@@ -19,11 +19,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
 
 import { useScrollTo } from "@/composables/useScrollTo";
+import { usePosTracker } from "@/composables/usePosTracker";
 
 import ArticleList from "@/components/blog/ArticleList.vue";
 import ArticleDetail from "@/components/blog/ArticleReader.vue";
@@ -47,6 +48,48 @@ const currentArticle = ref(null);
 const articleContent = ref("");
 const loadingContent = ref(false);
 const errorContent = ref("");
+const stopBlogPosTracker = ref(null);
+const trackedArticleId = ref("");
+
+const disposeBlogPosTracker = () => {
+  if (typeof stopBlogPosTracker.value === "function") {
+    stopBlogPosTracker.value();
+  }
+
+  stopBlogPosTracker.value = null;
+  trackedArticleId.value = "";
+};
+
+const setupBlogPosTracker = () => {
+  const articleId = String(
+    currentArticle.value?.id || route.params.articleId || "",
+  );
+  const shouldTrack =
+    currentComponent.value === "ArticleDetail" &&
+    !loadingContent.value &&
+    Boolean(articleContent.value) &&
+    Boolean(articleId);
+
+  if (!shouldTrack) {
+    disposeBlogPosTracker();
+    return;
+  }
+
+  if (trackedArticleId.value === articleId && stopBlogPosTracker.value) {
+    return;
+  }
+
+  disposeBlogPosTracker();
+
+  stopBlogPosTracker.value = usePosTracker(router, undefined, {
+    readPosKey: "BLOG_READ_POS",
+    readContextKey: "BLOG_READ_ARTICLE_ID",
+    getContextId: () =>
+      String(currentArticle.value?.id || route.params.articleId || ""),
+    getPage: () => 1,
+  });
+  trackedArticleId.value = articleId;
+};
 
 // 加载文章列表
 const loadArticles = async () => {
@@ -105,7 +148,6 @@ const refreshCurrentArticle = async () => {
 };
 
 // 监听路由 params 参数
-import { watch } from "vue";
 watch(
   () => route.params.articleId,
   (newId) => {
@@ -118,6 +160,19 @@ watch(
   },
 );
 
+watch(
+  () => [
+    currentComponent.value,
+    loadingContent.value,
+    articleContent.value,
+    currentArticle.value?.id,
+  ],
+  () => {
+    setupBlogPosTracker();
+  },
+  { immediate: true },
+);
+
 // 初始加载
 onMounted(async () => {
   await loadArticles();
@@ -128,5 +183,9 @@ onMounted(async () => {
     currentComponent.value = "ArticleDetail";
     await loadArticleContent(String(articleId));
   }
+});
+
+onBeforeUnmount(() => {
+  disposeBlogPosTracker();
 });
 </script>
