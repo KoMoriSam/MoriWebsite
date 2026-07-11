@@ -33,8 +33,7 @@
               class="block"
               :class="{
                 'menu-active':
-                  currentComponent !== 'NovelDetail' &&
-                  chapter.uuid === currentChapterUuid,
+                  isReaderRoute && chapter.uuid === currentChapterUuid,
                 'btn-disabled': isDisabled,
               }"
             >
@@ -88,6 +87,8 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useDateFormat } from "@vueuse/core";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -97,16 +98,17 @@ import Loading from "@/components/base/Loading.vue";
 import Submenu from "@/components/ui/menu/Submenu.vue";
 
 const novelStore = useNovelStore();
-const { currentComponent, isLoadingList, chapters, currentChapterUuid } =
-  storeToRefs(novelStore);
+const { isLoadingList, chapters, currentChapterUuid } = storeToRefs(novelStore);
+
+const route = useRoute();
+const isReaderRoute = computed(() => {
+  return Boolean(route.params.volumeSlug && route.params.chapterSlug);
+});
 
 const { isRead, handleAnyChapter, isRecent } = useChapters();
 
 const handleChapter = (newId) => {
   handleAnyChapter(newId);
-  if (currentComponent.value === "NovelDetail") {
-    props.togglePage();
-  }
 };
 
 import { useClickLimit } from "@/composables/useClickLimit";
@@ -117,10 +119,4 @@ const { isDisabled, handleClick } = useClickLimit();
 const onClick = (newId) => {
   handleClick(handleChapter, newId);
 };
-
-const props = defineProps({
-  togglePage: {
-    type: Function,
-  },
-});
 </script>

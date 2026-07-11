@@ -92,11 +92,32 @@ export const useNovelActions = (state, getters) => {
 
   const isUuid = (value) => UUID_PATTERN.test(String(value || "").trim());
 
+  const isReaderRoute = () => {
+    if (typeof window === "undefined") return false;
+
+    const path = String(window.location?.pathname || "").replace(/\/+$/, "");
+    const segments = path.split("/").filter(Boolean);
+    const query = new URLSearchParams(String(window.location?.search || ""));
+
+    if (segments[0] !== "novel") {
+      return false;
+    }
+
+    if (segments.length >= 3) {
+      return true;
+    }
+
+    return Boolean(query.get("chapter"));
+  };
+
   const setRead = () => {
-    if (state.currentComponent.value === "NovelDetail") {
+    if (!isReaderRoute()) {
       console.log("setRead: not in Reader component, skipping");
       return;
     }
+
+    if (!getters.currentChapter.value) return;
+
     const chapterSet = new Set(
       state.readChapters.value.map((item) => item.uuid),
     );
@@ -248,14 +269,13 @@ export const useNovelActions = (state, getters) => {
   }, 500);
 
   const updateTitle = () => {
-    if (state.currentComponent.value === "NovelDetail") {
+    if (!isReaderRoute()) {
       state.title.value = "向远方 | KoMoriSam";
       useTitle(state.title.value);
+      return;
     }
-    if (
-      getters.currentChapter.value &&
-      state.currentComponent.value === "Reader"
-    ) {
+
+    if (getters.currentChapter.value) {
       state.title.value = `${getters.currentChapter.value.title} | KoMoriSam`;
       useTitle(state.title.value);
     }

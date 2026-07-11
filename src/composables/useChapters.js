@@ -1,9 +1,10 @@
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useToast } from "@/composables/useToast";
+import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -13,21 +14,34 @@ export function useChapters() {
   const { scrollToTop } = useScrollTo();
 
   const novelStore = useNovelStore();
+  const { getState } = useReadingStateStorage();
   const {
-    currentComponent,
     currentChapter,
     currentChapterUuid,
+    currentChapterPage,
     currentChapterIndex,
     latestChapter,
     flatChapters,
     readChapters,
   } = storeToRefs(novelStore);
 
+  const route = useRoute();
   const router = useRouter();
 
-  const handleChapter = (uuid) => {
+  const isReaderRoute = computed(() => {
+    return Boolean(route.params.volumeSlug && route.params.chapterSlug);
+  });
+
+  const handleChapter = (uuid, options = {}) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
+
+    const targetPage =
+      Number.isFinite(Number(options.page)) && Number(options.page) > 0
+        ? Number(options.page)
+        : 1;
+    const targetHash = String(options.hash || "").trim();
+    const shouldScrollTop = options.scrollTop !== false;
 
     router.push({
       name: "novel",
@@ -35,27 +49,61 @@ export function useChapters() {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
       },
-      query: { page: 1 },
+      query: { page: targetPage },
+      hash: targetHash,
     });
-    scrollToTop(80);
+    if (shouldScrollTop) {
+      scrollToTop(80);
+    }
   };
 
   const handleFirstChapter = () => {
-    if (
-      currentChapterIndex.value === 0 &&
-      currentComponent.value === "Reader"
-    ) {
+    if (currentChapterIndex.value === 0 && isReaderRoute.value) {
       toast.info("已经是第一章啦！");
     } else {
       handleChapter("7d5e9b50-a9cb-428a-9264-903046354e22");
     }
   };
 
-  const handleAnyChapter = (uuid) => {
-    if (
-      uuid === currentChapterUuid.value &&
-      currentComponent.value === "Reader"
-    ) {
+  const handleAnyChapter = (uuid, options = {}) => {
+    if (options.resume) {
+      const storedChapterId = String(getState("READ_CH_ID", "") || "").trim();
+      const storedPos = String(getState("READ_POS", "") || "").trim();
+      const storedPage = Number(
+        getState("READ_PAGE", currentChapterPage.value),
+      );
+
+      const canUseStoredChapter =
+        Boolean(storedChapterId) &&
+        Boolean(novelStore.getPermalinkByUuid(storedChapterId));
+      const targetUuid = canUseStoredChapter ? storedChapterId : uuid;
+      const resumePage =
+        Number.isFinite(storedPage) && storedPage > 0 ? storedPage : 1;
+      const resumeHash = storedPos ? `#${storedPos}` : "";
+
+      const currentPage = Number(route.query.page);
+      const normalizedCurrentPage =
+        Number.isFinite(currentPage) && currentPage > 0 ? currentPage : 1;
+      const sameRouteTarget =
+        targetUuid === currentChapterUuid.value &&
+        isReaderRoute.value &&
+        normalizedCurrentPage === resumePage &&
+        route.hash === resumeHash;
+
+      if (sameRouteTarget) {
+        toast.info("已经是当前阅读位置啦！");
+        return;
+      }
+
+      handleChapter(targetUuid, {
+        page: resumePage,
+        hash: resumeHash,
+        scrollTop: false,
+      });
+      return;
+    }
+
+    if (uuid === currentChapterUuid.value && isReaderRoute.value) {
       toast.info("已经是当前章啦！");
     } else {
       handleChapter(uuid);
@@ -65,7 +113,7 @@ export function useChapters() {
   const handleRecentChapter = () => {
     if (
       latestChapter.value.uuid === currentChapterUuid.value &&
-      currentComponent.value === "Reader"
+      isReaderRoute.value
     ) {
       toast.info("已经是最新章啦！");
     } else {

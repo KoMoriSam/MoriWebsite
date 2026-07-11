@@ -176,6 +176,7 @@ import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
 import { useDateFormat } from "@vueuse/core";
+import { useRouter } from "vue-router";
 import { useChapters } from "@/composables/useChapters";
 import { useGiscus } from "@/composables/useGiscus";
 import { useScrollTo } from "@/composables/useScrollTo";
@@ -189,8 +190,9 @@ const {
   currentChapterUuid,
   currentChapterPage,
   isLoadingContent,
-  currentComponent,
 } = storeToRefs(novelStore);
+
+const router = useRouter();
 
 const readerStore = useReaderStore();
 const { styleConfigs } = storeToRefs(readerStore);
@@ -240,13 +242,8 @@ const remountGiscus = () => {
 };
 
 watch(
-  () => [
-    currentChapterUuid.value,
-    currentMapping.value,
-    currentComponent.value,
-  ],
+  () => [currentChapterUuid.value, currentMapping.value],
   () => {
-    if (currentComponent.value !== "Reader") return;
     remountGiscus();
   },
   { immediate: true },
@@ -342,7 +339,10 @@ const fabActions = computed(() => [
     buttonClass: "btn-secondary btn-soft",
     onClick: () => {
       scrollToTop();
-      props.togglePage();
+      router.push({
+        name: "novel",
+        params: { volumeSlug: undefined, chapterSlug: undefined },
+      });
     },
   },
 ]);
@@ -355,11 +355,4 @@ const { isDisabled, handleClick } = useClickLimit();
 const onClick = () => {
   handleClick(handleRecentChapter);
 };
-
-const props = defineProps({
-  togglePage: {
-    type: Function,
-    required: true,
-  },
-});
 </script>

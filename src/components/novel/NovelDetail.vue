@@ -22,31 +22,31 @@
             匆忙中，才学会乡音……
           </p>
           <ChapterInfo
+            v-if="readChapters.length === 0"
             badge="开始阅读"
             :content="
               flatChapters.length > 0 ? flatChapters[0]?.title : '加载中……'
             "
             additionalClasses="btn-primary"
-            :onClick="
-              () => {
-                handleFirstChapter();
-                togglePage();
-              }
-            "
+            :onClick="() => handleFirstChapter()"
           />
           <ChapterInfo
-            v-if="readChapters.length > 0"
+            v-else
             badge="继续阅读"
             :content="currentChapter ? currentChapter?.title : '加载中……'"
-            additionalClasses="mt-6"
-            :onClick="() => togglePage()"
+            additionalClasses="btn-secondary"
+            :onClick="
+              () =>
+                currentChapter?.uuid &&
+                handleAnyChapter(currentChapter.uuid, { resume: true })
+            "
           />
         </figcaption>
       </figure>
     </section>
 
     <section class="basis-xs">
-      <Chapters :togglePage />
+      <Chapters />
     </section>
 
     <Giscus
@@ -94,12 +94,5 @@ const themeStore = useThemeStore();
 
 const { imageLoaded, handleImageLoad } = useImageLoad();
 
-const { handleFirstChapter } = useChapters();
-
-const props = defineProps({
-  togglePage: {
-    type: Function,
-    required: true,
-  },
-});
+const { handleFirstChapter, handleAnyChapter } = useChapters();
 </script>
