@@ -63,14 +63,14 @@ const loadArticles = async () => {
 // 进入文章详情
 const goToDetail = (id) => {
   currentComponent.value = "ArticleDetail";
-  router.push({ query: { article: id } });
+  router.push({ name: "blog", params: { articleId: id } });
   scrollToTop();
 };
 
 // 返回文章列表
 const goToList = () => {
   currentComponent.value = "ArticleList";
-  router.push({ query: {} });
+  router.push({ name: "blog", params: { articleId: undefined } });
   scrollToTop();
 };
 
@@ -97,21 +97,21 @@ const loadArticleContent = async (id) => {
 };
 
 const refreshCurrentArticle = async () => {
-  const id = route.query.article || currentArticle.value?.id;
+  const id = route.params.articleId || currentArticle.value?.id;
 
   if (!id) return;
 
   await loadArticleContent(String(id));
 };
 
-// 监听路由 query 参数
+// 监听路由 params 参数
 import { watch } from "vue";
 watch(
-  () => route.query.article,
+  () => route.params.articleId,
   (newId) => {
     if (newId) {
       currentComponent.value = "ArticleDetail";
-      loadArticleContent(newId);
+      loadArticleContent(String(newId));
     } else {
       currentComponent.value = "ArticleList";
     }
@@ -123,10 +123,10 @@ onMounted(async () => {
   await loadArticles();
 
   // 恢复上次阅读的文章
-  const articleId = route.query.article;
+  const articleId = route.params.articleId;
   if (articleId) {
     currentComponent.value = "ArticleDetail";
-    await loadArticleContent(articleId);
+    await loadArticleContent(String(articleId));
   }
 });
 </script>

@@ -25,7 +25,7 @@ const router = createRouter({
       }),
     },
     {
-      path: "/novel",
+      path: "/novel/:volumeSlug?/:chapterSlug?",
       name: "novel",
       component: () => import("@/views/Novel.vue"),
       meta: { title: "向远方 | KoMoriSam" },
@@ -49,7 +49,7 @@ const router = createRouter({
       meta: { title: "更新日志 | KoMoriSam" },
     },
     {
-      path: "/blog",
+      path: "/blog/:articleId?",
       name: "blog",
       component: () => import("@/views/Blog.vue"),
       meta: { title: "博客 | KoMoriSam" },
@@ -79,6 +79,21 @@ export default router;
 router.beforeEach((to, from, next) => {
   NProgress.start();
 
+  const legacyArticleId =
+    typeof to.query.article === "string" ? to.query.article.trim() : "";
+  if (!to.params.articleId && legacyArticleId && to.path === "/blog") {
+    const nextQuery = { ...to.query };
+    delete nextQuery.article;
+    next({
+      name: "blog",
+      params: { articleId: legacyArticleId },
+      query: nextQuery,
+      hash: to.hash,
+      replace: true,
+    });
+    return;
+  }
+
   const currentPath = to.fullPath.split("#")[0];
   const previousPath = from.fullPath.split("#")[0];
 
@@ -87,7 +102,7 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
-  if (to.path === "/novel") {
+  if (to.path === "/novel" || to.path.startsWith("/novel/")) {
     next();
     return;
   }
@@ -107,7 +122,7 @@ router.afterEach((to, from) => {
     return;
   }
 
-  if (to.path === "/novel") {
+  if (to.path === "/novel" || to.path.startsWith("/novel/")) {
     return;
   }
 

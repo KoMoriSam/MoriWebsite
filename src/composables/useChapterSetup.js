@@ -7,6 +7,11 @@ import { useNovelStore } from "@/stores/novelStore";
 import { useToast } from "@/composables/useToast";
 import { usePosTracker } from "@/composables/usePosTracker";
 
+const normalizePageQuery = (page) => {
+  const n = Number(page);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+};
+
 export function useChapterSetup() {
   const route = useRoute();
   const router = useRouter();
@@ -22,31 +27,72 @@ export function useChapterSetup() {
     currentChapterPage,
   } = storeToRefs(novelStore);
 
+  const replaceToCanonical = (uuid, page) => {
+    const permalink = novelStore.getPermalinkByUuid(uuid);
+    if (!permalink) return;
+
+    router.replace({
+      name: "novel",
+      params: {
+        volumeSlug: permalink.volumeSlug,
+        chapterSlug: permalink.chapterSlug,
+      },
+      query: { page },
+      hash: route.hash,
+    });
+  };
+
+  const resolveRouteToChapterUuid = () => {
+    const volumeSlug = String(route.params.volumeSlug || "");
+    const chapterSlug = String(route.params.chapterSlug || "");
+    const legacyQueryChapter =
+      typeof route.query.chapter === "string" ? route.query.chapter.trim() : "";
+
+    if (volumeSlug && chapterSlug) {
+      return novelStore.resolveChapterUuidByPermalink(volumeSlug, chapterSlug);
+    }
+
+    if (legacyQueryChapter && novelStore.isUuid(legacyQueryChapter)) {
+      return legacyQueryChapter;
+    }
+
+    if (volumeSlug && !chapterSlug && novelStore.isUuid(volumeSlug)) {
+      return volumeSlug;
+    }
+
+    return "";
+  };
+
   // 检查并补充路由参数
   const checkAndSupplementRouteParams = () => {
     watch(
       () => currentComponent.value,
       async (newComponent) => {
         if (newComponent !== "Reader") return;
-        if (route.query.chapter) {
-          await novelStore.setChapter(route.query.chapter);
-          if (route.query.page) {
-            novelStore.setPage(Number(route.query.page));
-          } else {
-            novelStore.setPage(1);
+
+        const page = normalizePageQuery(route.query.page);
+        const chapterUuid = resolveRouteToChapterUuid();
+        if (chapterUuid) {
+          await novelStore.setChapter(chapterUuid);
+          novelStore.setPage(page);
+
+          const hasCanonicalParams =
+            route.params.volumeSlug && route.params.chapterSlug;
+          const hasLegacyQuery =
+            typeof route.query.chapter === "string" &&
+            route.query.chapter.trim();
+
+          if (!hasCanonicalParams || hasLegacyQuery) {
+            replaceToCanonical(chapterUuid, page);
           }
           return;
         }
-        if (!route.query.chapter) {
-          if (currentChapterUuid.value) {
-            router.push({
-              query: {
-                chapter: currentChapterUuid.value,
-                page: currentChapterPage.value,
-              },
-            });
-            return;
-          }
+
+        if (currentChapterUuid.value) {
+          replaceToCanonical(
+            currentChapterUuid.value,
+            currentChapterPage.value,
+          );
         }
       },
       { immediate: true },
@@ -56,10 +102,27 @@ export function useChapterSetup() {
   // 监听路由参数变化
   const watchRouteParams = () => {
     watch(
-      () => route.query.chapter,
-      async (newId) => {
-        if (newId) {
-          await novelStore.setChapter(newId);
+      () => [
+        route.params.volumeSlug,
+        route.params.chapterSlug,
+        route.query.chapter,
+      ],
+      async () => {
+        const chapterUuid = resolveRouteToChapterUuid();
+        if (chapterUuid) {
+          await novelStore.setChapter(chapterUuid);
+
+          const hasCanonicalParams =
+            route.params.volumeSlug && route.params.chapterSlug;
+          const hasLegacyQuery =
+            typeof route.query.chapter === "string" &&
+            route.query.chapter.trim();
+          if (!hasCanonicalParams || hasLegacyQuery) {
+            replaceToCanonical(
+              chapterUuid,
+              normalizePageQuery(route.query.page),
+            );
+          }
         }
       },
     );
@@ -67,9 +130,7 @@ export function useChapterSetup() {
     watch(
       () => route.query.page,
       (newPage) => {
-        if (newPage) {
-          novelStore.setPage(Number(newPage));
-        }
+        novelStore.setPage(normalizePageQuery(newPage));
       },
     );
   };

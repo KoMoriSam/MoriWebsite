@@ -26,8 +26,16 @@ export function useChapters() {
   const router = useRouter();
 
   const handleChapter = (uuid) => {
+    const permalink = novelStore.getPermalinkByUuid(uuid);
+    if (!permalink) return;
+
     router.push({
-      query: { chapter: uuid, page: 1 },
+      name: "novel",
+      params: {
+        volumeSlug: permalink.volumeSlug,
+        chapterSlug: permalink.chapterSlug,
+      },
+      query: { page: 1 },
     });
     scrollToTop(80);
   };
@@ -68,7 +76,7 @@ export function useChapters() {
   const hasPrevious = computed(() => currentChapterIndex.value > 0);
 
   const hasNext = computed(
-    () => currentChapterIndex.value + 1 < flatChapters.value.length
+    () => currentChapterIndex.value + 1 < flatChapters.value.length,
   );
 
   const handlePrev = () => {
@@ -80,8 +88,16 @@ export function useChapters() {
   };
 
   const handleAnyPage = (index) => {
+    const permalink = novelStore.getPermalinkByUuid(currentChapter.value.uuid);
+    if (!permalink) return;
+
     router.push({
-      query: { chapter: currentChapter.value.uuid, page: index },
+      name: "novel",
+      params: {
+        volumeSlug: permalink.volumeSlug,
+        chapterSlug: permalink.chapterSlug,
+      },
+      query: { page: index },
     });
     scrollToTop(80);
   };

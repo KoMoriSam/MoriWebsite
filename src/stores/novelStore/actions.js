@@ -15,6 +15,61 @@ export const useNovelActions = (state, getters) => {
 
   const toast = useToast({ position: "center-top", closable: false });
 
+  const UUID_PATTERN =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  const slugifySegment = (value, fallback = "item") => {
+    const raw = String(value || "").trim();
+    if (!raw) return fallback;
+
+    const normalized = raw
+      .toLowerCase()
+      .replace(/\.md$/i, "")
+      .replace(/[\\/]+/g, "-")
+      .replace(/[“”"'`]/g, "")
+      .replace(/[。！？：；，、·]/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    return normalized || fallback;
+  };
+
+  const buildPermalinkMaps = () => {
+    const permalinkToUuid = {};
+    const uuidToPermalink = {};
+    const volumeSlugCounter = {};
+
+    for (const chapter of state.flatChapters.value) {
+      const chapterPath = String(chapter.path || "");
+      const [volumeRaw = "", chapterFileRaw = ""] = chapterPath.split("/");
+
+      const volumeSlug = slugifySegment(volumeRaw, "volume");
+      const chapterBaseSlug = slugifySegment(chapterFileRaw, "chapter");
+
+      const volumeChapterKey = `${volumeSlug}/${chapterBaseSlug}`;
+      const duplicateIndex = (volumeSlugCounter[volumeChapterKey] || 0) + 1;
+      volumeSlugCounter[volumeChapterKey] = duplicateIndex;
+
+      const chapterSlug =
+        duplicateIndex > 1
+          ? `${chapterBaseSlug}-${duplicateIndex}`
+          : chapterBaseSlug;
+
+      const permalink = {
+        volumeSlug,
+        chapterSlug,
+      };
+      const permalinkKey = `${permalink.volumeSlug}/${permalink.chapterSlug}`;
+
+      permalinkToUuid[permalinkKey] = chapter.uuid;
+      uuidToPermalink[chapter.uuid] = permalink;
+    }
+
+    state.chapterPermalinkToUuid.value = permalinkToUuid;
+    state.chapterUuidToPermalink.value = uuidToPermalink;
+  };
+
   const flatList = (list) => {
     state.flatChapters.value = Object.values(list).flatMap((volume) =>
       volume.chapters.map((chapter) => ({
@@ -23,7 +78,19 @@ export const useNovelActions = (state, getters) => {
         volumeUuid: volume.volumeInfo.uuid,
       })),
     );
+    buildPermalinkMaps();
   };
+
+  const resolveChapterUuidByPermalink = (volumeSlug, chapterSlug) => {
+    const key = `${String(volumeSlug || "")}/${String(chapterSlug || "")}`;
+    return state.chapterPermalinkToUuid.value[key] || "";
+  };
+
+  const getPermalinkByUuid = (uuid) => {
+    return state.chapterUuidToPermalink.value[String(uuid || "")] || null;
+  };
+
+  const isUuid = (value) => UUID_PATTERN.test(String(value || "").trim());
 
   const setRead = () => {
     if (state.currentComponent.value === "NovelDetail") {
@@ -209,5 +276,8 @@ export const useNovelActions = (state, getters) => {
     setPage,
     updateTitle,
     setRead,
+    resolveChapterUuidByPermalink,
+    getPermalinkByUuid,
+    isUuid,
   };
 };

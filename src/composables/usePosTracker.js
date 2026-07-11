@@ -39,7 +39,7 @@ export function usePosTracker(router, onRestoreTitle) {
       return shortId;
     }
 
-    const chapter = router.currentRoute.value.query.chapter; // 从查询参数获取章节UUID
+    const chapter = getState("READ_CH_ID", ""); // 从阅读状态获取章节UUID
     const page = router.currentRoute.value.query.page; // 从查询参数获取页码
     return `${chapter}-${page}-${shortId}`; // 拼接完整的段落ID
   }
@@ -79,10 +79,7 @@ export function usePosTracker(router, onRestoreTitle) {
     }
 
     // 确保路由已加载完成后再重试
-    if (
-      router.currentRoute.value.query.chapter &&
-      router.currentRoute.value.query.page
-    ) {
+    if (getState("READ_CH_ID", "") && router.currentRoute.value.query.page) {
       // 轮询等待 DOM 渲染，最多重试 8 次（总计约 4 秒）
       let retries = 0;
       const maxRetries = 8;
