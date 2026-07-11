@@ -2,122 +2,313 @@ import { useEventListener, useThrottleFn } from "@vueuse/core";
 import { computed } from "vue";
 import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 
-export function usePosTracker(router, onRestoreTitle) {
+const FULL_PARAGRAPH_ID_RE =
+  /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/;
+
+export function usePosTracker(router, onRestoreTitle, options = {}) {
   // const READ_POS_KEY = "READ_POS";
   // const readPos = useStorage(READ_POS_KEY, "");
   const { getState, setState } = useReadingStateStorage();
-  const readPos = computed({
-    get: () => getState("READ_POS", ""),
-    set: (value) => setState("READ_POS", value),
-  });
-  let isManualHashChange = false;
+  const readPosKey = options.readPosKey || "READ_POS";
+  const readContextKey = options.readContextKey || "READ_CH_ID";
+  const getContextId =
+    typeof options.getContextId === "function"
+      ? options.getContextId
+      : () => getState(readContextKey, "");
+  const getPage =
+    typeof options.getPage === "function"
+      ? options.getPage
+      : () => router.currentRoute.value.query.page;
 
-  const posSelector = "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id], p[id]";
+  const readPos = computed({
+    get: () => getState(readPosKey, ""),
+    set: (value) => setState(readPosKey, value),
+  });
+  const readContext = computed({
+    get: () => getState(readContextKey, ""),
+    set: (value) => setState(readContextKey, value),
+  });
+  let skippedScrollUpdates = 0;
+  const stopListeners = [];
+
+  function suppressNextScrollUpdates(count = 6) {
+    skippedScrollUpdates = Math.max(skippedScrollUpdates, count);
+  }
+
+  function shouldSkipCurrentScrollUpdate() {
+    if (skippedScrollUpdates <= 0) {
+      return false;
+    }
+
+    skippedScrollUpdates -= 1;
+    return true;
+  }
+
+  const posSelector =
+    options.posSelector ||
+    "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id], p[id]";
+
+  function trackListener(stop) {
+    if (typeof stop === "function") {
+      stopListeners.push(stop);
+    }
+  }
+
+  function normalizeAnchorToken(token) {
+    if (token == null) return "";
+    const raw = typeof token === "string" ? token : String(token);
+    const withoutHash = raw.startsWith("#") ? raw.slice(1) : raw;
+    if (!withoutHash) return "";
+
+    // 兼容双重编码（如 #%25E9%2595...）: 最多解码 3 次，直到稳定或失败。
+    let decoded = withoutHash;
+    for (let i = 0; i < 3; i++) {
+      try {
+        const next = decodeURIComponent(decoded);
+        if (next === decoded) {
+          break;
+        }
+        decoded = next;
+      } catch {
+        break;
+      }
+    }
+
+    try {
+      return decoded;
+    } catch {
+      return decoded;
+    }
+  }
+
+  function isNumericAnchor(token) {
+    return /^\d+$/.test(token);
+  }
+
+  function getCurrentContextId() {
+    const ctx = normalizeAnchorToken(getContextId?.());
+    if (ctx) {
+      return ctx;
+    }
+
+    return normalizeAnchorToken(readContext.value);
+  }
+
+  function getContextPrefix() {
+    const contextId = getCurrentContextId();
+    const page = String(getPage?.() ?? "").trim();
+    if (!contextId || !page) {
+      return "";
+    }
+
+    return `${contextId}-${page}-`;
+  }
+
+  function isContextParagraphId(token) {
+    const normalizedToken = normalizeAnchorToken(token);
+    if (!normalizedToken) {
+      return false;
+    }
+
+    const prefix = getContextPrefix();
+    if (!prefix || !normalizedToken.startsWith(prefix)) {
+      return false;
+    }
+
+    const suffix = normalizedToken.slice(prefix.length);
+    return /^\d+$/.test(suffix);
+  }
+
+  function syncReadContext() {
+    const ctx = getCurrentContextId();
+    if (ctx) {
+      readContext.value = ctx;
+    }
+  }
 
   // 动态生成完整的段落 id
-  function getFullId(shortId) {
-    // 保证 shortId 是字符串
-    if (shortId == null) return "";
-    if (typeof shortId !== "string") shortId = String(shortId);
+  function getFullId(anchorToken) {
+    const token = normalizeAnchorToken(anchorToken);
+    if (!token) return "";
 
     // 如果已经是完整ID格式（包含章节和页码），直接返回
-    if (
-      shortId.match(
-        /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/,
-      )
-    ) {
-      return shortId;
+    if (FULL_PARAGRAPH_ID_RE.test(token)) {
+      return token;
     }
 
-    // 如果是普通标题，直接返回
-    if (!shortId.match(/^\d+$/)) {
-      return shortId;
+    // 非段落短ID（如脚注、标题等）直接按原样处理
+    if (!isNumericAnchor(token)) {
+      return token;
     }
 
-    // 如果是脚注，直接返回
-    if (shortId.startsWith("fn")) {
-      return shortId;
+    const chapter = getCurrentContextId(); // 从阅读状态或当前上下文获取章节/文章ID
+    const page = getPage?.(); // 从当前上下文获取页码
+    if (!chapter || !page) {
+      return token;
     }
 
-    const chapter = getState("READ_CH_ID", ""); // 从阅读状态获取章节UUID
-    const page = router.currentRoute.value.query.page; // 从查询参数获取页码
-    return `${chapter}-${page}-${shortId}`; // 拼接完整的段落ID
+    return `${chapter}-${page}-${token}`; // 拼接完整的段落ID
   }
 
   // 提取简化的段落 id
   function getShortId(fullId) {
-    // 保证 fullId 是字符串
-    if (fullId == null) return "";
-    if (typeof fullId !== "string") fullId = String(fullId);
+    const normalizedId = normalizeAnchorToken(fullId);
+    if (!normalizedId) return "";
 
-    // 如果已经是简化ID格式，直接返回
+    // 非完整段落ID时，按原样保存（脚注/标题/任意锚点）
     if (
-      !fullId.match(
-        /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/,
-      )
+      !FULL_PARAGRAPH_ID_RE.test(normalizedId) &&
+      !isContextParagraphId(normalizedId)
     ) {
-      return fullId;
+      return normalizedId;
     }
 
-    const parts = fullId.split("-");
-    if (parts.length >= 3) {
-      return `${parts[parts.length - 1]}`; // 提取段落编号
+    const contextPrefix = getContextPrefix();
+    if (contextPrefix && normalizedId.startsWith(contextPrefix)) {
+      const suffix = normalizedId.slice(contextPrefix.length);
+      if (/^\d+$/.test(suffix)) {
+        return suffix;
+      }
     }
+
+    const match = normalizedId.match(/-(\d+)$/);
+    if (match?.[1]) {
+      return match[1];
+    }
+
+    return normalizedId;
   }
 
-  // 跳转到 READ_POS
-  function scrollToLastReadPos() {
-    const shortId = readPos.value;
-    console.log("短ID", shortId);
-    if (!shortId) return;
+  function getScrollCandidates(anchorToken) {
+    const token = normalizeAnchorToken(anchorToken);
+    if (!token) return [];
 
-    const id = getFullId(shortId); // 动态生成完整的段落ID
-    const el = document.getElementById(id);
-    if (el) {
-      performScroll(shortId, id, el);
+    const candidates = [token, encodeURIComponent(token)];
+    const fullId = getFullId(token);
+    if (fullId && fullId !== token) {
+      candidates.unshift(fullId);
+    }
+
+    if (fullId) {
+      candidates.push(encodeURIComponent(fullId));
+    }
+
+    return [...new Set(candidates.filter(Boolean))];
+  }
+
+  function resolveInitialAnchorToken() {
+    const routeHashToken = normalizeAnchorToken(
+      router.currentRoute.value.hash || window.location.hash,
+    );
+    if (routeHashToken) {
+      return routeHashToken;
+    }
+
+    const storedToken = normalizeAnchorToken(readPos.value);
+    if (!storedToken) {
+      return "";
+    }
+
+    const storedContext = normalizeAnchorToken(readContext.value);
+    const activeContext = normalizeAnchorToken(getContextId?.());
+
+    if (storedContext && activeContext && storedContext !== activeContext) {
+      return "";
+    }
+
+    return storedToken;
+  }
+
+  function findAnchorElement(anchorToken) {
+    const candidates = getScrollCandidates(anchorToken);
+    for (const candidate of candidates) {
+      const element = document.getElementById(candidate);
+      if (element) {
+        return { element, resolvedId: candidate };
+      }
+    }
+
+    return { element: null, resolvedId: "" };
+  }
+
+  function syncRouteHash(anchorToken, suppressCount = 0) {
+    const token = getShortId(anchorToken);
+
+    const currentRawHash = window.location.hash || "";
+    const currentToken = normalizeAnchorToken(
+      router.currentRoute.value.hash || currentRawHash,
+    );
+
+    if (!token) {
+      if (!currentRawHash) return;
+      if (suppressCount > 0) {
+        suppressNextScrollUpdates(suppressCount);
+      }
+      const urlWithoutHash = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState(window.history.state, "", urlWithoutHash);
       return;
     }
 
-    // 确保路由已加载完成后再重试
-    if (getState("READ_CH_ID", "") && router.currentRoute.value.query.page) {
-      // 轮询等待 DOM 渲染，最多重试 8 次（总计约 4 秒）
-      let retries = 0;
-      const maxRetries = 8;
-      const tryScroll = () => {
-        const id = getFullId(shortId);
-        const el = document.getElementById(id);
-        if (el) {
-          performScroll(shortId, id, el);
-        } else if (retries < maxRetries) {
-          retries++;
-          setTimeout(tryScroll, Math.min(300 + retries * 200, 1000));
-        } else {
-          console.warn("滚动到上次阅读位置失败：元素未找到", shortId);
-        }
-      };
-      setTimeout(tryScroll, 200); // 初始延迟，给内容渲染一些时间
-    } else {
-      console.warn("路由参数未准备好，无法滚动到上次阅读位置");
+    // token 一致且不是双重编码时不重复写入，避免无意义 replace。
+    if (currentToken === token && !currentRawHash.includes("%25")) {
+      return;
     }
+
+    if (suppressCount > 0) {
+      suppressNextScrollUpdates(suppressCount);
+    }
+    const nextUrl = `${window.location.pathname}${window.location.search}#${token}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+  }
+
+  function scrollToAnchorWithRetry(anchorToken) {
+    const token = normalizeAnchorToken(anchorToken);
+    if (!token) return;
+
+    const firstTry = findAnchorElement(token);
+    if (firstTry.element) {
+      performScroll(firstTry.resolvedId, firstTry.element);
+      return;
+    }
+
+    let retries = 0;
+    const maxRetries = 8;
+    const tryScroll = () => {
+      const result = findAnchorElement(token);
+      if (result.element) {
+        performScroll(result.resolvedId, result.element);
+      } else if (retries < maxRetries) {
+        retries++;
+        setTimeout(tryScroll, Math.min(300 + retries * 200, 1000));
+      } else {
+        console.warn("滚动到锚点失败：元素未找到", token);
+      }
+    };
+
+    setTimeout(tryScroll, 200);
+  }
+
+  // 优先跳转到 URL hash，其次回退到 READ_POS
+  function scrollToLastReadPos() {
+    const anchorToken = resolveInitialAnchorToken();
+    if (!anchorToken) return;
+
+    scrollToAnchorWithRetry(anchorToken);
   }
 
   // 执行滚动操作
-  function performScroll(shortId, id, el) {
-    isManualHashChange = true;
-    router.replace({
-      path: router.currentRoute.value.path,
-      query: router.currentRoute.value.query,
-      hash: `#${decodeURIComponent(shortId)}`, // URL中只使用简化的ID
-    });
+  function performScroll(anchorToken, el) {
+    suppressNextScrollUpdates(8);
+    const shortToken = getShortId(anchorToken);
+    syncReadContext();
+    readPos.value = shortToken;
+    syncRouteHash(shortToken, 2);
     el.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => {
-      isManualHashChange = false;
-      onRestoreTitle?.();
-    }, 1000);
+    setTimeout(() => onRestoreTitle?.(), 1000);
   }
 
   const updateCurrentPos = useThrottleFn(() => {
-    if (isManualHashChange) return;
+    if (shouldSkipCurrentScrollUpdate()) return;
 
     const poss = Array.from(document.querySelectorAll(posSelector));
     if (poss.length === 0) return;
@@ -136,57 +327,91 @@ export function usePosTracker(router, onRestoreTitle) {
         if (scrollTop + offset >= top) {
           const id = el.id;
           if (id) {
-            const shortId = getShortId(id); // 确保存储的是简化ID
-            isManualHashChange = true;
-            router.replace({
-              path: router.currentRoute.value.path,
-              query: router.currentRoute.value.query,
-              hash: `#${decodeURIComponent(shortId)}`,
-            });
-            readPos.value = shortId; // 存储简化ID
-            setTimeout(() => {
-              isManualHashChange = false;
-            }, 300);
+            const shortId = getShortId(id);
+            if (readPos.value !== shortId) {
+              syncReadContext();
+              readPos.value = shortId;
+              // 滚动时同步 hash，保持位置可分享。
+              syncRouteHash(shortId, 0);
+            }
           }
           break;
         }
       }
     } else {
-      if (readPos.value && !readPos.value.startsWith("#fn")) {
+      // 顶部区域在无 hash 锚点时清空阅读位置，避免历史位置误恢复
+      if (
+        readPos.value &&
+        !normalizeAnchorToken(
+          router.currentRoute.value.hash || window.location.hash,
+        )
+      ) {
         readPos.value = "";
-        router.replace({
-          path: router.currentRoute.value.path,
-          query: router.currentRoute.value.query,
-          hash: "",
-        });
+        syncRouteHash("", 0);
       }
     }
-  }, 300);
+  }, 120);
 
-  // 监听hash变化事件（包括脚注跳转）
-  useEventListener(window, "hashchange", (e) => {
-    const hash = window.location.hash;
-    if (hash.startsWith("#fn")) {
-      isManualHashChange = true;
-      readPos.value = hash.substring(1); // 记录脚注（如 "fn1"）
-      setTimeout(() => {
-        isManualHashChange = false;
-      }, 300);
-    }
-  });
+  // 监听 hash 变化（支持任意 #id）
+  trackListener(
+    useEventListener(window, "hashchange", () => {
+      const hashTarget = normalizeAnchorToken(window.location.hash);
+      if (hashTarget) {
+        suppressNextScrollUpdates(4);
+        syncReadContext();
+        readPos.value = getShortId(hashTarget);
+        // 把 #%25... 规范成更短的可读 hash（如中文标题）。
+        syncRouteHash(hashTarget, 1);
+        scrollToAnchorWithRetry(hashTarget);
+      }
+    }),
+  );
 
-  // 监听点击事件，检测脚注链接点击
-  useEventListener(document, "click", (e) => {
-    const target = e.target.closest("a");
-    if (target?.getAttribute("href")?.startsWith("#fn")) {
-      isManualHashChange = true;
-      readPos.value = target.getAttribute("href")?.substring(1) || ""; // 记录脚注（如 "fn1"）
-      setTimeout(() => {
-        isManualHashChange = false;
-      }, 300);
-    }
-  });
+  // 监听点击事件，捕获页内锚点跳转
+  trackListener(
+    useEventListener(document, "click", (e) => {
+      if (!(e.target instanceof Element)) return;
+
+      const target = e.target.closest("a");
+      const href = target?.getAttribute("href") || "";
+      if (href.startsWith("#")) {
+        const hashTarget = normalizeAnchorToken(href);
+        if (!hashTarget) return;
+
+        suppressNextScrollUpdates(4);
+        syncReadContext();
+        readPos.value = getShortId(hashTarget);
+      }
+    }),
+  );
+
+  trackListener(
+    router.afterEach((to, from) => {
+      const pageChanged =
+        String(to.query?.page ?? "") !== String(from.query?.page ?? "");
+      const hashChanged = String(to.hash || "") !== String(from.hash || "");
+      const pathChanged = String(to.path || "") !== String(from.path || "");
+
+      if (!pageChanged && !hashChanged && !pathChanged) {
+        return;
+      }
+
+      // 路由切换后重新尝试恢复，覆盖“继续阅读”等程序化跳转场景。
+      suppressNextScrollUpdates(4);
+      scrollToLastReadPos();
+    }),
+  );
 
   scrollToLastReadPos();
-  useEventListener(window, "scroll", updateCurrentPos);
+  trackListener(useEventListener(window, "scroll", updateCurrentPos));
+
+  return () => {
+    stopListeners.forEach((stop) => {
+      try {
+        stop();
+      } catch {
+        // no-op
+      }
+    });
+  };
 }
