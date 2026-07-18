@@ -219,7 +219,7 @@
     </template>
   </Reader>
 
-  <FootBar />
+  <FootBar v-if="!loading" />
 </template>
 
 <script setup>
