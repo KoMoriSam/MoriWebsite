@@ -131,32 +131,35 @@
 @layer utilities {
   /* 标题样式 */
   #markdown-content.prose h1 {
-    @apply font-serif mt-3 mb-2
+    @apply font-serif pt-3 pb-2 my-0
+    text-balance
     text-[calc(var(--para-font-size)*1.25)]
-    leading-[calc(var(--para-font-size)*1.25)]
+    leading-[calc(var(--para-font-size)*1.75)]
     tracking-[calc(var(--para-letter-spacing)*1.25)];
   }
 
   #markdown-content.prose h2 {
-    @apply font-serif font-semibold mt-3 mb-2
+    @apply font-serif font-semibold pt-3 pb-2 my-0 text-balance
     text-[calc(var(--para-font-size)*1.125)]
-    leading-[calc(var(--para-font-size)*1.125)]
+    leading-[calc(var(--para-font-size)*1.5)]
     tracking-[calc(var(--para-letter-spacing)*1.125)];
   }
 
   #markdown-content.prose h3 {
-    @apply font-serif font-medium text-base-content mt-2 mb-1 
+    @apply font-serif font-medium text-base-content pt-2 pb-1 my-0
+    text-balance
     text-(length:--para-font-size)
-    leading-(--para-font-size)
+    leading-[calc(var(--para-font-size)*1.25)]
     tracking-(--para-letter-spacing);
   }
 
   #markdown-content.prose h4,
   #markdown-content.prose h5,
   #markdown-content.prose h6 {
-    @apply font-serif font-normal mt-2 mb-0 
+    @apply font-serif font-normal pt-2 pb-0 my-0
+    text-balance
     text-(length:--para-font-size) 
-    leading-(--para-line-height) 
+    leading-[calc(var(--para-font-size)*1.25)]
     tracking-(--para-letter-spacing);
   }
 
@@ -241,7 +244,7 @@
     @apply whitespace-nowrap
     relative overflow-visible
     inline-flex items-center justify-center
-    h-4 min-h-0 w-6 min-w-6 pl-0.5 pb-0.25
+    h-4 min-h-0 w-6 min-w-6 pl-0.5 pb-0.25 ml-1
     opacity-0 group-hover:opacity-100
     group-focus-within:opacity-100
     transition-[opacity,scale]
@@ -504,14 +507,18 @@
   }
 
   /* 引用与强调文本 */
-  #markdown-content.prose blockquote,
+  #markdown-content.prose blockquote {
+    @apply [quotes:none] font-serif ps-2 lg:ps-4;
+  }
+
   #markdown-content.prose em {
-    @apply italic [quotes:none] font-song;
+    @apply italic font-serif;
   }
 
   #markdown-content.prose blockquote p,
   #markdown-content.prose .footnotes p {
-    @apply indent-0;
+    @apply indent-0 text-justify text-pretty
+    text-[calc(var(--para-font-size)*0.875)];
   }
 
   #markdown-content.prose strong {
@@ -523,9 +530,10 @@
   }
 
   /* 脚注样式 */
-  #markdown-content.prose .footnote-ref,
-  #markdown-content.prose .footnote-backref {
-    white-space: nowrap;
+  #markdown-content.prose .footnote-ref {
+    @apply whitespace-nowrap
+    before:content-['\2060']
+    after:content-['\2060'];
   }
 
   #markdown-content.prose .footnote-ref a {
@@ -586,6 +594,10 @@
   /* Task List 任务列表 */
   #markdown-content.prose ul.contains-task-list {
     @apply list-none ps-[0.5em];
+  }
+
+  #markdown-content.prose li.task-list-item {
+    @apply pl-(--para-text-indent)  indent-[calc(var(--para-text-indent)*-1)];
   }
 
   #markdown-content.prose input.task-list-item-checkbox {
