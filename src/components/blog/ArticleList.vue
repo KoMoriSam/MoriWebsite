@@ -393,7 +393,7 @@
               </div>
 
               <h2
-                class="mt-3 line-clamp-2 text-xl leading-snug font-bold font-serif sm:text-2xl"
+                class="mt-3 line-clamp-2 text-xl leading-snug font-bold font-serif sm:text-2xl text-balance"
                 :class="item.banner ? 'drop-shadow-sm' : ''"
               >
                 {{ item.title }}

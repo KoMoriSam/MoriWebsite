@@ -102,7 +102,7 @@
 
           <!-- 标题 -->
           <h1
-            class="max-w-4xl text-3xl leading-tight font-black font-serif tracking-tight sm:text-4xl lg:text-5xl"
+            class="max-w-4xl text-3xl leading-tight font-black font-serif tracking-tight sm:text-4xl lg:text-5xl text-balance"
             :class="article?.banner ? 'drop-shadow-sm' : ''"
           >
             {{ article?.title }}
