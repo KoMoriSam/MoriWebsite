@@ -15,7 +15,7 @@
           class="w-full aspect-12/17 object-cover rounded-lg shadow-2xl z-10"
           @load="handleImageLoad"
         />
-        <figcaption class="relative z-0 pt-6">
+        <figcaption class="relative z-0 pt-6 w-full">
           <h1 class="text-5xl font-bold">向远方</h1>
           <p class="py-6">
             慌张中，才学会张口……<br />
@@ -32,13 +32,21 @@
           />
           <ChapterInfo
             v-else
-            badge="继续阅读"
+            badge="继续上次阅读"
             :content="currentChapter ? currentChapter?.title : '加载中……'"
             additionalClasses="btn-secondary"
             :onClick="
               () =>
                 currentChapter?.uuid &&
                 handleAnyChapter(currentChapter.uuid, { resume: true })
+            "
+          />
+          <ChapterInfo
+            badge="最新章节"
+            :content="latestChapter ? latestChapter?.title : '加载中……'"
+            additionalClasses="btn-success mt-4"
+            :onClick="
+              () => latestChapter?.uuid && handleAnyChapter(latestChapter.uuid)
             "
           />
         </figcaption>
@@ -89,7 +97,8 @@ import ToTop from "@/components/base/ToTop.vue";
 import FootBar from "@/components/layout/FootBar.vue";
 
 const novelStore = useNovelStore();
-const { readChapters, flatChapters, currentChapter } = storeToRefs(novelStore);
+const { readChapters, flatChapters, currentChapter, latestChapter } =
+  storeToRefs(novelStore);
 const themeStore = useThemeStore();
 
 const { imageLoaded, handleImageLoad } = useImageLoad();
