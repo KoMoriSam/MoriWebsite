@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.12.2</strong>
+  当前版本：<strong>1.13.0</strong>
   ·
   <a href="https://komorisam.github.io/changelog">查看更新日志</a>
 </p>
