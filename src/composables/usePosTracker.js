@@ -21,6 +21,8 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       : () =>
           router.currentRoute.value.query.p ??
           router.currentRoute.value.query.page;
+  const isTrackingActive =
+    typeof options.isActive === "function" ? options.isActive : () => true;
 
   const readPos = computed({
     get: () => getState(readPosKey, ""),
@@ -122,6 +124,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   }
 
   function syncReadContext() {
+    if (!isTrackingActive()) {
+      return;
+    }
+
     const ctx = getCurrentContextId();
     if (ctx) {
       readContext.value = ctx;
@@ -198,10 +204,21 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     return [...new Set(candidates.filter(Boolean))];
   }
 
+  function getPersistedPosToken(anchorToken) {
+    const token = normalizeAnchorToken(anchorToken);
+    if (!token) {
+      return "";
+    }
+
+    return normalizeAnchorToken(getFullId(token) || token);
+  }
+
   function resolveInitialAnchorToken() {
-    const routeHashToken = normalizeAnchorToken(
-      router.currentRoute.value.hash || window.location.hash,
-    );
+    if (!isTrackingActive()) {
+      return "";
+    }
+
+    const routeHashToken = normalizeAnchorToken(router.currentRoute.value.hash);
     if (routeHashToken) {
       return routeHashToken;
     }
@@ -211,6 +228,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return "";
     }
 
+    if (FULL_PARAGRAPH_ID_RE.test(storedToken)) {
+      return storedToken;
+    }
+
     const storedContext = normalizeAnchorToken(readContext.value);
     const activeContext = normalizeAnchorToken(getContextId?.());
 
@@ -218,7 +239,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return "";
     }
 
-    return storedToken;
+    return getFullId(storedToken) || storedToken;
   }
 
   function findAnchorElement(anchorToken) {
@@ -292,6 +313,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   // 优先跳转到 URL hash，其次回退到 READ_POS
   function scrollToLastReadPos() {
+    if (!isTrackingActive()) {
+      return;
+    }
+
     const anchorToken = resolveInitialAnchorToken();
     if (!anchorToken) return;
 
@@ -300,17 +325,22 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   // 执行滚动操作
   function performScroll(anchorToken, el) {
+    if (!isTrackingActive()) {
+      return;
+    }
+
     suppressNextScrollUpdates(8);
-    const shortToken = getShortId(anchorToken);
+    const persistedPosToken = getPersistedPosToken(el?.id || anchorToken);
+    const shortToken = getShortId(persistedPosToken || anchorToken);
     syncReadContext();
-    readPos.value = shortToken;
+    readPos.value = persistedPosToken;
     syncRouteHash(shortToken, 2);
     el.scrollIntoView({ behavior: "smooth" });
     setTimeout(() => onRestoreTitle?.(), 1000);
   }
 
   const updateCurrentPos = useThrottleFn(() => {
-    if (shouldSkipCurrentScrollUpdate()) return;
+    if (!isTrackingActive() || shouldSkipCurrentScrollUpdate()) return;
 
     const poss = Array.from(document.querySelectorAll(posSelector));
     if (poss.length === 0) return;
@@ -329,10 +359,11 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         if (scrollTop + offset >= top) {
           const id = el.id;
           if (id) {
-            const shortId = getShortId(id);
-            if (readPos.value !== shortId) {
+            const persistedPosToken = getPersistedPosToken(id);
+            const shortId = getShortId(persistedPosToken || id);
+            if (normalizeAnchorToken(readPos.value) !== persistedPosToken) {
               syncReadContext();
-              readPos.value = shortId;
+              readPos.value = persistedPosToken;
               // 滚动时同步 hash，保持位置可分享。
               syncRouteHash(shortId, 0);
             }
@@ -357,11 +388,16 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   // 监听 hash 变化（支持任意 #id）
   trackListener(
     useEventListener(window, "hashchange", () => {
+      if (!isTrackingActive()) {
+        return;
+      }
+
       const hashTarget = normalizeAnchorToken(window.location.hash);
       if (hashTarget) {
+        const persistedPosToken = getPersistedPosToken(hashTarget);
         suppressNextScrollUpdates(4);
         syncReadContext();
-        readPos.value = getShortId(hashTarget);
+        readPos.value = persistedPosToken;
         // 把 #%25... 规范成更短的可读 hash（如中文标题）。
         syncRouteHash(hashTarget, 1);
         scrollToAnchorWithRetry(hashTarget);
@@ -372,6 +408,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   // 监听点击事件，捕获页内锚点跳转
   trackListener(
     useEventListener(document, "click", (e) => {
+      if (!isTrackingActive()) {
+        return;
+      }
+
       if (!(e.target instanceof Element)) return;
 
       const target = e.target.closest("a");
@@ -380,15 +420,20 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         const hashTarget = normalizeAnchorToken(href);
         if (!hashTarget) return;
 
+        const persistedPosToken = getPersistedPosToken(hashTarget);
         suppressNextScrollUpdates(4);
         syncReadContext();
-        readPos.value = getShortId(hashTarget);
+        readPos.value = persistedPosToken;
       }
     }),
   );
 
   trackListener(
     router.afterEach((to, from) => {
+      if (!isTrackingActive()) {
+        return;
+      }
+
       const toPage = String(to.query?.p ?? to.query?.page ?? "");
       const fromPage = String(from.query?.p ?? from.query?.page ?? "");
       const pageChanged = toPage !== fromPage;

@@ -87,6 +87,8 @@ const setupBlogPosTracker = () => {
     getContextId: () =>
       String(currentArticle.value?.id || route.params.articleId || ""),
     getPage: () => 1,
+    isActive: () =>
+      String(router.currentRoute.value.path || "").startsWith("/blog"),
   });
   trackedArticleId.value = articleId;
 };

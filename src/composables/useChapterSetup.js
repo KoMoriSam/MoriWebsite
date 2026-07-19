@@ -155,7 +155,14 @@ export function useChapterSetup() {
         disposePosTracker();
       }
 
-      disposePosTracker = usePosTracker(router, () => novelStore.updateTitle());
+      disposePosTracker = usePosTracker(
+        router,
+        () => novelStore.updateTitle(),
+        {
+          isActive: () =>
+            String(router.currentRoute.value.path || "").startsWith("/novel"),
+        },
+      );
     } catch (error) {
       console.error("Error during initialization:", error);
     }
