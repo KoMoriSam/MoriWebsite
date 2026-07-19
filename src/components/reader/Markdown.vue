@@ -5,7 +5,7 @@
     ref="articleRef"
     v-else
     id="markdown-content"
-    class="prose prose-2xl min-w-0 w-full max-w-full prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-2xl prose-h4:text-2xl prose-p:text-justify quotes-none prose-blockquote:prose-p:not-italic prose-blockquote:prose-p:indent-0 prose-blockquote:ps-4 lg:prose-blockquote:ps-8 prose-blockquote:prose-p:text-left"
+    class="prose prose-2xl min-w-0 w-full max-w-full"
     :class="styleConfigs.fontStyle"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,

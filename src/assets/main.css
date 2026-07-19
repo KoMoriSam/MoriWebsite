@@ -77,11 +77,12 @@
 
 @theme {
   --font-song:
-    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STSong", "SimSun",
-    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
+    "Fraunces Variable", "Fraunces", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
+    "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
+    serif;
   --font-hei:
-    "LXGW Neo XiHei", "STHeiti", "STXihei", "SimHei",
-    "Noto Sans Sinhala Variable", "Noto Sans Sinhala", sans-serif;
+    "Manrope Variable", "Manrope", "LXGW Neo XiHei", "STHeiti", "STXihei",
+    "SimHei", "Noto Sans Sinhala Variable", "Noto Sans Sinhala", sans-serif;
   --font-kai:
     "LXGW WenKai GB", "LXGW WenKai GB Lite", "STKaiti", "KaiTi", "Maname",
     cursive;
@@ -125,6 +126,7 @@
       "Noto Serif SC", "Source Han Serif SC Variable", "Source Han Serif SC",
       "Noto Serif Sinhala Variable", "Noto Serif Sinhala", ui-serif, Georgia,
       Cambria, "Times New Roman", Times, serif;
+    font-feature-settings: "halt";
   }
 }
 
@@ -165,7 +167,7 @@
 
   /* 段落与列表 */
   #markdown-content.prose p {
-    @apply text-pretty 
+    @apply text-pretty text-justify
     text-(length:--para-font-size) 
     leading-(--para-line-height) 
     my-(--para-margin-inline) 
@@ -537,27 +539,24 @@
   }
 
   #markdown-content.prose .footnote-ref a {
-    @apply badge badge-sm hover:badge-info hover:text-info-content no-underline indent-0 px-1.5 font-serif;
+    @apply badge badge-sm hover:badge-info hover:text-info-content
+    no-underline indent-0 px-1.5 font-serif;
   }
 
   #markdown-content.prose .footnote-backref {
-    @apply badge badge-sm hover:badge-info hover:text-info-content px-1.5 no-underline
-    text-[calc(var(--para-font-size)*0.5)];
+    @apply badge badge-xs hover:badge-info hover:text-info-content no-underline;
   }
 
-  #markdown-content.prose .footnotes,
   #markdown-content.prose .footnotes p {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)]
-    leading-[calc(var(--para-line-height)*0.75)]
-    my-[calc(var(--para-margin-inline)*0.75)]
-    mx-0;
+    leading-(--para-line-height)
+    mx-0 text-left text-pretty;
   }
 
   #markdown-content.prose li.footnote-item::marker {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)] list-decimal;
-    /* content: counter(list-item); */
   }
 
   #markdown-content.prose li.footnote-item ul,
@@ -567,7 +566,7 @@
 
   /* 代码块样式 */
   #markdown-content.prose .code-wrapper {
-    @apply mockup-code w-full max-w-full overflow-x-auto my-0 relative text-sm my-[var(--para-margin-inline)];
+    @apply mockup-code w-full max-w-full overflow-x-auto my-0 relative text-sm;
   }
 
   #markdown-content.prose .code-wrapper .lang-tag {
