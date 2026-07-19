@@ -18,7 +18,9 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   const getPage =
     typeof options.getPage === "function"
       ? options.getPage
-      : () => router.currentRoute.value.query.page;
+      : () =>
+          router.currentRoute.value.query.p ??
+          router.currentRoute.value.query.page;
 
   const readPos = computed({
     get: () => getState(readPosKey, ""),
@@ -387,8 +389,9 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   trackListener(
     router.afterEach((to, from) => {
-      const pageChanged =
-        String(to.query?.page ?? "") !== String(from.query?.page ?? "");
+      const toPage = String(to.query?.p ?? to.query?.page ?? "");
+      const fromPage = String(from.query?.p ?? from.query?.page ?? "");
+      const pageChanged = toPage !== fromPage;
       const hashChanged = String(to.hash || "") !== String(from.hash || "");
       const pathChanged = String(to.path || "") !== String(from.path || "");
 

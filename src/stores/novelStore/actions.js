@@ -17,56 +17,86 @@ export const useNovelActions = (state, getters) => {
 
   const UUID_PATTERN =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const ROUTE_CODE_PATTERN = /^[0-9A-Za-z]{6}$/;
 
-  const slugifySegment = (value, fallback = "item") => {
+  const normalizePermalinkSegment = (value, fallback = "item") => {
     const raw = String(value || "").trim();
     if (!raw) return fallback;
 
-    const normalized = raw
-      .toLowerCase()
-      .replace(/\.md$/i, "")
-      .replace(/[\\/]+/g, "-")
-      .replace(/[“”"'`]/g, "")
-      .replace(/[。！？：；，、·]/g, "-")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+    return raw.replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  };
 
-    return normalized || fallback;
+  const normalizeVolumePermalinkSegment = (value, fallback = "volume") => {
+    const raw = String(value || "").trim();
+    if (!raw) return fallback;
+
+    const leadingTitle = raw.split(/\s+/)[0] || raw;
+    return normalizePermalinkSegment(leadingTitle, fallback);
   };
 
   const buildPermalinkMaps = () => {
     const permalinkToUuid = {};
+    const legacyPermalinkToUuid = {};
+    const routeCodeToUuid = {};
     const uuidToPermalink = {};
-    const volumeSlugCounter = {};
+    const volumeTitleCounter = {};
 
     for (const chapter of state.flatChapters.value) {
       const chapterPath = String(chapter.path || "");
       const [volumeRaw = "", chapterFileRaw = ""] = chapterPath.split("/");
 
-      const volumeSlug = slugifySegment(volumeRaw, "volume");
-      const chapterBaseSlug = slugifySegment(chapterFileRaw, "chapter");
+      const volumeTitle = normalizeVolumePermalinkSegment(
+        chapter.volumeTitle,
+        volumeRaw,
+      );
+      const volumeTitleAlias = normalizePermalinkSegment(
+        chapter.volumeTitle,
+        volumeRaw,
+      );
+      const chapterTitle = normalizePermalinkSegment(
+        chapter.title,
+        chapterFileRaw,
+      );
+      const routeCode = String(chapter.routeCode || "").trim();
+      const validRouteCode = ROUTE_CODE_PATTERN.test(routeCode)
+        ? routeCode
+        : "";
+      const legacyVolumeKey = normalizePermalinkSegment(volumeRaw, "volume");
+      const legacyChapterKey = normalizePermalinkSegment(
+        chapterFileRaw.replace(/\.md$/i, ""),
+        "chapter",
+      );
 
-      const volumeChapterKey = `${volumeSlug}/${chapterBaseSlug}`;
-      const duplicateIndex = (volumeSlugCounter[volumeChapterKey] || 0) + 1;
-      volumeSlugCounter[volumeChapterKey] = duplicateIndex;
+      const titleKey = `${volumeTitle}/${chapterTitle}`;
+      const legacyKey = `${legacyVolumeKey}/${legacyChapterKey}`;
+      const duplicateIndex = (volumeTitleCounter[titleKey] || 0) + 1;
+      volumeTitleCounter[titleKey] = duplicateIndex;
 
-      const chapterSlug =
-        duplicateIndex > 1
-          ? `${chapterBaseSlug}-${duplicateIndex}`
-          : chapterBaseSlug;
+      const chapterPathName =
+        duplicateIndex > 1 ? `${chapterTitle}-${duplicateIndex}` : chapterTitle;
+      const canonicalKey = `${volumeTitle}/${chapterPathName}`;
 
       const permalink = {
-        volumeSlug,
-        chapterSlug,
+        volumeSlug: volumeTitle,
+        chapterSlug: chapterPathName,
+        routeCode: validRouteCode,
       };
-      const permalinkKey = `${permalink.volumeSlug}/${permalink.chapterSlug}`;
 
-      permalinkToUuid[permalinkKey] = chapter.uuid;
+      permalinkToUuid[canonicalKey] = chapter.uuid;
+      if (volumeTitleAlias !== volumeTitle) {
+        permalinkToUuid[`${volumeTitleAlias}/${chapterPathName}`] =
+          chapter.uuid;
+      }
+      legacyPermalinkToUuid[legacyKey] = chapter.uuid;
+      if (validRouteCode) {
+        routeCodeToUuid[validRouteCode] = chapter.uuid;
+      }
       uuidToPermalink[chapter.uuid] = permalink;
     }
 
     state.chapterPermalinkToUuid.value = permalinkToUuid;
+    state.chapterLegacyPermalinkToUuid.value = legacyPermalinkToUuid;
+    state.chapterRouteCodeToUuid.value = routeCodeToUuid;
     state.chapterUuidToPermalink.value = uuidToPermalink;
   };
 
@@ -83,7 +113,15 @@ export const useNovelActions = (state, getters) => {
 
   const resolveChapterUuidByPermalink = (volumeSlug, chapterSlug) => {
     const key = `${String(volumeSlug || "")}/${String(chapterSlug || "")}`;
-    return state.chapterPermalinkToUuid.value[key] || "";
+    return (
+      state.chapterPermalinkToUuid.value[key] ||
+      state.chapterLegacyPermalinkToUuid.value[key] ||
+      ""
+    );
+  };
+
+  const resolveChapterUuidByRouteCode = (routeCode) => {
+    return state.chapterRouteCodeToUuid.value[String(routeCode || "")] || "";
   };
 
   const getPermalinkByUuid = (uuid) => {
@@ -91,6 +129,17 @@ export const useNovelActions = (state, getters) => {
   };
 
   const isUuid = (value) => UUID_PATTERN.test(String(value || "").trim());
+
+  const isRouteCode = (value) =>
+    ROUTE_CODE_PATTERN.test(String(value || "").trim());
+
+  const hasRouteCodes = (chapters) => {
+    return Object.values(chapters || {}).every((volume) =>
+      (volume.chapters || []).every((chapter) =>
+        isRouteCode(chapter.routeCode),
+      ),
+    );
+  };
 
   const isReaderRoute = () => {
     if (typeof window === "undefined") return false;
@@ -107,7 +156,7 @@ export const useNovelActions = (state, getters) => {
       return true;
     }
 
-    return Boolean(query.get("chapter"));
+    return Boolean(query.get("chapter") || query.get("c"));
   };
 
   const setRead = () => {
@@ -135,11 +184,13 @@ export const useNovelActions = (state, getters) => {
   // 章节相关操作
   const setChapters = useDebounceFn(async (forceUpdate = false) => {
     const now = Date.now();
+    const hasCachedRouteCodes = hasRouteCodes(state.storedChapters.value);
 
     if (
       !forceUpdate &&
       Object.keys(state.storedChapters.value).length > 0 &&
-      now - state.lastUpdated.value < CACHE_EXPIRATION
+      now - state.lastUpdated.value < CACHE_EXPIRATION &&
+      hasCachedRouteCodes
     ) {
       console.log("setChapters: Call cache");
       state.chapters.value = state.storedChapters.value;
@@ -297,7 +348,9 @@ export const useNovelActions = (state, getters) => {
     updateTitle,
     setRead,
     resolveChapterUuidByPermalink,
+    resolveChapterUuidByRouteCode,
     getPermalinkByUuid,
     isUuid,
+    isRouteCode,
   };
 };

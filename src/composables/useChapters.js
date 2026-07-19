@@ -32,6 +32,13 @@ export function useChapters() {
     return Boolean(route.params.volumeSlug && route.params.chapterSlug);
   });
 
+  const getCurrentPageQuery = () => {
+    const pageValue = route.query.p ?? route.query.page;
+    return Number.isFinite(Number(pageValue)) && Number(pageValue) > 0
+      ? Number(pageValue)
+      : 1;
+  };
+
   const handleChapter = (uuid, options = {}) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
@@ -42,6 +49,11 @@ export function useChapters() {
         : 1;
     const targetHash = String(options.hash || "").trim();
     const shouldScrollTop = options.scrollTop !== false;
+    const query = {};
+    if (permalink.routeCode) {
+      query.c = permalink.routeCode;
+    }
+    query.p = targetPage;
 
     router.push({
       name: "novel",
@@ -49,7 +61,7 @@ export function useChapters() {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
       },
-      query: { page: targetPage },
+      query,
       hash: targetHash,
     });
     if (shouldScrollTop) {
@@ -81,14 +93,16 @@ export function useChapters() {
         Number.isFinite(storedPage) && storedPage > 0 ? storedPage : 1;
       const resumeHash = storedPos ? `#${storedPos}` : "";
 
-      const currentPage = Number(route.query.page);
-      const normalizedCurrentPage =
-        Number.isFinite(currentPage) && currentPage > 0 ? currentPage : 1;
+      const normalizedCurrentPage = getCurrentPageQuery();
+      const targetRouteCode = String(
+        novelStore.getPermalinkByUuid(targetUuid)?.routeCode || "",
+      );
       const sameRouteTarget =
         targetUuid === currentChapterUuid.value &&
         isReaderRoute.value &&
         normalizedCurrentPage === resumePage &&
-        route.hash === resumeHash;
+        route.hash === resumeHash &&
+        (!targetRouteCode || route.query.c === targetRouteCode);
 
       if (sameRouteTarget) {
         toast.info("已经是当前阅读位置啦！");
@@ -139,13 +153,19 @@ export function useChapters() {
     const permalink = novelStore.getPermalinkByUuid(currentChapter.value.uuid);
     if (!permalink) return;
 
+    const query = {};
+    if (permalink.routeCode) {
+      query.c = permalink.routeCode;
+    }
+    query.p = index;
+
     router.push({
       name: "novel",
       params: {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
       },
-      query: { page: index },
+      query,
     });
     scrollToTop(80);
   };

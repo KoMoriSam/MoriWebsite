@@ -15,6 +15,8 @@ export const useNovelState = () => {
   });
   const flatChapters = ref([]);
   const chapterPermalinkToUuid = ref({});
+  const chapterLegacyPermalinkToUuid = ref({});
+  const chapterRouteCodeToUuid = ref({});
   const chapterUuidToPermalink = ref({});
   const readChapters = computed({
     get: () => getState("READ_CHS", []),
@@ -49,6 +51,8 @@ export const useNovelState = () => {
     lastUpdated,
     flatChapters,
     chapterPermalinkToUuid,
+    chapterLegacyPermalinkToUuid,
+    chapterRouteCodeToUuid,
     chapterUuidToPermalink,
     readChapters,
     currentChapterContent,

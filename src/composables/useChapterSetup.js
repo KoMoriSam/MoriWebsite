@@ -3,7 +3,6 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novelStore";
-import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 
 import { useToast } from "@/composables/useToast";
 import { usePosTracker } from "@/composables/usePosTracker";
@@ -13,6 +12,11 @@ const normalizePageQuery = (page) => {
   return Number.isFinite(n) && n > 0 ? n : 1;
 };
 
+const getRoutePageQuery = (route) => {
+  const pageValue = route.query.p ?? route.query.page;
+  return normalizePageQuery(pageValue);
+};
+
 export function useChapterSetup() {
   const route = useRoute();
   const router = useRouter();
@@ -20,19 +24,20 @@ export function useChapterSetup() {
   const toast = useToast({ closable: false, position: "center" });
 
   const novelStore = useNovelStore();
-  const { getState } = useReadingStateStorage();
 
-  const {
-    currentChapter,
-    currentChapterUuid,
-    currentChapterPage,
-    readChapters,
-  } = storeToRefs(novelStore);
+  const { currentChapter, currentChapterUuid, currentChapterPage } =
+    storeToRefs(novelStore);
   let disposePosTracker = null;
 
   const replaceToCanonical = (uuid, page, hash = route.hash) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
+
+    const query = {};
+    if (permalink.routeCode) {
+      query.c = permalink.routeCode;
+    }
+    query.p = page;
 
     router.replace({
       name: "novel",
@@ -40,16 +45,28 @@ export function useChapterSetup() {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
       },
-      query: { page },
+      query,
       hash,
     });
+  };
+
+  const getRouteCodeQuery = () => {
+    return typeof route.query.c === "string" ? route.query.c.trim() : "";
   };
 
   const resolveRouteToChapterUuid = () => {
     const volumeSlug = String(route.params.volumeSlug || "");
     const chapterSlug = String(route.params.chapterSlug || "");
+    const routeCode = getRouteCodeQuery();
     const legacyQueryChapter =
       typeof route.query.chapter === "string" ? route.query.chapter.trim() : "";
+
+    if (routeCode && novelStore.isRouteCode(routeCode)) {
+      const chapterUuid = novelStore.resolveChapterUuidByRouteCode(routeCode);
+      if (chapterUuid) {
+        return chapterUuid;
+      }
+    }
 
     if (volumeSlug && chapterSlug) {
       return novelStore.resolveChapterUuidByPermalink(volumeSlug, chapterSlug);
@@ -66,59 +83,42 @@ export function useChapterSetup() {
     return "";
   };
 
-  const isCanonicalChapterRoute = () => {
-    return Boolean(route.params.volumeSlug && route.params.chapterSlug);
-  };
-
   const hasLegacyQueryChapter = () => {
     return Boolean(
       typeof route.query.chapter === "string" && route.query.chapter.trim(),
     );
   };
 
-  const hasReadingHistory = () => {
-    const pos = String(getState("READ_POS", "") || "").trim();
-    const readList = getState("READ_CHS", []);
-    return Boolean(pos || (Array.isArray(readList) && readList.length > 0));
+  const isCanonicalChapterRoute = () => {
+    return Boolean(route.params.volumeSlug && route.params.chapterSlug);
   };
 
-  const getHistoryHash = () => {
-    const pos = String(getState("READ_POS", "") || "").trim();
-    if (!pos) return "";
-    return `#${pos}`;
-  };
+  const hasCanonicalRouteForUuid = (uuid) => {
+    const permalink = novelStore.getPermalinkByUuid(uuid);
+    if (!permalink) return false;
 
-  const canRedirectFromNovelHome = () => {
-    const isNovelHomePath = route.path === "/novel";
+    const hasCanonicalParams =
+      route.params.volumeSlug === permalink.volumeSlug &&
+      route.params.chapterSlug === permalink.chapterSlug;
+    const hasCanonicalRouteCode =
+      !permalink.routeCode || getRouteCodeQuery() === permalink.routeCode;
+
     return (
-      isNovelHomePath &&
-      !route.params.volumeSlug &&
-      !route.params.chapterSlug &&
-      !hasLegacyQueryChapter()
+      hasCanonicalParams && hasCanonicalRouteCode && !hasLegacyQueryChapter()
     );
   };
 
   const syncChapterFromRoute = async ({ withFallback = false } = {}) => {
-    const page = normalizePageQuery(route.query.page);
+    const page = getRoutePageQuery(route);
     const chapterUuid = resolveRouteToChapterUuid();
 
     if (chapterUuid) {
       await novelStore.setChapter(chapterUuid);
       novelStore.setPage(page);
 
-      if (!isCanonicalChapterRoute() || hasLegacyQueryChapter()) {
+      if (!hasCanonicalRouteForUuid(chapterUuid)) {
         replaceToCanonical(chapterUuid, page);
       }
-      return;
-    }
-
-    if (withFallback && canRedirectFromNovelHome() && hasReadingHistory()) {
-      const fallbackPage = normalizePageQuery(currentChapterPage.value);
-      replaceToCanonical(
-        currentChapterUuid.value,
-        fallbackPage,
-        getHistoryHash(),
-      );
       return;
     }
 
@@ -133,7 +133,9 @@ export function useChapterSetup() {
       () => [
         route.params.volumeSlug,
         route.params.chapterSlug,
+        route.query.c,
         route.query.chapter,
+        route.query.p,
         route.query.page,
       ],
       async () => {
@@ -154,9 +156,6 @@ export function useChapterSetup() {
       }
 
       disposePosTracker = usePosTracker(router, () => novelStore.updateTitle());
-      setTimeout(() => {
-        toast.success("已继续上次阅读！");
-      }, 750);
     } catch (error) {
       console.error("Error during initialization:", error);
     }
