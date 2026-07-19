@@ -8,9 +8,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/komorisam.github.io.git",
-    "preview": "vite preview --host 0.0.0.0",
-    "novel": "node mock/novel/generate-index.js",
-    "blog": "node mock/article/generate-index.js"
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.9",
