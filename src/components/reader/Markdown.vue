@@ -13,7 +13,7 @@
       '--para-line-height': styleConfigs.lineHeight,
       '--para-margin-inline': `${
         styleConfigs.paraHeight *
-        ((styleConfigs.fontSize * styleConfigs.lineHeight * 0.5) / 24)
+        ((styleConfigs.fontSize * styleConfigs.lineHeight * 0.5) / 36)
       }rem`,
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
       + ${styleConfigs.fontGap * 0.7}rem)`,
