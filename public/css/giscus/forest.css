@@ -38,6 +38,9 @@ main {
     "Noto Sans Sinhala Variable", "Noto Sans Sinhala", ui-sans-serif, system-ui,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji";
+
+  font-feature-settings: "halt";
+
   /* ========== 语法高亮 ========== */
   --color-prettylights-syntax-comment: oklch(60% 0.02 160);
   --color-prettylights-syntax-constant: oklch(75% 0.15 220);
