@@ -3,6 +3,7 @@ import "nprogress/nprogress.css";
 import "highlight.js/styles/github-dark.css";
 
 import "@fontsource-variable/fraunces";
+import "@fontsource-variable/fraunces/wght-italic.css";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/noto-sans-sc";
 import "@fontsource-variable/noto-serif-sc";
