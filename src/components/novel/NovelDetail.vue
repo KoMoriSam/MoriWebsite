@@ -44,7 +44,7 @@
           <ChapterInfo
             badge="最新章节"
             :content="latestChapter ? latestChapter?.title : '加载中……'"
-            additionalClasses="btn-success mt-4"
+            additionalClasses="btn-success my-4"
             :onClick="
               () => latestChapter?.uuid && handleAnyChapter(latestChapter.uuid)
             "
