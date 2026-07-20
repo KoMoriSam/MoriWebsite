@@ -1,1 +1,0 @@
-System.register(["./index-legacy-CuufIKKV.js"],(function(e,n){"use strict";var r;return{setters:[function(e){r=e.r}],execute:function(){e("u",(function(){var e=r(!1),n=r(!1);return{imageLoaded:e,imageError:n,handleImageLoad:function(){e.value=!0},handleImageError:function(){n.value=!0}}}))}}}));
