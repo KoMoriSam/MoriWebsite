@@ -15,12 +15,12 @@
           class="w-full aspect-12/17 object-cover rounded-lg shadow-2xl z-10"
           @load="handleImageLoad"
         />
-        <figcaption class="relative z-0 pt-6 w-full">
-          <h1 class="text-5xl font-bold">向远方</h1>
-          <p class="py-6">
+        <figcaption class="relative z-0 pt-6 w-full prose">
+          <h1 class="text-5xl font-black font-serif mb-0">向远方</h1>
+          <blockquote class="font-kai not-italic">
             慌张中，才学会张口……<br />
             匆忙中，才学会乡音……
-          </p>
+          </blockquote>
           <ChapterInfo
             v-if="readChapters.length === 0"
             badge="开始阅读"

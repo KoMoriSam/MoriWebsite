@@ -170,7 +170,7 @@
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="alert alert-error my-16">
-      <i class="ri-error-warning-line text-xl"></i>
+      <i class="ri-error-warning-line text-3xl"></i>
 
       <div>
         <h2 class="font-bold">文章加载失败</h2>

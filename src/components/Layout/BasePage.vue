@@ -5,19 +5,19 @@
     <figure class="relative m-0 p-0" @click="onHandleClick">
       <div
         v-show="!imageLoaded"
-        class="skeleton absolute inset-0 h-52 lg:w-52 lg:h-auto lg:basis-3xs rounded-lg z-20"
+        class="skeleton absolute inset-0 h-52 lg:w-52 lg:h-auto lg:basis-3xs rounded-lg z-10"
       ></div>
       <img
         v-fade-in
         :src="imageSrc"
         :alt="imageAlt"
-        class="h-52 lg:w-52 lg:h-auto lg:basis-3xs object-cover rounded-lg z-10"
+        class="h-52 lg:w-52 lg:h-auto lg:basis-3xs object-cover rounded-lg z-0"
         @load="handleImageLoad"
       />
     </figure>
     <div class="divider md:divider-horizontal m-0 p-0"></div>
     <section class="prose lg:prose-xl lg:basis-3xl">
-      <h2>{{ title }}</h2>
+      <h2 class="font-serif">{{ title }}</h2>
       <p>{{ description }}</p>
       <slot></slot>
     </section>
