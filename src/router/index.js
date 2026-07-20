@@ -25,28 +25,16 @@ const router = createRouter({
       }),
     },
     {
-      path: "/novel/:volumeSlug?/:chapterSlug?",
-      name: "novel",
-      component: () => import("@/views/Novel.vue"),
-      meta: { title: "向远方 | KoMoriSam" },
-    },
-    {
       path: "/contact",
-      name: "contact",
-      component: () => import("@/views/Contact.vue"),
-      meta: { title: "联系 | KoMoriSam" },
+      redirect: () => ({
+        name: "home",
+      }),
     },
     {
       path: "/about",
-      name: "about",
-      component: () => import("@/views/About.vue"),
-      meta: { title: "关于 | KoMoriSam" },
-    },
-    {
-      path: "/changelog",
-      name: "changelog",
-      component: () => import("@/views/Changelog.vue"),
-      meta: { title: "更新日志 | KoMoriSam" },
+      redirect: () => ({
+        name: "home",
+      }),
     },
     {
       path: "/blog/:articleId?",
@@ -54,7 +42,25 @@ const router = createRouter({
       component: () => import("@/views/Blog.vue"),
       meta: { title: "博客 | KoMoriSam" },
     },
-    // 🧪 仅在开发环境可见，生产构建自动移除
+    {
+      path: "/novel/:volumeSlug?/:chapterSlug?",
+      name: "novel",
+      component: () => import("@/views/Novel.vue"),
+      meta: { title: "向远方 | KoMoriSam" },
+    },
+    {
+      path: "/tools/:toolSlug?",
+      name: "tools",
+      component: () => import("@/views/Tools.vue"),
+      meta: { title: "工具 | KoMoriSam" },
+    },
+    {
+      path: "/changelog",
+      name: "changelog",
+      component: () => import("@/views/Changelog.vue"),
+      meta: { title: "更新日志 | KoMoriSam" },
+    },
+    // 仅开发环境可见，生产构建自动移除
     ...(import.meta.env.DEV
       ? [
           {
@@ -78,6 +84,29 @@ export default router;
 
 router.beforeEach((to, from, next) => {
   NProgress.start();
+
+  // 兼容旧的 .html 地址
+  if (to.path === "/index.html") {
+    next({
+      path: "/",
+      query: to.query,
+      hash: to.hash,
+      replace: true,
+    });
+    return;
+  }
+
+  if (/\.html$/i.test(to.path)) {
+    const normalizedPath = to.path.replace(/\.html$/i, "") || "/";
+
+    next({
+      path: normalizedPath,
+      query: to.query,
+      hash: to.hash,
+      replace: true,
+    });
+    return;
+  }
 
   const legacyArticleId =
     typeof to.query.article === "string" ? to.query.article.trim() : "";

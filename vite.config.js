@@ -24,7 +24,7 @@ export default defineConfig({
     // 预渲染
     seoPrerender({
       // 要渲染的路由
-      routes: ["/", "/novel", "/about", "/contact", "/changelog"],
+      routes: ["/", "/blog", "/novel", "/tools", "/changelog"],
       // 指定系统已安装的 Chrome 浏览器路径
       puppeteer: {
         executablePath:
