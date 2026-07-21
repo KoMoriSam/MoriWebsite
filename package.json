@@ -8,7 +8,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/komorisam.github.io.git",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "push": "git push origin main:cl-pages --force"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.9",

@@ -28,17 +28,7 @@ export default defineConfig({
       routes: ["/", "/blog", "/novel", "/tools", "/changelog"],
 
       puppeteer: {
-<<<<<<< HEAD
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-=======
-        ...(isCI
-          ? {}
-          : {
-              executablePath:
-                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-            }),
-
->>>>>>> a8ac7c98f167d30abb52f7d07b5535a5d6449a6a
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       },
     }),
