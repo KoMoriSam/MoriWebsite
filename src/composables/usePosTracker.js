@@ -6,6 +6,15 @@ const FULL_PARAGRAPH_ID_RE =
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/;
 
 export function usePosTracker(router, onRestoreTitle, options = {}) {
+  // 位置追踪依赖 window、document、requestAnimationFrame，只能在浏览器运行。
+  if (
+    import.meta.env.SSR ||
+    typeof window === "undefined" ||
+    typeof document === "undefined"
+  ) {
+    return () => {};
+  }
+
   // const READ_POS_KEY = "READ_POS";
   // const readPos = useStorage(READ_POS_KEY, "");
   const { getState, setState } = useReadingStateStorage();

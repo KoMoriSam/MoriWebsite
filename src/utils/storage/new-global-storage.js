@@ -19,8 +19,9 @@ export function useGlobalStorage() {
       return GLOBAL_INFO.value[newKey];
     }
 
-    // 尝试从旧键名获取
-    const oldValue = localStorage.getItem(key);
+    // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
+    const oldValue =
+      typeof window !== "undefined" ? localStorage.getItem(key) : null;
     if (oldValue !== null) {
       // 根据类型转换
       let value = oldValue;

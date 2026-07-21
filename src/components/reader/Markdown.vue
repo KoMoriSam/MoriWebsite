@@ -1,12 +1,12 @@
 <template>
-  <Loading :size="`my-64`" v-if="isLoading || markdownPreparing" />
+  <Loading :size="`my-64`" v-if="isLoading" />
 
   <article
     ref="articleRef"
     v-else
     id="markdown-content"
+    :class="[{ 'opacity-60': markdownPreparing }, styleConfigs.fontStyle]"
     class="prose prose-2xl min-w-0 w-full max-w-full"
-    :class="styleConfigs.fontStyle"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,
       '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,
@@ -21,7 +21,7 @@
   >
     <vue-markdown
       v-if="content"
-      :key="`${headerData.uuid}-${headerData.page}`"
+      :key="`${headerData.uuid}-${headerData.page}-v${markdownRenderVersion}`"
       :source="content"
       :options="options"
       :plugins="plugins"
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
 import VueMarkdown from "vue-markdown-render";
 import Loading from "@/components/base/Loading.vue";
@@ -248,11 +248,27 @@ const plugins = computed(() => [
   tableWrapperPlugin,
 ]);
 
+// 运行时 content 变化：异步加载特性插件后渲染
 watch(
   () => props.content,
   async (content) => {
     if (!content) {
       markdownPreparing.value = false;
+      return;
+    }
+
+    // SSG 构建时无法执行异步加载，直接渲染基础 Markdown
+    if (import.meta.env.SSR) {
+      markdownPreparing.value = false;
+      return;
+    }
+
+    // 客户端初次水合：立即显示 SSG 预渲染内容，后台加载特性插件
+    if (!markdownRenderVersion.value) {
+      markdownPreparing.value = false;
+      loadMarkdownFeaturePlugins(content).then(() => {
+        markdownRenderVersion.value += 1;
+      });
       return;
     }
 
@@ -281,6 +297,16 @@ watch(
     props.headerData.sourceType,
   ],
   async ([isLoading, isPreparing]) => {
+    // immediate watch 在 SSG 阶段也会执行；段评统计依赖浏览器 DOM 和 RAF。
+    if (
+      import.meta.env.SSR ||
+      typeof window === "undefined" ||
+      typeof document === "undefined" ||
+      typeof window.requestAnimationFrame !== "function"
+    ) {
+      return;
+    }
+
     if (isLoading) {
       return;
     }
@@ -298,7 +324,7 @@ watch(
     latestBatchToken.value = token;
 
     await nextTick();
-    requestAnimationFrame(async () => {
+    window.requestAnimationFrame(async () => {
       const paragraphIds = collectPrefetchParagraphIds();
       await loadBatchCounts(paragraphIds, token);
 

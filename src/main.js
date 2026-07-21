@@ -11,19 +11,25 @@ import "@fontsource-variable/noto-sans-sinhala";
 import "@fontsource-variable/noto-serif-sinhala";
 import "@fontsource/maname";
 
-import { createApp } from "vue";
+import { ViteSSG } from "vite-ssg";
 import { createPinia } from "pinia";
 import App from "./App.vue";
-import router from "./router";
+import { routes } from "./router";
 import { lazyPlugin, fadeIn } from "./directive";
 
-const pinia = createPinia();
-const app = createApp(App);
+export const createApp = ViteSSG(
+  App,
+  {
+    routes,
+    base: import.meta.env.BASE_URL,
+  },
+  ({ app }) => {
+    const pinia = createPinia();
 
-app.use(router);
-app.use(pinia);
-app.use(lazyPlugin);
+    app.use(pinia);
 
-app.directive("fade-in", fadeIn);
+    app.use(lazyPlugin);
 
-app.mount("#app");
+    app.directive("fade-in", fadeIn);
+  },
+);

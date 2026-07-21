@@ -12,9 +12,13 @@
 <script setup>
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
 
+import { onMounted } from "vue";
+
 import { useScrollTo } from "@/composables/useScrollTo";
 
 const { showButton, scrollToTop, handleScroll } = useScrollTo();
 
-handleScroll();
+onMounted(() => {
+  handleScroll();
+});
 </script>

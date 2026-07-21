@@ -1,13 +1,13 @@
 <template>
-  <li v-for="link in navLinks" :key="link.routeName">
+  <li v-for="link in navLinks" :key="link.to.name">
     <router-link
       :to="link.to"
       class="btn m-1 lg:m-1.5"
-      :class="route.name === link.to.name ? 'btn-primary' : 'btn-ghost'"
+      :class="isLinkActive(link) ? 'btn-primary' : 'btn-ghost'"
     >
       <i
         class="lg:text-xl font-normal"
-        :class="`${link.icon}-${route.name === link.to.name ? 'fill' : 'line'}`"
+        :class="`${link.icon}-${isLinkActive(link) ? 'fill' : 'line'}`"
       >
       </i>
       {{ link.name }}
@@ -20,9 +20,14 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 
-import { computed } from "vue";
+// SSG 直达文章页会匹配无 name 的具体文章路由。
+// 使用 navName 标记它所属的一级导航，避免给所有文章路由设置重复 name。
+const isLinkActive = (link) =>
+  route.matched.some(
+    (record) => (record.meta.navName || record.name) === link.to.name,
+  );
 
-const navLinks = computed(() => [
+const navLinks = [
   {
     name: "主页",
     icon: "ri-home-9",
@@ -43,5 +48,5 @@ const navLinks = computed(() => [
     icon: "ri-pencil-ruler-2",
     to: { name: "tools" },
   },
-]);
+];
 </script>

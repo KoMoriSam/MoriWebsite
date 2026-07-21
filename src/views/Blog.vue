@@ -7,7 +7,7 @@
       @select="goToDetail"
     />
     <ArticleDetail
-      v-else-if="currentComponent === 'ArticleDetail'"
+      v-else
       :article="currentArticle"
       :content="articleContent"
       :loading="loadingContent"
@@ -33,23 +33,33 @@ const route = useRoute();
 const router = useRouter();
 
 const { scrollToTop } = useScrollTo();
-
 const { fetchArticleList, fetchArticleContent } = useArticleApi();
 
-// 当前显示组件
-const currentComponent = ref("ArticleList");
+// 静态文章路由在构建时把文章数据放进 route.meta。
+// 服务端渲染和浏览器 hydration 使用完全相同的初始数据，避免 mismatch。
+const initialArticle = route.meta.article || null;
+const initialContent = route.meta.content || "";
+const initialArticleId = String(
+  route.params.articleId || initialArticle?.id || "",
+).trim();
 
-// 列表数据
+const currentComponent = ref(
+  initialArticleId ? "ArticleDetail" : "ArticleList",
+);
+
 const articles = ref([]);
 const loadingList = ref(false);
 
-// 详情数据
-const currentArticle = ref(null);
-const articleContent = ref("");
+const currentArticle = ref(initialArticle);
+const articleContent = ref(initialContent);
 const loadingContent = ref(false);
 const errorContent = ref("");
+
 const stopBlogPosTracker = ref(null);
 const trackedArticleId = ref("");
+
+const getRouteArticleId = () =>
+  String(route.params.articleId || route.meta.article?.id || "").trim();
 
 const disposeBlogPosTracker = () => {
   if (typeof stopBlogPosTracker.value === "function") {
@@ -61,8 +71,10 @@ const disposeBlogPosTracker = () => {
 };
 
 const setupBlogPosTracker = () => {
+  if (typeof window === "undefined") return;
+
   const articleId = String(
-    currentArticle.value?.id || route.params.articleId || "",
+    currentArticle.value?.id || getRouteArticleId(),
   );
   const shouldTrack =
     currentComponent.value === "ArticleDetail" &&
@@ -85,7 +97,7 @@ const setupBlogPosTracker = () => {
     readPosKey: "BLOG_READ_POS",
     readContextKey: "BLOG_READ_ARTICLE_ID",
     getContextId: () =>
-      String(currentArticle.value?.id || route.params.articleId || ""),
+      String(currentArticle.value?.id || getRouteArticleId()),
     getPage: () => 1,
     isActive: () =>
       String(router.currentRoute.value.path || "").startsWith("/blog"),
@@ -93,9 +105,9 @@ const setupBlogPosTracker = () => {
   trackedArticleId.value = articleId;
 };
 
-// 加载文章列表
 const loadArticles = async () => {
   loadingList.value = true;
+
   try {
     articles.value = await fetchArticleList();
   } catch (err) {
@@ -105,31 +117,32 @@ const loadArticles = async () => {
   }
 };
 
-// 进入文章详情
 const goToDetail = (id) => {
   currentComponent.value = "ArticleDetail";
   router.push({ name: "blog", params: { articleId: id } });
   scrollToTop();
 };
 
-// 返回文章列表
 const goToList = () => {
   currentComponent.value = "ArticleList";
   router.push({ name: "blog", params: { articleId: undefined } });
   scrollToTop();
 };
 
-// 加载文章内容
-const loadArticleContent = async (id) => {
-  const article = articles.value.find((a) => a.id === id);
+const loadArticleContent = async (id, { keepCurrentContent = false } = {}) => {
+  const article = articles.value.find((item) => String(item.id) === String(id));
+
   if (!article) {
     errorContent.value = "文章不存在";
     return;
   }
 
   currentArticle.value = article;
-  loadingContent.value = true;
   errorContent.value = "";
+
+  if (!keepCurrentContent) {
+    loadingContent.value = true;
+  }
 
   try {
     articleContent.value = await fetchArticleContent(article.path);
@@ -142,22 +155,30 @@ const loadArticleContent = async (id) => {
 };
 
 const refreshCurrentArticle = async () => {
-  const id = route.params.articleId || currentArticle.value?.id;
+  const id = getRouteArticleId() || currentArticle.value?.id;
 
   if (!id) return;
 
   await loadArticleContent(String(id));
 };
 
-// 监听路由 params 参数
 watch(
-  () => route.params.articleId,
-  (newId) => {
-    if (newId) {
-      currentComponent.value = "ArticleDetail";
-      loadArticleContent(String(newId));
-    } else {
+  () => [route.params.articleId, route.meta.article?.id],
+  async () => {
+    const articleId = getRouteArticleId();
+
+    if (!articleId) {
       currentComponent.value = "ArticleList";
+      currentArticle.value = null;
+      articleContent.value = "";
+      errorContent.value = "";
+      return;
+    }
+
+    currentComponent.value = "ArticleDetail";
+
+    if (articles.value.length > 0) {
+      await loadArticleContent(articleId);
     }
   },
 );
@@ -169,22 +190,22 @@ watch(
     articleContent.value,
     currentArticle.value?.id,
   ],
-  () => {
-    setupBlogPosTracker();
-  },
+  setupBlogPosTracker,
   { immediate: true },
 );
 
-// 初始加载
 onMounted(async () => {
   await loadArticles();
 
-  // 恢复上次阅读的文章
-  const articleId = route.params.articleId;
-  if (articleId) {
-    currentComponent.value = "ArticleDetail";
-    await loadArticleContent(String(articleId));
-  }
+  const articleId = getRouteArticleId();
+  if (!articleId) return;
+
+  currentComponent.value = "ArticleDetail";
+
+  // 刷新静态文章页时保留已经渲染出的 SSG 内容，后台请求最新数据后覆盖。
+  await loadArticleContent(articleId, {
+    keepCurrentContent: Boolean(initialArticle && initialContent),
+  });
 });
 
 onBeforeUnmount(() => {

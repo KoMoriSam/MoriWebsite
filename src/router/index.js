@@ -7,83 +7,85 @@ NProgress.configure({
   minimum: 0.3, // 初始化时的最小百分比
 });
 
-import { createRouter, createWebHistory } from "vue-router";
+import articleRoutes from "./ssg-routes";
+
+import {
+  createRouter,
+  createWebHistory,
+  createMemoryHistory,
+} from "vue-router";
+
+export const routes = [
+  {
+    path: "/",
+    name: "home",
+    component: () => import("@/views/Home.vue"),
+    meta: { title: "主页 | KoMoriSam", navName: "home" },
+  },
+  {
+    path: "/home",
+    redirect: () => ({
+      name: "home",
+    }),
+  },
+  // 生产构建时由可选的 article-data.generated.js 提供具体文章路径。
+  // 开发环境该数组为空，不依赖任何 generated 文件。
+  ...articleRoutes,
+  {
+    path: "/blog/:articleId?",
+    name: "blog",
+    component: () => import("@/views/Blog.vue"),
+    meta: { title: "博客 | KoMoriSam", navName: "blog" },
+  },
+  {
+    path: "/novel/:volumeSlug?/:chapterSlug?",
+    name: "novel",
+    component: () => import("@/views/Novel.vue"),
+    meta: { title: "向远方 | KoMoriSam", navName: "novel" },
+  },
+  {
+    path: "/tools/:toolSlug?",
+    name: "tools",
+    component: () => import("@/views/Tools.vue"),
+    meta: { title: "工具 | KoMoriSam", navName: "tools" },
+  },
+  {
+    path: "/changelog",
+    name: "changelog",
+    component: () => import("@/views/Changelog.vue"),
+    meta: { title: "更新日志 | KoMoriSam" },
+  },
+  // 仅开发环境可见，生产构建自动移除
+  ...(import.meta.env.DEV
+    ? [
+        {
+          path: "/test",
+          name: "test",
+          component: () => import("@/views/Test.vue"),
+          meta: { title: "测试 | KoMoriSam" },
+        },
+      ]
+    : []),
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/NotFound.vue"),
+    meta: { title: "404! | KoMoriSam" },
+  },
+];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: "/",
-      name: "home",
-      component: () => import("@/views/Home.vue"),
-      meta: { title: "主页 | KoMoriSam" },
-    },
-    {
-      path: "/home",
-      redirect: () => ({
-        name: "home",
-      }),
-    },
-    {
-      path: "/contact",
-      redirect: () => ({
-        name: "home",
-      }),
-    },
-    {
-      path: "/about",
-      redirect: () => ({
-        name: "home",
-      }),
-    },
-    {
-      path: "/blog/:articleId?",
-      name: "blog",
-      component: () => import("@/views/Blog.vue"),
-      meta: { title: "博客 | KoMoriSam" },
-    },
-    {
-      path: "/novel/:volumeSlug?/:chapterSlug?",
-      name: "novel",
-      component: () => import("@/views/Novel.vue"),
-      meta: { title: "向远方 | KoMoriSam" },
-    },
-    {
-      path: "/tools/:toolSlug?",
-      name: "tools",
-      component: () => import("@/views/Tools.vue"),
-      meta: { title: "工具 | KoMoriSam" },
-    },
-    {
-      path: "/changelog",
-      name: "changelog",
-      component: () => import("@/views/Changelog.vue"),
-      meta: { title: "更新日志 | KoMoriSam" },
-    },
-    // 仅开发环境可见，生产构建自动移除
-    ...(import.meta.env.DEV
-      ? [
-          {
-            path: "/test",
-            name: "test",
-            component: () => import("@/views/Test.vue"),
-            meta: { title: "测试 | KoMoriSam" },
-          },
-        ]
-      : []),
-    {
-      path: "/:pathMatch(.*)*",
-      name: "NotFound",
-      component: () => import("@/views/NotFound.vue"),
-      meta: { title: "404! | KoMoriSam" },
-    },
-  ],
+  history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
+
+  routes,
 });
 
 export default router;
 
 router.beforeEach((to, from, next) => {
-  NProgress.start();
+  if (typeof document !== "undefined") {
+    NProgress.start();
+  }
 
   // 兼容旧的 .html 地址
   if (to.path === "/index.html") {
@@ -136,13 +138,17 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
-  document.title = to.meta.title || "Welcome KoMoriSam's Website!";
+  if (typeof document !== "undefined") {
+    document.title = to.meta.title || "Welcome KoMoriSam's Website!";
+  }
 
   next();
 });
 
 router.afterEach((to, from) => {
-  NProgress.done();
+  if (typeof document !== "undefined") {
+    NProgress.start();
+  }
 
   const currentPath = to.fullPath.split("#")[0];
   const previousPath = from.fullPath.split("#")[0];
@@ -155,5 +161,7 @@ router.afterEach((to, from) => {
     return;
   }
 
-  document.title = to.meta.title || "Welcome KoMoriSam's Website!";
+  if (typeof document !== "undefined") {
+    document.title = to.meta.title || "Welcome KoMoriSam's Website!";
+  }
 });

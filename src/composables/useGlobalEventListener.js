@@ -9,26 +9,30 @@ import { onUnmounted } from "vue";
 export const useGlobalEventListener = (
   eventType,
   callback,
-  options = false
+  options = false,
 ) => {
   let isListenerAdded = false;
 
+  const isSSR = typeof document === "undefined";
+
   const addEventListener = () => {
-    if (isListenerAdded) return;
+    if (isListenerAdded || isSSR) return;
 
     document.addEventListener(eventType, callback, options);
     isListenerAdded = true;
   };
 
   const removeEventListener = () => {
-    if (!isListenerAdded) return;
+    if (!isListenerAdded || isSSR) return;
 
     document.removeEventListener(eventType, callback, options);
     isListenerAdded = false;
   };
 
   // 自动清理事件监听器
-  onUnmounted(removeEventListener);
+  if (!isSSR) {
+    onUnmounted(removeEventListener);
+  }
 
   return { addEventListener, removeEventListener };
 };

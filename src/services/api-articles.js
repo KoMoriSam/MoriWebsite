@@ -1,4 +1,3 @@
-import { useFetch } from "@vueuse/core";
 import fm from "front-matter";
 
 const BASE_URL = import.meta.env.VITE_API_ARTICLE_URL;
@@ -164,20 +163,33 @@ export function useArticleApi() {
    * @returns {Promise<Array<{id, title, summary, date, tags, path, banner?}>>}
    */
   const fetchArticleList = async () => {
-    const { data, error } = await useFetch(
-      `${CONTENT_BASE_URL}/index.json`,
-    ).json();
-    if (error.value) {
-      throw new Error("获取文章列表失败");
+    const res = await fetch(`${CONTENT_BASE_URL}/index.json`);
+
+    if (!res.ok) {
+      throw new Error(`获取文章列表失败: ${res.status}`);
     }
-    const raw = data.value;
-    // 扁平格式：直接返回
-    if (Array.isArray(raw)) return raw.map(normalizeArticleMeta);
-    // 兼容旧嵌套格式：{ 标签: { articles: [...] } }
+
+    const raw = await res.json();
+
+    // 新格式：数组
+    if (Array.isArray(raw)) {
+      return raw.map(normalizeArticleMeta);
+    }
+
+    // 防止错误数据
+    if (!raw || typeof raw !== "object") {
+      throw new Error("index.json 格式错误");
+    }
+
+    // 兼容旧格式
     const flat = [];
+
     for (const tag of Object.values(raw)) {
-      if (tag.articles) flat.push(...tag.articles);
+      if (tag && Array.isArray(tag.articles)) {
+        flat.push(...tag.articles);
+      }
     }
+
     return flat.map(normalizeArticleMeta);
   };
 
@@ -187,21 +199,27 @@ export function useArticleApi() {
    * @returns {Promise<string>}
    */
   const fetchArticleContent = async (path) => {
-    const { data, error } = await useFetch(
-      `${CONTENT_BASE_URL}/${path}`,
-    ).text();
-    if (error.value) {
-      throw new Error("获取文章内容失败");
+    const res = await fetch(`${CONTENT_BASE_URL}/${path}`);
+
+    if (!res.ok) {
+      throw new Error(`获取文章内容失败: ${res.status}`);
     }
-    const raw = data.value;
+
+    const raw = await res.text();
+
     const parsed = fm(raw);
+
     const bannerName = extractImageTarget(parsed?.attributes?.banner || "")
       .split("|")[0]
       .trim();
+
     const normalizedObsidian = normalizeObsidianImages(parsed.body, {
       bannerName,
     });
-    return normalizeMarkdownImages(normalizedObsidian, { bannerName });
+
+    return normalizeMarkdownImages(normalizedObsidian, {
+      bannerName,
+    });
   };
 
   return {

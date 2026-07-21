@@ -6,11 +6,8 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import legacy from "@vitejs/plugin-legacy";
 import tailwindcss from "@tailwindcss/vite";
 
-import seoPrerender from "vite-plugin-seo-prerender";
 import { copyFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-
-const isCI = process.env.CI || process.env.CF_PAGES === "1";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -22,15 +19,6 @@ export default defineConfig({
     legacy({
       targets: ["ie>=11"],
       additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
-    }),
-    // 预渲染
-    seoPrerender({
-      routes: ["/", "/blog", "/novel", "/tools", "/changelog"],
-
-      puppeteer: {
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      },
     }),
     {
       name: "copy-404",
