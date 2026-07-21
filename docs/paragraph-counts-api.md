@@ -47,7 +47,7 @@
 
 5. 在前端环境变量中配置：
 
-- COMMENT_COUNTS_API=https://paragraph-counts.xxx.workers.dev
+- VITE_COMMENT_COUNTS_API=https://paragraph-counts.xxx.workers.dev
 
 6. 重新构建部署前端。
 
@@ -105,7 +105,7 @@ body:
 
 ## 5. 当前前端行为
 
-当 COMMENT_COUNTS_API 已配置且可用时：
+当 VITE_COMMENT_COUNTS_API 已配置且可用时：
 
 - 页面会优先一次批量拉取段评计数并更新显示。
 - 失败时才回退到 giscus metadata 模式。

@@ -131,21 +131,21 @@ pnpm preview
 Le projet utilise actuellement les variables Vite suivantes :
 
 ```bash
-BLOG_RAW=
-NOVEL_RAW=
-SERVER_ADDRESS=
+VITE_BLOG_RAW=
+VITE_NOVEL_RAW=
+VITE_SERVER_ADDRESS=
 MXNZP_APP_ID=
 MXNZP_APP_SECRET=
-GISCUS_CSS_RAW=
+VITE_GISCUS_CSS_RAW=
 ```
 
 Utilisation :
 
-- BLOG_RAW : source de l'index et des fichiers Markdown des articles
-- NOVEL_RAW : source de l'index et du contenu des chapitres de roman
-- SERVER_ADDRESS : adresse serveur par défaut affichée sur l'accueil
+- VITE_BLOG_RAW : source de l'index et des fichiers Markdown des articles
+- VITE_NOVEL_RAW : source de l'index et du contenu des chapitres de roman
+- VITE_SERVER_ADDRESS : adresse serveur par défaut affichée sur l'accueil
 - MXNZP_APP_ID / MXNZP_APP_SECRET : identifiants pour l'API de citation quotidienne
-- GISCUS_CSS_RAW : URL de base du site pour certaines ressources liées au thème
+- VITE_GISCUS_CSS_RAW : URL de base du site pour certaines ressources liées au thème
 
 Si vous utilisez uniquement le contenu statique local, veillez à faire pointer les URL d'API des articles et des romans vers les répertoires statiques correspondants ou vers un proxy local.
 

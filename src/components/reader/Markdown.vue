@@ -316,7 +316,7 @@ watch(
     }
 
     if (!hasParagraphCountsApi) {
-      console.warn("未配置 COMMENT_COUNTS_API，已禁用段评批量查询");
+      console.warn("未配置 VITE_COMMENT_COUNTS_API，已禁用段评批量查询");
       return;
     }
 

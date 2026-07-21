@@ -1,6 +1,6 @@
 import { useFetch } from "@vueuse/core";
 
-const BASE_URL = import.meta.env.NOVEL_RAW;
+const BASE_URL = import.meta.env.VITE_NOVEL_RAW;
 
 export function useChapterApi() {
   const fetchChapters = async () => {

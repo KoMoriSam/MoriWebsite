@@ -1,4 +1,4 @@
-const HERO_API_URL = import.meta.env.RANDOM_HERO_API;
+const HERO_API_URL = import.meta.env.VITE_RANDOM_HERO_API;
 
 export async function fetchRandomHero() {
   const response = await fetch(HERO_API_URL, {
