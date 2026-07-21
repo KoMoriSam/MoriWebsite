@@ -10,6 +10,8 @@ import seoPrerender from "vite-plugin-seo-prerender";
 import { copyFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+const isCI = process.env.CI || process.env.CF_PAGES === "1";
+
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
@@ -23,12 +25,11 @@ export default defineConfig({
     }),
     // 预渲染
     seoPrerender({
-      // 要渲染的路由
       routes: ["/", "/blog", "/novel", "/tools", "/changelog"],
-      // 指定系统已安装的 Chrome 浏览器路径
+
       puppeteer: {
-        executablePath:
-          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
       },
     }),
     {
