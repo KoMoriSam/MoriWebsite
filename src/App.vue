@@ -1,6 +1,5 @@
 <template>
   <NavBar />
-  <h1>HELLO SSG</h1>
   <router-view />
 </template>
 
@@ -15,8 +14,8 @@ import { useStorageMigration } from "@/utils/storage/migrate-storage";
 import { useDiscardStorage } from "@/utils/storage/discard-storage";
 
 const route = useRoute();
-const pageTitle = computed(
-  () => String(route.meta.title || "Welcome! | KoMoriSam"),
+const pageTitle = computed(() =>
+  String(route.meta.title || "Welcome! | KoMoriSam"),
 );
 
 // ViteSSG 会在构建时把该标题写入每个静态页面，并在客户端路由切换时同步更新。
