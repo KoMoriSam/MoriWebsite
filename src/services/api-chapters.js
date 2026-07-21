@@ -1,6 +1,6 @@
 import { useFetch } from "@vueuse/core";
 
-const BASE_URL = import.meta.env.VITE_API_NOVEL_URL;
+const BASE_URL = import.meta.env.NOVEL_RAW;
 
 export function useChapterApi() {
   const fetchChapters = async () => {
@@ -13,7 +13,7 @@ export function useChapterApi() {
 
   const fetchContent = async (path) => {
     const { data: markdownRaw, error } = await useFetch(
-      `${BASE_URL}/${path}`
+      `${BASE_URL}/${path}`,
     ).text();
     if (error.value) {
       throw new Error("获取内容失败");

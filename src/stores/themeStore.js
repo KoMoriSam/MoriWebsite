@@ -3,8 +3,6 @@ import { ref, computed } from "vue";
 import { usePreferredDark } from "@vueuse/core";
 import { useGlobalStorage } from "@/utils/storage/new-global-storage";
 
-const BASE_URL = import.meta.env.VITE_HOMEPAGE_URL;
-
 const isDark = usePreferredDark();
 
 /**
@@ -15,7 +13,7 @@ const isDark = usePreferredDark();
  *   corporate (日间模式) — 专业蓝色商务色调
  *   dim       (夜间模式) — 低调蓝灰色调
  */
-const GISCUS_THEME_BASE = `${BASE_URL}/css/giscus`;
+const GISCUS_THEME_BASE = import.meta.env.GISCUS_CSS_RAW;
 
 export const useThemeStore = defineStore("theme", () => {
   const { GLOBAL_INFO } = useGlobalStorage();

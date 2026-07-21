@@ -129,21 +129,21 @@ pnpm preview
 项目当前依赖以下 Vite 环境变量：
 
 ```bash
-VITE_API_ARTICLE_URL=
-VITE_API_NOVEL_URL=
-VITE_SERVER_ADDRESS=
-VITE_MXNZP_APP_ID=
-VITE_MXNZP_APP_SECRET=
-VITE_HOMEPAGE_URL=
+BLOG_RAW=
+NOVEL_RAW=
+SERVER_ADDRESS=
+MXNZP_APP_ID=
+MXNZP_APP_SECRET=
+GISCUS_CSS_RAW=
 ```
 
 说明：
 
-- VITE_API_ARTICLE_URL：文章索引与文章 Markdown 的来源地址
-- VITE_API_NOVEL_URL：小说章节索引与正文来源地址
-- VITE_SERVER_ADDRESS：默认服务器地址
-- VITE_MXNZP_APP_ID / VITE_MXNZP_APP_SECRET：每日一句接口凭据
-- VITE_HOMEPAGE_URL：站点基地址，用于主题等静态资源引用
+- BLOG_RAW：文章索引与文章 Markdown 的来源地址
+- NOVEL_RAW：小说章节索引与正文来源地址
+- SERVER_ADDRESS：默认服务器地址
+- MXNZP_APP_ID / MXNZP_APP_SECRET：每日一句接口凭据
+- GISCUS_CSS_RAW：站点基地址，用于主题等静态资源引用
 
 如果你只在本地使用仓库内的静态内容，通常需要保证文章与小说接口地址能指向相应的静态目录或代理地址。
 

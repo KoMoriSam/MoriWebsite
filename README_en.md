@@ -131,21 +131,21 @@ pnpm preview
 The project currently relies on these Vite environment variables:
 
 ```bash
-VITE_API_ARTICLE_URL=
-VITE_API_NOVEL_URL=
-VITE_SERVER_ADDRESS=
-VITE_MXNZP_APP_ID=
-VITE_MXNZP_APP_SECRET=
-VITE_HOMEPAGE_URL=
+BLOG_RAW=
+NOVEL_RAW=
+SERVER_ADDRESS=
+MXNZP_APP_ID=
+MXNZP_APP_SECRET=
+GISCUS_CSS_RAW=
 ```
 
 What they are used for:
 
-- VITE_API_ARTICLE_URL: article index and Markdown source
-- VITE_API_NOVEL_URL: novel chapter index and content source
-- VITE_SERVER_ADDRESS: default server address shown on the homepage
-- VITE_MXNZP_APP_ID / VITE_MXNZP_APP_SECRET: credentials for the daily quote API
-- VITE_HOMEPAGE_URL: site base URL used by theme-related assets
+- BLOG_RAW: article index and Markdown source
+- NOVEL_RAW: novel chapter index and content source
+- SERVER_ADDRESS: default server address shown on the homepage
+- MXNZP_APP_ID / MXNZP_APP_SECRET: credentials for the daily quote API
+- GISCUS_CSS_RAW: site base URL used by theme-related assets
 
 If you want to use only local static content, make sure the article and novel API URLs point to the corresponding static directories or a local proxy.
 

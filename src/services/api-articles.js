@@ -1,6 +1,6 @@
 import fm from "front-matter";
 
-const BASE_URL = import.meta.env.VITE_API_ARTICLE_URL;
+const BASE_URL = import.meta.env.BLOG_RAW;
 const OBSIDIAN_LINK_REGEX = /^\[\[(.+)\]\]$/;
 const OBSIDIAN_IMAGE_REGEX = /!\[\[([^\]]+)\]\]/g;
 const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
@@ -154,7 +154,7 @@ const normalizeArticleMeta = (article = {}) => {
 /**
  * 文章 API 服务
  * - 开发环境：读取 /mock/article（本地静态文件）
- * - 生产环境：由 VITE_API_ARTICLE_URL 环境变量指定
+ * - 生产环境：由 BLOG_RAW 环境变量指定
  */
 export function useArticleApi() {
   /**

@@ -1,7 +1,7 @@
 import { useFetch } from "@vueuse/core";
 
 const API_BASE = "https://list.mczfw.com/api/";
-const DEFAULT_SERVER = import.meta.env.VITE_SERVER_ADDRESS;
+const DEFAULT_SERVER = import.meta.env.SERVER_ADDRESS;
 
 export function useServerApi() {
   const getServerInfo = async (serverAddress) => {

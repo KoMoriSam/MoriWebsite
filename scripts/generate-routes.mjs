@@ -7,10 +7,10 @@ dotenv.config({
   path: ".env.production",
 });
 
-const API_URL = process.env.VITE_API_ARTICLE_URL;
+const API_URL = process.env.BLOG_RAW;
 
 if (!API_URL) {
-  throw new Error("缺少 VITE_API_ARTICLE_URL");
+  throw new Error("缺少 BLOG_RAW");
 }
 
 const BASE = API_URL.replace(/\/+$/, "");

@@ -1,7 +1,7 @@
 import { useFetch } from "@vueuse/core";
 
-const MXNZP_APP_ID = import.meta.env.VITE_MXNZP_APP_ID;
-const MXNZP_APP_SECRET = import.meta.env.VITE_MXNZP_APP_SECRET;
+const MXNZP_APP_ID = import.meta.env.MXNZP_APP_ID;
+const MXNZP_APP_SECRET = import.meta.env.MXNZP_APP_SECRET;
 
 export function useQuotesApi() {
   const getQuotes = async () => {
