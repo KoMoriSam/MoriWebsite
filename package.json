@@ -8,7 +8,7 @@
     "dev": "vite --host 0.0.0.0",
     "prebuild": "node scripts/generate-routes.mjs",
     "build": "vite-ssg build",
-    "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/komorisam.github.io.git",
+    "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/MoriWebsite.git",
     "preview": "vite preview --host 0.0.0.0",
     "push": "git push origin main:cl-pages --force"
   },
