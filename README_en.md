@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://komorisam.github.io/">
-    <img src="https://komorisam.github.io/favicon.webp" alt="Logo" width="80" height="80">
+  <a href="https://komori.cc/">
+    <img src="https://komori.cc/favicon.webp" alt="Logo" width="80" height="80">
   </a>
 </p>
 
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://komorisam.github.io/">Live Site</a>
+  <a href="https://komori.cc/">Live Site</a>
   ·
   <a href="https://github.com/KoMoriSam/komorisam.github.io">Source Code</a>
   ·
@@ -21,7 +21,7 @@
 <p align="center">
   Latest version: <strong>1.13.0</strong>
   ·
-  <a href="https://komorisam.github.io/changelog">View changelog</a>
+  <a href="https://komori.cc/changelog">View changelog</a>
 </p>
 
 ---

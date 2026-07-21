@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://komorisam.github.io/">
-    <img src="https://komorisam.github.io/favicon.webp" alt="Logo" width="80" height="80">
+  <a href="https://komori.cc/">
+    <img src="https://komori.cc/favicon.webp" alt="Logo" width="80" height="80">
   </a>
 </p>
 
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://komorisam.github.io/">在线访问</a>
+  <a href="https://komori.cc/">在线访问</a>
   ·
   <a href="https://github.com/KoMoriSam/komorisam.github.io">查看源代码</a>
   ·
@@ -21,7 +21,7 @@
 <p align="center">
   当前版本：<strong>1.13.0</strong>
   ·
-  <a href="https://komorisam.github.io/changelog">查看更新日志</a>
+  <a href="https://komori.cc/changelog">查看更新日志</a>
 </p>
 
 ---
