@@ -22,15 +22,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Manrope";
-  src: url("https://cdn.jsdelivr.net/npm/manrope@2.0.0/complete/manrope-bold.woff2")
-    format("woff2");
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
 main {
   /* ========== 字体（与主站 daisyUI --default-font-family 风格一致） ========== */
   font-family:
