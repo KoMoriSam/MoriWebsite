@@ -18,7 +18,6 @@ const pageTitle = computed(() =>
   String(route.meta.title || "Welcome! | KoMoriSam"),
 );
 
-// ViteSSG 会在构建时把该标题写入每个静态页面，并在客户端路由切换时同步更新。
 useHead({
   title: pageTitle,
 });
