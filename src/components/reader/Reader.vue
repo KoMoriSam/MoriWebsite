@@ -381,20 +381,243 @@ const ReaderBody = defineComponent({
     showToc: { type: Boolean, default: false },
     showAside: { type: Boolean, default: false },
   },
+
   setup(bodyProps, { slots: bodySlots }) {
+    const asideRef = ref(null);
+
+    const asideMask = ref({
+      top: false,
+      bottom: false,
+    });
+
+    let observedAside = null;
+    let resizeObserver = null;
+    let asideMutationObserver = null;
+    let maskFrame = 0;
+
+    const resetAsideMask = () => {
+      asideMask.value = {
+        top: false,
+        bottom: false,
+      };
+    };
+
+    const updateAsideMask = () => {
+      const el = observedAside;
+
+      if (!el || !el.isConnected) {
+        resetAsideMask();
+        return;
+      }
+
+      const maxScrollTop = Math.max(el.scrollHeight - el.clientHeight, 0);
+
+      const hasOverflow = maxScrollTop > 1;
+      const scrollTop = Math.max(0, el.scrollTop);
+
+      const nextMask = {
+        top: hasOverflow && scrollTop > 1,
+        bottom: hasOverflow && scrollTop < maxScrollTop - 1,
+      };
+
+      // 避免每次 scroll 都创建无意义的响应式更新
+      if (
+        asideMask.value.top !== nextMask.top ||
+        asideMask.value.bottom !== nextMask.bottom
+      ) {
+        asideMask.value = nextMask;
+      }
+    };
+
+    const scheduleAsideMaskUpdate = () => {
+      if (maskFrame || typeof window === "undefined") return;
+
+      maskFrame = window.requestAnimationFrame(() => {
+        maskFrame = 0;
+        updateAsideMask();
+      });
+    };
+
+    /**
+     * aside 本身受到 max-height 限制后，内部内容继续变化时，
+     * aside 的盒子尺寸不一定变化。
+     *
+     * 因此除了观察 aside，也观察它的直接子元素。
+     * Giscus 外层容器高度变化时就能被捕获。
+     */
+    const syncResizeTargets = () => {
+      const el = observedAside;
+
+      if (!el || !resizeObserver) return;
+
+      resizeObserver.disconnect();
+      resizeObserver.observe(el);
+
+      Array.from(el.children).forEach((child) => {
+        resizeObserver.observe(child);
+      });
+    };
+
+    const detachAside = (el = observedAside) => {
+      if (el) {
+        el.removeEventListener("scroll", scheduleAsideMaskUpdate);
+
+        // 捕获模式必须保持一致
+        el.removeEventListener("load", scheduleAsideMaskUpdate, true);
+      }
+
+      resizeObserver?.disconnect();
+      asideMutationObserver?.disconnect();
+
+      resizeObserver = null;
+      asideMutationObserver = null;
+      observedAside = null;
+
+      resetAsideMask();
+    };
+
+    const attachAside = (el) => {
+      if (!el) return;
+
+      observedAside = el;
+
+      el.addEventListener("scroll", scheduleAsideMaskUpdate, {
+        passive: true,
+      });
+
+      /**
+       * load 不冒泡，所以使用捕获阶段。
+       * 可捕获 aside 内图片、iframe 等资源加载完成。
+       */
+      el.addEventListener("load", scheduleAsideMaskUpdate, true);
+
+      if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => {
+          scheduleAsideMaskUpdate();
+        });
+
+        syncResizeTargets();
+      }
+
+      if (typeof MutationObserver !== "undefined") {
+        asideMutationObserver = new MutationObserver(() => {
+          // 新增了根节点时，将其加入 ResizeObserver
+          syncResizeTargets();
+          scheduleAsideMaskUpdate();
+        });
+
+        asideMutationObserver.observe(el, {
+          childList: true,
+          subtree: true,
+
+          // Giscus 可能通过修改 iframe style 更新高度
+          attributes: true,
+          attributeFilter: ["class", "style", "src"],
+
+          characterData: true,
+        });
+      }
+
+      scheduleAsideMaskUpdate();
+    };
+
+    /**
+     * 关键修复：
+     *
+     * ArticleReader 首次渲染时 showAside=false，
+     * asideRef 为 null；文章加载完成后 asideRef 才会出现。
+     *
+     * 监听 ref 后，无论 aside 何时挂载、替换或卸载，
+     * 都能正确绑定和清理监听器。
+     */
+    watch(
+      asideRef,
+      (el, oldEl) => {
+        if (oldEl) {
+          detachAside(oldEl);
+        }
+
+        if (el) {
+          attachAside(el);
+        }
+      },
+      {
+        flush: "post",
+      },
+    );
+
+    onBeforeUnmount(() => {
+      detachAside();
+
+      if (maskFrame && typeof window !== "undefined") {
+        window.cancelAnimationFrame(maskFrame);
+        maskFrame = 0;
+      }
+    });
+
+    const asideMaskImage = computed(() => {
+      const { top, bottom } = asideMask.value;
+
+      // 位于中间：上下都有渐隐
+      if (top && bottom) {
+        return [
+          "linear-gradient(",
+          "to bottom,",
+          "transparent 0,",
+          "black 2rem,",
+          "black calc(100% - 2rem),",
+          "transparent 100%",
+          ")",
+        ].join(" ");
+      }
+
+      // 已滚到底部：只有顶部渐隐
+      if (top) {
+        return [
+          "linear-gradient(",
+          "to bottom,",
+          "transparent 0,",
+          "black 2rem,",
+          "black 100%",
+          ")",
+        ].join(" ");
+      }
+
+      // 位于顶部：只有底部渐隐
+      if (bottom) {
+        return [
+          "linear-gradient(",
+          "to bottom,",
+          "black 0,",
+          "black calc(100% - 2rem),",
+          "transparent 100%",
+          ")",
+        ].join(" ");
+      }
+
+      // 内容没有溢出
+      return "none";
+    });
+
     return () =>
       h(
         "div",
-        { class: ["min-w-0 w-full max-w-full", bodyProps.containerClass] },
+        {
+          class: ["min-w-0 w-full max-w-full", bodyProps.containerClass],
+        },
         [
           bodySlots.before?.(),
+
           bodyProps.showToc
             ? h(
                 "div",
-                { class: "sticky top-2 z-10 mb-4 xl:hidden" },
+                {
+                  class: "sticky top-2 z-10 mb-4 xl:hidden",
+                },
                 bodySlots["mobile-toc"]?.(),
               )
             : null,
+
           h(
             "div",
             {
@@ -420,36 +643,55 @@ const ReaderBody = defineComponent({
                     bodySlots.toc?.(),
                   )
                 : null,
+
               h(
                 "section",
                 {
                   "data-reader-content": readerId,
                   class: [
                     "min-w-0 w-full max-w-full",
+
                     bodyProps.showAside &&
                       "border-b border-base-300 pb-8 xl:border-r xl:border-b-0 xl:pr-8 xl:pb-0",
+
                     bodyProps.showToc &&
                       "xl:border-l xl:border-base-300 xl:pl-8",
+
                     bodyProps.contentClass,
                   ],
                 },
                 bodySlots.default?.(),
               ),
+
               bodyProps.showAside
                 ? h(
                     "aside",
                     {
+                      ref: asideRef,
+
                       class: [
-                        "min-w-0 w-full max-w-full space-y-8 xl:sticky xl:self-start",
+                        "lg:sticky lg:self-start",
+                        "max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto",
+                        "scrollbar-none",
                         bodyProps.asideClass,
                       ],
-                      style: { top: bodyProps.stickyTop },
+
+                      style: {
+                        top: bodyProps.stickyTop,
+
+                        // 标准属性
+                        maskImage: asideMaskImage.value,
+
+                        // Safari 兼容
+                        WebkitMaskImage: asideMaskImage.value,
+                      },
                     },
                     bodySlots.aside?.(),
                   )
                 : null,
             ],
           ),
+
           bodySlots.after?.(),
         ],
       );

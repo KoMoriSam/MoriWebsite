@@ -105,42 +105,38 @@
     </section>
 
     <template #aside>
-      <section class="min-w-0 w-full max-w-full">
-        <div
-          class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
+      <section
+        class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
+      >
+        <h2 class="min-w-0 text-2xl font-bold break-words">
+          {{ currentMapping === "title" ? "本章说" : "本书说" }}
+        </h2>
+
+        <button
+          type="button"
+          class="btn btn-info btn-soft btn-xs shrink-0"
+          @click="commentToggle"
         >
-          <h2 class="min-w-0 text-2xl font-bold break-words">
-            {{ currentMapping === "title" ? "本章说" : "本书说" }}
-          </h2>
-
-          <button
-            type="button"
-            class="btn btn-info btn-soft btn-xs shrink-0"
-            @click="commentToggle"
-          >
-            {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
-          </button>
-        </div>
-
-        <aside class="min-w-0 w-full max-w-full">
-          <Giscus
-            :key="giscusKey"
-            :repo="GISCUS.novelRepo.name"
-            :repo-id="GISCUS.novelRepo.id"
-            :category="GISCUS.categories.general.name"
-            :category-id="GISCUS.categories.general.id"
-            :mapping="giscusMapping"
-            :term="giscusTerm"
-            strict="0"
-            reactions-enabled="1"
-            emit-metadata="0"
-            input-position="top"
-            :theme="giscusTheme"
-            lang="zh-CN"
-            loading="lazy"
-          />
-        </aside>
+          {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
+        </button>
       </section>
+
+      <Giscus
+        :key="giscusKey"
+        :repo="GISCUS.novelRepo.name"
+        :repo-id="GISCUS.novelRepo.id"
+        :category="GISCUS.categories.general.name"
+        :category-id="GISCUS.categories.general.id"
+        :mapping="giscusMapping"
+        :term="giscusTerm"
+        strict="0"
+        reactions-enabled="1"
+        emit-metadata="0"
+        input-position="bottom"
+        :theme="giscusTheme"
+        lang="zh-CN"
+        loading="lazy"
+      />
     </template>
 
     <template #floating>
