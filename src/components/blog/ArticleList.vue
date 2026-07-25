@@ -326,21 +326,38 @@
           <!-- 封面 -->
           <div
             class="relative h-48 shrink-0 overflow-hidden bg-base-200 sm:h-52"
+            :aria-busy="hasBanner(item) && !isBannerLoaded(item)"
           >
-            <div
-              v-if="item.banner"
-              class="absolute inset-0 bg-cover bg-center transition-transform duration-500 ease-out group-hover:scale-105"
-              :style="{
-                backgroundImage: `url(${resolveBannerUrl(item.banner)})`,
-              }"
-            />
+            <!-- 有封面图片 -->
+            <template v-if="hasBanner(item)">
+              <!-- daisyUI 骨架背景始终放在图片下方 -->
+              <div
+                class="skeleton absolute inset-0 rounded-none"
+                aria-hidden="true"
+              ></div>
 
-            <div
-              v-else
-              class="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 transition-transform duration-500 group-hover:scale-105"
-            />
+              <!-- 使用 img 才能准确监听加载状态 -->
+              <img
+                :src="resolveBannerUrl(item.banner)"
+                :alt="item.title"
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+                class="absolute inset-0 size-full object-cover object-center transition-[opacity,transform] duration-500 ease-out motion-reduce:transition-none group-hover:scale-105"
+                :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
+                @load="handleBannerLoad(item)"
+                @error="handleBannerError(item)"
+              />
 
-            <template v-if="!item.banner">
+              <!-- 图片加载完成后再显示遮罩 -->
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500"
+                :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
+              ></div>
+            </template>
+
+            <!-- 无封面或封面加载失败 -->
+            <template v-else>
               <div
                 class="absolute -right-10 -top-14 size-40 rounded-full bg-primary/10 blur-2xl transition-transform duration-500 group-hover:scale-125"
               ></div>
@@ -365,14 +382,14 @@
               ></div>
             </template>
 
+            <!-- 文章信息 -->
             <div
-              v-if="item.banner"
-              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5"
-            ></div>
-
-            <div
-              class="absolute inset-x-0 bottom-0 p-4 sm:p-5"
-              :class="item.banner ? 'text-white' : 'text-base-content'"
+              class="absolute inset-x-0 bottom-0 z-10 p-4 transition-colors duration-300 sm:p-5"
+              :class="
+                hasBanner(item) && isBannerLoaded(item)
+                  ? 'text-white'
+                  : 'text-base-content'
+              "
             >
               <div
                 v-if="item.tags?.length"
@@ -381,9 +398,9 @@
                 <span
                   v-for="tag in item.tags"
                   :key="tag"
-                  class="badge badge-sm max-w-full"
+                  class="badge badge-sm max-w-full transition-colors duration-300"
                   :class="
-                    item.banner
+                    hasBanner(item) && isBannerLoaded(item)
                       ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
                       : 'badge-primary badge-soft'
                   "
@@ -393,8 +410,12 @@
               </div>
 
               <h2
-                class="mt-3 line-clamp-2 text-xl leading-snug font-bold font-serif sm:text-2xl text-balance"
-                :class="item.banner ? 'drop-shadow-sm' : ''"
+                class="mt-3 line-clamp-2 text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
+                :class="
+                  hasBanner(item) && isBannerLoaded(item)
+                    ? 'drop-shadow-sm'
+                    : ''
+                "
               >
                 {{ item.title }}
               </h2>
@@ -477,7 +498,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, reactive } from "vue";
 import { refDebounced, useDateFormat } from "@vueuse/core";
 
 import ToTop from "@/components/base/ToTop.vue";
@@ -509,6 +530,35 @@ const resolveBannerUrl = (banner) => {
   if (!banner) return "";
   return banner;
 };
+
+const loadedBanners = reactive(new Set());
+const failedBanners = reactive(new Set());
+
+function getBannerKey(item) {
+  // 优先使用文章唯一标识，最后才使用 banner 地址
+  return String(item.id ?? item.slug ?? item.path ?? item.banner);
+}
+
+function hasBanner(item) {
+  if (!item.banner) return false;
+
+  return !failedBanners.has(getBannerKey(item));
+}
+
+function isBannerLoaded(item) {
+  return loadedBanners.has(getBannerKey(item));
+}
+
+function handleBannerLoad(item) {
+  loadedBanners.add(getBannerKey(item));
+}
+
+function handleBannerError(item) {
+  const key = getBannerKey(item);
+
+  loadedBanners.delete(key);
+  failedBanners.add(key);
+}
 
 const estimateReadingTime = (length = 0) => {
   return Math.max(1, Math.ceil(Number(length || 0) / 300));

@@ -20,15 +20,34 @@
         class="relative min-h-72 overflow-hidden rounded-2xl bg-base-200 shadow-lg sm:min-h-80 lg:rounded-3xl"
       >
         <!-- Banner -->
-        <div
-          v-if="article?.banner"
-          class="absolute inset-0 bg-cover bg-center"
-          :style="{
-            backgroundImage: `url(${resolveBannerUrl(article.banner)})`,
-          }"
-        ></div>
+        <template v-if="article?.banner && !bannerFailed">
+          <!-- Skeleton -->
+          <div
+            v-if="!bannerLoaded"
+            class="skeleton absolute inset-0 rounded-none"
+          ></div>
 
-        <!-- 无 Banner 背景 -->
+          <!-- 图片 -->
+          <img
+            :src="resolveBannerUrl(article.banner)"
+            :alt="article.title"
+            loading="eager"
+            decoding="async"
+            draggable="false"
+            class="absolute inset-0 size-full object-cover object-center transition-opacity duration-700"
+            :class="bannerLoaded ? 'opacity-100' : 'opacity-0'"
+            @load="handleBannerLoad"
+            @error="handleBannerError"
+          />
+
+          <!-- 遮罩 -->
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 transition-opacity duration-700"
+            :class="bannerLoaded ? 'opacity-100' : 'opacity-0'"
+          ></div>
+        </template>
+
+        <!-- 无 Banner / 加载失败背景 -->
         <div
           v-else
           class="absolute inset-0 bg-gradient-to-br from-accent/25 to-primary/20"
@@ -56,12 +75,6 @@
             "
           ></div>
         </div>
-
-        <!-- Banner 遮罩 -->
-        <div
-          v-if="article?.banner"
-          class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10"
-        ></div>
 
         <!-- 头图内容 -->
         <div
@@ -194,28 +207,23 @@
       <FormatSetting />
     </template>
 
-    <template #aside>
-      <aside
-        v-if="content && article?.id != null"
-        class="min-w-0 w-full max-w-full"
-      >
-        <Giscus
-          :key="`article-comments-${article.id}`"
-          :repo="GISCUS.blogRepo.name"
-          :repo-id="GISCUS.blogRepo.id"
-          :category="GISCUS.categories.announcements.name"
-          :category-id="GISCUS.categories.announcements.id"
-          mapping="specific"
-          :term="String(article.id)"
-          strict="0"
-          reactions-enabled="1"
-          emit-metadata="0"
-          input-position="top"
-          :theme="giscusTheme"
-          lang="zh-CN"
-          loading="lazy"
-        />
-      </aside>
+    <template #aside v-if="content && article?.id != null">
+      <Giscus
+        :key="`article-comments-${article.id}`"
+        :repo="GISCUS.blogRepo.name"
+        :repo-id="GISCUS.blogRepo.id"
+        :category="GISCUS.categories.announcements.name"
+        :category-id="GISCUS.categories.announcements.id"
+        mapping="specific"
+        :term="String(article.id)"
+        strict="0"
+        reactions-enabled="1"
+        emit-metadata="0"
+        input-position="bottom"
+        :theme="giscusTheme"
+        lang="zh-CN"
+        loading="lazy"
+      />
     </template>
   </Reader>
 
@@ -223,7 +231,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import Giscus from "@giscus/vue";
 
@@ -276,6 +284,18 @@ const resolveBannerUrl = (banner) => {
   if (!banner) return "";
   return banner;
 };
+
+const bannerLoaded = ref(false);
+const bannerFailed = ref(false);
+
+function handleBannerLoad() {
+  bannerLoaded.value = true;
+}
+
+function handleBannerError() {
+  bannerFailed.value = true;
+  bannerLoaded.value = false;
+}
 
 const estimateReadingTime = (length) => {
   const characterCount = Number(length);
@@ -331,6 +351,7 @@ const headerData = computed(() => {
     ],
   };
 });
+
 const fabActions = computed(() => {
   const actions = [
     {
