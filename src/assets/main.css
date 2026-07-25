@@ -179,6 +179,10 @@
     tracking-(--para-letter-spacing);
   }
 
+  #markdown-content.prose p.signature {
+    @apply indent-0 font-serif font-semibold text-right italic;
+  }
+
   #markdown-content.prose li {
     @apply text-(length:--para-font-size) tracking-(--para-letter-spacing);
   }
@@ -320,16 +324,26 @@
 
   /* Alert 警告框样式 */
   #markdown-content.prose details.alert {
-    @apply block w-full max-w-full box-border text-left justify-items-stretch my-[var(--para-margin-inline)];
+    @apply block w-full max-w-full box-border
+    border border-base-300
+    text-left justify-items-stretch 
+    my-[var(--para-margin-inline)];
   }
 
   #markdown-content.prose details.alert > summary.alert-title {
-    @apply flex w-full max-w-full min-w-0 
-    items-center box-border gap-2 px-2 py-0 mb-2 text-left;
+    @apply flex w-full max-w-full min-w-0
+    items-center box-border gap-2 p-0 text-left;
   }
 
-  #markdown-content.prose details.alert > summary.alert-title h3 {
-    @apply flex-1 min-w-0;
+  #markdown-content.prose details.alert > summary.alert-title i {
+    @apply text-[calc(var(--para-font-size)*0.875)];
+  }
+
+  #markdown-content.prose details.alert > summary.alert-title h6 {
+    @apply flex-1 min-w-0 p-0
+      indent-0 font-serif
+      text-[calc(var(--para-font-size)*0.875)]
+      text-inherit leading-[calc(var(--para-line-height)*0.875)];
   }
 
   #markdown-content.prose details.alert.collapse > summary.alert-title {
@@ -346,21 +360,10 @@
     @apply w-full;
   }
 
-  #markdown-content.prose details.alert > summary.alert-title .alert-icon {
-    @apply translate-y-[calc(var(--para-font-size)*(var(--para-line-height))/4.5)]
-    text-(length:--para-font-size);
-  }
-
-  #markdown-content.prose details.alert > summary.alert-title h3 {
-    @apply indent-0 m-1 font-serif translate-y-0.75
-    text-[calc(var(--para-font-size)*0.85)]
-    text-inherit leading-[calc(var(--para-line-height)*0.85)];
-  }
-
   #markdown-content.prose details.alert p,
   #markdown-content.prose details.alert ul li,
   #markdown-content.prose details.alert ol li {
-    @apply indent-0 text-base-content px-2 py-0 mt-0
+    @apply indent-0 text-base-content px-2 py-0 mt-2 mb-1
     text-[calc(var(--para-font-size)*0.75)]
     leading-(--para-line-height)
     tracking-[calc(var(--para-letter-spacing)*0.75)];
