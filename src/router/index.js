@@ -32,6 +32,18 @@ export const routes = [
   // 开发环境该数组为空，不依赖任何 generated 文件。
   ...articleRoutes,
   {
+    path: "/blog",
+    name: "blog",
+    component: () => import("@/views/Blog.vue"),
+    meta: { title: "博客 | KoMoriSam", navName: "blog" },
+  },
+  {
+    path: "/changelog",
+    name: "changelog",
+    component: () => import("@/views/Changelog.vue"),
+    meta: { title: "更新日志 | KoMoriSam" },
+  },
+  {
     path: "/blog/:articleId?",
     name: "blog",
     component: () => import("@/views/Blog.vue"),
@@ -48,12 +60,6 @@ export const routes = [
     name: "tools",
     component: () => import("@/views/Tools.vue"),
     meta: { title: "工具 | KoMoriSam", navName: "tools" },
-  },
-  {
-    path: "/changelog",
-    name: "changelog",
-    component: () => import("@/views/Changelog.vue"),
-    meta: { title: "更新日志 | KoMoriSam" },
   },
   // 仅开发环境可见，生产构建自动移除
   ...(import.meta.env.DEV
