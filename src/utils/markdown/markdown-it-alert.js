@@ -135,7 +135,12 @@ function installInlineCollector(md) {
     for (const token of tokens) {
       if (token.type === "inline") {
         token.children = [];
-        state.md.inline.parse(token.content, state.md, state.env, token.children);
+        state.md.inline.parse(
+          token.content,
+          state.md,
+          state.env,
+          token.children,
+        );
         continue;
       }
 
@@ -264,27 +269,32 @@ export function alertPlugin(md) {
     const alert = tokens[idx].meta?.alert;
     if (!alert) return defaultBlockquoteOpen(tokens, idx, options, env, self);
 
-    const title = renderPreparedInlineToken(alert.titleToken, options, env, self);
+    const title = renderPreparedInlineToken(
+      alert.titleToken,
+      options,
+      env,
+      self,
+    );
     const summaryTitle = alert.hasTitle ? title : "";
 
     if (alert.foldable) {
       const openAttr = alert.collapsed ? "" : " open";
       const summaryRow = `
       <summary class="alert-title collapse-title">
-        <i class="${alert.icon} translate-y-0.75 scale-150"></i>
-        <h3>${summaryTitle}</h3>
+        <i class="${alert.icon}"></i>
+        <h6>${summaryTitle}</h6>
       </summary>`;
       return `
       <details role="alert" 
-        class="alert alert-${alert.type} alert-soft alert-vertical sm:gap-2 collapse collapse-arrow"${openAttr}>
+        class="alert alert-${alert.type} alert-soft alert-vertical border border-${alert.type}-content sm:gap-2 collapse collapse-arrow"${openAttr}>
         ${summaryRow}
       `;
     }
 
     const staticSummaryRow = `
     <summary class="alert-title select-none pointer-events-none cursor-default">
-      <i class="${alert.icon} translate-y-0.75 scale-150"></i>
-      <h3>${summaryTitle}</h3>
+      <i class="${alert.icon}"></i>
+      <h6>${summaryTitle}</h6>
     </summary>`;
     return `
     <details role="alert" open 
