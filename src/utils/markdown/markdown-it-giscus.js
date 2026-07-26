@@ -181,7 +181,7 @@ export const useParagraphComments = () => {
         state.stack.push(paragraphId);
 
         tokens[idx].attrSet("id", paragraphId);
-        tokens[idx].attrSet("class", "group");
+        tokens[idx].attrJoin("class", "group");
         tokens[idx].attrSet("tabindex", "0");
         tokens[idx].meta = {
           ...(tokens[idx].meta || {}),
