@@ -184,7 +184,8 @@
   }
 
   #markdown-content.prose li {
-    @apply text-(length:--para-font-size) tracking-(--para-letter-spacing);
+    @apply text-(length:--para-font-size) tracking-(--para-letter-spacing)
+    ps-[calc(var(--para-text-indent)*0.8)] indent-[calc(var(--para-text-indent)*-0.65)];
   }
 
   #markdown-content.prose li p {
@@ -603,7 +604,7 @@
   }
 
   #markdown-content.prose li.task-list-item {
-    @apply pl-(--para-text-indent)  indent-[calc(var(--para-text-indent)*-1)];
+    @apply ps-[calc(var(--para-text-indent)*0.75)] indent-[calc(var(--para-text-indent)*-0.7)];
   }
 
   #markdown-content.prose input.task-list-item-checkbox {
