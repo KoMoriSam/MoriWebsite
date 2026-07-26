@@ -140,7 +140,7 @@
     </template>
 
     <template #floating>
-      <aside class="max-lg:dock">
+      <aside class="max-lg:dock shadow-sm">
         <FloatingActionButton main-icon="ri-more-line" :actions="fabActions" />
       </aside>
     </template>

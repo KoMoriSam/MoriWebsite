@@ -1,17 +1,18 @@
 import fm from "front-matter";
+import {
+  createArticleAssetResolver,
+  extractArticleImageTarget,
+} from "@/utils/article-assets";
 
 const BASE_URL = import.meta.env.VITE_BLOG_RAW;
-const OBSIDIAN_LINK_REGEX = /^\[\[(.+)\]\]$/;
 const OBSIDIAN_IMAGE_REGEX = /!\[\[([^\]]+)\]\]/g;
 const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
 
-const normalizeBaseUrl = (value = "") =>
-  String(value || "").replace(/\/+$/, "");
-
-const BASE_URL_NORMALIZED = normalizeBaseUrl(BASE_URL);
-const CONTENT_BASE_URL = BASE_URL_NORMALIZED.replace(/\/images$/i, "");
-const IMAGE_BASE_URL = `${CONTENT_BASE_URL}/images`;
-const BANNER_DIRECTORY = "banners";
+const {
+  contentBaseUrl: CONTENT_BASE_URL,
+  normalizeImageSrc,
+  normalizeBanner,
+} = createArticleAssetResolver(BASE_URL);
 
 const escapeHtmlAttr = (value = "") => {
   return String(value)
@@ -21,59 +22,7 @@ const escapeHtmlAttr = (value = "") => {
     .replaceAll(">", "&gt;");
 };
 
-const extractImageTarget = (rawTarget = "") => {
-  const target = String(rawTarget || "").trim();
-  if (!target) return "";
-
-  const obsidianMatch = target.match(OBSIDIAN_LINK_REGEX);
-  const targetValue = obsidianMatch ? obsidianMatch[1] : target;
-
-  return targetValue
-    .replace(/^<([^>]+)>$/, "$1")
-    .replace(/\s+"[^"]*"$/, "")
-    .trim();
-};
-
-const normalizeImageSrc = (rawTarget = "", { bannerName = "" } = {}) => {
-  const target = extractImageTarget(rawTarget);
-  if (!target) return "";
-
-  if (
-    target.startsWith("/") ||
-    target.startsWith("data:") ||
-    /^(https?:)?\/\//i.test(target)
-  ) {
-    return target;
-  }
-
-  const normalizedRelativeTarget = target
-    .replace(/^\.\//, "")
-    .replace(/^images\//i, "")
-    .replace(/^banner\//i, `${BANNER_DIRECTORY}/`)
-    .replace(/^banners\//i, `${BANNER_DIRECTORY}/`);
-
-  if (!normalizedRelativeTarget) return "";
-
-  const shouldUseBannerDirectory =
-    bannerName &&
-    !normalizedRelativeTarget.includes("/") &&
-    normalizedRelativeTarget === bannerName;
-
-  return `${IMAGE_BASE_URL}/${
-    shouldUseBannerDirectory
-      ? `${BANNER_DIRECTORY}/${normalizedRelativeTarget}`
-      : normalizedRelativeTarget
-  }`;
-};
-
-const normalizeBanner = (banner) => {
-  const value = extractImageTarget(banner);
-  if (!value) return "";
-
-  const target = value.split("|")[0]?.trim() || "";
-
-  return normalizeImageSrc(target, { bannerName: target });
-};
+const extractImageTarget = extractArticleImageTarget;
 
 const formatImageWidth = (raw = "") => {
   const value = String(raw || "").trim();

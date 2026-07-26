@@ -299,6 +299,8 @@
 
                 <!-- 使用 img 才能准确监听加载状态 -->
                 <img
+                  :key="getBannerKey(item)"
+                  :ref="(element) => setBannerImageRef(item, element)"
                   :src="resolveBannerUrl(item.banner)"
                   :alt="item.title"
                   loading="lazy"
@@ -926,10 +928,11 @@ const resolveBannerUrl = (banner) => {
 
 const loadedBanners = reactive(new Set());
 const failedBanners = reactive(new Set());
+const bannerImages = new Map();
 
 function getBannerKey(item) {
-  // 优先使用文章唯一标识，最后才使用 banner 地址
-  return String(item.id ?? item.slug ?? item.path ?? item.banner);
+  // URL 变化时必须使用新的加载状态，不能沿用旧地址的失败记录。
+  return String(item.banner ?? item.id ?? item.slug ?? item.path ?? "");
 }
 
 function hasBanner(item) {
@@ -943,7 +946,10 @@ function isBannerLoaded(item) {
 }
 
 function handleBannerLoad(item) {
-  loadedBanners.add(getBannerKey(item));
+  const key = getBannerKey(item);
+
+  failedBanners.delete(key);
+  loadedBanners.add(key);
 }
 
 function handleBannerError(item) {
@@ -951,6 +957,30 @@ function handleBannerError(item) {
 
   loadedBanners.delete(key);
   failedBanners.add(key);
+}
+
+function syncBannerImageState(item, image) {
+  if (!image?.complete) return;
+
+  if (image.naturalWidth > 0) {
+    handleBannerLoad(item);
+  } else {
+    handleBannerError(item);
+  }
+}
+
+function setBannerImageRef(item, element) {
+  const key = getBannerKey(item);
+
+  if (!element) {
+    bannerImages.delete(key);
+    return;
+  }
+
+  bannerImages.set(key, element);
+
+  // SSG 页面 hydration 前图片可能已经完成加载，此时不会再次触发 load。
+  syncBannerImageState(item, element);
 }
 
 const estimateReadingTime = (length = 0) => {

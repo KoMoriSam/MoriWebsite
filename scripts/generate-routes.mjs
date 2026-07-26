@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import fm from "front-matter";
 import fs from "fs";
 import path from "path";
+import { createArticleAssetResolver } from "../src/utils/article-assets.js";
 
 dotenv.config({
   path: ".env.production",
@@ -20,6 +21,7 @@ if (!NOVEL_API_URL) {
 
 const BASE = API_URL.replace(/\/+$/, "");
 const NOVEL_BASE = NOVEL_API_URL.replace(/\/+$/, "");
+const { normalizeBanner } = createArticleAssetResolver(BASE);
 
 console.log("Article API:", BASE);
 
@@ -66,13 +68,17 @@ for (const article of articles) {
 
   const rawContent = await mdRes.text();
   const { attributes, body: content } = fm(rawContent);
+  const articleData = {
+    ...attributes,
+    ...article,
+  };
 
   generatedArticles.push({
     id: article.id,
     path: `/blog/${article.id}`,
     article: {
-      ...attributes,
-      ...article,
+      ...articleData,
+      banner: normalizeBanner(articleData.banner),
     },
     content,
   });

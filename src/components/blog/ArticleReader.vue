@@ -20,7 +20,7 @@
         class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80 lg:rounded-3xl"
       >
         <!-- Banner -->
-        <template v-if="article?.banner && !bannerFailed">
+        <template v-if="bannerUrl && !bannerFailed">
           <!-- Skeleton -->
           <div
             v-if="!bannerLoaded"
@@ -29,7 +29,9 @@
 
           <!-- 图片 -->
           <img
-            :src="resolveBannerUrl(article.banner)"
+            :key="bannerUrl"
+            ref="bannerImage"
+            :src="bannerUrl"
             :alt="article.title"
             loading="eager"
             decoding="async"
@@ -79,7 +81,7 @@
         <!-- 头图内容 -->
         <div
           class="relative flex min-h-72 flex-col justify-end p-5 sm:min-h-80 sm:p-8"
-          :class="article?.banner ? 'text-white' : 'text-base-content'"
+          :class="hasVisibleBanner ? 'text-white' : 'text-base-content'"
         >
           <!-- 标签 -->
           <div
@@ -90,7 +92,7 @@
               <button
                 class="btn btn-sm btn-circle"
                 :class="
-                  article?.banner
+                  hasVisibleBanner
                     ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
                     : 'btn-primary btn-soft'
                 "
@@ -106,7 +108,7 @@
               data-pagefind-filter="tag"
               class="badge badge-sm"
               :class="
-                article?.banner
+                hasVisibleBanner
                   ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
                   : 'badge-primary badge-soft'
               "
@@ -121,7 +123,7 @@
             data-pagefind-meta="title"
             data-pagefind-weight="10"
             class="max-w-4xl text-3xl leading-tight font-black font-serif tracking-tight sm:text-4xl lg:text-5xl text-balance"
-            :class="article?.banner ? 'drop-shadow-sm' : ''"
+            :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
           >
             {{ article?.title }}
           </h1>
@@ -173,7 +175,7 @@
               :title="alias"
               class="mr-2 mb-2 inline-flex max-w-full items-center justify-start overflow-x-auto whitespace-nowrap text-left font-bold badge scrollbar-none px-2"
               :class="
-                article?.banner
+                hasVisibleBanner
                   ? 'border-white/15 bg-white/10 text-white/85'
                   : 'border-base-300 bg-base-100 text-base-content/75'
               "
@@ -185,7 +187,9 @@
           <!-- 元数据 -->
           <div
             class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-            :class="article?.banner ? 'text-white/70' : 'text-base-content/55'"
+            :class="
+              hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'
+            "
           >
             <time v-if="article?.date" class="inline-flex items-center gap-1.5">
               <i class="ri-calendar-line"></i>
@@ -239,7 +243,7 @@
     </div>
 
     <template #floating>
-      <aside class="max-lg:dock">
+      <aside class="max-lg:dock shadow-sm">
         <FloatingActionButton :actions="fabActions" main-icon="ri-menu-line" />
       </aside>
     </template>
@@ -272,7 +276,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import Giscus from "@giscus/vue";
 
@@ -322,15 +326,16 @@ const { giscusTheme } = storeToRefs(themeStore);
 
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
 
-const resolveBannerUrl = (banner) => {
-  if (!banner) return "";
-  return banner;
-};
-
+const bannerUrl = computed(() => String(props.article?.banner || "").trim());
+const bannerImage = ref(null);
 const bannerLoaded = ref(false);
 const bannerFailed = ref(false);
+const hasVisibleBanner = computed(
+  () => Boolean(bannerUrl.value) && !bannerFailed.value,
+);
 
 function handleBannerLoad() {
+  bannerFailed.value = false;
   bannerLoaded.value = true;
 }
 
@@ -338,6 +343,30 @@ function handleBannerError() {
   bannerFailed.value = true;
   bannerLoaded.value = false;
 }
+
+function syncBannerImageState() {
+  const image = bannerImage.value;
+
+  if (!image?.complete) return;
+
+  if (image.naturalWidth > 0) {
+    handleBannerLoad();
+  } else {
+    handleBannerError();
+  }
+}
+
+watch(
+  bannerUrl,
+  async () => {
+    bannerLoaded.value = false;
+    bannerFailed.value = false;
+
+    await nextTick();
+    syncBannerImageState();
+  },
+  { immediate: true, flush: "post" },
+);
 
 const estimateReadingTime = (length) => {
   const characterCount = Number(length);
