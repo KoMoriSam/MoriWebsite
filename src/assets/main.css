@@ -183,6 +183,30 @@
     @apply indent-0 font-serif font-semibold text-right italic;
   }
 
+  #markdown-content.prose ul {
+    @apply list-disc;
+  }
+
+  #markdown-content.prose ul ul {
+    @apply list-[circle];
+  }
+
+  #markdown-content.prose ul ul ul {
+    @apply list-[square];
+  }
+
+  #markdown-content.prose ol {
+    @apply list-decimal;
+  }
+
+  #markdown-content.prose ol ol {
+    @apply list-[lower-alpha];
+  }
+
+  #markdown-content.prose ol ol ol {
+    @apply list-[lower-roman];
+  }
+
   #markdown-content.prose ul,
   #markdown-content.prose ol {
     @apply ps-0;
@@ -193,6 +217,10 @@
     ms-(--para-text-indent)
     md:ms-[calc(var(--para-text-indent)*1.5)]
     ps-0 indent-0;
+  }
+
+  #markdown-content.prose li > :is(ul, ol) li {
+    @apply ms-[calc(var(--para-text-indent)*0.5)];
   }
 
   #markdown-content.prose li p {
@@ -525,7 +553,9 @@
 
   /* 引用与强调文本 */
   #markdown-content.prose blockquote {
-    @apply [quotes:none] font-serif ps-2 lg:ps-4;
+    @apply [quotes:none] font-serif font-extralight
+    ps-[calc(var(--para-text-indent)*0.25)]
+    md:ps-[calc(var(--para-text-indent)*0.5)];
   }
 
   #markdown-content.prose em {
@@ -534,7 +564,7 @@
 
   #markdown-content.prose blockquote p,
   #markdown-content.prose .footnotes p {
-    @apply indent-0 text-justify text-pretty
+    @apply indent-0 text-justify text-pretty not-italic
     text-[calc(var(--para-font-size)*0.875)];
   }
 
