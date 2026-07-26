@@ -19,7 +19,7 @@ const SITE_URL = "https://komori.cc";
 const SITE_NAME = "KoMoriSam";
 const DEFAULT_TITLE = "KoMoriSam | 个人博客、小说与独立开发";
 const DEFAULT_DESCRIPTION =
-  "KoMoriSam 的个人网站，分享技术探索、随笔与读书笔记，也提供原创小说《向远方》和实用小工具。";
+  "KoMoriSam 的个人网站，分享技术探索、随笔与读书笔记，平常也写点小说，提供一些实用小工具。";
 const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
 const KEYWORDS = "KoMoriSam,个人博客,技术博客,独立开发,原创小说,向远方";
 
