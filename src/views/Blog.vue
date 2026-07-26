@@ -4,7 +4,6 @@
       v-if="currentComponent === 'ArticleList'"
       :articles="articles"
       :loading="loadingList"
-      @select="goToDetail"
     />
     <ArticleDetail
       v-else
@@ -119,12 +118,6 @@ const loadArticles = async () => {
   } finally {
     loadingList.value = false;
   }
-};
-
-const goToDetail = (id) => {
-  currentComponent.value = "ArticleDetail";
-  router.push({ name: "blog-article", params: { articleId: id } });
-  scrollToTop();
 };
 
 const goToList = () => {

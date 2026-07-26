@@ -19,6 +19,7 @@ export const generatedArticles = Array.isArray(ssgData.articles)
 
 export const generatedArticleList = generatedArticles.map((entry) => ({
   ...entry.article,
+  routePath: entry.path,
   content: entry.content,
   frontmatter: entry.article,
 }));

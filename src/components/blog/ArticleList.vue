@@ -278,15 +278,11 @@
           v-if="filteredArticles.length"
           class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:gap-6"
         >
-          <article
+          <RouterLink
             v-for="item in filteredArticles"
             :key="getArticleKey(item)"
+            :to="getArticleRoute(item)"
             class="group card card-border min-w-0 cursor-pointer overflow-hidden bg-base-100 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            tabindex="0"
-            role="button"
-            @click="$emit('select', item.id)"
-            @keydown.enter="$emit('select', item.id)"
-            @keydown.space.prevent="$emit('select', item.id)"
           >
             <!-- 封面 -->
             <div
@@ -469,7 +465,7 @@
                 </span>
               </div>
             </div>
-          </article>
+          </RouterLink>
         </div>
 
         <!-- 无匹配结果 -->
@@ -546,8 +542,6 @@ const props = defineProps({
     default: false,
   },
 });
-
-defineEmits(["select"]);
 
 const {
   keyword,
@@ -973,5 +967,14 @@ const getArticleKey = (article) => {
   return String(
     article.id ?? article.slug ?? article.path ?? article.title ?? "",
   );
+};
+
+const getArticleRoute = (article) => {
+  const generatedPath = String(article?.routePath || "").trim();
+
+  if (generatedPath) return generatedPath;
+
+  const articleId = String(article?.id || "").trim();
+  return articleId ? `/blog/${encodeURIComponent(articleId)}` : "/blog";
 };
 </script>
