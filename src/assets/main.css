@@ -183,9 +183,16 @@
     @apply indent-0 font-serif font-semibold text-right italic;
   }
 
+  #markdown-content.prose ul,
+  #markdown-content.prose ol {
+    @apply ps-0;
+  }
+
   #markdown-content.prose li {
     @apply text-(length:--para-font-size) tracking-(--para-letter-spacing)
-    ps-[calc(var(--para-text-indent)*0.8)] indent-[calc(var(--para-text-indent)*-0.65)];
+    ms-(--para-text-indent)
+    md:ms-[calc(var(--para-text-indent)*1.5)]
+    ps-0 indent-0;
   }
 
   #markdown-content.prose li p {
@@ -604,11 +611,13 @@
   }
 
   #markdown-content.prose li.task-list-item {
-    @apply ps-[calc(var(--para-text-indent)*0.75)] indent-[calc(var(--para-text-indent)*-0.7)];
+    @apply ms-[calc(var(--para-text-indent)*0.75)]
+    md:ms-[calc(var(--para-text-indent)*1.25)]
+    indent-[calc(var(--para-text-indent)*-0.625)];
   }
 
   #markdown-content.prose input.task-list-item-checkbox {
-    @apply checkbox checkbox-primary;
+    @apply checkbox checkbox-primary checkbox-sm mb-1;
   }
 
   /* KaTeX 数学公式 */
