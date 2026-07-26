@@ -337,7 +337,6 @@ const fabActions = computed(() => [
       scrollToTop();
       router.push({
         name: "novel",
-        params: { volumeSlug: undefined, chapterSlug: undefined },
       });
     },
   },
