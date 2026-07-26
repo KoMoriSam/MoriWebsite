@@ -6,7 +6,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import legacy from "@vitejs/plugin-legacy";
 import tailwindcss from "@tailwindcss/vite";
 
-import { copyFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 // https://vite.dev/config/
@@ -35,7 +35,14 @@ export default defineConfig({
         }
 
         try {
-          copyFileSync(indexPath, notFoundPath);
+          const notFoundHtml = readFileSync(indexPath, "utf8").replace(
+            /<title>.*?<\/title>/s,
+            `<title>页面未找到 | KoMoriSam</title>
+    <meta name="description" content="未找到请求的页面。" />
+    <meta name="robots" content="noindex, nofollow" />`,
+          );
+
+          writeFileSync(notFoundPath, notFoundHtml, "utf8");
           console.log("404.html 已成功创建！");
         } catch (error) {
           console.error("创建 404.html 时出错：", error);
