@@ -8,7 +8,11 @@
         <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
       </a>
       <div class="dropdown">
-        <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <div
+          tabindex="0"
+          role="button"
+          class="btn btn-ghost max-md:btn-square lg:hidden"
+        >
           <i class="fill-current ri-menu-line text-base lg:text-xl"></i>
         </div>
         <ul
@@ -35,6 +39,7 @@
         </div>
       </nav>
       <nav class="navbar-end">
+        <GlobalSearch />
         <ThemeController />
       </nav>
     </client-only>
@@ -46,5 +51,6 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 import NavLinks from "@/components/layout/NavLinks.vue";
+import GlobalSearch from "@/components/layout/GlobalSearch.vue";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
 </script>

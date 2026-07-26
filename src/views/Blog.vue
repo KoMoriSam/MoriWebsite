@@ -22,6 +22,7 @@
 import { ref, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
+import { fetchBlogSearchArticles } from "@/services/search-content";
 
 import { useScrollTo } from "@/composables/useScrollTo";
 import { usePosTracker } from "@/composables/usePosTracker";
@@ -33,7 +34,7 @@ const route = useRoute();
 const router = useRouter();
 
 const { scrollToTop } = useScrollTo();
-const { fetchArticleList, fetchArticleContent } = useArticleApi();
+const { fetchArticleContent } = useArticleApi();
 
 // 静态文章路由在构建时把文章数据放进 route.meta。
 // 服务端渲染和浏览器 hydration 使用完全相同的初始数据，避免 mismatch。
@@ -47,8 +48,11 @@ const currentComponent = ref(
   initialArticleId ? "ArticleDetail" : "ArticleList",
 );
 
-const articles = ref([]);
-const loadingList = ref(false);
+const initialArticles = Array.isArray(route.meta.articles)
+  ? route.meta.articles
+  : [];
+const articles = ref(initialArticles);
+const loadingList = ref(initialArticles.length === 0);
 
 const currentArticle = ref(initialArticle);
 const articleContent = ref(initialContent);
@@ -109,7 +113,7 @@ const loadArticles = async () => {
   loadingList.value = true;
 
   try {
-    articles.value = await fetchArticleList();
+    articles.value = await fetchBlogSearchArticles();
   } catch (err) {
     console.error("加载文章列表失败:", err);
   } finally {
@@ -119,13 +123,13 @@ const loadArticles = async () => {
 
 const goToDetail = (id) => {
   currentComponent.value = "ArticleDetail";
-  router.push({ name: "blog", params: { articleId: id } });
+  router.push({ name: "blog-article", params: { articleId: id } });
   scrollToTop();
 };
 
 const goToList = () => {
   currentComponent.value = "ArticleList";
-  router.push({ name: "blog", params: { articleId: undefined } });
+  router.push({ name: "blog" });
   scrollToTop();
 };
 

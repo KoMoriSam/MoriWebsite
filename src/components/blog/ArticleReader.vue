@@ -17,7 +17,7 @@
       <!-- 文章正文：保留头图、标签、别名和阅读时长 -->
       <!-- 文章头图 -->
       <header
-        class="relative min-h-72 overflow-hidden rounded-2xl bg-base-200 shadow-lg sm:min-h-80 lg:rounded-3xl"
+        class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80 lg:rounded-3xl"
       >
         <!-- Banner -->
         <template v-if="article?.banner && !bannerFailed">
@@ -102,6 +102,8 @@
             <span
               v-for="tag in article.tags"
               :key="tag"
+              data-pagefind-body
+              data-pagefind-filter="tag"
               class="badge badge-sm"
               :class="
                 article?.banner
@@ -115,11 +117,50 @@
 
           <!-- 标题 -->
           <h1
+            data-pagefind-body
+            data-pagefind-meta="title"
+            data-pagefind-weight="10"
             class="max-w-4xl text-3xl leading-tight font-black font-serif tracking-tight sm:text-4xl lg:text-5xl text-balance"
             :class="article?.banner ? 'drop-shadow-sm' : ''"
           >
             {{ article?.title }}
           </h1>
+
+          <p
+            v-if="article?.summary"
+            data-pagefind-body
+            data-pagefind-meta="summary"
+            data-pagefind-weight="2"
+            class="sr-only"
+          >
+            {{ article.summary }}
+          </p>
+
+          <span
+            v-if="articleTagsText"
+            data-pagefind-meta="tags"
+            class="sr-only"
+          >
+            {{ articleTagsText }}
+          </span>
+
+          <span
+            v-if="publicationYear"
+            data-pagefind-filter="year"
+            class="sr-only"
+          >
+            {{ publicationYear }}
+          </span>
+
+          <time
+            v-if="publicationDate"
+            :datetime="publicationDate"
+            data-pagefind-meta="date"
+            data-pagefind-sort="date"
+            class="sr-only"
+          >
+            {{ publicationDate }}
+          </time>
 
           <!-- 别名或副标题 -->
           <p
@@ -240,6 +281,7 @@ import { useDateFormat } from "@vueuse/core";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
+import { normalizeArticleDate } from "@/composables/useArticleFilter";
 import CONFIG from "@/constants/config";
 
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
@@ -323,6 +365,23 @@ const aliasList = computed(() => {
   }
 
   return [];
+});
+
+const articleTagsText = computed(() => {
+  const tags = Array.isArray(props.article?.tags) ? props.article.tags : [];
+
+  return tags
+    .map((tag) => String(tag).trim())
+    .filter(Boolean)
+    .join(" · ");
+});
+
+const publicationDate = computed(() => {
+  return normalizeArticleDate(props.article?.date);
+});
+
+const publicationYear = computed(() => {
+  return publicationDate.value.slice(0, 4);
 });
 
 const handleRefresh = () => {
