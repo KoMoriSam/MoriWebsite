@@ -48,7 +48,7 @@
                     v-for="type in selectedTypes"
                     :key="`type-${type}`"
                     type="button"
-                    class="badge badge-info badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
+                    class="badge badge-info pl-2.5 pr-1.5"
                     :aria-label="`移除类型 ${getTypeLabel(type)}`"
                     @click="removeSelectedType(type)"
                   >
@@ -60,7 +60,7 @@
                     v-for="tag in selectedTags"
                     :key="`tag-${tag}`"
                     type="button"
-                    class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
+                    class="badge badge-primary badge-soft pl-2.5 pr-1.5"
                     :aria-label="`移除筛选 ${getSelectedTagLabel(tag)}`"
                     @click="removeSelectedTag(tag)"
                   >
@@ -72,7 +72,7 @@
                     v-for="year in selectedYears"
                     :key="`year-${year}`"
                     type="button"
-                    class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
+                    class="badge badge-secondary badge-soft pl-2.5 pr-1.5"
                     :aria-label="`移除年份 ${year}`"
                     @click="removeSelectedYear(year)"
                   >
