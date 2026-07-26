@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novelStore";
+import ssgData from "@/router/ssg-data";
 
 import { useToast } from "@/composables/useToast";
 import { usePosTracker } from "@/composables/usePosTracker";
@@ -25,6 +26,13 @@ export function useChapterSetup() {
 
   const novelStore = useNovelStore();
 
+  if (
+    ssgData.novelChapters &&
+    typeof ssgData.novelChapters === "object"
+  ) {
+    novelStore.hydrateChapters(ssgData.novelChapters);
+  }
+
   const { currentChapter, currentChapterUuid, currentChapterPage } =
     storeToRefs(novelStore);
   let disposePosTracker = null;
@@ -40,7 +48,7 @@ export function useChapterSetup() {
     query.p = page;
 
     router.replace({
-      name: "novel",
+      name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,

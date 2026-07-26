@@ -193,12 +193,7 @@ export function useArticleApi() {
     return flat.map(normalizeArticleMeta);
   };
 
-  /**
-   * 获取单篇文章的 Markdown 内容（已剥离 frontmatter）
-   * @param {string} path - 文章文件路径（扁平结构下即文件名，如 "2024-07-07.md"）
-   * @returns {Promise<string>}
-   */
-  const fetchArticleContent = async (path) => {
+  const fetchArticleDocument = async (path) => {
     const res = await fetch(`${CONTENT_BASE_URL}/${path}`);
 
     if (!res.ok) {
@@ -217,13 +212,27 @@ export function useArticleApi() {
       bannerName,
     });
 
-    return normalizeMarkdownImages(normalizedObsidian, {
-      bannerName,
-    });
+    return {
+      attributes: parsed?.attributes || {},
+      content: normalizeMarkdownImages(normalizedObsidian, {
+        bannerName,
+      }),
+    };
+  };
+
+  /**
+   * 获取单篇文章的 Markdown 内容（已剥离 frontmatter）
+   * @param {string} path - 文章文件路径（扁平结构下即文件名，如 "2024-07-07.md"）
+   * @returns {Promise<string>}
+   */
+  const fetchArticleContent = async (path) => {
+    const document = await fetchArticleDocument(path);
+    return document.content;
   };
 
   return {
     fetchArticleList,
+    fetchArticleDocument,
     fetchArticleContent,
   };
 }

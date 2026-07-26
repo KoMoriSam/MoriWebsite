@@ -11,6 +11,5 @@ mock
 *.old*
 .github
 
-# ViteSSG article build outputs
-src/router/article-data.generated.js
-src/router/article-routes.generated.js
+# ViteSSG build output
+src/router/ssg-data.generated.js

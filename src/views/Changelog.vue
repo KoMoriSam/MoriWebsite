@@ -1,7 +1,7 @@
 <template>
   <main class="my-12 mx-6 md:mx-12">
     <article class="mx-auto prose">
-      <h1>
+      <h1 class="font-serif">
         更新日志
         <router-link class="btn btn-xs no-underline mb-px" to="/">
           返回主页
@@ -16,6 +16,7 @@
           class="timeline timeline-snap-icon timeline-compact timeline-vertical p-0"
         >
           <li
+            :id="`version-${version}`"
             class="m-0! p-0!"
             v-for="(item, version, index) in log"
             :key="version"
@@ -96,11 +97,21 @@
 <script setup>
 import { useChangelogStore } from "@/stores/changelogStore";
 import { onMounted, computed } from "vue";
+import ssgData from "@/router/ssg-data";
 
 import Loading from "@/components/base/Loading.vue";
 import ToTop from "@/components/base/ToTop.vue";
 
 const store = useChangelogStore();
+
+if (
+  Object.keys(store.data).length === 0 &&
+  ssgData.changelog &&
+  typeof ssgData.changelog === "object"
+) {
+  store.hydrateChangelog(ssgData.changelog);
+}
+
 const log = computed(() => store.data);
 const isLoading = computed(() => store.loading);
 const error = computed(() => store.error);

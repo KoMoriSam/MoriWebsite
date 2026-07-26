@@ -25,6 +25,14 @@ export const useChangelogStore = defineStore("changelog", () => {
     }
   };
 
+  const hydrateChangelog = (value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return;
+
+    data.value = value;
+    error.value = null;
+    loading.value = false;
+  };
+
   // 获取特定版本的信息
   const getVersionInfo = (version) => {
     return data.value[version];
@@ -52,6 +60,7 @@ export const useChangelogStore = defineStore("changelog", () => {
     loading,
     error,
     fetchChangelog,
+    hydrateChangelog,
     getVersionInfo,
     getLatestVersion,
   };

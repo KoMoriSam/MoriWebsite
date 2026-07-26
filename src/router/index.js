@@ -7,7 +7,7 @@ NProgress.configure({
   minimum: 0.3, // 初始化时的最小百分比
 });
 
-import articleRoutes from "./ssg-routes";
+import { articleRoutes, generatedArticleList } from "./ssg-data";
 
 import {
   createRouter,
@@ -28,14 +28,18 @@ export const routes = [
       name: "home",
     }),
   },
-  // 生产构建时由可选的 article-data.generated.js 提供具体文章路径。
-  // 开发环境该数组为空，不依赖任何 generated 文件。
+  // 生产构建时由统一的 SSG 数据快照提供具体文章路径。
+  // 开发环境该数组为空，不依赖 generated 文件。
   ...articleRoutes,
   {
     path: "/blog",
     name: "blog",
     component: () => import("@/views/Blog.vue"),
-    meta: { title: "博客 | KoMoriSam", navName: "blog" },
+    meta: {
+      title: "博客 | KoMoriSam",
+      navName: "blog",
+      articles: generatedArticleList,
+    },
   },
   {
     path: "/changelog",
@@ -44,14 +48,20 @@ export const routes = [
     meta: { title: "更新日志 | KoMoriSam" },
   },
   {
-    path: "/blog/:articleId?",
-    name: "blog",
+    path: "/blog/:articleId",
+    name: "blog-article",
     component: () => import("@/views/Blog.vue"),
     meta: { title: "博客 | KoMoriSam", navName: "blog" },
   },
   {
-    path: "/novel/:volumeSlug?/:chapterSlug?",
+    path: "/novel",
     name: "novel",
+    component: () => import("@/views/Novel.vue"),
+    meta: { title: "向远方 | KoMoriSam", navName: "novel" },
+  },
+  {
+    path: "/novel/:volumeSlug/:chapterSlug?",
+    name: "novel-reader",
     component: () => import("@/views/Novel.vue"),
     meta: { title: "向远方 | KoMoriSam", navName: "novel" },
   },
@@ -122,7 +132,7 @@ router.beforeEach((to, from, next) => {
     const nextQuery = { ...to.query };
     delete nextQuery.article;
     next({
-      name: "blog",
+      name: "blog-article",
       params: { articleId: legacyArticleId },
       query: nextQuery,
       hash: to.hash,

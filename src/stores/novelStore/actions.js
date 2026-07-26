@@ -111,6 +111,14 @@ export const useNovelActions = (state, getters) => {
     buildPermalinkMaps();
   };
 
+  const hydrateChapters = (data) => {
+    if (!data || typeof data !== "object" || Array.isArray(data)) return;
+
+    state.chapters.value = data;
+    flatList(data);
+    state.isLoadingList.value = false;
+  };
+
   const resolveChapterUuidByPermalink = (volumeSlug, chapterSlug) => {
     const key = `${String(volumeSlug || "")}/${String(chapterSlug || "")}`;
     return (
@@ -335,6 +343,7 @@ export const useNovelActions = (state, getters) => {
   return {
     // 章节操作
     setChapters,
+    hydrateChapters,
     refreshChapters,
     refreshReadChapters,
 

@@ -56,7 +56,7 @@ export function useChapters() {
     query.p = targetPage;
 
     router.push({
-      name: "novel",
+      name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
@@ -160,7 +160,7 @@ export function useChapters() {
     query.p = index;
 
     router.push({
-      name: "novel",
+      name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
         chapterSlug: permalink.chapterSlug,
