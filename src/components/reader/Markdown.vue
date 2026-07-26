@@ -90,7 +90,9 @@ const options = {
 
 // 引入常用插件
 import MarkdownItAbbr from "markdown-it-abbr";
+import MarkdownItAttrs from "markdown-it-attrs";
 import { full as emojiPlugin } from "markdown-it-emoji";
+import MarkdownItRuby from "markdown-it-ruby";
 import MarkdownItSub from "markdown-it-sub";
 import MarkdownItSup from "markdown-it-sup";
 import MarkdownItTaskLists from "markdown-it-task-lists";
@@ -224,6 +226,12 @@ const loadMarkdownFeaturePlugins = async (content = "") => {
   }
 };
 
+const rubyPlugin = (md) => {
+  MarkdownItRuby(md, {
+    rp: ["（", "）"],
+  });
+};
+
 const plugins = computed(() => [
   paragraphPlugin(
     props.headerData.uuid,
@@ -231,6 +239,7 @@ const plugins = computed(() => [
     props.headerData.sourceType,
   ),
   MarkdownItAbbr,
+  MarkdownItAttrs,
   highlightLazyPlugin,
   anchorPlugin,
   alertPlugin,
@@ -240,6 +249,7 @@ const plugins = computed(() => [
   codePlugin,
   emojiPlugin,
   footnotePlugin,
+  rubyPlugin,
   MarkdownItSub,
   MarkdownItSup,
   MarkdownItTaskLists,
