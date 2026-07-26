@@ -1,6 +1,6 @@
 <template>
   <div class="dropdown dropdown-end">
-    <div tabindex="0" role="button" class="btn btn-ghost m-1">
+    <div tabindex="0" role="button" class="btn btn-ghost max-md:btn-square m-1">
       <i :class="currentTheme.icon" class="text-base lg:text-xl"></i>
       <span class="hidden lg:block">主题</span>
       <i class="ri-arrow-down-s-line hidden lg:block"></i>
