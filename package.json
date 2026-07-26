@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "prebuild": "node scripts/generate-routes.mjs",
-    "build": "vite-ssg build",
+    "build": "vite-ssg build && pagefind --site dist",
     "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/MoriWebsite.git",
     "preview": "vite preview --host 0.0.0.0",
     "push": "git push origin main:cl-pages --force"
@@ -58,6 +58,7 @@
     "daisyui": "^5.6.18",
     "dotenv": "^17.4.2",
     "gh-pages": "^6.3.0",
+    "pagefind": "1.5.2",
     "vite": "^6.2.5",
     "vite-plugin-vue-devtools": "^7.7.2"
   }
