@@ -1,104 +1,104 @@
 <p align="center">
   <a href="https://komori.cc/">
-    <img src="https://komori.cc/favicon.webp" alt="Logo" width="80" height="80">
+    <img src="https://komori.cc/favicon.webp" alt="Logo KoMoriSam" width="80" height="80">
   </a>
 </p>
 
-<h1 align="center">KoMoriSam</h1>
+<h1 align="center">MoriWebsite</h1>
 
 <p align="center">
-  Un site personnel construit avec Vite, Vue 3 et daisyUI, réunissant une page d'accueil, un flux d'articles, un lecteur de roman, un système de commentaires, un journal des modifications et des pages de profil.
+  Un jardin numérique personnel construit avec Vue 3, Vite SSG, Tailwind CSS et daisyUI, réunissant blog, lecteur de roman, recherche globale, commentaires et outils en ligne.
 </p>
 
 <p align="center">
   <a href="https://komori.cc/">Site en ligne</a>
   ·
-  <a href="https://github.com/KoMoriSam/komorisam.github.io">Code source</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite">Code source</a>
   ·
-  <a href="https://github.com/KoMoriSam/komorisam.github.io/issues">Signaler un problème</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Signaler un problème</a>
 </p>
 
 <p align="center">
-  Dernière version : <strong>1.13.0</strong>
+  Version actuelle : <strong>1.14.0</strong>
   ·
-  <a href="https://komori.cc/changelog">Voir le journal des modifications</a>
+  <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
 
 ---
 
 ## Vue d'ensemble
 
-Ce dépôt n'est plus une simple page de blog personnelle. Il s'agit désormais d'une application orientée contenu, centrée sur l'expérience de lecture et la publication de textes longs.
+MoriWebsite est l'interface du site personnel de KoMoriSam. Le projet est conçu pour la publication et la lecture de textes longs. La génération de site statique (SSG) fournit des pages d'articles indexables et des métadonnées SEO complètes.
 
-Sections actuellement disponibles :
+Le site comprend actuellement :
 
-- page d'accueil avec salutation et informations serveur
-- liste d'articles et lecteur d'article
-- catalogue de roman et lecteur basés sur Markdown
-- commentaires Giscus, y compris au niveau du paragraphe
-- pages à propos, contact et journal des modifications
-- améliorations de typographie et de lecture pour ordinateur et mobile
+- une page d'accueil responsive avec profil, arrière-plan dynamique et liens de contact
+- un blog filtrable par mot-clé, étiquette et année
+- le roman original _Vers l'horizon_, alimenté par Markdown, et son lecteur dédié
+- une recherche globale Pagefind couvrant articles, chapitres et journal des modifications
+- des commentaires Giscus au niveau des articles, chapitres et paragraphes
+- des outils en ligne, dont l'état d'un serveur Minecraft
+- journal des modifications, thèmes, progression de lecture et préférences locales
 
-Routes actuelles :
+Routes de production :
 
-- /
-- /blog
-- /novel
-- /about
-- /contact
-- /changelog
+```text
+/
+/blog
+/blog/:articleId
+/novel
+/novel/:volumeSlug/:chapterSlug?
+/tools/:toolSlug?
+/changelog
+```
 
-En développement, une route supplémentaire /test est disponible pour tester les composants et les interactions.
+En développement, `/test` permet également de tester les composants et interactions. Les URL inconnues utilisent la vue 404 de l'application, et le build génère un fichier `404.html` adapté à l'hébergement statique.
 
 ## Stack technique
 
-- Vite 6
-- Vue 3
-- Vue Router
-- Pinia
-- Tailwind CSS 4
-- daisyUI 5
+- Vue 3, Vue Router, Pinia
+- Vite 6, vite-ssg
+- Tailwind CSS 4, daisyUI 5
+- Pagefind
+- Unhead
 - VueUse
-- vue-markdown-render
+- Markdown-it, vue-markdown-render
 - Giscus
 - highlight.js
 
 ## Fonctionnalités
 
-### 1. Système d'articles
+### Contenu et lecture
 
-- vues séparées pour la liste et le détail
-- rendu d'articles en Markdown
-- prise en charge des images au format Obsidian et normalisation des bannières
-- commentaires au niveau de l'article et du paragraphe
+- liste et détail des articles avec filtrage combiné par mot-clé, étiquette et année
+- volumes, navigation entre chapitres, position de lecture et réglages persistants
+- coloration du code Markdown, notes de bas de page, tâches, formules, encadrés et format de dialogue personnalisé
+- références d'images de style Obsidian, bannières et chargement différé
+- typographie, barres latérales et progression adaptées aux ordinateurs et mobiles
 
-Le contenu des articles provient actuellement de :
+### Recherche et découverte
 
-- mock/article
-- mock/article/generate-index.mjs
+- ouverture de la recherche globale avec `Ctrl/Cmd + K`
+- index statique créé par Pagefind après le build de production
+- filtres combinables par type de contenu, étiquette ou volume, et année
+- recherche plein texte et filtres propres à la liste du blog
+- état de recherche synchronisé avec l'URL pour le partage et la navigation
 
-### 2. Système de lecture de roman
+### Commentaires et état local
 
-- catalogue et lecteur séparés
-- chargement des chapitres via index et fichiers Markdown
-- persistance des réglages du lecteur et de l'état de lecture
-- améliorations dédiées à la typographie, au défilement et à la lecture longue
+- commentaires Giscus pour les articles et chapitres
+- discussions attachées à des paragraphes précis
+- API facultative de comptage groupé des commentaires de paragraphe
+- thème, réglages et position de lecture conservés dans le navigateur
+- migration et nettoyage intégrés des anciens formats de stockage local
 
-Le contenu des romans se trouve actuellement dans :
+### SSG, SEO et hébergement statique
 
-- mock/novel
-
-### 3. Commentaires et interactions
-
-- Giscus est utilisé comme backend de commentaires
-- des thèmes Giscus personnalisés suivent les thèmes du site
-- les commentaires de paragraphe peuvent récupérer le texte courant pour une discussion plus précise
-
-### 4. Données externes et fonctions annexes
-
-- bloc d'information serveur sur la page d'accueil
-- encapsulation de l'API de citation quotidienne conservée dans le projet
-- page de changelog alimentée par public/changelog.json
+- récupération des articles, du catalogue du roman et du journal avant le build pour créer un instantané SSG commun
+- routes statiques pour les articles avec des données identiques au rendu serveur et à l'hydratation
+- liens canonical, métadonnées Open Graph, Twitter Card et JSON-LD générés avec Unhead
+- index Pagefind et page 404 pour hébergement statique générés après le rendu
+- fichier `wrangler.jsonc` configuré pour servir `dist/` comme ressources statiques Cloudflare
 
 ## Démarrage rapide
 
@@ -114,13 +114,17 @@ pnpm install
 pnpm dev
 ```
 
+Le serveur de développement écoute par défaut sur toutes les interfaces réseau.
+
 ### Construire pour la production
 
 ```bash
 pnpm build
 ```
 
-### Prévisualiser la build
+Le build crée l'instantané SSG, prérend le site et génère l'index Pagefind dans `dist/`. Les sources des articles et du roman doivent être accessibles pendant cette opération.
+
+### Prévisualiser le build
 
 ```bash
 pnpm preview
@@ -128,74 +132,76 @@ pnpm preview
 
 ## Variables d'environnement
 
-Le projet utilise actuellement les variables Vite suivantes :
+Les fichiers `.env.development` et `.env.production` fournissent les sources et services propres à chaque environnement :
 
 ```bash
 VITE_BLOG_RAW=
 VITE_NOVEL_RAW=
 VITE_SERVER_ADDRESS=
-MXNZP_APP_ID=
-MXNZP_APP_SECRET=
+VITE_RANDOM_HERO_API=
+VITE_COMMENT_COUNTS_API=
 VITE_GISCUS_CSS_RAW=
 ```
 
-Utilisation :
+| Variable                  | Utilisation                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| `VITE_BLOG_RAW`           | URL de base de l'index, du Markdown et des images du blog ; requise pour le build de production |
+| `VITE_NOVEL_RAW`          | URL de base de l'index et des chapitres du roman ; requise pour le build de production          |
+| `VITE_SERVER_ADDRESS`     | Serveur Minecraft interrogé par défaut sur la page des outils                                   |
+| `VITE_RANDOM_HERO_API`    | Endpoint de l'arrière-plan aléatoire de l'accueil                                               |
+| `VITE_COMMENT_COUNTS_API` | Endpoint facultatif de comptage des commentaires de paragraphe                                  |
+| `VITE_GISCUS_CSS_RAW`     | URL de base des thèmes Giscus personnalisés                                                     |
 
-- VITE_BLOG_RAW : source de l'index et des fichiers Markdown des articles
-- VITE_NOVEL_RAW : source de l'index et du contenu des chapitres de roman
-- VITE_SERVER_ADDRESS : adresse serveur par défaut affichée sur l'accueil
-- MXNZP_APP_ID / MXNZP_APP_SECRET : identifiants pour l'API de citation quotidienne
-- VITE_GISCUS_CSS_RAW : URL de base du site pour certaines ressources liées au thème
+`scripts/generate-routes.mjs` lit `.env.production` avant le build. Ne validez aucun identifiant privé dans le dépôt ; seules les valeurs destinées au client doivent utiliser le préfixe `VITE_`.
 
-Si vous utilisez uniquement le contenu statique local, veillez à faire pointer les URL d'API des articles et des romans vers les répertoires statiques correspondants ou vers un proxy local.
+## Structure du projet
 
-## Organisation du contenu et du projet
-
-```bash
+```text
 src/
   components/
-    blog/          # liste d'articles, lecteur
-    novel/         # détail du roman, infos de chapitre, contrôles du lecteur
-    reader/        # réglages, panneaux de style du lecteur, commentaires de paragraphe, rendu Markdown
-    layout/        # mise en page et navigation
-  composables/     # logique réutilisable pour le scroll, les modales, les commentaires, les images, etc.
-  services/        # articles, chapitres, serveur, citations quotidiennes
-  stores/          # thème, changelog, état du lecteur
-  utils/           # Markdown, stockage, notifications de mise à jour, aides diverses
-  views/           # pages de niveau route
+    blog/          # liste des articles et lecteur
+    novel/         # catalogue, informations de chapitre et lecteur
+    reader/        # Markdown, commentaires de paragraphe et réglages
+    layout/        # navigation, recherche globale et mise en page
+    ui/            # composants d'interface partagés
+  composables/     # filtres, défilement, modales et images
+  services/        # API de contenu, commentaires, serveur et arrière-plan
+  stores/          # thème, journal des modifications et état de lecture
+  router/          # routes et données SSG générées au build
+  utils/           # extensions Markdown, stockage local et notifications
+  views/           # pages associées aux routes
+
+scripts/
+  generate-routes.mjs       # génère les routes d'articles et l'instantané SSG
 
 mock/
-  article/         # fichiers Markdown des articles, ressources et générateur d'index
-  novel/           # fichiers Markdown des romans et générateur d'index
+  article/                  # articles, images et index locaux
+  novel/                    # chapitres, index et générateur d'index locaux
 
 public/
-  css/giscus/      # thèmes Giscus personnalisés
-  archive/         # anciennes pages statiques archivées
-  changelog.json   # données du changelog
+  assets/                   # images, polices et icônes
+  archive/                  # anciennes pages statiques archivées
+  changelog.json            # historique des versions
 ```
 
-## Notes de développement
+## Notes sur le contenu et le build
 
-- le routage est défini dans src/router/index.js
-- les données du changelog sont lues depuis public/changelog.json
-- la configuration Giscus est centralisée dans src/constants/config.js
-- les API de contenu sont implémentées dans src/services/api-articles.js et src/services/api-chapters.js
-- les index des articles et des romans sont maintenus via des scripts generate-index.mjs
+- Le blog et le roman sont maintenus dans [theWake](https://github.com/KoMoriSam/theWake) et [theHorizon](https://github.com/KoMoriSam/theHorizon) ; `mock/` contient des copies locales.
+- `src/router/ssg-data.generated.js` est généré automatiquement et ne doit pas être modifié manuellement.
+- La configuration Giscus est centralisée dans `src/constants/config.js`.
+- Les API des articles et chapitres se trouvent dans `src/services/api-articles.js` et `src/services/api-chapters.js`.
+- Le journal des modifications provient de `public/changelog.json`.
+- `pnpm deploy` publie `dist/` sur la branche `gh-pages` du dépôt ; la configuration des ressources statiques Cloudflare se trouve dans `wrangler.jsonc`.
 
 ## Compatibilité
 
-Le projet vise principalement les navigateurs modernes :
-
-- Chrome
-- Firefox
-- Microsoft Edge
-- navigateurs mobiles courants
+Le projet vise principalement les versions récentes de Chrome, Firefox, Microsoft Edge et des navigateurs mobiles courants.
 
 ## Licence
 
-Ce projet est distribué sous licence MIT. Voir [LICENSE](https://github.com/KoMoriSam/komorisam.github.io/blob/master/LICENSE) pour plus de détails.
+Ce projet est distribué sous [licence MIT](./LICENSE).
 
 ## Langues
 
-- 中文: [README.md](https://github.com/KoMoriSam/komorisam.github.io/blob/main/README.md)
-- English: [README_en.md](https://github.com/KoMoriSam/komorisam.github.io/blob/main/README_en.md)
+- [中文](./README.md)
+- [English](./README_en.md)

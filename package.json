@@ -1,7 +1,7 @@
 {
   "name": "KoMoriSam",
-  "version": "1.13.0",
-  "homepage": "https://komorisam.github.io/",
+  "version": "1.14.0",
+  "homepage": "https://komori.cc/",
   "private": true,
   "type": "module",
   "scripts": {

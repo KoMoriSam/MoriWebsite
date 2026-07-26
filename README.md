@@ -1,102 +1,104 @@
 <p align="center">
   <a href="https://komori.cc/">
-    <img src="https://komori.cc/favicon.webp" alt="Logo" width="80" height="80">
+    <img src="https://komori.cc/favicon.webp" alt="KoMoriSam Logo" width="80" height="80">
   </a>
 </p>
 
-<h1 align="center">KoMoriSam</h1>
+<h1 align="center">MoriWebsite</h1>
 
 <p align="center">
-  一个基于 Vite、Vue 3 与 daisyUI 构建的个人站点，包含首页、博客文章流、小说阅读器、评论系统、更新日志与联系页面。
+  一个使用 Vue 3、Vite SSG、Tailwind CSS 与 daisyUI 构建的个人数字花园，集博客、小说阅读、全站搜索、评论与实用工具于一体。
 </p>
 
 <p align="center">
   <a href="https://komori.cc/">在线访问</a>
   ·
-  <a href="https://github.com/KoMoriSam/komorisam.github.io">查看源代码</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite">源代码</a>
   ·
-  <a href="https://github.com/KoMoriSam/komorisam.github.io/issues">报告问题</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">问题反馈</a>
 </p>
 
 <p align="center">
-  当前版本：<strong>1.13.0</strong>
+  当前版本：<strong>1.14.0</strong>
   ·
-  <a href="https://komori.cc/changelog">查看更新日志</a>
+  <a href="https://komori.cc/changelog">更新日志</a>
 </p>
 
 ---
 
 ## 项目简介
 
-这个仓库已经不再只是一个简单的博客主页，而是一个围绕“内容展示与阅读体验”持续演进的个人站点应用。目前主要包含：
+MoriWebsite 是 KoMoriSam 的个人网站前端。站点围绕内容发布与长文本阅读设计，并通过静态站点生成（SSG）提供可索引的文章页面和更完整的 SEO 信息。
 
-- 首页问候与服务器信息展示
-- 博客文章列表与文章详情页
-- 基于 Markdown 的小说目录页与阅读器
-- Giscus 评论系统，以及段落级评论能力
-- 独立的关于、联系、更新日志页面
-- 针对桌面端与移动端优化过的阅读与排版体验
+当前主要内容包括：
 
-站点当前路由包括：
+- 包含个人介绍、动态背景与联系方式的响应式首页
+- 支持关键词、标签和年份筛选的博客
+- Markdown 驱动的原创小说《向远方》及专用阅读器
+- 基于 Pagefind 的全站搜索，可检索博客、小说与更新日志
+- 基于 Giscus 的文章、章节和段落级评论
+- Minecraft 服务器状态等在线工具
+- 更新日志、主题切换、阅读进度和本地阅读偏好
 
-- /
-- /blog
-- /novel
-- /about
-- /contact
-- /changelog
+生产环境路由：
 
-开发环境下额外提供 /test 页面用于调试组件与交互。
+```text
+/
+/blog
+/blog/:articleId
+/novel
+/novel/:volumeSlug/:chapterSlug?
+/tools/:toolSlug?
+/changelog
+```
+
+开发环境还提供 `/test`，用于组件与交互调试。未知地址由站内 404 页面处理，构建时也会生成适合静态托管的 `404.html`。
 
 ## 技术栈
 
-- Vite 6
-- Vue 3
-- Vue Router
-- Pinia
-- Tailwind CSS 4
-- daisyUI 5
+- Vue 3、Vue Router、Pinia
+- Vite 6、vite-ssg
+- Tailwind CSS 4、daisyUI 5
+- Pagefind
+- Unhead
 - VueUse
-- vue-markdown-render
+- Markdown-it、vue-markdown-render
 - Giscus
 - highlight.js
 
 ## 主要功能
 
-### 1. 博客文章系统
+### 内容与阅读
 
-- 文章列表与详情页分离，支持从列表进入阅读
-- 文章内容使用 Markdown 渲染
-- 支持 Obsidian 风格图片引用与横幅图规范化
-- 支持文章级评论与段落级评论
+- 文章列表、详情页以及关键词、标签、年份组合筛选
+- 小说卷目、章节导航、阅读位置与阅读器设置持久化
+- Markdown 代码高亮、脚注、任务列表、数学公式、警告框和自定义对话格式
+- Obsidian 风格图片引用、横幅图片和图片懒加载
+- 适配桌面端与移动端的排版、侧栏和阅读进度体验
 
-文章数据默认通过文章索引与 Markdown 文件提供：
+### 搜索与内容发现
 
-- 开发/静态内容来源：mock/article
-- 文章索引生成脚本：mock/article/generate-index.mjs
+- `Ctrl/Cmd + K` 打开全局搜索
+- Pagefind 在生产构建后生成静态搜索索引
+- 支持按内容类型、标签或卷目、年份组合筛选
+- 博客列表内置独立的全文搜索与筛选界面
+- 搜索条件会同步至 URL，便于分享和返回
 
-### 2. 小说阅读系统
+### 评论与本地状态
 
-- 小说目录页与阅读页分离
-- 章节内容通过索引文件与 Markdown 动态加载
-- 支持阅读器设置、阅读状态持久化与评论区集成
-- 针对长文本阅读做了字体、行高、滚动和分页相关优化
+- Giscus 提供文章与小说评论
+- 支持围绕具体段落发起讨论
+- 可选的段评计数接口用于批量显示评论数量
+- 主题、阅读设置与阅读位置保存在浏览器本地
+- 内置旧版存储迁移与废弃数据清理
 
-小说内容当前位于：
+### SSG、SEO 与静态托管
 
-- mock/novel
-
-### 3. 评论与交互
-
-- 使用 Giscus 作为评论后端
-- 为全站主题适配自定义 Giscus 样式
-- 文章段落评论支持获取当前段落文本，方便定位讨论内容
-
-### 4. 附加信息流与外部数据
-
-- 首页包含服务器信息展示
-- 项目内保留每日一句接口服务封装
-- 更新日志通过 public/changelog.json 驱动页面展示
+- 构建前抓取文章、小说目录与更新日志，生成统一的 SSG 数据快照
+- 为文章生成独立静态路由并保持服务端渲染与 hydration 数据一致
+- 使用 Unhead 输出 canonical、Open Graph、Twitter Card 与 JSON-LD 信息
+- 构建完成后生成 Pagefind 索引与静态托管用 404 页面
+- `wrangler.jsonc` 已配置为从 `dist/` 提供 Cloudflare 静态资源
 
 ## 快速开始
 
@@ -106,11 +108,13 @@
 pnpm install
 ```
 
-### 启动开发环境
+### 启动开发服务器
 
 ```bash
 pnpm dev
 ```
+
+开发服务器默认监听所有网络接口。
 
 ### 构建生产版本
 
@@ -118,7 +122,9 @@ pnpm dev
 pnpm build
 ```
 
-### 本地预览构建结果
+构建流程会依次生成 SSG 数据、预渲染页面，并为 `dist/` 创建 Pagefind 搜索索引。构建时必须能够访问文章和小说内容源。
+
+### 本地预览
 
 ```bash
 pnpm preview
@@ -126,74 +132,76 @@ pnpm preview
 
 ## 环境变量
 
-项目当前依赖以下 Vite 环境变量：
+项目通过 `.env.development` 和 `.env.production` 提供不同环境的内容源与服务地址：
 
 ```bash
 VITE_BLOG_RAW=
 VITE_NOVEL_RAW=
 VITE_SERVER_ADDRESS=
-MXNZP_APP_ID=
-MXNZP_APP_SECRET=
+VITE_RANDOM_HERO_API=
+VITE_COMMENT_COUNTS_API=
 VITE_GISCUS_CSS_RAW=
 ```
 
-说明：
+| 变量 | 用途 |
+| --- | --- |
+| `VITE_BLOG_RAW` | 文章索引、Markdown 与图片资源的基础地址；生产构建必需 |
+| `VITE_NOVEL_RAW` | 小说索引与章节 Markdown 的基础地址；生产构建必需 |
+| `VITE_SERVER_ADDRESS` | 工具页默认查询的 Minecraft 服务器地址 |
+| `VITE_RANDOM_HERO_API` | 首页随机背景图接口 |
+| `VITE_COMMENT_COUNTS_API` | 可选的段落评论数量查询接口 |
+| `VITE_GISCUS_CSS_RAW` | Giscus 自定义主题资源的基础地址 |
 
-- VITE_BLOG_RAW：文章索引与文章 Markdown 的来源地址
-- VITE_NOVEL_RAW：小说章节索引与正文来源地址
-- VITE_SERVER_ADDRESS：默认服务器地址
-- MXNZP_APP_ID / MXNZP_APP_SECRET：每日一句接口凭据
-- VITE_GISCUS_CSS_RAW：站点基地址，用于主题等静态资源引用
+`scripts/generate-routes.mjs` 会在构建前读取 `.env.production`。请勿把私密凭据提交到仓库；只有需要暴露给客户端的值才应使用 `VITE_` 前缀。
 
-如果你只在本地使用仓库内的静态内容，通常需要保证文章与小说接口地址能指向相应的静态目录或代理地址。
+## 项目结构
 
-## 内容与数据组织
-
-```bash
+```text
 src/
   components/
-    blog/          # 博客文章列表、文章阅读
-    novel/         # 小说详情、章节信息、阅读器控制
-    reader/        # 阅读器设置、样式相关组件、段落评论与 Markdown 渲染
-    layout/        # 页面布局与导航
-  composables/     # 滚动、弹窗、评论、图片加载等可复用逻辑
-  services/        # 文章、小说、服务器、每日一句等接口封装
-  stores/          # 主题、更新日志、阅读器状态管理
-  utils/           # Markdown、storage、更新通知等工具
-  views/           # 页面路由入口
+    blog/          # 文章列表与阅读器
+    novel/         # 小说目录、章节信息与阅读器
+    reader/        # Markdown、段评与阅读设置
+    layout/        # 导航、全局搜索与页面布局
+    ui/            # 通用界面组件
+  composables/     # 搜索筛选、滚动、弹窗、图片等复用逻辑
+  services/        # 内容、评论、服务器与背景图接口
+  stores/          # 主题、更新日志和阅读状态
+  router/          # 路由及构建期生成的 SSG 数据
+  utils/           # Markdown 扩展、本地存储与更新通知
+  views/           # 路由页面
+
+scripts/
+  generate-routes.mjs       # 生成文章静态路由与统一 SSG 快照
 
 mock/
-  article/         # 博客文章 Markdown、图片与索引生成脚本
-  novel/           # 小说章节 Markdown 与索引生成脚本
+  article/                  # 本地文章、图片与索引
+  novel/                    # 本地小说章节、索引及索引生成脚本
 
 public/
-  css/giscus/      # Giscus 自定义主题
-  archive/         # 历史静态页面归档
-  changelog.json   # 更新日志数据
+  assets/                   # 图片、字体与图标
+  archive/                  # 历史静态页面归档
+  changelog.json            # 版本更新数据
 ```
 
-## 开发约定
+## 内容与构建说明
 
-- 路由定义在 src/router/index.js
-- 更新日志页面数据来自 public/changelog.json
-- Giscus 配置集中在 src/constants/config.js
-- 文章与小说内容接口分别封装在 src/services/api-articles.js 与 src/services/api-chapters.js
-- 文章索引和小说索引通过 generate-index.mjs 脚本维护
+- 博客与小说内容分别维护在 [theWake](https://github.com/KoMoriSam/theWake) 和 [theHorizon](https://github.com/KoMoriSam/theHorizon)，`mock/` 提供本地内容镜像。
+- `src/router/ssg-data.generated.js` 由构建脚本自动生成，不应手动编辑。
+- Giscus 配置集中在 `src/constants/config.js`。
+- 文章与小说接口分别位于 `src/services/api-articles.js` 和 `src/services/api-chapters.js`。
+- 更新日志数据来自 `public/changelog.json`。
+- `pnpm deploy` 会把 `dist/` 发布到仓库的 `gh-pages` 分支；Cloudflare 静态资源配置位于 `wrangler.jsonc`。
 
-## 兼容性
+## 浏览器支持
 
-当前主要面向现代浏览器：
-
-- Chrome
-- Firefox
-- Microsoft Edge
-- 移动端主流浏览器
+项目主要面向 Chrome、Firefox、Microsoft Edge 及主流移动浏览器的近期版本。
 
 ## 许可证
 
-本项目采用 MIT License，详见 [LICENSE](https://github.com/KoMoriSam/komorisam.github.io/blob/master/LICENSE)。
+本项目采用 [MIT License](./LICENSE)。
 
-## 多语言文档
+## 其他语言
 
-- English: [README_en.md](https://github.com/KoMoriSam/komorisam.github.io/blob/main/README_en.md)
-- Français: [README_fr.md](https://github.com/KoMoriSam/komorisam.github.io/blob/main/README_fr.md)
+- [English](./README_en.md)
+- [Français](./README_fr.md)
