@@ -17,7 +17,7 @@
       <!-- 文章正文：保留头图、标签、别名和阅读时长 -->
       <!-- 文章头图 -->
       <header
-        class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80 lg:rounded-3xl"
+        class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80"
       >
         <!-- Banner -->
         <template v-if="bannerUrl && !bannerFailed">
@@ -187,9 +187,7 @@
           <!-- 元数据 -->
           <div
             class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-            :class="
-              hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'
-            "
+            :class="hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'"
           >
             <time v-if="article?.date" class="inline-flex items-center gap-1.5">
               <i class="ri-calendar-line"></i>
