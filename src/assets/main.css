@@ -135,6 +135,40 @@
 }
 
 @layer utilities {
+  .fade-in-background {
+    @apply isolate bg-none
+
+    before:content-['']
+    before:row-start-1
+    before:col-start-1
+    before:self-stretch
+    before:justify-self-stretch
+    before:size-full
+    before:pointer-events-none
+
+    before:[background-image:var(--fade-in-background-image,none)]
+    before:[background-position:inherit]
+    before:[background-size:inherit]
+    before:[background-repeat:inherit]
+    before:[background-attachment:inherit]
+    before:[background-origin:inherit]
+    before:[background-clip:inherit]
+
+    before:z-0
+    before:opacity-0
+    before:transition-opacity
+    before:duration-500
+
+    motion-reduce:before:transition-none
+
+    [&>.hero-overlay]:z-[1]
+    [&>.hero-content]:z-[2];
+  }
+
+  .fade-in-background-loaded {
+    @apply before:opacity-100;
+  }
+
   /* 标题样式 */
   #markdown-content.prose h1 {
     @apply font-serif pt-3 pb-2 my-0
