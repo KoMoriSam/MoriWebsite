@@ -13,3 +13,6 @@ mock
 
 # ViteSSG build output
 src/router/ssg-data.generated.js
+
+.agents
+skills-lock.json
