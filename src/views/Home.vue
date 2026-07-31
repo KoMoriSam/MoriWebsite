@@ -27,7 +27,7 @@
           <h1 class="font-serif font-black text-2xl lg:text-4xl">KoMoriSam</h1>
           <client-only>
             <h2 class="font-kai text-lg lg:text-xl">
-              {{ greeting }} {{ description }}
+              {{ greeting }}{{ description }}
             </h2>
           </client-only>
           <p class="font-kai text-base lg:text-lg">
@@ -192,13 +192,14 @@
           你好，我是 KoMori
           <br />
           <span lang="ja"
-            >22 <ruby>歳<rt>さい</rt></ruby
-            >で、<ruby>学生<rt>がくせい</rt></ruby
+            >22 <ruby>歳<rp>（</rp><rt>さい</rt><rp>）</rp></ruby>で、<ruby
+              >学生<rp>（</rp><rt>がくせい</rt><rp>）</rp></ruby
             >です。</span
           >
           <br />
           <small
-            >你还可以叫我的僧伽罗名字 <ruby>විශ්ව<rt>Wishwa</rt></ruby></small
+            >你还可以叫我的僧伽罗名字
+            <ruby>විශ්ව<rp>（</rp><rt>Wishwa</rt><rp>）</rp></ruby></small
           >
           <br />
           一个热衷于折腾各种东西的独立开发者 <small>（存疑）</small>
@@ -233,15 +234,6 @@
         </p>
         <div class="flex flex-wrap gap-3 justify-center mt-4 lg:mt-8">
           <a
-            href="https://space.bilibili.com/71104942"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button class="btn btn-info">
-              <i class="ri-bilibili-line font-normal"></i>Bilibili
-            </button></a
-          >
-          <a
             href="https://github.com/KoMoriSam"
             target="_blank"
             rel="noopener noreferrer"
@@ -250,6 +242,17 @@
               <i class="ri-github-fill font-normal"></i>
               GitHub
             </button>
+          </a>
+          <a
+            href="https://space.bilibili.com/71104942"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div class="aura text-info">
+              <button class="btn btn-info">
+                <i class="ri-bilibili-line font-normal"></i>Bilibili
+              </button>
+            </div>
           </a>
           <a
             href="https://weibo.com/u/5281976456"
