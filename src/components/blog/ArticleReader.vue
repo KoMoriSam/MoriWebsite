@@ -29,6 +29,7 @@
 
           <!-- 图片 -->
           <img
+            v-fade-in
             :key="bannerUrl"
             ref="bannerImage"
             :src="bannerUrl"
@@ -37,7 +38,6 @@
             decoding="async"
             draggable="false"
             class="absolute inset-0 size-full object-cover object-center transition-opacity duration-700"
-            :class="bannerLoaded ? 'opacity-100' : 'opacity-0'"
             @load="handleBannerLoad"
             @error="handleBannerError"
           />

@@ -299,6 +299,7 @@
 
                 <!-- 使用 img 才能准确监听加载状态 -->
                 <img
+                  v-fade-in
                   :key="getBannerKey(item)"
                   :ref="(element) => setBannerImageRef(item, element)"
                   :src="resolveBannerUrl(item.banner)"
@@ -307,7 +308,6 @@
                   decoding="async"
                   draggable="false"
                   class="absolute inset-0 size-full object-cover object-center transition-[opacity,transform,scale] duration-500 ease-out motion-reduce:transition-none group-hover:scale-105"
-                  :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
                   @load="handleBannerLoad(item)"
                   @error="handleBannerError(item)"
                 />
