@@ -135,17 +135,18 @@
       "Noto Serif Sinhala", ui-serif, Georgia, Cambria, "Times New Roman",
       Times, serif;
     /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
-    font-kerning: normal;
     line-break: strict;
-    text-spacing-trim: trim-start;
     text-spacing-trim: trim-both;
-    hanging-punctuation: first allow-end last;
+    hanging-punctuation: first last;
   }
 }
 
-@supports (hanging-punctuation: first force-end last) {
-  :root {
-    hanging-punctuation: first force-end last;
+@supports not (text-spacing-trim: trim-both) {
+  @supports (hanging-punctuation: first force-end last) {
+    :root {
+      /* Fallback for engines without contextual CJK line-edge trimming. */
+      hanging-punctuation: first force-end last;
+    }
   }
 }
 

@@ -12,166 +12,221 @@
  * the source typeface's normal contour gap. Em-dash pairs use one centered,
  * continuous 2-em ligature with bracket-matched outer side space, so there is
  * no seam, overlapping ink, or collision with adjacent text.
+ * Fullwidth sentence stops expose `halt` positioning for 0.5-em line-end trim.
  */
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-100.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-100.woff2") format("woff2");
   font-style: normal;
   font-weight: 100;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-200.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-200.woff2") format("woff2");
   font-style: normal;
   font-weight: 200;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-300.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-300.woff2") format("woff2");
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-400.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-400.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-500.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-500.woff2") format("woff2");
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-600.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-600.woff2") format("woff2");
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-700.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-700.woff2") format("woff2");
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-800.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-800.woff2") format("woff2");
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Sans Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-sans-900.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-sans-900.woff2") format("woff2");
   font-style: normal;
   font-weight: 900;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-100.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-100.woff2") format("woff2");
   font-style: normal;
   font-weight: 100;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-200.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-200.woff2") format("woff2");
   font-style: normal;
   font-weight: 200;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-300.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-300.woff2") format("woff2");
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-400.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-400.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-500.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-500.woff2") format("woff2");
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-600.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-600.woff2") format("woff2");
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-700.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-700.woff2") format("woff2");
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-800.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-800.woff2") format("woff2");
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
 
 @font-face {
   font-family: "Kaiming Serif Punctuation";
-  src: url("/assets/fonts/kaiming/kaiming-serif-900.woff2?v=4") format("woff2");
+  src: url("/assets/fonts/kaiming/kaiming-serif-900.woff2") format("woff2");
   font-style: normal;
   font-weight: 900;
   font-display: swap;
-  unicode-range: U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F, U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F, U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
 }
