@@ -41,6 +41,12 @@ export const useNovelGetters = (state) => {
       return content.length;
     }),
 
+    totalWordCount: computed(() => {
+      return state.flatChapters.value.reduce((total, chapter) => {
+        return total + (chapter.length || 0);
+      }, 0);
+    }),
+
     currentPageContent: computed(
       () =>
         state.currentChapterContent.value[state.currentChapterPage.value - 1] ||
