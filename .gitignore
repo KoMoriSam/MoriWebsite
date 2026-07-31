@@ -3,6 +3,7 @@ node_modules
 .nuxt
 .nitro
 .cache
+.tmp
 .env.production
 .env.development
 dist
