@@ -8,6 +8,8 @@ Rules baked into the output:
 
 * pauses and brackets have a 0.5-em base advance;
 * stops have a 1-em base advance;
+* ``。？！`` expose a ``halt`` adjustment that removes their trailing 0.5 em
+  when CSS line layout trims fullwidth punctuation at a line end;
 * every closing-opening pair is two natural half-em forms, for a 1-em logical
   advance with the source typeface's normal contour gap;
 * adjacent stops are compressed from 2 em to 1.5 em;
@@ -276,14 +278,23 @@ def set_font_identity(font: TTFont, style: str, weight: int) -> None:
 def feature_source(
     mapping: dict[int, str],
     dash_pair_name: str,
+    half_em: int,
 ) -> str:
     lines = [
         "languagesystem DFLT dflt;",
-        "feature ccmp {",
-        f"  sub {mapping[0x2014]} {mapping[0x2014]} by {dash_pair_name};",
-        "} ccmp;",
-        "feature kern {",
+        "feature halt {",
     ]
+    for full_stop in sorted(FULL_STOPS):
+        lines.append(f"  pos {mapping[full_stop]} <0 0 -{half_em} 0>;")
+    lines.extend(
+        [
+            "} halt;",
+            "feature ccmp {",
+            f"  sub {mapping[0x2014]} {mapping[0x2014]} by {dash_pair_name};",
+            "} ccmp;",
+            "feature kern {",
+        ]
+    )
 
     full_stops = " ".join(
         mapping[codepoint] for codepoint in sorted(FULL_STOPS)
@@ -404,7 +415,9 @@ def build_instance(style: str, package: str, weight: int) -> Path:
         if table in base:
             del base[table]
 
-    addOpenTypeFeaturesFromString(base, feature_source(mapping, dash_pair_name))
+    addOpenTypeFeaturesFromString(
+        base, feature_source(mapping, dash_pair_name, half_em)
+    )
     set_font_identity(base, style, weight)
 
     output = OUTPUT_ROOT / f"kaiming-{style}-{weight}.woff2"
@@ -518,6 +531,14 @@ def verify(output: Path) -> None:
                     f"width={pair_width}, ink_gap={ink_gap}"
                 )
 
+    generated_halt = halt_values(font)
+    for full_stop in FULL_STOPS:
+        halt = generated_halt.get(cmap[full_stop])
+        if halt != (0, -500):
+            raise ValueError(
+                f"{output.name}: U+{full_stop:04X} halt={halt}, expected (0, -500)"
+            )
+
     for first in FULL_STOPS:
         for second in FULL_STOPS:
             values = pair_values(font, cmap[first], cmap[second])
@@ -582,6 +603,7 @@ def main() -> None:
     total = sum(output.stat().st_size for output in outputs)
     print(f"Built and verified {len(outputs)} WOFF2 files ({total / 1024:.1f} KiB).")
     print("All closing-opening pairs are 1 em with positive contour gaps.")
+    print("Fullwidth sentence stops expose a trailing 0.5-em halt adjustment.")
     print("Em-dash pairs are centered 2-em ligatures with bracket-matched side space.")
 
 
