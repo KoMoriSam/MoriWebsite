@@ -1,3 +1,4 @@
+@import "./kaiming-punctuation.css";
 @import "tailwindcss";
 @plugin "daisyui";
 
@@ -77,19 +78,20 @@
 
 @theme {
   --font-song:
-    "Fraunces Variable", "Fraunces", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
-    "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
-    serif;
+    "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
+    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STSong", "SimSun",
+    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
   --font-hei:
-    "Manrope Variable", "Manrope", "LXGW Neo XiHei", "STHeiti", "STXihei",
-    "SimHei", "Noto Sans Sinhala Variable", "Noto Sans Sinhala", sans-serif;
+    "Kaiming Sans Punctuation", "Manrope Variable", "Manrope", "LXGW Neo XiHei",
+    "STHeiti", "STXihei", "SimHei", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", sans-serif;
   --font-kai:
-    "LXGW WenKai GB", "LXGW WenKai GB Lite", "STKaiti", "KaiTi", "Maname",
-    cursive;
+    "Kaiming Serif Punctuation", "LXGW WenKai GB", "LXGW WenKai GB Lite",
+    "STKaiti", "KaiTi", "Maname", cursive;
   --font-fang:
-    "Zhuque Fangsong (technical preview)", "LXGW Neo ZhiSong CHS",
-    "LXGW Neo ZhiSong", "STFangsong", "FangSong", "Noto Serif Sinhala Variable",
-    "Noto Serif Sinhala", serif;
+    "Kaiming Serif Punctuation", "Zhuque Fangsong (technical preview)",
+    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STFangsong", "FangSong",
+    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
 }
 
 @utility mask-bubble {
@@ -121,16 +123,29 @@
 @layer base {
   :root {
     --font-sans:
-      "Manrope Variable", "Manrope", "Noto Sans SC Variable", "Noto Sans SC",
-      "Noto Sans Sinhala Variable", "Noto Sans Sinhala", ui-sans-serif,
-      system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol", "Noto Color Emoji";
+      "Kaiming Sans Punctuation", "Manrope Variable", "Manrope",
+      "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
+      "Noto Sans Sinhala", ui-sans-serif, system-ui, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+      "Noto Color Emoji";
     --font-serif:
-      "Fraunces Variable", "Fraunces", "Noto Serif SC Variable",
-      "Noto Serif SC", "Source Han Serif SC Variable", "Source Han Serif SC",
-      "Noto Serif Sinhala Variable", "Noto Serif Sinhala", ui-serif, Georgia,
-      Cambria, "Times New Roman", Times, serif;
-    font-feature-settings: "halt";
+      "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
+      "Noto Serif SC Variable", "Noto Serif SC", "Source Han Serif SC Variable",
+      "Source Han Serif SC", "Noto Serif Sinhala Variable",
+      "Noto Serif Sinhala", ui-serif, Georgia, Cambria, "Times New Roman",
+      Times, serif;
+    /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
+    font-kerning: normal;
+    line-break: strict;
+    text-spacing-trim: trim-start;
+    text-spacing-trim: trim-both;
+    hanging-punctuation: first allow-end last;
+  }
+}
+
+@supports (hanging-punctuation: first force-end last) {
+  :root {
+    hanging-punctuation: first force-end last;
   }
 }
 
@@ -279,8 +294,9 @@
   #markdown-content.prose li,
   #markdown-content.prose blockquote,
   #markdown-content.prose a {
-    @apply min-w-0 max-w-full break-words [overflow-wrap:anywhere];
-    word-break: break-word;
+    @apply min-w-0 max-w-full break-words;
+    line-break: strict;
+    word-break: normal;
   }
 
   #markdown-content.prose :not(pre) code {
