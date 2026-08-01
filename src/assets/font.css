@@ -1,0 +1,58 @@
+@font-face {
+  font-family: "Zhuque Fangsong";
+  src:
+    local("Zhuque Fangsong (technical preview)"),
+    local("ZhuqueFangsong(technicalpreview)"),
+    url("/assets/fonts/ZhuqueFangsong-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-song:
+    "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
+    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STSong", "SimSun",
+    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
+  --font-hei:
+    "Kaiming Sans Punctuation", "Manrope Variable", "Manrope", "LXGW Neo XiHei",
+    "STHeiti", "STXihei", "SimHei", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", sans-serif;
+  --font-kai:
+    "Kaiming Serif Punctuation", "LXGW WenKai GB", "LXGW WenKai GB Lite",
+    "STKaiti", "KaiTi", "Maname", cursive;
+  --font-fang:
+    "Kaiming Serif Punctuation", "Zhuque Fangsong", "LXGW Neo ZhiSong CHS",
+    "LXGW Neo ZhiSong", "STFangsong", "FangSong", "Noto Serif Sinhala Variable",
+    "Noto Serif Sinhala", serif;
+}
+
+@layer base {
+  :root {
+    --font-sans:
+      "Kaiming Sans Punctuation", "Manrope Variable", "Manrope",
+      "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
+      "Noto Sans Sinhala", ui-sans-serif, system-ui, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+      "Noto Color Emoji";
+    --font-serif:
+      "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
+      "Noto Serif SC Variable", "Noto Serif SC", "Source Han Serif SC Variable",
+      "Source Han Serif SC", "Noto Serif Sinhala Variable",
+      "Noto Serif Sinhala", ui-serif, Georgia, Cambria, "Times New Roman",
+      Times, serif;
+    /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
+    line-break: strict;
+    text-spacing-trim: trim-both;
+    hanging-punctuation: first last;
+  }
+}
+
+@supports not (text-spacing-trim: trim-both) {
+  @supports (hanging-punctuation: first force-end last) {
+    :root {
+      /* Fallback for engines without contextual CJK line-edge trimming. */
+      hanging-punctuation: first force-end last;
+    }
+  }
+}
