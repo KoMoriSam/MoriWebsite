@@ -35,9 +35,7 @@
             class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
           >
             <div>
-              <p
-                class="max-w-3xl text-sm leading-relaxed text-base-content/70"
-              >
+              <p class="max-w-3xl text-sm leading-relaxed text-base-content/70">
                 当前页面就是通用布局组件的完整实例；眉题、标题、说明与操作区均由具名入口提供，正文继续保留自由组合能力。
               </p>
               <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
@@ -91,360 +89,356 @@
         </TestCard>
       </div>
 
-        <div id="toast" class="scroll-mt-24">
-          <TestCard title="Toast 通知">
-            <div
-              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-4"
+      <div id="toast" class="scroll-mt-24">
+        <TestCard title="Toast 通知">
+          <div
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-4"
+          >
+            <button
+              class="btn btn-sm btn-success"
+              @click="toast.success('操作成功！')"
             >
-              <button
-                class="btn btn-sm btn-success"
-                @click="toast.success('操作成功！')"
-              >
-                Success
-              </button>
-              <button
-                class="btn btn-sm btn-error"
-                @click="toast.error('操作失败！')"
-              >
-                Error
-              </button>
-              <button
-                class="btn btn-sm btn-warning"
-                @click="toast.warning('请注意！')"
-              >
-                Warning
-              </button>
-              <button
-                class="btn btn-sm btn-info"
-                @click="toast.info('提示信息')"
-              >
-                Info
-              </button>
-              <button
-                class="btn btn-sm btn-ghost"
-                @click="toast.loading('加载中…')"
-              >
-                Loading
-              </button>
-              <button
-                class="btn btn-sm btn-accent"
-                @click="toast.star('发现彩蛋')"
-              >
-                Star
-              </button>
-            </div>
-            <p class="text-xs font-semibold mb-2 opacity-60">不同位置</p>
-            <div class="flex flex-wrap gap-1.5">
-              <button
-                v-for="pos in toastPositions"
-                :key="pos"
-                class="btn btn-xs btn-outline"
-                @click="testToastPos(pos)"
-              >
-                {{ pos }}
-              </button>
-            </div>
-          </TestCard>
-        </div>
+              Success
+            </button>
+            <button
+              class="btn btn-sm btn-error"
+              @click="toast.error('操作失败！')"
+            >
+              Error
+            </button>
+            <button
+              class="btn btn-sm btn-warning"
+              @click="toast.warning('请注意！')"
+            >
+              Warning
+            </button>
+            <button class="btn btn-sm btn-info" @click="toast.info('提示信息')">
+              Info
+            </button>
+            <button
+              class="btn btn-sm btn-ghost"
+              @click="toast.loading('加载中…')"
+            >
+              Loading
+            </button>
+            <button
+              class="btn btn-sm btn-accent"
+              @click="toast.star('发现彩蛋')"
+            >
+              Star
+            </button>
+          </div>
+          <p class="text-xs font-semibold mb-2 opacity-60">不同位置</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="pos in toastPositions"
+              :key="pos"
+              class="btn btn-xs btn-outline"
+              @click="testToastPos(pos)"
+            >
+              {{ pos }}
+            </button>
+          </div>
+        </TestCard>
+      </div>
 
-        <div id="modal" class="scroll-mt-24">
-          <TestCard title="Modal 弹窗">
-            <div class="flex flex-wrap gap-2 mb-4">
-              <button
-                class="btn btn-sm btn-primary"
-                @click="modal.info('信息', '通过 useModal().info() 调用')"
-              >
-                Info Modal
-              </button>
-              <button
-                class="btn btn-sm btn-warning"
-                @click="
-                  modal.confirm('确认', '确认执行操作？', {
-                    onSubmit: () => toast.success('已确认'),
-                  })
-                "
-              >
-                Confirm Modal
-              </button>
-              <button
-                class="btn btn-sm btn-outline"
-                @click="inlineModal = !inlineModal"
-              >
-                {{ inlineModal ? "关闭内联" : "内联 v-if" }}
-              </button>
-            </div>
-            <Modal
-              v-if="inlineModal"
-              :visible="true"
-              title="内联 Modal"
-              description="&lt;Modal :visible /&gt; 声明式控制"
-              button-text="关闭"
-              @close="inlineModal = false"
-            />
-          </TestCard>
-        </div>
+      <div id="modal" class="scroll-mt-24">
+        <TestCard title="Modal 弹窗">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              class="btn btn-sm btn-primary"
+              @click="modal.info('信息', '通过 useModal().info() 调用')"
+            >
+              Info Modal
+            </button>
+            <button
+              class="btn btn-sm btn-warning"
+              @click="
+                modal.confirm('确认', '确认执行操作？', {
+                  onSubmit: () => toast.success('已确认'),
+                })
+              "
+            >
+              Confirm Modal
+            </button>
+            <button
+              class="btn btn-sm btn-outline"
+              @click="inlineModal = !inlineModal"
+            >
+              {{ inlineModal ? "关闭内联" : "内联 v-if" }}
+            </button>
+          </div>
+          <Modal
+            v-if="inlineModal"
+            :visible="true"
+            title="内联 Modal"
+            description="&lt;Modal :visible /&gt; 声明式控制"
+            button-text="关闭"
+            @close="inlineModal = false"
+          />
+        </TestCard>
+      </div>
 
-        <div id="markdown" class="scroll-mt-24 xl:col-span-2">
-          <TestCard title="Markdown 渲染">
-            <div class="flex flex-wrap gap-2 mb-4">
-              <button
-                v-for="s in mdSamples"
-                :key="s.name"
-                class="btn btn-xs"
-                :class="currentMd === s.name ? 'btn-primary' : 'btn-outline'"
-                @click="currentMd = s.name"
-              >
-                {{ s.name }}
-              </button>
-            </div>
-            <div class="bg-base-100 rounded-lg p-4 max-h-96 overflow-auto">
-              <article
-                class="prose max-w-none"
-                :class="readerStore.styleConfigs.fontStyle"
-              >
-                <vue-markdown
-                  v-if="mdContent"
-                  :source="mdContent"
-                  :options="mdOptions"
-                  :plugins="[]"
-                />
-                <p v-else class="opacity-50 italic">加载中…</p>
-              </article>
-            </div>
-          </TestCard>
-        </div>
+      <div id="markdown" class="scroll-mt-24 xl:col-span-2">
+        <TestCard title="Markdown 渲染">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              v-for="s in mdSamples"
+              :key="s.name"
+              class="btn btn-xs"
+              :class="currentMd === s.name ? 'btn-primary' : 'btn-outline'"
+              @click="currentMd = s.name"
+            >
+              {{ s.name }}
+            </button>
+          </div>
+          <div class="bg-base-100 rounded-lg p-4 max-h-96 overflow-auto">
+            <article
+              class="prose max-w-none"
+              :class="readerStore.styleConfigs.fontStyle"
+            >
+              <vue-markdown
+                v-if="mdContent"
+                :source="mdContent"
+                :options="mdOptions"
+                :plugins="[]"
+              />
+              <p v-else class="opacity-50 italic">加载中…</p>
+            </article>
+          </div>
+        </TestCard>
+      </div>
 
-        <div id="number-controller" class="scroll-mt-24">
-          <TestCard title="NumberController 组件">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <TestControlRow label="字体大小" :value="ncFontSize">
-                <NumberController
-                  v-model="ncFontSize"
-                  :step="1"
-                  :places="0"
-                  :min="12"
-                  :max="48"
-                />
-              </TestControlRow>
-              <TestControlRow label="字间距" :value="ncFontGap">
-                <NumberController
-                  v-model="ncFontGap"
-                  :step="0.01"
-                  :places="2"
-                  :min="-1"
-                  :max="1"
-                />
-              </TestControlRow>
-              <TestControlRow label="行高" :value="ncLineHeight">
-                <NumberController
-                  v-model="ncLineHeight"
-                  :step="0.1"
-                  :places="1"
-                  :min="1"
-                  :max="3"
-                />
-              </TestControlRow>
-            </div>
-          </TestCard>
-        </div>
+      <div id="number-controller" class="scroll-mt-24">
+        <TestCard title="NumberController 组件">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <TestControlRow label="字体大小" :value="ncFontSize">
+              <NumberController
+                v-model="ncFontSize"
+                :step="1"
+                :places="0"
+                :min="12"
+                :max="48"
+              />
+            </TestControlRow>
+            <TestControlRow label="字间距" :value="ncFontGap">
+              <NumberController
+                v-model="ncFontGap"
+                :step="0.01"
+                :places="2"
+                :min="-1"
+                :max="1"
+              />
+            </TestControlRow>
+            <TestControlRow label="行高" :value="ncLineHeight">
+              <NumberController
+                v-model="ncLineHeight"
+                :step="0.1"
+                :places="1"
+                :min="1"
+                :max="3"
+              />
+            </TestControlRow>
+          </div>
+        </TestCard>
+      </div>
 
-        <div id="loading" class="scroll-mt-24">
-          <TestCard title="Loading 状态">
-            <div class="flex flex-wrap items-center gap-4 mb-4">
-              <button
-                class="btn btn-sm btn-primary"
-                :disabled="loadingOn"
-                @click="toggleLoading"
-              >
-                <span
-                  v-if="loadingOn"
-                  class="loading loading-spinner loading-xs"
-                ></span>
-                {{ loadingOn ? "加载中" : "测试 Loading（3s）" }}
-              </button>
+      <div id="loading" class="scroll-mt-24">
+        <TestCard title="Loading 状态">
+          <div class="flex flex-wrap items-center gap-4 mb-4">
+            <button
+              class="btn btn-sm btn-primary"
+              :disabled="loadingOn"
+              @click="toggleLoading"
+            >
               <span
                 v-if="loadingOn"
-                class="loading loading-spinner loading-sm"
+                class="loading loading-spinner loading-xs"
               ></span>
-            </div>
-            <div
-              class="bg-base-100 rounded-lg p-6 min-h-[100px] flex items-center justify-center"
+              {{ loadingOn ? "加载中" : "测试 Loading（3s）" }}
+            </button>
+            <span
+              v-if="loadingOn"
+              class="loading loading-spinner loading-sm"
+            ></span>
+          </div>
+          <div
+            class="bg-base-100 rounded-lg p-6 min-h-[100px] flex items-center justify-center"
+          >
+            <Loading v-if="loadingOn" size="my-4" />
+            <p v-else class="opacity-50">点击按钮查看 Loading 组件</p>
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="pagination" class="scroll-mt-24">
+        <TestCard title="Pagination 分页">
+          <p class="text-xs opacity-60 mb-3">
+            依赖 novelStore（需先访问 /novel 进入阅读器）
+          </p>
+          <div class="bg-base-100 rounded-lg p-4 flex justify-center">
+            <Pagination />
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="codeblock" class="scroll-mt-24 xl:col-span-2">
+        <TestCard title="CodeBlock（带复制）">
+          <CodeBlock language="typescript" :code="sampleCode" />
+        </TestCard>
+      </div>
+
+      <div id="to-top" class="scroll-mt-24">
+        <TestCard title="浮动按钮与回到顶部">
+          <p class="text-xs opacity-50 mb-3">
+            大屏滚动即可看到右下角浮动按钮，点击下方测试回到顶部：
+          </p>
+        </TestCard>
+      </div>
+
+      <div id="click-limit" class="scroll-mt-24">
+        <TestCard title="useClickLimit 防连点">
+          <p class="text-xs opacity-60 mb-2">
+            连点 ≥{{ limitOpts.maxClicks }} 次 → 冷却
+            {{ limitOpts.cooldown / 1000 }}s
+          </p>
+          <div class="flex items-center gap-3">
+            <button
+              class="btn btn-sm btn-warning"
+              :disabled="clickLimit.isDisabled.value"
+              @click="clickLimit.handleClick(() => clickCount++)"
             >
-              <Loading v-if="loadingOn" size="my-4" />
-              <p v-else class="opacity-50">点击按钮查看 Loading 组件</p>
+              点击: {{ clickCount }}
+            </button>
+            <button
+              class="btn btn-xs btn-ghost"
+              @click="
+                clickLimit.reset();
+                clickCount = 0;
+              "
+            >
+              重置
+            </button>
+            <span
+              v-if="clickLimit.isDisabled.value"
+              class="text-error text-xs font-bold animate-pulse"
+              >冷却中…</span
+            >
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="image-load" class="scroll-mt-24">
+        <TestCard title="useImageLoad">
+          <div class="flex items-center gap-4">
+            <div
+              class="relative w-32 h-32 bg-base-300 rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!imgLoaded"
+                class="skeleton absolute inset-0 z-10"
+              ></div>
+              <img
+                src="/assets/images/avatar/komorisam.webp"
+                alt="avatar"
+                class="w-full h-full object-cover"
+                @load="imgLoaded = true"
+              />
             </div>
-          </TestCard>
-        </div>
-
-        <div id="pagination" class="scroll-mt-24">
-          <TestCard title="Pagination 分页">
-            <p class="text-xs opacity-60 mb-3">
-              依赖 novelStore（需先访问 /novel 进入阅读器）
-            </p>
-            <div class="bg-base-100 rounded-lg p-4 flex justify-center">
-              <Pagination />
-            </div>
-          </TestCard>
-        </div>
-
-        <div id="codeblock" class="scroll-mt-24 xl:col-span-2">
-          <TestCard title="CodeBlock（带复制）">
-            <CodeBlock language="typescript" :code="sampleCode" />
-          </TestCard>
-        </div>
-
-        <div id="to-top" class="scroll-mt-24">
-          <TestCard title="浮动按钮与回到顶部">
-            <p class="text-xs opacity-50 mb-3">
-              大屏滚动即可看到右下角浮动按钮，点击下方测试回到顶部：
-            </p>
-            <ToTop />
-          </TestCard>
-        </div>
-
-        <div id="click-limit" class="scroll-mt-24">
-          <TestCard title="useClickLimit 防连点">
-            <p class="text-xs opacity-60 mb-2">
-              连点 ≥{{ limitOpts.maxClicks }} 次 → 冷却
-              {{ limitOpts.cooldown / 1000 }}s
-            </p>
-            <div class="flex items-center gap-3">
-              <button
-                class="btn btn-sm btn-warning"
-                :disabled="clickLimit.isDisabled.value"
-                @click="clickLimit.handleClick(() => clickCount++)"
-              >
-                点击: {{ clickCount }}
-              </button>
-              <button
-                class="btn btn-xs btn-ghost"
-                @click="
-                  clickLimit.reset();
-                  clickCount = 0;
-                "
-              >
-                重置
-              </button>
+            <p class="flex items-center gap-2 text-sm">
+              <span>状态:</span>
               <span
-                v-if="clickLimit.isDisabled.value"
-                class="text-error text-xs font-bold animate-pulse"
-                >冷却中…</span
+                class="inline-flex items-center gap-1"
+                :class="imgLoaded ? 'text-success' : 'text-warning'"
               >
-            </div>
-          </TestCard>
-        </div>
+                <i
+                  :class="
+                    imgLoaded
+                      ? 'ri-checkbox-circle-line'
+                      : 'ri-loader-4-line animate-spin'
+                  "
+                  aria-hidden="true"
+                ></i>
+                {{ imgLoaded ? "已加载" : "加载中…" }}
+              </span>
+            </p>
+          </div>
+        </TestCard>
+      </div>
 
-        <div id="image-load" class="scroll-mt-24">
-          <TestCard title="useImageLoad">
-            <div class="flex items-center gap-4">
-              <div
-                class="relative w-32 h-32 bg-base-300 rounded-lg overflow-hidden"
-              >
-                <div
-                  v-if="!imgLoaded"
-                  class="skeleton absolute inset-0 z-10"
-                ></div>
-                <img
-                  src="/assets/images/avatar/komorisam.webp"
-                  alt="avatar"
-                  class="w-full h-full object-cover"
-                  @load="imgLoaded = true"
-                />
-              </div>
-              <p class="flex items-center gap-2 text-sm">
-                <span>状态:</span>
-                <span
-                  class="inline-flex items-center gap-1"
-                  :class="imgLoaded ? 'text-success' : 'text-warning'"
-                >
-                  <i
-                    :class="
-                      imgLoaded
-                        ? 'ri-checkbox-circle-line'
-                        : 'ri-loader-4-line animate-spin'
-                    "
-                    aria-hidden="true"
-                  ></i>
-                  {{ imgLoaded ? "已加载" : "加载中…" }}
-                </span>
-              </p>
-            </div>
-          </TestCard>
-        </div>
-
-        <div id="storage" class="scroll-mt-24 xl:col-span-2">
-          <TestCard title="localStorage">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div
-                v-for="g in storageGroups"
-                :key="g.key"
-                class="bg-base-100 rounded-lg p-3"
-              >
-                <h4 class="font-semibold text-sm mb-1">{{ g.label }}</h4>
-                <pre
-                  class="text-[10px] overflow-auto max-h-48 bg-base-300 p-2 rounded leading-tight"
-                  >{{ g.data || "(空)" }}</pre
-                >
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <button class="btn btn-sm btn-warning" @click="clearStorage">
-                清空全部
-              </button>
-              <button class="btn btn-sm btn-info" @click="refreshStorage">
-                刷新
-              </button>
-            </div>
-          </TestCard>
-        </div>
-
-        <div id="environment" class="scroll-mt-24">
-          <TestCard title="环境信息">
-            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              <template v-for="(v, k) in envInfo" :key="k">
-                <span class="font-semibold">{{ k }}:</span
-                ><code class="text-xs break-all">{{ v }}</code>
-              </template>
-            </div>
-          </TestCard>
-        </div>
-
-        <div id="api" class="scroll-mt-24">
-          <TestCard title="API 测试">
-            <div class="flex gap-2 mb-3">
-              <button
-                class="btn btn-sm btn-primary"
-                :disabled="apiLoading"
-                @click="testApi('chapters')"
-              >
-                章节列表
-              </button>
-              <button
-                class="btn btn-sm btn-primary"
-                :disabled="apiLoading"
-                @click="testApi('content')"
-              >
-                章节内容
-              </button>
-              <button
-                class="btn btn-sm btn-secondary"
-                :disabled="apiLoading"
-                @click="testApi('permalink-map')"
-              >
-                UUID ↔ Permalink
-              </button>
-            </div>
+      <div id="storage" class="scroll-mt-24 xl:col-span-2">
+        <TestCard title="localStorage">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div
-              v-if="apiLoading"
-              class="loading loading-spinner loading-sm mb-2"
-            ></div>
-            <pre
-              v-if="apiResult"
-              class="text-[10px] overflow-auto max-h-48 bg-base-300 p-2 rounded leading-tight"
-              >{{ apiResult }}</pre
+              v-for="g in storageGroups"
+              :key="g.key"
+              class="bg-base-100 rounded-lg p-3"
             >
-            <p v-if="apiError" class="text-error text-sm">{{ apiError }}</p>
-          </TestCard>
+              <h4 class="font-semibold text-sm mb-1">{{ g.label }}</h4>
+              <pre
+                class="text-[10px] overflow-auto max-h-48 bg-base-300 p-2 rounded leading-tight"
+                >{{ g.data || "(空)" }}</pre
+              >
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-warning" @click="clearStorage">
+              清空全部
+            </button>
+            <button class="btn btn-sm btn-info" @click="refreshStorage">
+              刷新
+            </button>
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="environment" class="scroll-mt-24">
+        <TestCard title="环境信息">
+          <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <template v-for="(v, k) in envInfo" :key="k">
+              <span class="font-semibold">{{ k }}:</span
+              ><code class="text-xs break-all">{{ v }}</code>
+            </template>
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="api" class="scroll-mt-24">
+        <TestCard title="API 测试">
+          <div class="flex gap-2 mb-3">
+            <button
+              class="btn btn-sm btn-primary"
+              :disabled="apiLoading"
+              @click="testApi('chapters')"
+            >
+              章节列表
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              :disabled="apiLoading"
+              @click="testApi('content')"
+            >
+              章节内容
+            </button>
+            <button
+              class="btn btn-sm btn-secondary"
+              :disabled="apiLoading"
+              @click="testApi('permalink-map')"
+            >
+              UUID ↔ Permalink
+            </button>
+          </div>
+          <div
+            v-if="apiLoading"
+            class="loading loading-spinner loading-sm mb-2"
+          ></div>
+          <pre
+            v-if="apiResult"
+            class="text-[10px] overflow-auto max-h-48 bg-base-300 p-2 rounded leading-tight"
+            >{{ apiResult }}</pre
+          >
+          <p v-if="apiError" class="text-error text-sm">{{ apiError }}</p>
+        </TestCard>
       </div>
     </section>
   </ContentPage>
@@ -467,7 +461,6 @@ import Modal from "@/components/ui/Modal.vue";
 import NumberController from "@/components/ui/input/NumberController.vue";
 import Pagination from "@/components/base/Pagination.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
-import ToTop from "@/components/base/ToTop.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import TestCard from "@/components/test/_TestCard.vue";
 import TestControlRow from "@/components/test/_TestControlRow.vue";

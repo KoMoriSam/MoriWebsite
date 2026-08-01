@@ -1,8 +1,5 @@
 <template>
-  <ContentPage
-    eyebrow="Release Notes &amp; Maintenance"
-    title="更新日志"
-  >
+  <ContentPage eyebrow="Release Notes &amp; Maintenance" title="更新日志">
     <template #actions>
       <template v-if="totalVersions">
         <span class="badge badge-primary badge-soft badge-lg font-semibold">
@@ -228,7 +225,6 @@
     </template>
   </ContentPage>
 
-  <ToTop />
   <FootBar />
 </template>
 
@@ -238,7 +234,6 @@ import { computed, onMounted } from "vue";
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import Loading from "@/components/base/Loading.vue";
-import ToTop from "@/components/base/ToTop.vue";
 import ssgData from "@/router/ssg-data";
 import { useChangelogStore } from "@/stores/changelogStore";
 import { typeText } from "@/utils/type-changelog";

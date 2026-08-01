@@ -1,13 +1,17 @@
 <template>
   <NavBar />
   <router-view />
+  <ToTop />
 </template>
 
 <script setup>
 import { computed, onMounted } from "vue";
 import { useHead } from "@unhead/vue";
 import { useRoute } from "vue-router";
+
 import NavBar from "@/components/layout/NavBar.vue";
+import ToTop from "./components/base/ToTop.vue";
+
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
 import { checkUpdateNotice } from "@/utils/update-notice";

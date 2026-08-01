@@ -508,7 +508,6 @@
 
   <FootBar v-if="!loading" />
 
-  <ToTop />
 </template>
 
 <script setup>
@@ -524,7 +523,6 @@ import {
 } from "vue";
 import { useDateFormat } from "@vueuse/core";
 
-import ToTop from "@/components/base/ToTop.vue";
 import Loading from "@/components/base/Loading.vue";
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";

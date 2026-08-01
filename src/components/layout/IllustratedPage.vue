@@ -21,7 +21,6 @@
       <p>{{ description }}</p>
       <slot></slot>
     </section>
-    <ToTop />
   </main>
   <FootBar />
 </template>
@@ -32,7 +31,6 @@ import { ref } from "vue";
 import { useImageLoad } from "@/composables/useImageLoad";
 
 import FootBar from "@/components/layout/FootBar.vue";
-import ToTop from "@/components/base/ToTop.vue";
 
 defineProps({
   imageSrc: {

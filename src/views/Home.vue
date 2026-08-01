@@ -316,12 +316,10 @@
     </section>
   </section>
   <FootBar />
-  <ToTop />
 </template>
 
 <script setup>
 import FootBar from "@/components/layout/FootBar.vue";
-import ToTop from "@/components/base/ToTop.vue";
 
 import { useImageLoad } from "@/composables/useImageLoad";
 

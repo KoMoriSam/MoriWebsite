@@ -128,8 +128,6 @@
         loading="lazy"
       />
     </section>
-
-    <ToTop />
   </main>
   <FootBar />
 </template>
@@ -149,7 +147,6 @@ import { useNovelStore } from "@/stores/novelStore";
 import { useThemeStore } from "@/stores/themeStore";
 
 import Chapters from "@/components/novel/ChapterList.vue";
-import ToTop from "@/components/base/ToTop.vue";
 import FootBar from "@/components/layout/FootBar.vue";
 
 const novelStore = useNovelStore();

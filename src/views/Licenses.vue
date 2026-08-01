@@ -225,7 +225,6 @@
     </section>
   </ContentPage>
 
-  <ToTop />
   <FootBar />
 </template>
 
@@ -236,7 +235,6 @@ import { useRoute } from "vue-router";
 
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
-import ToTop from "@/components/base/ToTop.vue";
 import licenseData from "@/router/license-data";
 import { createLicenseAnchor } from "@/utils/license-anchor";
 
