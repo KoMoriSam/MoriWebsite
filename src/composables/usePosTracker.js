@@ -4,6 +4,7 @@ import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 
 const FULL_PARAGRAPH_ID_RE =
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/;
+const DEFAULT_SCROLL_OFFSET_REM = 3;
 
 export function usePosTracker(router, onRestoreTitle, options = {}) {
   // 位置追踪依赖 window、document、requestAnimationFrame，只能在浏览器运行。
@@ -43,6 +44,23 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   });
   let skippedScrollUpdates = 0;
   const stopListeners = [];
+
+  function getScrollOffsetPx() {
+    if (options.scrollOffset != null) {
+      const configuredOffset = Number(options.scrollOffset);
+      if (Number.isFinite(configuredOffset)) {
+        return Math.max(0, configuredOffset);
+      }
+    }
+
+    const rootFontSize = Number.parseFloat(
+      window.getComputedStyle(document.documentElement).fontSize,
+    );
+    return (
+      DEFAULT_SCROLL_OFFSET_REM *
+      (Number.isFinite(rootFontSize) ? rootFontSize : 16)
+    );
+  }
 
   function suppressNextScrollUpdates(count = 6) {
     skippedScrollUpdates = Math.max(skippedScrollUpdates, count);
@@ -344,7 +362,11 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     syncReadContext();
     readPos.value = persistedPosToken;
     syncRouteHash(shortToken, 2);
-    el.scrollIntoView({ behavior: "smooth" });
+    const targetTop = Math.max(
+      0,
+      window.scrollY + el.getBoundingClientRect().top - getScrollOffsetPx(),
+    );
+    window.scrollTo({ top: targetTop, behavior: "smooth" });
     setTimeout(() => onRestoreTitle?.(), 1000);
   }
 
