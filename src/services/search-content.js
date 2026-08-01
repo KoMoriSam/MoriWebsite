@@ -8,6 +8,9 @@ import {
 import { useArticleApi } from "@/services/api-articles";
 import { useChapterApi } from "@/services/api-chapters";
 import { typeText } from "@/utils/type-changelog";
+import { createLicenseAnchor } from "@/utils/license-anchor";
+import { createMarkdownSearchBlocks } from "@/utils/markdown/search-anchors";
+import { splitMarkdown } from "@/utils/markdown/split-markdown";
 
 export const CONTENT_TYPES = [
   {
@@ -24,6 +27,11 @@ export const CONTENT_TYPES = [
     value: "changelog",
     label: "更新日志",
     icon: "ri-history-line",
+  },
+  {
+    value: "licenses",
+    label: "开源许可",
+    icon: "ri-file-shield-2-line",
   },
 ];
 
@@ -111,6 +119,32 @@ const stripMarkdown = (value) => {
     .replace(/[*_~=<>{}\[\]|\\]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+};
+
+const createLocalMarkdownSearchBlocks = ({
+  content,
+  baseUrl,
+  title,
+  paginated = false,
+}) => {
+  const pages = paginated ? splitMarkdown(content) : [content];
+
+  return pages.flatMap((pageContent, pageIndex) =>
+    createMarkdownSearchBlocks(pageContent).map((block) => {
+      const sectionTitle = stripMarkdown(block.heading);
+      const url = `${baseUrl}${paginated ? `?p=${pageIndex + 1}` : ""}#${block.id}`;
+
+      return {
+        url,
+        title:
+          sectionTitle && sectionTitle !== title
+            ? `${title} · ${sectionTitle}`
+            : title,
+        summary: stripMarkdown(block.content).slice(0, 280),
+        content: block.content,
+      };
+    }),
+  );
 };
 
 const formatDateTime = (value) => {
@@ -344,12 +378,20 @@ const fetchBlogEntries = async () => {
       ? article.metadata
       : blogMetadata.metadata;
 
+    const url = id ? `/blog/${encodeURIComponent(id)}` : "/blog";
+    const title = String(article?.title || "未命名文章");
+
     return withType(
       {
-        url: id ? `/blog/${encodeURIComponent(id)}` : "/blog",
-        title: String(article?.title || "未命名文章"),
+        url,
+        title,
         summary: String(article?.summary || ""),
         content: String(article?.content || ""),
+        searchBlocks: createLocalMarkdownSearchBlocks({
+          content: article?.content,
+          baseUrl: url,
+          title,
+        }),
         tags,
         filterTags,
         metadata,
@@ -419,13 +461,21 @@ const fetchNovelEntries = async () => {
         "modifiedDate",
         "length",
       ]);
+      const url = uuid ? `/novel/${encodeURIComponent(uuid)}` : "/novel";
+      const title = String(chapter?.title || "未命名章节");
 
       return withType(
         {
-          url: uuid ? `/novel/${encodeURIComponent(uuid)}` : "/novel",
-          title: String(chapter?.title || "未命名章节"),
+          url,
+          title,
           summary: volumeTitle || "《向远方》",
           content,
+          searchBlocks: createLocalMarkdownSearchBlocks({
+            content,
+            baseUrl: url,
+            title,
+            paginated: true,
+          }),
           tags: volumeTitle ? [volumeTitle] : [],
           filterTags: volumeFacet ? [volumeFacet] : [],
           metadata,
@@ -500,6 +550,123 @@ const fetchChangelogEntries = async () => {
   );
 };
 
+const createLicenseSearchEntry = ({
+  url,
+  title,
+  summary,
+  content,
+  tags = [],
+  metadata = [],
+  catalogOrder,
+}) => {
+  const filterTags = tags
+    .map((tag) =>
+      createFilterTag("licenses", tag, {
+        label: tag,
+      }),
+    )
+    .filter(Boolean);
+
+  return withType(
+    {
+      url,
+      title,
+      summary,
+      content,
+      tags,
+      filterTags,
+      metadata,
+      metadataText: metadataSearchText(metadata),
+      date: "",
+      year: "",
+      catalogOrder,
+    },
+    "licenses",
+  );
+};
+
+const fetchLicenseEntries = async () => {
+  const { default: licenseData } = await import("@/router/license-data");
+  const entries = [
+    createLicenseSearchEntry({
+      url: "/licenses#notices",
+      title: "开源许可与第三方声明",
+      summary: "第三方库、字体、图标、图片与其他内容的许可范围和权利声明。",
+      content: [
+        licenseData.noticesMarkdownZh,
+        licenseData.noticesMarkdownEn,
+      ].join("\n\n"),
+      tags: ["第三方声明"],
+      catalogOrder: 0,
+    }),
+    createLicenseSearchEntry({
+      url: "/licenses#project-license",
+      title: "项目 MIT License",
+      summary: "本仓库原创软件源代码适用的 MIT License。",
+      content: licenseData.projectLicense,
+      tags: ["MIT"],
+      catalogOrder: 1,
+    }),
+  ];
+
+  licenseData.dependencyNotices.forEach((dependency, index) => {
+    const declaredLicense = String(
+      dependency.declaredLicense || "not declared",
+    );
+    const metadata = [
+      {
+        key: "license",
+        label: "许可证",
+        value: declaredLicense,
+        icon: "ri-file-shield-2-line",
+      },
+    ];
+    const licenseText = dependency.licenseFiles
+      .flatMap((license) => [license.name, license.text])
+      .join("\n\n");
+
+    entries.push(
+      createLicenseSearchEntry({
+        url: `/licenses#${createLicenseAnchor(
+          "dependency",
+          dependency.name,
+          dependency.version,
+        )}`,
+        title: `${dependency.name}@${dependency.version}`,
+        summary: `${declaredLicense} · ${dependency.source}`,
+        content: [
+          dependency.name,
+          dependency.version,
+          declaredLicense,
+          dependency.source,
+          licenseText,
+        ].join("\n"),
+        tags: declaredLicense === "not declared" ? [] : [declaredLicense],
+        metadata,
+        catalogOrder: index + 2,
+      }),
+    );
+  });
+
+  licenseData.supplementalLicenses.forEach((license, index) => {
+    entries.push(
+      createLicenseSearchEntry({
+        url: `/licenses#${createLicenseAnchor(
+          "supplemental",
+          license.name,
+        )}`,
+        title: license.name,
+        summary: "字体、图标或其他第三方内容的补充许可证文件。",
+        content: license.text,
+        tags: ["补充许可"],
+        catalogOrder: licenseData.dependencyNotices.length + index + 2,
+      }),
+    );
+  });
+
+  return entries;
+};
+
 export const fetchGlobalSearchIndex = async () => {
   if (globalSearchPromise) return globalSearchPromise;
 
@@ -508,6 +675,7 @@ export const fetchGlobalSearchIndex = async () => {
       fetchBlogEntries(),
       fetchNovelEntries(),
       fetchChangelogEntries(),
+      fetchLicenseEntries(),
     ]);
     const entries = sources.flatMap((source) =>
       source.status === "fulfilled" ? source.value : [],

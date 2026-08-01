@@ -8,12 +8,14 @@ import { computed, onMounted } from "vue";
 import { useHead } from "@unhead/vue";
 import { useRoute } from "vue-router";
 import NavBar from "@/components/layout/NavBar.vue";
+import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
 import { checkUpdateNotice } from "@/utils/update-notice";
 import { useStorageMigration } from "@/utils/storage/migrate-storage";
 import { useDiscardStorage } from "@/utils/storage/discard-storage";
 
 const route = useRoute();
+useSearchResultHighlight();
 
 const SITE_URL = "https://komori.cc";
 const SITE_NAME = "KoMoriSam";

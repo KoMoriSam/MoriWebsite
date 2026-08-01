@@ -535,6 +535,7 @@ const activeFilterIndex = ref(0);
 const isComposing = ref(false);
 
 let searchEntries = [];
+let pagefindEngine = null;
 let engineType = "";
 let searchTimer;
 let urlSyncTimer;
@@ -689,6 +690,7 @@ const filteredFilterOptions = computed(() => {
           blog: "博客标签",
           novel: "小说卷",
           changelog: "更新类型",
+          licenses: "许可证类型",
         };
         const nestedGroupLabel =
           tag.contentType === "blog" && tag.groupPath
@@ -844,11 +846,16 @@ const sortSearchResults = (items) => {
 
   return items
     .map((item, index) => {
-      const rawScore = getArticleSearchScore(item, query);
+      const hasPagefindScore = Number.isFinite(item.pagefindScore);
+      const rawScore = hasPagefindScore
+        ? item.pagefindScore
+        : getArticleSearchScore(item, query);
 
       return {
         ...item,
-        summary: createSearchExcerpt(item.content, query, item.summary),
+        summary: hasPagefindScore
+          ? item.summary
+          : createSearchExcerpt(item.content, query, item.summary),
         originalIndex: index,
         searchScore: Number.isFinite(rawScore) ? rawScore : 0,
       };
@@ -867,8 +874,128 @@ const sortSearchResults = (items) => {
     });
 };
 
+const parsePagefindMetadata = (value, fallback = []) => {
+  try {
+    const parsed = JSON.parse(String(value || ""));
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const normalizePagefindExcerpt = (value) =>
+  String(value || "")
+    .replace(/([\p{Script=Han}])\s+(?=[\p{Script=Han}])/gu, "$1")
+    .replace(/\s+([，。！？；：、）】》])/gu, "$1")
+    .replace(/([（【《])\s+/gu, "$1");
+
+const loadPagefindEngine = async () => {
+  if (typeof window === "undefined") return null;
+
+  const baseUrl = String(import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+  const module = await import(
+    /* @vite-ignore */ `${baseUrl}pagefind/pagefind.js`
+  );
+
+  await module.options({ excerptLength: 42 });
+  await module.init();
+  return module;
+};
+
+const mapPagefindResult = async (result) => {
+  const data = await result.data();
+  const meta = data?.meta || {};
+  const type = String(meta.type || data?.filters?.type?.[0] || "blog");
+  const typeDefinition =
+    CONTENT_TYPES.find((definition) => definition.value === type) ||
+    CONTENT_TYPES[0];
+  const catalogOrder = Number(meta.catalogOrder);
+
+  const excerpt = normalizePagefindExcerpt(data?.plain_excerpt);
+  const summary = /[\p{Script=Han}]/u.test(keyword.value)
+    ? String(meta.summary || excerpt)
+    : excerpt || String(meta.summary || "");
+
+  return {
+    url: String(data?.url || result.url || "/"),
+    title: String(meta.title || "未命名内容"),
+    summary,
+    content: excerpt,
+    tags: parsePagefindMetadata(meta.tags),
+    filterTags: [],
+    metadata: parsePagefindMetadata(meta.metadata),
+    metadataText: "",
+    date: String(meta.date || ""),
+    year: String(meta.year || ""),
+    catalogOrder: Number.isFinite(catalogOrder) ? catalogOrder : 0,
+    type,
+    typeLabel: String(meta.typeLabel || typeDefinition.label),
+    typeIcon: String(meta.typeIcon || typeDefinition.icon),
+    pagefindScore: Number.isFinite(result.score) ? result.score : 0,
+  };
+};
+
+const searchPagefindIndex = async () => {
+  const query = keyword.value.trim();
+
+  // 没有关键词时只是浏览筛选结果，不需要启动全文检索。
+  if (!query) return searchIndex();
+
+  const filters = {};
+  if (selectedTypes.value.length) filters.type = [...selectedTypes.value];
+  if (selectedTags.value.length) filters.tag = [...selectedTags.value];
+  if (selectedYears.value.length) filters.year = [...selectedYears.value];
+
+  const encodeCjkToken = (value) =>
+    `z${Array.from(value, (character) =>
+      character.codePointAt(0).toString(16).padStart(6, "0"),
+    ).join("")}`;
+  const segmentedQuery = query
+    .replace(/[\p{Script=Han}]+/gu, (run) => {
+      const characters = Array.from(run);
+      if (characters.length === 1) return encodeCjkToken(run);
+
+      return Array.from({ length: characters.length - 1 }, (_, index) =>
+        encodeCjkToken(characters.slice(index, index + 2).join("")),
+      ).join(" ");
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+  const response = await pagefindEngine.search(segmentedQuery, { filters });
+  if (!response?.results?.length) return [];
+
+  const mappedResults = await Promise.all(
+    response.results.map(mapPagefindResult),
+  );
+  const seenReaderPages = new Set();
+
+  return mappedResults.filter((result) => {
+    if (!["blog", "novel"].includes(result.type)) return true;
+
+    const resolved = router.resolve(result.url || "/");
+    const readerKey = `${result.type}:${resolved.path}`;
+    if (seenReaderPages.has(readerKey)) return false;
+
+    seenReaderPages.add(readerKey);
+    return true;
+  });
+};
+
 const loadSearchEngine = async () => {
-  searchEntries = await fetchGlobalSearchIndex();
+  const [entriesResult, pagefindResult] = await Promise.allSettled([
+    fetchGlobalSearchIndex(),
+    loadPagefindEngine(),
+  ]);
+
+  searchEntries =
+    entriesResult.status === "fulfilled" ? entriesResult.value : [];
+  pagefindEngine =
+    pagefindResult.status === "fulfilled" ? pagefindResult.value : null;
+
+  if (!searchEntries.length && !pagefindEngine) {
+    throw entriesResult.reason || pagefindResult.reason || new Error("没有可用的搜索索引");
+  }
+
   const tagDefinitions = new Map();
   const tagCounts = new Map();
   const yearCounts = new Map();
@@ -917,7 +1044,7 @@ const loadSearchEngine = async () => {
     .sort((a, b) => b.value.localeCompare(a.value));
   availableTagGroupCounts.value = buildTagGroupCounts(searchEntries);
   reconcileSelectedTags();
-  engineType = "local";
+  engineType = pagefindEngine ? "pagefind" : "local";
 };
 
 const initializeSearch = async (force = false) => {
@@ -941,10 +1068,9 @@ const searchIndex = () => {
   const typeSet = new Set(selectedTypes.value);
   const tagSet = new Set(selectedTags.value);
   const yearSet = new Set(selectedYears.value);
+  const query = keyword.value.trim();
 
-  return searchEntries.filter((entry) => {
-    const score = getArticleSearchScore(entry, keyword.value);
-    const matchesKeyword = score !== Number.NEGATIVE_INFINITY;
+  return searchEntries.flatMap((entry) => {
     const matchesType = typeSet.size === 0 || typeSet.has(entry.type);
     const entryTagSet = new Set(
       (Array.isArray(entry.filterTags) ? entry.filterTags : []).map(
@@ -955,7 +1081,33 @@ const searchIndex = () => {
       tagSet.size === 0 || [...tagSet].some((tag) => entryTagSet.has(tag));
     const matchesYear = yearSet.size === 0 || yearSet.has(entry.year);
 
-    return matchesKeyword && matchesType && matchesTag && matchesYear;
+    if (!matchesType || !matchesTag || !matchesYear) return [];
+    if (!query) return [entry];
+
+    const blockMatches = (Array.isArray(entry.searchBlocks)
+      ? entry.searchBlocks
+      : []
+    )
+      .map((block, index) => {
+        const candidate = {
+          ...entry,
+          ...block,
+          metadataText: entry.metadataText,
+        };
+
+        return {
+          candidate,
+          index,
+          score: getArticleSearchScore(candidate, query),
+        };
+      })
+      .filter((match) => match.score !== Number.NEGATIVE_INFINITY)
+      .sort((a, b) => b.score - a.score || a.index - b.index);
+
+    if (blockMatches.length) return [blockMatches[0].candidate];
+
+    const score = getArticleSearchScore(entry, query);
+    return score === Number.NEGATIVE_INFINITY ? [] : [entry];
   });
 };
 
@@ -976,7 +1128,8 @@ async function runSearch() {
   errorMessage.value = "";
 
   try {
-    const matches = searchIndex();
+    const matches =
+      engineType === "pagefind" ? await searchPagefindIndex() : searchIndex();
 
     if (requestId !== searchRequestId) return;
 
@@ -1342,8 +1495,8 @@ const openActiveResult = () => {
 };
 
 const openResult = (result) => {
-  const query = {};
-  const [resultPath, resultHash = ""] = String(result.url || "/").split("#");
+  const destination = router.resolve(String(result.url || "/"));
+  const query = { ...destination.query };
   const serializedTags = serializeSelectedTags();
 
   if (selectedTypes.value.length) query.type = [...selectedTypes.value];
@@ -1354,11 +1507,15 @@ const openResult = (result) => {
   isOpen.value = false;
   closeFilterMenu();
   setBodyScrollLocked(false);
-  router.push({
-    path: resultPath || "/",
-    query,
-    hash: resultHash ? `#${resultHash}` : "",
-  });
+  router
+    .push({
+      path: destination.path || "/",
+      query,
+      hash: destination.hash,
+    })
+    .then(() => {
+      document.dispatchEvent(new CustomEvent("global-search-result-opened"));
+    });
 };
 
 const handleGlobalKeydown = (event) => {
