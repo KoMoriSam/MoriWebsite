@@ -98,8 +98,25 @@ export const routes = [
 
 const router = createRouter({
   history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+    if (to.hash && typeof document !== "undefined") {
+      const rawHash = to.hash.slice(1);
+      let anchorId = rawHash;
+
+      try {
+        anchorId = decodeURIComponent(rawHash);
+      } catch {
+        // 非法转义交给原始 ID 尝试匹配。
+      }
+
+      const target = document.getElementById(anchorId);
+      if (target) return { el: target, top: 96 };
+    }
+    if (to.path !== from.path) return { top: 0 };
+    return false;
+  },
 });
 
 export default router;
