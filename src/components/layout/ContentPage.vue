@@ -1,0 +1,66 @@
+<template>
+  <main
+    class="mx-auto w-full max-w-7xl px-8 py-6 lg:py-12"
+    :aria-labelledby="showHeader ? titleId : undefined"
+  >
+    <header v-if="showHeader" class="mb-6">
+      <div
+        class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+      >
+        <div class="max-w-3xl min-w-0">
+          <p
+            v-if="eyebrow || $slots.eyebrow"
+            class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
+          >
+            <slot name="eyebrow">{{ eyebrow }}</slot>
+          </p>
+
+          <h1 :id="titleId" class="font-serif text-3xl font-bold md:text-4xl">
+            <slot name="title">{{ title }}</slot>
+          </h1>
+
+          <p
+            v-if="description || $slots.description"
+            class="mt-3 text-pretty text-base-content/70"
+          >
+            <slot name="description">{{ description }}</slot>
+          </p>
+        </div>
+
+        <div
+          v-if="$slots.actions"
+          class="flex max-w-full flex-wrap items-center gap-2 md:max-w-md md:justify-end"
+        >
+          <slot name="actions"></slot>
+        </div>
+      </div>
+    </header>
+
+    <slot></slot>
+  </main>
+</template>
+
+<script setup>
+defineProps({
+  eyebrow: {
+    type: String,
+    default: "",
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    default: "",
+  },
+  titleId: {
+    type: String,
+    default: "page-title",
+  },
+  showHeader: {
+    type: Boolean,
+    default: true,
+  },
+});
+</script>

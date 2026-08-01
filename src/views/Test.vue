@@ -1,67 +1,95 @@
 <template>
-  <main class="my-12 mx-6 md:mx-12">
-    <article class="mx-auto max-w-6xl space-y-6">
-      <header
-        class="relative overflow-hidden rounded-box border border-base-300 bg-base-200/70 p-6 md:p-8 shadow-sm"
-      >
-        <div
-          class="pointer-events-none absolute -top-10 -right-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
-        ></div>
-        <div
-          class="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-accent/10 blur-2xl"
-        ></div>
+  <ContentPage
+    eyebrow="Development Diagnostics"
+    title="开发测试面板"
+    description="集中验证页面布局、基础组件、组合式函数与数据服务在当前设计系统中的行为。"
+  >
+    <template #actions>
+      <span class="badge badge-warning badge-soft badge-lg">仅开发环境</span>
+      <span class="badge badge-dash badge-lg">
+        {{ testSections.length }} 个检查项
+      </span>
+      <router-link class="btn btn-sm" to="/">
+        <i class="ri-arrow-left-line" aria-hidden="true"></i>
+        返回主页
+      </router-link>
+    </template>
 
-        <div
-          class="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-        >
-          <div class="prose max-w-none">
-            <h1 class="mb-2">开发测试面板</h1>
-            <p class="my-0 text-sm opacity-70">
-              当前页面用于验证组件、交互与 API 行为，风格与主站保持一致。
-            </p>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="badge badge-warning badge-sm">DEV ONLY</span>
-            <router-link class="btn btn-sm btn-outline" to="/">
-              返回主页
-            </router-link>
-          </div>
-        </div>
-      </header>
-
-      <nav
-        class="sticky top-3 z-10 rounded-box border border-base-300 bg-base-100/90 backdrop-blur px-3 py-2 shadow-sm"
-      >
-        <div class="flex flex-wrap gap-1.5">
-          <a
-            v-for="item in testSections"
-            :key="item.id"
-            class="btn btn-xs btn-ghost"
-            :href="`#${item.id}`"
-          >
+    <nav
+      class="sticky top-3 z-20 mt-8 mb-6 overflow-x-auto rounded-box border border-base-300 bg-base-100/90 p-2 shadow-sm backdrop-blur"
+      aria-label="测试项目快速导航"
+    >
+      <ul class="menu menu-horizontal flex-nowrap gap-1 p-0">
+        <li v-for="item in testSections" :key="item.id">
+          <a class="whitespace-nowrap text-xs" :href="`#${item.id}`">
             {{ item.label }}
           </a>
-        </div>
-      </nav>
+        </li>
+      </ul>
+    </nav>
 
-      <section class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-        <div id="routing" class="scroll-mt-24">
-          <TestCard title="路由与导航">
-            <div class="flex flex-wrap gap-2 mb-3">
-              <button
-                v-for="r in routes"
-                :key="r.path"
-                class="btn btn-sm btn-outline"
-                @click="router.push(r.path)"
+    <section class="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+      <div id="page-layout" class="scroll-mt-24 xl:col-span-2">
+        <TestCard title="ContentPage 内容页">
+          <div
+            class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
+          >
+            <div>
+              <p
+                class="max-w-3xl text-sm leading-relaxed text-base-content/70"
               >
-                {{ r.name }}
-              </button>
+                当前页面就是通用布局组件的完整实例；眉题、标题、说明与操作区均由具名入口提供，正文继续保留自由组合能力。
+              </p>
+              <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <div class="rounded-box bg-base-200 p-3">
+                  <dt class="text-xs text-base-content/55">内容宽度</dt>
+                  <dd class="mt-1 font-mono font-semibold">max-w-7xl</dd>
+                </div>
+                <div class="rounded-box bg-base-200 p-3">
+                  <dt class="text-xs text-base-content/55">标题层级</dt>
+                  <dd class="mt-1 font-semibold">语义化 h1</dd>
+                </div>
+                <div class="rounded-box bg-base-200 p-3">
+                  <dt class="text-xs text-base-content/55">响应式操作区</dt>
+                  <dd class="mt-1 font-semibold">自动换行与对齐</dd>
+                </div>
+              </dl>
             </div>
-            <p class="text-xs opacity-50">
-              当前路由: <code>{{ $route.fullPath }}</code>
-            </p>
-          </TestCard>
-        </div>
+            <div class="flex flex-wrap gap-2 lg:max-w-sm lg:justify-end">
+              <router-link class="btn btn-sm btn-outline" to="/blog">
+                文章列表
+              </router-link>
+              <router-link class="btn btn-sm btn-outline" to="/changelog">
+                更新日志
+              </router-link>
+              <router-link class="btn btn-sm btn-outline" to="/licenses">
+                许可声明
+              </router-link>
+              <router-link class="btn btn-sm btn-outline" to="/tools">
+                工具集
+              </router-link>
+            </div>
+          </div>
+        </TestCard>
+      </div>
+
+      <div id="routing" class="scroll-mt-24">
+        <TestCard title="路由与导航">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <router-link
+              v-for="r in routes"
+              :key="r.path"
+              class="btn btn-sm btn-outline"
+              :to="r.path"
+            >
+              {{ r.name }}
+            </router-link>
+          </div>
+          <p class="text-xs opacity-50">
+            当前路由: <code>{{ $route.fullPath }}</code>
+          </p>
+        </TestCard>
+      </div>
 
         <div id="toast" class="scroll-mt-24">
           <TestCard title="Toast 通知">
@@ -100,7 +128,7 @@
               </button>
               <button
                 class="btn btn-sm btn-accent"
-                @click="toast.star('彩蛋 ⭐')"
+                @click="toast.star('发现彩蛋')"
               >
                 Star
               </button>
@@ -223,8 +251,16 @@
         <div id="loading" class="scroll-mt-24">
           <TestCard title="Loading 状态">
             <div class="flex flex-wrap items-center gap-4 mb-4">
-              <button class="btn btn-sm btn-primary" @click="toggleLoading">
-                切换 Loading（3s）
+              <button
+                class="btn btn-sm btn-primary"
+                :disabled="loadingOn"
+                @click="toggleLoading"
+              >
+                <span
+                  v-if="loadingOn"
+                  class="loading loading-spinner loading-xs"
+                ></span>
+                {{ loadingOn ? "加载中" : "测试 Loading（3s）" }}
               </button>
               <span
                 v-if="loadingOn"
@@ -315,11 +351,22 @@
                   @load="imgLoaded = true"
                 />
               </div>
-              <p class="text-sm">
-                状态:
-                <span :class="imgLoaded ? 'text-success' : 'text-warning'">{{
-                  imgLoaded ? "✅ 已加载" : "⏳ 加载中…"
-                }}</span>
+              <p class="flex items-center gap-2 text-sm">
+                <span>状态:</span>
+                <span
+                  class="inline-flex items-center gap-1"
+                  :class="imgLoaded ? 'text-success' : 'text-warning'"
+                >
+                  <i
+                    :class="
+                      imgLoaded
+                        ? 'ri-checkbox-circle-line'
+                        : 'ri-loader-4-line animate-spin'
+                    "
+                    aria-hidden="true"
+                  ></i>
+                  {{ imgLoaded ? "已加载" : "加载中…" }}
+                </span>
               </p>
             </div>
           </TestCard>
@@ -398,14 +445,13 @@
             >
             <p v-if="apiError" class="text-error text-sm">{{ apiError }}</p>
           </TestCard>
-        </div>
-      </section>
-    </article>
-  </main>
+      </div>
+    </section>
+  </ContentPage>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "@/composables/useToast";
 import { useModal } from "@/composables/useModal";
@@ -422,6 +468,7 @@ import NumberController from "@/components/ui/input/NumberController.vue";
 import Pagination from "@/components/base/Pagination.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import ToTop from "@/components/base/ToTop.vue";
+import ContentPage from "@/components/layout/ContentPage.vue";
 import TestCard from "@/components/test/_TestCard.vue";
 import TestControlRow from "@/components/test/_TestControlRow.vue";
 
@@ -435,6 +482,7 @@ const modal = useModal();
 const readerStore = useReaderStore();
 
 const testSections = [
+  { id: "page-layout", label: "页面布局" },
   { id: "routing", label: "路由" },
   { id: "toast", label: "Toast" },
   { id: "modal", label: "Modal" },
@@ -520,13 +568,19 @@ const ncLineHeight = ref(1.5);
 
 // ───────── Loading ─────────
 const loadingOn = ref(false);
+let loadingTimer;
+
 function toggleLoading() {
   loadingOn.value = true;
-  setTimeout(() => {
+  loadingTimer = window.setTimeout(() => {
     loadingOn.value = false;
     toast.success("加载完成！");
   }, 3000);
 }
+
+onBeforeUnmount(() => {
+  window.clearTimeout(loadingTimer);
+});
 
 // ───────── CodeBlock ─────────
 const sampleCode = `interface Test {\n  name: string;\n  value: number;\n}\n\nconst t: Test = { name: "hello", value: 42 };\nconsole.log(t);`;

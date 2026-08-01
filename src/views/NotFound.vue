@@ -1,5 +1,5 @@
 <template>
-  <BasePage
+  <IllustratedPage
     :imageSrc="`/assets/images/profile/me4.webp`"
     imageAlt="me!"
     title="Ah Oh!"
@@ -25,11 +25,11 @@
         <i class="ri-book-fill"></i>看看小说
       </button>
     </section>
-  </BasePage>
+  </IllustratedPage>
 </template>
 
 <script setup>
-import BasePage from "@/components/layout/BasePage.vue";
+import IllustratedPage from "@/components/layout/IllustratedPage.vue";
 
 import { useRouter } from "vue-router";
 const route = useRouter();

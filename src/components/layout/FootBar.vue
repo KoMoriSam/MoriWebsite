@@ -8,11 +8,17 @@
         alt="welcome!"
         class="h-6"
       />
-      <router-link class="btn btn-xs no-underline my-2 sm:my-5" to="/changelog">
-        <i class="ri-history-line"></i>
-        <span>更新日志</span>
-      </router-link>
       <small class="text-sm"> KoMoriSam © 2025–2026 </small>
+      <small class="text-xs text-base-content/50">
+        <router-link class="link link-hover block my-2" to="/changelog">
+          更新日志
+          <i class="ri-arrow-right-line"></i>
+        </router-link>
+        <router-link class="link link-hover block my-2" to="/licenses">
+          开源许可与第三方声明
+          <i class="ri-arrow-right-line"></i>
+        </router-link>
+      </small>
     </aside>
     <nav>
       <h6 class="footer-title">社交帐号</h6>
@@ -28,27 +34,16 @@
         </a>
       </div>
       <br />
-      <small class="text-xs lg:text-sm text-base-content/50">
-        <span>
-          在找旧版网页？
-          <a
-            class="link link-primary no-underline hover:underline"
-            href="/archive/home/index.html"
-            target="_blank"
-          >
-            这里跳转
-            <i class="ri-arrow-right-up-line"></i>
-          </a>
-        </span>
-        <span class="block mt-2">
-          <router-link
-            class="link link-hover"
-            to="/licenses"
-          >
-            开源许可与第三方声明
-            <i class="ri-arrow-right-line"></i>
-          </router-link>
-        </span>
+      <small class="text-xs text-base-content/50">
+        在找旧版网页？
+        <a
+          class="link link-primary no-underline hover:underline"
+          href="/archive/home/index.html"
+          target="_blank"
+        >
+          这里跳转
+          <i class="ri-arrow-right-up-line"></i>
+        </a>
       </small>
     </nav>
   </footer>

@@ -1,29 +1,27 @@
 <template>
-  <main
-    class="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12"
+  <ContentPage
+    eyebrow="Posts &amp; Articles"
+    title="文章列表"
+    :show-header="!loading && articles.length > 0"
   >
+    <template #actions>
+      <span class="badge badge-dash badge-lg font-semibold">
+        共 {{ articles.length }} 篇文章
+      </span>
+      <client-only>
+        <span v-if="hasFilter" class="badge badge-primary badge-soft badge-lg">
+          找到 {{ filteredArticles.length }} 篇
+        </span>
+      </client-only>
+    </template>
+
     <!-- 加载状态 -->
     <Loading v-if="loading" :size="`my-32`" />
 
     <template v-else-if="articles.length">
-      <!-- 页面标题 -->
-      <header class="mb-6 flex flex-wrap items-center justify-start gap-4">
-        <h1 class="text-2xl font-serif font-black sm:text-3xl">文章列表</h1>
-
-        <p class="text-sm text-base-content/55">
-          共 {{ articles.length }} 篇文章
-        </p>
-
-        <client-only>
-          <span v-if="hasFilter" class="badge badge-primary badge-soft">
-            找到 {{ filteredArticles.length }} 篇
-          </span>
-        </client-only>
-      </header>
-
       <!-- 检索区域 -->
       <client-only>
-        <section class="mb-8" aria-label="文章检索">
+        <section class="my-6" aria-label="文章检索">
           <div ref="searchBox" class="relative min-w-0">
             <div
               class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
@@ -506,7 +504,9 @@
       <h2 class="text-lg font-semibold">暂无文章</h2>
       <p class="mt-2 text-sm text-base-content/50">文章发布后会显示在这里</p>
     </div>
-  </main>
+  </ContentPage>
+
+  <FootBar v-if="!loading" />
 
   <ToTop />
 </template>
@@ -526,6 +526,8 @@ import { useDateFormat } from "@vueuse/core";
 
 import ToTop from "@/components/base/ToTop.vue";
 import Loading from "@/components/base/Loading.vue";
+import FootBar from "@/components/layout/FootBar.vue";
+import ContentPage from "@/components/layout/ContentPage.vue";
 import {
   formatArticleTag,
   normalizeArticleTag,

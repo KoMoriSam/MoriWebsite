@@ -1,40 +1,25 @@
 <template>
-  <main class="mx-auto w-full max-w-7xl px-4 py-12 md:px-8 lg:py-16">
-    <header>
-      <div
-        class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+  <ContentPage
+    eyebrow="Open Source &amp; Attributions"
+    title="开源许可与第三方声明"
+    description="项目的 MIT 许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。"
+  >
+    <template #actions>
+      <span class="badge badge-lg badge-primary badge-soft">
+        {{ licenseData.dependencyCount }} 个依赖版本
+      </span>
+      <span class="badge badge-lg badge-outline">
+        {{ licenseData.supplementalLicenses.length }} 份补充许可
+      </span>
+      <span
+        v-if="licenseData.missingLicenseFileCount"
+        class="badge badge-lg badge-dash"
       >
-        <div class="max-w-3xl">
-          <p class="mb-2 text-sm font-semibold tracking-wide text-primary">
-            OPEN SOURCE &amp; ATTRIBUTIONS
-          </p>
-          <h1 class="font-serif font-bold text-3xl md:text-4xl">
-            开源许可与第三方声明
-          </h1>
-          <p class="mt-3 text-base-content/70">
-            项目的 MIT
-            许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。
-          </p>
-        </div>
+        {{ licenseData.missingLicenseFileCount }} 个包未附顶层许可文件
+      </span>
+    </template>
 
-        <div class="flex flex-wrap gap-2 md:max-w-xs md:justify-end">
-          <span class="badge badge-lg"
-            >{{ licenseData.dependencyCount }} 个依赖版本</span
-          >
-          <span class="badge badge-lg badge-outline">
-            {{ licenseData.supplementalLicenses.length }} 份补充许可
-          </span>
-          <span
-            v-if="licenseData.missingLicenseFileCount"
-            class="badge badge-lg badge-outline"
-          >
-            {{ licenseData.missingLicenseFileCount }} 个包未附顶层许可文件
-          </span>
-        </div>
-      </div>
-    </header>
-
-    <section id="project-license" class="scroll-mt-24 py-10">
+    <section id="project-license" class="scroll-mt-24 my-8">
       <div
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
@@ -66,7 +51,7 @@
       </details>
     </section>
 
-    <section id="notices" class="scroll-mt-24 pb-10">
+    <section id="notices" class="scroll-mt-24 my-8">
       <div
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
@@ -108,10 +93,7 @@
         </div>
       </div>
 
-      <article
-        class="card card-border bg-base-100"
-        :lang="noticeLanguage"
-      >
+      <article class="card card-border bg-base-100" :lang="noticeLanguage">
         <div class="card-body">
           <VueMarkdown
             class="prose max-w-none"
@@ -124,11 +106,11 @@
 
     <section
       id="dependencies"
-      class="scroll-mt-24 pb-10"
+      class="scroll-mt-24 my-8"
       data-pagefind-ignore="all"
     >
       <div
-        class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
+        class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
           <p class="text-sm text-base-content/60">
@@ -147,7 +129,7 @@
         </a>
       </div>
 
-      <p class="mb-5 max-w-3xl text-sm text-base-content/70">
+      <p class="mb-5 text-sm text-base-content/70">
         以下内容来自构建时实际安装的软件包。若软件包未携带顶层许可文件，条目仍会保留其声明的许可证和上游地址，并明确标记缺失情况。
       </p>
 
@@ -155,7 +137,8 @@
         <details
           v-for="dependency in licenseData.dependencyNotices"
           :key="`${dependency.name}@${dependency.version}`"
-          class="collapse collapse-arrow border border-base-300 bg-base-100"
+          :id="dependencyAnchor(dependency)"
+          class="collapse collapse-arrow scroll-mt-24 border border-base-300 bg-base-100"
         >
           <summary class="collapse-title pr-12">
             <span
@@ -212,7 +195,7 @@
 
     <section
       id="supplemental"
-      class="scroll-mt-24 pb-6"
+      class="scroll-mt-24 my-8"
       data-pagefind-ignore="all"
     >
       <div class="mb-4">
@@ -226,7 +209,8 @@
         <details
           v-for="license in licenseData.supplementalLicenses"
           :key="license.name"
-          class="collapse collapse-arrow border border-base-300 bg-base-100"
+          :id="supplementalAnchor(license)"
+          class="collapse collapse-arrow scroll-mt-24 border border-base-300 bg-base-100"
         >
           <summary class="collapse-title font-mono text-sm font-semibold">
             {{ license.name }}
@@ -239,19 +223,24 @@
         </details>
       </div>
     </section>
-  </main>
+  </ContentPage>
 
   <ToTop />
   <FootBar />
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import VueMarkdown from "vue-markdown-render";
+import { useRoute } from "vue-router";
 
 import FootBar from "@/components/layout/FootBar.vue";
+import ContentPage from "@/components/layout/ContentPage.vue";
 import ToTop from "@/components/base/ToTop.vue";
 import licenseData from "@/router/license-data";
+import { createLicenseAnchor } from "@/utils/license-anchor";
+
+const route = useRoute();
 
 const markdownOptions = {
   html: false,
@@ -288,6 +277,24 @@ const rawNoticeUrl = computed(() =>
 
 const rawNoticeLabel = computed(() =>
   noticeLanguage.value === "zh-CN" ? "查看中文原始文本" : "View English source",
+);
+
+const dependencyAnchor = (dependency) =>
+  createLicenseAnchor("dependency", dependency.name, dependency.version);
+
+const supplementalAnchor = (license) =>
+  createLicenseAnchor("supplemental", license.name);
+
+watch(
+  () => route.hash,
+  async (hash) => {
+    if (!hash || typeof document === "undefined") return;
+
+    await nextTick();
+    const target = document.getElementById(hash.slice(1));
+    if (target instanceof HTMLDetailsElement) target.open = true;
+  },
+  { immediate: true, flush: "post" },
 );
 
 const sourceUrl = (source) => {

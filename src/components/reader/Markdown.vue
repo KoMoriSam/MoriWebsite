@@ -22,7 +22,7 @@
     <vue-markdown
       v-if="content"
       :key="`${headerData.uuid}-${headerData.page}-v${markdownRenderVersion}`"
-      :source="content"
+      :source="searchAnchoredContent"
       :options="options"
       :plugins="plugins"
     />
@@ -32,9 +32,11 @@
 
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 
 import VueMarkdown from "vue-markdown-render";
 import Loading from "@/components/base/Loading.vue";
+import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 
 const props = defineProps({
   // 内容数据
@@ -121,11 +123,49 @@ import {
 } from "@/services/api-paragraph-comments";
 
 const paragraphPlugin = useParagraphComments();
+const route = useRoute();
 const articleRef = ref(null);
 const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const katexPlugin = ref(null);
+const searchAnchoredContent = computed(() =>
+  injectMarkdownSearchAnchors(props.content),
+);
+
+const getRouteAnchorId = () => {
+  const rawHash = String(route.hash || "").replace(/^#/, "");
+  if (!rawHash) return "";
+
+  try {
+    return decodeURIComponent(rawHash);
+  } catch {
+    return rawHash;
+  }
+};
+
+const scrollToRouteAnchor = async () => {
+  if (
+    import.meta.env.SSR ||
+    typeof window === "undefined" ||
+    typeof document === "undefined" ||
+    props.isLoading ||
+    markdownPreparing.value
+  ) {
+    return;
+  }
+
+  const anchorId = getRouteAnchorId();
+  if (!anchorId) return;
+
+  await nextTick();
+  window.requestAnimationFrame(() => {
+    const target = document.getElementById(anchorId);
+    if (!target || !articleRef.value?.contains(target)) return;
+
+    target.scrollIntoView({ block: "start" });
+  });
+};
 
 const collectPrefetchParagraphIds = () => {
   if (!articleRef.value) {
@@ -344,5 +384,18 @@ watch(
     });
   },
   { immediate: true },
+);
+
+watch(
+  () => [
+    route.hash,
+    props.isLoading,
+    markdownPreparing.value,
+    props.content,
+    props.headerData.page,
+    markdownRenderVersion.value,
+  ],
+  scrollToRouteAnchor,
+  { immediate: true, flush: "post" },
 );
 </script>
