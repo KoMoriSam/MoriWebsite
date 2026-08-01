@@ -41,7 +41,11 @@ export function useChapterSetup() {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
 
-    const query = {};
+    const query = Object.fromEntries(
+      Object.entries(route.query).filter(
+        ([key]) => !["c", "chapter", "p", "page", "search"].includes(key),
+      ),
+    );
     if (permalink.routeCode) {
       query.c = permalink.routeCode;
     }
