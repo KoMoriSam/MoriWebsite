@@ -1,7 +1,7 @@
 <template>
   <NavBar />
   <router-view />
-  <ToTop />
+  <ToTop v-if="!route.meta.hideToTop" />
 </template>
 
 <script setup>

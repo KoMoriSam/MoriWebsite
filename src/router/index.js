@@ -57,7 +57,11 @@ export const routes = [
     path: "/blog/:articleId",
     name: "blog-article",
     component: () => import("@/views/Blog.vue"),
-    meta: { title: "博客 | KoMoriSam", navName: "blog" },
+    meta: {
+      title: "博客 | KoMoriSam",
+      navName: "blog",
+      hideToTop: true,
+    },
   },
   {
     path: "/novel",
@@ -69,7 +73,11 @@ export const routes = [
     path: "/novel/:volumeSlug/:chapterSlug?",
     name: "novel-reader",
     component: () => import("@/views/Novel.vue"),
-    meta: { title: "向远方 | KoMoriSam", navName: "novel" },
+    meta: {
+      title: "向远方 | KoMoriSam",
+      navName: "novel",
+      hideToTop: true,
+    },
   },
   {
     path: "/tools/:toolSlug?",
