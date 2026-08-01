@@ -5,9 +5,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate-third-party-licenses.mjs --source",
     "dev": "vite --host 0.0.0.0",
-    "prebuild": "node scripts/generate-routes.mjs",
+    "prebuild": "node scripts/generate-routes.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "build": "vite-ssg build && pagefind --site dist",
+    "postbuild": "node scripts/generate-third-party-licenses.mjs --dist",
     "deploy": "gh-pages -d dist -r https://github.com/KoMoriSam/MoriWebsite.git",
     "preview": "vite preview --host 0.0.0.0",
     "push": "git push origin main:cl-pages --force"

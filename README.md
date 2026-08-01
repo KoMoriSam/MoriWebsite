@@ -199,7 +199,9 @@ public/
 
 ## 许可证
 
-本项目采用 [MIT License](./LICENSE)。
+除另有说明外，本仓库的原创软件源代码采用 [MIT License](./LICENSE)。第三方库、字体、图标、图片、文章及其他非软件内容仍适用各自的许可证或权利声明，不因收录于本仓库而改为 MIT；详情参见[中文第三方声明](./THIRD_PARTY_NOTICES.zh-CN.md)或[英文原版](./THIRD_PARTY_NOTICES.md)。
+
+生产构建会在 `dist/legal/` 中生成并附带运行时依赖的许可证文本，同时将其预渲染为站内 `/licenses` 页面。
 
 ## 其他语言
 

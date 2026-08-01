@@ -48,6 +48,12 @@ export const routes = [
     meta: { title: "更新日志 | KoMoriSam" },
   },
   {
+    path: "/licenses",
+    name: "licenses",
+    component: () => import("@/views/Licenses.vue"),
+    meta: { title: "开源许可与第三方声明 | KoMoriSam" },
+  },
+  {
     path: "/blog/:articleId",
     name: "blog-article",
     component: () => import("@/views/Blog.vue"),

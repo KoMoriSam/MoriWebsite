@@ -1,88 +1,61 @@
-<!DOCTYPE html>
-<html lang="zh-cn">
+<!doctype html>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minecraft Space!!! | KoMoriSam</title>
-
+    <meta name="robots" content="noindex" />
+    <title>旧版专题页说明 | KoMoriSam</title>
     <!--=============== icons ===============-->
-    <link rel="icon" href="../../assets/images/icons/favicon.png" />
+    <link rel="icon" href="../../assets/images/icons/favicon.webp" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.4.0/remixicon.css"
+      crossorigin=""
+    />
 
-    <!--=============== js ===============-->
+    <!--=============== js =============== -->
     <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/getText.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+    <script src="../js/main.js"></script>
 
     <!--=============== css ===============-->
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/bg3D.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
   </head>
 
   <body>
-    <div class="bg3D">
-      <div class="out-front"></div>
-      <div class="out-back"></div>
-      <div class="out-left"></div>
-      <div class="out-right"></div>
-    </div>
+    <!--=============== bar ===============-->
+    <div id="page-bar"></div>
+    <script>
+      $("#page-bar").load("../com/side.html");
+    </script>
 
-    <header>
-      <img
-        src="assets/image/title/minecraft.png"
-        alt="minecraft"
-        class="img-title"
-      />
-      <img
-        src="assets/image/title/html_edition.png"
-        alt="html-edition"
-        class="img-edition"
-      />
-      <span id="splash"></span>
-    </header>
-
-    <main>
-      <div class="button_list">
-        <p>
-          <button
-            class="long_btn"
-            onclick="playSoundAndRedirect('https://www.minecraft.net')"
-          >
-            开始游戏
-          </button>
-        </p>
-        <p>
-          <button class="long_btn" onclick="playSoundAndRedirect('about.html')">
-            游戏简介
-          </button>
-        </p>
-        <p><button class="long_btn" disabled="disabled">网易代理</button></p>
-        <p>
-          <button class="mid_btn" onclick="playSound()">网页设置</button>
-          <button class="mid_btn" onclick="playSoundAndRedirect('../../')">
-            退出网页
-          </button>
-        </p>
-      </div>
+    <!--=============== main ===============-->
+    <main class="main container" id="main">
+      <h1>旧版专题页已停止提供</h1>
+      <p>
+        这个历史页面曾包含无法确认再分发授权的游戏与音乐素材。为尊重相关作者和权利人的权益，素材和原页面已经移除。
+      </p>
+      <p>
+        本页是非官方的玩家历史说明页，并非 Minecraft 官方产品、服务或活动；未经
+        Mojang 或 Microsoft 批准，也与其没有关联。
+      </p>
+      <p>
+        This is an unofficial historical notice. It is not approved by or
+        associated with Mojang or Microsoft.
+      </p>
+      <nav aria-label="相关链接">
+        <a href="https://www.minecraft.net/">访问 Minecraft 官方网站</a>
+        ·
+        <a href="/archive/home/index.html">返回旧版主页</a>
+        ·
+        <a href="/">返回当前网站</a>
+      </nav>
     </main>
-
-    <footer>
-      <p>
-        <button onclick="playSound(); musiccc()">
-          <img id="musicico" src="assets/image/icon/jukebox.png" width="16px" />
-          C418 - Minecraft
-        </button>
-      </p>
-      Made by KoMoriSam!!
-      <p>
-        <img src="assets/image/icon/github.svg" width="16px" />
-        <a href="https://github.com/KoMoriSam">GitHub</a>
-        <br />
-        <img src="https://www.bilibili.com/favicon.ico" width="16px" />
-        <a href="https://space.bilibili.com/71104942">Bilibili</a>
-      </p>
-    </footer>
   </body>
 </html>

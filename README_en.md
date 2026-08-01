@@ -199,7 +199,9 @@ The project primarily targets recent versions of Chrome, Firefox, Microsoft Edge
 
 ## License
 
-This project is available under the [MIT License](./LICENSE).
+Unless otherwise stated, original software source code in this repository is available under the [MIT License](./LICENSE). Third-party libraries, fonts, icons, images, articles, and other non-software content remain subject to their respective licenses or rights notices and are not relicensed under MIT. See the [third-party notices](./THIRD_PARTY_NOTICES.md).
+
+Production builds generate runtime dependency license texts under `dist/legal/` and prerender them as the site's `/licenses` page.
 
 ## Languages
 

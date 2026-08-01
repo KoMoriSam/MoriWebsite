@@ -24,6 +24,8 @@ const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
 const KEYWORDS = "KoMoriSam,个人博客,技术博客,独立开发,原创小说,向远方";
 
 const PAGE_DESCRIPTIONS = {
+  licenses:
+    "查看 KoMoriSam 网站原创软件、生产依赖、字体、图标及其他第三方内容的许可证与权利声明。",
   blog: "阅读 KoMoriSam 的技术探索、生活随笔与读书笔记。",
   "blog-article": "阅读 KoMoriSam 的博客文章。",
   changelog: "查看 KoMoriSam 个人网站的功能更新、修复与版本记录。",

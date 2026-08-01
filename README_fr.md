@@ -199,7 +199,9 @@ Le projet vise principalement les versions récentes de Chrome, Firefox, Microso
 
 ## Licence
 
-Ce projet est distribué sous [licence MIT](./LICENSE).
+Sauf indication contraire, le code source logiciel original de ce dépôt est distribué sous [licence MIT](./LICENSE). Les bibliothèques, polices, icônes, images, articles et autres contenus non logiciels de tiers restent soumis à leurs licences ou mentions de droits respectives et ne sont pas placés sous licence MIT. Consultez les [mentions relatives aux tiers](./THIRD_PARTY_NOTICES.md).
+
+Les versions de production génèrent les textes de licence des dépendances d’exécution dans `dist/legal/` et les pré-rendent sur la page `/licenses` du site.
 
 ## Langues
 

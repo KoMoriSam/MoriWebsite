@@ -12,7 +12,7 @@
         <i class="ri-history-line"></i>
         <span>更新日志</span>
       </router-link>
-      <small class="text-sm"> KoMoriSam © 2025 </small>
+      <small class="text-sm"> KoMoriSam © 2025–2026 </small>
     </aside>
     <nav>
       <h6 class="footer-title">社交帐号</h6>
@@ -39,6 +39,15 @@
             这里跳转
             <i class="ri-arrow-right-up-line"></i>
           </a>
+        </span>
+        <span class="block mt-2">
+          <router-link
+            class="link link-hover"
+            to="/licenses"
+          >
+            开源许可与第三方声明
+            <i class="ri-arrow-right-line"></i>
+          </router-link>
         </span>
       </small>
     </nav>
