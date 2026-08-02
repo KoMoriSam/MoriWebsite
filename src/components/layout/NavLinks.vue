@@ -17,36 +17,17 @@
 
 <script setup>
 import { useRoute } from "vue-router";
+import {
+  NAV_LINKS,
+  isNavigationLinkActive,
+} from "@/constants/navigation.js";
 
 const route = useRoute();
 
 // SSG 直达文章页会匹配无 name 的具体文章路由。
 // 使用 navName 标记它所属的一级导航，避免给所有文章路由设置重复 name。
 const isLinkActive = (link) =>
-  route.matched.some(
-    (record) => (record.meta.navName || record.name) === link.to.name,
-  );
+  isNavigationLinkActive(route, link);
 
-const navLinks = [
-  {
-    name: "主页",
-    icon: "ri-home-9",
-    to: { name: "home" },
-  },
-  {
-    name: "博客",
-    icon: "ri-article",
-    to: { name: "blog" },
-  },
-  {
-    name: "小说",
-    icon: "ri-book-3",
-    to: { name: "novel" },
-  },
-  {
-    name: "工具",
-    icon: "ri-pencil-ruler-2",
-    to: { name: "tools" },
-  },
-];
+const navLinks = NAV_LINKS;
 </script>

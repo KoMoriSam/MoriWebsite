@@ -7,21 +7,7 @@
       >
         <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
       </a>
-      <div class="dropdown">
-        <div
-          tabindex="0"
-          role="button"
-          class="btn btn-ghost max-md:btn-square lg:hidden"
-        >
-          <i class="fill-current ri-menu-line text-base lg:text-xl"></i>
-        </div>
-        <ul
-          tabindex="0"
-          class="menu menu-sm dropdown-content bg-base-200 rounded-box z-20 mt-5 w-max p-0 shadow"
-        >
-          <NavLinks />
-        </ul>
-      </div>
+      <MobileNav />
     </nav>
     <client-only>
       <nav class="navbar-center">
@@ -32,10 +18,11 @@
             class="h-8"
           />
         </a>
-        <div class="hidden lg:flex">
+        <div class="hidden items-center lg:flex">
           <ul class="menu menu-horizontal px-1">
             <NavLinks />
           </ul>
+          <ProjectMenu />
         </div>
       </nav>
       <nav class="navbar-end">
@@ -51,6 +38,8 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 
 import NavLinks from "@/components/layout/NavLinks.vue";
+import MobileNav from "@/components/layout/MobileNav.vue";
+import ProjectMenu from "@/components/layout/ProjectMenu.vue";
 import GlobalSearch from "@/components/layout/GlobalSearch.vue";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
 </script>
