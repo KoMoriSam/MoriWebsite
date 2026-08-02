@@ -38,6 +38,8 @@ const PAGE_DESCRIPTIONS = {
   novel: "在线阅读 KoMoriSam 创作的原创小说《向远方》。",
   "novel-reader": "在线阅读 KoMoriSam 创作的原创小说《向远方》。",
   tools: "使用 KoMoriSam 制作的在线小工具与服务查询功能。",
+  kaiming:
+    "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
   NotFound: "未找到请求的页面。",
   test: "KoMoriSam 网站的组件测试页面。",
 };

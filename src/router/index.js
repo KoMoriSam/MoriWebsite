@@ -85,6 +85,12 @@ export const routes = [
     component: () => import("@/views/Tools.vue"),
     meta: { title: "工具 | KoMoriSam", navName: "tools" },
   },
+  {
+    path: "/kaiming",
+    name: "kaiming",
+    component: () => import("@/views/Kaiming.vue"),
+    meta: { title: "开明标点 | KoMoriSam" },
+  },
   // 仅开发环境可见，生产构建自动移除
   ...(import.meta.env.DEV
     ? [
