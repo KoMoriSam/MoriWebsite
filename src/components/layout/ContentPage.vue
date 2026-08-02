@@ -1,6 +1,6 @@
 <template>
   <main
-    class="mx-auto w-full max-w-7xl px-8 py-6 lg:py-12"
+    class="mx-auto w-full max-w-7xl p-6 sm:px-8 lg:px-10 lg:py-12"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
     <header v-if="showHeader" class="mb-6">

@@ -90,7 +90,7 @@
     </section>
   </section>
 
-  <section class="py-24 px-4">
+  <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
         <h2 class="font-serif text-3xl font-bold mb-3">我在做什么</h2>
@@ -171,7 +171,7 @@
 
   <div class="divider"></div>
 
-  <section class="py-24 px-4">
+  <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
         <h2 class="font-serif text-3xl font-bold mb-3">关于我</h2>
@@ -210,7 +210,7 @@
 
   <div class="divider"></div>
 
-  <section class="py-24 px-4">
+  <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
         <h2 class="font-serif text-3xl font-bold mb-3">关注 & 联系</h2>
