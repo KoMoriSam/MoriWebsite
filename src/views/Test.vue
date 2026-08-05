@@ -16,7 +16,7 @@
     </template>
 
     <nav
-      class="sticky top-3 z-20 mt-8 mb-6 overflow-x-auto rounded-box border border-base-300 bg-base-100/90 p-2 shadow-sm backdrop-blur"
+      class="sticky top-3 z-10 mt-8 mb-6 overflow-x-auto rounded-box border border-base-300 bg-base-100/90 p-2 shadow-sm backdrop-blur"
       aria-label="测试项目快速导航"
     >
       <ul class="menu menu-horizontal flex-nowrap gap-1 p-0">
@@ -112,7 +112,15 @@
             >
               Warning
             </button>
-            <button class="btn btn-sm btn-info" @click="toast.info('提示信息')">
+            <button
+              class="btn btn-sm btn-info"
+              @click="
+                toast.info('提示信息', {
+                  closable: true,
+                  duration: 0,
+                })
+              "
+            >
               Info
             </button>
             <button

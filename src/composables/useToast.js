@@ -29,7 +29,7 @@ export function useToast(defaultOptions = {}) {
       const container = document.createElement("div");
       // 添加基础类名和位置类名
       document.body.appendChild(container);
-      container.className = `toast z-1 mx-0 my-18 ${
+      container.className = `toast z-20 mx-0 my-18 ${
         TOAST_POSITIONS[position] || position
       }`;
 
