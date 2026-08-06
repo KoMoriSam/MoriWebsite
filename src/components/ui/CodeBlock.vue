@@ -13,7 +13,6 @@
     >
 
     <span
-      v-if="isSupported"
       class="absolute right-2 top-2 tooltip tooltip-left"
       :class="copied ? 'tooltip-success' : ''"
       :data-tip="copied ? '复制成功' : '复制到剪贴板'"
@@ -76,7 +75,8 @@ onMounted(highlightCode);
 watch(() => [props.code, props.language], highlightCode, { flush: "post" });
 
 // 复制功能
-const { copy, copied, isSupported } = useClipboard({
+const { copy, copied } = useClipboard({
   source: code,
+  legacy: true,
 });
 </script>
