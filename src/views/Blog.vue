@@ -1,20 +1,18 @@
 <template>
-  <KeepAlive>
-    <ArticleList
-      v-if="currentComponent === 'ArticleList'"
-      :articles="articles"
-      :loading="loadingList"
-    />
-    <ArticleDetail
-      v-else
-      :article="currentArticle"
-      :content="articleContent"
-      :loading="loadingContent"
-      :error="errorContent"
-      @refresh="refreshCurrentArticle"
-      @back="goToList"
-    />
-  </KeepAlive>
+  <ArticleList
+    v-if="currentComponent === 'ArticleList'"
+    :articles="articles"
+    :loading="loadingList"
+  />
+  <ArticleDetail
+    v-else
+    :article="currentArticle"
+    :content="articleContent"
+    :loading="loadingContent"
+    :error="errorContent"
+    @refresh="refreshCurrentArticle"
+    @back="goToList"
+  />
 </template>
 
 <script setup>
@@ -76,9 +74,7 @@ const disposeBlogPosTracker = () => {
 const setupBlogPosTracker = () => {
   if (typeof window === "undefined") return;
 
-  const articleId = String(
-    currentArticle.value?.id || getRouteArticleId(),
-  );
+  const articleId = String(currentArticle.value?.id || getRouteArticleId());
   const shouldTrack =
     currentComponent.value === "ArticleDetail" &&
     !loadingContent.value &&
@@ -99,8 +95,7 @@ const setupBlogPosTracker = () => {
   stopBlogPosTracker.value = usePosTracker(router, undefined, {
     readPosKey: "BLOG_READ_POS",
     readContextKey: "BLOG_READ_ARTICLE_ID",
-    getContextId: () =>
-      String(currentArticle.value?.id || getRouteArticleId()),
+    getContextId: () => String(currentArticle.value?.id || getRouteArticleId()),
     getPage: () => 1,
     isActive: () =>
       String(router.currentRoute.value.path || "").startsWith("/blog"),
