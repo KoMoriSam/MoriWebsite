@@ -5,9 +5,13 @@ const modal = {
   show(options = {}) {
     const {
       title = "Hello!",
-      description = "点击按钮以关闭。",
+      description = "这是一个提示弹窗。",
       buttonText = "关闭",
+      cancelText = "取消",
+      buttonMode = "footer",
+      variant = "default",
       onSubmit = () => {},
+      onCancel = () => {},
     } = options;
 
     const container = document.createElement("div");
@@ -48,7 +52,11 @@ const modal = {
               title,
               description,
               buttonText,
+              cancelText,
+              buttonMode,
+              variant,
               onSubmit,
+              onCancel,
               onClose: close,
               visible: visible.value,
             },
@@ -84,8 +92,10 @@ const modal = {
     return this.show({
       title,
       description,
-      buttonText: options.buttonText || "确认",
       ...options,
+      variant: "confirm",
+      buttonText: options.buttonText || "确认",
+      cancelText: options.cancelText || "取消",
     });
   },
 };

@@ -3,20 +3,44 @@
     v-if="visible"
     ref="dialogRef"
     class="modal modal-bottom sm:modal-middle"
-    @keydown.esc="handleSubmit"
+    @cancel="handleNativeCancel"
   >
-    <section ref="modalRef" class="modal-box">
-      <slot name="title">
-        <h3 class="text-lg font-bold">{{ title }}</h3>
-      </slot>
+    <section ref="modalRef" class="modal-box relative">
+      <form v-if="!isConfirm && buttonMode === 'close'" method="dialog">
+        <button
+          class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
+          type="button"
+          aria-label="关闭"
+          @click="handleDismiss"
+        >
+          <i class="ri-close-line text-lg" aria-hidden="true"></i>
+        </button>
+      </form>
+      <header :class="{ 'pr-10': !isConfirm && buttonMode === 'close' }">
+        <slot name="title">
+          <h3 class="text-lg font-bold">{{ title }}</h3>
+        </slot>
+      </header>
       <section class="py-4">
         <slot name="description">
           <p>{{ description }}</p>
           <!-- fallback -->
         </slot>
       </section>
-      <form class="modal-action" method="dialog" @submit.prevent="handleSubmit">
-        <button class="btn" type="submit">
+      <form v-if="isConfirm" method="dialog" class="modal-action">
+        <button class="btn btn-primary" type="button" @click="handleSubmit">
+          {{ buttonText }}
+        </button>
+        <button class="btn" type="button" @click="handleCancel">
+          {{ cancelText }}
+        </button>
+      </form>
+      <form
+        v-else-if="buttonMode === 'footer'"
+        method="dialog"
+        class="modal-action"
+      >
+        <button class="btn" type="button" @click="handleSubmit">
           {{ buttonText }}
         </button>
       </form>
@@ -25,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, h } from "vue";
+import { computed, ref, h } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
 const props = defineProps({
@@ -41,12 +65,29 @@ const props = defineProps({
     type: String,
     default: "关闭",
   },
+  cancelText: {
+    type: String,
+    default: "取消",
+  },
+  buttonMode: {
+    type: String,
+    default: "footer",
+    validator: (value) => ["none", "close", "footer"].includes(value),
+  },
+  variant: {
+    type: String,
+    default: "default",
+    validator: (value) => ["default", "confirm"].includes(value),
+  },
   visible: {
-    // 添加 visible prop
     type: Boolean,
     default: false,
   },
   onSubmit: {
+    type: Function,
+    default: () => {},
+  },
+  onCancel: {
     type: Function,
     default: () => {},
   },
@@ -56,8 +97,8 @@ const emit = defineEmits(["close"]);
 
 const modalRef = ref(null);
 const dialogRef = ref(null);
+const isConfirm = computed(() => props.variant === "confirm");
 
-// 关闭Modal
 const close = () => {
   if (dialogRef.value?.close) {
     dialogRef.value.close();
@@ -65,18 +106,29 @@ const close = () => {
   emit("close");
 };
 
-// 处理提交
 const handleSubmit = () => {
   props.onSubmit();
   close();
 };
 
-// 点击外部关闭
-onClickOutside(modalRef, () => {
-  handleSubmit();
-});
+const handleDismiss = () => {
+  if (!isConfirm.value) {
+    close();
+  }
+};
 
-// 暴露方法给父组件
+const handleCancel = () => {
+  props.onCancel();
+  close();
+};
+
+const handleNativeCancel = (event) => {
+  event.preventDefault();
+  handleDismiss();
+};
+
+onClickOutside(modalRef, handleDismiss);
+
 defineExpose({
   close,
 });
