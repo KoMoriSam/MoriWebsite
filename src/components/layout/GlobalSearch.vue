@@ -16,7 +16,7 @@
     <Transition name="global-search">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-start justify-center bg-neutral/45 px-3 pt-[8vh] backdrop-blur-sm sm:px-6 sm:pt-[10vh]"
+        class="fixed inset-0 z-[100] flex items-start justify-center bg-black/40 px-3 pt-[8vh] sm:px-6 sm:pt-[10vh]"
         role="presentation"
         @mousedown.self="closeSearch"
       >
@@ -993,7 +993,11 @@ const loadSearchEngine = async () => {
     pagefindResult.status === "fulfilled" ? pagefindResult.value : null;
 
   if (!searchEntries.length && !pagefindEngine) {
-    throw entriesResult.reason || pagefindResult.reason || new Error("没有可用的搜索索引");
+    throw (
+      entriesResult.reason ||
+      pagefindResult.reason ||
+      new Error("没有可用的搜索索引")
+    );
   }
 
   const tagDefinitions = new Map();
@@ -1084,9 +1088,8 @@ const searchIndex = () => {
     if (!matchesType || !matchesTag || !matchesYear) return [];
     if (!query) return [entry];
 
-    const blockMatches = (Array.isArray(entry.searchBlocks)
-      ? entry.searchBlocks
-      : []
+    const blockMatches = (
+      Array.isArray(entry.searchBlocks) ? entry.searchBlocks : []
     )
       .map((block, index) => {
         const candidate = {

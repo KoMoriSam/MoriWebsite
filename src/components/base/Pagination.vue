@@ -91,7 +91,7 @@
       >
         <div
           v-if="isPageMenuOpen"
-          class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-[1px] lg:hidden"
+          class="fixed inset-0 z-[100] bg-black/40 lg:hidden"
           @click.self="closePageMenu"
         >
           <Transition
