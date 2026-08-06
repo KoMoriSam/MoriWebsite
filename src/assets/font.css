@@ -11,17 +11,17 @@
 
 @theme {
   --font-song:
-    "Kaiming Serif Punctuation", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
+    "Kaiming Punctuation Serif", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
     "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
     serif;
   --font-hei:
-    "Kaiming Sans Punctuation", "LXGW Neo XiHei", "STHeiti", "STXihei",
+    "Kaiming Punctuation Sans", "LXGW Neo XiHei", "STHeiti", "STXihei",
     "SimHei", "Noto Sans Sinhala Variable", "Noto Sans Sinhala", sans-serif;
   --font-kai:
-    "Kaiming Serif Punctuation", "LXGW WenKai GB", "LXGW WenKai GB Lite",
+    "Kaiming Punctuation Serif", "LXGW WenKai GB", "LXGW WenKai GB Lite",
     "STKaiti", "KaiTi", "Maname", cursive;
   --font-fang:
-    "Kaiming Serif Punctuation", "Zhuque Fangsong", "LXGW Neo ZhiSong CHS",
+    "Kaiming Punctuation Serif", "Zhuque Fangsong", "LXGW Neo ZhiSong CHS",
     "LXGW Neo ZhiSong", "STFangsong", "FangSong", "Noto Serif Sinhala Variable",
     "Noto Serif Sinhala", serif;
 }
@@ -29,13 +29,13 @@
 @layer base {
   :root {
     --font-sans:
-      "Kaiming Sans Punctuation", "Manrope Variable", "Manrope",
+      "Kaiming Punctuation Sans", "Manrope Variable", "Manrope",
       "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
       "Noto Sans Sinhala", ui-sans-serif, system-ui, sans-serif,
       "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
       "Noto Color Emoji";
     --font-serif:
-      "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
+      "Kaiming Punctuation Serif", "Fraunces Variable", "Fraunces",
       "Noto Serif SC Variable", "Noto Serif SC", "Source Han Serif SC Variable",
       "Source Han Serif SC", "Noto Serif Sinhala Variable",
       "Noto Serif Sinhala", ui-serif, Georgia, Cambria, "Times New Roman",
