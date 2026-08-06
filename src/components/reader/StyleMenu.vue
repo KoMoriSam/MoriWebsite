@@ -20,7 +20,7 @@
       <span v-else class="text-xs text-base-content/45">默认值</span>
     </header>
 
-    <div class="px-3 pb-3 pt-2">
+    <div class="py-2">
       <slot></slot>
     </div>
   </section>
