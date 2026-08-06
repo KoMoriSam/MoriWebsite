@@ -10,6 +10,7 @@ const modal = {
       cancelText = "取消",
       buttonMode = "footer",
       variant = "default",
+      leadingAction = null,
       onSubmit = () => {},
       onCancel = () => {},
     } = options;
@@ -63,12 +64,17 @@ const modal = {
             {
               title: () =>
                 typeof title === "string"
-                  ? h("h3", { class: "text-lg font-bold" }, title)
-                  : h("div", { class: "text-lg font-bold" }, title),
+                  ? h("h3", { class: "text-lg font-serif font-bold" }, title)
+                  : h(
+                      "hgroup",
+                      { class: "text-lg font-serif font-bold" },
+                      title,
+                    ),
               description: () =>
                 typeof description === "string"
                   ? h("p", description)
-                  : h("div", description),
+                  : h("article", description),
+              "leading-action": () => leadingAction,
             },
           );
       },

@@ -5,7 +5,7 @@
     class="modal modal-bottom sm:modal-middle"
     @cancel="handleNativeCancel"
   >
-    <section ref="modalRef" class="modal-box relative">
+    <section ref="modalRef" class="modal-box relative scrollbar-thin">
       <form v-if="!isConfirm && buttonMode === 'close'" method="dialog">
         <button
           class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
@@ -16,18 +16,20 @@
           <i class="ri-close-line text-lg" aria-hidden="true"></i>
         </button>
       </form>
-      <header :class="{ 'pr-10': !isConfirm && buttonMode === 'close' }">
+      <header
+        class="mb-4"
+        :class="{ 'pr-10': !isConfirm && buttonMode === 'close' }"
+      >
         <slot name="title">
           <h3 class="text-lg font-bold">{{ title }}</h3>
         </slot>
       </header>
-      <section class="py-4">
-        <slot name="description">
-          <p>{{ description }}</p>
-          <!-- fallback -->
-        </slot>
-      </section>
+      <slot name="description">
+        {{ description }}
+        <!-- fallback -->
+      </slot>
       <form v-if="isConfirm" method="dialog" class="modal-action">
+        <slot name="leading-action"></slot>
         <button class="btn btn-primary" type="button" @click="handleSubmit">
           {{ buttonText }}
         </button>
@@ -40,6 +42,7 @@
         method="dialog"
         class="modal-action"
       >
+        <slot name="leading-action"></slot>
         <button class="btn" type="button" @click="handleSubmit">
           {{ buttonText }}
         </button>
