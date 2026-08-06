@@ -101,10 +101,12 @@ export const useParagraphComments = () => {
         ? `${paragraphText.slice(0, MAX_TITLE_LENGTH)}...`
         : paragraphText;
     const titleNode = h("div", { class: "space-y-1" }, [
-      h("p", { class: "text-xs font-medium opacity-60" }, "当前段评"),
+      h("h3", { class: "text-sm" }, "当前段评"),
       h(
         "p",
-        { class: "text-sm font-semibold font-serif leading-snug break-all" },
+        {
+          class: "text-base font-medium leading-snug text-justify text-pretty",
+        },
         truncatedTitle,
       ),
     ]);
