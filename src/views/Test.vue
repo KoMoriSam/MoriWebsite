@@ -152,35 +152,68 @@
 
       <div id="modal" class="scroll-mt-24">
         <TestCard title="Modal 弹窗">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <button
-              class="btn btn-sm btn-primary"
-              @click="modal.info('信息', '通过 useModal().info() 调用')"
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <article class="rounded-box border border-base-300 p-4">
+              <h3 class="font-semibold">1. 无按钮</h3>
+              <p class="mt-1 text-sm opacity-70">
+                应仅能通过 Esc 或点击弹窗外部关闭。
+              </p>
+              <button class="btn btn-sm mt-3" @click="openNoButtonModal">
+                测试无按钮 Modal
+              </button>
+            </article>
+
+            <article class="rounded-box border border-base-300 p-4">
+              <h3 class="font-semibold">2. 右上角关闭按钮</h3>
+              <p class="mt-1 text-sm opacity-70">
+                可点击右上角关闭按钮，也可通过 Esc 或点击外部关闭。
+              </p>
+              <button class="btn btn-sm mt-3" @click="openTopCloseModal">
+                测试顶部关闭按钮
+              </button>
+            </article>
+
+            <article class="rounded-box border border-base-300 p-4">
+              <h3 class="font-semibold">3. 右下角操作按钮</h3>
+              <p class="mt-1 text-sm opacity-70">
+                点击按钮应显示成功提示；Esc 或点击外部只关闭，不显示提示。
+              </p>
+              <button class="btn btn-sm mt-3" @click="openFooterModal">
+                测试底部按钮
+              </button>
+            </article>
+
+            <article class="rounded-box border border-base-300 p-4">
+              <h3 class="font-semibold">4. 确认 Modal</h3>
+              <p class="mt-1 text-sm opacity-70">
+                确认按钮应为主色，取消按钮在右侧；Esc 与点击外部均不能关闭。
+              </p>
+              <button class="btn btn-sm mt-3" @click="openConfirmModal">
+                测试确认 Modal
+              </button>
+            </article>
+
+            <article
+              class="rounded-box border border-base-300 p-4 sm:col-span-2"
             >
-              Info Modal
-            </button>
-            <button
-              class="btn btn-sm btn-warning"
-              @click="
-                modal.confirm('确认', '确认执行操作？', {
-                  onSubmit: () => toast.success('已确认'),
-                })
-              "
-            >
-              Confirm Modal
-            </button>
-            <button
-              class="btn btn-sm btn-outline"
-              @click="inlineModal = !inlineModal"
-            >
-              {{ inlineModal ? "关闭内联" : "内联 v-if" }}
-            </button>
+              <h3 class="font-semibold">5. 声明式 Modal 组件</h3>
+              <p class="mt-1 text-sm opacity-70">
+                直接使用 &lt;Modal&gt;，验证 visible、button-text 与 close
+                事件。
+              </p>
+              <button
+                class="btn btn-sm mt-3"
+                @click="inlineModal = !inlineModal"
+              >
+                {{ inlineModal ? "关闭声明式 Modal" : "打开声明式 Modal" }}
+              </button>
+            </article>
           </div>
           <Modal
             v-if="inlineModal"
             :visible="true"
-            title="内联 Modal"
-            description="&lt;Modal :visible /&gt; 声明式控制"
+            title="声明式 Modal"
+            description="这是通过 &lt;Modal :visible /&gt; 直接声明的弹窗。"
             button-text="关闭"
             @close="inlineModal = false"
           />
@@ -201,18 +234,11 @@
             </button>
           </div>
           <div class="bg-base-100 rounded-lg p-4 max-h-96 overflow-auto">
-            <article
-              class="prose max-w-none"
-              :class="readerStore.styleConfigs.fontStyle"
-            >
-              <vue-markdown
-                v-if="mdContent"
-                :source="mdContent"
-                :options="mdOptions"
-                :plugins="[]"
-              />
-              <p v-else class="opacity-50 italic">加载中…</p>
-            </article>
+            <Markdown
+              :content="mdContent"
+              :header-data="mdHeaderData"
+              :style-configs="readerStore.styleConfigs"
+            />
           </div>
         </TestCard>
       </div>
@@ -463,9 +489,9 @@ import { useChapterApi } from "@/services/api-chapters";
 import { useGlobalStorage } from "@/utils/storage/new-global-storage";
 import { useReaderSettingsStorage } from "@/utils/storage/new-reader-settings";
 import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
-import VueMarkdown from "vue-markdown-render";
 import Loading from "@/components/base/Loading.vue";
 import Modal from "@/components/ui/Modal.vue";
+import Markdown from "@/components/reader/Markdown.vue";
 import NumberController from "@/components/ui/input/NumberController.vue";
 import Pagination from "@/components/base/Pagination.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
@@ -527,40 +553,333 @@ const routes = computed(() =>
 // ───────── 内联 Modal ─────────
 const inlineModal = ref(false);
 
+function openNoButtonModal() {
+  modal.show({
+    title: "无按钮 Modal",
+    description: "请分别使用 Esc 和点击弹窗外部来关闭。",
+    buttonMode: "none",
+  });
+}
+
+function openTopCloseModal() {
+  modal.info("右上角关闭按钮", "请依次验证关闭按钮、Esc 和点击弹窗外部。", {
+    buttonMode: "close",
+  });
+}
+
+function openFooterModal() {
+  modal.info(
+    "右下角操作按钮",
+    "只有点击“我知道了”才应显示成功提示；Esc 和点击外部只负责关闭。",
+    {
+      buttonMode: "footer",
+      buttonText: "我知道了",
+      onSubmit: () => toast.success("右下角按钮已触发"),
+    },
+  );
+}
+
+function openConfirmModal() {
+  modal.confirm(
+    "确认操作",
+    "Esc 和点击弹窗外部不应关闭此弹窗，请测试确认和取消按钮。",
+    {
+      buttonText: "确认",
+      cancelText: "取消",
+      onSubmit: () => toast.success("已确认"),
+      onCancel: () => toast.info("已取消"),
+    },
+  );
+}
+
 // ───────── Markdown ─────────
-const mdOptions = {
-  html: true,
-  typographer: true,
-  linkify: true,
-  breaks: true,
-};
 const mdSamples = [
   {
-    name: "标题段落",
-    content:
-      "# 一级标题\n## 二级标题\n### 三级标题\n\n**粗体** *斜体* ~~删除~~ `行内代码`\n\n> 引用",
+    name: "标题与段落",
+    content: [
+      "# 一级标题",
+      "## 二级标题",
+      "### 三级标题",
+      "#### 四级标题",
+      "##### 五级标题",
+      "###### 六级标题",
+      "",
+      "这是第一段正文，用于观察段落宽度、字号、行高、字间距与首行缩进。",
+      "",
+      "这是第二段正文。下面使用两个行尾空格产生硬换行。  ",
+      "这一行应紧跟上一行显示，但仍然位于同一段落中。",
+      "",
+      "---",
+      "",
+      "> 普通引用第一层",
+      ">",
+      "> > 嵌套引用第二层",
+    ].join("\n"),
   },
-  { name: "列表", content: "- 无序列表\n  - 嵌套项\n\n1. 有序\n2. 列表" },
   {
-    name: "代码块",
-    content:
-      "```javascript\nfunction fib(n) {\n  if (n <= 1) return n;\n  return fib(n-1) + fib(n-2);\n}\nconsole.log(fib(10)); // 55\n```",
+    name: "行内与扩展",
+    content: [
+      "普通文本、**粗体**、*斜体*、***粗斜体***、~~删除线~~、==高亮文本==。",
+      "",
+      "行内代码 `const answer = 42`，转义字符 \\*不会变成斜体\\*。",
+      "",
+      "上标：X^2^；下标：H~2~O；Emoji：:smile: :tada: :warning:。",
+      "",
+      "Ruby 注音：{小森|コモリ}、{远方|yuǎnfāng}、{汉字|かんじ}。",
+      "",
+      "HTML 和 CSS 都可以使用缩写提示。",
+      "",
+      "*[HTML]: HyperText Markup Language",
+      "*[CSS]: Cascading Style Sheets",
+      "",
+      "这是一段签名样式测试。{.signature}",
+      "",
+      "## 带自定义 ID 的标题 {#custom-heading}",
+      "",
+      "[跳转到自定义标题](#custom-heading)",
+    ].join("\n"),
+  },
+  {
+    name: "列表与任务",
+    content: [
+      "## 无序列表",
+      "",
+      "- 一级项目 A",
+      "  - 二级项目 A.1",
+      "    - 三级项目 A.1.1",
+      "- 一级项目 B",
+      "",
+      "## 有序列表",
+      "",
+      "1. 第一步",
+      "2. 第二步",
+      "   1. 子步骤",
+      "   2. 另一个子步骤",
+      "3. 第三步",
+      "",
+      "## 任务列表",
+      "",
+      "- [x] 已完成任务",
+      "- [ ] 未完成任务",
+      "- [x] 包含 **粗体** 与 `code` 的任务",
+    ].join("\n"),
+  },
+  {
+    name: "链接与媒体",
+    content: [
+      "## 链接",
+      "",
+      "[站内首页](/)、[GitHub](https://github.com) 与自动链接 <https://komori.cc/>。",
+      "",
+      "这是一个带标题的链接：[Markdown 指南](https://www.markdownguide.org/ \"打开 Markdown 指南\")。",
+      "",
+      "[引用式链接][docs]",
+      "",
+      "[docs]: https://www.markdownguide.org/",
+      "",
+      "## 图片",
+      "",
+      "![小森头像](/assets/images/avatar/komorisam.webp \"本地图片与替代文本测试\")",
+      "",
+      "图片下方正文用于检查图片尺寸、间距和加载后的布局稳定性。",
+    ].join("\n"),
   },
   {
     name: "表格",
-    content:
-      "| 属性 | 类型 | 默认 |\n|------|------|------|\n| size | string | md |\n| color | string | primary |",
+    content: [
+      "## 对齐与行内格式",
+      "",
+      "| 左对齐 | 居中 | 右对齐 | 混合内容 |",
+      "| :--- | :---: | ---: | --- |",
+      "| 普通文本 | **粗体** | 123.45 | `inline code` |",
+      "| 较长内容用于测试列宽和换行 | [链接](https://example.com) | 9,999 | ~~删除~~ 与 ==高亮== |",
+      "| 中文标点：，。！？ | :smile: | -42 | H~2~O 与 X^2^ |",
+      "",
+      "表格下方正文用于检查滚动容器与上下间距。",
+    ].join("\n"),
   },
   {
-    name: "链接图片",
-    content:
-      "[GitHub](https://github.com)\n\n![pic](https://placehold.co/400x200/374151/fff?text=Test+Image)",
+    name: "代码高亮",
+    content: [
+      "行内代码：`npm run build`。",
+      "",
+      "~~~javascript",
+      "function fibonacci(n) {",
+      "  if (n <= 1) return n;",
+      "  return fibonacci(n - 1) + fibonacci(n - 2);",
+      "}",
+      "",
+      "console.log(fibonacci(10));",
+      "~~~",
+      "",
+      "~~~python",
+      "def greet(name: str) -> str:",
+      "    return f'Hello, {name}!'",
+      "",
+      "print(greet('KoMoriSam'))",
+      "~~~",
+      "",
+      "~~~diff",
+      "- const enabled = false;",
+      "+ const enabled = true;",
+      "~~~",
+      "",
+      "~~~",
+      "没有声明语言的纯文本代码块",
+      "用于检查 fallback 与复制按钮。",
+      "~~~",
+    ].join("\n"),
+  },
+  {
+    name: "提示与折叠",
+    content: [
+      "> [!NOTE] 普通说明",
+      "> 静态说明块，支持 **Markdown** 与 `行内代码`。",
+      "",
+      "> [!TIP]+ 默认展开",
+      "> 这是可以折叠的提示块。",
+      ">",
+      "> - 支持列表",
+      "> - 支持多段内容",
+      "",
+      "> [!WARNING]- 默认折叠",
+      "> 点击标题后才能看到这段警告内容。",
+      "",
+      "> [!CAUTION] 危险操作",
+      "> 请确认 error 语义色、图标与正文对比度。",
+      "",
+      "> [!SUCCESS] 操作成功",
+      "> success 类型的渲染效果。",
+      "",
+      "> [!QUOTE] 自定义引用",
+      "> 用于区别普通 blockquote 与项目提示块。",
+    ].join("\n"),
+  },
+  {
+    name: "脚注与锚点",
+    content: [
+      "# 可跳转的测试标题",
+      "",
+      "标题右侧应生成无障碍锚点。[跳转到标题](#可跳转的测试标题)",
+      "",
+      "这是数字脚注[^1]，这是命名脚注[^note]。同一个脚注可以再次引用[^1]。",
+      "",
+      "脚注中可以包含 **粗体**、链接和多段内容。[^long]",
+      "",
+      "[^1]: 第一条脚注内容。",
+      "[^note]: 命名脚注会按照出现顺序编号。",
+      "[^long]: 第一段脚注，包含 [外部链接](https://example.com)。",
+      "",
+      "    第二段脚注，用于检查缩进和返回链接。",
+    ].join("\n"),
+  },
+  {
+    name: "数学公式",
+    content: [
+      "## 行内公式",
+      "",
+      "质能方程 $E = mc^2$ 应与正文基线对齐，勾股定理为 $a^2 + b^2 = c^2$。",
+      "",
+      "## 块级公式",
+      "",
+      "$$",
+      "a^2 + b^2 = c^2",
+      "$$",
+      "",
+      "$$",
+      "f(x) = x^3 + 2x^2 - x + 1",
+      "$$",
+      "",
+      "公式后的正文用于检查异步加载 KaTeX 时是否闪烁或丢失内容。",
+    ].join("\n"),
+  },
+  {
+    name: "原生 HTML",
+    content: [
+      "## HTML 混排",
+      "",
+      "<u>下划线文本</u>、<small>小号文本</small> 与 <del>删除文本</del>。",
+      "",
+      "<details>",
+      "  <summary>点击展开原生 details</summary>",
+      "  <p>这里包含 <strong>HTML 粗体</strong> 和 <code>HTML code</code>。</p>",
+      "</details>",
+      "",
+      "<div title=\"悬停提示\">带有 title 属性的块级 HTML。</div>",
+      "",
+      "HTML 后的 **Markdown 正文** 应继续正常解析。",
+    ].join("\n"),
+  },
+  {
+    name: "聊天记录",
+    content: [
+      "> [!chat] **李焰老师** · 在线",
+      ">",
+      "> > **Mori** 10:30 · 已送达",
+      "> > 老师，这是包含 **粗体**、`代码` 和 [链接](https://example.com) 的消息。",
+      ">",
+      "> 对方已加入会话",
+      ">",
+      "> > **李焰老师** 10:31 · 已读 · 👍",
+      "> > 收到，聊天气泡与状态徽章渲染正常。",
+      "> >",
+      "> > 第二行消息用于测试气泡内的多段内容。",
+      "",
+      "## 仅聊天消息（无 ChatBar）",
+      "",
+      "> > [!chat] **Mori** 10:30 · 已送达",
+      "> > 康神开播了，真的假的😲",
+    ].join("\n"),
+  },
+  {
+    name: "空间动态",
+    content: [
+      "> [!moment] **Mori** · 2026-08-06 10:30 · 昆明",
+      ">",
+      "> 今天在测试自定义 **空间动态** 渲染，正文支持 `Markdown` 和 :tada:。",
+      ">",
+      "> ![动态配图](/assets/images/avatar/komorisam.webp)",
+      ">",
+      "> ❤️ 12 · 💬 2 · 🔁 3",
+      ">",
+      "> **评论**",
+      "> - **李焰老师** 10:35：渲染效果不错。",
+      ">   - **Mori** 回复 **李焰老师** 10:36：收到，谢谢！",
+      "> - **小群主** 10:40：评论也支持 **行内格式**。",
+    ].join("\n"),
+  },
+  {
+    name: "边界情况",
+    content: [
+      "## 中英文与标点",
+      "",
+      "中文English混排，数字1234567890，全角标点：，。！？；：“”‘’（）【】——……",
+      "",
+      "超长连续文本用于检查换行：LooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooongWord",
+      "",
+      "特殊字符：& < > © ™，以及已经转义的 HTML：&lt;script&gt;alert('safe')&lt;/script&gt;。",
+      "",
+      "连续分隔线：",
+      "",
+      "---",
+      "",
+      "***",
+      "",
+      "空链接 [空目标]()、不存在的图片 ![替代文本](/assets/images/not-found.webp)。",
+    ].join("\n"),
   },
 ];
-const currentMd = ref("标题段落");
+const currentMd = ref("标题与段落");
 const mdContent = computed(
   () => mdSamples.find((s) => s.name === currentMd.value)?.content || "",
 );
+const mdHeaderData = computed(() => ({
+  title: `Markdown 渲染测试：${currentMd.value}`,
+  uuid: "markdown-test",
+  page: mdSamples.findIndex((sample) => sample.name === currentMd.value) + 1,
+  meta: "",
+  sourceType: "article",
+}));
 
 // ───────── NumberController ─────────
 const ncFontSize = ref(24);
