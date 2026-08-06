@@ -1,22 +1,26 @@
 <template>
-  <div
-    class="mockup-code w-full max-w-full overflow-x-auto my-0 relative group"
-  >
+  <section class="mockup-code w-full max-w-full overflow-x-auto my-0 relative">
     <pre
       class="m-0 p-0 max-w-full overflow-x-auto before:content-none"
     ><code ref="codeEl" class="hljs bg-transparent! py-0!" :class="`language-${language}`">{{ code }}</code></pre>
 
-    <div
+    <span
+      v-if="language"
+      class="font-mono badge badge-ghost badge-sm opacity-50 absolute left-20 top-4"
+      >{{ language }}</span
+    >
+
+    <span
       v-if="isSupported"
-      class="absolute right-4 top-2 opacity-0 group-hover:opacity-100 transition-opacity tooltip tooltip-left"
-      :class="copied ? 'tooltip-success' : 'tooltip-accent'"
+      class="absolute right-2 top-2 tooltip tooltip-left"
+      :class="copied ? 'tooltip-success' : ''"
       :data-tip="copied ? '复制成功' : '复制到剪贴板'"
     >
       <button
         class="btn btn-sm btn-square"
         @click="copy(code)"
         :class="{
-          'btn-success text-success-content': copied,
+          'btn-success': copied,
           'btn-neutral': !copied,
         }"
       >
@@ -27,8 +31,8 @@
           ]"
         ></i>
       </button>
-    </div>
-  </div>
+    </span>
+  </section>
 </template>
 
 <script setup>

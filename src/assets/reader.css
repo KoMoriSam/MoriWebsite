@@ -480,9 +480,8 @@
   }
 
   #markdown-content.prose .code-wrapper .lang-tag {
-    @apply font-mono badge badge-sm absolute left-20 top-3.75
-    text-[calc(var(--para-font-size)*0.4)]
-    md:text-[calc(var(--para-font-size)*0.55)];
+    @apply font-mono badge badge-ghost badge-sm opacity-75
+    absolute left-20 top-4;
   }
 
   #markdown-content.prose pre {
