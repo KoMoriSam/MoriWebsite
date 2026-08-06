@@ -35,7 +35,7 @@ export function codePlugin(md) {
 			  tooltipDiv.setAttribute('data-tip', '复制成功');
 			  setTimeout(() => {
 			    tooltipDiv.classList.remove('!opacity-100');
-			    btn.innerHTML = '<i class=ri-clipboard-line></i>';
+			    btn.innerHTML = '<i class=ri-file-copy-line></i>';
 			    btn.classList.remove('btn-success');
 			    btn.classList.add('btn-ghost');
 			    tooltipDiv.classList.remove('tooltip-success');
@@ -45,7 +45,7 @@ export function codePlugin(md) {
 		    });
 		  })(this)"
 		  data-code="${encodeURIComponent(codeContent)}">
-		  <i class="ri-clipboard-line"></i>
+		  <i class="ri-file-copy-line"></i>
 	    </button>
 	  </div>
     </div>`;
