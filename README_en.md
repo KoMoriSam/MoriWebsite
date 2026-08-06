@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.15.0</strong>
+  Current version: <strong>1.16.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -172,26 +172,26 @@ VITE_COMMENT_COUNTS_API=
 VITE_GISCUS_CSS_RAW=
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `VITE_BLOG_RAW` | Base URL for the blog `index.json`, Markdown, and images; required for production builds |
-| `VITE_NOVEL_RAW` | Base URL for the novel `index.json` and chapter Markdown; required for production builds |
-| `VITE_SERVER_ADDRESS` | Default Minecraft server queried by the tools page |
-| `VITE_RANDOM_HERO_API` | Random homepage-background endpoint |
-| `VITE_COMMENT_COUNTS_API` | Optional batch endpoint for paragraph-comment counts |
-| `VITE_GISCUS_CSS_RAW` | Base URL for custom Giscus theme assets |
+| Variable                  | Purpose                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| `VITE_BLOG_RAW`           | Base URL for the blog `index.json`, Markdown, and images; required for production builds |
+| `VITE_NOVEL_RAW`          | Base URL for the novel `index.json` and chapter Markdown; required for production builds |
+| `VITE_SERVER_ADDRESS`     | Default Minecraft server queried by the tools page                                       |
+| `VITE_RANDOM_HERO_API`    | Random homepage-background endpoint                                                      |
+| `VITE_COMMENT_COUNTS_API` | Optional batch endpoint for paragraph-comment counts                                     |
+| `VITE_GISCUS_CSS_RAW`     | Base URL for custom Giscus theme assets                                                  |
 
 All of these variables use the `VITE_` prefix and are exposed to client code. Do not store secrets or private credentials in them. Both `scripts/generate-routes.mjs` and `scripts/generate-pagefind-index.mjs` read `.env.production`.
 
 ## Available Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Generate license data and start the development server |
-| `pnpm build` | Generate the SSG site, search index, and distributed license files |
-| `pnpm preview` | Preview `dist/` locally |
-| `pnpm deploy` | Publish `dist/` to the repository's `gh-pages` branch |
-| `pnpm push` | Force-push local `main` to the remote `cl-pages` branch |
+| Command        | Purpose                                                            |
+| -------------- | ------------------------------------------------------------------ |
+| `pnpm dev`     | Generate license data and start the development server             |
+| `pnpm build`   | Generate the SSG site, search index, and distributed license files |
+| `pnpm preview` | Preview `dist/` locally                                            |
+| `pnpm deploy`  | Publish `dist/` to the repository's `gh-pages` branch              |
+| `pnpm push`    | Force-push local `main` to the remote `cl-pages` branch            |
 
 `pnpm push` includes `--force`; confirm the remote branch's purpose and your current commit before using it.
 

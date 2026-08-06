@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.15.0</strong>
+  Version actuelle : <strong>1.16.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
