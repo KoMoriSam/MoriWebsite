@@ -1,8 +1,69 @@
-// utils/markdown/markdown-it-code.js
+import { createApp } from "vue";
+
+import CodeBlock from "@/components/ui/CodeBlock.vue";
+
+const CODE_BLOCK_SELECTOR = "[data-markdown-code-block]";
+const mountedCodeBlocks = new WeakMap();
+
+const decodeProp = (value = "") => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+export function mountCodeBlocks(root) {
+  if (!root || import.meta.env.SSR) {
+    return;
+  }
+
+  let mounts = mountedCodeBlocks.get(root);
+
+  if (!mounts) {
+    mounts = new Map();
+    mountedCodeBlocks.set(root, mounts);
+  }
+
+  for (const [element, app] of mounts) {
+    if (!root.contains(element)) {
+      app.unmount();
+      mounts.delete(element);
+    }
+  }
+
+  root.querySelectorAll(CODE_BLOCK_SELECTOR).forEach((element) => {
+    if (mounts.has(element)) {
+      return;
+    }
+
+    const app = createApp(CodeBlock, {
+      code: decodeProp(element.dataset.code),
+      language: decodeProp(element.dataset.language) || "plaintext",
+    });
+
+    app.mount(element);
+    mounts.set(element, app);
+  });
+}
+
+export function unmountCodeBlocks(root) {
+  const mounts = root ? mountedCodeBlocks.get(root) : null;
+
+  if (!mounts) {
+    return;
+  }
+
+  mounts.forEach((app) => app.unmount());
+  mounts.clear();
+  mountedCodeBlocks.delete(root);
+}
+
 export function codePlugin(md) {
   const defaultFenceRenderer = md.renderer.rules.fence;
 
   md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
     const highlightedHtml = defaultFenceRenderer(
       tokens,
       idx,
@@ -10,40 +71,11 @@ export function codePlugin(md) {
       env,
       self,
     );
-    const codeContent = tokens[idx].content;
-    const lang = tokens[idx].info.trim();
-    const mountId = `code-block-${Date.now()}-${idx}`;
 
-    return `
-    <div class="code-wrapper" id="${mountId}">
-	  ${highlightedHtml}
-	  ${lang ? `<span class="lang-tag">${lang}</span>` : ""}
-	  <div 
-	    class="absolute right-2 top-2 tooltip tooltip-left"
-	    data-tip="复制到剪贴板">
-	    <button class="btn btn-sm btn-neutral btn-square"
-		  onclick="(function(btn){
-		    const tooltipDiv = btn.parentElement;
-		    const code = decodeURIComponent(btn.getAttribute('data-code'));
-		    navigator.clipboard.writeText(code).then(() => {;
-			  btn.innerHTML = '<i class=ri-check-line font-normal></i>';
-			  btn.classList.remove('btn-neutral');
-			  btn.classList.add('btn-success');
-			  tooltipDiv.classList.add('tooltip-success');
-			  tooltipDiv.setAttribute('data-tip', '复制成功');
-			  setTimeout(() => {
-			    btn.innerHTML = '<i class=ri-file-copy-line font-normal></i>';
-			    btn.classList.remove('btn-success');
-				btn.classList.add('btn-neutral');
-			    tooltipDiv.classList.remove('tooltip-success');
-			    tooltipDiv.setAttribute('data-tip', '复制到剪贴板');
-			  }, 2000);
-		    });
-		  })(this)"
-		  data-code="${encodeURIComponent(codeContent)}">
-		  <i class="ri-file-copy-line font-normal"></i>
-	    </button>
-	  </div>
-    </div>`;
+    return `<div data-markdown-code-block data-code="${encodeURIComponent(
+      token.content,
+    )}" data-language="${encodeURIComponent(token.info.trim())}">
+${highlightedHtml}
+</div>`;
   };
 }

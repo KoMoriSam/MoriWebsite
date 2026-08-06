@@ -31,7 +31,14 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { useRoute } from "vue-router";
 
 import VueMarkdown from "vue-markdown-render";
@@ -108,7 +115,11 @@ import {
   chatContainerPlugin,
   momentsPlugin,
 } from "@/utils/markdown/markdown-it-chat";
-import { codePlugin } from "@/utils/markdown/markdown-it-code";
+import {
+  codePlugin,
+  mountCodeBlocks,
+  unmountCodeBlocks,
+} from "@/utils/markdown/markdown-it-code";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
 import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
 import {
@@ -129,8 +140,41 @@ const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const katexPlugin = ref(null);
+let codeBlockRoot = null;
 const searchAnchoredContent = computed(() =>
   injectMarkdownSearchAnchors(props.content),
+);
+
+const syncCodeBlocks = async () => {
+  if (import.meta.env.SSR) {
+    return;
+  }
+
+  await nextTick();
+
+  const nextRoot = articleRef.value;
+
+  if (codeBlockRoot && codeBlockRoot !== nextRoot) {
+    unmountCodeBlocks(codeBlockRoot);
+  }
+
+  codeBlockRoot = nextRoot;
+  mountCodeBlocks(codeBlockRoot);
+};
+
+onMounted(syncCodeBlocks);
+onBeforeUnmount(() => unmountCodeBlocks(codeBlockRoot));
+
+watch(
+  () => [
+    props.content,
+    props.isLoading,
+    props.headerData.uuid,
+    props.headerData.page,
+    markdownRenderVersion.value,
+  ],
+  syncCodeBlocks,
+  { flush: "post" },
 );
 
 const getRouteAnchorId = () => {

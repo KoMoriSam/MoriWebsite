@@ -1,8 +1,10 @@
 <template>
-  <section class="mockup-code w-full max-w-full overflow-x-auto my-0 relative">
+  <section
+    class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
+  >
     <pre
       class="m-0 p-0 max-w-full overflow-x-auto before:content-none"
-    ><code ref="codeEl" class="hljs bg-transparent! py-0!" :class="`language-${language}`">{{ code }}</code></pre>
+    ><code ref="codeEl" class="hljs bg-transparent! px-5! pt-0! text-sm md:text-base" :class="`language-${language}`">{{ code }}</code></pre>
 
     <span
       v-if="language"
