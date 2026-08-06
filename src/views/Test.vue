@@ -221,24 +221,68 @@
       </div>
 
       <div id="markdown" class="scroll-mt-24 xl:col-span-2">
-        <TestCard title="Markdown 渲染">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <button
-              v-for="s in mdSamples"
-              :key="s.name"
-              class="btn btn-xs"
-              :class="currentMd === s.name ? 'btn-primary' : 'btn-outline'"
-              @click="currentMd = s.name"
-            >
-              {{ s.name }}
-            </button>
-          </div>
-          <div class="bg-base-100 rounded-lg p-4 max-h-96 overflow-auto">
-            <Markdown
-              :content="mdContent"
-              :header-data="mdHeaderData"
-              :style-configs="readerStore.styleConfigs"
-            />
+        <TestCard title="Markdown 渲染与阅读器样式设置">
+          <div
+            class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)]"
+          >
+            <FormatSetting />
+
+            <section class="rounded-box p-4 sm:p-5">
+              <h3 class="font-semibold">实时联动检查</h3>
+
+              <dl class="my-2 grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                <div
+                  class="rounded-box border border-base-300 p-2 col-span-2 sm:col-auto"
+                >
+                  <dt class="text-xs text-base-content/55">字体类名</dt>
+                  <dd class="mt-1 font-mono font-semibold">
+                    {{ readerStore.styleConfigs.fontStyle }}
+                  </dd>
+                </div>
+                <div class="rounded-box border border-base-300 p-2">
+                  <dt class="text-xs text-base-content/55">字体大小</dt>
+                  <dd class="mt-1 font-mono font-semibold">
+                    {{ readerStore.styleConfigs.fontSize }}px
+                  </dd>
+                </div>
+                <div class="rounded-box border border-base-300 p-2">
+                  <dt class="text-xs text-base-content/55">字间距</dt>
+                  <dd class="mt-1 font-mono font-semibold">
+                    {{ readerStore.styleConfigs.fontGap }}
+                  </dd>
+                </div>
+                <div class="rounded-box border border-base-300 p-2">
+                  <dt class="text-xs text-base-content/55">行间距</dt>
+                  <dd class="mt-1 font-mono font-semibold">
+                    {{ readerStore.styleConfigs.lineHeight }}
+                  </dd>
+                </div>
+                <div class="rounded-box border border-base-300 p-2">
+                  <dt class="text-xs text-base-content/55">段间距</dt>
+                  <dd class="mt-1 font-mono font-semibold">
+                    {{ readerStore.styleConfigs.paraHeight }}
+                  </dd>
+                </div>
+              </dl>
+
+              <div class="flex flex-wrap gap-2 my-4">
+                <button
+                  v-for="s in mdSamples"
+                  :key="s.name"
+                  class="btn btn-xs"
+                  :class="currentMd === s.name ? 'btn-primary' : 'btn-outline'"
+                  @click="currentMd = s.name"
+                >
+                  {{ s.name }}
+                </button>
+              </div>
+              <Markdown
+                class="max-h-140 overflow-auto"
+                :content="mdContent"
+                :header-data="mdHeaderData"
+                :style-configs="readerStore.styleConfigs"
+              />
+            </section>
           </div>
         </TestCard>
       </div>
@@ -307,11 +351,29 @@
 
       <div id="pagination" class="scroll-mt-24">
         <TestCard title="Pagination 分页">
-          <p class="text-xs opacity-60 mb-3">
-            依赖 novelStore（需先访问 /novel 进入阅读器）
+          <p class="mb-3 text-xs opacity-60">
+            完全由 Test.vue 本地状态驱动：当前第
+            {{ paginationCurrentPage }} 页，共 {{ paginationTotalPages }} 页。
           </p>
-          <div class="bg-base-100 rounded-lg p-4 flex justify-center">
-            <Pagination />
+          <div class="mb-4 flex flex-wrap gap-2">
+            <button class="btn btn-xs" @click="setPaginationScenario(3, 5)">
+              少量页
+            </button>
+            <button class="btn btn-xs" @click="setPaginationScenario(1, 24)">
+              第一页
+            </button>
+            <button class="btn btn-xs" @click="setPaginationScenario(12, 24)">
+              中间页
+            </button>
+            <button class="btn btn-xs" @click="setPaginationScenario(24, 24)">
+              最后一页
+            </button>
+          </div>
+          <div class="flex justify-center rounded-lg bg-base-100 p-4">
+            <Pagination
+              v-model:current-page="paginationCurrentPage"
+              :total-pages="paginationTotalPages"
+            />
           </div>
         </TestCard>
       </div>
@@ -319,6 +381,10 @@
       <div id="codeblock" class="scroll-mt-24 xl:col-span-2">
         <TestCard title="CodeBlock（带复制）">
           <CodeBlock language="typescript" :code="sampleCode" />
+          <CodeBlock
+            language=""
+            code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
+          />
         </TestCard>
       </div>
 
@@ -476,6 +542,7 @@
       </div>
     </section>
   </ContentPage>
+  <FootBar />
 </template>
 
 <script setup>
@@ -492,12 +559,14 @@ import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 import Loading from "@/components/base/Loading.vue";
 import Modal from "@/components/ui/Modal.vue";
 import Markdown from "@/components/reader/Markdown.vue";
+import FormatSetting from "@/components/reader/FormatSetting.vue";
 import NumberController from "@/components/ui/input/NumberController.vue";
 import Pagination from "@/components/base/Pagination.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import TestCard from "@/components/test/_TestCard.vue";
 import TestControlRow from "@/components/test/_TestControlRow.vue";
+import FootBar from "@/components/layout/FootBar.vue";
 
 const router = useRouter();
 const toast = useToast({
@@ -671,7 +740,7 @@ const mdSamples = [
       "",
       "[站内首页](/)、[GitHub](https://github.com) 与自动链接 <https://komori.cc/>。",
       "",
-      "这是一个带标题的链接：[Markdown 指南](https://www.markdownguide.org/ \"打开 Markdown 指南\")。",
+      '这是一个带标题的链接：[Markdown 指南](https://www.markdownguide.org/ "打开 Markdown 指南")。',
       "",
       "[引用式链接][docs]",
       "",
@@ -679,7 +748,7 @@ const mdSamples = [
       "",
       "## 图片",
       "",
-      "![小森头像](/assets/images/avatar/komorisam.webp \"本地图片与替代文本测试\")",
+      '![小森头像](/assets/images/avatar/komorisam.webp "本地图片与替代文本测试")',
       "",
       "图片下方正文用于检查图片尺寸、间距和加载后的布局稳定性。",
     ].join("\n"),
@@ -805,7 +874,7 @@ const mdSamples = [
       "  <p>这里包含 <strong>HTML 粗体</strong> 和 <code>HTML code</code>。</p>",
       "</details>",
       "",
-      "<div title=\"悬停提示\">带有 title 属性的块级 HTML。</div>",
+      '<div title="悬停提示">带有 title 属性的块级 HTML。</div>',
       "",
       "HTML 后的 **Markdown 正文** 应继续正常解析。",
     ].join("\n"),
@@ -885,6 +954,15 @@ const mdHeaderData = computed(() => ({
 const ncFontSize = ref(24);
 const ncFontGap = ref(0);
 const ncLineHeight = ref(1.5);
+
+// ───────── Pagination ─────────
+const paginationCurrentPage = ref(12);
+const paginationTotalPages = ref(24);
+
+function setPaginationScenario(currentPage, totalPages) {
+  paginationTotalPages.value = totalPages;
+  paginationCurrentPage.value = currentPage;
+}
 
 // ───────── Loading ─────────
 const loadingOn = ref(false);
