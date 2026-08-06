@@ -486,11 +486,7 @@
   }
 
   #markdown-content.prose pre {
-    @apply my-0 py-0 max-w-full overflow-x-auto;
-  }
-
-  #markdown-content.prose pre::before {
-    @apply content-none;
+    @apply my-0 py-0 max-w-full overflow-x-auto before:content-none;
   }
 
   #markdown-content.prose pre code.hljs {
