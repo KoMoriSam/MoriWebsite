@@ -20,255 +20,249 @@
 
     <template v-else-if="articles.length">
       <!-- 检索区域 -->
-      <client-only>
-        <section class="my-6" aria-label="文章检索">
-          <div ref="searchBox" class="relative min-w-0">
+      <section class="my-6" aria-label="文章检索">
+        <div ref="searchBox" class="relative min-w-0">
+          <div
+            class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
+          >
+            <label for="article-search" class="sr-only">搜索文章</label>
+            <i
+              class="ri-search-line shrink-0 text-base-content/45"
+              aria-hidden="true"
+            ></i>
+
             <div
-              class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
+              v-if="advancedFilterCount"
+              class="flex max-w-full flex-wrap items-center gap-1.5"
             >
-              <label for="article-search" class="sr-only">搜索文章</label>
-              <i
-                class="ri-search-line shrink-0 text-base-content/45"
-                aria-hidden="true"
-              ></i>
-
-              <div
-                v-if="advancedFilterCount"
-                class="flex max-w-full flex-wrap items-center gap-1.5"
+              <button
+                v-for="tag in selectedTags"
+                :key="`tag-${tag}`"
+                type="button"
+                class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
+                :aria-label="`移除标签 ${tag}`"
+                @click="removeTag(tag)"
               >
-                <button
-                  v-for="tag in selectedTags"
-                  :key="`tag-${tag}`"
-                  type="button"
-                  class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
-                  :aria-label="`移除标签 ${tag}`"
-                  @click="removeTag(tag)"
-                >
-                  <span class="truncate">{{ formatTag(tag) }}</span>
-                  <i class="ri-close-line shrink-0" aria-hidden="true"></i>
-                </button>
-
-                <button
-                  v-for="year in selectedYears"
-                  :key="`year-${year}`"
-                  type="button"
-                  class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
-                  :aria-label="`移除年份 ${year}`"
-                  @click="removeYear(year)"
-                >
-                  {{ year }}
-                  <i class="ri-close-line" aria-hidden="true"></i>
-                </button>
-              </div>
-
-              <input
-                id="article-search"
-                ref="searchInput"
-                v-model="searchText"
-                type="search"
-                role="combobox"
-                class="min-w-32 flex-1"
-                placeholder="搜索文章"
-                autocomplete="off"
-                spellcheck="false"
-                aria-autocomplete="list"
-                :aria-expanded="isFilterMenuOpen"
-                :aria-controls="
-                  isFilterMenuOpen
-                    ? 'article-filter-suggestions'
-                    : 'article-results'
-                "
-                :aria-activedescendant="
-                  activeFilterIndex >= 0 && filteredFilterOptions.length
-                    ? `article-filter-option-${activeFilterIndex}`
-                    : null
-                "
-                @input="handleSearchInput"
-                @focus="updateFilterQuery"
-                @click="updateFilterQuery"
-                @keydown.down="handleFilterArrow($event, 1)"
-                @keydown.up="handleFilterArrow($event, -1)"
-                @keydown.enter="handleFilterEnter"
-                @keydown.tab="handleFilterTab"
-                @keydown.backspace="handleSearchBackspace"
-                @keydown.esc.prevent="handleSearchEscape"
-                @compositionstart="isComposing = true"
-                @compositionend="handleCompositionEnd"
-              />
+                <span class="truncate">{{ formatTag(tag) }}</span>
+                <i class="ri-close-line shrink-0" aria-hidden="true"></i>
+              </button>
 
               <button
-                v-if="advancedFilterCount"
+                v-for="year in selectedYears"
+                :key="`year-${year}`"
                 type="button"
-                class="btn btn-circle btn-ghost btn-xs shrink-0"
-                aria-label="清除全部搜索条件"
-                @click="resetFilter"
+                class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
+                :aria-label="`移除年份 ${year}`"
+                @click="removeYear(year)"
               >
-                <i class="ri-delete-bin-line" aria-hidden="true"></i>
+                {{ year }}
+                <i class="ri-close-line" aria-hidden="true"></i>
               </button>
             </div>
 
-            <div
-              v-if="isFilterMenuOpen"
-              id="article-filter-suggestions"
-              class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xl"
-              role="listbox"
-              :aria-label="
-                activeFilterQuery.type === 'tag'
-                  ? '标签筛选建议'
-                  : '年份筛选建议'
+            <input
+              id="article-search"
+              ref="searchInput"
+              v-model="searchText"
+              type="search"
+              role="combobox"
+              class="min-w-32 flex-1"
+              placeholder="搜索文章"
+              autocomplete="off"
+              spellcheck="false"
+              aria-autocomplete="list"
+              :aria-expanded="isFilterMenuOpen"
+              :aria-controls="
+                isFilterMenuOpen
+                  ? 'article-filter-suggestions'
+                  : 'article-results'
               "
+              :aria-activedescendant="
+                activeFilterIndex >= 0 && filteredFilterOptions.length
+                  ? `article-filter-option-${activeFilterIndex}`
+                  : null
+              "
+              @input="handleSearchInput"
+              @focus="updateFilterQuery"
+              @click="updateFilterQuery"
+              @keydown.down="handleFilterArrow($event, 1)"
+              @keydown.up="handleFilterArrow($event, -1)"
+              @keydown.enter="handleFilterEnter"
+              @keydown.tab="handleFilterTab"
+              @keydown.backspace="handleSearchBackspace"
+              @keydown.esc.prevent="handleSearchEscape"
+              @compositionstart="isComposing = true"
+              @compositionend="handleCompositionEnd"
+            />
+
+            <button
+              v-if="advancedFilterCount"
+              type="button"
+              class="btn btn-circle btn-ghost btn-xs shrink-0"
+              aria-label="清除全部搜索条件"
+              @click="resetFilter"
             >
-              <div
-                class="flex items-center justify-between gap-3 border-b border-base-300 bg-base-200/45 px-3 py-2 text-xs text-base-content/55"
-              >
-                <span class="flex items-center gap-1.5">
-                  <i
-                    :class="
-                      activeFilterQuery.type === 'tag'
-                        ? 'ri-price-tag-3-line'
-                        : 'ri-calendar-line'
-                    "
-                    aria-hidden="true"
-                  ></i>
-                  {{
-                    activeFilterQuery.type === "tag"
-                      ? "选择标签"
-                      : "选择发布年份"
-                  }}
-                </span>
-                <span class="hidden sm:inline">
-                  <kbd class="kbd kbd-xs">↑</kbd
-                  ><kbd class="kbd kbd-xs">↓</kbd> 选择 ·
-                  <kbd class="kbd kbd-xs">Enter</kbd> 确认 ·
-                  <kbd class="kbd kbd-xs">Esc</kbd> 关闭
-                </span>
-              </div>
-
-              <ul
-                v-if="filteredFilterOptions.length"
-                class="max-h-72 space-y-1 overflow-y-auto overscroll-contain p-1.5"
-              >
-                <li
-                  v-for="group in filterOptionGroups"
-                  :key="group.key"
-                  role="presentation"
-                >
-                  <div
-                    v-if="group.label"
-                    class="flex items-center gap-2 px-3 pb-1 pt-2 text-xs font-semibold text-base-content/45"
-                  >
-                    <i class="ri-folder-3-line" aria-hidden="true"></i>
-                    <span class="min-w-0 flex-1 truncate">
-                      {{ group.label }}
-                    </span>
-                    <span class="shrink-0 font-normal text-base-content/40">
-                      {{ group.count }} 篇
-                    </span>
-                  </div>
-
-                  <ul
-                    class="space-y-0.5"
-                    :role="group.label ? 'group' : 'presentation'"
-                    :aria-label="group.label || null"
-                  >
-                    <li
-                      v-for="option in group.options"
-                      :key="`${option.type}-${option.value}`"
-                      role="presentation"
-                    >
-                      <button
-                        :id="`article-filter-option-${option.index}`"
-                        type="button"
-                        role="option"
-                        :aria-label="
-                          option.type === 'tag'
-                            ? `标签 ${option.fullLabel}`
-                            : `年份 ${option.label}`
-                        "
-                        :aria-selected="activeFilterIndex === option.index"
-                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
-                        :class="[
-                          activeFilterIndex === option.index
-                            ? 'bg-primary/10 text-primary'
-                            : 'hover:bg-base-200',
-                          group.label ? 'pl-5' : '',
-                        ]"
-                        @mouseenter="activeFilterIndex = option.index"
-                        @mousedown.prevent="selectFilterOption(option)"
-                      >
-                        <span
-                          class="flex size-7 shrink-0 items-center justify-center text-sm text-base-content/40"
-                          :class="
-                            group.label
-                              ? ''
-                              : 'rounded-md bg-base-200 font-mono text-base-content/55'
-                          "
-                          aria-hidden="true"
-                        >
-                          <i
-                            v-if="group.label"
-                            class="ri-corner-down-right-line"
-                          ></i>
-                          <template v-else>{{ option.prefix }}</template>
-                        </span>
-                        <span class="min-w-0 flex-1 truncate font-medium">
-                          {{ option.label }}
-                        </span>
-                        <span class="text-xs text-base-content/40">
-                          {{ option.count }} 篇
-                        </span>
-                      </button>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-
-              <p
-                v-else
-                class="px-4 py-8 text-center text-sm text-base-content/50"
-              >
-                {{
-                  activeFilterQuery.query
-                    ? `没有匹配“${activeFilterQuery.query}”的选项`
-                    : "没有更多可选条件"
-                }}
-              </p>
-            </div>
+              <i class="ri-delete-bin-line" aria-hidden="true"></i>
+            </button>
           </div>
 
-          <p class="mt-2 px-1 text-xs text-base-content/45">
-            输入 <kbd class="kbd kbd-xs">#</kbd> 筛选标签，输入
-            <kbd class="kbd kbd-xs">/</kbd> 筛选年份，可组合多个条件。
-          </p>
-        </section>
+          <div
+            v-if="isFilterMenuOpen"
+            id="article-filter-suggestions"
+            class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xl"
+            role="listbox"
+            :aria-label="
+              activeFilterQuery.type === 'tag' ? '标签筛选建议' : '年份筛选建议'
+            "
+          >
+            <div
+              class="flex items-center justify-between gap-3 border-b border-base-300 bg-base-200/45 px-3 py-2 text-xs text-base-content/55"
+            >
+              <span class="flex items-center gap-1.5">
+                <i
+                  :class="
+                    activeFilterQuery.type === 'tag'
+                      ? 'ri-price-tag-3-line'
+                      : 'ri-calendar-line'
+                  "
+                  aria-hidden="true"
+                ></i>
+                {{
+                  activeFilterQuery.type === "tag" ? "选择标签" : "选择发布年份"
+                }}
+              </span>
+              <span class="hidden sm:inline">
+                <kbd class="kbd kbd-xs">↑</kbd
+                ><kbd class="kbd kbd-xs">↓</kbd> 选择 ·
+                <kbd class="kbd kbd-xs">Enter</kbd> 确认 ·
+                <kbd class="kbd kbd-xs">Esc</kbd> 关闭
+              </span>
+            </div>
 
-        <!-- 结果信息 -->
-        <div
-          class="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/55"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <p>
-            <template v-if="hasFilter">
-              当前显示
-              <strong class="font-semibold text-base-content">
-                {{ filteredArticles.length }}
-              </strong>
-              篇文章
-            </template>
+            <ul
+              v-if="filteredFilterOptions.length"
+              class="max-h-72 space-y-1 overflow-y-auto overscroll-contain p-1.5"
+            >
+              <li
+                v-for="group in filterOptionGroups"
+                :key="group.key"
+                role="presentation"
+              >
+                <div
+                  v-if="group.label"
+                  class="flex items-center gap-2 px-3 pb-1 pt-2 text-xs font-semibold text-base-content/45"
+                >
+                  <i class="ri-folder-3-line" aria-hidden="true"></i>
+                  <span class="min-w-0 flex-1 truncate">
+                    {{ group.label }}
+                  </span>
+                  <span class="shrink-0 font-normal text-base-content/40">
+                    {{ group.count }} 篇
+                  </span>
+                </div>
 
-            <template v-else> 浏览全部文章 </template>
-          </p>
+                <ul
+                  class="space-y-0.5"
+                  :role="group.label ? 'group' : 'presentation'"
+                  :aria-label="group.label || null"
+                >
+                  <li
+                    v-for="option in group.options"
+                    :key="`${option.type}-${option.value}`"
+                    role="presentation"
+                  >
+                    <button
+                      :id="`article-filter-option-${option.index}`"
+                      type="button"
+                      role="option"
+                      :aria-label="
+                        option.type === 'tag'
+                          ? `标签 ${option.fullLabel}`
+                          : `年份 ${option.label}`
+                      "
+                      :aria-selected="activeFilterIndex === option.index"
+                      class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                      :class="[
+                        activeFilterIndex === option.index
+                          ? 'bg-primary/10 text-primary'
+                          : 'hover:bg-base-200',
+                        group.label ? 'pl-5' : '',
+                      ]"
+                      @mouseenter="activeFilterIndex = option.index"
+                      @mousedown.prevent="selectFilterOption(option)"
+                    >
+                      <span
+                        class="flex size-7 shrink-0 items-center justify-center text-sm text-base-content/40"
+                        :class="
+                          group.label
+                            ? ''
+                            : 'rounded-md bg-base-200 font-mono text-base-content/55'
+                        "
+                        aria-hidden="true"
+                      >
+                        <i
+                          v-if="group.label"
+                          class="ri-corner-down-right-line"
+                        ></i>
+                        <template v-else>{{ option.prefix }}</template>
+                      </span>
+                      <span class="min-w-0 flex-1 truncate font-medium">
+                        {{ option.label }}
+                      </span>
+                      <span class="text-xs text-base-content/40">
+                        {{ option.count }} 篇
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </li>
+            </ul>
 
-          <p v-if="keyword.trim()">
-            搜索：
-            <span class="font-medium text-base-content">
-              “{{ keyword.trim() }}”
-            </span>
-          </p>
+            <p
+              v-else
+              class="px-4 py-8 text-center text-sm text-base-content/50"
+            >
+              {{
+                activeFilterQuery.query
+                  ? `没有匹配“${activeFilterQuery.query}”的选项`
+                  : "没有更多可选条件"
+              }}
+            </p>
+          </div>
         </div>
-      </client-only>
+
+        <p class="mt-2 px-1 text-xs text-base-content/45">
+          输入 <kbd class="kbd kbd-xs">#</kbd> 筛选标签，输入
+          <kbd class="kbd kbd-xs">/</kbd> 筛选年份，可组合多个条件。
+        </p>
+      </section>
+
+      <!-- 结果信息 -->
+      <div
+        class="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/55"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <p>
+          <template v-if="hasFilter">
+            当前显示
+            <strong class="font-semibold text-base-content">
+              {{ filteredArticles.length }}
+            </strong>
+            篇文章
+          </template>
+
+          <template v-else> 浏览全部文章 </template>
+        </p>
+
+        <p v-if="keyword.trim()">
+          搜索：
+          <span class="font-medium text-base-content">
+            “{{ keyword.trim() }}”
+          </span>
+        </p>
+      </div>
 
       <div id="article-results">
         <!-- 文章列表 -->
@@ -507,7 +501,6 @@
   </ContentPage>
 
   <FootBar v-if="!loading" />
-
 </template>
 
 <script setup>
