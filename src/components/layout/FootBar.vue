@@ -8,7 +8,11 @@
         alt="welcome!"
         class="h-6"
       />
-      <small class="text-sm"> KoMoriSam © 2025–2026 </small>
+      <p>
+        MoriWebsite
+        <br />
+        KoMoriSam © 2025–2026
+      </p>
       <small class="text-xs text-base-content/50">
         <router-link class="link link-hover block my-2" to="/changelog">
           更新日志
@@ -22,7 +26,7 @@
     </aside>
     <nav>
       <h6 class="footer-title">社交帐号</h6>
-      <div class="grid grid-flow-col gap-4">
+      <address class="grid grid-flow-col gap-4">
         <a href="https://github.com/KoMoriSam">
           <i class="ri-github-fill text-2xl"></i>
         </a>
@@ -32,7 +36,7 @@
         <a href="https://weibo.com/u/5281976456">
           <i class="ri-weibo-fill text-2xl"></i>
         </a>
-      </div>
+      </address>
       <br />
       <small class="text-xs text-base-content/50">
         在找旧版网页？
