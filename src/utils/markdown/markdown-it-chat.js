@@ -307,7 +307,14 @@ function renderChatMessage(md, message, options, env, self) {
 
 function prepareChatCallout(md, lines, env) {
   const headLine = parseCalloutHead(lines[0] || "", "chat");
-  const messages = parseChatMessages(lines.slice(1));
+  return {
+    headLine,
+    ...prepareChatMessages(md, lines.slice(1), env),
+  };
+}
+
+function prepareChatMessages(md, lines, env) {
+  const messages = parseChatMessages(lines);
 
   for (const message of messages) {
     if (message.type === "system") continue;
@@ -315,7 +322,6 @@ function prepareChatCallout(md, lines, env) {
   }
 
   return {
-    headLine,
     messages,
     collectorTokens: messages.flatMap((message) =>
       collectInlineCollectorTokens(message.contentTokens || []),
@@ -323,10 +329,34 @@ function prepareChatCallout(md, lines, env) {
   };
 }
 
+function prepareChatMessagesOnly(md, lines, env) {
+  const messageLines = lines.map((line, index) =>
+    index === 0
+      ? line.replace(/^>\s*\[!chat\]\s*/i, "> ")
+      : line,
+  );
+
+  return prepareChatMessages(md, messageLines, env);
+}
+
+function renderChatMessages(md, messages, options, env, self) {
+  return messages
+    .map((message) => renderChatMessage(md, message, options, env, self))
+    .join("\n");
+}
+
 function renderChatCallout(md, prepared, options, env, self) {
   return `
         ${renderChatBar(md, prepared.headLine)}
-        ${prepared.messages.map((message) => renderChatMessage(md, message, options, env, self)).join("\n")}
+        ${renderChatMessages(md, prepared.messages, options, env, self)}
+        </div>
+`;
+}
+
+function renderChatMessagesOnly(md, prepared, options, env, self) {
+  return `
+        <div class="chat-content">
+          ${renderChatMessages(md, prepared.messages, options, env, self)}
         </div>
 `;
 }
@@ -705,9 +735,13 @@ function installCalloutPlugin(md) {
     env,
     self,
   ) {
-    const { type, prepared } = tokens[idx].meta || {};
+    const { type, mode, prepared } = tokens[idx].meta || {};
 
     if (type === "chat" && prepared) {
+      if (mode === "messages-only") {
+        return renderChatMessagesOnly(md, prepared, options, env, self);
+      }
+
       return renderChatCallout(md, prepared, options, env, self);
     }
 
@@ -726,10 +760,12 @@ function installCalloutPlugin(md) {
       if (token.type !== "komorisam_chat_moment_callout") continue;
       if (token.meta?.prepared) continue;
 
-      const { type, lines = [] } = token.meta || {};
+      const { type, mode, lines = [] } = token.meta || {};
       const prepared =
         type === "chat"
-          ? prepareChatCallout(md, lines, state.env)
+          ? mode === "messages-only"
+            ? prepareChatMessagesOnly(md, lines, state.env)
+            : prepareChatCallout(md, lines, state.env)
           : type === "moment"
             ? prepareMomentCallout(md, lines, state.env)
             : null;
@@ -754,7 +790,9 @@ function installCalloutPlugin(md) {
       const startMax = state.eMarks[startLine];
       const startRaw = state.src.slice(startPos, startMax);
       const startText = stripOuterQuote(startRaw).trim();
-      const type = startText.match(/^\[!(chat|moment)\]\s*/)?.[1];
+      const fullType = startText.match(/^\[!(chat|moment)\]\s*/)?.[1];
+      const messagesOnly = /^>\s*\[!chat\]\s*/i.test(startText);
+      const type = fullType || (messagesOnly ? "chat" : "");
 
       if (!type) return false;
       if (silent) return true;
@@ -774,7 +812,11 @@ function installCalloutPlugin(md) {
       const token = state.push("komorisam_chat_moment_callout", "", 0);
       token.block = true;
       token.map = [startLine, nextLine];
-      token.meta = { type, lines };
+      token.meta = {
+        type,
+        mode: messagesOnly ? "messages-only" : "full",
+        lines,
+      };
 
       state.line = nextLine;
       return true;
