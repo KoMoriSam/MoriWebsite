@@ -109,7 +109,9 @@ export const useParagraphComments = () => {
       ),
     ]);
 
-    modal.info(titleNode, h(ParaGiscus, { paragraphId, sourceType }));
+    modal.info(titleNode, h(ParaGiscus, { paragraphId, sourceType }), {
+      buttonMode: "close",
+    });
   };
 
   const handleParagraphMetadata = (event) => {

@@ -1,22 +1,20 @@
 <template>
-  <aside class="px-1">
-    <Giscus
-      :key="paragraphId"
-      :repo="currentRepo.name"
-      :repo-id="currentRepo.id"
-      :category="currentCategory.name"
-      :category-id="currentCategory.id"
-      mapping="specific"
-      :term="paragraphId"
-      strict="0"
-      reactions-enabled="1"
-      emit-metadata="1"
-      input-position="bottom"
-      :theme="giscusTheme"
-      lang="zh-CN"
-      loading="lazy"
-    />
-  </aside>
+  <Giscus
+    :key="paragraphId"
+    :repo="currentRepo.name"
+    :repo-id="currentRepo.id"
+    :category="currentCategory.name"
+    :category-id="currentCategory.id"
+    mapping="specific"
+    :term="paragraphId"
+    strict="0"
+    reactions-enabled="1"
+    emit-metadata="1"
+    input-position="bottom"
+    :theme="giscusTheme"
+    lang="zh-CN"
+    loading="lazy"
+  />
 </template>
 
 <script setup>
