@@ -43,13 +43,34 @@ export async function checkUpdateNotice() {
     changes,
     note,
     warning,
-    onViewLog: updateVersion,
   });
+
+  const leadingAction = h(
+    "a",
+    {
+      href: "/changelog",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      class: "btn btn-primary no-underline",
+      onClick: (event) => {
+        event.stopPropagation();
+        updateVersion();
+      },
+    },
+    [
+      "查看完整日志",
+      h("i", {
+        class: "ri-arrow-right-up-line font-normal",
+        "aria-hidden": "true",
+      }),
+    ],
+  );
 
   modal.show({
     title: "新版本更新！",
     description: description,
     buttonText: "我知道了",
+    leadingAction,
     onSubmit: () => {
       updateVersion();
     },
