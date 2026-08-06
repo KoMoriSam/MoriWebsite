@@ -19,6 +19,15 @@ export const NAV_LINKS = [
     icon: "ri-pencil-ruler-2",
     to: { name: "tools" },
   },
+  ...(import.meta.env.DEV
+    ? [
+        {
+          name: "测试",
+          icon: "ri-flask",
+          to: { name: "test" },
+        },
+      ]
+    : []),
 ];
 
 export const isNavigationLinkActive = (route, link) =>
