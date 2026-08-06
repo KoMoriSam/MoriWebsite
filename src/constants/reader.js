@@ -7,7 +7,7 @@ export const STYLE_CONFIG_KEYS = [
   {
     key: "fontSize",
     storageKey: "STYLE_FONT_SIZE",
-    default: 22,
+    default: 20,
   },
   {
     key: "fontGap",
@@ -27,8 +27,10 @@ export const STYLE_CONFIG_KEYS = [
 ];
 
 export const FONTS = [
-  { name: "宋体", style: "font-song" },
-  { name: "黑体", style: "font-hei" },
-  { name: "楷书", style: "font-kai" },
-  { name: "仿宋", style: "font-fang" },
+  { name: "无衬线（Noto Sans SC + Manrope）", style: "font-sans" },
+  { name: "衬线体（Noto Serif SC + Fraunces）", style: "font-serif" },
+  { name: "霞鹜文楷", style: "font-kai" },
+  { name: "霞鹜新致宋", style: "font-song" },
+  { name: "霞鹜新晰黑", style: "font-hei" },
+  { name: "朱雀仿宋", style: "font-fang" },
 ];

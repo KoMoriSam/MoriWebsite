@@ -11,13 +11,12 @@
 
 @theme {
   --font-song:
-    "Kaiming Serif Punctuation", "Fraunces Variable", "Fraunces",
-    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STSong", "SimSun",
-    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
+    "Kaiming Serif Punctuation", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
+    "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
+    serif;
   --font-hei:
-    "Kaiming Sans Punctuation", "Manrope Variable", "Manrope", "LXGW Neo XiHei",
-    "STHeiti", "STXihei", "SimHei", "Noto Sans Sinhala Variable",
-    "Noto Sans Sinhala", sans-serif;
+    "Kaiming Sans Punctuation", "LXGW Neo XiHei", "STHeiti", "STXihei",
+    "SimHei", "Noto Sans Sinhala Variable", "Noto Sans Sinhala", sans-serif;
   --font-kai:
     "Kaiming Serif Punctuation", "LXGW WenKai GB", "LXGW WenKai GB Lite",
     "STKaiti", "KaiTi", "Maname", cursive;
