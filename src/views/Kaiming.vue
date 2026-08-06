@@ -5,85 +5,89 @@
     description="一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。"
   >
     <template #actions>
-      <a
-        class="btn btn-primary"
-        href="https://raw.komori.cc/kaiming/kaiming-punctuation-variable.css"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <i class="ri-code-s-slash-line"></i>
-        使用 CSS
-      </a>
+      <ul class="flex flex-wrap gap-2" aria-label="字体规格">
+        <li class="badge badge-outline">wght 100–900</li>
+        <li class="badge badge-outline">Sans / Serif</li>
+        <li class="badge badge-outline">WOFF2 Variable</li>
+        <li class="badge badge-outline">SIL OFL 1.1</li>
+      </ul>
       <a
         class="btn btn-ghost"
         href="https://github.com/KoMoriSam/Kaiming"
         target="_blank"
         rel="noopener noreferrer"
       >
-        <i class="ri-github-fill"></i>
+        <i class="ri-github-fill text-xl font-normal"></i>
         查看源码
+        <i class="ri-arrow-right-up-line font-normal"></i>
       </a>
     </template>
-
-    <ul class="mb-6 flex flex-wrap gap-2" aria-label="字体规格">
-      <li class="badge badge-outline">wght 100–900</li>
-      <li class="badge badge-outline">Sans / Serif</li>
-      <li class="badge badge-outline">WOFF2 Variable</li>
-      <li class="badge badge-outline">SIL OFL 1.1</li>
-    </ul>
 
     <section
       class="card overflow-hidden border border-base-200 bg-base-200/10"
       aria-labelledby="specimen-title"
     >
       <div
-        class="flex flex-col gap-4 border-b border-base-200 bg-base-200/60 p-4 lg:flex-row lg:items-end lg:justify-between"
+        class="flex flex-col gap-4 border-b border-base-200 bg-base-200/60 p-4 md:flex-row md:items-start md:justify-between"
       >
-        <label class="form-control min-w-0 flex-1" for="kaiming-weight">
-          <span class="label pb-1 text-sm font-semibold">
-            <span>可变字重</span>
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">标点字体族</legend>
+          <select
+            class="select w-full max-w-xs md:w-48"
+            :style="demoStyle"
+            v-model="family"
+            aria-label="标点字体族"
+            @change="family = $event.target.value"
+          >
+            <option disabled selected>选择字体族</option>
+            <option
+              v-for="option in familyOptions"
+              :key="option.value"
+              :value="option.value"
+              :class="{
+                'font-serif': option.value === 'serif',
+                'font-sans': option.value === 'sans',
+              }"
+              :selected="family === option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+        </fieldset>
+        <fieldset class="fieldset flex-1">
+          <legend class="fieldset-legend">
+            可变字重
             <output class="badge badge-primary badge-sm" for="kaiming-weight">
               {{ weight }}
             </output>
-          </span>
+          </legend>
           <input
             id="kaiming-weight"
             v-model.number="weight"
-            class="range range-primary range-sm"
+            class="range range-primary max-md:range-sm w-full mt-1"
             type="range"
             min="100"
             max="900"
             step="1"
             :aria-valuetext="`字重 ${weight}`"
           />
-        </label>
-
-        <div class="join" role="group" aria-label="标点字体族">
-          <button
-            v-for="option in familyOptions"
-            :key="option.value"
-            class="btn btn-sm join-item"
-            :class="family === option.value ? 'btn-primary' : 'btn-ghost'"
-            type="button"
-            :aria-pressed="family === option.value"
-            @click="family = option.value"
-          >
-            {{ option.label }}
-          </button>
-        </div>
+        </fieldset>
       </div>
 
-      <div class="p-5 md:p-10 lg:p-16">
+      <div class="p-6">
         <h2 id="specimen-title" class="sr-only">在线字体样张</h2>
         <div
-          class="min-h-64 rounded-box p-3 text-4xl leading-snug outline-none transition-colors hover:bg-base-200/40 focus:bg-base-200/60 md:min-h-80 md:p-5 md:text-6xl lg:text-7xl"
+          class="text-justify mx-auto min-h-64 w-[11em] md:w-[17em] lg:w-[18em] xl:w-[19em] rounded-box p-3 leading-snug outline-none transition-colors hover:bg-base-200/40 focus:bg-base-200/60 md:min-h-80 md:p-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
           contenteditable="true"
           role="textbox"
           aria-label="可编辑字体样张"
           aria-multiline="true"
           spellcheck="false"
           :style="demoStyle"
-        >他说：“开明，清楚；准确。”——这就是中文标点。</div>
+        >
+          　　潋城，清晨。老街传来消息：“《重返地平线（克里斯·莫蒂著）》已出版，首批
+          100 万册！”——真让人惊喜！但我想问：它会被更多人读到吗？
+        </div>
       </div>
 
       <div
@@ -96,10 +100,15 @@
 
     <section class="py-16" aria-labelledby="features-title">
       <header class="mb-8 text-center">
-        <p class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase">
+        <p
+          class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
+        >
           Typography Features
         </p>
-        <h2 id="features-title" class="font-serif text-2xl font-bold md:text-3xl">
+        <h2
+          id="features-title"
+          class="font-serif text-2xl font-bold md:text-3xl"
+        >
           为中文正文重新整理标点节奏
         </h2>
       </header>
@@ -111,12 +120,20 @@
           class="card card-dash border border-base-200 bg-base-200/10"
         >
           <div class="card-body">
-            <aside class="card-icon font-mono text-sm">{{ feature.index }}</aside>
+            <aside class="card-icon font-mono text-sm">
+              {{ feature.index }}
+            </aside>
             <h3 class="card-title font-serif font-bold">{{ feature.title }}</h3>
-            <p class="my-4 text-4xl leading-none md:text-5xl" :style="demoStyle">
+            <p
+              class="my-4 text-4xl leading-none md:text-5xl"
+              :class="demoStyle.fontFamily"
+              :style="demoStyle"
+            >
               {{ feature.sample }}
             </p>
-            <p class="text-sm text-base-content/70">{{ feature.description }}</p>
+            <p class="text-sm text-base-content/70">
+              {{ feature.description }}
+            </p>
           </div>
         </article>
       </div>
@@ -124,7 +141,9 @@
 
     <section class="pb-12" aria-labelledby="usage-title">
       <header class="mb-8 text-center">
-        <p class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase">
+        <p
+          class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
+        >
           Use on the Web
         </p>
         <h2 id="usage-title" class="font-serif text-2xl font-bold md:text-3xl">
@@ -135,8 +154,10 @@
         </p>
       </header>
 
-      <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-        <article class="card overflow-hidden bg-neutral text-neutral-content">
+      <div
+        class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]"
+      >
+        <article class="card overflow-hidden">
           <div class="card-body p-0">
             <CodeBlock :code="usageCode" language="css" />
           </div>
@@ -180,11 +201,11 @@ import FootBar from "@/components/layout/FootBar.vue";
 import CodeBlock from "@/components/ui/CodeBlock.vue";
 
 const weight = ref(400);
-const family = ref("sans");
+const family = ref("serif");
 
 const familyOptions = [
-  { label: "黑体", value: "sans" },
-  { label: "宋体", value: "serif" },
+  { label: "无衬线", value: "sans" },
+  { label: "衬线体", value: "serif" },
 ];
 
 const activeFamilyLabel = computed(
@@ -194,8 +215,8 @@ const activeFamilyLabel = computed(
 const demoStyle = computed(() => ({
   fontFamily:
     family.value === "serif"
-      ? '"Kaiming Serif Variable Demo", "Noto Serif SC Variable", "Noto Serif SC", serif'
-      : '"Kaiming Sans Variable Demo", "Noto Sans SC Variable", "Noto Sans SC", sans-serif',
+      ? "'Kaiming Punctuation Serif', 'Fraunces Variable', 'Fraunces', 'Noto Serif SC Variable', 'Noto Serif SC', 'Source Han Serif SC Variable', 'Source Han Serif SC', 'Noto Serif Sinhala Variable', 'Noto Serif Sinhala', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif"
+      : "'Kaiming Punctuation Sans', 'Manrope Variable', 'Manrope', 'Noto Sans SC Variable', 'Noto Sans SC', 'Noto Sans Sinhala Variable', 'Noto Sans Sinhala', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
   fontWeight: weight.value,
   fontVariationSettings: `"wght" ${weight.value}`,
 }));
@@ -233,19 +254,13 @@ article {
 
 const downloads = [
   {
-    label: "变量字体 CSS",
-    meta: "CSS",
-    href: "https://raw.komori.cc/kaiming/kaiming-punctuation-variable.css",
-    external: true,
-  },
-  {
-    label: "开明黑体",
+    label: "开明标点黑",
     meta: "WOFF2",
     href: "https://raw.komori.cc/kaiming/Sans-VF.woff2",
     external: true,
   },
   {
-    label: "开明宋体",
+    label: "开明标点宋",
     meta: "WOFF2",
     href: "https://raw.komori.cc/kaiming/Serif-VF.woff2",
     external: true,
