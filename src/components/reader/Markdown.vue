@@ -13,8 +13,8 @@
       '--para-line-height': styleConfigs.lineHeight,
       '--para-margin-inline': `${
         styleConfigs.paraHeight *
-        ((styleConfigs.fontSize * styleConfigs.lineHeight * 0.5) / 36)
-      }rem`,
+        ((styleConfigs.fontSize * styleConfigs.lineHeight) / 36)
+      }em`,
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
       + ${styleConfigs.fontGap * 0.7}rem)`,
     }"
@@ -84,7 +84,7 @@ const props = defineProps({
       fontSize: 22, // 字体大小(px)
       fontGap: 0, // 字间距
       lineHeight: 1.6, // 行间距
-      paraHeight: 1, // 段间距
+      paraHeight: 0.5, // 段间距
     }),
   },
 });

@@ -11,21 +11,22 @@
       </p>
 
       <StyleMenu title="正文字体" configKey="fontStyle">
-        <div class="join w-full">
-          <button
+        <select
+          class="select"
+          :class="styleConfigs.fontStyle"
+          @change="(e) => store.setStyle('fontStyle', e.target.value)"
+        >
+          <option disabled selected>选择字体</option>
+          <option
             v-for="font in FONTS"
             :key="font.style"
-            type="button"
-            :class="{
-              'btn btn-accent join-item w-1/4 p-0': true,
-              [font.style]: true,
-              'btn-soft': styleConfigs.fontStyle !== font.style,
-            }"
-            @click="store.setStyle('fontStyle', font.style)"
+            :class="font.style"
+            :selected="styleConfigs.fontStyle === font.style"
+            :value="font.style"
           >
             {{ font.name }}
-          </button>
-        </div>
+          </option>
+        </select>
       </StyleMenu>
 
       <StyleMenu title="字体大小" configKey="fontSize">
@@ -53,8 +54,8 @@
       <StyleMenu title="行间距" configKey="lineHeight">
         <NumberController
           :modelValue="styleConfigs.lineHeight"
-          :step="0.1"
-          :places="1"
+          :step="0.01"
+          :places="2"
           :min="1"
           :max="3"
           @update:modelValue="(val) => store.setStyle('lineHeight', val)"
@@ -64,9 +65,9 @@
       <StyleMenu title="段间距" configKey="paraHeight">
         <NumberController
           :modelValue="styleConfigs.paraHeight"
-          :step="0.1"
-          :places="1"
-          :min="1"
+          :step="0.01"
+          :places="2"
+          :min="0"
           :max="3"
           @update:modelValue="(val) => store.setStyle('paraHeight', val)"
         />

@@ -129,10 +129,10 @@ defineProps({
     type: Object,
     default: () => ({
       fontStyle: "font-kai", // 字体样式类名
-      fontSize: 24, // 字体大小(px)
+      fontSize: 20, // 字体大小(px)
       fontGap: 0, // 字间距
-      lineHeight: 1.5, // 行高
-      paraHeight: 1.5, // 段落高度
+      lineHeight: 1.6, // 行高
+      paraHeight: 1, // 段落高度
     }),
   },
 });
@@ -187,7 +187,7 @@ const calculatePages = (articleWidth, containerWidth) => {
     "页面宽度:",
     pageWidth.value,
     "总页数:",
-    currentTotalPages.value
+    currentTotalPages.value,
   );
 };
 
@@ -208,7 +208,7 @@ onMounted(() => {
 
     const nowTotalPages = currentTotalPages.value;
     const nowPage = Math.ceil(
-      ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value
+      ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value,
     );
 
     // 更新当前页
@@ -229,7 +229,7 @@ onMounted(() => {
 
         const nowTotalPages = currentTotalPages.value;
         const nowPage = Math.ceil(
-          ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value
+          ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value,
         );
 
         // 更新当前页
@@ -244,7 +244,7 @@ onMounted(() => {
       childList: true, // 监听子元素增删
       subtree: true, // 监听所有后代元素
       characterData: true, // 监听文本变化
-    }
+    },
   );
 
   // 3. 初始计算
@@ -253,7 +253,7 @@ onMounted(() => {
 
   const nowTotalPages = currentTotalPages.value;
   const nowPage = Math.ceil(
-    ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value
+    ((prevCurrentPage.value + 1) * nowTotalPages) / prevTotalPages.value,
   );
 
   // 更新当前页
@@ -269,7 +269,7 @@ watch(
   () => currentPage,
   () => {
     setPage(currentPage.value);
-  }
+  },
 );
 
 // Markdown 渲染选项

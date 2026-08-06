@@ -22,7 +22,7 @@ export const STYLE_CONFIG_KEYS = [
   {
     key: "paraHeight",
     storageKey: "CONTENT_PARA_HEIGHT",
-    default: 1,
+    default: 0.5,
   },
 ];
 
