@@ -9,9 +9,9 @@
       <button
         type="button"
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-        :disabled="currentChapterPage === 1"
+        :disabled="currentPage <= 1"
         aria-label="上一页"
-        @click="handleAnyPage(currentChapterPage - 1)"
+        @click="requestPage(currentPage - 1)"
       >
         <i class="ri-arrow-left-s-line text-lg"></i>
       </button>
@@ -27,7 +27,7 @@
       >
         <span class="truncate">
           <span class="hidden xs:inline">第 </span>
-          <span class="font-semibold">{{ currentChapterPage }}</span>
+          <span class="font-semibold">{{ currentPage }}</span>
           <span class="hidden xs:inline"> 页</span>
 
           <span class="mx-1 opacity-40">/</span>
@@ -51,8 +51,8 @@
           v-if="item.type === 'page'"
           type="button"
           class="btn join-item hidden min-w-10 px-3 lg:flex"
-          :class="{ 'btn-primary': item.page === currentChapterPage }"
-          @click="handleAnyPage(item.page)"
+          :class="{ 'btn-primary': item.page === currentPage }"
+          @click="requestPage(item.page)"
         >
           {{ item.page }}
         </button>
@@ -71,9 +71,9 @@
       <button
         type="button"
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-        :disabled="currentChapterPage === totalPages"
+        :disabled="currentPage >= totalPages"
         aria-label="下一页"
-        @click="handleAnyPage(currentChapterPage + 1)"
+        @click="requestPage(currentPage + 1)"
       >
         <i class="ri-arrow-right-s-line text-lg"></i>
       </button>
@@ -125,7 +125,7 @@
                   <p class="mt-1 text-sm text-base-content/60">
                     当前第
                     <span class="font-medium text-base-content">
-                      {{ currentChapterPage }}
+                      {{ currentPage }}
                     </span>
                     页，共
                     <span class="font-medium text-base-content">
@@ -156,12 +156,12 @@
                   type="button"
                   class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
                   :class="
-                    page === currentChapterPage
+                    page === currentPage
                       ? 'btn-primary'
                       : 'btn-ghost bg-base-200/70 hover:bg-base-300'
                   "
                   :aria-current="
-                    page === currentChapterPage ? 'page' : undefined
+                    page === currentPage ? 'page' : undefined
                   "
                   @click="selectPage(page)"
                 >
@@ -176,7 +176,7 @@
                 <button
                   type="button"
                   class="btn min-w-0 gap-2"
-                  :disabled="currentChapterPage === 1"
+                  :disabled="currentPage <= 1"
                   @click="selectPage(1)"
                 >
                   <i class="ri-skip-left-line shrink-0"></i>
@@ -186,7 +186,7 @@
                 <button
                   type="button"
                   class="btn min-w-0 gap-2"
-                  :disabled="currentChapterPage === totalPages"
+                  :disabled="currentPage >= totalPages"
                   @click="selectPage(totalPages)"
                 >
                   <span>最后一页</span>
@@ -203,15 +203,21 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
-import { storeToRefs } from "pinia";
 
-import { useNovelStore } from "@/stores/novelStore";
-import { useChapters } from "@/composables/useChapters";
+const props = defineProps({
+  currentPage: {
+    type: Number,
+    required: true,
+    validator: (value) => Number.isInteger(value) && value >= 1,
+  },
+  totalPages: {
+    type: Number,
+    required: true,
+    validator: (value) => Number.isInteger(value) && value >= 1,
+  },
+});
 
-const novelStore = useNovelStore();
-const { currentChapterPage, totalPages } = storeToRefs(novelStore);
-
-const { handleAnyPage } = useChapters();
+const emit = defineEmits(["update:currentPage", "change"]);
 
 const paginationRef = ref(null);
 const pageMenuRef = ref(null);
@@ -256,12 +262,21 @@ const closePageMenu = () => {
   isPageMenuOpen.value = false;
 };
 
-const selectPage = async (page) => {
-  closePageMenu();
+const requestPage = (page) => {
+  const targetPage = Math.min(
+    props.totalPages,
+    Math.max(1, Math.trunc(page)),
+  );
 
-  if (page !== currentChapterPage.value) {
-    await handleAnyPage(page);
-  }
+  if (targetPage === props.currentPage) return;
+
+  emit("update:currentPage", targetPage);
+  emit("change", targetPage);
+};
+
+const selectPage = (page) => {
+  closePageMenu();
+  requestPage(page);
 };
 
 const handleClickOutside = (event) => {
@@ -301,8 +316,8 @@ onBeforeUnmount(() => {
 });
 
 const visiblePages = computed(() => {
-  const total = totalPages.value;
-  const current = currentChapterPage.value;
+  const total = props.totalPages;
+  const current = props.currentPage;
   const limit = maxVisibleItems.value;
 
   if (total <= limit) {

@@ -10,7 +10,12 @@
       <span>上一章</span>
     </button>
 
-    <Pagination v-if="totalPages > 1" />
+    <Pagination
+      v-if="totalPages > 1"
+      :current-page="currentChapterPage"
+      :total-pages="totalPages"
+      @change="handleAnyPage"
+    />
 
     <!-- 下一章 -->
     <button
@@ -34,9 +39,11 @@ import { useNovelStore } from "@/stores/novelStore";
 import Pagination from "@/components/base/Pagination.vue";
 
 const novelStore = useNovelStore();
-const { totalPages, isLoadingContent } = storeToRefs(novelStore);
+const { currentChapterPage, totalPages, isLoadingContent } =
+  storeToRefs(novelStore);
 
-const { hasPrevious, hasNext, handlePrev, handleNext } = useChapters();
+const { hasPrevious, hasNext, handlePrev, handleNext, handleAnyPage } =
+  useChapters();
 
 import { useClickLimit } from "@/composables/useClickLimit";
 
