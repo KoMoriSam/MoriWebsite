@@ -71,7 +71,7 @@ const MATH_BLOCK_REGEX =
 const MATH_INLINE_REGEX =
   /(^|[^\\])\$(?:[^$\n]|\\\$)+\$|\\\((?:[^\n]|\\\))+\\\)/;
 
-const normalizeLanguage = (rawLanguage = "") => {
+export const normalizeLanguage = (rawLanguage = "") => {
   const firstToken = String(rawLanguage || "")
     .trim()
     .split(/\s+/)[0]
