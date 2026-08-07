@@ -163,7 +163,7 @@
                     <section
                       v-for="changeGroup in release.changeGroups"
                       :key="changeGroup.type"
-                      class="grid gap-3 py-5 first:pt-5 last:pb-0 md:grid-cols-[5rem_minmax(0,1fr)] md:gap-5 md:first:pt-0"
+                      class="grid gap-3 py-5 first:pt-5 last:pb-0 md:grid-cols-[3rem_minmax(0,1fr)] md:gap-5 md:first:pt-0"
                     >
                       <div>
                         <span
