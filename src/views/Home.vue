@@ -31,7 +31,7 @@
             </h2>
           </client-only>
           <p class="font-kai text-base lg:text-lg">
-            写点代码 · 搭点方块 · 折腾点服务器
+            写点代码&#8197;·&#8197;搭点方块&#8197;·&#8197;折腾点服务器
           </p>
           <section
             class="flex max-lg:flex-col gap-4 justify-center mt-8 lg:mt-12"
@@ -65,9 +65,9 @@
               rel="noopener noreferrer"
               class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
             >
-              摄影 · {{ hero.author?.name || "Pixabay 用户" }}
+              摄影&#8197;·&#8197;{{ hero.author?.name || "Pixabay 用户" }}
               <br />
-              来源 · Pixabay
+              来源&#8197;·&#8197;Pixabay
             </a>
           </client-only>
           <a
@@ -77,9 +77,9 @@
             rel="noopener noreferrer"
             class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
           >
-            摄影 · florianhoellmueller
+            摄影&#8197;·&#8197;florianhoellmueller
             <br />
-            来源 · Pixabay
+            来源&#8197;·&#8197;Pixabay
           </a>
           <i
             class="ri-arrow-down-s-line absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
