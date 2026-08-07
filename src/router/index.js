@@ -1,12 +1,3 @@
-import NProgress from "nprogress";
-NProgress.configure({
-  easing: "ease", // 动画方式
-  speed: 500, // 递增进度条的速度
-  showSpinner: false, // 是否显示加载ico
-  trickleSpeed: 200, // 自动递增间隔
-  minimum: 0.3, // 初始化时的最小百分比
-});
-
 import { articleRoutes, generatedArticleList } from "./ssg-data";
 
 import {
@@ -136,10 +127,6 @@ const router = createRouter({
 export default router;
 
 router.beforeEach((to, from, next) => {
-  if (typeof document !== "undefined") {
-    NProgress.start();
-  }
-
   // 兼容旧的 .html 地址
   if (to.path === "/index.html") {
     next({
@@ -199,10 +186,6 @@ router.beforeEach((to, from, next) => {
 });
 
 router.afterEach((to, from) => {
-  if (typeof document !== "undefined") {
-    NProgress.start();
-  }
-
   const currentPath = to.fullPath.split("#")[0];
   const previousPath = from.fullPath.split("#")[0];
 

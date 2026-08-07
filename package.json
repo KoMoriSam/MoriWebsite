@@ -45,7 +45,6 @@
     "markdown-it-sub": "^2.0.0",
     "markdown-it-sup": "^2.0.0",
     "markdown-it-task-lists": "^2.1.1",
-    "nprogress": "^0.2.0",
     "pinia": "^3.0.1",
     "postcss": "^8.5.3",
     "postcss-cli": "^11.0.1",

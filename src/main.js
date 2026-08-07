@@ -1,15 +1,4 @@
 import "@/assets/main.css";
-import "nprogress/nprogress.css";
-import "highlight.js/styles/github-dark.css";
-
-import "@fontsource-variable/fraunces";
-import "@fontsource-variable/fraunces/wght-italic.css";
-import "@fontsource-variable/manrope";
-import "@fontsource-variable/noto-sans-sc";
-import "@fontsource-variable/noto-serif-sc";
-import "@fontsource-variable/noto-sans-sinhala";
-import "@fontsource-variable/noto-serif-sinhala";
-import "@fontsource/maname";
 
 import { ViteSSG } from "vite-ssg";
 import { createPinia } from "pinia";
