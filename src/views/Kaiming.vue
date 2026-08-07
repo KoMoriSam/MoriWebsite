@@ -242,7 +242,7 @@ const features = [
   },
 ];
 
-const usageCode = `@import url("https://raw.komori.cc/kaiming/kaiming-punctuation-variable.css");
+const usageCode = `@import url("https://raw.komori.cc/kaiming/index.css");
 
 article {
   font-family:
@@ -254,21 +254,21 @@ article {
 
 const downloads = [
   {
-    label: "开明标点黑",
-    meta: "WOFF2",
-    href: "https://raw.komori.cc/kaiming/Sans-VF.woff2",
+    label: "网页引用",
+    meta: "CSS",
+    href: "https://raw.komori.cc/kaiming/index.css",
     external: true,
   },
   {
-    label: "开明标点宋",
-    meta: "WOFF2",
-    href: "https://raw.komori.cc/kaiming/Serif-VF.woff2",
-    external: true,
-  },
-  {
-    label: "其他格式",
-    meta: "GitHub",
+    label: "发布版本",
+    meta: "Releases",
     href: "https://github.com/KoMoriSam/Kaiming/releases",
+    external: true,
+  },
+  {
+    label: "源码仓库",
+    meta: "GitHub",
+    href: "https://github.com/KoMoriSam/Kaiming",
     external: true,
   },
   {
