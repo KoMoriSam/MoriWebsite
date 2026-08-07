@@ -9,6 +9,17 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "JetBrains Mono Scaled";
+  src: url("@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2")
+    format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+
+  /* 核心：将宽度从 600 缩放至 500 */
+  size-adjust: 83.33%;
+}
+
 @theme {
   --font-song:
     "Kaiming Punctuation Serif", "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong",
@@ -44,6 +55,10 @@
     line-break: strict;
     text-spacing-trim: trim-both;
     hanging-punctuation: first last;
+    --font-mono:
+      "JetBrains Mono Scaled", "JetBrains Mono Variable", "JetBrains Mono",
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
   }
 }
 
