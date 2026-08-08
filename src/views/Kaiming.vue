@@ -57,7 +57,10 @@
         <fieldset class="fieldset flex-1">
           <legend class="fieldset-legend">
             可变字重
-            <output class="badge badge-primary badge-sm" for="kaiming-weight">
+            <output
+              class="badge badge-primary badge-sm font-mono"
+              for="kaiming-weight"
+            >
               {{ weight }}
             </output>
           </legend>
