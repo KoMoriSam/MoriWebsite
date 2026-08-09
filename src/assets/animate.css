@@ -1,0 +1,70 @@
+@theme {
+  --animate-typing: typing 8s steps(15, end) infinite;
+  --animate-cursor-blink: cursor-blink 0.8s step-end infinite;
+
+  @keyframes typing {
+    /* 开头停顿 */
+    0%,
+    8% {
+      --type-progress: 0%;
+    }
+
+    /* 逐字输入 */
+    45% {
+      --type-progress: 100%;
+    }
+
+    /* 阅读停留 */
+    68% {
+      --type-progress: 100%;
+    }
+
+    /* 逐字删除 */
+    92%,
+    100% {
+      --type-progress: 0%;
+    }
+  }
+
+  @keyframes cursor-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@theme {
+  --animate-name-reveal: name-reveal 8s ease-in-out infinite;
+
+  @keyframes name-reveal {
+    0%,
+    15% {
+      max-width: 0;
+      margin-left: 0;
+      transform: translateX(-0.5rem);
+      opacity: 0;
+    }
+
+    30%,
+    65% {
+      max-width: 12rem;
+      margin-left: 0.5rem;
+      transform: translateX(0);
+      opacity: 0.75;
+    }
+
+    80%,
+    100% {
+      max-width: 0;
+      margin-left: 0;
+      transform: translateX(-0.5rem);
+      opacity: 0;
+    }
+  }
+}
+
+@property --type-progress {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
