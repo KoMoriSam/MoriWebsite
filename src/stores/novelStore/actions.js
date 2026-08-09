@@ -329,13 +329,13 @@ export const useNovelActions = (state, getters) => {
 
   const updateTitle = () => {
     if (!isReaderRoute()) {
-      state.title.value = "向远方 | KoMoriSam";
+      state.title.value = "《向远方》 | 远方之森";
       useTitle(state.title.value);
       return;
     }
 
     if (getters.currentChapter.value) {
-      state.title.value = `${getters.currentChapter.value.title} | KoMoriSam`;
+      state.title.value = `${getters.currentChapter.value.title} | 《向远方》`;
       useTitle(state.title.value);
     }
   };

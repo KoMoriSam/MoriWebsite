@@ -22,26 +22,26 @@ const route = useRoute();
 useSearchResultHighlight();
 
 const SITE_URL = "https://komori.cc";
-const SITE_NAME = "KoMoriSam";
-const DEFAULT_TITLE = "KoMoriSam | 个人博客、小说与独立开发";
+const SITE_NAME = "远方之森";
+const DEFAULT_TITLE = "远方之森 | 个人博客与独立开发";
 const DEFAULT_DESCRIPTION =
-  "KoMoriSam 的个人网站，分享技术探索、随笔与读书笔记，平常也写点小说，提供一些实用小工具。";
+  "远方之森的个人网站，分享技术探索、随笔与读书笔记，平常也写点小说，提供一些实用小工具。";
 const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
-const KEYWORDS = "KoMoriSam,个人博客,技术博客,独立开发,原创小说,向远方";
+const KEYWORDS = "远方之森,个人博客,技术博客,独立开发,原创小说,向远方";
 
 const PAGE_DESCRIPTIONS = {
   licenses:
-    "查看 KoMoriSam 网站原创软件、生产依赖、字体、图标及其他第三方内容的许可证与权利声明。",
-  blog: "阅读 KoMoriSam 的技术探索、生活随笔与读书笔记。",
-  "blog-article": "阅读 KoMoriSam 的博客文章。",
-  changelog: "查看 KoMoriSam 个人网站的功能更新、修复与版本记录。",
-  novel: "在线阅读 KoMoriSam 创作的原创小说《向远方》。",
-  "novel-reader": "在线阅读 KoMoriSam 创作的原创小说《向远方》。",
-  tools: "使用 KoMoriSam 制作的在线小工具与服务查询功能。",
+    "查看远方之森网站原创软件、生产依赖、字体、图标及其他第三方内容的许可证与权利声明。",
+  blog: "阅读远方之森的技术探索、生活随笔与读书笔记。",
+  "blog-article": "阅读远方之森的博客文章。",
+  changelog: "查看远方之森个人网站的功能更新、修复与版本记录。",
+  novel: "在线阅读远方之森创作的原创小说《向远方》。",
+  "novel-reader": "在线阅读远方之森 创作的原创小说《向远方》。",
+  tools: "使用远方之森制作的在线小工具与服务查询功能。",
   kaiming:
     "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
   NotFound: "未找到请求的页面。",
-  test: "KoMoriSam 网站的组件测试页面。",
+  test: "远方之森网站的组件测试页面。",
 };
 
 const routeName = computed(() => String(route.name || ""));

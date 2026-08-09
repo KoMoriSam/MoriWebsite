@@ -41,7 +41,7 @@ export const useNovelState = () => {
   });
 
   // 其他状态
-  const title = ref("向远方 | KoMoriSam");
+  const title = ref("《向远方》 | 远方之森");
   const isLoadingList = ref(true);
   const isLoadingContent = ref(true);
 

@@ -28,7 +28,7 @@ export const articleRoutes = generatedArticles.map((entry) => ({
   path: entry.path,
   component: () => import("@/views/Blog.vue"),
   meta: {
-    title: `${entry.article?.title || "博客"} | KoMoriSam`,
+    title: `${entry.article?.title || "博客"} | 远方之森`,
     navName: "blog",
     hideToTop: true,
     article: entry.article,

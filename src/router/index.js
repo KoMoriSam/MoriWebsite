@@ -11,7 +11,7 @@ export const routes = [
     path: "/",
     name: "home",
     component: () => import("@/views/Home.vue"),
-    meta: { title: "主页 | KoMoriSam", navName: "home" },
+    meta: { title: "主页 | 远方之森", navName: "home" },
   },
   {
     path: "/home",
@@ -27,7 +27,7 @@ export const routes = [
     name: "blog",
     component: () => import("@/views/Blog.vue"),
     meta: {
-      title: "博客 | KoMoriSam",
+      title: "博客 | 远方之森",
       navName: "blog",
       articles: generatedArticleList,
     },
@@ -36,20 +36,20 @@ export const routes = [
     path: "/changelog",
     name: "changelog",
     component: () => import("@/views/Changelog.vue"),
-    meta: { title: "更新日志 | KoMoriSam" },
+    meta: { title: "更新日志 | 远方之森" },
   },
   {
     path: "/licenses",
     name: "licenses",
     component: () => import("@/views/Licenses.vue"),
-    meta: { title: "开源许可与第三方声明 | KoMoriSam" },
+    meta: { title: "开源许可与第三方声明 | 远方之森" },
   },
   {
     path: "/blog/:articleId",
     name: "blog-article",
     component: () => import("@/views/Blog.vue"),
     meta: {
-      title: "博客 | KoMoriSam",
+      title: "博客 | 远方之森",
       navName: "blog",
       hideToTop: true,
     },
@@ -58,14 +58,14 @@ export const routes = [
     path: "/novel",
     name: "novel",
     component: () => import("@/views/Novel.vue"),
-    meta: { title: "向远方 | KoMoriSam", navName: "novel" },
+    meta: { title: "《向远方》 | 远方之森", navName: "novel" },
   },
   {
     path: "/novel/:volumeSlug/:chapterSlug?",
     name: "novel-reader",
     component: () => import("@/views/Novel.vue"),
     meta: {
-      title: "向远方 | KoMoriSam",
+      title: "《向远方》 | 远方之森",
       navName: "novel",
       hideToTop: true,
     },
@@ -74,13 +74,13 @@ export const routes = [
     path: "/tools/:toolSlug?",
     name: "tools",
     component: () => import("@/views/Tools.vue"),
-    meta: { title: "工具 | KoMoriSam", navName: "tools" },
+    meta: { title: "工具 | 远方之森", navName: "tools" },
   },
   {
     path: "/kaiming",
     name: "kaiming",
     component: () => import("@/views/Kaiming.vue"),
-    meta: { title: "开明标点 | KoMoriSam" },
+    meta: { title: "开明标点 | 远方之森" },
   },
   // 仅开发环境可见，生产构建自动移除
   ...(import.meta.env.DEV
@@ -89,7 +89,7 @@ export const routes = [
           path: "/test",
           name: "test",
           component: () => import("@/views/Test.vue"),
-          meta: { title: "测试 | KoMoriSam" },
+          meta: { title: "测试 | 远方之森" },
         },
       ]
     : []),
@@ -97,7 +97,7 @@ export const routes = [
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/views/NotFound.vue"),
-    meta: { title: "404! | KoMoriSam" },
+    meta: { title: "404! | 远方之森" },
   },
 ];
 

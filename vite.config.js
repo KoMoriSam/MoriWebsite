@@ -37,7 +37,7 @@ export default defineConfig({
         try {
           const notFoundHtml = readFileSync(indexPath, "utf8").replace(
             /<title>.*?<\/title>/s,
-            `<title>页面未找到 | KoMoriSam</title>
+            `<title>404! | 远方之森</title>
     <meta name="description" content="未找到请求的页面。" />
     <meta name="robots" content="noindex, nofollow" />`,
           );
