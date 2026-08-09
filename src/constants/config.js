@@ -70,7 +70,7 @@ const GISCUS = {
     timeout: 8000,
   },
   // 小说书评
-  defaultTerm: "向远方",
+  defaultTerm: "《向远方》 | 远方之森",
 };
 
 const CONFIG = {

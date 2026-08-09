@@ -8,9 +8,11 @@
 import { computed, onMounted } from "vue";
 import { useHead } from "@unhead/vue";
 import { useRoute } from "vue-router";
+import { storeToRefs } from "pinia";
 
 import NavBar from "@/components/layout/NavBar.vue";
 import ToTop from "./components/base/ToTop.vue";
+import { useNovelStore } from "@/stores/novelStore";
 
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
@@ -19,6 +21,8 @@ import { useStorageMigration } from "@/utils/storage/migrate-storage";
 import { useDiscardStorage } from "@/utils/storage/discard-storage";
 
 const route = useRoute();
+const novelStore = useNovelStore();
+const { title: novelTitle } = storeToRefs(novelStore);
 useSearchResultHighlight();
 
 const SITE_URL = "https://komori.cc";
@@ -53,6 +57,7 @@ const isIndexable = computed(
 
 const pageTitle = computed(() => {
   if (routeName.value === "home") return DEFAULT_TITLE;
+  if (routeName.value === "novel-reader") return novelTitle.value;
   return String(route.meta.title || DEFAULT_TITLE);
 });
 

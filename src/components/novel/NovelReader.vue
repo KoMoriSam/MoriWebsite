@@ -224,9 +224,17 @@ const { currentMapping, commentToggle } = useGiscus();
 
 const giscusVersion = ref(0);
 const giscusMapping = "specific";
+
+const extractVolume = (volumeTitle = "") => {
+  const match = volumeTitle.match(
+    /^第[零〇一二三四五六七八九十百千万0-9]+卷/,
+  );
+  return match ? match[0] : volumeTitle;
+};
+
 const giscusTerm = computed(() =>
   currentMapping.value === "title"
-    ? `${currentChapter.value?.title || ""} | KoMoriSam`
+    ? `${currentChapter.value?.title || ""} | 《向远方》${extractVolume(currentChapter.value?.volumeTitle)}`
     : GISCUS.defaultTerm,
 );
 const giscusKey = computed(
@@ -267,10 +275,7 @@ const chapterStats = computed(() => {
   if (currentChapter.value?.modifiedDate) {
     stats.push({
       icon: "ri-file-edit-line",
-      text: useDateFormat(
-        currentChapter.value.modifiedDate,
-        "YYYY/M/D H:mm 修改",
-      ),
+      text: "已修订",
     });
   }
 

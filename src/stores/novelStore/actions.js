@@ -334,8 +334,16 @@ export const useNovelActions = (state, getters) => {
       return;
     }
 
+    function extractVolume(volumeTitle) {
+      const match = volumeTitle.match(
+        /^第[零〇一二三四五六七八九十百千万0-9]+卷/,
+      );
+      return match ? match[0] : volumeTitle;
+    }
+
     if (getters.currentChapter.value) {
-      state.title.value = `${getters.currentChapter.value.title} | 《向远方》`;
+      const volume = extractVolume(getters.currentChapter.value.volumeTitle);
+      state.title.value = `${getters.currentChapter.value.title} | 《向远方》${volume}`;
       useTitle(state.title.value);
     }
   };
