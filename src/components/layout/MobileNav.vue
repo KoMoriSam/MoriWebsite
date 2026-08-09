@@ -49,10 +49,7 @@
 
       <section aria-labelledby="mobile-project-navigation">
         <div class="divider my-3 justify-between">
-          <h2
-            id="mobile-project-navigation"
-            class="text-base-content/55 text-xs font-bold"
-          >
+          <h2 class="text-base-content/55 text-xs font-bold">
             项目
             <span class="badge badge-ghost badge-xs">
               {{ PROJECTS.length }}

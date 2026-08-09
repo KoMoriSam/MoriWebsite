@@ -1,9 +1,6 @@
 <template>
   <section v-if="embedded" aria-labelledby="mobile-theme-controller">
-    <h2
-      id="mobile-theme-controller"
-      class="text-base-content/55 text-xs font-bold mb-2 px-1"
-    >
+    <h2 class="text-base-content/55 text-xs font-bold mb-2 px-1">
       <div class="divider my-3">主题</div>
     </h2>
 
