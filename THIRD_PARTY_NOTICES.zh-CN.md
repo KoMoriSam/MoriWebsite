@@ -12,16 +12,17 @@
 
 下列字体软件依据 SIL Open Font License 1.1 分发。版权声明仍归相应的上游项目所有，许可证全文见 [`licenses/OFL-1.1.txt`](./licenses/OFL-1.1.txt)。
 
-| 字体 | 版权所有者／来源 | 说明 |
-| --- | --- | --- |
-| Fraunces | The Fraunces Project Authors | 通过 Fontsource 分发 |
-| Manrope | The Manrope Project Authors | 通过 Fontsource 分发 |
-| Noto Sans SC 与 Noto Serif SC | Google Inc. / The Noto Project Authors | 通过 Fontsource 分发 |
-| Noto Sans Sinhala 与 Noto Serif Sinhala | The Noto Project Authors | 通过 Fontsource 分发 |
-| Maname | The Maname Project Authors | 通过 Fontsource 分发 |
-| 朱雀仿宋 | Copyright (c) 2023, Zhejiang JadeFoci Techonology Co. LTD / TrionesType | 随站点分发的网页字体 |
-| 开明式标点黑体／宋体 | 衍生自 Noto Sans SC 与 Noto Serif SC | 已修改、子集化并重命名；仍适用 OFL-1.1 |
-| LXGW Neo ZhiSong、LXGW Neo XiHei 与 LXGW WenKai GB | 各上游作者 | 通过 jsDelivr 加载；继续适用各自的上游许可证 |
+| 字体                                               | 版权所有者／来源                                                        | 说明                                                                         |
+| -------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Fraunces                                           | The Fraunces Project Authors                                            | 通过 Fontsource 分发                                                         |
+| JetBrains Mono                                     | The JetBrains Mono Project Authors                                      | 通过 Fontsource 分发                                                         |
+| Manrope                                            | The Manrope Project Authors                                             | 通过 Fontsource 分发                                                         |
+| Noto Sans SC 与 Noto Serif SC                      | Google Inc. / The Noto Project Authors                                  | 通过 Fontsource 分发                                                         |
+| Noto Sans Sinhala 与 Noto Serif Sinhala            | The Noto Project Authors                                                | 通过 Fontsource 分发                                                         |
+| Maname                                             | The Maname Project Authors                                              | 通过 Fontsource 分发                                                         |
+| 朱雀仿宋                                           | Copyright (c) 2023, Zhejiang JadeFoci Techonology Co. LTD / TrionesType | 随站点分发的网页字体                                                         |
+| 开明式标点黑体／宋体                               | 衍生自 Noto Sans SC 与 Noto Serif SC                                    | 已修改、子集化并重命名；仍适用 OFL-1.1；从 `raw.komori.cc/kaiming/` 在线加载 |
+| LXGW Neo ZhiSong、LXGW Neo XiHei 与 LXGW WenKai GB | 各上游作者                                                              | 通过 jsDelivr 加载；继续适用各自的上游许可证                                 |
 
 上述字体文件及其衍生版本不适用本项目的 MIT License。
 
@@ -36,7 +37,7 @@
 
 - 备用山景照片由 `florianhoellmueller` 创作，并依据 Pixabay Content License 使用；站点中提供了其来源页面链接。
 - Pixabay API 返回的图片继续适用 Pixabay Content License 及任何相关第三方权利。
-- 除非文件或随附声明另有说明，本仓库中的文章、小说、头像、个人照片、封面、美术素材、表情及其他非软件内容**不依据 MIT License 提供**，相关权利由各自权利人保留。
+- 除非文件或随附声明另有说明，本仓库中的文章、小说、头像、个人照片、封面、美术素材、动画 GIF 素材、表情及其他非软件内容**不依据 MIT License 提供**，相关权利由各自权利人保留。
 
 ## Minecraft 归档页
 

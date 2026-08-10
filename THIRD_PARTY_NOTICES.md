@@ -26,16 +26,17 @@ The following font software is distributed under the SIL Open Font License
 1.1. Copyright notices remain with the named upstream projects. See
 [`licenses/OFL-1.1.txt`](./licenses/OFL-1.1.txt).
 
-| Font | Copyright / source | Notes |
-| --- | --- | --- |
-| Fraunces | The Fraunces Project Authors | Distributed through Fontsource |
-| Manrope | The Manrope Project Authors | Distributed through Fontsource |
-| Noto Sans SC and Noto Serif SC | Google Inc. / The Noto Project Authors | Distributed through Fontsource |
-| Noto Sans Sinhala and Noto Serif Sinhala | The Noto Project Authors | Distributed through Fontsource |
-| Maname | The Maname Project Authors | Distributed through Fontsource |
-| Zhuque Fangsong | Copyright (c) 2023, Zhejiang JadeFoci Techonology Co. LTD / TrionesType | Vendored webfont |
-| Kaiming Sans/Serif Punctuation | Derived from Noto Sans SC and Noto Serif SC | Modified, subsetted, and renamed; remains OFL-1.1 |
-| LXGW Neo ZhiSong, LXGW Neo XiHei, and LXGW WenKai GB | Their respective upstream authors | Loaded from jsDelivr; remain under their upstream licenses |
+| Font                                                 | Copyright / source                                                      | Notes                                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Fraunces                                             | The Fraunces Project Authors                                            | Distributed through Fontsource                                                                 |
+| JetBrains Mono                                       | The JetBrains Mono Project Authors                                      | Distributed through Fontsource                                                                 |
+| Manrope                                              | The Manrope Project Authors                                             | Distributed through Fontsource                                                                 |
+| Noto Sans SC and Noto Serif SC                       | Google Inc. / The Noto Project Authors                                  | Distributed through Fontsource                                                                 |
+| Noto Sans Sinhala and Noto Serif Sinhala             | The Noto Project Authors                                                | Distributed through Fontsource                                                                 |
+| Maname                                               | The Maname Project Authors                                              | Distributed through Fontsource                                                                 |
+| Zhuque Fangsong                                      | Copyright (c) 2023, Zhejiang JadeFoci Techonology Co. LTD / TrionesType | Vendored webfont                                                                               |
+| Kaiming Sans/Serif Punctuation                       | Derived from Noto Sans SC and Noto Serif SC                             | Modified, subsetted, and renamed; remains OFL-1.1; loaded online from `raw.komori.cc/kaiming/` |
+| LXGW Neo ZhiSong, LXGW Neo XiHei, and LXGW WenKai GB | Their respective upstream authors                                       | Loaded from jsDelivr; remain under their upstream licenses                                     |
 
 The font files and their derivatives are not licensed under this project's MIT
 License.
@@ -63,9 +64,9 @@ License.
 - Images returned by the Pixabay API remain subject to the Pixabay Content
   License and any applicable third-party rights.
 - Unless a file or accompanying notice says otherwise, articles, fiction,
-  avatars, profile photographs, cover art, emotes, and other non-software
-  content in this repository are **not** offered under the MIT License. All
-  rights are reserved by their respective copyright holders.
+  avatars, profile photographs, cover art, animated GIF assets, emotes, and 
+  other non-software content in this repository are **not** offered under the 
+  MIT License. All rights are reserved by their respective copyright holders.
 
 ## Minecraft archive
 
