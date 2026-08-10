@@ -132,7 +132,7 @@ defineProps({
       fontSize: 20, // 字体大小(px)
       fontGap: 0, // 字间距
       lineHeight: 1.6, // 行高
-      paraHeight: 1, // 段落高度
+      paraHeight: 0.5, // 段落高度
     }),
   },
 });
