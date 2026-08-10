@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import fm from "front-matter";
 import fs from "fs";
 import path from "path";
-import { createArticleAssetResolver } from "../src/utils/article-assets.js";
+import { createArticleAssetResolver } from "../src/utils/resolve-article-assets.js";
 
 dotenv.config({
   path: ".env.production",

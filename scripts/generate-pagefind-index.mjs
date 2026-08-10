@@ -5,9 +5,10 @@ import { resolve } from "node:path";
 
 import licenseData from "../src/router/license-data.generated.js";
 import ssgData from "../src/router/ssg-data.generated.js";
-import { createLicenseAnchor } from "../src/utils/license-anchor.js";
+import { createLicenseAnchor } from "../src/utils/create-license-anchor.js";
 import { createMarkdownSearchBlocks } from "../src/utils/markdown/search-anchors.js";
-import { splitMarkdown } from "../src/utils/markdown/split-markdown.js";
+// 小说索引按整章 Markdown 生成，不再使用固定字数分页。
+// import { splitMarkdown } from "../src/utils/markdown/split-markdown.js";
 
 dotenv.config({ path: ".env.production" });
 
@@ -80,7 +81,9 @@ const createCjkSearchTerms = (value) =>
           const tokens = characters.map(encodeCjkToken);
 
           for (let index = 0; index < characters.length - 1; index += 1) {
-            tokens.push(encodeCjkToken(characters.slice(index, index + 2).join("")));
+            tokens.push(
+              encodeCjkToken(characters.slice(index, index + 2).join("")),
+            );
           }
 
           return tokens;
@@ -113,7 +116,9 @@ const createRecord = ({
   const filters = {
     type: [type],
   };
-  const tagFilters = normalizedTags.map((tag) => tagFilter(type, tag)).filter(Boolean);
+  const tagFilters = normalizedTags
+    .map((tag) => tagFilter(type, tag))
+    .filter(Boolean);
 
   if (tagFilters.length) filters.tag = tagFilters;
   if (normalizedDate) filters.year = [normalizedDate.slice(0, 4)];
@@ -123,17 +128,17 @@ const createRecord = ({
     language: "zh",
     content: (() => {
       const plainContent = stripMarkdown(
-      [
-        searchTitle,
-        summary,
-        content,
-        indexContext ? normalizedTags.join(" ") : "",
-        ...(indexContext
-          ? metadata.flatMap((item) => [item.label, item.value])
-          : []),
-      ]
-        .filter(Boolean)
-        .join("\n\n"),
+        [
+          searchTitle,
+          summary,
+          content,
+          indexContext ? normalizedTags.join(" ") : "",
+          ...(indexContext
+            ? metadata.flatMap((item) => [item.label, item.value])
+            : []),
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       );
       return `${plainContent}\n\n${createCjkSearchTerms(plainContent)}`;
     })(),
@@ -213,7 +218,12 @@ const blogRecords = (ssgData.articles || []).flatMap((entry, catalogOrder) => {
   const metadata = [
     { key: "date", label: "发布时间", value: date, icon: "ri-calendar-line" },
     article.length
-      ? { key: "length", label: "约", value: `${article.length} 字`, icon: "ri-file-text-line" }
+      ? {
+          key: "length",
+          label: "约",
+          value: `${article.length} 字`,
+          icon: "ri-file-text-line",
+        }
       : null,
   ].filter(Boolean);
 
@@ -233,16 +243,20 @@ const blogRecords = (ssgData.articles || []).flatMap((entry, catalogOrder) => {
 });
 
 const loadNovelRecords = async () => {
-  if (!NOVEL_BASE) throw new Error("缺少 VITE_NOVEL_RAW，无法生成小说 Pagefind 索引");
+  if (!NOVEL_BASE)
+    throw new Error("缺少 VITE_NOVEL_RAW，无法生成小说 Pagefind 索引");
 
   let catalogOrder = 0;
-  const chapters = Object.values(ssgData.novelChapters || {}).flatMap((volume, volumeOrder) =>
-    (Array.isArray(volume?.chapters) ? volume.chapters : []).map((chapter) => ({
-      ...chapter,
-      volumeTitle: String(volume?.volumeInfo?.title || "").trim(),
-      volumeOrder,
-      catalogOrder: catalogOrder++,
-    })),
+  const chapters = Object.values(ssgData.novelChapters || {}).flatMap(
+    (volume, volumeOrder) =>
+      (Array.isArray(volume?.chapters) ? volume.chapters : []).map(
+        (chapter) => ({
+          ...chapter,
+          volumeTitle: String(volume?.volumeInfo?.title || "").trim(),
+          volumeOrder,
+          catalogOrder: catalogOrder++,
+        }),
+      ),
   );
 
   const chapterRecordGroups = await Promise.all(
@@ -251,7 +265,9 @@ const loadNovelRecords = async () => {
       if (chapter.path) {
         const response = await fetch(`${NOVEL_BASE}/${chapter.path}`);
         if (!response.ok) {
-          throw new Error(`获取小说章节失败：${chapter.path} (${response.status})`);
+          throw new Error(
+            `获取小说章节失败：${chapter.path} (${response.status})`,
+          );
         }
         document = fm(await response.text());
       }
@@ -262,13 +278,28 @@ const loadNovelRecords = async () => {
       const date = modifiedDate || uploadDate;
       const metadata = [
         uploadDate
-          ? { key: "uploadDate", label: "发布时间", value: uploadDate, icon: "ri-upload-2-line" }
+          ? {
+              key: "uploadDate",
+              label: "发布时间",
+              value: uploadDate,
+              icon: "ri-upload-2-line",
+            }
           : null,
         modifiedDate
-          ? { key: "modifiedDate", label: "修改时间", value: modifiedDate, icon: "ri-file-edit-line" }
+          ? {
+              key: "modifiedDate",
+              label: "修改时间",
+              value: modifiedDate,
+              icon: "ri-file-edit-line",
+            }
           : null,
         attributes.length
-          ? { key: "length", label: "约", value: `${attributes.length} 字`, icon: "ri-file-text-line" }
+          ? {
+              key: "length",
+              label: "约",
+              value: `${attributes.length} 字`,
+              icon: "ri-file-text-line",
+            }
           : null,
       ].filter(Boolean);
 
@@ -277,9 +308,9 @@ const loadNovelRecords = async () => {
         : "/novel";
 
       return createMarkdownRecords({
-        pages: splitMarkdown(document.body),
-        urlForBlock: ({ block, page }) =>
-          `${baseUrl}?p=${page}${block ? `#${block.id}` : ""}`,
+        // pages: splitMarkdown(document.body),
+        pages: [document.body],
+        urlForBlock: ({ block }) => `${baseUrl}${block ? `#${block.id}` : ""}`,
         title: chapter.title || "未命名章节",
         fallbackSummary: chapter.volumeTitle || "《向远方》",
         type: "novel",
@@ -297,7 +328,9 @@ const loadNovelRecords = async () => {
 const changelogRecords = Object.entries(ssgData.changelog || {}).map(
   ([version, item], catalogOrder) => {
     const changeEntries = Object.entries(item?.changes || {});
-    const changes = changeEntries.flatMap(([, values]) => (Array.isArray(values) ? values : []));
+    const changes = changeEntries.flatMap(([, values]) =>
+      Array.isArray(values) ? values : [],
+    );
     const tags = changeEntries
       .filter(([, values]) => Array.isArray(values) && values.length)
       .map(([type]) => type);
@@ -341,7 +374,9 @@ const licenseRecords = [
   }),
 ];
 
-for (const [index, dependency] of (licenseData.dependencyNotices || []).entries()) {
+for (const [index, dependency] of (
+  licenseData.dependencyNotices || []
+).entries()) {
   const declaredLicense = String(dependency.declaredLicense || "not declared");
   const metadata = [
     {
@@ -368,7 +403,9 @@ for (const [index, dependency] of (licenseData.dependencyNotices || []).entries(
   );
 }
 
-for (const [index, license] of (licenseData.supplementalLicenses || []).entries()) {
+for (const [index, license] of (
+  licenseData.supplementalLicenses || []
+).entries()) {
   licenseRecords.push(
     createRecord({
       url: `/licenses#${createLicenseAnchor("supplemental", license.name)}`,
@@ -383,7 +420,12 @@ for (const [index, license] of (licenseData.supplementalLicenses || []).entries(
 }
 
 const novelRecords = await loadNovelRecords();
-const records = [...blogRecords, ...novelRecords, ...changelogRecords, ...licenseRecords];
+const records = [
+  ...blogRecords,
+  ...novelRecords,
+  ...changelogRecords,
+  ...licenseRecords,
+];
 const { index, errors } = await createIndex({ includeCharacters: "@/+-._" });
 
 if (!index || errors.length) {
