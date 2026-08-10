@@ -99,7 +99,6 @@ const setupBlogPosTracker = () => {
     readPosKey: "BLOG_READ_POS",
     readContextKey: "BLOG_READ_ARTICLE_ID",
     getContextId: () => String(currentArticle.value?.id || getRouteArticleId()),
-    getPage: () => 1,
     isActive: () =>
       String(router.currentRoute.value.path || "").startsWith("/blog"),
   });
