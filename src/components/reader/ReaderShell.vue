@@ -2,7 +2,7 @@
   <SideBar
     v-if="drawer"
     :drawer-id="drawerId"
-    class="min-w-0 w-full max-w-full"
+    class="h-full min-w-0 w-full max-w-full"
   >
     <template #content>
       <slot />
