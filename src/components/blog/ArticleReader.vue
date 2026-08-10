@@ -378,8 +378,6 @@
       />
     </template>
   </Reader>
-
-  <FootBar class="max-lg:hidden" />
 </template>
 
 <script setup>
@@ -396,7 +394,6 @@ import { normalizeArticleDate } from "@/composables/useArticleFilter";
 import CONFIG from "@/constants/config";
 
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
-import FootBar from "@/components/layout/FootBar.vue";
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";

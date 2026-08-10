@@ -60,6 +60,8 @@
       </template>
     </ReaderShell>
   </main>
+
+  <FootBar class="max-lg:hidden" />
 </template>
 
 <script setup>
@@ -75,6 +77,7 @@ import {
 import ReaderBody from "@/components/reader/ReaderBody.vue";
 import ReaderShell from "@/components/reader/ReaderShell.vue";
 import ReaderToc from "@/components/reader/ReaderToc.vue";
+import FootBar from "@/components/layout/FootBar.vue";
 
 const props = defineProps({
   drawer: {
