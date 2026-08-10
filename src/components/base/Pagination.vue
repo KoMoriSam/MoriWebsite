@@ -240,14 +240,21 @@ const updateVisibleCount = (width) => {
 const scrollToCurrentPage = async () => {
   await nextTick();
 
-  const currentButton = pageListRef.value?.querySelector(
+  const pageList = pageListRef.value;
+  const currentButton = pageList?.querySelector(
     '[aria-current="page"]',
   );
 
-  currentButton?.scrollIntoView({
-    block: "center",
-    behavior: "auto",
-  });
+  if (!pageList || !currentButton) return;
+
+  const listRect = pageList.getBoundingClientRect();
+  const buttonRect = currentButton.getBoundingClientRect();
+  const buttonTop = buttonRect.top - listRect.top + pageList.scrollTop;
+  const targetTop =
+    buttonTop - (pageList.clientHeight - currentButton.offsetHeight) / 2;
+
+  // 只滚动页码弹层，避免 scrollIntoView 连带改变阅读页的垂直位置。
+  pageList.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
 };
 
 const togglePageMenu = async () => {
