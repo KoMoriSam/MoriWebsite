@@ -3,7 +3,11 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import { useToast } from "@/composables/useToast";
-import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
+import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
+import {
+  getChapterRoutePage,
+  normalizeChapterPage,
+} from "@/utils/normalize-chapter-route";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -29,13 +33,6 @@ export function useChapters() {
   const isReaderRoute = computed(() => {
     return Boolean(route.params.volumeSlug && route.params.chapterSlug);
   });
-
-  const getCurrentPageQuery = () => {
-    const pageValue = route.query.p ?? route.query.page;
-    return Number.isFinite(Number(pageValue)) && Number(pageValue) > 0
-      ? Number(pageValue)
-      : 1;
-  };
 
   const waitForChapterRender = (uuid, page) => {
     const isReady = () =>
@@ -94,10 +91,7 @@ export function useChapters() {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
 
-    const targetPage =
-      Number.isFinite(Number(options.page)) && Number(options.page) > 0
-        ? Number(options.page)
-        : 1;
+    const targetPage = normalizeChapterPage(options.page);
     const targetHash = String(options.hash || "").trim();
     const query = {};
 
@@ -153,7 +147,7 @@ export function useChapters() {
         Number.isFinite(storedPage) && storedPage > 0 ? storedPage : 1;
       const resumeHash = storedPos ? `#${storedPos}` : "";
 
-      const normalizedCurrentPage = getCurrentPageQuery();
+      const normalizedCurrentPage = getChapterRoutePage(route);
       const targetRouteCode = String(
         novelStore.getPermalinkByUuid(targetUuid)?.routeCode || "",
       );

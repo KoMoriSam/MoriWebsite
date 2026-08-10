@@ -4,18 +4,9 @@ import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novelStore";
 import ssgData from "@/router/ssg-data";
+import { getChapterRoutePage } from "@/utils/normalize-chapter-route";
 
 import { useToast } from "@/composables/useToast";
-
-const normalizePageQuery = (page) => {
-  const n = Number(page);
-  return Number.isFinite(n) && n > 0 ? n : 1;
-};
-
-const getRoutePageQuery = (route) => {
-  const pageValue = route.query.p ?? route.query.page;
-  return normalizePageQuery(pageValue);
-};
 
 export function useChapterSetup() {
   const route = useRoute();
@@ -119,7 +110,7 @@ export function useChapterSetup() {
   };
 
   const syncChapterFromRoute = async ({ withFallback = false } = {}) => {
-    const page = getRoutePageQuery(route);
+    const page = getChapterRoutePage(route);
     const chapterUuid = resolveRouteToChapterUuid();
 
     if (chapterUuid) {

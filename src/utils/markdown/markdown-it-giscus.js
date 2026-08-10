@@ -2,7 +2,7 @@ import ParaGiscus from "@/components/reader/ParaGiscus.vue";
 import { h } from "vue";
 import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
-import { useParagraphCommentsStorage } from "@/utils/storage/new-paragraph-comments";
+import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 export const useParagraphComments = () => {
   const modal = useModal();

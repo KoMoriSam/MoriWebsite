@@ -2,7 +2,7 @@ import fm from "front-matter";
 import {
   createArticleAssetResolver,
   extractArticleImageTarget,
-} from "@/utils/article-assets";
+} from "@/utils/resolve-article-assets";
 
 const BASE_URL = import.meta.env.VITE_BLOG_RAW;
 const OBSIDIAN_IMAGE_REGEX = /!\[\[([^\]]+)\]\]/g;

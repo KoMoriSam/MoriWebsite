@@ -236,7 +236,7 @@ import { useRoute } from "vue-router";
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import licenseData from "@/router/license-data";
-import { createLicenseAnchor } from "@/utils/license-anchor";
+import { createLicenseAnchor } from "@/utils/create-license-anchor";
 
 const route = useRoute();
 

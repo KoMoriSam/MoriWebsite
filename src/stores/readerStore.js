@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { computed } from "vue";
 import { STYLE_CONFIG_KEYS } from "@/constants/reader";
-import { useReaderSettingsStorage } from "@/utils/storage/new-reader-settings";
+import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
 
 export const useReaderStore = defineStore("reader", () => {
   const { getSetting, setSetting } = useReaderSettingsStorage();

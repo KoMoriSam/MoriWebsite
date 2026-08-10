@@ -1,6 +1,6 @@
 import { useEventListener, useThrottleFn } from "@vueuse/core";
 import { computed } from "vue";
-import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
+import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 
 const FULL_PARAGRAPH_ID_RE =
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/;

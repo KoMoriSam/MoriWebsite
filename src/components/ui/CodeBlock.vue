@@ -43,7 +43,7 @@ import { nextTick, onMounted, ref, toRef, watch } from "vue";
 import {
   normalizeLanguage,
   preloadHighlightLanguages,
-} from "@/utils/markdown/markdown-feature-loader";
+} from "@/utils/markdown/load-markdown-features";
 
 // 接收 props
 const props = defineProps({

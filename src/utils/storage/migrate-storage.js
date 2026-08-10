@@ -1,7 +1,7 @@
 import { useStorage } from "@vueuse/core";
-import { useGlobalStorage } from "@/utils/storage/new-global-storage";
-import { useReaderSettingsStorage } from "@/utils/storage/new-reader-settings";
-import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
+import { useGlobalStorage } from "@/utils/storage/use-global-storage";
+import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
+import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 
 export function useStorageMigration() {
   // 检查并执行迁移

@@ -141,7 +141,7 @@ import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
-import { getChapterDisplayTitle } from "@/utils/novel-chapter-label";
+import { getChapterDisplayTitle } from "@/utils/format-chapter-label";
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;

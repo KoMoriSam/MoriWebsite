@@ -1,5 +1,5 @@
 import { h, computed } from "vue";
-import { useGlobalStorage } from "@/utils/storage/new-global-storage";
+import { useGlobalStorage } from "@/utils/storage/use-global-storage";
 
 import UpdateDetail from "@/components/UpdateDetail.vue";
 

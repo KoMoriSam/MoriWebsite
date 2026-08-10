@@ -22,6 +22,14 @@ export const useNovelGetters = (state) => {
   };
 
   return {
+    chapterVolumes: computed(() =>
+      Array.isArray(state.chapters.value)
+        ? state.chapters.value
+        : Object.values(state.chapters.value || {}),
+    ),
+
+    chapterCount: computed(() => state.flatChapters.value.length),
+
     currentChapter: computed(() => {
       return state.flatChapters.value.find(
         (chapter) => chapter.uuid === state.currentChapterUuid.value,

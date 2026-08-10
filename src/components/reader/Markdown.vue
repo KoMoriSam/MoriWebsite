@@ -127,7 +127,7 @@ import {
   hasMathSyntax,
   highlightLazyPlugin,
   preloadHighlightLanguages,
-} from "@/utils/markdown/markdown-feature-loader";
+} from "@/utils/markdown/load-markdown-features";
 import {
   fetchParagraphCountsBatch,
   hasParagraphCountsApi,

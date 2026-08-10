@@ -1,5 +1,5 @@
 import { ref, computed } from "vue";
-import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
+import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 
 export const useNovelState = () => {
   // 章节相关状态

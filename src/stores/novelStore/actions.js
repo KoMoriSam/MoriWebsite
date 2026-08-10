@@ -5,6 +5,7 @@ import { useToast } from "@/composables/useToast";
 import { useChapterApi } from "@/services/api-chapters";
 
 import { splitMarkdown } from "@/utils/markdown/split-markdown";
+import { getChapterContextTitle } from "@/utils/format-chapter-label";
 
 import CONFIG from "@/constants/config.js";
 import fm from "front-matter";
@@ -334,16 +335,8 @@ export const useNovelActions = (state, getters) => {
       return;
     }
 
-    function extractVolume(volumeTitle) {
-      const match = volumeTitle.match(
-        /^第[零〇一二三四五六七八九十百千万0-9]+卷/,
-      );
-      return match ? match[0] : volumeTitle;
-    }
-
     if (getters.currentChapter.value) {
-      const volume = extractVolume(getters.currentChapter.value.volumeTitle);
-      state.title.value = `${getters.currentChapter.value.title} | 《向远方》${volume}`;
+      state.title.value = getChapterContextTitle(getters.currentChapter.value);
       useTitle(state.title.value);
     }
   };

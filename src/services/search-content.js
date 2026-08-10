@@ -8,7 +8,7 @@ import {
 import { useArticleApi } from "@/services/api-articles";
 import { useChapterApi } from "@/services/api-chapters";
 import { typeText } from "@/utils/type-changelog";
-import { createLicenseAnchor } from "@/utils/license-anchor";
+import { createLicenseAnchor } from "@/utils/create-license-anchor";
 import { createMarkdownSearchBlocks } from "@/utils/markdown/search-anchors";
 import { splitMarkdown } from "@/utils/markdown/split-markdown";
 
