@@ -112,7 +112,7 @@
               :class="[
                 chapter.uuid === currentChapterUuid
                   ? 'bg-primary/10 font-black text-primary'
-                  : 'text-base-content/60 hover:bg-base-200 hover:text-base-content',
+                  : 'text-base-content/80 hover:bg-base-200 hover:text-base-content',
                 {
                   'opacity-50 hover:opacity-80':
                     isRead(chapter.uuid) && chapter.uuid !== currentChapterUuid,

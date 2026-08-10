@@ -42,7 +42,7 @@
             heading.level >= 4 ? 'pl-8 font-light text-xs' : '',
             heading.id === activeId
               ? 'border-primary bg-primary/10 text-primary font-black!'
-              : 'border-transparent text-base-content/60 hover:bg-base-200 hover:text-base-content',
+              : 'border-transparent text-base-content/80 hover:bg-base-200 hover:text-base-content',
             isRead(headingIndex) && heading.id !== activeId
               ? 'opacity-50 hover:opacity-80'
               : '',
@@ -72,11 +72,7 @@ const props = defineProps({
   progress: { type: Number, default: 0 },
 });
 
-const emit = defineEmits([
-  "select",
-  "toggle-compact",
-  "menu-open-change",
-]);
+const emit = defineEmits(["select", "toggle-compact", "menu-open-change"]);
 
 const tocFrame = ref(null);
 const listElement = ref(null);
@@ -94,8 +90,7 @@ const activeIndex = computed(() =>
   props.headings.findIndex((heading) => heading.id === props.activeId),
 );
 const activeText = computed(
-  () =>
-    props.headings.find((heading) => heading.id === props.activeId)?.text,
+  () => props.headings.find((heading) => heading.id === props.activeId)?.text,
 );
 const progressValue = computed(() =>
   Math.min(100, Math.max(0, Math.round(props.progress || 0))),
