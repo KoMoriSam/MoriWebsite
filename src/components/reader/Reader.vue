@@ -1,62 +1,6 @@
 <template>
   <main :class="['w-full min-w-0 max-w-full flex-1', pageClass]">
-    <SideBar
-      v-if="drawer"
-      :drawer-id="drawerId"
-      class="min-w-0 w-full max-w-full"
-    >
-      <template #content>
-        <ReaderBody
-          :container-class="containerClass"
-          :grid-class="resolvedGridClass"
-          :content-class="contentClass"
-          :toc-class="tocClass"
-          :aside-class="asideClass"
-          :sticky-top="stickyTop"
-          :show-toc="showToc"
-          :show-aside="showAside"
-          :reader-id="readerId"
-        >
-          <template #before><slot name="before" /></template>
-          <template #mobile-toc>
-            <slot name="mobile-toc" :progress="readingProgress">
-              <ReaderToc
-                v-if="showToc"
-                mobile
-                :title="tocTitle"
-                :headings="headings"
-                :active-id="activeHeadingId"
-                :progress="readingProgress"
-                @select="scrollToHeading"
-              />
-            </slot>
-          </template>
-          <template #toc>
-            <slot name="toc" :progress="readingProgress">
-              <ReaderToc
-                v-if="showToc"
-                :title="tocTitle"
-                :headings="headings"
-                :active-id="activeHeadingId"
-                :progress="readingProgress"
-                @select="scrollToHeading"
-              />
-            </slot>
-          </template>
-          <template #default><slot /></template>
-          <template #aside><slot name="aside" /></template>
-          <template #after><slot name="after" /></template>
-        </ReaderBody>
-
-        <slot name="floating" />
-      </template>
-
-      <template v-if="$slots.drawer" #aside>
-        <slot name="drawer" />
-      </template>
-    </SideBar>
-
-    <template v-else>
+    <ReaderShell :drawer="drawer" :drawer-id="drawerId">
       <ReaderBody
         :container-class="containerClass"
         :grid-class="resolvedGridClass"
@@ -69,16 +13,26 @@
         :reader-id="readerId"
       >
         <template #before><slot name="before" /></template>
-        <template #mobile-toc>
-          <slot name="mobile-toc" :progress="readingProgress">
+        <template #mobile-toc="{ compact, expand, toggle, setMenuOpen }">
+          <slot
+            name="mobile-toc"
+            :progress="readingProgress"
+            :compact="compact"
+            :expand="expand"
+            :toggle="toggle"
+            :setMenuOpen="setMenuOpen"
+          >
             <ReaderToc
               v-if="showToc"
               mobile
+              :compact="compact"
               :title="tocTitle"
               :headings="headings"
               :active-id="activeHeadingId"
               :progress="readingProgress"
               @select="scrollToHeading"
+              @toggle-compact="toggle"
+              @menu-open-change="setMenuOpen"
             />
           </slot>
         </template>
@@ -100,7 +54,11 @@
       </ReaderBody>
 
       <slot name="floating" />
-    </template>
+
+      <template v-if="$slots.drawer" #drawer>
+        <slot name="drawer" />
+      </template>
+    </ReaderShell>
   </main>
 </template>
 
@@ -114,8 +72,8 @@ import {
   useSlots,
   watch,
 } from "vue";
-import SideBar from "@/components/layout/SideBar.vue";
 import ReaderBody from "@/components/reader/ReaderBody.vue";
+import ReaderShell from "@/components/reader/ReaderShell.vue";
 import ReaderToc from "@/components/reader/ReaderToc.vue";
 
 const props = defineProps({

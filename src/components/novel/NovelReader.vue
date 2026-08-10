@@ -1,7 +1,13 @@
 <template>
   <Reader drawer drawer-id="novel-reader-sidebar" toc>
-    <template #mobile-toc="{ progress }">
-      <ChapterToc mobile :page-progress="progress" />
+    <template #mobile-toc="{ progress, compact, toggle, setMenuOpen }">
+      <ChapterToc
+        mobile
+        :compact="compact"
+        :page-progress="progress"
+        @toggle-compact="toggle"
+        @menu-open-change="setMenuOpen"
+      />
     </template>
 
     <template #toc="{ progress }">
@@ -149,6 +155,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
+import { getChapterContextTitle } from "@/utils/format-chapter-label";
+import { getChapterRoutePage } from "@/utils/normalize-chapter-route";
 
 const novelStore = useNovelStore();
 const {
@@ -189,11 +197,6 @@ const disposeNovelPosTracker = () => {
   trackedReaderContext.value = "";
 };
 
-const getRoutePage = () => {
-  const value = Number(route.query.p ?? route.query.page);
-  return Number.isFinite(value) && value > 0 ? value : 1;
-};
-
 const setupNovelPosTracker = () => {
   if (typeof window === "undefined") return;
 
@@ -205,7 +208,7 @@ const setupNovelPosTracker = () => {
     permalink &&
     route.params.volumeSlug === permalink.volumeSlug &&
     route.params.chapterSlug === permalink.chapterSlug &&
-    getRoutePage() === page,
+    getChapterRoutePage(route) === page,
   );
   const shouldTrack =
     routeMatchesContent &&
@@ -262,14 +265,9 @@ const { currentMapping, commentToggle } = useGiscus();
 const giscusVersion = ref(0);
 const giscusMapping = "specific";
 
-const extractVolume = (volumeTitle = "") => {
-  const match = volumeTitle.match(/^第[零〇一二三四五六七八九十百千万0-9]+卷/);
-  return match ? match[0] : volumeTitle;
-};
-
 const giscusTerm = computed(() =>
   currentMapping.value === "title"
-    ? `${currentChapter.value?.title || ""} | 《向远方》${extractVolume(currentChapter.value?.volumeTitle)}`
+    ? getChapterContextTitle(currentChapter.value)
     : GISCUS.defaultTerm,
 );
 const giscusKey = computed(

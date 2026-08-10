@@ -98,34 +98,13 @@
                     >
                       {{ chapter.title }}
                     </span>
-                    <span
-                      v-if="
-                        chapter.uuid === latestChapter?.uuid &&
-                        !isRead(chapter.uuid)
-                      "
-                      class="badge badge-warning badge-xs shrink-0"
-                    >
-                      最新
-                    </span>
-                    <span
-                      v-if="chapter.modifiedDate"
-                      class="badge badge-info badge-soft badge-xs shrink-0"
-                    >
-                      有修订
-                    </span>
-                    <span v-else class="badge badge-ghost badge-xs shrink-0">
-                      首发
-                    </span>
-                    <span
-                      v-if="
-                        isRecent(chapter.uuid, chapter.uploadDate) &&
-                        chapter.uuid !== latestChapter?.uuid &&
-                        !isRead(chapter.uuid)
-                      "
-                      class="badge badge-warning badge-xs shrink-0"
-                    >
-                      NEW
-                    </span>
+                    <ChapterStatusBadges
+                      :chapter="chapter"
+                      :latest-chapter-uuid="latestChapter?.uuid"
+                      :read="isRead(chapter.uuid)"
+                      :recent="isRecent(chapter.uuid, chapter.uploadDate)"
+                      revision-label="有修订"
+                    />
                   </span>
 
                   <span
@@ -188,43 +167,31 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useDateFormat } from "@vueuse/core";
-import { computed } from "vue";
 
 import { useNovelStore } from "@/stores/novelStore";
 
 import { useChapters } from "@/composables/useChapters";
+import { useClickLimit } from "@/composables/useClickLimit";
 
 import Loading from "@/components/base/Loading.vue";
+import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";
 import Submenu from "@/components/ui/menu/Submenu.vue";
 
 const novelStore = useNovelStore();
-const { chapters, currentChapterUuid, isLoadingList, latestChapter } =
-  storeToRefs(novelStore);
-
-const chapterVolumes = computed(() =>
-  Array.isArray(chapters.value)
-    ? chapters.value
-    : Object.values(chapters.value || {}),
-);
-const chapterCount = computed(() =>
-  chapterVolumes.value.reduce(
-    (count, volume) => count + (volume.chapters?.length || 0),
-    0,
-  ),
-);
+const {
+  chapterCount,
+  chapterVolumes,
+  currentChapterUuid,
+  isLoadingList,
+  latestChapter,
+} = storeToRefs(novelStore);
 
 const { isRead, handleAnyChapter, isRecent } = useChapters();
-
-const handleChapter = (newId) => {
-  handleAnyChapter(newId);
-};
-
-import { useClickLimit } from "@/composables/useClickLimit";
 
 const { isDisabled, handleClick } = useClickLimit();
 
 // 点击事件
 const onClick = (newId) => {
-  handleClick(handleChapter, newId);
+  handleClick(handleAnyChapter, newId);
 };
 </script>

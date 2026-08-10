@@ -10,4 +10,11 @@ export const getDirectoryLabel = (title, unit) => {
 export const getChapterDisplayTitle = (chapter) =>
   [getDirectoryLabel(chapter?.volumeTitle, "卷"), chapter?.title]
     .filter(Boolean)
-    .join(" · ");
+    .join("/");
+
+export const getChapterContextTitle = (chapter) => {
+  if (!chapter) return "";
+
+  const volumeLabel = getDirectoryLabel(chapter.volumeTitle, "卷");
+  return `${chapter.title || ""} | 《向远方》${volumeLabel}`;
+};
