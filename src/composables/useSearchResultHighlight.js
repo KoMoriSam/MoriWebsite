@@ -274,7 +274,7 @@ export function useSearchResultHighlight() {
   };
 
   watch(
-    () => [route.path, route.hash, route.query.q, route.query.p],
+    () => [route.path, route.hash, route.query.q],
     scheduleHighlight,
     { flush: "post" },
   );

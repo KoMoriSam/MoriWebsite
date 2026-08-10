@@ -4,10 +4,6 @@ import { storeToRefs } from "pinia";
 
 import { useToast } from "@/composables/useToast";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
-import {
-  getChapterRoutePage,
-  normalizeChapterPage,
-} from "@/utils/normalize-chapter-route";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -17,9 +13,7 @@ export function useChapters() {
   const novelStore = useNovelStore();
   const { getState, setState } = useReadingStateStorage();
   const {
-    currentChapter,
     currentChapterUuid,
-    currentChapterPage,
     currentChapterIndex,
     latestChapter,
     flatChapters,
@@ -34,10 +28,9 @@ export function useChapters() {
     return Boolean(route.params.volumeSlug && route.params.chapterSlug);
   });
 
-  const waitForChapterRender = (uuid, page) => {
+  const waitForChapterRender = (uuid) => {
     const isReady = () =>
       currentChapterUuid.value === uuid &&
-      currentChapterPage.value === page &&
       !isLoadingContent.value;
 
     if (isReady()) {
@@ -60,10 +53,10 @@ export function useChapters() {
     });
   };
 
-  const scrollToReadingStart = async (uuid, page) => {
+  const scrollToReadingStart = async (uuid) => {
     if (import.meta.env.SSR || typeof window === "undefined") return;
 
-    await waitForChapterRender(uuid, page);
+    await waitForChapterRender(uuid);
     await nextTick();
     await new Promise((resolve) => {
       window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
@@ -71,7 +64,6 @@ export function useChapters() {
 
     if (
       currentChapterUuid.value !== uuid ||
-      currentChapterPage.value !== page ||
       route.name !== "novel-reader"
     ) {
       return;
@@ -91,7 +83,6 @@ export function useChapters() {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
 
-    const targetPage = normalizeChapterPage(options.page);
     const targetHash = String(options.hash || "").trim();
     const query = {};
 
@@ -104,8 +95,6 @@ export function useChapters() {
     if (permalink.routeCode) {
       query.c = permalink.routeCode;
     }
-    query.p = targetPage;
-
     const navigation = router.push({
       name: "novel-reader",
       params: {
@@ -114,10 +103,11 @@ export function useChapters() {
       },
       query,
       hash: targetHash,
+      state: options.state,
     });
 
     if (!targetHash) {
-      void navigation.then(() => scrollToReadingStart(uuid, targetPage));
+      void navigation.then(() => scrollToReadingStart(uuid));
     }
 
     return navigation;
@@ -135,26 +125,19 @@ export function useChapters() {
     if (options.resume) {
       const storedChapterId = String(getState("READ_CH_ID", "") || "").trim();
       const storedPos = String(getState("READ_POS", "") || "").trim();
-      const storedPage = Number(
-        getState("READ_PAGE", currentChapterPage.value),
-      );
 
       const canUseStoredChapter =
         Boolean(storedChapterId) &&
         Boolean(novelStore.getPermalinkByUuid(storedChapterId));
       const targetUuid = canUseStoredChapter ? storedChapterId : uuid;
-      const resumePage =
-        Number.isFinite(storedPage) && storedPage > 0 ? storedPage : 1;
       const resumeHash = storedPos ? `#${storedPos}` : "";
 
-      const normalizedCurrentPage = getChapterRoutePage(route);
       const targetRouteCode = String(
         novelStore.getPermalinkByUuid(targetUuid)?.routeCode || "",
       );
       const sameRouteTarget =
         targetUuid === currentChapterUuid.value &&
         isReaderRoute.value &&
-        normalizedCurrentPage === resumePage &&
         route.hash === resumeHash &&
         (!targetRouteCode || route.query.c === targetRouteCode);
 
@@ -164,7 +147,6 @@ export function useChapters() {
       }
 
       handleChapter(targetUuid, {
-        page: resumePage,
         hash: resumeHash,
       });
       return;
@@ -198,19 +180,16 @@ export function useChapters() {
     const previousChapter = flatChapters.value[currentChapterIndex.value - 1];
     if (!previousChapter) return;
 
-    let targetPage = 1;
-    if (lastPage) {
-      try {
-        targetPage = await novelStore.getChapterPageCount(
-          previousChapter.uuid,
-        );
-      } catch (error) {
-        console.error("获取上一章末页失败:", error);
-        toast.warning("无法读取上一章末页，已打开上一章首页");
-      }
-    }
-
-    return handleChapter(previousChapter.uuid, { page: targetPage });
+    return handleChapter(previousChapter.uuid, {
+      state: lastPage
+        ? {
+            mobileReaderEdge: {
+              chapterUuid: previousChapter.uuid,
+              edge: "end",
+            },
+          }
+        : undefined,
+    });
   };
 
   const handleNext = () => {
@@ -218,34 +197,6 @@ export function useChapters() {
     if (!nextChapter) return;
 
     return handleChapter(nextChapter.uuid);
-  };
-
-  const handleAnyPage = (index) => {
-    const permalink = novelStore.getPermalinkByUuid(currentChapter.value.uuid);
-    if (!permalink) return;
-
-    const query = {};
-    if (permalink.routeCode) {
-      query.c = permalink.routeCode;
-    }
-    query.p = index;
-
-    // 翻页后从该页顶部开始，并阻止旧页锚点被恢复。
-    setState("READ_POS", "");
-
-    const navigation = router.push({
-      name: "novel-reader",
-      params: {
-        volumeSlug: permalink.volumeSlug,
-        chapterSlug: permalink.chapterSlug,
-      },
-      query,
-    });
-
-    void navigation.then(() =>
-      scrollToReadingStart(currentChapter.value.uuid, index),
-    );
-    return navigation;
   };
 
   const isWithinRecentPeriod = (dateStr) => {
@@ -275,7 +226,6 @@ export function useChapters() {
     handleRecentChapter,
     handlePrev,
     handleNext,
-    handleAnyPage,
     isRecent,
   };
 }

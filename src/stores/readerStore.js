@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { computed } from "vue";
-import { STYLE_CONFIG_KEYS } from "@/constants/reader";
+import {
+  MOBILE_READING_MODES,
+  MOBILE_READING_MODE_SETTING,
+  STYLE_CONFIG_KEYS,
+} from "@/constants/reader";
 import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
 
 export const useReaderStore = defineStore("reader", () => {
@@ -13,6 +17,22 @@ export const useReaderStore = defineStore("reader", () => {
     });
     return configs;
   });
+
+  const mobileReadingMode = computed(() => {
+    const mode = getSetting(
+      MOBILE_READING_MODE_SETTING,
+      MOBILE_READING_MODES.PAGED,
+    );
+
+    return Object.values(MOBILE_READING_MODES).includes(mode)
+      ? mode
+      : MOBILE_READING_MODES.PAGED;
+  });
+
+  const setMobileReadingMode = (mode) => {
+    if (!Object.values(MOBILE_READING_MODES).includes(mode)) return;
+    setSetting(MOBILE_READING_MODE_SETTING, mode);
+  };
 
   const isDefault = (key) => {
     const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
@@ -37,6 +57,8 @@ export const useReaderStore = defineStore("reader", () => {
 
   return {
     styleConfigs, // 保持兼容性
+    mobileReadingMode,
+    setMobileReadingMode,
     setStyle,
     isDefault,
     resetStyle,

@@ -120,6 +120,7 @@ import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
 
 const route = useRoute();
+const emit = defineEmits(["open-change"]);
 const mobilePopover = ref(null);
 const isOpen = ref(false);
 
@@ -137,6 +138,7 @@ const projectLinkProps = (project) =>
 
 const handleToggle = (event) => {
   isOpen.value = event.newState === "open";
+  emit("open-change", isOpen.value);
 };
 
 const closeMenu = () => {

@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novelStore";
 import ssgData from "@/router/ssg-data";
-import { getChapterRoutePage } from "@/utils/normalize-chapter-route";
 
 import { useToast } from "@/composables/useToast";
 
@@ -23,10 +22,9 @@ export function useChapterSetup() {
     novelStore.hydrateChapters(ssgData.novelChapters);
   }
 
-  const { currentChapter, currentChapterUuid, currentChapterPage } =
-    storeToRefs(novelStore);
+  const { currentChapter, currentChapterUuid } = storeToRefs(novelStore);
 
-  const replaceToCanonical = (uuid, page, hash = route.hash) => {
+  const replaceToCanonical = (uuid, hash = route.hash) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
 
@@ -38,8 +36,6 @@ export function useChapterSetup() {
     if (permalink.routeCode) {
       query.c = permalink.routeCode;
     }
-    query.p = page;
-
     router.replace({
       name: "novel-reader",
       params: {
@@ -90,6 +86,9 @@ export function useChapterSetup() {
     );
   };
 
+  const hasLegacyPageQuery = () =>
+    route.query.p != null || route.query.page != null;
+
   const isCanonicalChapterRoute = () => {
     return Boolean(route.params.volumeSlug && route.params.chapterSlug);
   };
@@ -105,26 +104,28 @@ export function useChapterSetup() {
       !permalink.routeCode || getRouteCodeQuery() === permalink.routeCode;
 
     return (
-      hasCanonicalParams && hasCanonicalRouteCode && !hasLegacyQueryChapter()
+      hasCanonicalParams &&
+      hasCanonicalRouteCode &&
+      !hasLegacyQueryChapter() &&
+      !hasLegacyPageQuery()
     );
   };
 
   const syncChapterFromRoute = async ({ withFallback = false } = {}) => {
-    const page = getChapterRoutePage(route);
     const chapterUuid = resolveRouteToChapterUuid();
 
     if (chapterUuid) {
       await novelStore.setChapter(chapterUuid);
-      novelStore.setPage(page);
+      novelStore.setPage(1);
 
       if (!hasCanonicalRouteForUuid(chapterUuid)) {
-        replaceToCanonical(chapterUuid, page);
+        replaceToCanonical(chapterUuid);
       }
       return;
     }
 
     if (withFallback && currentChapterUuid.value && isCanonicalChapterRoute()) {
-      replaceToCanonical(currentChapterUuid.value, currentChapterPage.value);
+      replaceToCanonical(currentChapterUuid.value);
     }
   };
 

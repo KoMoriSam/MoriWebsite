@@ -1,94 +1,131 @@
 <template>
-  <Reader drawer drawer-id="novel-reader-sidebar" toc>
-    <template #mobile-toc="{ progress, compact, toggle, setMenuOpen }">
-      <ChapterToc
-        mobile
-        :compact="compact"
-        :page-progress="progress"
-        @toggle-compact="toggle"
-        @menu-open-change="setMenuOpen"
-      />
-    </template>
-
+  <Reader
+    drawer
+    drawer-id="novel-reader-sidebar"
+    :toc="!isMobileReader"
+    :aside="!isMobileReader"
+    :page-class="readerPageClass"
+    :container-class="readerContainerClass"
+    :grid-class="readerGridClass"
+    :content-class="readerContentClass"
+  >
     <template #toc="{ progress }">
       <ChapterToc :page-progress="progress" />
     </template>
 
-    <section :ref="scrollRef" class="min-w-0 w-full max-w-full overflow-x-clip">
-      <header
-        v-if="currentChapter && isFirstChapterPage"
-        id="novel-reading-start"
-        class="flex min-w-0 w-full max-w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between"
-      >
-        <div class="group min-w-0 max-w-full flex-1">
-          <div
-            v-if="currentChapter.volumeTitle"
-            class="mb-2 flex min-w-0 max-w-full items-center"
-          >
-            <div
-              class="tooltip tooltip-right max-lg:hidden"
-              data-tip="返回封面页"
-            >
-              <RouterLink
-                to="/novel"
-                class="btn btn-outline btn-info btn-xs btn-circle mr-2"
-              >
-                <i class="ri-arrow-left-line"></i>
-              </RouterLink>
-            </div>
-            <span
-              class="badge badge-outline badge-info min-w-0 max-w-full gap-1 overflow-hidden font-normal"
-            >
-              <i class="ri-bookmark-line shrink-0"></i>
-              <span class="min-w-0 truncate">
-                {{ currentChapter.volumeTitle }}
-              </span>
-            </span>
-          </div>
-
-          <div class="flex min-w-0 max-w-full items-start gap-2">
-            <h1
-              class="min-w-0 max-w-full flex-1 text-pretty text-3xl leading-tight font-serif font-bold break-words [overflow-wrap:anywhere] md:text-4xl"
-            >
-              {{ currentChapter.title }}
-            </h1>
-          </div>
-        </div>
-
-        <ul
-          v-if="chapterStats.length"
-          class="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 lg:max-w-64 lg:shrink-0 lg:justify-end"
-        >
-          <li
-            v-for="(stat, index) in chapterStats"
-            :key="index"
-            class="flex min-w-0 max-w-full"
-          >
-            <span
-              class="badge badge-sm min-w-0 max-w-full gap-1 overflow-hidden"
-            >
-              <i v-if="stat.icon" class="shrink-0" :class="stat.icon"></i>
-              <span class="truncate">{{ stat.text }}</span>
-            </span>
-          </li>
-        </ul>
-      </header>
-
-      <ChapterController
-        v-else-if="currentChapter && showTopChapterController"
-        id="novel-reading-start"
+    <section
+      :ref="scrollRef"
+      class="min-w-0 w-full max-w-full overflow-x-clip"
+      :class="{ 'relative h-full min-h-0': isMobileReader }"
+      :style="
+        isMobileReader
+          ? {
+              '--mobile-reader-content-padding-block': '0.5rem',
+              '--mobile-reader-shell-padding-bottom': '1.5rem',
+              '--mobile-reader-dock-clearance':
+                'calc(4.5rem + env(safe-area-inset-bottom))',
+            }
+          : undefined
+      "
+    >
+      <ChapterHeader
+        v-if="currentChapter && !isMobileReader"
+        :chapter="currentChapter"
+        :stats="chapterStats"
       />
 
-      <div v-if="currentChapter" class="min-w-0 w-full max-w-full">
+      <PagedReader
+        v-if="currentChapter && isMobileReader && isPagedMobileReader"
+        ref="activeMobileReaderRef"
+        :content="currentChapterContent"
+        :chapter="currentChapter"
+        :chapter-stats="chapterStats"
+        :header-data="chapterHeaderData"
+        :style-configs="styleConfigs"
+        :is-loading="isLoadingContent"
+        :controls-open="mobileReaderControlsOpen"
+        @controls-open-change="mobileReaderControlsOpen = $event"
+        @controller-state="updateMobileControllerState"
+      />
+
+      <ScrollReader
+        v-else-if="currentChapter && isMobileReader"
+        ref="activeMobileReaderRef"
+        :content="currentChapterContent"
+        :chapter="currentChapter"
+        :chapter-stats="chapterStats"
+        :header-data="chapterHeaderData"
+        :style-configs="styleConfigs"
+        :is-loading="isLoadingContent"
+        :controls-open="mobileReaderControlsOpen"
+        @controller-state="updateMobileControllerState"
+      />
+
+      <ChapterController
+        v-if="currentChapter && isMobileReader"
+        variant="mobile"
+        :current-page="mobileControllerState.currentPage"
+        :total-pages="mobileControllerState.totalPages"
+        :pagination-ready="mobileControllerState.paginationReady"
+        :controls-open="mobileReaderControlsOpen"
+        :reading-progress="mobileControllerState.readingProgress"
+        :page-progress="mobileControllerState.pageProgress"
+        :reading-mode="mobileReadingMode"
+        @change-page="callMobileReaderAction('goToPage', $event)"
+        @change-chapter="callMobileReaderAction('turnChapter', $event)"
+        @controls-open-change="mobileReaderControlsOpen = $event"
+        @refresh-content="handleRefreshContent"
+        @show-reader-hint="callMobileReaderAction('triggerReaderHint')"
+        @reading-mode-change="readerStore.setMobileReadingMode"
+      >
+        <template #comments>
+          <section
+            class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
+          >
+            <h3
+              id="mobile-reader-comments-title"
+              class="min-w-0 text-xl font-bold break-words"
+            >
+              {{ currentMapping === "title" ? "本章说" : "本书说" }}
+            </h3>
+
+            <button
+              type="button"
+              class="btn btn-info btn-soft btn-xs shrink-0"
+              @click="commentToggle"
+            >
+              {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
+            </button>
+          </section>
+
+          <Giscus
+            :key="giscusKey"
+            :repo="GISCUS.novelRepo.name"
+            :repo-id="GISCUS.novelRepo.id"
+            :category="GISCUS.categories.general.name"
+            :category-id="GISCUS.categories.general.id"
+            :mapping="giscusMapping"
+            :term="giscusTerm"
+            strict="0"
+            reactions-enabled="1"
+            emit-metadata="0"
+            input-position="bottom"
+            :theme="giscusTheme"
+            lang="zh-CN"
+            loading="lazy"
+          />
+        </template>
+      </ChapterController>
+
+      <div v-else-if="currentChapter" class="min-w-0 w-full max-w-full">
         <Markdown
-          :content="currentPageContent"
+          :content="currentChapterContent"
           :is-loading="isLoadingContent"
           :header-data="chapterHeaderData"
           :style-configs="styleConfigs"
         />
+        <ChapterController v-if="!isLoadingContent" />
       </div>
-
-      <ChapterController v-if="currentChapter && !isLoadingContent" />
     </section>
 
     <template #aside>
@@ -126,7 +163,7 @@
       />
     </template>
 
-    <template #floating>
+    <template v-if="!isMobileReader" #floating>
       <aside class="max-lg:dock shadow-sm">
         <FloatingActionButton main-icon="ri-more-line" :actions="fabActions" />
       </aside>
@@ -148,6 +185,9 @@ import Giscus from "@giscus/vue";
 import Reader from "@/components/reader/Reader.vue";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import ChapterController from "@/components/novel/ChapterController.vue";
+import ChapterHeader from "@/components/novel/ChapterHeader.vue";
+import PagedReader from "@/components/novel/mobile/PagedReader.vue";
+import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
@@ -155,32 +195,27 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
-import { useDateFormat } from "@vueuse/core";
+import { useDateFormat, useMediaQuery } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { getChapterContextTitle } from "@/utils/format-chapter-label";
-import {
-  getChapterRoutePage,
-  normalizeChapterPage,
-} from "@/utils/normalize-chapter-route";
+import { MOBILE_READING_MODES } from "@/constants/reader";
 
 const novelStore = useNovelStore();
 const {
-  currentPageContent,
   currentChapter,
+  currentChapterContent,
   currentChapterUuid,
-  currentChapterPage,
   isLoadingContent,
-  totalPages,
 } = storeToRefs(novelStore);
 
 const router = useRouter();
 const route = useRoute();
 
 const readerStore = useReaderStore();
-const { styleConfigs } = storeToRefs(readerStore);
+const { styleConfigs, mobileReadingMode } = storeToRefs(readerStore);
 
 const themeStore = useThemeStore();
 const { giscusTheme } = storeToRefs(themeStore);
@@ -196,14 +231,46 @@ import {
 
 const stopNovelPosTracker = ref(null);
 const trackedReaderContext = ref("");
-const isFirstChapterPage = computed(
-  () => normalizeChapterPage(currentChapterPage.value) === 1,
+const mobileReaderControlsOpen = ref(false);
+const activeMobileReaderRef = ref(null);
+const mobileControllerState = ref({
+  currentPage: 1,
+  totalPages: 1,
+  paginationReady: false,
+  readingProgress: 0,
+  pageProgress: 0,
+});
+
+const updateMobileControllerState = (state = {}) => {
+  mobileControllerState.value = {
+    ...mobileControllerState.value,
+    ...state,
+  };
+};
+
+const callMobileReaderAction = (name, ...args) => {
+  const action = activeMobileReaderRef.value?.[name];
+  if (typeof action === "function") action(...args);
+};
+const isMobileReader = useMediaQuery("(max-width: 1023px)");
+const isPagedMobileReader = computed(
+  () => mobileReadingMode.value === MOBILE_READING_MODES.PAGED,
 );
-const showTopChapterController = computed(
-  () =>
-    totalPages.value > 1 &&
-    !isFirstChapterPage.value &&
-    !isLoadingContent.value,
+const readerPageClass = computed(() =>
+  isMobileReader.value
+    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 p-6 pt-2 sm:px-8 [&_.drawer]:h-full [&_.drawer-content]:pb-0"
+    : "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+);
+const readerContainerClass = computed(() =>
+  isMobileReader.value ? "flex h-full min-h-0 flex-col" : "py-6",
+);
+const readerGridClass = computed(() =>
+  isMobileReader.value
+    ? "min-h-0 flex-1"
+    : "gap-y-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] xl:gap-x-8 2xl:grid-cols-[17rem_minmax(0,1fr)_22rem]",
+);
+const readerContentClass = computed(() =>
+  isMobileReader.value ? "h-full min-h-0 border-0! p-0!" : "",
 );
 
 const disposeNovelPosTracker = () => {
@@ -219,19 +286,18 @@ const setupNovelPosTracker = () => {
   if (typeof window === "undefined") return;
 
   const chapterId = String(currentChapterUuid.value || "");
-  const page = Number(currentChapterPage.value) || 1;
   const permalink = novelStore.getPermalinkByUuid(chapterId);
   const routeMatchesContent = Boolean(
     route.name === "novel-reader" &&
     permalink &&
     route.params.volumeSlug === permalink.volumeSlug &&
-    route.params.chapterSlug === permalink.chapterSlug &&
-    getChapterRoutePage(route) === page,
+    route.params.chapterSlug === permalink.chapterSlug,
   );
   const shouldTrack =
     routeMatchesContent &&
     !isLoadingContent.value &&
-    Boolean(currentPageContent.value) &&
+    currentChapterContent.value.length > 0 &&
+    !isMobileReader.value &&
     Boolean(chapterId);
 
   if (!shouldTrack) {
@@ -239,7 +305,7 @@ const setupNovelPosTracker = () => {
     return;
   }
 
-  const readerContext = `${chapterId}:${page}`;
+  const readerContext = chapterId;
   if (
     trackedReaderContext.value === readerContext &&
     stopNovelPosTracker.value
@@ -253,7 +319,6 @@ const setupNovelPosTracker = () => {
     () => novelStore.updateTitle(),
     {
       getContextId: () => String(currentChapterUuid.value || ""),
-      getPage: () => Number(currentChapterPage.value) || 1,
       isActive: () => router.currentRoute.value.name === "novel-reader",
       posSelector:
         "#markdown-content h1[id], #markdown-content h2[id], #markdown-content h3[id], #markdown-content h4[id], #markdown-content h5[id], #markdown-content h6[id], #markdown-content p[id]",
@@ -266,9 +331,9 @@ watch(
   () => [
     route.fullPath,
     currentChapterUuid.value,
-    currentChapterPage.value,
     isLoadingContent.value,
-    currentPageContent.value,
+    currentChapterContent.value,
+    isMobileReader.value,
   ],
   setupNovelPosTracker,
   { immediate: true, flush: "post" },
@@ -307,7 +372,7 @@ watch(
 const chapterHeaderData = computed(() => ({
   title: currentChapter.value?.title || "",
   uuid: currentChapterUuid.value,
-  page: currentChapterPage.value,
+  page: 1,
   sourceType: "novel",
   meta: currentChapter.value?.volumeTitle,
 }));
@@ -319,7 +384,7 @@ const chapterStats = computed(() => {
       text: useDateFormat(
         currentChapter.value?.uploadDate,
         "YYYY/M/D H:mm 发布",
-      ),
+      ).value,
     },
   ];
 

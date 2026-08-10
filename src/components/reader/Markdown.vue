@@ -4,9 +4,9 @@
   <article
     ref="articleRef"
     v-else
-    id="markdown-content"
+    :id="contentId"
     :class="[{ 'opacity-60': markdownPreparing }, styleConfigs.fontStyle]"
-    class="prose prose-2xl min-w-0 w-full max-w-full"
+    class="markdown-content prose prose-2xl min-w-0 w-full max-w-full"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,
       '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,
@@ -19,14 +19,16 @@
       + ${styleConfigs.fontGap * 0.7}rem)`,
     }"
   >
+    <slot name="before" />
     <vue-markdown
-      v-if="content"
-      :key="`${headerData.uuid}-${headerData.page}-v${markdownRenderVersion}`"
-      :source="searchAnchoredContent"
+      v-for="page in renderedPages"
+      :key="`${headerData.uuid}-v${markdownRenderVersion}`"
+      :source="page.source"
       :options="options"
-      :plugins="plugins"
+      :plugins="page.plugins"
     />
-    <h1 v-else>加载失败，请稍后重试。</h1>
+    <slot name="after" />
+    <h1 v-if="!renderedPages.length">加载失败，请稍后重试。</h1>
   </article>
 </template>
 
@@ -50,6 +52,17 @@ const props = defineProps({
   content: {
     type: String,
     default: "",
+  },
+
+  // 兼容旧缓存中的分页数组；渲染前会合并为一个完整 Markdown 内容块。
+  pages: {
+    type: Array,
+    default: () => [],
+  },
+
+  contentId: {
+    type: String,
+    default: "markdown-content",
   },
 
   // 头部数据
@@ -76,6 +89,11 @@ const props = defineProps({
     default: false,
   },
 
+  manageRouteAnchor: {
+    type: Boolean,
+    default: true,
+  },
+
   // 样式配置
   styleConfigs: {
     type: Object,
@@ -89,7 +107,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["refresh"]);
+const emit = defineEmits(["refresh", "render-ready"]);
 
 // Markdown 渲染选项
 const options = {
@@ -141,8 +159,19 @@ const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const katexPlugin = ref(null);
 let codeBlockRoot = null;
-const searchAnchoredContent = computed(() =>
-  injectMarkdownSearchAnchors(props.content),
+const combinedContent = computed(() => {
+  if (String(props.content || "").trim()) return props.content;
+
+  return props.pages.filter((page) => String(page || "").trim()).join("\n");
+});
+const anchoredPages = computed(() =>
+  combinedContent.value
+    ? [
+        {
+          source: injectMarkdownSearchAnchors(combinedContent.value),
+        },
+      ]
+    : [],
 );
 
 const syncCodeBlocks = async () => {
@@ -153,6 +182,7 @@ const syncCodeBlocks = async () => {
   await nextTick();
 
   const nextRoot = articleRef.value;
+  if (!nextRoot) return;
 
   if (codeBlockRoot && codeBlockRoot !== nextRoot) {
     unmountCodeBlocks(codeBlockRoot);
@@ -160,6 +190,7 @@ const syncCodeBlocks = async () => {
 
   codeBlockRoot = nextRoot;
   mountCodeBlocks(codeBlockRoot);
+  emit("render-ready");
 };
 
 onMounted(syncCodeBlocks);
@@ -167,10 +198,9 @@ onBeforeUnmount(() => unmountCodeBlocks(codeBlockRoot));
 
 watch(
   () => [
-    props.content,
+    combinedContent.value,
     props.isLoading,
     props.headerData.uuid,
-    props.headerData.page,
     markdownRenderVersion.value,
   ],
   syncCodeBlocks,
@@ -193,6 +223,7 @@ const scrollToRouteAnchor = async () => {
     import.meta.env.SSR ||
     typeof window === "undefined" ||
     typeof document === "undefined" ||
+    !props.manageRouteAnchor ||
     props.isLoading ||
     markdownPreparing.value
   ) {
@@ -316,12 +347,7 @@ const rubyPlugin = (md) => {
   });
 };
 
-const plugins = computed(() => [
-  paragraphPlugin(
-    props.headerData.uuid,
-    props.headerData.page,
-    props.headerData.sourceType,
-  ),
+const sharedPlugins = computed(() => [
   MarkdownItAbbr,
   MarkdownItAttrs,
   highlightLazyPlugin,
@@ -342,9 +368,20 @@ const plugins = computed(() => [
   tableWrapperPlugin,
 ]);
 
+// 正文只创建一个 Markdown 渲染实例，段落序号在整篇内容内连续递增。
+const renderedPages = computed(() =>
+  anchoredPages.value.map((page) => ({
+    ...page,
+    plugins: [
+      paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
+      ...sharedPlugins.value,
+    ],
+  })),
+);
+
 // 运行时 content 变化：异步加载特性插件后渲染
 watch(
-  () => props.content,
+  combinedContent,
   async (content) => {
     if (!content) {
       markdownPreparing.value = false;
@@ -385,9 +422,8 @@ watch(
   () => [
     props.isLoading,
     markdownPreparing.value,
-    props.content,
+    combinedContent.value,
     props.headerData.uuid,
-    props.headerData.page,
     props.headerData.sourceType,
   ],
   async ([isLoading, isPreparing]) => {
@@ -435,8 +471,7 @@ watch(
     route.hash,
     props.isLoading,
     markdownPreparing.value,
-    props.content,
-    props.headerData.page,
+    combinedContent.value,
     markdownRenderVersion.value,
   ],
   scrollToRouteAnchor,

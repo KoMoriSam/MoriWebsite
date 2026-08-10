@@ -1,13 +1,10 @@
 <template>
-  <span
-    v-if="showLatest"
-    class="badge badge-warning badge-xs shrink-0"
-  >
+  <span v-if="showLatest" class="badge badge-warning badge-xs shrink-0">
     {{ latestLabel }}
   </span>
   <span
     v-if="chapter.modifiedDate"
-    class="badge badge-info badge-soft badge-xs shrink-0"
+    class="badge badge-info badge-xs shrink-0"
     title="该章节有过修订"
   >
     {{ revisionLabel }}
@@ -19,10 +16,7 @@
   >
     首发
   </span>
-  <span
-    v-if="showRecent"
-    class="badge badge-warning badge-xs shrink-0"
-  >
+  <span v-if="showRecent" class="badge badge-warning badge-xs shrink-0">
     {{ recentLabel }}
   </span>
 </template>
@@ -53,7 +47,7 @@ const props = defineProps({
   },
   revisionLabel: {
     type: String,
-    default: "修订",
+    default: "有修订",
   },
   recentLabel: {
     type: String,
@@ -61,9 +55,7 @@ const props = defineProps({
   },
 });
 
-const isLatest = computed(
-  () => props.chapter.uuid === props.latestChapterUuid,
-);
+const isLatest = computed(() => props.chapter.uuid === props.latestChapterUuid);
 const showLatest = computed(() => isLatest.value && !props.read);
 const showRecent = computed(
   () => props.recent && !isLatest.value && !props.read,

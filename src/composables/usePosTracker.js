@@ -3,7 +3,9 @@ import { computed } from "vue";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 
 const FULL_PARAGRAPH_ID_RE =
-  /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-\d+-/;
+  /^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})-(\d+)$/i;
+const LEGACY_PARAGRAPH_ID_RE =
+  /^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})-\d+-(\d+)$/i;
 const DEFAULT_SCROLL_OFFSET_REM = 3;
 
 export function usePosTracker(router, onRestoreTitle, options = {}) {
@@ -25,12 +27,6 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     typeof options.getContextId === "function"
       ? options.getContextId
       : () => getState(readContextKey, "");
-  const getPage =
-    typeof options.getPage === "function"
-      ? options.getPage
-      : () =>
-          router.currentRoute.value.query.p ??
-          router.currentRoute.value.query.page;
   const isTrackingActive =
     typeof options.isActive === "function" ? options.isActive : () => true;
 
@@ -127,12 +123,19 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   function getContextPrefix() {
     const contextId = getCurrentContextId();
-    const page = String(getPage?.() ?? "").trim();
-    if (!contextId || !page) {
-      return "";
-    }
+    if (!contextId) return "";
 
-    return `${contextId}-${page}-`;
+    return `${contextId}-`;
+  }
+
+  function normalizeLegacyParagraphId(token) {
+    const normalizedToken = normalizeAnchorToken(token);
+    if (!normalizedToken) return "";
+
+    const uuidMatch = normalizedToken.match(LEGACY_PARAGRAPH_ID_RE);
+    if (uuidMatch) return `${uuidMatch[1]}-${uuidMatch[2]}`;
+
+    return normalizedToken;
   }
 
   function isContextParagraphId(token) {
@@ -163,11 +166,11 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   // 动态生成完整的段落 id
   function getFullId(anchorToken) {
-    const token = normalizeAnchorToken(anchorToken);
+    const token = normalizeLegacyParagraphId(anchorToken);
     if (!token) return "";
 
-    // 如果已经是完整ID格式（包含章节和页码），直接返回
-    if (FULL_PARAGRAPH_ID_RE.test(token)) {
+    // 如果已经是完整 ID 格式（上下文 + 段落序号），直接返回。
+    if (FULL_PARAGRAPH_ID_RE.test(token) || isContextParagraphId(token)) {
       return token;
     }
 
@@ -176,18 +179,17 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return token;
     }
 
-    const chapter = getCurrentContextId(); // 从阅读状态或当前上下文获取章节/文章ID
-    const page = getPage?.(); // 从当前上下文获取页码
-    if (!chapter || !page) {
+    const chapter = getCurrentContextId();
+    if (!chapter) {
       return token;
     }
 
-    return `${chapter}-${page}-${token}`; // 拼接完整的段落ID
+    return `${chapter}-${token}`;
   }
 
   // 提取简化的段落 id
   function getShortId(fullId) {
-    const normalizedId = normalizeAnchorToken(fullId);
+    const normalizedId = normalizeLegacyParagraphId(fullId);
     if (!normalizedId) return "";
 
     // 非完整段落ID时，按原样保存（脚注/标题/任意锚点）
@@ -206,6 +208,11 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       }
     }
 
+    // 不属于当前上下文的完整段落 ID 保持原样。
+    if (FULL_PARAGRAPH_ID_RE.test(normalizedId)) {
+      return normalizedId;
+    }
+
     const match = normalizedId.match(/-(\d+)$/);
     if (match?.[1]) {
       return match[1];
@@ -218,8 +225,14 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     const token = normalizeAnchorToken(anchorToken);
     if (!token) return [];
 
-    const candidates = [token, encodeURIComponent(token)];
-    const fullId = getFullId(token);
+    const migratedToken = normalizeLegacyParagraphId(token);
+    const candidates = [
+      migratedToken,
+      encodeURIComponent(migratedToken),
+      token,
+      encodeURIComponent(token),
+    ];
+    const fullId = getFullId(migratedToken);
     if (fullId && fullId !== token) {
       candidates.unshift(fullId);
     }
@@ -232,7 +245,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   }
 
   function getPersistedPosToken(anchorToken) {
-    const token = normalizeAnchorToken(anchorToken);
+    const token = normalizeLegacyParagraphId(anchorToken);
     if (!token) {
       return "";
     }
@@ -250,7 +263,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return routeHashToken;
     }
 
-    const storedToken = normalizeAnchorToken(readPos.value);
+    const storedToken = normalizeLegacyParagraphId(readPos.value);
     if (!storedToken) {
       return "";
     }
@@ -465,13 +478,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         return;
       }
 
-      const toPage = String(to.query?.p ?? to.query?.page ?? "");
-      const fromPage = String(from.query?.p ?? from.query?.page ?? "");
-      const pageChanged = toPage !== fromPage;
       const hashChanged = String(to.hash || "") !== String(from.hash || "");
       const pathChanged = String(to.path || "") !== String(from.path || "");
 
-      if (!pageChanged && !hashChanged && !pathChanged) {
+      if (!hashChanged && !pathChanged) {
         return;
       }
 

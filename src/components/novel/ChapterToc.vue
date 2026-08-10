@@ -1,7 +1,10 @@
 <template>
   <TocFrame
+    v-if="!progressOnly"
     ref="tocFrame"
     :mobile="mobile"
+    :popup-only="popupOnly"
+    :embedded="embedded"
     :compact="compact"
     :progress="chapterProgress"
     :progress-label="chapterProgressLabel"
@@ -56,7 +59,11 @@
       ref="listElement"
       :class="[
         'space-y-4 overflow-y-auto overscroll-contain pr-1 scrollbar-none',
-        mobile ? 'max-h-[min(55vh,32rem)]' : 'min-h-0 flex-1',
+        embedded
+          ? 'max-h-[min(62dvh,34rem)] min-h-0'
+          : mobile
+            ? 'max-h-[min(55vh,32rem)]'
+            : 'min-h-0 flex-1',
       ]"
       :style="
         mobile
@@ -157,7 +164,7 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { computed, ref, useId } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
 import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";
 import TocFrame from "@/components/reader/TocFrame.vue";
@@ -173,6 +180,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  popupOnly: {
+    type: Boolean,
+    default: false,
+  },
+  embedded: {
+    type: Boolean,
+    default: false,
+  },
   compact: {
     type: Boolean,
     default: false,
@@ -180,6 +195,14 @@ const props = defineProps({
   pageProgress: {
     type: Number,
     default: 0,
+  },
+  viewportPagination: {
+    type: Boolean,
+    default: false,
+  },
+  progressOnly: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -190,7 +213,6 @@ const {
   currentChapter,
   currentChapterContent,
   currentChapterIndex,
-  currentChapterPage,
   currentChapterUuid,
   flatChapters,
   isLoadingList,
@@ -205,7 +227,12 @@ const listId = useId();
 const { maskImage: listMaskImage } = useScrollMask(listElement);
 const tocVisible = ref(!props.mobile);
 
-const emit = defineEmits(["toggle-compact", "menu-open-change"]);
+const emit = defineEmits([
+  "toggle-compact",
+  "menu-open-change",
+  "progress-change",
+  "select",
+]);
 
 const latestChapterTitle = computed(() =>
   getChapterDisplayTitle(latestChapter.value),
@@ -224,21 +251,19 @@ const chapterProgress = computed(() => {
   if (chapterIndex < 0 || !chapterCount.value) return 0;
 
   const pageCount = Math.max(Number(totalPages.value) || 1, 1);
-  const page = Math.min(
-    pageCount,
-    Math.max(Number(currentChapterPage.value) || 1, 1),
-  );
+  const page = 1;
   const pageFraction = Math.min(
     1,
     Math.max(Number(props.pageProgress) || 0, 0) / 100,
   );
-  const pageWeights = currentChapterContent.value.map(getContentWeight);
+  const pageWeights = [getContentWeight(currentChapterContent.value)];
   const totalPageWeight = pageWeights.reduce(
     (total, weight) => total + weight,
     0,
   );
-  const currentChapterFraction =
-    totalPageWeight > 0
+  const currentChapterFraction = props.viewportPagination
+    ? pageFraction
+    : totalPageWeight > 0
       ? (pageWeights
           .slice(0, page - 1)
           .reduce((total, weight) => total + weight, 0) +
@@ -276,6 +301,12 @@ const chapterProgress = computed(() => {
 });
 const chapterProgressLabel = computed(
   () => `${chapterProgress.value.toFixed(1)}%`,
+);
+
+watch(
+  chapterProgress,
+  (progress) => emit("progress-change", progress),
+  { immediate: true },
 );
 
 const { handleAnyChapter, handleRecentChapter, isRead } = useChapters();
@@ -319,11 +350,13 @@ const expandCurrentChapterVolume = () => {
 const onChapterSelect = (uuid) => {
   tocFrame.value?.closeMenu();
   handleClick(handleAnyChapter, uuid);
+  emit("select");
 };
 
 const onLatestChapterSelect = () => {
   tocFrame.value?.closeMenu();
   handleClick(handleRecentChapter);
+  emit("select");
 };
 
 useRevealCurrentItem({
@@ -333,4 +366,9 @@ useRevealCurrentItem({
   refreshSources: [isLoadingList],
   beforeReveal: expandCurrentChapterVolume,
 });
+
+const closeMenu = () => tocFrame.value?.closeMenu();
+const toggleMenu = () => tocFrame.value?.toggleMenu();
+
+defineExpose({ closeMenu, toggleMenu });
 </script>

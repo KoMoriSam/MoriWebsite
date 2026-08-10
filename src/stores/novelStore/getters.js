@@ -48,7 +48,7 @@ export const useNovelGetters = (state) => {
 
     totalPages: computed(() => {
       const content = state.currentChapterContent.value;
-      return content.length;
+      return String(content || "").trim() ? 1 : 0;
     }),
 
     totalWordCount: computed(() => {
@@ -57,10 +57,8 @@ export const useNovelGetters = (state) => {
       }, 0);
     }),
 
-    currentPageContent: computed(
-      () =>
-        state.currentChapterContent.value[state.currentChapterPage.value - 1] ||
-        "",
+    currentPageContent: computed(() =>
+      String(state.currentChapterContent.value || ""),
     ),
   };
 };

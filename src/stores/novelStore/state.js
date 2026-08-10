@@ -24,7 +24,7 @@ export const useNovelState = () => {
   });
 
   // 内容相关状态
-  const currentChapterContent = ref([]);
+  const currentChapterContent = ref("");
   const contentCache = computed({
     get: () => getState("CHAPTERS_CONTENT", {}),
     set: (value) => setState("CHAPTERS_CONTENT", value),

@@ -4,7 +4,8 @@ import { useToast } from "@/composables/useToast";
 
 import { useChapterApi } from "@/services/api-chapters";
 
-import { splitMarkdown } from "@/utils/markdown/split-markdown";
+// 章节正文不再按固定字数预分页。
+// import { splitMarkdown } from "@/utils/markdown/split-markdown";
 import { getChapterContextTitle } from "@/utils/format-chapter-label";
 
 import CONFIG from "@/constants/config.js";
@@ -15,6 +16,7 @@ export const useNovelActions = (state, getters) => {
   const { fetchChapters, fetchContent } = useChapterApi();
 
   const toast = useToast({ position: "center-top", closable: false });
+  let contentRequestToken = 0;
 
   const UUID_PATTERN =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -252,17 +254,41 @@ export const useNovelActions = (state, getters) => {
   }, 500);
 
   // 内容相关操作
-  const loadChapterContent = async (forceUpdate = false) => {
-    if (
-      !forceUpdate &&
-      state.contentCache.value[state.currentChapterUuid.value]
-    ) {
+  const normalizeChapterContent = (value) =>
+    Array.isArray(value) ? value.join("\n") : String(value || "");
+
+  const loadChapterContent = async (
+    forceUpdate = false,
+    requestedUuid = state.currentChapterUuid.value,
+  ) => {
+    const chapterUuid = String(requestedUuid || "");
+    const chapter = state.flatChapters.value.find(
+      (item) => String(item.uuid) === chapterUuid,
+    );
+    if (!chapter?.path) return;
+
+    const requestToken = ++contentRequestToken;
+    const isCurrentRequest = () =>
+      requestToken === contentRequestToken &&
+      String(state.currentChapterUuid.value || "") === chapterUuid;
+    const cachedContent = normalizeChapterContent(
+      state.contentCache.value[chapterUuid],
+    );
+
+    if (!forceUpdate && cachedContent) {
       state.isLoadingContent.value = true;
       console.log("loadChapterContent: Call cache");
-      state.currentChapterContent.value =
-        state.contentCache.value[state.currentChapterUuid.value];
-      setRead();
-      state.isLoadingContent.value = false;
+      if (isCurrentRequest()) {
+        state.currentChapterContent.value = cachedContent;
+        if (Array.isArray(state.contentCache.value[chapterUuid])) {
+          state.contentCache.value = {
+            ...state.contentCache.value,
+            [chapterUuid]: cachedContent,
+          };
+        }
+        setRead();
+        state.isLoadingContent.value = false;
+      }
       return;
     }
 
@@ -271,28 +297,32 @@ export const useNovelActions = (state, getters) => {
     try {
       state.isLoadingContent.value = true;
 
-      const markdownRaw = await fetchContent(getters.currentChapter.value.path);
+      const markdownRaw = await fetchContent(chapter.path);
       const { body: content } = fm(markdownRaw);
-      const parsedContent = splitMarkdown(content);
-      state.currentChapterContent.value = parsedContent;
+      // const parsedContent = splitMarkdown(content);
+      const parsedContent = content;
 
       state.contentCache.value = {
         ...state.contentCache.value,
-        [state.currentChapterUuid.value]: state.currentChapterContent.value,
+        [chapterUuid]: parsedContent,
       };
-      if (forceUpdate) {
-        console.log("loadChapterContent: Force update");
-        toast.success("章节内容已刷新！");
-      } else {
-        console.log("loadChapterContent: First loading");
-        toast.success("章节内容加载完成！");
+
+      if (isCurrentRequest()) {
+        state.currentChapterContent.value = parsedContent;
+        if (forceUpdate) {
+          console.log("loadChapterContent: Force update");
+          toast.success("章节内容已刷新！");
+        } else {
+          console.log("loadChapterContent: First loading");
+          toast.success("章节内容加载完成！");
+        }
+        setRead();
       }
-      setRead();
     } catch (error) {
       console.error("章节内容加载失败:", error);
-      toast.error("章节内容加载失败！");
+      if (isCurrentRequest()) toast.error("章节内容加载失败！");
     } finally {
-      state.isLoadingContent.value = false;
+      if (isCurrentRequest()) state.isLoadingContent.value = false;
       toast.remove(loadingToast.id, loadingToast.position);
     }
   };
@@ -318,10 +348,10 @@ export const useNovelActions = (state, getters) => {
 
   const getChapterPageCount = async (uuid) => {
     const chapterUuid = String(uuid || "");
-    const cachedContent = state.contentCache.value[chapterUuid];
-    if (Array.isArray(cachedContent) && cachedContent.length) {
-      return cachedContent.length;
-    }
+    const cachedContent = normalizeChapterContent(
+      state.contentCache.value[chapterUuid],
+    );
+    if (cachedContent.trim()) return 1;
 
     const chapter = state.flatChapters.value.find(
       (item) => item.uuid === chapterUuid,
@@ -330,21 +360,23 @@ export const useNovelActions = (state, getters) => {
 
     const markdownRaw = await fetchContent(chapter.path);
     const { body: content } = fm(markdownRaw);
-    const parsedContent = splitMarkdown(content);
+    // const parsedContent = splitMarkdown(content);
+    const parsedContent = content;
 
     state.contentCache.value = {
       ...state.contentCache.value,
       [chapterUuid]: parsedContent,
     };
 
-    return Math.max(parsedContent.length, 1);
+    return 1;
   };
 
   // 阅读进度相关操作
   const setChapter = useDebounceFn(async (uuid) => {
-    state.currentChapterUuid.value = uuid;
-    console.log("setChapter:", uuid);
-    await loadChapterContent();
+    const chapterUuid = String(uuid || "");
+    state.currentChapterUuid.value = chapterUuid;
+    console.log("setChapter:", chapterUuid);
+    await loadChapterContent(false, chapterUuid);
   }, 500);
 
   const setPage = useDebounceFn((page) => {

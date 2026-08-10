@@ -1,3 +1,12 @@
+export const MOBILE_READER_NAVBAR_SHOW_EVENT = "mobile-reader:show-navbar";
+
+export const MOBILE_READING_MODES = Object.freeze({
+  PAGED: "paged",
+  SCROLL: "scroll",
+});
+
+export const MOBILE_READING_MODE_SETTING = "MOBILE_READING_MODE";
+
 export const STYLE_CONFIG_KEYS = [
   {
     key: "fontStyle",

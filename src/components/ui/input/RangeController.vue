@@ -4,7 +4,7 @@
     :min="min"
     :max="max"
     :step="step"
-    class="range range-accent range-xs join-item text-center"
+    class="range range-accent range-xs join-item text-center w-full"
     :value="modelValue"
     @input="updateValue($event.target.value)"
   />

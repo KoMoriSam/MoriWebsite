@@ -10,7 +10,8 @@ import { useChapterApi } from "@/services/api-chapters";
 import { typeText } from "@/utils/type-changelog";
 import { createLicenseAnchor } from "@/utils/create-license-anchor";
 import { createMarkdownSearchBlocks } from "@/utils/markdown/search-anchors";
-import { splitMarkdown } from "@/utils/markdown/split-markdown";
+// 小说正文和搜索锚点都按完整 Markdown 处理，不再预分页。
+// import { splitMarkdown } from "@/utils/markdown/split-markdown";
 
 export const CONTENT_TYPES = [
   {
@@ -95,6 +96,7 @@ const DATE_FRONTMATTER_KEYS = new Set([
 ]);
 
 let blogSearchPromise;
+let novelSearchPromise;
 let globalSearchPromise;
 
 const uniqueStrings = (values) => {
@@ -125,14 +127,14 @@ const createLocalMarkdownSearchBlocks = ({
   content,
   baseUrl,
   title,
-  paginated = false,
 }) => {
-  const pages = paginated ? splitMarkdown(content) : [content];
+  // const pages = paginated ? splitMarkdown(content) : [content];
+  const pages = [content];
 
-  return pages.flatMap((pageContent, pageIndex) =>
+  return pages.flatMap((pageContent) =>
     createMarkdownSearchBlocks(pageContent).map((block) => {
       const sectionTitle = stripMarkdown(block.heading);
-      const url = `${baseUrl}${paginated ? `?p=${pageIndex + 1}` : ""}#${block.id}`;
+      const url = `${baseUrl}#${block.id}`;
 
       return {
         url,
@@ -474,7 +476,6 @@ const fetchNovelEntries = async () => {
             content,
             baseUrl: url,
             title,
-            paginated: true,
           }),
           tags: volumeTitle ? [volumeTitle] : [],
           filterTags: volumeFacet ? [volumeFacet] : [],
@@ -490,6 +491,19 @@ const fetchNovelEntries = async () => {
       );
     }),
   );
+};
+
+export const fetchNovelSearchIndex = async () => {
+  if (novelSearchPromise) return novelSearchPromise;
+
+  novelSearchPromise = fetchNovelEntries();
+
+  try {
+    return await novelSearchPromise;
+  } catch (error) {
+    novelSearchPromise = null;
+    throw error;
+  }
 };
 
 const fetchChangelogEntries = async () => {
@@ -670,7 +684,7 @@ export const fetchGlobalSearchIndex = async () => {
   globalSearchPromise = (async () => {
     const sources = await Promise.allSettled([
       fetchBlogEntries(),
-      fetchNovelEntries(),
+      fetchNovelSearchIndex(),
       fetchChangelogEntries(),
       fetchLicenseEntries(),
     ]);

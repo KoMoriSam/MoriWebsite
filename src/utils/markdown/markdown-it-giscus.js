@@ -42,6 +42,14 @@ export const useParagraphComments = () => {
   const getParagraphTitleText = (paragraphElement) => {
     if (!paragraphElement) return "当前段评";
 
+    if (paragraphElement.dataset.readerFullParagraphText) {
+      return (
+        normalizeParagraphText(
+          paragraphElement.dataset.readerFullParagraphText,
+        ) || "当前段评"
+      );
+    }
+
     const clonedElement = paragraphElement.cloneNode(true);
     removeIgnoredTitleNodes(clonedElement);
 
@@ -101,11 +109,12 @@ export const useParagraphComments = () => {
         ? `${paragraphText.slice(0, MAX_TITLE_LENGTH)}...`
         : paragraphText;
     const titleNode = h("div", { class: "space-y-1" }, [
-      h("h3", { class: "text-sm" }, "当前段评"),
+      h("h3", { class: "text-base" }, "当前段评"),
       h(
-        "p",
+        "blockquote",
         {
-          class: "text-base font-medium leading-snug text-justify text-pretty",
+          class:
+            "text-sm font-medium leading-snug text-justify text-pretty border-s-3 border-s-base-content/25 ps-1.5",
         },
         truncatedTitle,
       ),
@@ -142,7 +151,7 @@ export const useParagraphComments = () => {
       false,
     );
 
-  const paragraphPlugin = (uuid, page, sourceType = "article") => {
+  const paragraphPlugin = (uuid, sourceType = "article") => {
     return (md) => {
       if (!md.renderer.rules) {
         md.renderer.rules = {};
@@ -179,7 +188,7 @@ export const useParagraphComments = () => {
         self,
       ) {
         const state = getParagraphState(env);
-        const paragraphId = `${uuid}-${page}-${state.counter}`;
+        const paragraphId = `${uuid}-${state.counter}`;
 
         state.counter += 1;
         state.stack.push(paragraphId);
