@@ -14,6 +14,7 @@
       <!-- 文章正文：保留头图、标签、别名和阅读时长 -->
       <!-- 文章头图 -->
       <header
+        id="blog-reading-start"
         class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80"
       >
         <!-- Banner -->
@@ -85,7 +86,10 @@
             v-if="article?.tags?.length"
             class="mb-3 flex flex-wrap gap-2 items-center"
           >
-            <div class="tooltip tooltip-right" data-tip="返回文章列表">
+            <div
+              class="tooltip tooltip-right max-lg:hidden"
+              data-tip="返回文章列表"
+            >
               <button
                 class="btn btn-sm btn-circle"
                 :class="
@@ -245,6 +249,88 @@
           :style-configs="styleConfigs"
         />
       </div>
+
+      <nav
+        v-if="previousArticle || nextArticle"
+        class="mt-8 grid grid-cols-1 gap-2 border-t border-base-300 pt-4 sm:grid-cols-2"
+        aria-label="文章翻页"
+      >
+        <RouterLink
+          v-if="previousArticle"
+          :to="getArticleRoute(previousArticle)"
+          class="card card-border card-xs group min-w-0 bg-base-100 transition-colors hover:border-base-content/25 hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          :aria-label="`上一篇：${previousArticle.title}`"
+          @click="handleArticleNavigation(previousArticle, $event)"
+        >
+          <div class="card-body min-w-0 gap-1 p-3">
+            <div
+              class="flex min-w-0 items-center justify-between gap-2 text-[11px] text-base-content/50"
+            >
+              <span class="inline-flex shrink-0 items-center gap-1 font-medium">
+                <i
+                  class="ri-arrow-left-line transition-transform group-hover:-translate-x-0.5"
+                  aria-hidden="true"
+                ></i>
+                上一篇
+              </span>
+
+              <time
+                v-if="getArticleDate(previousArticle)"
+                :datetime="getArticleDate(previousArticle)"
+                class="truncate"
+              >
+                发布于 {{ formatArticleDate(previousArticle) }}
+              </time>
+            </div>
+
+            <span
+              class="truncate text-sm leading-5 font-bold"
+              :title="previousArticle.title"
+            >
+              {{ previousArticle.title }}
+            </span>
+          </div>
+        </RouterLink>
+
+        <div v-else class="hidden sm:block" aria-hidden="true"></div>
+
+        <RouterLink
+          v-if="nextArticle"
+          :to="getArticleRoute(nextArticle)"
+          class="card card-border card-xs group min-w-0 bg-base-100 text-right transition-colors hover:border-base-content/25 hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          :aria-label="`下一篇：${nextArticle.title}`"
+          @click="handleArticleNavigation(nextArticle, $event)"
+        >
+          <div class="card-body min-w-0 gap-1 p-3">
+            <div
+              class="flex min-w-0 items-center justify-between gap-2 text-[11px] text-base-content/50"
+            >
+              <time
+                v-if="getArticleDate(nextArticle)"
+                :datetime="getArticleDate(nextArticle)"
+                class="truncate"
+              >
+                发布于 {{ formatArticleDate(nextArticle) }}
+              </time>
+
+              <span class="inline-flex shrink-0 items-center gap-1 font-medium">
+                下一篇
+                <i
+                  class="ri-arrow-right-line transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                ></i>
+              </span>
+            </div>
+
+            <span
+              class="truncate text-sm leading-5 font-bold"
+              :title="nextArticle.title"
+            >
+              {{ nextArticle.title }}
+            </span>
+          </div>
+        </RouterLink>
+      </nav>
     </article>
 
     <!-- 错误状态 -->
@@ -320,6 +406,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  articles: {
+    type: Array,
+    default: () => [],
+  },
   content: {
     type: String,
     default: "",
@@ -334,7 +424,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["back", "refresh"]);
+const emit = defineEmits(["back", "refresh", "navigate"]);
 
 const { GISCUS } = CONFIG;
 
@@ -432,6 +522,85 @@ const publicationDate = computed(() => {
 const publicationYear = computed(() => {
   return publicationDate.value.slice(0, 4);
 });
+
+const getArticleDate = (article) => normalizeArticleDate(article?.date);
+
+const getArticleTimestamp = (article) => {
+  const date = getArticleDate(article);
+  if (!date) return null;
+
+  const timestamp = Date.parse(`${date}T00:00:00.000Z`);
+  return Number.isNaN(timestamp) ? null : timestamp;
+};
+
+const chronologicalArticles = computed(() => {
+  const sourceArticles = Array.isArray(props.articles) ? props.articles : [];
+
+  return sourceArticles
+    .map((article, index) => ({
+      article,
+      index,
+      timestamp: getArticleTimestamp(article),
+    }))
+    .filter(({ article }) => article?.id != null)
+    .sort((a, b) => {
+      if (a.timestamp === null && b.timestamp === null) {
+        return a.index - b.index;
+      }
+      if (a.timestamp === null) return 1;
+      if (b.timestamp === null) return -1;
+
+      return a.timestamp - b.timestamp || a.index - b.index;
+    })
+    .map(({ article }) => article);
+});
+
+const currentArticleIndex = computed(() => {
+  const currentId = String(props.article?.id ?? "");
+  if (!currentId) return -1;
+
+  return chronologicalArticles.value.findIndex(
+    (article) => String(article.id) === currentId,
+  );
+});
+
+const previousArticle = computed(() => {
+  if (currentArticleIndex.value <= 0) return null;
+  return chronologicalArticles.value[currentArticleIndex.value - 1] || null;
+});
+
+const nextArticle = computed(() => {
+  const nextIndex = currentArticleIndex.value + 1;
+  if (currentArticleIndex.value < 0) return null;
+  return chronologicalArticles.value[nextIndex] || null;
+});
+
+const getArticleRoute = (article) => {
+  const generatedPath = String(article?.routePath || "").trim();
+  if (generatedPath) return generatedPath;
+
+  const articleId = String(article?.id || "").trim();
+  return articleId ? `/blog/${encodeURIComponent(articleId)}` : "/blog";
+};
+
+const formatArticleDate = (article) => {
+  return getArticleDate(article).replaceAll("-", "/");
+};
+
+const handleArticleNavigation = (article, event) => {
+  if (
+    event?.button !== 0 ||
+    event?.metaKey ||
+    event?.ctrlKey ||
+    event?.shiftKey ||
+    event?.altKey
+  ) {
+    return;
+  }
+
+  const articleId = String(article?.id || "").trim();
+  if (articleId) emit("navigate", articleId);
+};
 
 const handleRefresh = () => {
   emit("refresh");

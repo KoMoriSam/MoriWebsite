@@ -7,16 +7,18 @@
   <ArticleDetail
     v-else
     :article="currentArticle"
+    :articles="articles"
     :content="articleContent"
     :loading="loadingContent"
     :error="errorContent"
+    @navigate="prepareArticleNavigation"
     @refresh="refreshCurrentArticle"
     @back="goToList"
   />
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount, onMounted, watch } from "vue";
+import { nextTick, ref, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
 import { fetchBlogSearchArticles } from "@/services/search-content";
@@ -55,6 +57,7 @@ const currentArticle = ref(initialArticle);
 const articleContent = ref(initialContent);
 const loadingContent = ref(false);
 const errorContent = ref("");
+const pendingNavigationArticleId = ref("");
 
 const stopBlogPosTracker = ref(null);
 const trackedArticleId = ref("");
@@ -116,9 +119,40 @@ const loadArticles = async () => {
 };
 
 const goToList = () => {
+  pendingNavigationArticleId.value = "";
   currentComponent.value = "ArticleList";
   router.push({ name: "blog" });
   scrollToTop();
+};
+
+const prepareArticleNavigation = (articleId) => {
+  pendingNavigationArticleId.value = String(articleId || "").trim();
+};
+
+const scrollToArticleStart = async (articleId) => {
+  if (import.meta.env.SSR || typeof window === "undefined") return;
+
+  await nextTick();
+  await new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+  });
+
+  if (
+    String(currentArticle.value?.id || "") !== articleId ||
+    getRouteArticleId() !== articleId ||
+    loadingContent.value
+  ) {
+    return;
+  }
+
+  const target = document.getElementById("blog-reading-start");
+  if (!target) return;
+
+  const targetTop = Math.max(
+    0,
+    window.scrollY + target.getBoundingClientRect().top - 96,
+  );
+  window.scrollTo({ top: targetTop, behavior: "auto" });
 };
 
 const loadArticleContent = async (id, { keepCurrentContent = false } = {}) => {
@@ -160,6 +194,7 @@ watch(
     const articleId = getRouteArticleId();
 
     if (!articleId) {
+      pendingNavigationArticleId.value = "";
       currentComponent.value = "ArticleList";
       currentArticle.value = null;
       articleContent.value = "";
@@ -171,6 +206,11 @@ watch(
 
     if (articles.value.length > 0) {
       await loadArticleContent(articleId);
+
+      if (pendingNavigationArticleId.value === articleId) {
+        pendingNavigationArticleId.value = "";
+        await scrollToArticleStart(articleId);
+      }
     }
   },
 );
