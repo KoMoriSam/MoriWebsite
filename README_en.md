@@ -7,7 +7,7 @@
 <h1 align="center">MoriWebsite</h1>
 
 <p align="center">
-  A personal digital garden built with Vue 3, Vite SSG, Tailwind CSS, and daisyUI, combining a blog, novel reader, site-wide search, comments, and online tools.
+  A personal digital garden "远方之森" built with Vue 3, Vite SSG, Tailwind CSS, and daisyUI, combining a blog, novel reader, site-wide search, comments, and online tools.
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.16.0</strong>
+  Current version: <strong>1.17.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,15 +56,13 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.15.0 Highlights
+## Version 1.17.0 Highlights
 
-- added the `/licenses` page and a complete third-party license generation and distribution pipeline
-- added open-source license content to global search and improved Chinese Pagefind queries and result display
-- added total word counts to the novel overview
-- added Markdown attribute and ruby-annotation syntax while retaining on-demand syntax-highlighting languages
-- introduced Kaiming-style punctuation fonts and separate reading styles for improved Chinese typography
-- refactored the shared page shell, navigation, back-to-top control, scrolling, and anchor positioning
-- improved article image and banner resolution, SEO, and social sharing metadata
+- officially renamed the site to "远方之森" and unified page titles, descriptions, and SEO metadata
+- added the JetBrains Mono font for better monospaced rendering, such as code blocks
+- introduced animation effects and animated assets to enrich interactions
+- refined homepage spacing, sidebar, and chapter-list layouts
+- switched Kaiming punctuation fonts to online CSS references and removed local font files plus the abandoned NProgress dependency
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
@@ -76,6 +74,7 @@ See [`public/changelog.json`](./public/changelog.json) or the [online changelog]
 - Pagefind 1.5
 - Unhead, VueUse
 - Markdown-it, vue-markdown-render, KaTeX, highlight.js
+- Self-hosted fonts such as JetBrains Mono and Fraunces
 - Giscus
 
 ## Features

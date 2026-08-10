@@ -7,7 +7,7 @@
 <h1 align="center">MoriWebsite</h1>
 
 <p align="center">
-  Un jardin numérique personnel construit avec Vue 3, Vite SSG, Tailwind CSS et daisyUI, réunissant blog, lecteur de roman, recherche globale, commentaires et outils en ligne.
+  Un jardin numérique personnel « 远方之森 » construit avec Vue 3, Vite SSG, Tailwind CSS et daisyUI, réunissant blog, lecteur de roman, recherche globale, commentaires et outils en ligne.
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.16.0</strong>
+  Version actuelle : <strong>1.17.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,15 +56,13 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.15.0
+## Points clés de la version 1.17.0
 
-- ajout de la page `/licenses` et d'un flux complet de génération et de distribution des licences tierces
-- ajout des licences à la recherche globale et amélioration des requêtes Pagefind en chinois et de l'affichage des résultats
-- ajout du nombre total de caractères dans la vue d'ensemble du roman
-- prise en charge des attributs Markdown et des annotations ruby, avec chargement à la demande des langages de coloration syntaxique
-- ajout de polices de ponctuation de style Kaiming et séparation des styles de lecture pour améliorer la typographie chinoise
-- refonte du squelette commun, de la navigation, du bouton de retour en haut, du défilement et du positionnement des ancres
-- amélioration de la résolution des images et bannières, du SEO et des métadonnées de partage
+- renommage officiel du site en « 远方之森 » et unification des titres, descriptions et métadonnées SEO
+- ajout de la police JetBrains Mono pour améliorer le rendu des polices à chasse fixe, comme les blocs de code
+- introduction d'effets d'animation et d'animations pour enrichir les interactions
+- amélioration de l'espacement de l'accueil, des barres latérales et de la liste des chapitres
+- passage des polices de ponctuation Kaiming à des références CSS en ligne, suppression des polices locales et de la dépendance NProgress abandonnée
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
@@ -76,6 +74,7 @@ Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en l
 - Pagefind 1.5
 - Unhead, VueUse
 - Markdown-it, vue-markdown-render, KaTeX, highlight.js
+- Polices auto-hébergées comme JetBrains Mono et Fraunces
 - Giscus
 
 ## Fonctionnalités
@@ -172,26 +171,26 @@ VITE_COMMENT_COUNTS_API=
 VITE_GISCUS_CSS_RAW=
 ```
 
-| Variable | Utilisation |
-| --- | --- |
-| `VITE_BLOG_RAW` | URL de base du fichier `index.json`, du Markdown et des images du blog ; requise pour le build de production |
-| `VITE_NOVEL_RAW` | URL de base du fichier `index.json` et des chapitres du roman ; requise pour le build de production |
-| `VITE_SERVER_ADDRESS` | Serveur Minecraft interrogé par défaut sur la page des outils |
-| `VITE_RANDOM_HERO_API` | Endpoint de l'arrière-plan aléatoire de l'accueil |
-| `VITE_COMMENT_COUNTS_API` | Endpoint groupé facultatif pour le nombre de commentaires de paragraphe |
-| `VITE_GISCUS_CSS_RAW` | URL de base des thèmes Giscus personnalisés |
+| Variable                  | Utilisation                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `VITE_BLOG_RAW`           | URL de base du fichier `index.json`, du Markdown et des images du blog ; requise pour le build de production |
+| `VITE_NOVEL_RAW`          | URL de base du fichier `index.json` et des chapitres du roman ; requise pour le build de production          |
+| `VITE_SERVER_ADDRESS`     | Serveur Minecraft interrogé par défaut sur la page des outils                                                |
+| `VITE_RANDOM_HERO_API`    | Endpoint de l'arrière-plan aléatoire de l'accueil                                                            |
+| `VITE_COMMENT_COUNTS_API` | Endpoint groupé facultatif pour le nombre de commentaires de paragraphe                                      |
+| `VITE_GISCUS_CSS_RAW`     | URL de base des thèmes Giscus personnalisés                                                                  |
 
 Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code client. N'y placez aucun secret ni identifiant privé. `scripts/generate-routes.mjs` et `scripts/generate-pagefind-index.mjs` lisent tous deux `.env.production`.
 
 ## Scripts disponibles
 
-| Commande | Utilisation |
-| --- | --- |
-| `pnpm dev` | Générer les données de licence et lancer le serveur de développement |
-| `pnpm build` | Générer le site SSG, l'index de recherche et les licences distribuées |
-| `pnpm preview` | Prévisualiser localement `dist/` |
-| `pnpm deploy` | Publier `dist/` sur la branche `gh-pages` du dépôt |
-| `pnpm push` | Forcer l'envoi de la branche locale `main` vers la branche distante `cl-pages` |
+| Commande       | Utilisation                                                                    |
+| -------------- | ------------------------------------------------------------------------------ |
+| `pnpm dev`     | Générer les données de licence et lancer le serveur de développement           |
+| `pnpm build`   | Générer le site SSG, l'index de recherche et les licences distribuées          |
+| `pnpm preview` | Prévisualiser localement `dist/`                                               |
+| `pnpm deploy`  | Publier `dist/` sur la branche `gh-pages` du dépôt                             |
+| `pnpm push`    | Forcer l'envoi de la branche locale `main` vers la branche distante `cl-pages` |
 
 `pnpm push` contient `--force` ; vérifiez l'usage de la branche distante et le commit courant avant de l'exécuter.
 

@@ -7,7 +7,7 @@
 <h1 align="center">MoriWebsite</h1>
 
 <p align="center">
-  使用 Vue 3、Vite SSG、Tailwind CSS 与 daisyUI 构建的个人数字花园，集博客、小说阅读、全站搜索、评论与实用工具于一体。
+  使用 Vue 3、Vite SSG、Tailwind CSS 与 daisyUI 构建的个人数字花园「远方之森」，集博客、小说阅读、全站搜索、评论与实用工具于一体。
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.16.0</strong>
+  当前版本：<strong>1.17.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,15 +56,13 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.15.0 版本重点
+## 1.17.0 版本重点
 
-- 新增 `/licenses` 页面以及第三方许可数据生成、分发流程
-- 全站搜索新增开源许可内容，并改善中文 Pagefind 检索与结果展示
-- 小说详情页新增总字数统计
-- Markdown 新增属性与 ruby 注音语法支持，并继续按需加载代码高亮语言
-- 引入开明式标点字体与独立阅读样式，改善中文正文排版
-- 重构通用页面骨架、导航、回到顶部按钮、滚动与锚点定位逻辑
-- 完善文章图片及横幅资源解析、SEO 与分享元信息
+- 网站正式更名为「远方之森」，统一页面标题、描述与 SEO 信息
+- 新增 JetBrains Mono 字体，改善代码块等等宽场景的显示效果
+- 引入动画效果样式与动图素材，增强页面交互体验
+- 优化首页文本间隔、侧边栏与章节列表布局
+- Kaiming 标点字体改用在线 CSS 引用，移除本地字体文件与已弃用的 NProgress
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 
@@ -76,6 +74,7 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 - Pagefind 1.5
 - Unhead、VueUse
 - Markdown-it、vue-markdown-render、KaTeX、highlight.js
+- JetBrains Mono、Fraunces 等自托管字体
 - Giscus
 
 ## 主要功能
@@ -172,26 +171,26 @@ VITE_COMMENT_COUNTS_API=
 VITE_GISCUS_CSS_RAW=
 ```
 
-| 变量 | 用途 |
-| --- | --- |
-| `VITE_BLOG_RAW` | 博客 `index.json`、Markdown 与图片的基础地址；生产构建必需 |
-| `VITE_NOVEL_RAW` | 小说 `index.json` 与章节 Markdown 的基础地址；生产构建必需 |
-| `VITE_SERVER_ADDRESS` | 工具页默认查询的 Minecraft 服务器地址 |
-| `VITE_RANDOM_HERO_API` | 首页随机背景图接口 |
-| `VITE_COMMENT_COUNTS_API` | 可选的段落评论数量批量查询接口 |
-| `VITE_GISCUS_CSS_RAW` | Giscus 自定义主题资源的基础地址 |
+| 变量                      | 用途                                                       |
+| ------------------------- | ---------------------------------------------------------- |
+| `VITE_BLOG_RAW`           | 博客 `index.json`、Markdown 与图片的基础地址；生产构建必需 |
+| `VITE_NOVEL_RAW`          | 小说 `index.json` 与章节 Markdown 的基础地址；生产构建必需 |
+| `VITE_SERVER_ADDRESS`     | 工具页默认查询的 Minecraft 服务器地址                      |
+| `VITE_RANDOM_HERO_API`    | 首页随机背景图接口                                         |
+| `VITE_COMMENT_COUNTS_API` | 可选的段落评论数量批量查询接口                             |
+| `VITE_GISCUS_CSS_RAW`     | Giscus 自定义主题资源的基础地址                            |
 
 这些变量都使用 `VITE_` 前缀，会暴露给客户端；请勿在其中保存密钥或其他私密凭据。`scripts/generate-routes.mjs` 和 `scripts/generate-pagefind-index.mjs` 会读取 `.env.production`。
 
 ## 常用脚本
 
-| 命令 | 作用 |
-| --- | --- |
-| `pnpm dev` | 生成许可数据并启动开发服务器 |
-| `pnpm build` | 生成 SSG 站点、搜索索引与许可分发文件 |
-| `pnpm preview` | 本地预览 `dist/` |
-| `pnpm deploy` | 将 `dist/` 发布到仓库的 `gh-pages` 分支 |
-| `pnpm push` | 强制将本地 `main` 推送到远端 `cl-pages` 分支 |
+| 命令           | 作用                                         |
+| -------------- | -------------------------------------------- |
+| `pnpm dev`     | 生成许可数据并启动开发服务器                 |
+| `pnpm build`   | 生成 SSG 站点、搜索索引与许可分发文件        |
+| `pnpm preview` | 本地预览 `dist/`                             |
+| `pnpm deploy`  | 将 `dist/` 发布到仓库的 `gh-pages` 分支      |
+| `pnpm push`    | 强制将本地 `main` 推送到远端 `cl-pages` 分支 |
 
 `pnpm push` 含有 `--force`，使用前请确认远端分支用途与当前提交状态。
 
