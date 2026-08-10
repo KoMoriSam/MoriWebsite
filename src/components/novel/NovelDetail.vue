@@ -53,7 +53,10 @@
                 <span class="block text-xs font-normal opacity-70">
                   {{ primaryActionLabel }}
                 </span>
-                <span class="block truncate text-base">
+                <span
+                  class="block truncate text-base"
+                  :title="primaryChapterTitle"
+                >
                   {{ primaryChapterTitle }}
                 </span>
               </span>
@@ -71,8 +74,8 @@
               <i class="ri-sparkling-2-line shrink-0 text-lg"></i>
               <span class="min-w-0 text-left">
                 <span class="block text-xs font-normal"> 最新章节 </span>
-                <span class="block truncate">
-                  {{ latestChapter?.title || "加载中……" }}
+                <span class="block truncate" :title="latestChapterTitle">
+                  {{ latestChapterTitle }}
                 </span>
               </span>
             </button>
@@ -99,7 +102,7 @@
     </section>
 
     <section class="py-10 lg:py-14" aria-label="小说章节目录">
-      <Chapters variant="detail" />
+      <Chapters />
     </section>
 
     <section class="border-t border-base-300 pt-10 lg:pt-14">
@@ -138,6 +141,7 @@ import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
+import { getChapterDisplayTitle } from "@/utils/novel-chapter-label";
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
@@ -167,10 +171,16 @@ const hasReadingHistory = computed(() => readChapters.value.length > 0);
 const primaryActionLabel = computed(() =>
   hasReadingHistory.value ? "继续上次阅读" : "开始阅读",
 );
-const primaryChapterTitle = computed(() =>
+const primaryChapter = computed(() =>
   hasReadingHistory.value
-    ? currentChapter.value?.title || "加载中……"
-    : flatChapters.value[0]?.title || "加载中……",
+    ? currentChapter.value
+    : flatChapters.value[0],
+);
+const primaryChapterTitle = computed(() =>
+  getChapterDisplayTitle(primaryChapter.value) || "加载中……",
+);
+const latestChapterTitle = computed(
+  () => getChapterDisplayTitle(latestChapter.value) || "加载中……",
 );
 const primaryChapterDisabled = computed(() =>
   hasReadingHistory.value

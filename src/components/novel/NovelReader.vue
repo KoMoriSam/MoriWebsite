@@ -1,50 +1,14 @@
 <template>
-  <Reader drawer drawer-id="novel-reader-sidebar" toc tocTitle="本页已读">
+  <Reader drawer drawer-id="novel-reader-sidebar" toc>
+    <template #mobile-toc="{ progress }">
+      <ChapterToc mobile :page-progress="progress" />
+    </template>
+
+    <template #toc="{ progress }">
+      <ChapterToc :page-progress="progress" />
+    </template>
+
     <section :ref="scrollRef" class="min-w-0 w-full max-w-full overflow-x-clip">
-      <ChapterInfo
-        v-if="latestChapter"
-        :additionalClasses="`max-lg:btn-sm btn-outline btn-secondary py-6 ${
-          isDisabled ? 'btn-disabled' : ''
-        }`"
-        :onClick="onClick"
-      >
-        <template #content>
-          <div
-            class="min-w-0 flex max-md:flex-col md:gap-4 items-start md:items-center group"
-          >
-            <span class="font-bold truncate">{{ latestChapter.title }}</span>
-            <span
-              v-if="latestChapter.uploadDate"
-              class="block truncate text-xs text-secondary/60 group-hover:text-secondary-content/60"
-            >
-              {{
-                latestChapter.modifiedDate
-                  ? useDateFormat(
-                      latestChapter.modifiedDate,
-                      "YYYY/M/D H:mm 更新",
-                    )
-                  : useDateFormat(
-                      latestChapter.uploadDate,
-                      "YYYY/M/D H:mm 更新",
-                    )
-              }}
-            </span>
-          </div>
-        </template>
-        <template #aside>
-          <label
-            for="novel-reader-sidebar"
-            class="btn max-lg:btn-sm btn-secondary btn-outline py-6 font-bold"
-            @click="handleSideComponentUpdate('Chapters')"
-          >
-            <i class="ri-book-marked-line text-2xl md:text-lg"></i>
-            目录
-          </label>
-        </template>
-      </ChapterInfo>
-
-      <ChapterController />
-
       <header
         v-if="currentChapter"
         id="novel-reading-start"
@@ -55,6 +19,17 @@
             v-if="currentChapter.volumeTitle"
             class="mb-2 flex min-w-0 max-w-full items-center"
           >
+            <div
+              class="tooltip tooltip-right max-lg:hidden"
+              data-tip="返回封面页"
+            >
+              <RouterLink
+                to="/novel"
+                class="btn btn-outline btn-info btn-xs btn-circle mr-2"
+              >
+                <i class="ri-arrow-left-line"></i>
+              </RouterLink>
+            </div>
             <span
               class="badge badge-outline badge-info min-w-0 max-w-full gap-1 overflow-hidden font-normal"
             >
@@ -147,9 +122,7 @@
     </template>
 
     <template #drawer>
-      <KeepAlive>
-        <component :is="components[sideCurrentComponent]" />
-      </KeepAlive>
+      <FormatSetting />
     </template>
   </Reader>
 </template>
@@ -162,11 +135,10 @@ import { useThemeStore } from "@/stores/themeStore";
 
 import Giscus from "@giscus/vue";
 import Reader from "@/components/reader/Reader.vue";
-import Chapters from "@/components/novel/ChapterList.vue";
+import ChapterToc from "@/components/novel/ChapterToc.vue";
 import ChapterController from "@/components/novel/ChapterController.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
-import ChapterInfo from "@/components/novel/ChapterInfo.vue";
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
 
 import CONFIG from "@/constants/config";
@@ -174,16 +146,13 @@ const { GISCUS } = CONFIG;
 
 import { useDateFormat } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
-import { useChapters } from "@/composables/useChapters";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
-import { useClickLimit } from "@/composables/useClickLimit";
 
 const novelStore = useNovelStore();
 const {
   currentPageContent,
-  latestChapter,
   currentChapter,
   currentChapterUuid,
   currentChapterPage,
@@ -199,11 +168,6 @@ const { styleConfigs } = storeToRefs(readerStore);
 const themeStore = useThemeStore();
 const { giscusTheme } = storeToRefs(themeStore);
 
-const components = {
-  Chapters,
-  FormatSetting,
-};
-
 import {
   computed,
   onActivated,
@@ -212,23 +176,6 @@ import {
   ref,
   watch,
 } from "vue";
-import { useReaderSettingsStorage } from "@/utils/storage/new-reader-settings";
-const { getSetting, setSetting } = useReaderSettingsStorage();
-const sideCurrentComponent = ref(
-  getSetting("NOVEL_SIDE_CURRENT_COMPONENT", "Chapters"),
-);
-
-// 同样监听侧边栏组件变化
-watch(
-  () => getSetting("NOVEL_SIDE_CURRENT_COMPONENT"),
-  (newValue) => {
-    sideCurrentComponent.value = newValue;
-  },
-);
-
-const handleSideComponentUpdate = (component) => {
-  setSetting("NOVEL_SIDE_CURRENT_COMPONENT", component);
-};
 
 const stopNovelPosTracker = ref(null);
 const trackedReaderContext = ref("");
@@ -255,10 +202,10 @@ const setupNovelPosTracker = () => {
   const permalink = novelStore.getPermalinkByUuid(chapterId);
   const routeMatchesContent = Boolean(
     route.name === "novel-reader" &&
-      permalink &&
-      route.params.volumeSlug === permalink.volumeSlug &&
-      route.params.chapterSlug === permalink.chapterSlug &&
-      getRoutePage() === page,
+    permalink &&
+    route.params.volumeSlug === permalink.volumeSlug &&
+    route.params.chapterSlug === permalink.chapterSlug &&
+    getRoutePage() === page,
   );
   const shouldTrack =
     routeMatchesContent &&
@@ -316,9 +263,7 @@ const giscusVersion = ref(0);
 const giscusMapping = "specific";
 
 const extractVolume = (volumeTitle = "") => {
-  const match = volumeTitle.match(
-    /^第[零〇一二三四五六七八九十百千万0-9]+卷/,
-  );
+  const match = volumeTitle.match(/^第[零〇一二三四五六七八九十百千万0-9]+卷/);
   return match ? match[0] : volumeTitle;
 };
 
@@ -357,7 +302,7 @@ const chapterStats = computed(() => {
       icon: "ri-time-line",
       text: useDateFormat(
         currentChapter.value?.uploadDate,
-        "YYYY/M/D H:mm 上传",
+        "YYYY/M/D H:mm 发布",
       ),
     },
   ];
@@ -365,7 +310,7 @@ const chapterStats = computed(() => {
   if (currentChapter.value?.modifiedDate) {
     stats.push({
       icon: "ri-file-edit-line",
-      text: "已修订",
+      text: "有修订",
     });
   }
 
@@ -379,7 +324,7 @@ const chapterStats = computed(() => {
 
 const handleRefreshContent = async () => {
   if (isLoadingContent.value) return;
-  await novelStore.refreshContent();
+  await novelStore.refreshChapters();
   remountGiscus();
 };
 
@@ -413,15 +358,6 @@ const fabActions = computed(() => [
     label: "阅读器设置",
     icon: "ri-settings-3-line",
     buttonClass: "btn-primary btn-soft",
-    onClick: () => handleSideComponentUpdate("FormatSetting"),
-  },
-  {
-    key: "chapters",
-    for: "novel-reader-sidebar",
-    label: "目录",
-    icon: "ri-file-list-2-line",
-    buttonClass: "btn-primary btn-soft",
-    onClick: () => handleSideComponentUpdate("Chapters"),
   },
   {
     key: "cover",
@@ -438,11 +374,4 @@ const fabActions = computed(() => [
 ]);
 
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
-
-const { handleRecentChapter } = useChapters();
-
-const { isDisabled, handleClick } = useClickLimit();
-const onClick = () => {
-  handleClick(handleRecentChapter);
-};
 </script>

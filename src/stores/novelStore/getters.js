@@ -1,9 +1,24 @@
 import { computed } from "vue";
 
 export const useNovelGetters = (state) => {
-  const isRecent = (dateStr) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    return diff < 14 * 24 * 60 * 60 * 1000; // 14 天内
+  const getVisibleChapters = () =>
+    state.flatChapters.value.filter((chapter) => {
+      return !chapter.volumeTitle?.toLowerCase().includes("test");
+    });
+
+  const getLatestByDate = (chapters, dateKey) => {
+    const latestChapter = chapters.reduce((latest, chapter) => {
+      const chapterTime = new Date(chapter[dateKey]).getTime();
+      if (!Number.isFinite(chapterTime)) return latest;
+
+      const latestTime = latest
+        ? new Date(latest[dateKey]).getTime()
+        : Number.NEGATIVE_INFINITY;
+
+      return chapterTime >= latestTime ? chapter : latest;
+    }, null);
+
+    return latestChapter || chapters[chapters.length - 1];
   };
 
   return {
@@ -20,20 +35,7 @@ export const useNovelGetters = (state) => {
     }),
 
     latestChapter: computed(() => {
-      const visibleChapters = state.flatChapters.value.filter((chapter) => {
-        return !chapter.volumeTitle?.toLowerCase().includes("test");
-      });
-
-      const recentChapters = visibleChapters.filter((chapter) => {
-        const dateToCheck = chapter.modifiedDate || chapter.uploadDate;
-        return isRecent(dateToCheck);
-      });
-
-      if (recentChapters.length > 0) {
-        return recentChapters[recentChapters.length - 1];
-      }
-
-      return visibleChapters[visibleChapters.length - 1];
+      return getLatestByDate(getVisibleChapters(), "uploadDate");
     }),
 
     totalPages: computed(() => {

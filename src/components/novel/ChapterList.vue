@@ -2,7 +2,7 @@
   <Submenu
     title="章节目录"
     :meta="`${chapterVolumes.length} 卷 · ${chapterCount} 章`"
-    :density="isDetailVariant ? 'comfortable' : 'compact'"
+    density="comfortable"
   >
     <template #btn>
       <div class="tooltip tooltip-left" data-tip="刷新章节目录">
@@ -47,14 +47,10 @@
       >
         <details open class="collapse collapse-arrow rounded-none group/volume">
           <summary
-            class="collapse-title flex min-w-0 items-center transition-colors hover:bg-base-200/60 [&::-webkit-details-marker]:hidden"
-            :class="
-              isDetailVariant ? 'gap-4 px-5 py-4 sm:px-6' : 'gap-3 px-4 py-3.5'
-            "
+            class="collapse-title flex min-w-0 items-center gap-4 px-5 py-4 transition-colors hover:bg-base-200/60 sm:px-6 [&::-webkit-details-marker]:hidden"
           >
             <span
-              class="flex shrink-0 items-center justify-center rounded bg-base-200 font-serif font-bold text-base-content/65"
-              :class="isDetailVariant ? 'size-9 text-sm' : 'size-8 text-xs'"
+              class="flex size-9 shrink-0 items-center justify-center rounded bg-base-200 font-serif text-sm font-bold text-base-content/65"
             >
               {{ String(volumeIndex).padStart(2, "0") }}
             </span>
@@ -70,10 +66,7 @@
 
           <ol
             v-if="volume.chapters && volume.chapters.length > 0"
-            class="collapse-content grid border-t border-base-300 bg-base-200/15 py-2"
-            :class="
-              isDetailVariant ? 'px-5 md:grid-cols-2' : 'grid-cols-1 px-2'
-            "
+            class="collapse-content grid border-t border-base-300 bg-base-200/15 px-5 py-2 md:grid-cols-2"
           >
             <li
               v-for="(chapter, chapterIndex) in volume.chapters"
@@ -86,21 +79,14 @@
                 class="group/chapter btn btn-ghost h-fit w-full min-w-0 justify-start rounded py-3 text-left transition-[background-color,transform] duration-150 active:translate-y-px"
                 :class="[
                   {
-                    'btn-active':
-                      isReaderRoute && chapter.uuid === currentChapterUuid,
+                    'btn-active': chapter.uuid === currentChapterUuid,
                   },
                 ]"
-                :aria-current="
-                  isReaderRoute && chapter.uuid === currentChapterUuid
-                    ? 'page'
-                    : undefined
-                "
                 :disabled="isDisabled"
                 @click="onClick(chapter.uuid)"
               >
                 <span
-                  class="w-7 shrink-0 font-serif font-semibold tabular-nums text-base-content/35 transition-colors group-hover/chapter:text-primary"
-                  :class="isDetailVariant ? 'text-sm' : 'text-xs'"
+                  class="w-7 shrink-0 font-serif text-sm font-semibold tabular-nums text-base-content/35 transition-colors group-hover/chapter:text-primary"
                 >
                   {{ String(chapterIndex + 1).padStart(2, "0") }}
                 </span>
@@ -114,7 +100,26 @@
                     </span>
                     <span
                       v-if="
+                        chapter.uuid === latestChapter?.uuid &&
+                        !isRead(chapter.uuid)
+                      "
+                      class="badge badge-warning badge-xs shrink-0"
+                    >
+                      最新
+                    </span>
+                    <span
+                      v-if="chapter.modifiedDate"
+                      class="badge badge-info badge-soft badge-xs shrink-0"
+                    >
+                      有修订
+                    </span>
+                    <span v-else class="badge badge-ghost badge-xs shrink-0">
+                      首发
+                    </span>
+                    <span
+                      v-if="
                         isRecent(chapter.uuid, chapter.uploadDate) &&
+                        chapter.uuid !== latestChapter?.uuid &&
                         !isRead(chapter.uuid)
                       "
                       class="badge badge-warning badge-xs shrink-0"
@@ -124,8 +129,7 @@
                   </span>
 
                   <span
-                    class="mt-2 flex flex-wrap items-center gap-y-1 text-xs text-base-content/50"
-                    :class="isDetailVariant ? 'gap-x-3' : 'gap-x-2.5'"
+                    class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50"
                   >
                     <span
                       class="inline-flex items-center gap-1"
@@ -156,17 +160,6 @@
                       ></i>
                       {{ chapter.length }} 字
                     </span>
-                    <span
-                      v-if="chapter.modifiedDate"
-                      class="inline-flex items-center gap-1"
-                      title="该章节有过更新"
-                    >
-                      <i
-                        class="ri-edit-line font-normal"
-                        aria-hidden="true"
-                      ></i>
-                      已修订
-                    </span>
                   </span>
                 </span>
 
@@ -183,16 +176,11 @@
 
     <li
       v-else
-      class="flex flex-col items-center justify-center gap-2 text-center text-base-content/50"
-      :class="isDetailVariant ? 'min-h-64 px-6 py-12' : 'min-h-52 px-5 py-10'"
+      class="flex min-h-64 flex-col items-center justify-center gap-2 px-6 py-12 text-center text-base-content/50"
     >
-      <i
-        class="ri-book-open-line"
-        :class="isDetailVariant ? 'text-3xl' : 'text-2xl'"
-        aria-hidden="true"
-      ></i>
+      <i class="ri-book-open-line text-3xl" aria-hidden="true"></i>
       <p class="font-semibold text-base-content/70">暂时没有可阅读的章节</p>
-      <p :class="isDetailVariant ? 'text-sm' : 'text-xs'">刷新目录后再试一次</p>
+      <p class="text-sm">刷新目录后再试一次</p>
     </li>
   </Submenu>
 </template>
@@ -201,7 +189,6 @@
 import { storeToRefs } from "pinia";
 import { useDateFormat } from "@vueuse/core";
 import { computed } from "vue";
-import { useRoute } from "vue-router";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -210,18 +197,10 @@ import { useChapters } from "@/composables/useChapters";
 import Loading from "@/components/base/Loading.vue";
 import Submenu from "@/components/ui/menu/Submenu.vue";
 
-const props = defineProps({
-  variant: {
-    type: String,
-    default: "reader",
-    validator: (value) => ["reader", "detail"].includes(value),
-  },
-});
-
 const novelStore = useNovelStore();
-const { isLoadingList, chapters, currentChapterUuid } = storeToRefs(novelStore);
+const { chapters, currentChapterUuid, isLoadingList, latestChapter } =
+  storeToRefs(novelStore);
 
-const isDetailVariant = computed(() => props.variant === "detail");
 const chapterVolumes = computed(() =>
   Array.isArray(chapters.value)
     ? chapters.value
@@ -233,11 +212,6 @@ const chapterCount = computed(() =>
     0,
   ),
 );
-
-const route = useRoute();
-const isReaderRoute = computed(() => {
-  return Boolean(route.params.volumeSlug && route.params.chapterSlug);
-});
 
 const { isRead, handleAnyChapter, isRecent } = useChapters();
 

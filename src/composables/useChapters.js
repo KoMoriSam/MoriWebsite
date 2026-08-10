@@ -236,9 +236,18 @@ export function useChapters() {
     return navigation;
   };
 
+  const isWithinRecentPeriod = (dateStr) => {
+    const time = new Date(dateStr).getTime();
+    if (!Number.isFinite(time)) return false;
+
+    const diff = Date.now() - time;
+    return diff >= 0 && diff < 14 * 24 * 60 * 60 * 1000;
+  };
+
   const isRecent = (uuid, dateStr) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    return diff < 14 * 24 * 60 * 60 * 1000 || uuid === latestChapter.value.uuid; // 14 天内和最新章
+    return (
+      isWithinRecentPeriod(dateStr) || uuid === latestChapter.value?.uuid
+    );
   };
 
   const isRead = computed(() => (uuid) => {
