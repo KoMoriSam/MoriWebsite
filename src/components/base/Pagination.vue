@@ -9,9 +9,13 @@
       <button
         type="button"
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-        :disabled="currentPage <= 1"
-        aria-label="上一页"
-        @click="requestPage(currentPage - 1)"
+        :disabled="currentPage <= 1 && !canNavigateBefore"
+        :aria-label="
+          currentPage <= 1 && canNavigateBefore
+            ? beforeBoundaryLabel
+            : '上一页'
+        "
+        @click="requestPrevious"
       >
         <i class="ri-arrow-left-s-line text-lg"></i>
       </button>
@@ -71,9 +75,13 @@
       <button
         type="button"
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-        :disabled="currentPage >= totalPages"
-        aria-label="下一页"
-        @click="requestPage(currentPage + 1)"
+        :disabled="currentPage >= totalPages && !canNavigateAfter"
+        :aria-label="
+          currentPage >= totalPages && canNavigateAfter
+            ? afterBoundaryLabel
+            : '下一页'
+        "
+        @click="requestNext"
       >
         <i class="ri-arrow-right-s-line text-lg"></i>
       </button>
@@ -215,9 +223,30 @@ const props = defineProps({
     required: true,
     validator: (value) => Number.isInteger(value) && value >= 1,
   },
+  canNavigateBefore: {
+    type: Boolean,
+    default: false,
+  },
+  canNavigateAfter: {
+    type: Boolean,
+    default: false,
+  },
+  beforeBoundaryLabel: {
+    type: String,
+    default: "上一项",
+  },
+  afterBoundaryLabel: {
+    type: String,
+    default: "下一项",
+  },
 });
 
-const emit = defineEmits(["update:currentPage", "change"]);
+const emit = defineEmits([
+  "update:currentPage",
+  "change",
+  "navigate-before",
+  "navigate-after",
+]);
 
 const paginationRef = ref(null);
 const pageMenuRef = ref(null);
@@ -279,6 +308,24 @@ const requestPage = (page) => {
 
   emit("update:currentPage", targetPage);
   emit("change", targetPage);
+};
+
+const requestPrevious = () => {
+  if (props.currentPage > 1) {
+    requestPage(props.currentPage - 1);
+    return;
+  }
+
+  if (props.canNavigateBefore) emit("navigate-before");
+};
+
+const requestNext = () => {
+  if (props.currentPage < props.totalPages) {
+    requestPage(props.currentPage + 1);
+    return;
+  }
+
+  if (props.canNavigateAfter) emit("navigate-after");
 };
 
 const selectPage = (page) => {

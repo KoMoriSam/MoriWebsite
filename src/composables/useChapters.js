@@ -194,12 +194,30 @@ export function useChapters() {
     () => currentChapterIndex.value + 1 < flatChapters.value.length,
   );
 
-  const handlePrev = () => {
-    handleChapter(flatChapters.value[currentChapterIndex.value - 1].uuid);
+  const handlePrev = async ({ lastPage = false } = {}) => {
+    const previousChapter = flatChapters.value[currentChapterIndex.value - 1];
+    if (!previousChapter) return;
+
+    let targetPage = 1;
+    if (lastPage) {
+      try {
+        targetPage = await novelStore.getChapterPageCount(
+          previousChapter.uuid,
+        );
+      } catch (error) {
+        console.error("获取上一章末页失败:", error);
+        toast.warning("无法读取上一章末页，已打开上一章首页");
+      }
+    }
+
+    return handleChapter(previousChapter.uuid, { page: targetPage });
   };
 
   const handleNext = () => {
-    handleChapter(flatChapters.value[currentChapterIndex.value + 1].uuid);
+    const nextChapter = flatChapters.value[currentChapterIndex.value + 1];
+    if (!nextChapter) return;
+
+    return handleChapter(nextChapter.uuid);
   };
 
   const handleAnyPage = (index) => {

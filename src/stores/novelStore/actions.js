@@ -316,6 +316,30 @@ export const useNovelActions = (state, getters) => {
     }
   }, 500);
 
+  const getChapterPageCount = async (uuid) => {
+    const chapterUuid = String(uuid || "");
+    const cachedContent = state.contentCache.value[chapterUuid];
+    if (Array.isArray(cachedContent) && cachedContent.length) {
+      return cachedContent.length;
+    }
+
+    const chapter = state.flatChapters.value.find(
+      (item) => item.uuid === chapterUuid,
+    );
+    if (!chapter?.path) return 1;
+
+    const markdownRaw = await fetchContent(chapter.path);
+    const { body: content } = fm(markdownRaw);
+    const parsedContent = splitMarkdown(content);
+
+    state.contentCache.value = {
+      ...state.contentCache.value,
+      [chapterUuid]: parsedContent,
+    };
+
+    return Math.max(parsedContent.length, 1);
+  };
+
   // 阅读进度相关操作
   const setChapter = useDebounceFn(async (uuid) => {
     state.currentChapterUuid.value = uuid;
@@ -351,6 +375,7 @@ export const useNovelActions = (state, getters) => {
     // 内容操作
     loadChapterContent,
     refreshContent,
+    getChapterPageCount,
 
     // 阅读进度操作
     setChapter,

@@ -14,7 +14,13 @@
       v-if="totalPages > 1"
       :current-page="currentChapterPage"
       :total-pages="totalPages"
+      :can-navigate-before="hasPrevious"
+      :can-navigate-after="hasNext"
+      before-boundary-label="上一章末页"
+      after-boundary-label="下一章首页"
       @change="handleAnyPage"
+      @navigate-before="onNavigateBefore"
+      @navigate-after="onNavigateAfter"
     />
 
     <!-- 下一章 -->
@@ -33,6 +39,7 @@
 import { storeToRefs } from "pinia";
 
 import { useChapters } from "@/composables/useChapters";
+import { useClickLimit } from "@/composables/useClickLimit";
 
 import { useNovelStore } from "@/stores/novelStore";
 
@@ -45,8 +52,6 @@ const { currentChapterPage, totalPages, isLoadingContent } =
 const { hasPrevious, hasNext, handlePrev, handleNext, handleAnyPage } =
   useChapters();
 
-import { useClickLimit } from "@/composables/useClickLimit";
-
 const { isDisabled, handleClick } = useClickLimit();
 
 // 点击事件
@@ -55,6 +60,14 @@ const onHandlePrev = () => {
 };
 
 const onHandleNext = () => {
+  handleClick(handleNext);
+};
+
+const onNavigateBefore = () => {
+  handleClick(handlePrev, { lastPage: true });
+};
+
+const onNavigateAfter = () => {
   handleClick(handleNext);
 };
 </script>

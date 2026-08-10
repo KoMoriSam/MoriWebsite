@@ -16,7 +16,7 @@
 
     <section :ref="scrollRef" class="min-w-0 w-full max-w-full overflow-x-clip">
       <header
-        v-if="currentChapter"
+        v-if="currentChapter && isFirstChapterPage"
         id="novel-reading-start"
         class="flex min-w-0 w-full max-w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between"
       >
@@ -73,6 +73,11 @@
           </li>
         </ul>
       </header>
+
+      <ChapterController
+        v-else-if="currentChapter && showTopChapterController"
+        id="novel-reading-start"
+      />
 
       <div v-if="currentChapter" class="min-w-0 w-full max-w-full">
         <Markdown
@@ -156,7 +161,10 @@ import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { getChapterContextTitle } from "@/utils/format-chapter-label";
-import { getChapterRoutePage } from "@/utils/normalize-chapter-route";
+import {
+  getChapterRoutePage,
+  normalizeChapterPage,
+} from "@/utils/normalize-chapter-route";
 
 const novelStore = useNovelStore();
 const {
@@ -165,6 +173,7 @@ const {
   currentChapterUuid,
   currentChapterPage,
   isLoadingContent,
+  totalPages,
 } = storeToRefs(novelStore);
 
 const router = useRouter();
@@ -187,6 +196,15 @@ import {
 
 const stopNovelPosTracker = ref(null);
 const trackedReaderContext = ref("");
+const isFirstChapterPage = computed(
+  () => normalizeChapterPage(currentChapterPage.value) === 1,
+);
+const showTopChapterController = computed(
+  () =>
+    totalPages.value > 1 &&
+    !isFirstChapterPage.value &&
+    !isLoadingContent.value,
+);
 
 const disposeNovelPosTracker = () => {
   if (typeof stopNovelPosTracker.value === "function") {
