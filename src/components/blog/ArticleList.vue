@@ -1,9 +1,5 @@
 <template>
-  <ContentPage
-    eyebrow="Posts &amp; Articles"
-    title="文章列表"
-    :show-header="!loading && articles.length > 0"
-  >
+  <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
     <template #actions>
       <span class="badge badge-dash badge-lg font-semibold">
         共 {{ articles.length }} 篇文章
@@ -15,10 +11,7 @@
       </client-only>
     </template>
 
-    <!-- 加载状态 -->
-    <Loading v-if="loading" :size="`my-32`" />
-
-    <template v-else-if="articles.length">
+    <template v-if="loading || articles.length">
       <!-- 检索区域 -->
       <section class="my-6" aria-label="文章检索">
         <div ref="searchBox" class="relative min-w-0">
@@ -264,10 +257,53 @@
         </p>
       </div>
 
-      <div id="article-results">
+      <div id="article-results" :aria-busy="loading">
+        <!-- 加载状态仅替换文章结果区域 -->
+        <section
+          v-if="loading"
+          class="min-w-0"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          aria-label="文章列表加载中"
+        >
+          <span class="sr-only">文章列表加载中</span>
+
+          <div
+            class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:gap-6"
+            aria-hidden="true"
+          >
+            <article
+              v-for="index in 4"
+              :key="index"
+              class="card card-border min-w-0 overflow-hidden bg-base-100"
+            >
+              <div class="skeleton h-48 w-full rounded-none sm:h-52"></div>
+
+              <div class="card-body min-w-0 gap-0 p-5 sm:p-6">
+                <!-- <div class="flex gap-2">
+                  <div class="skeleton h-5 w-16"></div>
+                  <div class="skeleton h-5 w-20"></div>
+                </div>
+
+                <div class="skeleton mt-4 h-7 w-4/5"></div> -->
+                <div class="skeleton mt-2 h-4 w-full"></div>
+                <div class="skeleton mt-2 h-4 w-11/12"></div>
+                <div class="skeleton mt-2 h-4 w-3/5"></div>
+
+                <div class="mt-6 flex items-center gap-3">
+                  <div class="skeleton h-4 w-20"></div>
+                  <div class="skeleton h-4 w-16"></div>
+                  <div class="skeleton ml-auto h-4 w-20"></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <!-- 文章列表 -->
         <div
-          v-if="filteredArticles.length"
+          v-else-if="filteredArticles.length"
           class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:gap-6"
         >
           <RouterLink
@@ -500,7 +536,7 @@
     </div>
   </ContentPage>
 
-  <FootBar v-if="!loading" />
+  <FootBar />
 </template>
 
 <script setup>
@@ -516,7 +552,6 @@ import {
 } from "vue";
 import { useDateFormat } from "@vueuse/core";
 
-import Loading from "@/components/base/Loading.vue";
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import {

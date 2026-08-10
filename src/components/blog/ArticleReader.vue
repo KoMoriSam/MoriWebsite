@@ -5,12 +5,9 @@
     toc
     :aside="Boolean(content && article?.id != null)"
   >
-    <!-- 加载状态 -->
-    <Loading v-if="loading" :size="`my-32`" />
-
     <!-- 文章内容 -->
     <article
-      v-else-if="content"
+      v-if="article && (loading || content)"
       :ref="scrollRef"
       class="min-w-0 w-full max-w-full"
     >
@@ -215,7 +212,33 @@
 
       <!-- Markdown 正文 -->
       <div class="mt-8 min-w-0">
+        <!-- 加载状态仅替换正文阅读区 -->
+        <section
+          v-if="loading"
+          class="min-w-0 w-full max-w-full"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          aria-label="文章正文加载中"
+        >
+          <span class="sr-only">文章正文加载中</span>
+
+          <div class="mx-auto max-w-4xl space-y-7" aria-hidden="true">
+            <div class="skeleton h-8 w-2/5"></div>
+
+            <div v-for="index in 4" :key="index" class="space-y-3">
+              <div class="skeleton h-5 w-full"></div>
+              <div class="skeleton h-5 w-11/12"></div>
+              <div
+                class="skeleton h-5"
+                :class="index % 2 === 0 ? 'w-3/4' : 'w-4/5'"
+              ></div>
+            </div>
+          </div>
+        </section>
+
         <Markdown
+          v-else
           :content="content"
           :is-loading="false"
           :header-data="headerData"
@@ -270,7 +293,7 @@
     </template>
   </Reader>
 
-  <FootBar v-if="!loading" />
+  <FootBar class="max-lg:hidden" />
 </template>
 
 <script setup>
@@ -290,7 +313,6 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import FootBar from "@/components/layout/FootBar.vue";
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Loading from "@/components/base/Loading.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 
 const props = defineProps({
