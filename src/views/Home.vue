@@ -8,38 +8,55 @@
   >
     <section class="hero-overlay"></section>
     <section class="hero-content text-center">
-      <figure class="max-w-md">
-        <div
-          v-show="!imageLoaded"
-          class="skeleton h-16 w-16 lg:h-24 lg:w-24 mx-auto rounded-lg z-20"
-        ></div>
+      <figure class="max-w-md select-none">
         <img
           v-fade-in
           v-show="imageLoaded"
-          src="/favicon.webp"
-          alt="myAvatar"
-          class="h-16 w-16 lg:h-24 lg:w-24 mx-auto object-cover z-10"
+          src="/assets/images/animates/idle.gif"
+          alt="idle"
+          draggable="false"
+          class="w-32 md:w-40 lg:w-48 mx-auto object-cover"
           @load="handleImageLoad"
         />
         <figcaption
-          class="flex flex-col text-neutral-content gap-2 lg:gap-4 mt-8 lg:mt-12"
+          class="flex flex-col text-neutral-content gap-2 md:gap-3 lg:gap-4"
         >
-          <h1 class="font-serif font-black text-2xl lg:text-4xl">KoMoriSam</h1>
-          <client-only>
-            <h2 class="font-kai text-lg lg:text-xl">
-              {{ greeting }}{{ description }}
-            </h2>
-          </client-only>
-          <p class="font-kai text-base lg:text-lg">
-            写点代码&#8197;·&#8197;搭点方块&#8197;·&#8197;折腾点服务器
+          <h1 class="font-serif font-black text-2xl md:text-3xl lg:text-4xl">
+            <span
+              tabindex="0"
+              class="inline-flex items-baseline outline-none"
+              @mouseenter="handleNameEnter"
+              @mouseleave="handleNameLeave"
+              @focus="handleNameFocus"
+              @blur="handleNameBlur"
+            >
+              远方之森&#8197;
+              <span
+                ref="nameRef"
+                class="inline-block max-w-0 overflow-hidden whitespace-nowrap -translate-x-2 opacity-0 font-normal text-base md:text-lg lg:text-xl animate-name-reveal transition-[max-width,margin-left,transform,opacity] duration-500 ease-out"
+              >
+                /&#8197;<em>Wishwa Luo</em>
+              </span>
+            </span>
+          </h1>
+          <h2
+            class="relative mx-auto w-[15ch] whitespace-nowrap font-mono text-lg md:text-xl lg:text-2xl [--type-color:color-mix(in_oklab,var(--color-neutral-content)_70%,transparent)] text-transparent bg-[linear-gradient(var(--type-color),var(--type-color))] bg-no-repeat bg-[length:var(--type-progress)_100%] bg-clip-text animate-typing after:absolute after:top-1.25 after:lg:top-0 after:left-[var(--type-progress)] after:h-[1em] after:lg:h-[1.25em] after:w-1 after:lg:w-2 after:bg-[var(--type-color)] after:animate-cursor-blink"
+          >
+            Explore Beyond.
+          </h2>
+          <p class="text-base md:text-lg lg:text-xl">
+            {{ greeting }}{{ description }}
           </p>
           <section
-            class="flex max-lg:flex-col gap-4 justify-center mt-8 lg:mt-12"
+            class="flex flex-col lg:flex-row gap-4 justify-center mt-6 md:mt-8 lg:mt-12"
           >
-            <router-link to="/blog" class="btn btn-primary">
+            <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
               <i class="ri-article-fill font-normal"></i>阅读博客
             </router-link>
-            <router-link to="/novel" class="btn btn-primary btn-soft group">
+            <router-link
+              to="/novel"
+              class="btn btn-primary btn-soft w-64 lg:w-fit group"
+            >
               <i
                 class="ri-eye-line group-hover:hidden group-active:hidden font-normal"
               ></i>
@@ -48,7 +65,10 @@
               ></i>
               视奸小说
             </router-link>
-            <router-link to="/tools" class="btn btn-primary btn-soft group">
+            <router-link
+              to="/tools"
+              class="btn btn-primary btn-soft w-64 lg:w-fit group"
+            >
               <i
                 class="ri-gamepad-line group-hover:hidden group-active:hidden font-normal"
               ></i>
@@ -336,22 +356,22 @@ onMounted(() => {
   const hour = new Date().getHours();
   if (hour < 6) {
     greeting.value = "凌晨好！";
-    description.value = "夜深了，早点休息吧！";
+    description.value = "夜深了，早点休息～";
   } else if (hour < 12) {
     greeting.value = "早上好！";
-    description.value = "记得吃早餐哦！";
+    description.value = "记得吃早餐～";
   } else if (hour < 14) {
     greeting.value = "中午好！";
-    description.value = "午餐时间到了，休息一下吧！";
+    description.value = "午餐时间到了，休息一下～";
   } else if (hour < 18) {
     greeting.value = "下午好！";
-    description.value = "工作辛苦了，喝杯茶放松一下！";
+    description.value = "工作辛苦了，喝杯茶放松一下～";
   } else if (hour < 21) {
     greeting.value = "晚上好！";
-    description.value = "今天过得怎么样？";
+    description.value = "今天过得怎么样?";
   } else {
     greeting.value = "深夜好！";
-    description.value = "记得照顾好自己！";
+    description.value = "记得照顾好自己～";
   }
 });
 
@@ -380,4 +400,104 @@ async function loadHero() {
 }
 
 onMounted(loadHero);
+
+const nameRef = ref(null);
+
+let isHovered = false;
+let isFocused = false;
+let resetTimer = null;
+
+function freezeCurrentFrame() {
+  const el = nameRef.value;
+  if (!el) return;
+
+  clearTimeout(resetTimer);
+
+  const style = getComputedStyle(el);
+
+  const current = {
+    maxWidth: style.maxWidth,
+    marginLeft: style.marginLeft,
+    transform: style.transform,
+    opacity: style.opacity,
+  };
+
+  // 先保存动画当前帧
+  el.style.maxWidth = current.maxWidth;
+  el.style.marginLeft = current.marginLeft;
+  el.style.transform = current.transform;
+  el.style.opacity = current.opacity;
+
+  // 再关闭 animation。
+  // 因为已经保存了当前值，所以这里不会瞬移。
+  el.style.animation = "none";
+
+  // 强制浏览器提交当前帧
+  void el.offsetWidth;
+}
+
+function revealName() {
+  const el = nameRef.value;
+  if (!el) return;
+
+  freezeCurrentFrame();
+
+  requestAnimationFrame(() => {
+    el.style.maxWidth = "12rem";
+    el.style.marginLeft = "0.5rem";
+    el.style.transform = "translateX(0)";
+    el.style.opacity = "0.75";
+  });
+}
+
+function collapseAndResume() {
+  const el = nameRef.value;
+  if (!el) return;
+
+  freezeCurrentFrame();
+
+  requestAnimationFrame(() => {
+    el.style.maxWidth = "0";
+    el.style.marginLeft = "0";
+    el.style.transform = "translateX(-0.5rem)";
+    el.style.opacity = "0";
+  });
+
+  // 收回完成后重新交还给自动循环动画
+  resetTimer = setTimeout(() => {
+    if (isHovered || isFocused) return;
+
+    el.style.maxWidth = "";
+    el.style.marginLeft = "";
+    el.style.transform = "";
+    el.style.opacity = "";
+    el.style.animation = "";
+  }, 500);
+}
+
+function handleNameEnter() {
+  isHovered = true;
+  revealName();
+}
+
+function handleNameLeave() {
+  isHovered = false;
+
+  if (!isFocused) {
+    collapseAndResume();
+  }
+}
+
+function handleNameFocus() {
+  isFocused = true;
+  revealName();
+}
+
+function handleNameBlur() {
+  isFocused = false;
+
+  if (!isHovered) {
+    collapseAndResume();
+  }
+}
 </script>

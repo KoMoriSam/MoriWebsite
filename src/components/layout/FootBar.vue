@@ -8,10 +8,10 @@
         alt="welcome!"
         class="h-6"
       />
-      <p>
-        MoriWebsite
+      <p class="leading-relaxed">
+        远方之森&#8197;|&#8197;个人博客与独立开发
         <br />
-        KoMoriSam © 2025–2026
+        © 2025–2026 KoMoriSam
       </p>
       <small class="text-xs text-base-content/50">
         <router-link class="link link-hover block my-2" to="/changelog">

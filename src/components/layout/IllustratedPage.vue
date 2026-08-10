@@ -3,15 +3,11 @@
     class="flex-1 flex flex-col md:flex-row mx-12 my-12 items-start md:items-center justify-center md:justify-evenly gap-12"
   >
     <figure class="relative m-0 p-0" @click="onHandleClick">
-      <div
-        v-show="!imageLoaded"
-        class="skeleton absolute inset-0 h-52 lg:w-52 lg:h-auto lg:basis-3xs rounded-lg z-10"
-      ></div>
       <img
         v-fade-in
         :src="imageSrc"
         :alt="imageAlt"
-        class="h-52 lg:w-52 lg:h-auto lg:basis-3xs object-cover rounded-lg z-0"
+        class="w-26 h-48 lg:w-48 lg:h-72 lg:basis-3xs object-cover rounded-lg z-0"
         @load="handleImageLoad"
       />
     </figure>
