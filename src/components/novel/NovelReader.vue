@@ -47,6 +47,7 @@
 
       <header
         v-if="currentChapter"
+        id="novel-reading-start"
         class="flex min-w-0 w-full max-w-full flex-col gap-3 lg:flex-row lg:items-end lg:justify-between"
       >
         <div class="group min-w-0 max-w-full flex-1">
@@ -172,9 +173,10 @@ import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
 import { useDateFormat } from "@vueuse/core";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useChapters } from "@/composables/useChapters";
 import { useGiscus } from "@/composables/useGiscus";
+import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useClickLimit } from "@/composables/useClickLimit";
 
@@ -189,6 +191,7 @@ const {
 } = storeToRefs(novelStore);
 
 const router = useRouter();
+const route = useRoute();
 
 const readerStore = useReaderStore();
 const { styleConfigs } = storeToRefs(readerStore);
@@ -201,7 +204,14 @@ const components = {
   FormatSetting,
 };
 
-import { computed, ref, watch } from "vue";
+import {
+  computed,
+  onActivated,
+  onBeforeUnmount,
+  onDeactivated,
+  ref,
+  watch,
+} from "vue";
 import { useReaderSettingsStorage } from "@/utils/storage/new-reader-settings";
 const { getSetting, setSetting } = useReaderSettingsStorage();
 const sideCurrentComponent = ref(
@@ -219,6 +229,86 @@ watch(
 const handleSideComponentUpdate = (component) => {
   setSetting("NOVEL_SIDE_CURRENT_COMPONENT", component);
 };
+
+const stopNovelPosTracker = ref(null);
+const trackedReaderContext = ref("");
+
+const disposeNovelPosTracker = () => {
+  if (typeof stopNovelPosTracker.value === "function") {
+    stopNovelPosTracker.value();
+  }
+
+  stopNovelPosTracker.value = null;
+  trackedReaderContext.value = "";
+};
+
+const getRoutePage = () => {
+  const value = Number(route.query.p ?? route.query.page);
+  return Number.isFinite(value) && value > 0 ? value : 1;
+};
+
+const setupNovelPosTracker = () => {
+  if (typeof window === "undefined") return;
+
+  const chapterId = String(currentChapterUuid.value || "");
+  const page = Number(currentChapterPage.value) || 1;
+  const permalink = novelStore.getPermalinkByUuid(chapterId);
+  const routeMatchesContent = Boolean(
+    route.name === "novel-reader" &&
+      permalink &&
+      route.params.volumeSlug === permalink.volumeSlug &&
+      route.params.chapterSlug === permalink.chapterSlug &&
+      getRoutePage() === page,
+  );
+  const shouldTrack =
+    routeMatchesContent &&
+    !isLoadingContent.value &&
+    Boolean(currentPageContent.value) &&
+    Boolean(chapterId);
+
+  if (!shouldTrack) {
+    disposeNovelPosTracker();
+    return;
+  }
+
+  const readerContext = `${chapterId}:${page}`;
+  if (
+    trackedReaderContext.value === readerContext &&
+    stopNovelPosTracker.value
+  ) {
+    return;
+  }
+
+  disposeNovelPosTracker();
+  stopNovelPosTracker.value = usePosTracker(
+    router,
+    () => novelStore.updateTitle(),
+    {
+      getContextId: () => String(currentChapterUuid.value || ""),
+      getPage: () => Number(currentChapterPage.value) || 1,
+      isActive: () => router.currentRoute.value.name === "novel-reader",
+      posSelector:
+        "#markdown-content h1[id], #markdown-content h2[id], #markdown-content h3[id], #markdown-content h4[id], #markdown-content h5[id], #markdown-content h6[id], #markdown-content p[id]",
+    },
+  );
+  trackedReaderContext.value = readerContext;
+};
+
+watch(
+  () => [
+    route.fullPath,
+    currentChapterUuid.value,
+    currentChapterPage.value,
+    isLoadingContent.value,
+    currentPageContent.value,
+  ],
+  setupNovelPosTracker,
+  { immediate: true, flush: "post" },
+);
+
+onActivated(setupNovelPosTracker);
+onDeactivated(disposeNovelPosTracker);
+onBeforeUnmount(disposeNovelPosTracker);
 
 const { currentMapping, commentToggle } = useGiscus();
 

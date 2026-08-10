@@ -1,8 +1,7 @@
-import { computed } from "vue";
+import { computed, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
-import { useScrollTo } from "@/composables/useScrollTo";
 import { useToast } from "@/composables/useToast";
 import { useReadingStateStorage } from "@/utils/storage/new-reading-state";
 
@@ -11,10 +10,8 @@ import { useNovelStore } from "@/stores/novelStore";
 export function useChapters() {
   const toast = useToast({ position: "center", closable: false });
 
-  const { scrollToTop } = useScrollTo();
-
   const novelStore = useNovelStore();
-  const { getState } = useReadingStateStorage();
+  const { getState, setState } = useReadingStateStorage();
   const {
     currentChapter,
     currentChapterUuid,
@@ -23,6 +20,7 @@ export function useChapters() {
     latestChapter,
     flatChapters,
     readChapters,
+    isLoadingContent,
   } = storeToRefs(novelStore);
 
   const route = useRoute();
@@ -39,6 +37,59 @@ export function useChapters() {
       : 1;
   };
 
+  const waitForChapterRender = (uuid, page) => {
+    const isReady = () =>
+      currentChapterUuid.value === uuid &&
+      currentChapterPage.value === page &&
+      !isLoadingContent.value;
+
+    if (isReady()) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeoutId);
+        stop();
+        resolve();
+      };
+      const stop = watch(isReady, (ready) => {
+        if (ready) finish();
+      });
+      const timeoutId = window.setTimeout(finish, 10000);
+    });
+  };
+
+  const scrollToReadingStart = async (uuid, page) => {
+    if (import.meta.env.SSR || typeof window === "undefined") return;
+
+    await waitForChapterRender(uuid, page);
+    await nextTick();
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+    });
+
+    if (
+      currentChapterUuid.value !== uuid ||
+      currentChapterPage.value !== page ||
+      route.name !== "novel-reader"
+    ) {
+      return;
+    }
+
+    const target = document.getElementById("novel-reading-start");
+    if (!target) return;
+
+    const targetTop = Math.max(
+      0,
+      window.scrollY + target.getBoundingClientRect().top - 96,
+    );
+    window.scrollTo({ top: targetTop, behavior: "auto" });
+  };
+
   const handleChapter = (uuid, options = {}) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
     if (!permalink) return;
@@ -48,14 +99,20 @@ export function useChapters() {
         ? Number(options.page)
         : 1;
     const targetHash = String(options.hash || "").trim();
-    const shouldScrollTop = options.scrollTop !== false;
     const query = {};
+
+    // 主动切换章节时从新内容顶部开始，避免位置追踪器恢复上一章锚点。
+    // “继续阅读”等显式 hash 跳转保留已记录的位置。
+    if (!targetHash) {
+      setState("READ_POS", "");
+    }
+
     if (permalink.routeCode) {
       query.c = permalink.routeCode;
     }
     query.p = targetPage;
 
-    router.push({
+    const navigation = router.push({
       name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
@@ -64,9 +121,12 @@ export function useChapters() {
       query,
       hash: targetHash,
     });
-    if (shouldScrollTop) {
-      scrollToTop(80);
+
+    if (!targetHash) {
+      void navigation.then(() => scrollToReadingStart(uuid, targetPage));
     }
+
+    return navigation;
   };
 
   const handleFirstChapter = () => {
@@ -112,7 +172,6 @@ export function useChapters() {
       handleChapter(targetUuid, {
         page: resumePage,
         hash: resumeHash,
-        scrollTop: false,
       });
       return;
     }
@@ -159,7 +218,10 @@ export function useChapters() {
     }
     query.p = index;
 
-    router.push({
+    // 翻页后从该页顶部开始，并阻止旧页锚点被恢复。
+    setState("READ_POS", "");
+
+    const navigation = router.push({
       name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
@@ -167,7 +229,11 @@ export function useChapters() {
       },
       query,
     });
-    scrollToTop(80);
+
+    void navigation.then(() =>
+      scrollToReadingStart(currentChapter.value.uuid, index),
+    );
+    return navigation;
   };
 
   const isRecent = (uuid, dateStr) => {

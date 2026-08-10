@@ -1,4 +1,4 @@
-import { watch, onMounted, onActivated, onBeforeUnmount } from "vue";
+import { watch, onMounted, onActivated } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
@@ -6,7 +6,6 @@ import { useNovelStore } from "@/stores/novelStore";
 import ssgData from "@/router/ssg-data";
 
 import { useToast } from "@/composables/useToast";
-import { usePosTracker } from "@/composables/usePosTracker";
 
 const normalizePageQuery = (page) => {
   const n = Number(page);
@@ -35,7 +34,6 @@ export function useChapterSetup() {
 
   const { currentChapter, currentChapterUuid, currentChapterPage } =
     storeToRefs(novelStore);
-  let disposePosTracker = null;
 
   const replaceToCanonical = (uuid, page, hash = route.hash) => {
     const permalink = novelStore.getPermalinkByUuid(uuid);
@@ -163,18 +161,6 @@ export function useChapterSetup() {
       await novelStore.setChapters();
       await syncChapterFromRoute({ withFallback: true });
       novelStore.updateTitle();
-      if (typeof disposePosTracker === "function") {
-        disposePosTracker();
-      }
-
-      disposePosTracker = usePosTracker(
-        router,
-        () => novelStore.updateTitle(),
-        {
-          isActive: () =>
-            String(router.currentRoute.value.path || "").startsWith("/novel"),
-        },
-      );
     } catch (error) {
       console.error("Error during initialization:", error);
     }
@@ -211,13 +197,6 @@ export function useChapterSetup() {
 
   onMounted(() => {
     initialize();
-  });
-
-  onBeforeUnmount(() => {
-    if (typeof disposePosTracker === "function") {
-      disposePosTracker();
-      disposePosTracker = null;
-    }
   });
 
   return {
