@@ -262,7 +262,7 @@ const loadNovelRecords = async () => {
       const date = modifiedDate || uploadDate;
       const metadata = [
         uploadDate
-          ? { key: "uploadDate", label: "上传时间", value: uploadDate, icon: "ri-upload-2-line" }
+          ? { key: "uploadDate", label: "发布时间", value: uploadDate, icon: "ri-upload-2-line" }
           : null,
         modifiedDate
           ? { key: "modifiedDate", label: "修改时间", value: modifiedDate, icon: "ri-file-edit-line" }

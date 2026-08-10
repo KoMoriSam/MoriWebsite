@@ -51,7 +51,7 @@ const FRONTMATTER_LABELS = {
   modified: "修改时间",
   modifiedDate: "修改时间",
   status: "状态",
-  uploadDate: "上传时间",
+  uploadDate: "发布时间",
 };
 
 const FRONTMATTER_ICONS = {
@@ -651,10 +651,7 @@ const fetchLicenseEntries = async () => {
   licenseData.supplementalLicenses.forEach((license, index) => {
     entries.push(
       createLicenseSearchEntry({
-        url: `/licenses#${createLicenseAnchor(
-          "supplemental",
-          license.name,
-        )}`,
+        url: `/licenses#${createLicenseAnchor("supplemental", license.name)}`,
         title: license.name,
         summary: "字体、图标或其他第三方内容的补充许可证文件。",
         content: license.text,
