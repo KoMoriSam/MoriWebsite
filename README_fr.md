@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.17.0</strong>
+  Version actuelle : <strong>1.18.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,13 +56,13 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.17.0
+## Points clés de la version 1.18.0
 
-- renommage officiel du site en « 远方之森 » et unification des titres, descriptions et métadonnées SEO
-- ajout de la police JetBrains Mono pour améliorer le rendu des polices à chasse fixe, comme les blocs de code
-- introduction d'effets d'animation et d'animations pour enrichir les interactions
-- amélioration de l'espacement de l'accueil, des barres latérales et de la liste des chapitres
-- passage des polices de ponctuation Kaiming à des références CSS en ligne, suppression des polices locales et de la dépendance NProgress abandonnée
+- refonte du lecteur et des composants du sommaire (TOC) ; le sommaire suit désormais automatiquement le titre courant
+- refonte de la lecture paginée mobile et des contrôles de lecture pour une meilleure expérience tactile
+- navigation aux limites chapitre précédent/suivant dans le paginateur et navigation article précédent/suivant dans le blog
+- amélioration de la navigation entre chapitres, de l'affichage de la progression et du positionnement du défilement du paginateur
+- affinage de la barre de navigation inférieure du lecteur, des états de chargement et de la typographie des paragraphes
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.17.0</strong>
+  Current version: <strong>1.18.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,13 +56,13 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.17.0 Highlights
+## Version 1.18.0 Highlights
 
-- officially renamed the site to "远方之森" and unified page titles, descriptions, and SEO metadata
-- added the JetBrains Mono font for better monospaced rendering, such as code blocks
-- introduced animation effects and animated assets to enrich interactions
-- refined homepage spacing, sidebar, and chapter-list layouts
-- switched Kaiming punctuation fonts to online CSS references and removed local font files plus the abandoned NProgress dependency
+- refactored the reader and table of contents (TOC) components; the TOC now follows the current heading automatically
+- reworked mobile paginated reading and reading controls for a better touch experience
+- added first/next chapter boundary navigation to the pager and previous/next article navigation to blog posts
+- improved chapter navigation, reading progress display, and pager scroll positioning
+- refined the reader footer bar, loading states, and paragraph typography
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
