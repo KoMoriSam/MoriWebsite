@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.18.0</strong>
+  Current version: <strong>1.19.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,13 +56,13 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.18.0 Highlights
+## Version 1.19.0 Highlights
 
-- refactored the reader and table of contents (TOC) components; the TOC now follows the current heading automatically
-- reworked mobile paginated reading and reading controls for a better touch experience
-- added first/next chapter boundary navigation to the pager and previous/next article navigation to blog posts
-- improved chapter navigation, reading progress display, and pager scroll positioning
-- refined the reader footer bar, loading states, and paragraph typography
+- reworked mobile reading controls with volume-key/scroll paging and customizable tap-zone grids
+- added reading layout presets and multiple color themes with save/apply/delete/reset
+- added a long-press text context menu with copy, full-text search, and paragraph comments
+- refactored the mobile paged/scroll reader and extracted pagination measurement, footnote layout, and reading-position modules
+- added a Cloudflare API Worker for paragraph-comment counts and random homepage background endpoints
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.18.0</strong>
+  Version actuelle : <strong>1.19.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,13 +56,13 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.18.0
+## Points clés de la version 1.19.0
 
-- refonte du lecteur et des composants du sommaire (TOC) ; le sommaire suit désormais automatiquement le titre courant
-- refonte de la lecture paginée mobile et des contrôles de lecture pour une meilleure expérience tactile
-- navigation aux limites chapitre précédent/suivant dans le paginateur et navigation article précédent/suivant dans le blog
-- amélioration de la navigation entre chapitres, de l'affichage de la progression et du positionnement du défilement du paginateur
-- affinage de la barre de navigation inférieure du lecteur, des états de chargement et de la typographie des paragraphes
+- refonte des contrôles de lecture mobiles avec pagination par touches de volume/molette et grilles de zones tactiles personnalisables
+- ajout de préréglages de mise en page et de plusieurs thèmes de couleurs avec sauvegarde/application/suppression/réinitialisation
+- ajout d'un menu contextuel de texte par appui long avec copie, recherche plein texte et commentaires de paragraphe
+- refonte du lecteur paginé/à défilement mobile et extraction des modules de mesure de pagination, de mise en page des notes et de position de lecture
+- ajout d'un Worker Cloudflare API pour le comptage des commentaires de paragraphe et les endpoints d'arrière-plan aléatoire
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
