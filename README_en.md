@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.19.0</strong>
+  Current version: <strong>1.19.1</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,13 +56,13 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.19.0 Highlights
+## Version 1.19.1 Highlights
 
-- reworked mobile reading controls with volume-key/scroll paging and customizable tap-zone grids
-- added reading layout presets and multiple color themes with save/apply/delete/reset
-- added a long-press text context menu with copy, full-text search, and paragraph comments
-- refactored the mobile paged/scroll reader and extracted pagination measurement, footnote layout, and reading-position modules
-- added a Cloudflare API Worker for paragraph-comment counts and random homepage background endpoints
+- continued decoupling reader components and unified cross-device typography and Markdown rendering
+- migrated callouts, chat, moments, and code blocks to mountable Vue Markdown components
+- improved reading-position tracking with viewport-based saving and precise restoration, retaining position across reader-mode switches
+- unified modal dismissal and browser back-history handling to avoid route and scroll jumps when closing dialogs
+- refined mobile TOC gestures, reading progress bar, chapter controls, and article paging interactions
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 

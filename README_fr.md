@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.19.0</strong>
+  Version actuelle : <strong>1.19.1</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,13 +56,13 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.19.0
+## Points clés de la version 1.19.1
 
-- refonte des contrôles de lecture mobiles avec pagination par touches de volume/molette et grilles de zones tactiles personnalisables
-- ajout de préréglages de mise en page et de plusieurs thèmes de couleurs avec sauvegarde/application/suppression/réinitialisation
-- ajout d'un menu contextuel de texte par appui long avec copie, recherche plein texte et commentaires de paragraphe
-- refonte du lecteur paginé/à défilement mobile et extraction des modules de mesure de pagination, de mise en page des notes et de position de lecture
-- ajout d'un Worker Cloudflare API pour le comptage des commentaires de paragraphe et les endpoints d'arrière-plan aléatoire
+- poursuite du découplage des composants du lecteur et unification de la typographie et du rendu Markdown entre appareils
+- migration des encadrés, chats, moments et blocs de code vers des composants Vue Markdown montables
+- amélioration du suivi de position de lecture avec sauvegarde par zone d'affichage et restauration précise, maintien de la position lors des changements de mode de lecture
+- unification de la fermeture des modales et de la gestion de l'historique de retour du navigateur afin d'éviter les sauts de route et de défilement à la fermeture des boîtes de dialogue
+- affinage des gestes du sommaire mobile, de la barre de progression, des contrôles de chapitre et de la pagination des articles
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
