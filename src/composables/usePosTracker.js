@@ -7,6 +7,28 @@ const FULL_PARAGRAPH_ID_RE =
 const LEGACY_PARAGRAPH_ID_RE =
   /^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})-\d+-(\d+)$/i;
 const DEFAULT_SCROLL_OFFSET_REM = 3;
+const POSITION_TRACK_THROTTLE_MS = 60;
+const POSITION_SETTLE_DELAY_MS = 100;
+const activePositionTrackers = new Set();
+
+export function captureTrackedPosition() {
+  for (const tracker of activePositionTrackers) {
+    const snapshot = tracker.capture();
+    if (snapshot) return snapshot;
+  }
+
+  return null;
+}
+
+export function restoreTrackedPosition(options = {}) {
+  let restored = false;
+
+  activePositionTrackers.forEach((tracker) => {
+    restored = tracker.restore(options) || restored;
+  });
+
+  return restored;
+}
 
 export function usePosTracker(router, onRestoreTitle, options = {}) {
   // 位置追踪依赖 window、document、requestAnimationFrame，只能在浏览器运行。
@@ -23,6 +45,8 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   const { getState, setState } = useReadingStateStorage();
   const readPosKey = options.readPosKey || "READ_POS";
   const readContextKey = options.readContextKey || "READ_CH_ID";
+  const readViewportKey =
+    options.readViewportKey || `${readPosKey}_VIEWPORT`;
   const getContextId =
     typeof options.getContextId === "function"
       ? options.getContextId
@@ -39,6 +63,11 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     set: (value) => setState(readContextKey, value),
   });
   let skippedScrollUpdates = 0;
+  let skippedScrollResetFrame = 0;
+  let skippedHashRestores = 0;
+  let skippedRouteRestores = 0;
+  let settledScrollTimer = 0;
+  const preciseRestoreTimers = new Set();
   const stopListeners = [];
 
   function getScrollOffsetPx() {
@@ -60,6 +89,22 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   function suppressNextScrollUpdates(count = 6) {
     skippedScrollUpdates = Math.max(skippedScrollUpdates, count);
+    window.cancelAnimationFrame(skippedScrollResetFrame);
+    skippedScrollResetFrame = window.requestAnimationFrame(() => {
+      skippedScrollUpdates = 0;
+    });
+  }
+
+  function getViewportBreakpoint() {
+    const width = Math.max(
+      Number(window.innerWidth) || 0,
+      Number(document.documentElement.clientWidth) || 0,
+    );
+
+    if (width >= 1280) return "xl";
+    if (width >= 1024) return "lg";
+    if (width >= 768) return "md";
+    return "sm";
   }
 
   function shouldSkipCurrentScrollUpdate() {
@@ -258,6 +303,14 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return "";
     }
 
+    const breakpointPosition = getStoredViewportPosition();
+    if (
+      breakpointPosition?.anchorToken &&
+      isStoredViewportContextActive(breakpointPosition)
+    ) {
+      return normalizeLegacyParagraphId(breakpointPosition.anchorToken);
+    }
+
     const routeHashToken = normalizeAnchorToken(router.currentRoute.value.hash);
     if (routeHashToken) {
       return routeHashToken;
@@ -282,6 +335,95 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     return getFullId(storedToken) || storedToken;
   }
 
+  function getStoredViewportPosition() {
+    const storedViewport = getState(readViewportKey, null);
+    if (!storedViewport || typeof storedViewport !== "object") return null;
+
+    // 兼容旧版单值结构；下一次写入时会迁移为按宽度分组的结构。
+    if (storedViewport.anchorToken) return storedViewport;
+
+    return storedViewport[getViewportBreakpoint()] ?? null;
+  }
+
+  function isStoredViewportContextActive(storedViewport) {
+    const storedContext = normalizeAnchorToken(storedViewport?.contextId);
+    const activeContext = getCurrentContextId();
+
+    if (storedContext && activeContext) {
+      return storedContext === activeContext;
+    }
+
+    // 旧数据没有上下文，只在锚点仍与当前阅读位置一致时使用。
+    return (
+      !storedContext &&
+      normalizeLegacyParagraphId(storedViewport?.anchorToken) ===
+        normalizeLegacyParagraphId(readPos.value)
+    );
+  }
+
+  function getStoredViewportTop(anchorToken) {
+    const storedViewport = getStoredViewportPosition();
+    const storedAnchor = normalizeLegacyParagraphId(
+      storedViewport?.anchorToken,
+    );
+    const resolvedAnchor = normalizeLegacyParagraphId(anchorToken);
+    const viewportTop = Number(storedViewport?.viewportTop);
+
+    if (
+      !storedAnchor ||
+      !isStoredViewportContextActive(storedViewport) ||
+      storedAnchor !== resolvedAnchor ||
+      !Number.isFinite(viewportTop)
+    ) {
+      return null;
+    }
+
+    return viewportTop;
+  }
+
+  function persistViewportPosition(anchorToken, element) {
+    const persistedAnchor = getPersistedPosToken(anchorToken);
+    if (!persistedAnchor || !element) return;
+
+    const viewportTop = element.getBoundingClientRect().top;
+    const storedViewport = getState(readViewportKey, null);
+    const breakpoint = getViewportBreakpoint();
+    const isLegacyViewport = Boolean(storedViewport?.anchorToken);
+    const previous = isLegacyViewport
+      ? storedViewport
+      : storedViewport?.[breakpoint];
+    if (
+      normalizeLegacyParagraphId(previous?.anchorToken) === persistedAnchor &&
+      Math.abs(Number(previous?.viewportTop) - viewportTop) < 0.5
+    ) {
+      return;
+    }
+
+    const viewportPositions =
+      storedViewport && !isLegacyViewport ? { ...storedViewport } : {};
+    viewportPositions[breakpoint] = {
+      anchorToken: persistedAnchor,
+      contextId: getCurrentContextId(),
+      viewportTop,
+    };
+    setState(readViewportKey, viewportPositions);
+  }
+
+  function clearCurrentViewportPosition() {
+    const storedViewport = getState(readViewportKey, null);
+    if (!storedViewport || storedViewport.anchorToken) {
+      setState(readViewportKey, null);
+      return;
+    }
+
+    const viewportPositions = { ...storedViewport };
+    delete viewportPositions[getViewportBreakpoint()];
+    setState(
+      readViewportKey,
+      Object.keys(viewportPositions).length ? viewportPositions : null,
+    );
+  }
+
   function findAnchorElement(anchorToken) {
     const candidates = getScrollCandidates(anchorToken);
     for (const candidate of candidates) {
@@ -292,6 +434,64 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     }
 
     return { element: null, resolvedId: "" };
+  }
+
+  function cancelPreciseRestore() {
+    preciseRestoreTimers.forEach((timer) => window.clearTimeout(timer));
+    preciseRestoreTimers.clear();
+  }
+
+  function stabilizePreciseRestore(anchorToken, viewportTop) {
+    if (!Number.isFinite(Number(viewportTop))) return;
+
+    cancelPreciseRestore();
+    [80, 240, 600].forEach((delay) => {
+      const timer = window.setTimeout(() => {
+        preciseRestoreTimers.delete(timer);
+        const result = findAnchorElement(anchorToken);
+        if (result.element) {
+          performScroll(result.resolvedId, result.element, viewportTop);
+        }
+      }, delay);
+      preciseRestoreTimers.add(timer);
+    });
+  }
+
+  function capturePosition() {
+    if (!isTrackingActive()) return null;
+
+    const anchors = Array.from(document.querySelectorAll(posSelector));
+    const scrollSnapshot = {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    };
+    if (anchors.length === 0) return scrollSnapshot;
+
+    const viewportTarget = Math.min(
+      Math.max(getScrollOffsetPx(), 0),
+      window.innerHeight,
+    );
+    let anchor = anchors[0];
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    anchors.forEach((candidate) => {
+      const distance = Math.abs(
+        candidate.getBoundingClientRect().top - viewportTarget,
+      );
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        anchor = candidate;
+      }
+    });
+
+    const anchorToken = getPersistedPosToken(anchor.id);
+    if (!anchorToken) return scrollSnapshot;
+
+    return {
+      ...scrollSnapshot,
+      anchorToken,
+      viewportTop: anchor.getBoundingClientRect().top,
+    };
   }
 
   function syncRouteHash(anchorToken, suppressCount = 0) {
@@ -324,14 +524,15 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     window.history.replaceState(window.history.state, "", nextUrl);
   }
 
-  function scrollToAnchorWithRetry(anchorToken) {
+  function scrollToAnchorWithRetry(anchorToken, viewportTop = null) {
     const token = normalizeAnchorToken(anchorToken);
-    if (!token) return;
+    if (!token) return false;
 
     const firstTry = findAnchorElement(token);
     if (firstTry.element) {
-      performScroll(firstTry.resolvedId, firstTry.element);
-      return;
+      performScroll(firstTry.resolvedId, firstTry.element, viewportTop);
+      stabilizePreciseRestore(token, viewportTop);
+      return true;
     }
 
     let retries = 0;
@@ -339,7 +540,8 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     const tryScroll = () => {
       const result = findAnchorElement(token);
       if (result.element) {
-        performScroll(result.resolvedId, result.element);
+        performScroll(result.resolvedId, result.element, viewportTop);
+        stabilizePreciseRestore(token, viewportTop);
       } else if (retries < maxRetries) {
         retries++;
         setTimeout(tryScroll, Math.min(300 + retries * 200, 1000));
@@ -349,22 +551,34 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     };
 
     setTimeout(tryScroll, 200);
+    return true;
   }
 
   // 优先跳转到 URL hash，其次回退到 READ_POS
-  function scrollToLastReadPos() {
+  function scrollToLastReadPos({
+    anchorToken = "",
+    viewportTop = null,
+  } = {}) {
     if (!isTrackingActive()) {
-      return;
+      return false;
     }
 
-    const anchorToken = resolveInitialAnchorToken();
-    if (!anchorToken) return;
+    const resolvedAnchorToken =
+      normalizeAnchorToken(anchorToken) || resolveInitialAnchorToken();
+    if (!resolvedAnchorToken) return false;
 
-    scrollToAnchorWithRetry(anchorToken);
+    const resolvedViewportTop =
+      viewportTop == null
+        ? getStoredViewportTop(resolvedAnchorToken)
+        : viewportTop;
+    return scrollToAnchorWithRetry(
+      resolvedAnchorToken,
+      resolvedViewportTop,
+    );
   }
 
   // 执行滚动操作
-  function performScroll(anchorToken, el) {
+  function performScroll(anchorToken, el, viewportTop = null) {
     if (!isTrackingActive()) {
       return;
     }
@@ -375,16 +589,70 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     syncReadContext();
     readPos.value = persistedPosToken;
     syncRouteHash(shortToken, 2);
+    const resolvedViewportTop = Number(viewportTop);
     const targetTop = Math.max(
       0,
-      window.scrollY + el.getBoundingClientRect().top - getScrollOffsetPx(),
+      window.scrollY +
+        el.getBoundingClientRect().top -
+        (Number.isFinite(resolvedViewportTop)
+          ? resolvedViewportTop
+          : getScrollOffsetPx()),
     );
-    window.scrollTo({ top: targetTop, behavior: "smooth" });
+    const scrollingElement = document.scrollingElement;
+    if (scrollingElement) scrollingElement.scrollTop = targetTop;
+    else window.scrollTo(0, targetTop);
+    persistViewportPosition(persistedPosToken, el);
     setTimeout(() => onRestoreTitle?.(), 1000);
   }
 
-  const updateCurrentPos = useThrottleFn(() => {
-    if (!isTrackingActive() || shouldSkipCurrentScrollUpdate()) return;
+  const restorePosition = ({
+    anchorToken = "",
+    snapshot = null,
+    suppressNavigationRestore = false,
+  } = {}) => {
+    if (suppressNavigationRestore) {
+      skippedHashRestores += 1;
+      skippedRouteRestores += 1;
+    }
+
+    const snapshotScrollX = Number(snapshot?.scrollX);
+    const snapshotScrollY = Number(snapshot?.scrollY);
+    if (
+      Number.isFinite(snapshotScrollX) &&
+      Number.isFinite(snapshotScrollY)
+    ) {
+      suppressNextScrollUpdates(8);
+      const scrollingElement = document.scrollingElement;
+      if (scrollingElement) {
+        scrollingElement.scrollLeft = snapshotScrollX;
+        scrollingElement.scrollTop = snapshotScrollY;
+      } else {
+        window.scrollTo(snapshotScrollX, snapshotScrollY);
+      }
+      return true;
+    }
+
+    return scrollToLastReadPos({
+      anchorToken: snapshot?.anchorToken || anchorToken,
+      viewportTop: snapshot?.viewportTop,
+    });
+  };
+
+  const positionTracker = {
+    capture: capturePosition,
+    restore: restorePosition,
+  };
+  activePositionTrackers.add(positionTracker);
+
+  const recordCurrentPos = (ignoreSuppression = false) => {
+    if (
+      !isTrackingActive() ||
+      globalThis.__moriModalFallbackActive ||
+      globalThis.__moriModalFallbackRestoring ||
+      (!ignoreSuppression && shouldSkipCurrentScrollUpdate())
+    ) {
+      return;
+    }
 
     const poss = Array.from(document.querySelectorAll(posSelector));
     if (poss.length === 0) return;
@@ -411,6 +679,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
               // 滚动时同步 hash，保持位置可分享。
               syncRouteHash(shortId, 0);
             }
+            persistViewportPosition(persistedPosToken, el);
           }
           break;
         }
@@ -424,15 +693,51 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         )
       ) {
         readPos.value = "";
+        clearCurrentViewportPosition();
         syncRouteHash("", 0);
       }
     }
-  }, 120);
+  };
+  const updateCurrentPos = useThrottleFn(
+    () => recordCurrentPos(),
+    POSITION_TRACK_THROTTLE_MS,
+  );
+  const handleScroll = () => {
+    updateCurrentPos();
+    window.clearTimeout(settledScrollTimer);
+    settledScrollTimer = window.setTimeout(() => {
+      if (
+        globalThis.__moriModalFallbackActive ||
+        globalThis.__moriModalFallbackRestoring
+      ) {
+        return;
+      }
+      recordCurrentPos(true);
+    }, POSITION_SETTLE_DELAY_MS);
+  };
+  const handleResize = () => {
+    window.clearTimeout(settledScrollTimer);
+    settledScrollTimer = window.setTimeout(() => {
+      recordCurrentPos(true);
+    }, POSITION_SETTLE_DELAY_MS);
+  };
 
   // 监听 hash 变化（支持任意 #id）
   trackListener(
     useEventListener(window, "hashchange", () => {
       if (!isTrackingActive()) {
+        return;
+      }
+
+      if (
+        globalThis.__moriModalFallbackActive ||
+        globalThis.__moriModalFallbackRestoring
+      ) {
+        return;
+      }
+
+      if (skippedHashRestores > 0) {
+        skippedHashRestores -= 1;
         return;
       }
 
@@ -478,6 +783,18 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         return;
       }
 
+      if (
+        globalThis.__moriModalFallbackActive ||
+        globalThis.__moriModalFallbackRestoring
+      ) {
+        return;
+      }
+
+      if (skippedRouteRestores > 0) {
+        skippedRouteRestores -= 1;
+        return;
+      }
+
       const hashChanged = String(to.hash || "") !== String(from.hash || "");
       const pathChanged = String(to.path || "") !== String(from.path || "");
 
@@ -492,9 +809,20 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   );
 
   scrollToLastReadPos();
-  trackListener(useEventListener(window, "scroll", updateCurrentPos));
+  trackListener(useEventListener(window, "scroll", handleScroll));
+  trackListener(useEventListener(window, "resize", handleResize));
+  trackListener(
+    useEventListener(window, "pagehide", () => recordCurrentPos(true)),
+  );
+  ["wheel", "touchstart", "pointerdown", "keydown"].forEach((eventName) => {
+    trackListener(useEventListener(window, eventName, cancelPreciseRestore));
+  });
 
   return () => {
+    activePositionTrackers.delete(positionTracker);
+    cancelPreciseRestore();
+    window.clearTimeout(settledScrollTimer);
+    window.cancelAnimationFrame(skippedScrollResetFrame);
     stopListeners.forEach((stop) => {
       try {
         stop();

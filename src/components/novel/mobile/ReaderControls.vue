@@ -147,7 +147,7 @@
     <dialog
       ref="searchDialogRef"
       class="modal modal-bottom z-[90]"
-      @cancel.prevent="requestCloseDialog"
+      @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[72dvh] flex-col rounded-t-box p-0">
         <DialogHeader title="书内搜索" @back="requestCloseDialog" />
@@ -168,7 +168,7 @@
     <dialog
       ref="tocDialogRef"
       class="modal modal-bottom z-[90]"
-      @cancel.prevent="requestCloseDialog"
+      @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[76dvh] flex-col rounded-t-box p-0">
         <DialogHeader title="章节目录" @back="requestCloseDialog" />
@@ -191,7 +191,7 @@
     <dialog
       ref="formatDialogRef"
       class="modal modal-bottom z-[90]"
-      @cancel.prevent="requestCloseDialog"
+      @cancel.prevent="requestPlatformCloseDialog"
     >
       <div
         class="modal-box flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none p-0 sm:h-[min(90dvh,52rem)] sm:max-h-[min(90dvh,52rem)] sm:rounded-box"
@@ -213,7 +213,7 @@
             </button>
           </template>
         </DialogHeader>
-        <FormatSetting />
+        <FormatSetting mobile :show-header="false" />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click.prevent="requestCloseDialog">返回阅读控制</button>
@@ -223,7 +223,7 @@
     <dialog
       ref="moreDialogRef"
       class="modal modal-bottom z-[90]"
-      @cancel.prevent="requestCloseDialog"
+      @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box max-h-[78dvh] overflow-y-auto rounded-t-box p-0">
         <DialogHeader title="更多设置" @back="requestCloseDialog" />
@@ -237,7 +237,7 @@
     <dialog
       ref="commentsDialogRef"
       class="modal modal-bottom z-[90]"
-      @cancel.prevent="requestCloseDialog"
+      @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[78dvh] flex-col rounded-t-box p-0">
         <DialogHeader
@@ -295,6 +295,7 @@ import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useChapters } from "@/composables/useChapters";
 import { useGiscus } from "@/composables/useGiscus";
+import { useModalClose } from "@/composables/useModal";
 import { getChapterContextTitle } from "@/utils/format-chapter-label";
 import CONFIG from "@/constants/config";
 import {
@@ -303,7 +304,7 @@ import {
 } from "@/constants/reader";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import NovelContentSearch from "@/components/novel/NovelContentSearch.vue";
-import FormatSetting from "./FormatSetting.vue";
+import FormatSetting from "@/components/reader/FormatSetting.vue";
 import ReaderMoreSettings from "./ReaderMoreSettings.vue";
 import TapZoneEditor from "./TapZoneEditor.vue";
 import DialogHeader from "./ReaderDialogHeader.vue";
@@ -386,42 +387,6 @@ const dialogRefs = {
   more: moreDialogRef,
   comments: commentsDialogRef,
 };
-const DIALOG_HISTORY_KEY = "__moriMobileReaderDialog";
-let dialogHistoryToken = "";
-let dialogCloseFallbackTimer = 0;
-let dialogHistoryResolve = null;
-
-const getHistoryState = () =>
-  window.history.state && typeof window.history.state === "object"
-    ? window.history.state
-    : {};
-
-const pushDialogHistory = (name) => {
-  dialogHistoryToken = `${name}-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2, 8)}`;
-  window.history.pushState(
-    {
-      ...getHistoryState(),
-      [DIALOG_HISTORY_KEY]: dialogHistoryToken,
-    },
-    "",
-    window.location.href,
-  );
-};
-
-const discardDialogHistory = () => {
-  window.clearTimeout(dialogCloseFallbackTimer);
-  if (
-    dialogHistoryToken &&
-    getHistoryState()[DIALOG_HISTORY_KEY] === dialogHistoryToken
-  ) {
-    const nextState = { ...getHistoryState() };
-    delete nextState[DIALOG_HISTORY_KEY];
-    window.history.replaceState(nextState, "", window.location.href);
-  }
-  dialogHistoryToken = "";
-};
 
 const closeDialogImmediately = () => {
   const dialog = dialogRefs[activeDialog.value]?.value;
@@ -429,83 +394,45 @@ const closeDialogImmediately = () => {
   activeDialog.value = null;
   tapZoneEditorOpen.value = false;
 };
-
-const finishDialogHistoryBack = () => {
-  window.clearTimeout(dialogCloseFallbackTimer);
-  dialogHistoryToken = "";
-  closeDialogImmediately();
-  dialogHistoryResolve?.();
-  dialogHistoryResolve = null;
-};
+const dialogClose = useModalClose({
+  onClose: closeDialogImmediately,
+});
 
 const openDialog = async (name) => {
   if (!dialogRefs[name] || activeDialog.value === name) return;
   if (activeDialog.value) {
-    discardDialogHistory();
-    closeDialogImmediately();
+    dialogClose.discard();
   }
 
   activeDialog.value = name;
   await nextTick();
   const dialog = dialogRefs[name].value;
   if (!dialog || dialog.open) return;
-  pushDialogHistory(name);
+  dialogClose.activate();
   dialog.showModal();
 };
 
-const handleHistoryBack = () => {
-  if (!activeDialog.value && !tapZoneEditorOpen.value) return;
-  finishDialogHistoryBack();
-};
-
-const consumeDialogHistory = () => {
-  if (!activeDialog.value && !tapZoneEditorOpen.value) return Promise.resolve();
-  if (
-    dialogHistoryToken &&
-    getHistoryState()[DIALOG_HISTORY_KEY] === dialogHistoryToken
-  ) {
-    return new Promise((resolve) => {
-      dialogHistoryResolve = resolve;
-      window.history.back();
-      dialogCloseFallbackTimer = window.setTimeout(
-        finishDialogHistoryBack,
-        250,
-      );
-    });
-  }
-
-  finishDialogHistoryBack();
-  return Promise.resolve();
-};
-
-const requestCloseDialog = () => void consumeDialogHistory();
+const requestCloseDialog = () => dialogClose.requestClose();
+const requestPlatformCloseDialog = () => dialogClose.requestPlatformClose();
 const openTapZoneEditor = async () => {
-  await consumeDialogHistory();
+  dialogClose.discard();
   emit("controls-open-change", false);
   window.dispatchEvent(new Event(MOBILE_READER_NAVBAR_HIDE_EVENT));
   tapZoneEditorOpen.value = true;
-  pushDialogHistory("tap-zones");
+  dialogClose.activate();
 };
-const requestCloseTapZoneEditor = () => void consumeDialogHistory();
+const requestCloseTapZoneEditor = () => dialogClose.requestClose();
 
 const closeAll = () => {
-  if (activeDialog.value) {
-    discardDialogHistory();
-    closeDialogImmediately();
-  }
+  if (activeDialog.value || tapZoneEditorOpen.value) dialogClose.discard();
   emit("controls-open-change", false);
   window.dispatchEvent(new Event(MOBILE_READER_NAVBAR_HIDE_EVENT));
 };
 const prepareDialogNavigation = () => {
-  const replaceDialogHistory = Boolean(
-    dialogHistoryToken &&
-    getHistoryState()[DIALOG_HISTORY_KEY] === dialogHistoryToken,
-  );
+  const replaceDialogHistory = false;
 
-  // 选择内容时不等待 history.back：先同步关闭弹窗，随后由目标路由
-  // replace 掉 modal 的临时历史项，避免移动端 popstate 延迟阻塞切章。
-  discardDialogHistory();
-  closeDialogImmediately();
+  // 目标内容将自行完成路由更新，这里只同步关闭当前模态框。
+  dialogClose.discard();
   emit("controls-open-change", false);
   window.dispatchEvent(new Event(MOBILE_READER_NAVBAR_HIDE_EVENT));
   return { replaceDialogHistory };
@@ -543,10 +470,8 @@ onMounted(() => {
     "mobile-reader:open-control",
     handleExternalDialogRequest,
   );
-  window.addEventListener("popstate", handleHistoryBack);
 });
 onBeforeUnmount(() => {
-  discardDialogHistory();
   Object.values(dialogRefs).forEach(
     (item) => item.value?.open && item.value.close(),
   );
@@ -554,6 +479,5 @@ onBeforeUnmount(() => {
     "mobile-reader:open-control",
     handleExternalDialogRequest,
   );
-  window.removeEventListener("popstate", handleHistoryBack);
 });
 </script>

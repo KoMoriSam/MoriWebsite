@@ -1,5 +1,5 @@
 <template>
-  <section class="drawer h-full">
+  <article class="drawer h-full">
     <input :id="drawerId" type="checkbox" class="drawer-toggle" />
     <section
       class="drawer-content flex flex-wrap h-full min-w-0 w-full max-w-full items-start justify-center gap-4 lg:pr-16 pb-16 lg:pb-12"
@@ -22,7 +22,7 @@
         </aside>
       </section>
     </aside>
-  </section>
+  </article>
 </template>
 
 <script setup>

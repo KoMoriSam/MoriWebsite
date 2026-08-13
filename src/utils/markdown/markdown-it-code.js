@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 
-import CodeBlock from "@/components/ui/CodeBlock.vue";
+import CodeBlock from "@/components/markdown/CodeBlock.vue";
 
 const CODE_BLOCK_SELECTOR = "[data-markdown-code-block]";
 const mountedCodeBlocks = new WeakMap();
@@ -72,10 +72,10 @@ export function codePlugin(md) {
       self,
     );
 
-    return `<div data-markdown-code-block data-code="${encodeURIComponent(
+    return `<section class="code-wrapper" data-markdown-code-block data-code="${encodeURIComponent(
       token.content,
     )}" data-language="${encodeURIComponent(token.info.trim())}">
-${highlightedHtml}
-</div>`;
+    ${highlightedHtml}
+    </section>`;
   };
 }

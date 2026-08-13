@@ -8,11 +8,11 @@
         'sticky z-10 transition-[top,margin] duration-300 ease-out motion-reduce:transition-none xl:hidden',
         mobileTocCompact ? 'top-0 mb-1' : 'top-2 mb-4',
       ]"
-      @pointerdown.passive="handleMobileTocInteraction"
-      @touchstart.passive="handleMobileTocTouchStart"
-      @touchmove="handleMobileTocTouchMove"
-      @touchend.passive="handleMobileTocTouchEnd"
-      @touchcancel="resetMobileTocTouch"
+      @pointerdown="handleMobileTocPointerDown"
+      @pointermove="handleMobileTocPointerMove"
+      @pointerup="handleMobileTocPointerEnd"
+      @pointercancel="resetMobileTocPointer"
+      @click.capture="handleMobileTocClickCapture"
     >
       <div
         aria-hidden="true"
@@ -33,28 +33,6 @@
             to bottom,
             black 0%,
             black 42%,
-            transparent 100%
-          );
-        "
-      ></div>
-
-      <div
-        aria-hidden="true"
-        :class="[
-          'pointer-events-none absolute -top-1 -bottom-8 left-1/2 z-0 w-screen -translate-x-1/2 bg-base-100 transition-opacity duration-300 ease-out motion-reduce:transition-none',
-          mobileTocCompact ? 'opacity-100' : 'opacity-0',
-        ]"
-        style="
-          mask-image: linear-gradient(
-            to bottom,
-            black 0,
-            black calc(100% - 2rem),
-            transparent 100%
-          );
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            black 0,
-            black calc(100% - 2rem),
             transparent 100%
           );
         "
@@ -155,15 +133,36 @@ let contentBoundaryFrame = 0;
 let contentBoundaryReached = null;
 let contentBoundaryObserver;
 let mobileTocCollapseTimer;
+let mobileTocClickSuppressionTimer;
 let mobileTocMenuOpen = false;
-const mobileTocTouchStart = {
+let suppressNextMobileTocClick = false;
+const mobileTocPointerStart = {
+  id: null,
   x: 0,
   y: 0,
   active: false,
 };
 
-const resetMobileTocTouch = () => {
-  mobileTocTouchStart.active = false;
+const resetMobileTocPointer = () => {
+  mobileTocPointerStart.id = null;
+  mobileTocPointerStart.active = false;
+};
+
+const suppressMobileTocSyntheticClick = () => {
+  window.clearTimeout(mobileTocClickSuppressionTimer);
+  suppressNextMobileTocClick = true;
+  mobileTocClickSuppressionTimer = window.setTimeout(() => {
+    suppressNextMobileTocClick = false;
+  }, 500);
+};
+
+const handleMobileTocClickCapture = (event) => {
+  if (!suppressNextMobileTocClick) return;
+
+  window.clearTimeout(mobileTocClickSuppressionTimer);
+  suppressNextMobileTocClick = false;
+  event.preventDefault();
+  event.stopPropagation();
 };
 
 const clearMobileTocAutoCollapse = () => {
@@ -190,7 +189,7 @@ const scheduleMobileTocAutoCollapse = () => {
 };
 
 const setMobileTocCompact = (compact, autoCollapseAfterExpand = false) => {
-  const nextCompact = compact && getContentBoundaryState() === true;
+  const nextCompact = Boolean(compact);
 
   mobileTocCompact.value = nextCompact;
   if (nextCompact) mobileTocMenuOpen = false;
@@ -210,59 +209,59 @@ const setMobileTocMenuOpen = (open) => {
   }
 };
 
-const handleMobileTocInteraction = () => {
+const handleMobileTocPointerDown = (event) => {
   if (!mobileTocCompact.value) scheduleMobileTocAutoCollapse();
-};
 
-const handleMobileTocTouchStart = (event) => {
   const target = event.target;
   const handle =
     target instanceof Element
       ? target.closest("[data-mobile-toc-handle]")
       : null;
-  const touch = event.touches?.[0];
 
-  if (!handle || !touch) {
-    resetMobileTocTouch();
+  if (!handle || !event.isPrimary) {
+    resetMobileTocPointer();
     return;
   }
 
-  mobileTocTouchStart.x = touch.clientX;
-  mobileTocTouchStart.y = touch.clientY;
-  mobileTocTouchStart.active = true;
+  mobileTocPointerStart.id = event.pointerId;
+  mobileTocPointerStart.x = event.clientX;
+  mobileTocPointerStart.y = event.clientY;
+  mobileTocPointerStart.active = true;
+  event.currentTarget?.setPointerCapture?.(event.pointerId);
 };
 
-const handleMobileTocTouchMove = (event) => {
-  if (!mobileTocTouchStart.active) return;
+const handleMobileTocPointerMove = (event) => {
+  if (
+    !mobileTocPointerStart.active ||
+    event.pointerId !== mobileTocPointerStart.id
+  ) {
+    return;
+  }
 
-  const touch = event.touches?.[0];
-  if (!touch) return;
-
-  const deltaX = touch.clientX - mobileTocTouchStart.x;
-  const deltaY = touch.clientY - mobileTocTouchStart.y;
+  const deltaX = event.clientX - mobileTocPointerStart.x;
+  const deltaY = event.clientY - mobileTocPointerStart.y;
   const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
 
   if (isVerticalSwipe && event.cancelable) event.preventDefault();
 };
 
-const handleMobileTocTouchEnd = (event) => {
-  if (!mobileTocTouchStart.active) return;
+const handleMobileTocPointerEnd = (event) => {
+  if (
+    !mobileTocPointerStart.active ||
+    event.pointerId !== mobileTocPointerStart.id
+  ) {
+    return;
+  }
 
-  const touch = event.changedTouches?.[0];
-  resetMobileTocTouch();
-  if (!touch) return;
-
-  const deltaX = touch.clientX - mobileTocTouchStart.x;
-  const deltaY = touch.clientY - mobileTocTouchStart.y;
+  const deltaX = event.clientX - mobileTocPointerStart.x;
+  const deltaY = event.clientY - mobileTocPointerStart.y;
+  event.currentTarget?.releasePointerCapture?.(event.pointerId);
+  resetMobileTocPointer();
   const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
 
   if (!isVerticalSwipe || Math.abs(deltaY) < 36) return;
 
-  if (deltaY < 0 && getContentBoundaryState() !== true) {
-    setMobileTocCompact(false);
-    return;
-  }
-
+  suppressMobileTocSyntheticClick();
   const compact = deltaY < 0;
   setMobileTocCompact(compact, !compact);
 };
@@ -280,7 +279,7 @@ const getContentBoundaryState = () => {
   if (!props.showToc || !readerContentElement.value) return null;
 
   const contentBoundaryElement =
-    readerContentElement.value.querySelector("#markdown-content");
+    readerContentElement.value.querySelector(".markdown-content");
   if (!contentBoundaryElement) return null;
 
   return contentBoundaryElement.getBoundingClientRect().top <= 0;
@@ -326,6 +325,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   clearMobileTocAutoCollapse();
+  window.clearTimeout(mobileTocClickSuppressionTimer);
   contentBoundaryObserver?.disconnect();
   window.removeEventListener("scroll", scheduleMobileTocBoundaryUpdate);
   window.removeEventListener("resize", scheduleMobileTocBoundaryUpdate);

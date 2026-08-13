@@ -4,66 +4,81 @@
     :style="pageStyle"
     :data-theme="pageTheme || undefined"
   >
-    <ReaderShell :drawer="drawer" :drawer-id="drawerId">
-      <ReaderBody
-        :container-class="containerClass"
-        :grid-class="resolvedGridClass"
-        :content-class="contentClass"
-        :toc-class="tocClass"
-        :aside-class="asideClass"
-        :sticky-top="stickyTop"
-        :show-toc="showToc"
-        :show-aside="showAside"
-        :reader-id="readerId"
-      >
-        <template #before><slot name="before" /></template>
-        <template #mobile-toc="{ compact, expand, toggle, setMenuOpen }">
-          <slot
-            name="mobile-toc"
-            :progress="readingProgress"
+    <ReaderBody
+      :container-class="containerClass"
+      :grid-class="resolvedGridClass"
+      :content-class="contentClass"
+      :toc-class="tocClass"
+      :aside-class="asideClass"
+      :sticky-top="stickyTop"
+      :show-toc="showToc"
+      :show-aside="showAside"
+      :reader-id="readerId"
+    >
+      <template #before><slot name="before" /></template>
+      <template #mobile-toc="{ compact, expand, toggle, setMenuOpen }">
+        <slot
+          name="mobile-toc"
+          :progress="readingProgress"
+          :compact="compact"
+          :expand="expand"
+          :toggle="toggle"
+          :setMenuOpen="setMenuOpen"
+        >
+          <ReaderToc
+            v-if="showToc"
+            mobile
             :compact="compact"
-            :expand="expand"
-            :toggle="toggle"
-            :setMenuOpen="setMenuOpen"
-          >
-            <ReaderToc
-              v-if="showToc"
-              mobile
-              :compact="compact"
-              :title="tocTitle"
-              :headings="headings"
-              :active-id="activeHeadingId"
-              :progress="readingProgress"
-              @select="scrollToHeading"
-              @toggle-compact="toggle"
-              @menu-open-change="setMenuOpen"
-            />
-          </slot>
-        </template>
-        <template #toc>
-          <slot name="toc" :progress="readingProgress">
-            <ReaderToc
-              v-if="showToc"
-              :title="tocTitle"
-              :headings="headings"
-              :active-id="activeHeadingId"
-              :progress="readingProgress"
-              @select="scrollToHeading"
-            />
-          </slot>
-        </template>
-        <template #default><slot /></template>
-        <template #aside><slot name="aside" /></template>
-        <template #after><slot name="after" /></template>
-      </ReaderBody>
-
-      <slot name="floating" />
-
-      <template v-if="$slots.drawer" #drawer>
-        <slot name="drawer" />
+            :title="tocTitle"
+            :headings="headings"
+            :active-id="activeHeadingId"
+            :progress="readingProgress"
+            @select="scrollToHeading"
+            @toggle-compact="toggle"
+            @menu-open-change="setMenuOpen"
+          />
+        </slot>
       </template>
-    </ReaderShell>
+      <template #toc>
+        <slot name="toc" :progress="readingProgress">
+          <ReaderToc
+            v-if="showToc"
+            :title="tocTitle"
+            :headings="headings"
+            :active-id="activeHeadingId"
+            :progress="readingProgress"
+            @select="scrollToHeading"
+          />
+        </slot>
+      </template>
+      <template #default><slot /></template>
+      <template #aside><slot name="aside" /></template>
+      <template #after><slot name="after" /></template>
+    </ReaderBody>
+
+    <slot name="floating" />
   </main>
+
+  <dialog
+    v-if="$slots['format-setting']"
+    ref="formatSettingDialogRef"
+    class="modal modal-bottom lg:modal-start"
+    @cancel.prevent="requestPlatformCloseFormatSetting"
+  >
+    <section
+      class="modal-box flex h-full w-full lg:w-96 max-w-2xl flex-col overflow-hidden p-0 max-lg:mx-auto"
+    >
+      <slot name="format-setting" />
+    </section>
+    <form method="dialog" class="modal-backdrop">
+      <button
+        aria-label="关闭阅读排版设置"
+        @click.prevent="requestCloseFormatSetting"
+      >
+        关闭阅读排版设置
+      </button>
+    </form>
+  </dialog>
 
   <FootBar class="max-lg:hidden" />
 </template>
@@ -79,19 +94,11 @@ import {
   watch,
 } from "vue";
 import ReaderBody from "@/components/reader/ReaderBody.vue";
-import ReaderShell from "@/components/reader/ReaderShell.vue";
 import ReaderToc from "@/components/reader/ReaderToc.vue";
 import FootBar from "@/components/layout/FootBar.vue";
+import { useModalClose } from "@/composables/useModal";
 
 const props = defineProps({
-  drawer: {
-    type: Boolean,
-    default: false,
-  },
-  drawerId: {
-    type: String,
-    default: "reader-sidebar",
-  },
   toc: {
     type: Boolean,
     default: false,
@@ -158,6 +165,7 @@ const props = defineProps({
 
 const slots = useSlots();
 const contentElement = ref(null);
+const formatSettingDialogRef = ref(null);
 const headings = ref([]);
 const activeHeadingId = ref("");
 const readingProgressValue = ref(0);
@@ -165,6 +173,15 @@ let mutationObserver;
 let intersectionObserver;
 let updateTimer;
 let progressFrame = 0;
+
+const closeFormatSettingImmediately = () => {
+  if (formatSettingDialogRef.value?.open) {
+    formatSettingDialogRef.value.close();
+  }
+};
+const formatSettingModal = useModalClose({
+  onClose: closeFormatSettingImmediately,
+});
 
 const showToc = computed(
   () =>
@@ -322,6 +339,18 @@ const scrollToHeading = (id) => {
   window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
 };
 
+const openFormatSetting = () => {
+  const dialog = formatSettingDialogRef.value;
+  if (!dialog || dialog.open) return;
+
+  formatSettingModal.activate();
+  dialog.showModal();
+};
+
+const requestCloseFormatSetting = () => formatSettingModal.requestClose();
+const requestPlatformCloseFormatSetting = () =>
+  formatSettingModal.requestPlatformClose();
+
 onMounted(async () => {
   await nextTick();
   contentElement.value = document.querySelector(
@@ -360,4 +389,6 @@ onBeforeUnmount(() => {
 });
 
 const readerId = `reader-${Math.random().toString(36).slice(2, 10)}`;
+
+defineExpose({ openFormatSetting });
 </script>

@@ -25,7 +25,8 @@ export const MOBILE_READING_MODE_SETTING = "MOBILE_READING_MODE";
 export const MOBILE_READER_WHEEL_SETTING = "MOBILE_READER_WHEEL_PAGINATION";
 export const MOBILE_READER_VOLUME_SETTING = "MOBILE_READER_VOLUME_PAGINATION";
 export const MOBILE_READER_ZONE_SETTING = "MOBILE_READER_TAP_ZONES";
-export const MOBILE_READER_PRESETS_SETTING = "MOBILE_READER_LAYOUT_PRESETS";
+export const READER_LAYOUT_PRESETS_SETTING = "MOBILE_READER_LAYOUT_PRESETS";
+export const MOBILE_READER_PRESETS_SETTING = READER_LAYOUT_PRESETS_SETTING;
 
 export const MOBILE_READER_COLOR_THEMES = Object.freeze([
   { value: "site", label: "跟随站点", icon: "ri-contrast-line" },
@@ -59,7 +60,7 @@ export const DEFAULT_MOBILE_READER_ZONES = Object.freeze([
   "next-page",
 ]);
 
-export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
+export const READER_SYSTEM_PRESETS = Object.freeze([
   {
     id: "system-comfortable",
     name: "舒适",
@@ -67,7 +68,7 @@ export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
     mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-kai",
-      fontSize: 20,
+      fontSize: 22,
       fontGap: 0.05,
       lineHeight: 1.6,
       paraHeight: 0.5,
@@ -84,9 +85,9 @@ export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
     styles: {
       fontStyle: "font-hei",
       fontSize: 18,
-      fontGap: 0,
-      lineHeight: 1.5,
-      paraHeight: 0,
+      fontGap: -0.05,
+      lineHeight: 1.35,
+      paraHeight: 0.15,
       colorTheme: "site",
       textColor: "",
       backgroundColor: "",
@@ -110,7 +111,7 @@ export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
   },
   {
     id: "system-night",
-    name: "柔光",
+    name: "暗光",
     description: "深色低亮度配色，适合暗光环境",
     mode: MOBILE_READING_MODES.SCROLL,
     styles: {
@@ -126,8 +127,8 @@ export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
   },
   {
     id: "system-big",
-    name: "大字",
-    description: "大字号，内容集中，眼部友好",
+    name: "大字号",
+    description: "内容集中，眼部友好",
     mode: MOBILE_READING_MODES.SCROLL,
     styles: {
       fontStyle: "font-kai",
@@ -141,6 +142,8 @@ export const MOBILE_READER_SYSTEM_PRESETS = Object.freeze([
     },
   },
 ]);
+
+export const MOBILE_READER_SYSTEM_PRESETS = READER_SYSTEM_PRESETS;
 
 export const READER_TYPOGRAPHY_CONTROLS = Object.freeze([
   Object.freeze({
@@ -191,6 +194,13 @@ export const READER_TYPOGRAPHY_CONTROLS = Object.freeze([
     places: 2,
     unit: "行",
   }),
+]);
+
+// 桌面端与移动端可共享的纯排版字段。阅读模式与阅读配色属于移动端界面
+// 状态，不写入桌面端保存的预设，也不会在桌面端应用预设时被覆盖。
+export const READER_LAYOUT_STYLE_KEYS = Object.freeze([
+  "fontStyle",
+  ...READER_TYPOGRAPHY_CONTROLS.map(({ key }) => key),
 ]);
 
 export const STYLE_CONFIG_KEYS = Object.freeze([

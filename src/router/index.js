@@ -6,6 +6,26 @@ import {
   createMemoryHistory,
 } from "vue-router";
 
+if (
+  !import.meta.env.SSR &&
+  typeof window !== "undefined" &&
+  !globalThis.__moriModalFallbackDispatcherInstalled
+) {
+  globalThis.__moriModalFallbackDispatcherInstalled = true;
+  window.addEventListener(
+    "popstate",
+    (event) => {
+      const handleModalFallback =
+        globalThis.__moriModalFallbackPopstateHandler;
+      if (typeof handleModalFallback !== "function") return;
+
+      event.stopImmediatePropagation();
+      handleModalFallback(event);
+    },
+    { capture: true },
+  );
+}
+
 export const routes = [
   {
     path: "/",
@@ -105,6 +125,7 @@ const router = createRouter({
   history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
+    if (globalThis.__moriModalFallbackRestoring) return false;
     if (savedPosition) return savedPosition;
     if (to.hash && typeof document !== "undefined") {
       const rawHash = to.hash.slice(1);

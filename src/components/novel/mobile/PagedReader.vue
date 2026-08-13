@@ -45,6 +45,7 @@
         :show-loading="false"
         :header-data="headerData"
         :style-configs="styleConfigs"
+        use-reader-colors
         :manage-route-anchor="false"
         class="mobile-page-article"
         @render-ready="scheduleMeasure"

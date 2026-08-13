@@ -1,7 +1,6 @@
 <template>
   <Reader
-    drawer
-    drawer-id="novel-reader-sidebar"
+    ref="readerRef"
     :toc="!isMobileReader"
     :aside="!isMobileReader"
     :page-class="readerPageClass"
@@ -158,7 +157,7 @@
       </aside>
     </template>
 
-    <template #drawer>
+    <template #format-setting>
       <FormatSetting />
     </template>
   </Reader>
@@ -236,6 +235,7 @@ import {
 } from "vue";
 
 const stopNovelPosTracker = ref(null);
+const readerRef = ref(null);
 const trackedReaderContext = ref("");
 const mobileReaderControlsOpen = ref(false);
 const mobileTextContextOpen = ref(false);
@@ -336,10 +336,10 @@ watch(
   (mode, previousMode) => {
     restoreMobileScrollToChapterStart.value = Boolean(
       isMobileReader.value &&
-        previousMode === MOBILE_READING_MODES.PAGED &&
-        mode === MOBILE_READING_MODES.SCROLL &&
-        mobileControllerState.value.paginationReady &&
-        mobileControllerState.value.currentPage === 1,
+      previousMode === MOBILE_READING_MODES.PAGED &&
+      mode === MOBILE_READING_MODES.SCROLL &&
+      mobileControllerState.value.paginationReady &&
+      mobileControllerState.value.currentPage === 1,
     );
   },
   { flush: "sync" },
@@ -388,7 +388,7 @@ const readerPageStyle = computed(() => {
 });
 const readerPageClass = computed(() =>
   isMobileReader.value
-    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 px-6 py-2 text-base-content sm:px-8 [&_.drawer]:h-full [&_.drawer-content]:pb-0"
+    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 px-6 py-2 text-base-content sm:px-8"
     : "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
 );
 const readerContainerClass = computed(() =>
@@ -475,7 +475,10 @@ onActivated(setupNovelPosTracker);
 onDeactivated(disposeNovelPosTracker);
 onMounted(() => {
   window.addEventListener("keydown", handleVolumeKeydown);
-  window.addEventListener(MOBILE_READER_VOLUME_KEY_EVENT, handleNativeVolumeKey);
+  window.addEventListener(
+    MOBILE_READER_VOLUME_KEY_EVENT,
+    handleNativeVolumeKey,
+  );
 });
 onBeforeUnmount(() => {
   window.clearTimeout(mobileControlOpenTimer);
@@ -569,6 +572,13 @@ const fabActions = computed(() => [
     onClick: () => scrollToTop(),
   },
   {
+    key: "settings",
+    label: "阅读排版",
+    icon: "ri-settings-3-line",
+    buttonClass: "btn-primary btn-soft",
+    onClick: () => readerRef.value?.openFormatSetting(),
+  },
+  {
     key: "refresh",
     label: "刷新内容",
     icon: isLoadingContent.value
@@ -576,13 +586,6 @@ const fabActions = computed(() => [
       : "ri-refresh-line",
     buttonClass: "btn-success btn-soft",
     onClick: handleRefreshContent,
-  },
-  {
-    key: "settings",
-    for: "novel-reader-sidebar",
-    label: "阅读器设置",
-    icon: "ri-settings-3-line",
-    buttonClass: "btn-primary btn-soft",
   },
   {
     key: "cover",

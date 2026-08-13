@@ -6,8 +6,9 @@ import {
   MOBILE_READER_WHEEL_SETTING,
   MOBILE_READER_VOLUME_SETTING,
   MOBILE_READER_ZONE_SETTING,
-  MOBILE_READER_PRESETS_SETTING,
+  READER_LAYOUT_PRESETS_SETTING,
   DEFAULT_MOBILE_READER_ZONES,
+  READER_LAYOUT_STYLE_KEYS,
   STYLE_CONFIG_KEYS,
 } from "@/constants/reader";
 import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
@@ -53,10 +54,12 @@ export const useReaderStore = defineStore("reader", () => {
       ? zones
       : [...DEFAULT_MOBILE_READER_ZONES];
   });
-  const mobileLayoutPresets = computed(() => {
-    const presets = getSetting(MOBILE_READER_PRESETS_SETTING, []);
+  const readerLayoutPresets = computed(() => {
+    const presets = getSetting(READER_LAYOUT_PRESETS_SETTING, []);
     return Array.isArray(presets) ? presets : [];
   });
+  // 兼容现有移动端调用；底层已作为两端共用的排版预设集合。
+  const mobileLayoutPresets = readerLayoutPresets;
 
   const setMobileWheelPagination = (enabled) =>
     setSetting(MOBILE_READER_WHEEL_SETTING, Boolean(enabled));
@@ -79,33 +82,63 @@ export const useReaderStore = defineStore("reader", () => {
       mode: mobileReadingMode.value,
       styles: { ...styleConfigs.value },
     };
-    setSetting(MOBILE_READER_PRESETS_SETTING, [
-      ...mobileLayoutPresets.value,
+    setSetting(READER_LAYOUT_PRESETS_SETTING, [
+      ...readerLayoutPresets.value,
+      preset,
+    ]);
+    return true;
+  };
+  const saveReaderLayoutPreset = (name) => {
+    const normalizedName = String(name || "").trim();
+    if (!normalizedName) return false;
+    const styles = Object.fromEntries(
+      READER_LAYOUT_STYLE_KEYS.map((key) => [key, styleConfigs.value[key]]),
+    );
+    const preset = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: normalizedName,
+      styles,
+    };
+    setSetting(READER_LAYOUT_PRESETS_SETTING, [
+      ...readerLayoutPresets.value,
       preset,
     ]);
     return true;
   };
   const applyMobileLayoutPreset = (preset) => {
     if (!preset?.styles) return;
-    const inferredColorTheme =
-      preset.styles.colorTheme ||
-      (preset.styles.textColor || preset.styles.backgroundColor
+    const hasOwnStyle = (key) =>
+      Object.prototype.hasOwnProperty.call(preset.styles, key);
+    const hasPresetColors =
+      hasOwnStyle("colorTheme") ||
+      hasOwnStyle("textColor") ||
+      hasOwnStyle("backgroundColor");
+    const inferredColorTheme = hasOwnStyle("colorTheme")
+      ? preset.styles.colorTheme
+      : preset.styles.textColor || preset.styles.backgroundColor
         ? "custom"
-        : "site");
+        : "site";
     STYLE_CONFIG_KEYS.forEach(({ key }) => {
-      if (key === "colorTheme") {
+      if (key === "colorTheme" && hasPresetColors) {
         setStyle(key, inferredColorTheme);
       } else if (preset.styles[key] !== undefined) {
         setStyle(key, preset.styles[key]);
       }
     });
-    setMobileReadingMode(preset.mode);
+    if (preset.mode !== undefined) setMobileReadingMode(preset.mode);
+  };
+  const applyReaderLayoutPreset = (preset) => {
+    if (!preset?.styles) return;
+    READER_LAYOUT_STYLE_KEYS.forEach((key) => {
+      if (preset.styles[key] !== undefined) setStyle(key, preset.styles[key]);
+    });
   };
   const removeMobileLayoutPreset = (id) =>
     setSetting(
-      MOBILE_READER_PRESETS_SETTING,
-      mobileLayoutPresets.value.filter((preset) => preset.id !== id),
+      READER_LAYOUT_PRESETS_SETTING,
+      readerLayoutPresets.value.filter((preset) => preset.id !== id),
     );
+  const removeReaderLayoutPreset = removeMobileLayoutPreset;
 
   const isMobileLayoutDefault = computed(
     () =>
@@ -119,6 +152,20 @@ export const useReaderStore = defineStore("reader", () => {
   const resetMobileLayout = () => {
     STYLE_CONFIG_KEYS.forEach(({ key }) => resetStyle(key));
     setMobileReadingMode(MOBILE_READING_MODES.PAGED);
+  };
+
+  const isReaderLayoutDefault = computed(() =>
+    READER_LAYOUT_STYLE_KEYS.every((key) => {
+      const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
+      return (
+        config &&
+        getSetting(config.storageKey, config.default) === config.default
+      );
+    }),
+  );
+
+  const resetReaderLayout = () => {
+    READER_LAYOUT_STYLE_KEYS.forEach((key) => resetStyle(key));
   };
 
   const isDefault = (key) => {
@@ -143,22 +190,28 @@ export const useReaderStore = defineStore("reader", () => {
   };
 
   return {
-    styleConfigs, // 保持兼容性
+    styleConfigs,
     mobileReadingMode,
     mobileWheelPagination,
     mobileVolumePagination,
     mobileTapZones,
+    readerLayoutPresets,
     mobileLayoutPresets,
     isMobileLayoutDefault,
+    isReaderLayoutDefault,
     setMobileReadingMode,
     setMobileWheelPagination,
     setMobileVolumePagination,
     setMobileTapZone,
     resetMobileTapZones,
     saveMobileLayoutPreset,
+    saveReaderLayoutPreset,
     applyMobileLayoutPreset,
+    applyReaderLayoutPreset,
     removeMobileLayoutPreset,
+    removeReaderLayoutPreset,
     resetMobileLayout,
+    resetReaderLayout,
     setStyle,
     isDefault,
     resetStyle,

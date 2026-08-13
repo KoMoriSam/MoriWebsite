@@ -5,7 +5,13 @@
     ref="articleRef"
     v-else-if="!isLoading"
     :id="contentId"
-    :class="[{ 'opacity-60': markdownPreparing }, styleConfigs.fontStyle]"
+    :class="[
+      {
+        'opacity-60': markdownPreparing,
+        'reader-colors': useReaderColors,
+      },
+      styleConfigs.fontStyle,
+    ]"
     class="markdown-content prose prose-2xl min-w-0 w-full max-w-full"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,
@@ -18,8 +24,7 @@
       }px`,
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
       + ${styleConfigs.fontGap * 0.7}rem)`,
-      '--reader-text-color': resolvedTextColor || 'var(--color-base-content)',
-      color: resolvedTextColor || undefined,
+      '--reader-text-color': resolvedTextColor || undefined,
     }"
   >
     <slot name="before" />
@@ -65,7 +70,7 @@ const props = defineProps({
 
   contentId: {
     type: String,
-    default: "markdown-content",
+    default: "markdown",
   },
 
   // 头部数据
@@ -114,10 +119,15 @@ const props = defineProps({
       paraHeight: 0.5, // 段间距
     }),
   },
+  useReaderColors: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["refresh", "render-ready"]);
 const resolvedTextColor = computed(() => {
+  if (!props.useReaderColors) return "";
   const colorTheme = props.styleConfigs.colorTheme;
   return ["lemonade", "forest", "corporate", "dim"].includes(colorTheme)
     ? ""
@@ -142,11 +152,17 @@ import MarkdownItMark from "markdown-it-mark";
 
 // 引入自定义插件
 import { anchorPlugin } from "@/utils/markdown/markdown-it-anchor";
-import { alertPlugin } from "@/utils/markdown/markdown-it-alert";
+import {
+  alertPlugin,
+  mountAlertBlocks,
+  unmountAlertBlocks,
+} from "@/utils/markdown/markdown-it-alert";
 import {
   chatHeaderPlugin,
   chatContainerPlugin,
+  mountChatBlocks,
   momentsPlugin,
+  unmountChatBlocks,
 } from "@/utils/markdown/markdown-it-chat";
 import {
   codePlugin,
@@ -189,7 +205,7 @@ const anchoredPages = computed(() =>
     : [],
 );
 
-const syncCodeBlocks = async () => {
+const syncMarkdownComponents = async () => {
   if (import.meta.env.SSR) {
     return;
   }
@@ -200,16 +216,28 @@ const syncCodeBlocks = async () => {
   if (!nextRoot) return;
 
   if (codeBlockRoot && codeBlockRoot !== nextRoot) {
+    unmountAlertBlocks(codeBlockRoot);
+    unmountChatBlocks(codeBlockRoot);
     unmountCodeBlocks(codeBlockRoot);
   }
 
   codeBlockRoot = nextRoot;
+  // Alert 与聊天正文都可能继续包含另一种 Markdown 组件，重复两轮可让
+  // 新插入的嵌套挂载点也完成初始化，再处理最内层代码块。
+  mountAlertBlocks(codeBlockRoot);
+  mountChatBlocks(codeBlockRoot);
+  mountAlertBlocks(codeBlockRoot);
+  mountChatBlocks(codeBlockRoot);
   mountCodeBlocks(codeBlockRoot);
   emit("render-ready");
 };
 
-onMounted(syncCodeBlocks);
-onBeforeUnmount(() => unmountCodeBlocks(codeBlockRoot));
+onMounted(syncMarkdownComponents);
+onBeforeUnmount(() => {
+  unmountAlertBlocks(codeBlockRoot);
+  unmountChatBlocks(codeBlockRoot);
+  unmountCodeBlocks(codeBlockRoot);
+});
 
 watch(
   () => [
@@ -218,7 +246,7 @@ watch(
     props.headerData.uuid,
     markdownRenderVersion.value,
   ],
-  syncCodeBlocks,
+  syncMarkdownComponents,
   { flush: "post" },
 );
 

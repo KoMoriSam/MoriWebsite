@@ -161,9 +161,11 @@
         class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]"
       >
         <article class="card overflow-hidden">
-          <div class="card-body p-0">
+          <section
+            class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
+          >
             <CodeBlock :code="usageCode" language="css" />
-          </div>
+          </section>
         </article>
 
         <article class="card border border-base-200 bg-base-200/10">
@@ -201,7 +203,7 @@ import { computed, ref } from "vue";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
 import FootBar from "@/components/layout/FootBar.vue";
-import CodeBlock from "@/components/ui/CodeBlock.vue";
+import CodeBlock from "@/components/markdown/CodeBlock.vue";
 
 const weight = ref(400);
 const family = ref("serif");

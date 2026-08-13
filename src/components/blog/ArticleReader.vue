@@ -1,10 +1,5 @@
 <template>
-  <Reader
-    drawer
-    drawer-id="article-reader-sidebar"
-    toc
-    :aside="Boolean(content && article?.id != null)"
-  >
+  <Reader ref="readerRef" toc :aside="Boolean(content && article?.id != null)">
     <!-- 文章内容 -->
     <article
       v-if="article && (loading || content)"
@@ -252,83 +247,61 @@
 
       <nav
         v-if="previousArticle || nextArticle"
-        class="mt-8 grid grid-cols-1 gap-2 border-t border-base-300 pt-4 sm:grid-cols-2"
+        class="mt-12 flex border-t border-base-300 pt-6 justify-between"
         aria-label="文章翻页"
       >
         <RouterLink
           v-if="previousArticle"
           :to="getArticleRoute(previousArticle)"
-          class="card card-border card-xs group min-w-0 bg-base-100 transition-colors hover:border-base-content/25 hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="btn btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3"
           :aria-label="`上一篇：${previousArticle.title}`"
           @click="handleArticleNavigation(previousArticle, $event)"
         >
-          <div class="card-body min-w-0 gap-1 p-3">
-            <div
-              class="flex min-w-0 items-center justify-between gap-2 text-[11px] text-base-content/50"
-            >
-              <span class="inline-flex shrink-0 items-center gap-1 font-medium">
-                <i
-                  class="ri-arrow-left-line transition-transform group-hover:-translate-x-0.5"
-                  aria-hidden="true"
-                ></i>
-                上一篇
-              </span>
-
-              <time
-                v-if="getArticleDate(previousArticle)"
-                :datetime="getArticleDate(previousArticle)"
-                class="truncate"
-              >
-                发布于 {{ formatArticleDate(previousArticle) }}
-              </time>
-            </div>
-
+          <i class="ri-arrow-left-s-line"></i>
+          <div class="flex flex-col items-start gap-0.5 leading-[1.1]">
             <span
-              class="truncate text-sm leading-5 font-bold"
-              :title="previousArticle.title"
+              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
             >
+              上一篇
+            </span>
+            <span class="text-left text-balance">
               {{ previousArticle.title }}
             </span>
+            <time
+              v-if="getArticleDate(previousArticle)"
+              :datetime="getArticleDate(previousArticle)"
+              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+            >
+              发布于 {{ formatArticleDate(previousArticle) }}
+            </time>
           </div>
         </RouterLink>
-
-        <div v-else class="hidden sm:block" aria-hidden="true"></div>
 
         <RouterLink
           v-if="nextArticle"
           :to="getArticleRoute(nextArticle)"
-          class="card card-border card-xs group min-w-0 bg-base-100 text-right transition-colors hover:border-base-content/25 hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="btn btn-neutral btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3"
           :aria-label="`下一篇：${nextArticle.title}`"
           @click="handleArticleNavigation(nextArticle, $event)"
         >
-          <div class="card-body min-w-0 gap-1 p-3">
-            <div
-              class="flex min-w-0 items-center justify-between gap-2 text-[11px] text-base-content/50"
-            >
-              <time
-                v-if="getArticleDate(nextArticle)"
-                :datetime="getArticleDate(nextArticle)"
-                class="truncate"
-              >
-                发布于 {{ formatArticleDate(nextArticle) }}
-              </time>
-
-              <span class="inline-flex shrink-0 items-center gap-1 font-medium">
-                下一篇
-                <i
-                  class="ri-arrow-right-line transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                ></i>
-              </span>
-            </div>
-
+          <div class="flex flex-col items-end gap-0.5 leading-[1.1]">
             <span
-              class="truncate text-sm leading-5 font-bold"
-              :title="nextArticle.title"
+              class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
             >
-              {{ nextArticle.title }}
+              下一篇
             </span>
+            <span>
+              {{ nextArticle.title || "已经是最新推文" }}
+            </span>
+            <time
+              v-if="getArticleDate(nextArticle)"
+              :datetime="getArticleDate(nextArticle)"
+              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+            >
+              发布于 {{ formatArticleDate(nextArticle) }}
+            </time>
           </div>
+          <i class="ri-arrow-right-s-line"></i>
         </RouterLink>
       </nav>
     </article>
@@ -355,7 +328,7 @@
       </aside>
     </template>
 
-    <template #drawer>
+    <template #format-setting>
       <FormatSetting />
     </template>
 
@@ -397,6 +370,8 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
+
+const readerRef = ref(null);
 
 const props = defineProps({
   article: {
@@ -644,10 +619,10 @@ const fabActions = computed(() => {
     },
     {
       key: "settings",
-      for: "article-reader-sidebar",
-      label: "阅读器设置",
+      label: "阅读排版",
       icon: "ri-settings-3-line",
       buttonClass: "btn-primary btn-soft",
+      onClick: () => readerRef.value?.openFormatSetting(),
     },
     {
       key: "refresh",

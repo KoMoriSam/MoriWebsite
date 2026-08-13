@@ -58,7 +58,7 @@
       v-else-if="chapterVolumes.length"
       ref="listElement"
       :class="[
-        'space-y-4 overflow-y-auto overscroll-contain pr-1 scrollbar-none',
+        'space-y-2 overflow-y-auto overscroll-contain pr-1 scrollbar-none',
         embedded
           ? 'max-h-[min(62dvh,34rem)] min-h-0'
           : mobile
@@ -81,7 +81,7 @@
       >
         <button
           type="button"
-          class="group/volume mb-1.5 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold text-base-content/45 transition-colors hover:bg-base-200/70 hover:text-base-content/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="group/volume my-1 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold text-base-content/45 transition-colors hover:bg-base-200/70 hover:text-base-content/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           :aria-expanded="isVolumeExpanded(volume)"
           :aria-controls="getVolumeListId(volume)"
           @click="toggleVolume(volume)"
@@ -307,11 +307,9 @@ const chapterProgressLabel = computed(
   () => `${chapterProgress.value.toFixed(1)}%`,
 );
 
-watch(
-  chapterProgress,
-  (progress) => emit("progress-change", progress),
-  { immediate: true },
-);
+watch(chapterProgress, (progress) => emit("progress-change", progress), {
+  immediate: true,
+});
 
 const { handleAnyChapter, handleRecentChapter, isRead } = useChapters();
 const { isDisabled, handleClick } = useClickLimit();

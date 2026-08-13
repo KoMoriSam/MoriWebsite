@@ -1,43 +1,57 @@
-const selfNames = ["我", "小群主", "Mori", "KoMoriSam"];
-const avatarMap = {
-  "🈚️内👻，LG": "/assets/images/avatar/lg.webp",
-  小群主: "/assets/images/avatar/komorisam.webp",
-  Mori: "/assets/images/avatar/komorisam.webp",
-  真正群主: "/assets/images/avatar/talloran.webp",
-  牛子: "/assets/images/avatar/niuzi.webp",
-  欢乐豆人: "/assets/images/avatar/joybean.webp",
-  天天: "/assets/images/avatar/smellycat7.webp",
-  量子: "/assets/images/avatar/quantum.webp",
-  泡泡冰: "/assets/images/avatar/paopao.webp",
-  李焰老师: "/assets/images/avatar/liyan.webp",
-  赵天明老师: "/assets/images/avatar/zhaotianming.webp",
-  爸: "/assets/images/avatar/dad.webp",
-  妈: "/assets/images/avatar/mom.webp",
+import { createApp } from "vue";
+
+import Chat from "@/components/markdown/Chat.vue";
+import Moment from "@/components/markdown/Moment.vue";
+
+const CHAT_SELECTOR = "[data-markdown-chat]";
+const MOMENT_SELECTOR = "[data-markdown-moment]";
+const mountedChatBlocks = new WeakMap();
+
+const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
+
+const decodeProps = (value = "") => {
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    return {};
+  }
 };
 
-const footerStyleMap = [
-  { keyword: "已送达", className: "badge-info" },
-  { keyword: "已读", className: "badge-success" },
-  { keyword: "发送失败", className: "badge-error" },
-  { keyword: "已删除", className: "badge-neutral" },
-  { keyword: "已编辑", className: "badge-primary" },
-  { keyword: "已转发", className: "badge-secondary" },
-  { keyword: "已回复", className: "badge-accent" },
-  { keyword: "已引用", className: "badge-info" },
-  { keyword: "精华消息", className: "badge-secondary" },
-  { keyword: "👍", className: "badge-success" },
-  { keyword: "👎", className: "badge-error" },
-  { keyword: "💬", className: "badge-info" },
-  { keyword: "🔗", className: "badge-primary" },
-  { keyword: "📎", className: "badge-secondary" },
-  { keyword: "📷", className: "badge-accent" },
-  { keyword: "🎥", className: "badge-warning" },
-];
+export function mountChatBlocks(root) {
+  if (!root || import.meta.env.SSR) return;
 
-const DEFAULT_AVATAR = "/assets/images/avatar/default.webp";
+  let mounts = mountedChatBlocks.get(root);
+  if (!mounts) {
+    mounts = new Map();
+    mountedChatBlocks.set(root, mounts);
+  }
 
-function escapeHtml(md, value = "") {
-  return md.utils.escapeHtml(String(value));
+  for (const [element, app] of mounts) {
+    if (!root.contains(element)) {
+      app.unmount();
+      mounts.delete(element);
+    }
+  }
+
+  root.querySelectorAll(`${CHAT_SELECTOR}, ${MOMENT_SELECTOR}`).forEach((element) => {
+    if (mounts.has(element) || !root.contains(element)) return;
+
+    const component = element.matches(CHAT_SELECTOR)
+      ? Chat
+      : Moment;
+    const app = createApp(component, decodeProps(element.dataset.props));
+    app.mount(element);
+    mounts.set(element, app);
+  });
+}
+
+export function unmountChatBlocks(root) {
+  const mounts = root ? mountedChatBlocks.get(root) : null;
+  if (!mounts) return;
+
+  mounts.forEach((app) => app.unmount());
+  mounts.clear();
+  mountedChatBlocks.delete(root);
 }
 
 function installInlineCollector(md) {
@@ -140,67 +154,11 @@ function parseCalloutHead(line, type) {
   return match?.[1]?.trim() || "";
 }
 
-function renderFooterBadges(footers) {
-  if (!footers.length) return "";
-
-  return (
-    `<div class="chat-footer join mt-1.5">` +
-    footers
-      .map((footer) => {
-        const matched = footerStyleMap.find(({ keyword }) =>
-          footer.includes(keyword),
-        );
-        const cls = matched ? matched.className : "";
-        return `<span class="join-item badge badge-soft ${cls}">${footer}</span>`;
-      })
-      .join("") +
-    `</div>`
-  );
-}
-
-function renderChatBar(md, headLine) {
+function parseChatHeader(headLine) {
   const head = parseStrongHead(headLine);
   const title = head?.name || stripMarkdownStrong(headLine) || "聊天对象";
   const extra = head?.rest?.replace(/^·\s*/, "").trim();
-  const avatar = avatarMap[title] || DEFAULT_AVATAR;
-
-  const statusMap = {
-    在线: { text: "在线", class: "badge-success" },
-    离线: { text: "离线", class: "badge-outline" },
-    忙碌: { text: "忙碌", class: "badge-error" },
-  };
-
-  const isGroup = extra && /^\d+$/.test(extra);
-  const status =
-    statusMap[extra] || (extra ? { text: extra, class: "" } : null);
-
-  let infoLine = "";
-  if (isGroup) {
-    infoLine = `
-        <span class="badge max-sm:badge-xs">
-          ${escapeHtml(md, extra)}
-        </span>`;
-  } else if (status) {
-    infoLine = `
-        <span class="badge badge-soft ${status.class} max-sm:badge-xs">
-          ${escapeHtml(md, status.text)}
-        </span>`;
-  }
-
-  return `
-        <div class="chat-bar">
-          <i class="ri-arrow-left-wide-line ml-0.5 sm:ml-2 mr-0"></i>
-          <div class="chat-image avatar">
-            <div class="w-8 sm:w-10 rounded-full">
-              <img alt="${escapeHtml(md, title)}" src="${avatar}"/>
-            </div>
-          </div>
-          <span class="font-bold">
-            ${escapeHtml(md, title)}
-          </span>
-          ${infoLine}
-          <i class="ri-menu-line ml-auto mr-0.5 sm:mr-2"></i>
-        </div>`;
+  return { title, extra };
 }
 
 function parseChatMessages(lines) {
@@ -262,50 +220,26 @@ function parseChatMessages(lines) {
   return messages;
 }
 
-function renderChatMessage(md, message, options, env, self) {
+function toChatMessageProps(message, options, env, self) {
   if (message.type === "system") {
-    const lines = String(message.content || "")
+    return {
+      type: "system",
+      lines: String(message.content || "")
       .split("\n")
-      .map((line) => escapeHtml(md, line.trim()))
-      .filter(Boolean);
-    const contentHTML = lines.join("<br/>");
-
-    return `
-        <div class="chat-page-block">
-          <p class="chat-info">${contentHTML}</p>
-        </div>`;
+      .map((line) => line.trim())
+      .filter(Boolean),
+    };
   }
 
-  const username = message.username || "用户";
-  const time = message.time || "";
-  const footers = message.footers || [];
-  const isSelf = selfNames.includes(username);
-  const avatar = avatarMap[username.trim()] || DEFAULT_AVATAR;
-  const footerHTML = renderFooterBadges(
-    footers.map((item) => escapeHtml(md, item)),
-  );
-  const contentHTML = message.contentTokens?.length
-    ? renderPreparedMarkdownTokens(message.contentTokens, options, env, self)
-    : "";
-
-  return `
-        <div class="chat-page-block">
-          <div class="chat ${isSelf ? "chat-end" : "chat-start"}">
-          <div class="chat-image avatar">
-            <div class="w-10 rounded-full">
-              <img alt="${escapeHtml(md, username)}" src="${avatar}"/>
-            </div>
-          </div>
-          <div class="chat-header">
-            ${escapeHtml(md, username)}
-            <time class="opacity-50">${escapeHtml(md, time)}</time>
-          </div>
-          ${footerHTML}
-          <div class="chat-bubble ${isSelf ? "chat-bubble-primary" : ""}">
-            ${contentHTML}
-          </div>
-          </div>
-        </div>`;
+  return {
+    type: "message",
+    username: message.username || "用户",
+    time: message.time || "",
+    footers: message.footers || [],
+    contentHtml: message.contentTokens?.length
+      ? renderPreparedMarkdownTokens(message.contentTokens, options, env, self)
+      : "",
+  };
 }
 
 function prepareChatCallout(md, lines, env) {
@@ -342,42 +276,31 @@ function prepareChatMessagesOnly(md, lines, env) {
   return prepareChatMessages(md, messageLines, env);
 }
 
-function renderChatMessages(md, messages, options, env, self) {
+function renderChatMessages(messages, options, env, self) {
   return messages.map((message) =>
-    renderChatMessage(md, message, options, env, self),
+    toChatMessageProps(message, options, env, self),
   );
 }
 
-function renderChatCallout(md, prepared, options, env, self) {
+function renderChatCallout(prepared, options, env, self) {
   const renderedMessages = renderChatMessages(
-    md,
     prepared.messages,
     options,
     env,
     self,
   );
-  // 聊天栏头部只与它紧接的一个元素组成防孤行组；该元素既可能是
-  // 系统提示，也可能是气泡。后续元素全部恢复为各自独立的分页块。
-  const leadingMessage = renderedMessages[0] || "";
-  const remainingMessages = renderedMessages.slice(1).join("\n");
 
-  return `
-        <div class="chat-content">
-          <div class="chat-leading-group">
-            ${renderChatBar(md, prepared.headLine)}
-            ${leadingMessage}
-          </div>
-          ${remainingMessages}
-        </div>
-`;
+  return `<div class="chat-content" data-markdown-chat data-props="${encodeProps({
+    header: parseChatHeader(prepared.headLine),
+    messages: renderedMessages,
+  })}"></div>\n`;
 }
 
-function renderChatMessagesOnly(md, prepared, options, env, self) {
-  return `
-        <div class="chat-content">
-          ${renderChatMessages(md, prepared.messages, options, env, self).join("\n")}
-        </div>
-`;
+function renderChatMessagesOnly(prepared, options, env, self) {
+  return `<div class="chat-content" data-markdown-chat data-props="${encodeProps({
+    header: null,
+    messages: renderChatMessages(prepared.messages, options, env, self),
+  })}"></div>\n`;
 }
 
 function parseMomentHead(line) {
@@ -424,27 +347,6 @@ function parseMarkdownImage(line = "") {
     alt: match[1].trim(),
     url,
   };
-}
-
-function renderActions(like = "", comment = "", share = "") {
-  return `
-        <div class="moments-actions">
-          <button class="btn btn-ghost btn-sm">
-            <i class="ri-thumb-up-line"></i>
-            <span class="hidden sm:inline">点赞</span>
-            ${like ? `<span class="hidden sm:inline">·</span><span>${like}</span>` : ""}
-          </button>
-          <button class="btn btn-ghost btn-sm">
-            <i class="ri-chat-3-line"></i>
-            <span class="hidden sm:inline">评论</span>
-            ${comment ? `<span class="hidden sm:inline">·</span><span>${comment}</span>` : ""}
-          </button>
-          <button class="btn btn-ghost btn-sm">
-            <i class="ri-share-forward-line"></i>
-            <span class="hidden sm:inline">分享</span>
-            ${share ? `<span class="hidden sm:inline">·</span><span>${share}</span>` : ""}
-          </button>
-        </div>`;
 }
 
 function parseCommentHead(line = "") {
@@ -522,106 +424,6 @@ function parseMomentComments(lines) {
   return comments;
 }
 
-function injectCommentInfoIntoFirstParagraph(html, infoHTML) {
-  const trimmed = String(html || "").trim();
-  if (!trimmed) return `<p>${infoHTML}</p>`;
-
-  return trimmed.replace(/<p([^>]*)>([\s\S]*?)<\/p>/, (match, attrs, body) => {
-    const triggerMatch = body.match(
-      /([\s\S]*?)(<button\b[^>]*\bcomment-trigger\b[\s\S]*?<\/button>\s*)$/,
-    );
-    const bodyHTML = triggerMatch ? triggerMatch[1] : body;
-    const triggerHTML = triggerMatch ? triggerMatch[2] : "";
-
-    return `<p${attrs}>${infoHTML}<span data-paragraph-comment-content="true">${bodyHTML}</span>${triggerHTML}</p>`;
-  });
-}
-
-function renderMomentComment(md, comment, options, env, self) {
-  const username = comment.username || "用户";
-  const avatar = avatarMap[username] || DEFAULT_AVATAR;
-  const isSelf = selfNames.includes(username);
-  const infoHTML = `
-            <span class="comments-info" data-paragraph-comment-meta="true">
-              <span class="user-name">${!isSelf ? escapeHtml(md, username) : "我"}</span>
-              ${comment.time ? `<span class="comment-time">${escapeHtml(md, comment.time)}</span>` : ""}
-            </span>
-            `;
-  const contentHTML = injectCommentInfoIntoFirstParagraph(
-    comment.contentTokens?.length
-      ? renderPreparedMarkdownTokens(comment.contentTokens, options, env, self)
-      : "",
-    infoHTML,
-  );
-
-  return `
-        <div class="flex items-center gap-2 not-prose">
-          <div class="avatar">
-            <div class="w-8 h-8 rounded-full">
-              <img class="m-0!" src="${avatar}" alt="${escapeHtml(md, username)}" />
-            </div>
-          </div>
-          ${contentHTML}
-        </div>
-        ${comment.replies.map((reply) => renderMomentReply(md, reply, options, env, self)).join("\n")}`;
-}
-
-function renderMomentReply(md, reply, options, env, self) {
-  const replier = reply.replier || "用户";
-  const target = reply.target || "用户";
-  const avatar = avatarMap[replier] || DEFAULT_AVATAR;
-  const isSelf = selfNames.includes(replier);
-  const infoHTML = `
-            <span class="comments-info" data-paragraph-comment-meta="true">
-              <span class="user-name">${!isSelf ? escapeHtml(md, replier) : "我"}
-              <span class="opacity-60"> 回复 </span>
-              ${escapeHtml(md, target)}</span>
-              ${reply.time ? `<span class="comment-time">${escapeHtml(md, reply.time)}</span>` : ""}
-            </span>
-            `;
-  const contentHTML = injectCommentInfoIntoFirstParagraph(
-    reply.contentTokens?.length
-      ? renderPreparedMarkdownTokens(reply.contentTokens, options, env, self)
-      : "",
-    infoHTML,
-  );
-
-  return `
-        <div class="flex items-center gap-2 ml-10 -translate-y-1.5 not-prose">
-          <div class="avatar">
-            <div class="w-8 h-8 rounded-full">
-              <img class="m-0!" src="${avatar}" alt="${escapeHtml(md, replier)}" />
-            </div>
-          </div>
-          ${contentHTML}
-        </div>`;
-}
-
-function renderMomentComments(md, comments, options, env, self) {
-  if (!comments.length) return "";
-
-  const commentUser = "小群主";
-  const commentAvatar = avatarMap[commentUser] || DEFAULT_AVATAR;
-
-  return `
-        <div class="moments-comments">
-          <div class="flex items-center gap-2 mb-2 w-full">
-            <div class="avatar">
-              <div class="w-8 rounded-full">
-                <img src="${commentAvatar}" alt="${commentUser}" />
-              </div>
-            </div>
-            <div class="join w-full">
-              <input type="text" placeholder="说点什么……" class="input input-bordered input-sm join-item w-full" />
-              <button class="btn btn-primary btn-sm join-item">发送</button>
-            </div>
-          </div>
-          <div class="comments-list">
-            ${comments.map((comment) => renderMomentComment(md, comment, options, env, self)).join("\n")}
-          </div>
-        </div>`;
-}
-
 function parseMomentCalloutData(lines) {
   const { username, time, location } = parseMomentHead(lines[0] || "");
   const contentLines = [];
@@ -695,50 +497,37 @@ function prepareMomentCallout(md, lines, env) {
   return data;
 }
 
-function renderMomentCallout(md, prepared, options, env, self) {
+function renderMomentCallout(prepared, options, env, self) {
   const { username, time, location, images, stats, comments } = prepared;
-  const avatar = avatarMap[username] || DEFAULT_AVATAR;
-  const isSelf = selfNames.includes(username);
-
-  const contentHTML = prepared.contentTokens?.length
+  const contentHtml = prepared.contentTokens?.length
     ? renderPreparedMarkdownTokens(prepared.contentTokens, options, env, self)
     : "";
-  const imagesHTML = images.length
-    ? `<div class="moments-images not-prose">\n${images
-        .map(
-          ({ url, alt }) =>
-            `<img src="${escapeHtml(md, url)}" alt="${escapeHtml(md, alt)}" loading="lazy" />`,
-        )
-        .join("\n")}\n</div>`
-    : "";
 
-  return `
-        <div class="moments-card not-prose">
-          <div class="card-body">
-            <div class="flex items-center gap-3">
-              <div class="avatar">
-                <div class="w-12 rounded-full">
-                  <img class="m-0!" src="${avatar}" alt="${escapeHtml(md, username)}" />
-                </div>
-              </div>
-              <div class="moments-header">
-                <div class="header-title">${escapeHtml(md, username)}</div>
-                <div class="header-info">
-                  ${time ? `<span><i class="ri-time-line"></i> ${escapeHtml(md, time)}</span>` : ""}
-                  ${location ? `<span><i class="ri-map-pin-2-line"></i> ${escapeHtml(md, location)}</span>` : ""}
-                </div>
-              </div>
-              ${isSelf ? '<i class="ri-more-2-line"></i>' : ""}
-            </div>
-            <div class="moments-content mt-3">
-              ${contentHTML}
-              ${imagesHTML}
-            </div>
-            ${renderActions(stats.like, stats.comment, stats.share)}
-            ${renderMomentComments(md, comments, options, env, self)}
-          </div>
-        </div>
-`;
+  const renderedComments = comments.map((comment) => ({
+    username: comment.username,
+    time: comment.time,
+    contentHtml: comment.contentTokens?.length
+      ? renderPreparedMarkdownTokens(comment.contentTokens, options, env, self)
+      : "",
+    replies: comment.replies.map((reply) => ({
+      replier: reply.replier,
+      target: reply.target,
+      time: reply.time,
+      contentHtml: reply.contentTokens?.length
+        ? renderPreparedMarkdownTokens(reply.contentTokens, options, env, self)
+        : "",
+    })),
+  }));
+
+  return `<div class="moments-card not-prose" data-markdown-moment data-props="${encodeProps({
+    username,
+    time,
+    location,
+    contentHtml,
+    images,
+    stats,
+    comments: renderedComments,
+  })}"></div>\n`;
 }
 
 function installCalloutPlugin(md) {
@@ -758,14 +547,14 @@ function installCalloutPlugin(md) {
 
     if (type === "chat" && prepared) {
       if (mode === "messages-only") {
-        return renderChatMessagesOnly(md, prepared, options, env, self);
+        return renderChatMessagesOnly(prepared, options, env, self);
       }
 
-      return renderChatCallout(md, prepared, options, env, self);
+      return renderChatCallout(prepared, options, env, self);
     }
 
     if (type === "moment" && prepared) {
-      return renderMomentCallout(md, prepared, options, env, self);
+      return renderMomentCallout(prepared, options, env, self);
     }
 
     return "";

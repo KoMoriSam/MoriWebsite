@@ -52,8 +52,9 @@
 </template>
 
 <script setup>
-import { computed, ref, h } from "vue";
+import { computed, ref, h, nextTick, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+import { useModalClose } from "@/composables/useModal";
 
 const props = defineProps({
   title: {
@@ -102,12 +103,26 @@ const modalRef = ref(null);
 const dialogRef = ref(null);
 const isConfirm = computed(() => props.variant === "confirm");
 
-const close = () => {
+const closeImmediately = () => {
   if (dialogRef.value?.close) {
     dialogRef.value.close();
   }
   emit("close");
 };
+const modalClose = useModalClose({
+  onClose: closeImmediately,
+});
+
+const open = async () => {
+  await nextTick();
+  const dialog = dialogRef.value;
+  if (!props.visible || !dialog || dialog.open) return;
+
+  modalClose.activate();
+  dialog.showModal();
+};
+
+const close = () => modalClose.requestClose();
 
 const handleSubmit = () => {
   props.onSubmit();
@@ -127,12 +142,22 @@ const handleCancel = () => {
 
 const handleNativeCancel = (event) => {
   event.preventDefault();
-  handleDismiss();
+  if (!isConfirm.value) modalClose.requestPlatformClose();
 };
 
 onClickOutside(modalRef, handleDismiss);
 
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) void open();
+    else if (modalClose.isActive()) modalClose.discard();
+  },
+  { immediate: true },
+);
+
 defineExpose({
+  open,
   close,
 });
 </script>

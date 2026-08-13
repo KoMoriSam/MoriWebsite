@@ -380,11 +380,19 @@
 
       <div id="codeblock" class="scroll-mt-24 xl:col-span-2">
         <TestCard title="CodeBlock（带复制）">
-          <CodeBlock language="typescript" :code="sampleCode" />
-          <CodeBlock
-            language=""
-            code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
-          />
+          <section
+            class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
+          >
+            <CodeBlock language="typescript" :code="sampleCode" />
+          </section>
+          <section
+            class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
+          >
+            <CodeBlock
+              language=""
+              code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
+            />
+          </section>
         </TestCard>
       </div>
 
@@ -562,7 +570,7 @@ import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import NumberController from "@/components/ui/input/NumberController.vue";
 import Pagination from "@/components/base/Pagination.vue";
-import CodeBlock from "@/components/ui/CodeBlock.vue";
+import CodeBlock from "@/components/markdown/CodeBlock.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import TestCard from "@/components/test/_TestCard.vue";
 import TestControlRow from "@/components/test/_TestControlRow.vue";
@@ -802,7 +810,7 @@ const mdSamples = [
   {
     name: "提示与折叠",
     content: [
-      "> [!NOTE] 普通说明",
+      "> [!NOTE] 普通说明 `Markdown 格式支持`",
       "> 静态说明块，支持 **Markdown** 与 `行内代码`。",
       "",
       "> [!TIP]+ 默认展开",

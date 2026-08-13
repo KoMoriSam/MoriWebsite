@@ -1,3 +1,57 @@
+import { createApp } from "vue";
+
+import Alert from "@/components/markdown/Alert.vue";
+
+const ALERT_SELECTOR = "[data-markdown-alert]";
+const mountedAlerts = new WeakMap();
+
+const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
+
+const decodeProps = (value = "") => {
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    return {};
+  }
+};
+
+export function mountAlertBlocks(root) {
+  if (!root || import.meta.env.SSR) return;
+
+  let mounts = mountedAlerts.get(root);
+  if (!mounts) {
+    mounts = new Map();
+    mountedAlerts.set(root, mounts);
+  }
+
+  for (const [element, app] of mounts) {
+    if (!root.contains(element)) {
+      app.unmount();
+      mounts.delete(element);
+    }
+  }
+
+  root.querySelectorAll(ALERT_SELECTOR).forEach((element) => {
+    if (mounts.has(element) || !root.contains(element)) return;
+
+    const app = createApp(Alert, {
+      ...decodeProps(element.dataset.props),
+      contentHtml: element.innerHTML,
+    });
+    app.mount(element);
+    mounts.set(element, app);
+  });
+}
+
+export function unmountAlertBlocks(root) {
+  const mounts = root ? mountedAlerts.get(root) : null;
+  if (!mounts) return;
+
+  mounts.forEach((app) => app.unmount());
+  mounts.clear();
+  mountedAlerts.delete(root);
+}
+
 // GitHub Callout 类型与现有 alert 类型/图标/默认标题映射
 const CALLOUT_META = {
   NOTE: {
@@ -277,30 +331,29 @@ export function alertPlugin(md) {
     );
     const summaryTitle = alert.hasTitle ? title : "";
 
-    if (alert.foldable) {
-      const openAttr = alert.collapsed ? "" : " open";
-      const summaryRow = `
-      <summary class="alert-title collapse-title">
-        <i class="${alert.icon}"></i>
-        <h6>${summaryTitle}</h6>
-      </summary>`;
-      return `
-      <details role="alert" 
-        class="alert alert-${alert.type} alert-soft alert-vertical border border-${alert.type}-content sm:gap-2 collapse collapse-arrow"${openAttr}>
-        ${summaryRow}
-      `;
-    }
+    const classes = [
+      "alert",
+      `alert-${alert.type}`,
+      "alert-soft",
+      "alert-vertical",
+      "sm:gap-2",
+      ...(alert.foldable
+        ? [
+            "border",
+            `border-${alert.type}-content`,
+            "collapse",
+            "collapse-arrow",
+          ]
+        : []),
+    ];
+    const openAttr = !alert.foldable || !alert.collapsed ? " open" : "";
+    const props = encodeProps({
+      icon: alert.icon,
+      titleHtml: summaryTitle,
+      foldable: alert.foldable,
+    });
 
-    const staticSummaryRow = `
-    <summary class="alert-title select-none pointer-events-none cursor-default">
-      <i class="${alert.icon}"></i>
-      <h6>${summaryTitle}</h6>
-    </summary>`;
-    return `
-    <details role="alert" open 
-      class="alert alert-${alert.type} alert-soft alert-vertical sm:gap-2">
-      ${staticSummaryRow}
-    `;
+    return `<details role="alert" class="${classes.join(" ")}" data-markdown-alert data-props="${props}"${openAttr}>`;
   };
 
   md.renderer.rules.blockquote_close = function (

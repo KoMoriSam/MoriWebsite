@@ -15,6 +15,7 @@
       :show-loading="false"
       :header-data="headerData"
       :style-configs="styleConfigs"
+      use-reader-colors
       :manage-route-anchor="false"
       class="scroll-reader-article"
       @render-ready="handleMarkdownRenderReady"

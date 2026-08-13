@@ -1,39 +1,32 @@
 <template>
-  <section
-    class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
+  <span
+    v-if="language"
+    class="font-mono badge badge-ghost badge-sm opacity-50 absolute left-20 top-4"
+    >{{ language }}</span
   >
-    <pre
-      class="m-0 p-0 max-w-full before:content-none"
-    ><code ref="codeEl" class="hljs bg-transparent! px-5! pt-0! text-sm md:text-base scrollbar-thin" :class="`language-${language}`">{{ code }}</code></pre>
 
-    <span
-      v-if="language"
-      class="font-mono badge badge-ghost badge-sm opacity-50 absolute left-20 top-4"
-      >{{ language }}</span
-    >
+  <pre
+    class="m-0! p-0 max-w-full before:content-none"
+  ><code ref="codeEl" class="hljs bg-transparent! px-5! pt-0! text-sm md:text-base scrollbar-thin" :class="`language-${language}`">{{ code }}</code></pre>
 
-    <span
-      class="absolute right-2 top-2 tooltip tooltip-left"
-      :class="copied ? 'tooltip-success' : ''"
-      :data-tip="copied ? '复制成功' : '复制到剪贴板'"
+  <span
+    class="absolute right-2 top-2 tooltip tooltip-left font-mono"
+    :class="copied ? 'tooltip-success' : ''"
+    :data-tip="copied ? '复制成功' : '复制到剪贴板'"
+  >
+    <button
+      class="btn btn-sm btn-square"
+      @click="copy(code)"
+      :class="{
+        'btn-success': copied,
+        'btn-neutral': !copied,
+      }"
     >
-      <button
-        class="btn btn-sm btn-square"
-        @click="copy(code)"
-        :class="{
-          'btn-success': copied,
-          'btn-neutral': !copied,
-        }"
-      >
-        <i
-          :class="[
-            copied ? 'ri-check-line' : 'ri-file-copy-line',
-            'font-normal',
-          ]"
-        ></i>
-      </button>
-    </span>
-  </section>
+      <i
+        :class="[copied ? 'ri-check-line' : 'ri-file-copy-line', 'font-normal']"
+      ></i>
+    </button>
+  </span>
 </template>
 
 <script setup>
@@ -45,7 +38,6 @@ import {
   preloadHighlightLanguages,
 } from "@/utils/markdown/load-markdown-features";
 
-// 接收 props
 const props = defineProps({
   code: { type: String, required: true },
   language: { type: String, default: "plaintext" },
@@ -60,9 +52,7 @@ const highlightCode = async () => {
   await preloadHighlightLanguages([language, "plaintext"]);
   await nextTick();
 
-  if (!codeEl.value) {
-    return;
-  }
+  if (!codeEl.value) return;
 
   const resolvedLanguage = hljs.getLanguage(language) ? language : "plaintext";
   codeEl.value.innerHTML = hljs.highlight(props.code, {
@@ -74,7 +64,6 @@ const highlightCode = async () => {
 onMounted(highlightCode);
 watch(() => [props.code, props.language], highlightCode, { flush: "post" });
 
-// 复制功能
 const { copy, copied } = useClipboard({
   source: code,
   legacy: true,

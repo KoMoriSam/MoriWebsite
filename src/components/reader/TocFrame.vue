@@ -20,10 +20,10 @@
       :data-mobile-toc-handle="mobile ? '' : undefined"
       :class="[
         mobile
-          ? 'relative overflow-hidden rounded-box border transition-[padding,border-color,background-color,backdrop-filter] duration-300 ease-out motion-reduce:transition-none'
+          ? 'relative rounded-box border transition-[padding,border-color,background-color,backdrop-filter] duration-300 ease-out motion-reduce:transition-none'
           : 'mb-3',
         mobile && compact
-          ? 'border-transparent bg-transparent p-0 backdrop-blur-none'
+          ? 'rounded-none border-0 bg-transparent p-0 backdrop-blur-none'
           : mobile
             ? 'border-base-300/90 bg-base-100/96 p-2 backdrop-blur-md supports-[backdrop-filter]:bg-base-100/88'
             : '',
@@ -103,12 +103,12 @@
 
       <div
         :class="[
-          'h-1.5 w-full rounded-full transition-[margin,width,transform,border-radius] duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none',
+          'relative left-1/2 h-1.5 -translate-x-1/2 rounded-full transition-[margin,width,border-radius,background-color,box-shadow] duration-300 ease-out before:absolute before:inset-x-0 before:top-0 before:h-6 before:content-[\'\'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none',
           mobile
             ? compact
-              ? 'relative left-1/2 w-screen -translate-x-1/2 cursor-pointer rounded-none bg-base-300/85'
-              : 'mt-2 mb-1 cursor-pointer bg-base-300/85 ring-1 ring-base-300/70'
-            : 'mt-2 bg-base-300/70',
+              ? 'w-dvw cursor-pointer rounded-none bg-base-300'
+              : 'mt-2 mb-1 w-full cursor-pointer bg-base-300/85 ring-1 ring-base-300/70'
+            : 'mt-2 w-full bg-base-300/70',
         ]"
         :role="mobile ? 'button' : undefined"
         :tabindex="mobile ? 0 : undefined"
@@ -119,7 +119,10 @@
         @keydown.space.prevent="toggleCompact"
       >
         <div
-          class="h-full rounded-full bg-primary transition-all duration-300 ease-out"
+          :class="[
+            'h-full bg-primary transition-[width,border-radius] duration-300 ease-out motion-reduce:transition-none',
+            mobile && compact ? 'rounded-none' : 'rounded-full',
+          ]"
           :style="{ width: `${normalizedProgress}%` }"
         ></div>
       </div>
