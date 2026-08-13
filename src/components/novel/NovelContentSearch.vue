@@ -102,6 +102,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  initialKeyword: {
+    type: String,
+    default: "",
+  },
+  beforeNavigate: {
+    type: Function,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["select"]);
@@ -179,17 +187,30 @@ const initialize = async () => {
 };
 
 const openResult = async (result) => {
+  const navigationOptions = (await props.beforeNavigate?.()) || {};
   emit("select");
-  await router.push(String(result.url || "/novel"));
+  const navigate = navigationOptions.replaceDialogHistory
+    ? router.replace
+    : router.push;
+  await navigate.call(router, String(result.url || "/novel"));
 };
 
 watch(
   () => props.active,
   async (active) => {
     if (!active) return;
+    if (props.initialKeyword) keyword.value = props.initialKeyword.trim();
     await initialize();
     await nextTick();
     searchInputRef.value?.focus();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.initialKeyword,
+  (value) => {
+    if (value) keyword.value = String(value).trim();
   },
   { immediate: true },
 );

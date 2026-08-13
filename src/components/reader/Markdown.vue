@@ -1,9 +1,9 @@
 <template>
-  <Loading :size="`my-64`" v-if="isLoading" />
+  <Loading v-if="isLoading && showLoading" :size="`my-64`" />
 
   <article
     ref="articleRef"
-    v-else
+    v-else-if="!isLoading"
     :id="contentId"
     :class="[{ 'opacity-60': markdownPreparing }, styleConfigs.fontStyle]"
     class="markdown-content prose prose-2xl min-w-0 w-full max-w-full"
@@ -12,11 +12,14 @@
       '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,
       '--para-line-height': styleConfigs.lineHeight,
       '--para-margin-inline': `${
-        styleConfigs.paraHeight *
-        ((styleConfigs.fontSize * styleConfigs.lineHeight) / 36)
-      }em`,
+        Math.max(0, Number(styleConfigs.paraHeight) || 0) *
+        Math.max(1, Number(styleConfigs.fontSize) || 22) *
+        Math.max(1, Number(styleConfigs.lineHeight) || 1.6)
+      }px`,
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
       + ${styleConfigs.fontGap * 0.7}rem)`,
+      '--reader-text-color': resolvedTextColor || 'var(--color-base-content)',
+      color: resolvedTextColor || undefined,
     }"
   >
     <slot name="before" />
@@ -83,6 +86,12 @@ const props = defineProps({
     default: false,
   },
 
+  // 外层已有完整加载遮罩时，只保留 Markdown 的加载状态，不重复显示指示器。
+  showLoading: {
+    type: Boolean,
+    default: true,
+  },
+
   // 是否显示刷新按钮
   showRefresh: {
     type: Boolean,
@@ -108,6 +117,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["refresh", "render-ready"]);
+const resolvedTextColor = computed(() => {
+  const colorTheme = props.styleConfigs.colorTheme;
+  return ["lemonade", "forest", "corporate", "dim"].includes(colorTheme)
+    ? ""
+    : props.styleConfigs.textColor || "";
+});
 
 // Markdown 渲染选项
 const options = {
@@ -478,3 +493,5 @@ watch(
   { immediate: true, flush: "post" },
 );
 </script>
+
+<style scoped src="@/assets/reader.css"></style>

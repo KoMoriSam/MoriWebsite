@@ -5,6 +5,8 @@
     :toc="!isMobileReader"
     :aside="!isMobileReader"
     :page-class="readerPageClass"
+    :page-style="readerPageStyle"
+    :page-theme="readerPageTheme"
     :container-class="readerContainerClass"
     :grid-class="readerGridClass"
     :content-class="readerContentClass"
@@ -16,14 +18,14 @@
     <section
       :ref="scrollRef"
       class="min-w-0 w-full max-w-full overflow-x-clip"
-      :class="{ 'relative h-full min-h-0': isMobileReader }"
+      :class="{ 'relative flex h-full min-h-0 flex-col': isMobileReader }"
       :style="
         isMobileReader
           ? {
               '--mobile-reader-content-padding-block': '0.5rem',
-              '--mobile-reader-shell-padding-bottom': '1.5rem',
-              '--mobile-reader-dock-clearance':
-                'calc(4.5rem + env(safe-area-inset-bottom))',
+              '--mobile-reader-shell-padding-bottom': '0rem',
+              color: readerCustomTextColor || undefined,
+              backgroundColor: readerCustomBackgroundColor || undefined,
             }
           : undefined
       "
@@ -44,7 +46,11 @@
         :style-configs="styleConfigs"
         :is-loading="isLoadingContent"
         :controls-open="mobileReaderControlsOpen"
+        :tap-zones="mobileTapZones"
+        :wheel-pagination="mobileWheelPagination"
         @controls-open-change="mobileReaderControlsOpen = $event"
+        @reader-action="handleMobileReaderAction"
+        @text-context="openTextContextMenu"
         @controller-state="updateMobileControllerState"
       />
 
@@ -58,12 +64,27 @@
         :style-configs="styleConfigs"
         :is-loading="isLoadingContent"
         :controls-open="mobileReaderControlsOpen"
+        :tap-zones="mobileTapZones"
+        :restore-chapter-start="restoreMobileScrollToChapterStart"
         @controller-state="updateMobileControllerState"
+        @reader-action="handleMobileReaderAction"
+        @text-context="openTextContextMenu"
+        @chapter-start-restored="restoreMobileScrollToChapterStart = false"
       />
 
-      <ChapterController
+      <ReaderStatusBar
         v-if="currentChapter && isMobileReader"
-        variant="mobile"
+        book-title="向远方"
+        :volume-title="currentChapter.volumeTitle"
+        :chapter-title="getChapterDisplayTitle(currentChapter)"
+        :current-page="mobileControllerState.currentPage"
+        :total-pages="mobileControllerState.totalPages"
+        :reading-progress="mobileControllerState.readingProgress"
+      />
+
+      <ReaderControls
+        v-if="currentChapter && isMobileReader"
+        ref="mobileReaderControlsRef"
         :current-page="mobileControllerState.currentPage"
         :total-pages="mobileControllerState.totalPages"
         :pagination-ready="mobileControllerState.paginationReady"
@@ -76,46 +97,14 @@
         @controls-open-change="mobileReaderControlsOpen = $event"
         @refresh-content="handleRefreshContent"
         @show-reader-hint="callMobileReaderAction('triggerReaderHint')"
-        @reading-mode-change="readerStore.setMobileReadingMode"
-      >
-        <template #comments>
-          <section
-            class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
-          >
-            <h3
-              id="mobile-reader-comments-title"
-              class="min-w-0 text-xl font-bold break-words"
-            >
-              {{ currentMapping === "title" ? "本章说" : "本书说" }}
-            </h3>
+      />
 
-            <button
-              type="button"
-              class="btn btn-info btn-soft btn-xs shrink-0"
-              @click="commentToggle"
-            >
-              {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
-            </button>
-          </section>
-
-          <Giscus
-            :key="giscusKey"
-            :repo="GISCUS.novelRepo.name"
-            :repo-id="GISCUS.novelRepo.id"
-            :category="GISCUS.categories.general.name"
-            :category-id="GISCUS.categories.general.id"
-            :mapping="giscusMapping"
-            :term="giscusTerm"
-            strict="0"
-            reactions-enabled="1"
-            emit-metadata="0"
-            input-position="bottom"
-            :theme="giscusTheme"
-            lang="zh-CN"
-            loading="lazy"
-          />
-        </template>
-      </ChapterController>
+      <TextContextMenu
+        v-if="isMobileReader"
+        v-model="mobileTextContextOpen"
+        :context="mobileTextContext"
+        @search="openContextSearch"
+      />
 
       <div v-else-if="currentChapter" class="min-w-0 w-full max-w-full">
         <Markdown
@@ -188,6 +177,9 @@ import ChapterController from "@/components/novel/ChapterController.vue";
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
 import PagedReader from "@/components/novel/mobile/PagedReader.vue";
 import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
+import ReaderControls from "@/components/novel/mobile/ReaderControls.vue";
+import TextContextMenu from "@/components/novel/mobile/TextContextMenu.vue";
+import ReaderStatusBar from "@/components/novel/mobile/ReaderStatusBar.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
@@ -200,8 +192,14 @@ import { useRoute, useRouter } from "vue-router";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
-import { getChapterContextTitle } from "@/utils/format-chapter-label";
-import { MOBILE_READING_MODES } from "@/constants/reader";
+import {
+  getChapterContextTitle,
+  getChapterDisplayTitle,
+} from "@/utils/format-chapter-label";
+import {
+  MOBILE_READING_MODES,
+  MOBILE_READER_VOLUME_KEY_EVENT,
+} from "@/constants/reader";
 
 const novelStore = useNovelStore();
 const {
@@ -215,7 +213,13 @@ const router = useRouter();
 const route = useRoute();
 
 const readerStore = useReaderStore();
-const { styleConfigs, mobileReadingMode } = storeToRefs(readerStore);
+const {
+  styleConfigs,
+  mobileReadingMode,
+  mobileTapZones,
+  mobileWheelPagination,
+  mobileVolumePagination,
+} = storeToRefs(readerStore);
 
 const themeStore = useThemeStore();
 const { giscusTheme } = storeToRefs(themeStore);
@@ -225,6 +229,8 @@ import {
   onActivated,
   onBeforeUnmount,
   onDeactivated,
+  onMounted,
+  nextTick,
   ref,
   watch,
 } from "vue";
@@ -232,7 +238,12 @@ import {
 const stopNovelPosTracker = ref(null);
 const trackedReaderContext = ref("");
 const mobileReaderControlsOpen = ref(false);
+const mobileTextContextOpen = ref(false);
+const mobileTextContext = ref({});
 const activeMobileReaderRef = ref(null);
+const mobileReaderControlsRef = ref(null);
+const restoreMobileScrollToChapterStart = ref(false);
+let mobileControlOpenTimer = 0;
 const mobileControllerState = ref({
   currentPage: 1,
   totalPages: 1,
@@ -252,13 +263,132 @@ const callMobileReaderAction = (name, ...args) => {
   const action = activeMobileReaderRef.value?.[name];
   if (typeof action === "function") action(...args);
 };
+const openMobileControl = async (name, keyword = "") => {
+  mobileReaderControlsOpen.value = true;
+  window.dispatchEvent(new Event("mobile-reader:show-navbar"));
+  await nextTick();
+
+  // 九宫格动作由 pointerup 触发；等同一次合成 click 完成后再显示 modal，
+  // 避免刚生成的 backdrop 接收到这次点击并立即把 modal 关闭。
+  window.clearTimeout(mobileControlOpenTimer);
+  mobileControlOpenTimer = window.setTimeout(() => {
+    void mobileReaderControlsRef.value?.openControl({ name, keyword });
+  }, 0);
+};
+const handleMobileReaderAction = (action) => {
+  if (action === "menu") {
+    mobileReaderControlsOpen.value = !mobileReaderControlsOpen.value;
+    window.dispatchEvent(
+      new Event(
+        mobileReaderControlsOpen.value
+          ? "mobile-reader:show-navbar"
+          : "mobile-reader:hide-navbar",
+      ),
+    );
+    return;
+  }
+  if (action === "previous-page") callMobileReaderAction("turnPage", -1);
+  else if (action === "next-page") callMobileReaderAction("turnPage", 1);
+  else if (action === "previous-chapter")
+    callMobileReaderAction("turnChapter", -1);
+  else if (action === "next-chapter") callMobileReaderAction("turnChapter", 1);
+  else if (["toc", "search"].includes(action)) {
+    void openMobileControl(action);
+  } else if (action === "help") callMobileReaderAction("triggerReaderHint");
+};
+const openTextContextMenu = (context) => {
+  if (!context) {
+    mobileTextContextOpen.value = false;
+    mobileTextContext.value = {};
+    return;
+  }
+  mobileTextContext.value = context || {};
+  mobileTextContextOpen.value = true;
+};
+const openContextSearch = (keyword) => {
+  void openMobileControl("search", keyword);
+};
+const handleNativeVolumeKey = (event) => {
+  if (!isMobileReader.value || !mobileVolumePagination.value) return;
+  const direction = event.detail?.direction;
+  if (["down", "next", 1].includes(direction)) {
+    callMobileReaderAction("turnPage", 1);
+  } else if (["up", "previous", -1].includes(direction)) {
+    callMobileReaderAction("turnPage", -1);
+  }
+};
+const handleVolumeKeydown = (event) => {
+  if (!isMobileReader.value || !mobileVolumePagination.value) return;
+  if (["VolumeDown", "AudioVolumeDown"].includes(event.key)) {
+    event.preventDefault();
+    callMobileReaderAction("turnPage", 1);
+  } else if (["VolumeUp", "AudioVolumeUp"].includes(event.key)) {
+    event.preventDefault();
+    callMobileReaderAction("turnPage", -1);
+  }
+};
 const isMobileReader = useMediaQuery("(max-width: 1023px)");
 const isPagedMobileReader = computed(
   () => mobileReadingMode.value === MOBILE_READING_MODES.PAGED,
 );
+watch(
+  mobileReadingMode,
+  (mode, previousMode) => {
+    restoreMobileScrollToChapterStart.value = Boolean(
+      isMobileReader.value &&
+        previousMode === MOBILE_READING_MODES.PAGED &&
+        mode === MOBILE_READING_MODES.SCROLL &&
+        mobileControllerState.value.paginationReady &&
+        mobileControllerState.value.currentPage === 1,
+    );
+  },
+  { flush: "sync" },
+);
+const readerPageTheme = computed(() => {
+  if (!isMobileReader.value) return "";
+  return ["lemonade", "forest", "corporate", "dim"].includes(
+    styleConfigs.value.colorTheme,
+  )
+    ? styleConfigs.value.colorTheme
+    : "";
+});
+const usesCustomReaderColors = computed(
+  () =>
+    isMobileReader.value &&
+    (styleConfigs.value.colorTheme === "custom" ||
+      (!readerPageTheme.value &&
+        Boolean(
+          styleConfigs.value.textColor || styleConfigs.value.backgroundColor,
+        ))),
+);
+const readerCustomTextColor = computed(() =>
+  usesCustomReaderColors.value ? styleConfigs.value.textColor : "",
+);
+const readerCustomBackgroundColor = computed(() =>
+  usesCustomReaderColors.value ? styleConfigs.value.backgroundColor : "",
+);
+const readerPageStyle = computed(() => {
+  if (!isMobileReader.value) return undefined;
+
+  const textColor = readerCustomTextColor.value;
+  const backgroundColor = readerCustomBackgroundColor.value;
+  return {
+    color: textColor || undefined,
+    backgroundColor: backgroundColor || undefined,
+    "--reader-text-color": textColor || "var(--color-base-content)",
+    "--color-base-content": textColor || undefined,
+    "--color-base-100": backgroundColor || undefined,
+    "--color-base-200": backgroundColor
+      ? `color-mix(in oklab, ${backgroundColor} 94%, ${textColor || "black"})`
+      : undefined,
+    "--color-base-300": backgroundColor
+      ? `color-mix(in oklab, ${backgroundColor} 88%, ${textColor || "black"})`
+      : undefined,
+  };
+});
 const readerPageClass = computed(() =>
   isMobileReader.value
-    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 p-6 pt-2 sm:px-8 [&_.drawer]:h-full [&_.drawer-content]:pb-0"
+    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 px-6 py-2 text-base-content sm:px-8 [&_.drawer]:h-full [&_.drawer-content]:pb-0"
     : "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
 );
 const readerContainerClass = computed(() =>
@@ -266,11 +396,13 @@ const readerContainerClass = computed(() =>
 );
 const readerGridClass = computed(() =>
   isMobileReader.value
-    ? "min-h-0 flex-1"
+    ? "h-full min-h-0 flex-1 items-stretch! overflow-hidden"
     : "gap-y-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] xl:gap-x-8 2xl:grid-cols-[17rem_minmax(0,1fr)_22rem]",
 );
 const readerContentClass = computed(() =>
-  isMobileReader.value ? "h-full min-h-0 border-0! p-0!" : "",
+  isMobileReader.value
+    ? "flex h-full min-h-0 self-stretch overflow-hidden border-0! p-0!"
+    : "",
 );
 
 const disposeNovelPosTracker = () => {
@@ -341,7 +473,19 @@ watch(
 
 onActivated(setupNovelPosTracker);
 onDeactivated(disposeNovelPosTracker);
-onBeforeUnmount(disposeNovelPosTracker);
+onMounted(() => {
+  window.addEventListener("keydown", handleVolumeKeydown);
+  window.addEventListener(MOBILE_READER_VOLUME_KEY_EVENT, handleNativeVolumeKey);
+});
+onBeforeUnmount(() => {
+  window.clearTimeout(mobileControlOpenTimer);
+  disposeNovelPosTracker();
+  window.removeEventListener("keydown", handleVolumeKeydown);
+  window.removeEventListener(
+    MOBILE_READER_VOLUME_KEY_EVENT,
+    handleNativeVolumeKey,
+  );
+});
 
 const { currentMapping, commentToggle } = useGiscus();
 

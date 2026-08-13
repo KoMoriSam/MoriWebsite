@@ -2,7 +2,7 @@
   <nav
     v-if="variant === 'mobile'"
     data-mobile-reader-dock
-    class="dock dock-sm z-50 border-t border-base-300 bg-base-100/95"
+    class="dock z-50 border-t border-base-300 bg-base-100/95"
     aria-label="移动阅读控制"
   >
     <button

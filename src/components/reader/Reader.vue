@@ -1,5 +1,9 @@
 <template>
-  <main :class="['w-full min-w-0 max-w-full flex-1', pageClass]">
+  <main
+    :class="['w-full min-w-0 max-w-full flex-1', pageClass]"
+    :style="pageStyle"
+    :data-theme="pageTheme || undefined"
+  >
     <ReaderShell :drawer="drawer" :drawer-id="drawerId">
       <ReaderBody
         :container-class="containerClass"
@@ -117,6 +121,14 @@ const props = defineProps({
   pageClass: {
     type: [String, Array, Object],
     default: "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+  },
+  pageStyle: {
+    type: [String, Array, Object],
+    default: undefined,
+  },
+  pageTheme: {
+    type: String,
+    default: "",
   },
   containerClass: {
     type: [String, Array, Object],

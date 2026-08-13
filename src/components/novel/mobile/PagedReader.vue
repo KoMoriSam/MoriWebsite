@@ -1,20 +1,18 @@
 <template>
   <section
     ref="sectionRef"
-    class="relative flex h-full min-h-0 flex-col overflow-hidden"
+    class="relative flex min-h-0 flex-1 flex-col overflow-hidden"
     aria-label="分页阅读器"
     :aria-busy="showChapterLoadingOverlay"
     :style="readerTypographyStyle"
-    @touchstart.passive="handleTopPullStart"
-    @touchmove="handleTopPullMove"
-    @touchend.passive="resetTopPullGesture"
-    @touchcancel.passive="resetTopPullGesture"
   >
     <div
       ref="viewportRef"
       class="mobile-page-viewport relative min-h-0 shrink-0 overflow-hidden overscroll-none"
       :class="{
         'opacity-60': isMeasuring && !hasMeasured && !chapterSnapshotVisible,
+        'pagination-measuring': isMeasuring,
+        'pagination-layout-resetting': paginationLayoutResetting,
         'chapter-transition-preparing':
           chapterSnapshotVisible && !chapterSnapshotLeaving,
       }"
@@ -23,24 +21,28 @@
         '--reader-page-width': `${pageWidth}px`,
         '--reader-page-height': `${pageHeight}px`,
         '--reader-page-line-height': `${pageLineHeight}px`,
+        '--reader-page-baseline-offset': `${pageBaselineOffset}px`,
         '--reader-paragraph-gap': `${paragraphGap}px`,
         '--reader-footnote-reserve': `${footnoteReserve}px`,
         '--reader-page-font-size': `${styleConfigs.fontSize}px`,
         '--reader-page-padding-block':
           'var(--mobile-reader-content-padding-block)',
-        '--reader-page-offset': `${pageOffset}px`,
+        '--reader-page-offset': `${renderedPageOffset}px`,
         '--reader-chapter-offset': `${chapterEnterOffset}px`,
         height: `${pageHeight}px`,
+        backgroundColor: readerBackgroundColor || undefined,
       }"
-      @pointerdown="handlePointerDown"
-      @pointermove="handlePointerMove"
-      @pointerup="handlePointerUp"
-      @pointercancel="resetPointer"
+      @pointerdown.capture="handlePointerDown"
+      @pointermove.capture="handlePointerMove"
+      @pointerup.capture="handlePointerUp"
+      @pointercancel.capture="resetPointer"
       @click="handleViewportClick"
+      @contextmenu.capture.prevent="handleTextContextMenu"
     >
       <Markdown
         :content="content"
         :is-loading="isLoading"
+        :show-loading="false"
         :header-data="headerData"
         :style-configs="styleConfigs"
         :manage-route-anchor="false"
@@ -70,6 +72,12 @@
       />
 
       <div
+        v-if="isDevelopment"
+        class="mobile-page-baseline-grid pointer-events-none absolute inset-0 z-20"
+        aria-hidden="true"
+      ></div>
+
+      <div
         v-show="chapterSnapshotVisible"
         ref="chapterSnapshotRef"
         class="pointer-events-none absolute inset-0 z-30 overflow-hidden bg-base-100 transition-[transform,opacity] duration-[220ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
@@ -77,18 +85,12 @@
           'opacity-0':
             chapterSnapshotLeaving && chapterTransitionDirection === 0,
         }"
-        :style="{ transform: chapterSnapshotTransform }"
+        :style="{
+          transform: chapterSnapshotTransform,
+          backgroundColor: readerBackgroundColor || undefined,
+        }"
         aria-hidden="true"
       ></div>
-
-      <div
-        v-if="isMeasuring && !hasMeasured && !isLoading"
-        class="pointer-events-none absolute inset-0 flex items-center justify-center bg-base-100/70"
-        role="status"
-        aria-label="正在按屏幕大小排版"
-      >
-        <span class="loading loading-spinner loading-sm"></span>
-      </div>
 
       <Transition
         enter-active-class="transition duration-200 ease-out"
@@ -98,86 +100,74 @@
         leave-from-class="translate-y-0 opacity-100"
         leave-to-class="translate-y-2 opacity-0"
       >
-        <button
+        <div
           v-if="showNavigationHint"
-          type="button"
-          data-reader-interactive
-          aria-label="阅读操作提示：轻触两侧或左右滑动翻页，可在底部阅读控制切换为上下滚动，从顶部下滑调出导航栏，在导航栏区域上滑可收起，点击提示关闭"
-          class="alert alert-soft absolute bottom-3 left-1/2 z-20 block w-[calc(100%_-_1.5rem)] max-w-sm -translate-x-1/2 cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
-          @pointerdown.stop
-          @click.stop="dismissReaderHint"
+          class="pointer-events-none absolute inset-0 z-20 grid place-items-center"
         >
-          <span class="block w-full">
-            <span class="flex items-baseline justify-between gap-3">
-              <span class="text-sm font-semibold">阅读操作</span>
-              <span class="text-[0.6875rem] text-base-content/45">
-                轻触提示可关闭
+          <button
+            type="button"
+            data-reader-interactive
+            aria-label="阅读操作提示：轻触九宫格区域执行对应操作，左右滑动翻页，点击提示关闭"
+            class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
+            @pointerdown.stop
+            @click.stop="dismissReaderHint"
+          >
+            <span class="block w-full">
+              <span class="flex items-baseline justify-between gap-3">
+                <span class="text-sm font-semibold">阅读操作</span>
+                <span class="text-[0.6875rem] text-base-content/45">
+                  轻触提示可关闭
+                </span>
               </span>
-            </span>
 
-            <span
-              class="mt-2 flex items-center justify-center gap-2 rounded-box bg-base-200/75 px-2.5 py-2"
-            >
-              <i
-                class="ri-arrow-down-line text-xl leading-none text-base-content/75"
-                aria-hidden="true"
-              ></i>
-              <span class="text-left">
-                <span class="block text-xs font-semibold"
-                  >从最顶部下滑可唤出本站导航栏</span
-                >
+              <span class="mt-2.5 grid grid-cols-2 gap-2">
                 <span
-                  class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                  class="rounded-box bg-base-200/75 px-2.5 py-2 text-center"
                 >
-                  唤出后，可通过上滑导航栏收起；
-                  <br />
-                  你可以通过导航栏调整页面主题
+                  <i
+                    class="ri-grid-line block text-xl leading-none text-base-content/75"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="mt-1.5 block text-xs font-semibold">
+                    轻触操作（可自定义）
+                  </span>
+                  <span
+                    class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                  >
+                    中央展开菜单<br />
+                    四周翻页
+                  </span>
                 </span>
-              </span>
-            </span>
 
-            <span class="mt-2.5 grid grid-cols-2 gap-2">
-              <span class="rounded-box bg-base-200/75 px-2.5 py-2 text-center">
-                <i
-                  class="ri-arrow-left-right-line block text-xl leading-none text-base-content/75"
-                  aria-hidden="true"
-                ></i>
-                <span class="mt-1.5 block text-xs font-semibold">
-                  轻触翻页
-                </span>
                 <span
-                  class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                  class="rounded-box bg-base-200/75 px-2.5 py-2 text-center"
                 >
-                  页面左侧 / 右侧
+                  <i
+                    class="ri-drag-move-line block text-xl leading-none text-base-content/75"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="mt-1.5 block text-xs font-semibold">
+                    滑动翻页
+                  </span>
+                  <span
+                    class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                  >
+                    正文区域<br />可左右滑动
+                  </span>
                 </span>
               </span>
 
-              <span class="rounded-box bg-base-200/75 px-2.5 py-2 text-center">
-                <i
-                  class="ri-drag-move-line block text-xl leading-none text-base-content/75"
-                  aria-hidden="true"
-                ></i>
-                <span class="mt-1.5 block text-xs font-semibold">
-                  滑动翻页
-                </span>
-                <span
-                  class="mt-0.5 block text-[0.6875rem] text-base-content/55"
-                >
-                  正文区域左右滑动
+              <span
+                class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
+              >
+                <span class="shrink-0 font-semibold">更多控制</span>
+                <span class="text-base-content/60">
+                  九宫格区域可设为菜单、上一章、下一章、目录、搜索、帮助等操作
                 </span>
               </span>
             </span>
-
-            <span
-              class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
-            >
-              <span class="shrink-0 font-semibold">更多控制</span>
-              <span class="text-base-content/60">
-                点击底部页码可切换上下滚动，或打开目录、排版与跳页
-              </span>
-            </span>
-          </span>
-        </button>
+          </button>
+        </div>
       </Transition>
     </div>
 
@@ -225,14 +215,7 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, nextTick, ref, toRef, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
@@ -240,24 +223,45 @@ import PageFootnotes from "./PageFootnotes.vue";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 import { useChapters } from "@/composables/useChapters";
-import { MOBILE_READER_NAVBAR_SHOW_EVENT } from "@/constants/reader";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 import { alignMobileChapterHeaderBlock } from "@/utils/reader/align-header.js";
+import {
+  calculateRawColumnPage,
+  calculateReaderFlowBaseline,
+  calculateTextRectBaseline,
+  collectReaderBodyTextRects,
+  collectReaderPageFlowRects,
+  createFootnoteLayoutSignature,
+  findLastTextRect,
+  resetTextBaselineMetrics,
+  roundLayoutPixel,
+  waitForReaderLayout,
+} from "@/utils/reader/measure-mobile-pages";
+import { useReaderHint } from "@/composables/novel/useReaderHint";
+import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
+import { usePagedReaderInput } from "@/composables/novel/usePagedReaderInput";
+import { usePaginationKeyboardFreeze } from "@/composables/novel/usePaginationKeyboardFreeze";
+import { usePagedChapterTransition } from "@/composables/novel/usePagedChapterTransition";
+import { usePagedReadingPosition } from "@/composables/novel/usePagedReadingPosition";
+import { usePaginationScheduler } from "@/composables/novel/usePaginationScheduler";
+import { usePaginationObservers } from "@/composables/novel/usePaginationObservers";
+import { usePagedFootnoteLayout } from "@/composables/novel/usePagedFootnoteLayout";
+import {
+  prepareMobileTables,
+  restoreMobileTables,
+  splitMobileTables,
+} from "@/utils/reader/split-mobile-tables";
 
 const PAGE_GAP = 32;
-const PAGE_DOCK_GAP = 16;
 const PAGE_VERTICAL_PADDING = 8;
+const isDevelopment = import.meta.env.DEV;
 const MIN_BODY_LINES_WITH_FOOTNOTES = 3;
 const MAX_FOOTNOTE_LAYOUT_PASSES = 64;
 const MAX_EMPTY_PAGE_RECOVERY_PASSES = 3;
 const MIN_PAGE_HEIGHT = 160;
-const SWIPE_DISTANCE = 44;
-const TAP_EDGE_RATIO = 0.18;
-const COMMENT_EXCLUSION_RADIUS = 24;
-const NAVBAR_PULL_START_ZONE = 72;
-const NAVBAR_PULL_DISTANCE = 48;
-const NAVBAR_PULL_DIRECTION_RATIO = 1.25;
+const SWIPE_DISTANCE = 26;
 const VIEWPORT_SETTLE_DELAY = 120;
+const TYPOGRAPHY_SETTLE_DELAY = 90;
 const KEYBOARD_MIN_HEIGHT_DELTA = 80;
 const CHAPTER_REVEAL_DURATION = 150;
 const CHAPTER_SLIDE_DURATION = 220;
@@ -293,12 +297,16 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  tapZones: { type: Array, default: () => [] },
+  wheelPagination: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
   "progress",
   "controls-open-change",
   "controller-state",
+  "reader-action",
+  "text-context",
 ]);
 const route = useRoute();
 const { getState, setState } = useReadingStateStorage();
@@ -309,62 +317,59 @@ const viewportRef = ref(null);
 const endMarkerRef = ref(null);
 const chapterSnapshotRef = ref(null);
 const footnoteMeasureRef = ref(null);
-const totalReadingProgress = ref(0);
-const pendingReadingProgress = ref(0);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const pageWidth = ref(1);
 const pageHeight = ref(MIN_PAGE_HEIGHT);
 const pageLineHeight = ref(35.2);
+const pageBaselineOffset = ref(0);
+const leadingEmptyPages = ref(0);
+const paginationLayoutResetting = ref(false);
 const isMeasuring = ref(true);
 const hasMeasured = ref(false);
 const measuredChapterUuid = ref("");
-const restoredChapterUuid = ref("");
-const showNavigationHint = ref(false);
-const chapterSnapshotVisible = ref(false);
-const chapterSnapshotLeaving = ref(false);
-const chapterTransitionDirection = ref(0);
-const chapterNavigationPending = ref(false);
-const chapterLoadingOverlayVisible = ref(false);
+const {
+  visible: showNavigationHint,
+  show: showReaderHint,
+  dismiss: hideReaderHint,
+} = useReaderHint();
 const footnotesByPage = ref({});
 const footnoteReservesByPage = ref({});
 const measuringFootnotes = ref([]);
 
-let resizeObserver;
-let mutationObserver;
-let measureFrame = 0;
 let measureToken = 0;
-let persistTimer;
-let hintTimer;
-let viewportResizeTimer;
-let keyboardReleaseTimer;
-let chapterRevealTimer;
-let chapterNavigationTimer;
-let keyboardBaselineHeight = 0;
-let keyboardPaginationFrozen = false;
-let footnotePaginationDepth = 0;
-let footnoteSplitSequence = 0;
-let measureInProgress = false;
-let measureQueued = false;
 let emptyPageRecoveryPasses = 0;
+let forcePaginationResetPending = true;
+let takeMutationRecords = () => {};
 
 const pageStride = computed(() => pageWidth.value + PAGE_GAP);
+const readerBackgroundColor = computed(() =>
+  ["lemonade", "forest", "corporate", "dim"].includes(
+    props.styleConfigs.colorTheme,
+  )
+    ? ""
+    : props.styleConfigs.backgroundColor || "",
+);
 const pageOffset = computed(() => (currentPage.value - 1) * pageStride.value);
-const paragraphGapHalfSteps = computed(() => {
-  const configuredGap = Math.max(0, Number(props.styleConfigs.paraHeight) || 0);
-  return Math.round(configuredGap * 2);
-});
+// 移动端浏览器偶尔会在多栏布局稳定前保留一个没有内容的首栏。
+// 该偏移只折叠浏览器生成的空栏，不改变对外暴露的章节页码。
+const renderedPageOffset = computed(
+  () => pageOffset.value + leadingEmptyPages.value * pageStride.value,
+);
 const paragraphGap = computed(
-  () => paragraphGapHalfSteps.value * (pageLineHeight.value / 2),
+  () =>
+    Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
+    pageLineHeight.value,
 );
 const readerTypographyStyle = computed(() => ({
   "--para-font-size": `${props.styleConfigs.fontSize}px`,
   "--para-letter-spacing": `${props.styleConfigs.fontGap * 0.25}rem`,
   "--para-line-height": props.styleConfigs.lineHeight,
   "--para-margin-inline": `${
-    props.styleConfigs.paraHeight *
-    ((props.styleConfigs.fontSize * props.styleConfigs.lineHeight) / 36)
-  }em`,
+    Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
+    Math.max(1, Number(props.styleConfigs.fontSize) || 20) *
+    Math.max(1, Number(props.styleConfigs.lineHeight) || 1.6)
+  }px`,
   "--para-text-indent": `calc(${props.styleConfigs.fontSize * 2}px + ${
     props.styleConfigs.fontGap * 0.7
   }rem)`,
@@ -375,35 +380,52 @@ const footnoteReserve = computed(
 const currentPageFootnotes = computed(
   () => footnotesByPage.value[currentPage.value] || [],
 );
-const showChapterLoadingOverlay = computed(
-  () => props.isLoading || chapterLoadingOverlayVisible.value,
-);
-const chapterEnterOffset = computed(() => {
-  if (
-    !chapterSnapshotVisible.value ||
-    chapterSnapshotLeaving.value ||
-    chapterTransitionDirection.value === 0
-  ) {
-    return 0;
-  }
-
-  return chapterTransitionDirection.value * pageStride.value;
-});
-const chapterSnapshotTransform = computed(() => {
-  if (!chapterSnapshotLeaving.value) return "translate3d(0, 0, 0)";
-  if (chapterTransitionDirection.value > 0) {
-    return `translate3d(${-pageStride.value}px, 0, 0)`;
-  }
-  if (chapterTransitionDirection.value < 0) {
-    return `translate3d(${pageStride.value}px, 0, 0)`;
-  }
-  return "translate3d(0, 0, 0)";
-});
 const paginationReady = computed(
   () =>
     hasMeasured.value &&
     !isMeasuring.value &&
     measuredChapterUuid.value === String(props.chapter?.uuid || ""),
+);
+const getArticleElement = () =>
+  viewportRef.value?.querySelector(":scope > .markdown-content");
+const {
+  beginChapterNavigation,
+  cancelChapterNavigation,
+  captureChapterSnapshot,
+  chapterEnterOffset,
+  chapterLoadingOverlayVisible,
+  chapterNavigationPending,
+  chapterSnapshotLeaving,
+  chapterSnapshotTransform,
+  chapterSnapshotVisible,
+  chapterTransitionDirection,
+  handleReadingProgressChange,
+  revealMeasuredChapter,
+  totalReadingProgress,
+} = usePagedChapterTransition({
+  chapterSnapshotRef,
+  getArticleElement,
+  pageGap: PAGE_GAP,
+  pageVerticalPadding: PAGE_VERTICAL_PADDING,
+  pageWidth,
+  pageHeight,
+  pageLineHeight,
+  paragraphGap,
+  footnoteReserve,
+  renderedPageOffset,
+  pageStride,
+  fontSize: () => props.styleConfigs.fontSize,
+  paginationReady,
+  canCapture: hasMeasured,
+  revealDuration: CHAPTER_REVEAL_DURATION,
+  slideDuration: CHAPTER_SLIDE_DURATION,
+});
+const showChapterLoadingOverlay = computed(
+  () =>
+    props.isLoading ||
+    chapterLoadingOverlayVisible.value ||
+    !hasMeasured.value ||
+    measuredChapterUuid.value !== String(props.chapter?.uuid || ""),
 );
 const pageProgress = computed(() =>
   totalPages.value <= 1
@@ -411,161 +433,34 @@ const pageProgress = computed(() =>
     : ((currentPage.value - 1) / (totalPages.value - 1)) * 100,
 );
 
-const waitForLayout = () =>
-  new Promise((resolve) => {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-  });
+const waitForLayout = waitForReaderLayout;
 
 const normalizePage = (page) =>
   Math.min(totalPages.value, Math.max(1, Math.trunc(Number(page) || 1)));
 
-const getArticleElement = () =>
-  viewportRef.value?.querySelector(":scope > .markdown-content");
-
-const captureChapterSnapshot = () => {
-  const snapshotLayer = chapterSnapshotRef.value;
-  const article = getArticleElement();
-
-  if (chapterSnapshotVisible.value) {
-    window.clearTimeout(chapterRevealTimer);
-    chapterSnapshotLeaving.value = false;
-    return;
-  }
-  if (!snapshotLayer || !article || !hasMeasured.value) return;
-
-  const snapshot = article.cloneNode(true);
-  snapshot.removeAttribute("id");
-  snapshot.querySelectorAll("[id]").forEach((element) => {
-    element.removeAttribute("id");
-  });
-
-  snapshotLayer.style.setProperty("--reader-page-gap", `${PAGE_GAP}px`);
-  snapshotLayer.style.setProperty(
-    "--reader-page-width",
-    `${pageWidth.value}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-page-height",
-    `${pageHeight.value}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-page-line-height",
-    `${pageLineHeight.value}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-paragraph-gap",
-    `${paragraphGap.value}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-footnote-reserve",
-    `${footnoteReserve.value}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-page-font-size",
-    `${props.styleConfigs.fontSize}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-page-padding-block",
-    `${PAGE_VERTICAL_PADDING}px`,
-  );
-  snapshotLayer.style.setProperty(
-    "--reader-page-offset",
-    `${pageOffset.value}px`,
-  );
-  snapshotLayer.style.setProperty("--reader-chapter-offset", "0px");
-  snapshotLayer.replaceChildren(snapshot);
-  chapterSnapshotLeaving.value = false;
-  chapterSnapshotVisible.value = true;
-};
-
-const revealMeasuredChapter = async () => {
-  chapterLoadingOverlayVisible.value = false;
-  if (!chapterSnapshotVisible.value || chapterSnapshotLeaving.value) {
-    chapterNavigationPending.value = false;
-    chapterTransitionDirection.value = 0;
-    return;
-  }
-
-  await nextTick();
-  // 先提交新章节在屏幕外的初始位置，再启动双页位移动画。
-  getArticleElement()?.getBoundingClientRect();
-  window.requestAnimationFrame(() => {
-    totalReadingProgress.value = pendingReadingProgress.value;
-    chapterSnapshotLeaving.value = true;
-    window.clearTimeout(chapterRevealTimer);
-    chapterRevealTimer = window.setTimeout(
-      () => {
-        chapterSnapshotVisible.value = false;
-        chapterSnapshotLeaving.value = false;
-        chapterTransitionDirection.value = 0;
-        chapterNavigationPending.value = false;
-        chapterSnapshotRef.value?.replaceChildren();
-      },
-      chapterTransitionDirection.value === 0
-        ? CHAPTER_REVEAL_DURATION
-        : CHAPTER_SLIDE_DURATION,
-    );
-  });
-};
-
-const getLastTextRect = (article) => {
-  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
-  let lastTextNode = null;
-  let node = walker.nextNode();
-
-  while (node) {
-    if (
-      node.textContent?.trim() &&
-      !node.parentElement?.closest(".footnotes")
-    ) {
-      lastTextNode = node;
-    }
-    node = walker.nextNode();
-  }
-
-  if (!lastTextNode) return null;
-
-  const range = document.createRange();
-  const endOffset = lastTextNode.textContent.length;
-  range.setStart(lastTextNode, Math.max(0, endOffset - 1));
-  range.setEnd(lastTextNode, endOffset);
-  const rects = range.getClientRects();
-  const rect = rects[rects.length - 1] || null;
-  range.detach?.();
-  return rect;
-};
-
 const getPageLayout = (viewport) => {
-  const dock = document.querySelector("[data-mobile-reader-dock]");
-  const viewportTop = viewport.getBoundingClientRect().top;
+  const viewportRect = viewport.getBoundingClientRect();
+  const sectionRect = sectionRef.value?.getBoundingClientRect();
+  const viewportTop = viewportRect.top;
   const visualViewport = window.visualViewport;
   const visualBottom = visualViewport
     ? visualViewport.offsetTop + visualViewport.height
     : window.innerHeight;
-  const dockTop = dock?.getBoundingClientRect().top ?? visualBottom;
-
+  const readerBottom = sectionRect?.bottom ?? visualBottom;
   const availableHeight = Math.max(
     MIN_PAGE_HEIGHT,
-    Math.floor(Math.min(dockTop, visualBottom) - viewportTop - PAGE_DOCK_GAP),
+    Math.floor(Math.min(readerBottom, visualBottom) - viewportTop),
   );
   const fontSize = Math.max(1, Number(props.styleConfigs.fontSize) || 22);
-  const preferredLineHeight = Math.max(
+  const lineHeight = Math.max(
     1,
-    fontSize * (Number(props.styleConfigs.lineHeight) || 1.6),
-  );
-  const contentHeight = Math.max(
-    preferredLineHeight,
-    availableHeight - PAGE_VERTICAL_PADDING * 2,
-  );
-  const lineCount = Math.max(
-    1,
-    Math.floor(contentHeight / preferredLineHeight),
+    roundLayoutPixel(fontSize * (Number(props.styleConfigs.lineHeight) || 1.6)),
   );
 
   return {
     height: availableHeight,
-    // 让完整页恰好容纳整数行：首行和末行始终落在同一组上下基线上。
-    lineHeight: contentHeight / lineCount,
+    // 保持整章行高恒定；不足一行的余量自然留在页面底部。
+    lineHeight,
   };
 };
 
@@ -573,29 +468,27 @@ const getMeasuredPageCount = (article, viewport) => {
   const stride = pageStride.value;
   if (!stride) return 1;
 
-  const viewportRect = viewport.getBoundingClientRect();
-  const lastTextRect = getLastTextRect(article);
+  const lastTextRect = findLastTextRect(article);
   const markerRect = endMarkerRef.value?.getBoundingClientRect();
-  const lastTextLogicalLeft = lastTextRect
-    ? lastTextRect.left -
-      viewportRect.left +
-      pageOffset.value -
-      chapterEnterOffset.value
-    : 0;
-  const markerLogicalLeft = markerRect
-    ? markerRect.left -
-      viewportRect.left +
-      pageOffset.value -
-      chapterEnterOffset.value
-    : 0;
-  const lastTextPage =
-    Math.floor(Math.max(0, lastTextLogicalLeft) / stride) + 1;
-  const markerPage = Math.floor(Math.max(0, markerLogicalLeft) / stride) + 1;
+  const lastTextPage = lastTextRect
+    ? Math.max(
+        1,
+        getRawRectPage(lastTextRect, viewport) - leadingEmptyPages.value,
+      )
+    : 1;
+  const markerPage = markerRect
+    ? Math.max(
+        1,
+        getRawRectPage(markerRect, viewport) - leadingEmptyPages.value,
+      )
+    : 1;
 
   // scrollWidth 在部分移动浏览器的多栏布局中只会返回第一栏宽度；最后一个
   // 正文字符和末尾定位点能直接指出内容最终落在哪一栏。
-  const scrollWidthPages = Math.ceil(
-    (article.scrollWidth + PAGE_GAP - 1) / stride,
+  const scrollWidthPages = Math.max(
+    1,
+    Math.ceil((article.scrollWidth + PAGE_GAP - 1) / stride) -
+      leadingEmptyPages.value,
   );
 
   // 末尾定位点恰好换栏时会落到一个没有正文的额外列；有文本时以最后一个
@@ -616,158 +509,296 @@ const getElementPage = (element) => {
 const getRectPage = (rect, viewport = viewportRef.value) => {
   if (!viewport || !rect) return 1;
 
-  const viewportRect = viewport.getBoundingClientRect();
-  const logicalLeft =
-    rect.left - viewportRect.left + pageOffset.value - chapterEnterOffset.value;
   return normalizePage(
-    Math.floor(Math.max(0, logicalLeft) / pageStride.value) + 1,
+    getRawRectPage(rect, viewport) - leadingEmptyPages.value,
   );
 };
 
-const collectPageFootnotes = (article) => {
-  const definitions = new Map(
-    Array.from(article.querySelectorAll(".footnotes .footnote-item[id]")).map(
-      (item) => [`#${item.id}`, item],
-    ),
-  );
-  const grouped = {};
-
-  article.querySelectorAll(".footnote-ref a[href^='#fn']").forEach((link) => {
-    const definitionId = link.getAttribute("href") || "";
-    const definition = definitions.get(definitionId);
-    if (!definition) return;
-
-    const page = getElementPage(link.closest(".footnote-ref") || link);
-    const notes = (grouped[page] ||= []);
-    if (notes.some((note) => note.id === definitionId)) return;
-
-    const clone = definition.cloneNode(true);
-    clone
-      .querySelectorAll(".footnote-backref, [data-footnote-backref]")
-      .forEach((element) => element.remove());
-    clone
-      .querySelectorAll("[id]")
-      .forEach((element) => element.removeAttribute("id"));
-    const textBlocks = Array.from(clone.children)
-      .map((element) => element.textContent?.trim())
-      .filter(Boolean);
-
-    notes.push({
-      id: definitionId,
-      label: link.textContent?.trim() || String(notes.length + 1),
-      text: textBlocks.join("\n") || clone.textContent?.trim() || "",
-    });
-  });
-
-  return grouped;
-};
-
-const removeFootnotePageBreaks = (article) => {
-  const parents = new Set();
-  article.querySelectorAll(".mobile-footnote-page-break").forEach((element) => {
-    if (element.parentNode) parents.add(element.parentNode);
-    element.remove();
-  });
-  parents.forEach((parent) => parent.normalize?.());
-};
-
-const restoreFootnoteParagraphSplits = (article) => {
-  article
-    .querySelectorAll(".mobile-footnote-split-source")
-    .forEach((source) => {
-      const splitToken = source.dataset.mobileFootnoteSplit;
-      let sibling = source.nextElementSibling;
-
-      while (
-        splitToken &&
-        sibling?.classList.contains("mobile-footnote-continuation") &&
-        sibling.dataset.mobileFootnoteSplit === splitToken
-      ) {
-        const nextSibling = sibling.nextElementSibling;
-        while (sibling.firstChild) source.appendChild(sibling.firstChild);
-        sibling.remove();
-        sibling = nextSibling;
-      }
-
-      source.classList.remove(
-        "mobile-footnote-split-source",
-        "mobile-footnote-split-empty",
-      );
-      delete source.dataset.mobileFootnoteSplit;
-      delete source.dataset.readerFullParagraphText;
-      source.normalize?.();
-    });
-};
+const {
+  persistCurrentPosition,
+  persistPosition,
+  resetRestoredChapter,
+  restorePage,
+  restoredChapterUuid,
+} = usePagedReadingPosition({
+  route,
+  chapter: toRef(props, "chapter"),
+  currentPage,
+  totalPages,
+  viewportRef,
+  getArticleElement,
+  getElementPage,
+  getState,
+  setState,
+  legacyParagraphIdPattern: LEGACY_PARAGRAPH_ID_PATTERN,
+});
 
 const clearPageBaselineAdjustments = (article) => {
   article
-    .querySelectorAll(".mobile-page-baseline-adjusted")
+    .querySelectorAll(
+      ".mobile-page-baseline-adjusted, .mobile-page-edge-adjusted",
+    )
     .forEach((element) => {
       element.style.removeProperty("--reader-page-baseline-adjust");
       element.style.removeProperty("--reader-page-baseline-base-margin");
+      element.style.removeProperty("--reader-page-edge-margin");
       element.classList.remove("mobile-page-baseline-adjusted");
+      element.classList.remove("mobile-page-edge-adjusted");
     });
+};
+
+const clearPageFlowGridAdjustments = (article) => {
+  article
+    .querySelectorAll(".mobile-page-flow-grid-adjusted")
+    .forEach((element) => {
+      element.style.removeProperty("--reader-flow-grid-base-padding");
+      element.style.removeProperty("--reader-flow-grid-adjust");
+      element.classList.remove("mobile-page-flow-grid-adjusted");
+    });
+};
+
+const alignPageFlowBlocksToGrid = async (article, token) => {
+  clearPageFlowGridAdjustments(article);
+  await nextTick();
+  await waitForLayout();
+  if (token !== measureToken) return false;
+
+  const contentRoot = article.querySelector(":scope > div");
+  const viewport = viewportRef.value;
+  const lineHeight = pageLineHeight.value;
+  if (!contentRoot || !viewport || lineHeight <= 0) return true;
+
+  resetTextBaselineMetrics();
+  const bodyRects = getBodyTextRects(article);
+  const regularParagraph = contentRoot.querySelector(":scope > p");
+  const referenceRect =
+    bodyRects.find(
+      (rect) => rect.textElement?.closest("p") === regularParagraph,
+    ) || bodyRects[0];
+  const baselineOffset = referenceRect
+    ? calculateTextRectBaseline(referenceRect) - referenceRect.top
+    : 0;
+  const gridOrigin =
+    viewport.getBoundingClientRect().top +
+    PAGE_VERTICAL_PADDING +
+    baselineOffset;
+
+  const flowBlocks = Array.from(contentRoot.children).flatMap((element) => {
+    if (element.classList.contains("moments-card")) return [];
+    if (!element.classList.contains("chat-content")) return [element];
+    return Array.from(
+      element.querySelectorAll(
+        ":scope > .chat-leading-group > .chat-bar, :scope > .chat-leading-group > .chat-page-block, :scope > .chat-page-block",
+      ),
+    );
+  });
+
+  // 本轮统一读取所有块的几何信息。后面的容量判断只查缓存，避免每处理一个
+  // 聊天气泡都重新测量其余气泡，长聊天记录也保持线性布局读取次数。
+  const flowMeasurements = flowBlocks.map((element) => ({
+    element,
+    style: window.getComputedStyle(element),
+    rects: Array.from(element.getClientRects()).filter(
+      (rect) => rect.width > 0 && rect.height > 0,
+    ),
+  }));
+  const followingPageExtents = new Array(flowMeasurements.length);
+  const lowestFollowingByPage = new Map();
+  const lowestFollowingChatByPage = new Map();
+
+  for (let index = flowMeasurements.length - 1; index >= 0; index -= 1) {
+    const measurement = flowMeasurements[index];
+    const currentPage = measurement.rects[0]
+      ? getRectPage(measurement.rects[0], viewport)
+      : 0;
+    followingPageExtents[index] = {
+      lastFollowingEntry: lowestFollowingByPage.get(currentPage) || null,
+      lastFollowingChatEntry:
+        lowestFollowingChatByPage.get(currentPage) || null,
+    };
+
+    const isChatBlock = measurement.element.matches(
+      ".chat-bar, .chat-page-block",
+    );
+    measurement.rects.forEach((rect) => {
+      const page = getRectPage(rect, viewport);
+      const entry = { element: measurement.element, rect };
+      const lowestEntry = lowestFollowingByPage.get(page);
+      if (!lowestEntry || rect.bottom > lowestEntry.rect.bottom) {
+        lowestFollowingByPage.set(page, entry);
+      }
+      const lowestChatEntry = lowestFollowingChatByPage.get(page);
+      if (
+        isChatBlock &&
+        (!lowestChatEntry || rect.bottom > lowestChatEntry.rect.bottom)
+      ) {
+        lowestFollowingChatByPage.set(page, entry);
+      }
+    });
+  }
+
+  const adjustments = [];
+  const plannedPageShift = new Map();
+  const viewportBottom =
+    viewport.getBoundingClientRect().top +
+    pageHeight.value -
+    PAGE_VERTICAL_PADDING;
+  for (const [elementIndex, measurement] of flowMeasurements.entries()) {
+    const { element, rects, style } = measurement;
+    if (
+      element.matches(
+        "p, blockquote, .markdown-table-wrapper, .footnotes, .footnotes-sep, .mobile-footnote-continuation, .mobile-footnote-split-empty, [aria-hidden='true']",
+      )
+    ) {
+      continue;
+    }
+
+    // 聊天气泡同样必须只有一个外框 rect；若单条消息高于整页而被浏览器
+    // 强制拆开，就不能把多个 fragment 的高度相加后补到其中一栏。
+    if (
+      rects.length !== 1 ||
+      rects.length === 0 ||
+      style.display === "none" ||
+      style.position === "absolute" ||
+      style.position === "fixed"
+    ) {
+      continue;
+    }
+
+    const blockHeight = rects[0].height;
+    const marginStart = Number.parseFloat(style.marginBlockStart) || 0;
+    const marginEnd = Number.parseFloat(style.marginBlockEnd) || 0;
+    const blockAdvance = blockHeight + marginStart + marginEnd;
+    const remainder = ((blockAdvance % lineHeight) + lineHeight) % lineHeight;
+    let adjustment = remainder < 0.5 ? 0 : lineHeight - remainder;
+
+    // 正文标题使用大字号衬线字体，其文字基线偏移与普通正文不同。只将
+    // h1/h2 的外框高度补成整行仍可能让标题后的正文落在半格位置，因此
+    // 直接检查它之后第一条正文基线的相位，和引用块一样按实际流位移补齐。
+    if (element.matches("h1, h2, h3, h4, h5, h6") && referenceRect) {
+      const followingRect = bodyRects.find(
+        (rect) =>
+          rect.textElement &&
+          !element.contains(rect.textElement) &&
+          Boolean(
+            element.compareDocumentPosition(rect.textElement) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+          ),
+      );
+      if (followingRect) {
+        const baseline = calculateTextRectBaseline(followingRect);
+        const phase =
+          (((baseline - gridOrigin) % lineHeight) + lineHeight) % lineHeight;
+        adjustment =
+          phase < 0.5 || lineHeight - phase < 0.5 ? 0 : lineHeight - phase;
+      }
+    }
+
+    if (adjustment < 0.5 || adjustment > lineHeight - 0.5) continue;
+
+    const isChatBlock = element.matches(".chat-bar, .chat-page-block");
+    const elementPage = getRectPage(rects[0], viewport);
+    const currentPageShift = plannedPageShift.get(elementPage) || 0;
+    const { lastFollowingEntry, lastFollowingChatEntry } =
+      followingPageExtents[elementIndex];
+    const exceedsPage = (rect) =>
+      rect &&
+      rect.bottom + currentPageShift + adjustment > viewportBottom + 0.5;
+    const movesCurrentBlock = exceedsPage(rects[0]);
+    const movesFollowingChatBlock = exceedsPage(lastFollowingChatEntry?.rect);
+    const changesNaturalPageBreak = exceedsPage(lastFollowingEntry?.rect);
+
+    if (
+      movesFollowingChatBlock ||
+      (isChatBlock && (movesCurrentBlock || changesNaturalPageBreak))
+    ) {
+      // 外框补齐不能改变自然分页归属。若不足一行的 padding 会把当前气泡
+      // 或本页后续内容挤到下一页，本页不补；前置特殊块也不能挤走后续 chat。
+      continue;
+    }
+
+    const basePadding = Number.parseFloat(style.paddingBlockEnd) || 0;
+    adjustments.push({ element, basePadding, adjustment });
+    plannedPageShift.set(elementPage, currentPageShift + adjustment);
+  }
+
+  adjustments.forEach(({ element, basePadding, adjustment }) => {
+    element.classList.add("mobile-page-flow-grid-adjusted");
+    element.style.setProperty(
+      "--reader-flow-grid-base-padding",
+      `${basePadding}px`,
+    );
+    element.style.setProperty("--reader-flow-grid-adjust", `${adjustment}px`);
+  });
+  if (adjustments.length) {
+    await nextTick();
+    await waitForLayout();
+  }
+
+  return token === measureToken;
 };
 
 const alignChapterHeaderBlock = async (article, token) => {
   return alignMobileChapterHeaderBlock({
     article,
-    // Header 与正文首段之间的节奏应由用户设置的原始行高决定，不能使用
-    // 分页器为了填满屏幕而轻微拉伸后的 pageLineHeight。
-    lineHeight:
-      (Number(props.styleConfigs.fontSize) || 20) *
-      (Number(props.styleConfigs.lineHeight) || 1.6),
+    lineHeight: pageLineHeight.value,
     waitForLayout,
     isCurrent: () => token === measureToken,
   });
 };
 
-const getFootnoteLayoutSignature = (grouped) =>
-  Object.entries(grouped)
-    .map(([page, notes]) => `${page}:${notes.map((note) => note.id).join(",")}`)
-    .join("|");
+const getBodyTextRects = collectReaderBodyTextRects;
 
-const getPageBodyTextRects = (article, viewport, page) => {
-  const contentRoot = article.querySelector(":scope > div");
-  if (!contentRoot) return [];
+const getPageBodyTextRects = (article, viewport, page) =>
+  getBodyTextRects(article)
+    .filter((rect) => getRectPage(rect, viewport) === page)
+    .sort((left, right) => left.top - right.top || left.left - right.left);
 
-  const walker = document.createTreeWalker(contentRoot, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
-      const parent = node.parentElement;
-      if (
-        !parent ||
-        parent.closest(
-          ".footnotes, .footnote-ref, .mobile-footnote-page-break, button, [aria-hidden='true']",
-        )
-      ) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      return NodeFilter.FILTER_ACCEPT;
-    },
+const getRawRectPage = (rect, viewport = viewportRef.value) => {
+  // CSS 多栏会把整数列宽折算成带小数的布局像素。例如声明 343px 时，
+  // 后续栏的实际起点可能比理论 stride 小约 0.01px；直接 floor 会把整栏
+  // 误判为前一页，继而令脚注归属和页内基线校正全部错页。
+  return calculateRawColumnPage({
+    rect,
+    viewport,
+    renderedOffset: renderedPageOffset.value,
+    chapterOffset: chapterEnterOffset.value,
+    stride: pageStride.value,
   });
-  const range = document.createRange();
-  const rects = [];
-  let node = walker.nextNode();
+};
 
-  while (node) {
-    range.selectNodeContents(node);
-    Array.from(range.getClientRects()).forEach((rect) => {
-      if (
-        rect.width > 0 &&
-        rect.height > 0 &&
-        getRectPage(rect, viewport) === page
-      ) {
-        rects.push(rect);
-      }
-    });
-    node = walker.nextNode();
-  }
+const getFirstContentRawPage = (article, viewport) => {
+  const contentRects = [
+    ...getBodyTextRects(article),
+    ...Array.from(
+      article
+        .querySelector(":scope > .mobile-chapter-header")
+        ?.getClientRects() || [],
+    ),
+    ...Array.from(
+      article.querySelectorAll(
+        ":scope > div img, :scope > div video, :scope > div svg, :scope > div canvas, :scope > div table, :scope > div pre, :scope > div .chat-leading-group, :scope > div .chat-content > .chat-page-block",
+      ),
+    ).flatMap((element) => Array.from(element.getClientRects())),
+  ].filter((rect) => rect.width > 0 && rect.height > 0);
 
-  range.detach?.();
-  return rects.sort(
-    (left, right) => left.top - right.top || left.left - right.left,
+  if (!contentRects.length) return 1;
+  return Math.min(
+    ...contentRects.map((rect) => getRawRectPage(rect, viewport)),
   );
+};
+
+const normalizeLeadingEmptyPages = async (article, viewport, token) => {
+  const nextLeadingEmptyPages = Math.max(
+    0,
+    getFirstContentRawPage(article, viewport) - 1,
+  );
+  if (nextLeadingEmptyPages === leadingEmptyPages.value) return true;
+
+  leadingEmptyPages.value = nextLeadingEmptyPages;
+  await nextTick();
+  await waitForLayout();
+  return token === measureToken;
 };
 
 const pageHasVisibleContent = (article, viewport, page) => {
@@ -788,7 +819,7 @@ const pageHasVisibleContent = (article, viewport, page) => {
 
   return Array.from(
     article.querySelectorAll(
-      ":scope > div img, :scope > div video, :scope > div svg, :scope > div canvas, :scope > div table, :scope > div pre",
+      ":scope > div img, :scope > div video, :scope > div svg, :scope > div canvas, :scope > div table, :scope > div pre, :scope > div .chat-leading-group, :scope > div .chat-content > .chat-page-block",
     ),
   ).some((element) =>
     Array.from(element.getClientRects()).some(
@@ -826,9 +857,31 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
   const contentRoot = article.querySelector(":scope > div");
   if (!contentRoot) return [];
 
-  return Array.from(contentRoot.children).filter((element) => {
+  const flowBlocks = [
+    ...Array.from(contentRoot.children).flatMap((element) =>
+      element.classList.contains("chat-content")
+        ? Array.from(
+            element.querySelectorAll(
+              ":scope > .chat-leading-group, :scope > .chat-page-block",
+            ),
+          )
+        : [element],
+    ),
+    ...Array.from(
+      contentRoot.querySelectorAll(
+        "blockquote > p, blockquote > ul, blockquote > ol",
+      ),
+    ),
+  ];
+
+  return [...new Set(flowBlocks)].filter((element) => {
+    const isFirstChatBlock =
+      element.matches(".chat-leading-group, .chat-page-block") &&
+      !element.previousElementSibling &&
+      element.parentElement?.classList.contains("chat-content");
     if (
-      !element.previousElementSibling ||
+      (!element.previousElementSibling &&
+        !(isFirstChatBlock && element.parentElement.previousElementSibling)) ||
       element.matches(
         ".footnotes, .footnotes-sep, .mobile-footnote-continuation, .mobile-footnote-split-empty, [aria-hidden='true']",
       )
@@ -841,7 +894,8 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
       computedStyle.display === "none" ||
       computedStyle.display === "inline" ||
       computedStyle.position === "absolute" ||
-      computedStyle.position === "fixed"
+      computedStyle.position === "fixed" ||
+      element.getClientRects()[0]?.height <= 0
     ) {
       return false;
     }
@@ -855,41 +909,263 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
   });
 };
 
+const getPageStartGapElement = (contentRoot, firstRect, viewport, page) => {
+  let element = firstRect.textElement;
+  while (element && element !== contentRoot) {
+    const parent = element.parentElement;
+    const isTopLevelGap =
+      parent === contentRoot &&
+      element.previousElementSibling &&
+      !element.matches(
+        ".footnotes, .footnotes-sep, .mobile-footnote-continuation, .mobile-footnote-split-empty, [aria-hidden='true']",
+      );
+    const isNestedGap =
+      parent?.matches("blockquote, li") &&
+      element.matches("p, ul, ol, blockquote") &&
+      element.previousElementSibling;
+    const firstElementRect = element.getClientRects()[0];
+
+    if (
+      (isTopLevelGap || isNestedGap) &&
+      firstElementRect &&
+      getRectPage(firstElementRect, viewport) === page
+    ) {
+      return element;
+    }
+    element = parent;
+  }
+  return null;
+};
+
+const getFeasibleGridAdjustment = (
+  baseline,
+  targetBaseline,
+  lineHeight,
+  currentGap,
+  {
+    minBaseline = Number.NEGATIVE_INFINITY,
+    maxBaseline = Number.POSITIVE_INFINITY,
+  } = {},
+) => {
+  const rawAdjustment = targetBaseline - baseline;
+  const approximateGridStep = Math.round(-rawAdjustment / lineHeight);
+  const candidates = [];
+
+  for (
+    let step = approximateGridStep - 2;
+    step <= approximateGridStep + 2;
+    step += 1
+  ) {
+    const adjustment = rawAdjustment + step * lineHeight;
+    const adjustedBaseline = baseline + adjustment;
+    if (
+      currentGap + adjustment >= -0.5 &&
+      adjustedBaseline >= minBaseline &&
+      adjustedBaseline <= maxBaseline
+    ) {
+      candidates.push(adjustment);
+    }
+  }
+
+  return candidates.sort((left, right) => Math.abs(left) - Math.abs(right))[0];
+};
+
+// A paragraph that starts exactly at a column boundary may retain its
+// fractional block-start margin. Correct that page-start phase first; the
+// later end-of-page pass can then distribute only the remaining bottom error.
+const alignPageStartBaselines = async (article, viewport, token) => {
+  const lineHeight = pageLineHeight.value;
+  const contentRoot = article.querySelector(":scope > div");
+  const bodyRects = getBodyTextRects(article);
+  const regularParagraph = contentRoot?.querySelector(":scope > p");
+  const referenceRect =
+    bodyRects.find(
+      (rect) => rect.textElement?.closest("p") === regularParagraph,
+    ) || bodyRects[0];
+  if (!contentRoot || !referenceRect || lineHeight <= 0) return true;
+
+  const viewportTop = viewport.getBoundingClientRect().top;
+  const baselineOffset =
+    calculateTextRectBaseline(referenceRect) - referenceRect.top;
+  const targetBaseline = viewportTop + PAGE_VERTICAL_PADDING + baselineOffset;
+  pageBaselineOffset.value = baselineOffset;
+
+  for (let pass = 0; pass < 3; pass += 1) {
+    const adjustments = [];
+    const pageCount = getMeasuredPageCount(article, viewport);
+    const pageRects = getBodyTextRects(article).reduce((grouped, rect) => {
+      const page = getRectPage(rect, viewport);
+      (grouped[page] ||= []).push(rect);
+      return grouped;
+    }, {});
+
+    for (let page = 1; page <= pageCount; page += 1) {
+      if (token !== measureToken) return false;
+      const firstRect = pageRects[page]?.sort(
+        (left, right) => left.top - right.top || left.left - right.left,
+      )[0];
+      if (!firstRect) continue;
+
+      const gapElement = getPageStartGapElement(
+        contentRoot,
+        firstRect,
+        viewport,
+        page,
+      );
+      if (!gapElement) continue;
+
+      const currentGap =
+        Number.parseFloat(
+          window.getComputedStyle(gapElement).marginBlockStart,
+        ) || 0;
+      const firstFlowElement = firstRect.textElement?.closest(
+        "h1, h2, h3, h4, h5, h6",
+      );
+      const alignsSpecialBlockTop =
+        firstFlowElement?.parentElement === contentRoot;
+      const measuredBaseline = alignsSpecialBlockTop
+        ? firstFlowElement.getClientRects()[0]?.top
+        : calculateTextRectBaseline(firstRect);
+      const expectedBaseline = alignsSpecialBlockTop
+        ? viewportTop + PAGE_VERTICAL_PADDING
+        : targetBaseline;
+      const adjustment = getFeasibleGridAdjustment(
+        measuredBaseline,
+        expectedBaseline,
+        lineHeight,
+        currentGap,
+        {
+          minBaseline: expectedBaseline - 0.5,
+          maxBaseline: expectedBaseline + 0.5,
+        },
+      );
+      if (!Number.isFinite(adjustment) || Math.abs(adjustment) < 0.25) {
+        continue;
+      }
+
+      adjustments.push({ gapElement, currentGap, adjustment });
+    }
+
+    if (!adjustments.length) break;
+    adjustments.forEach(({ gapElement, currentGap, adjustment }) => {
+      gapElement.classList.add("mobile-page-baseline-adjusted");
+      gapElement.style.setProperty(
+        "--reader-page-baseline-base-margin",
+        `${currentGap}px`,
+      );
+      gapElement.style.setProperty(
+        "--reader-page-baseline-adjust",
+        `${adjustment}px`,
+      );
+    });
+    await nextTick();
+    await waitForLayout();
+  }
+
+  return token === measureToken;
+};
+
+const distributePageGapAdjustment = (candidates, adjustment) => {
+  const records = candidates.map((element) => ({
+    element,
+    baseMargin:
+      Number.parseFloat(window.getComputedStyle(element).marginBlockStart) || 0,
+  }));
+  if (!records.length) return [];
+
+  const totalCurrentGap = records.reduce(
+    (total, record) => total + record.baseMargin,
+    0,
+  );
+  const targetMargin =
+    (totalCurrentGap + adjustment) / Math.max(1, records.length);
+  if (targetMargin < -0.5) return [];
+
+  // 不论本轮是扩张还是压缩，都让本页所有实际块间距落到同一个值。
+  // 这样被压进页尾的新段落不会保留原始段距，形成末尾忽松忽紧。
+  return records.map((record) => ({
+    ...record,
+    targetMargin: Math.max(0, targetMargin),
+  }));
+};
+
+const applyPageGapRecords = (records) => {
+  records.forEach(({ element, targetMargin }) => {
+    element.classList.add("mobile-page-edge-adjusted");
+    element.style.setProperty("--reader-page-edge-margin", `${targetMargin}px`);
+  });
+};
+
 // CSS 多栏会在每栏顶部重新排正文，但段距和脚注会留下不足一行的剩余空间。
-// 把剩余空间平均补入页内已有块间距，不移动首行，也不制造额外页或改变脚注归属。
+// 把任意段距产生的相位差平均分摊到页内已有块间距，不移动首行，
+// 也不制造额外页或改变脚注归属。
 const alignPageEdgeBaselines = async (article, viewport, reserves, token) => {
   const lineHeight = pageLineHeight.value;
   if (lineHeight <= 0) return;
+  resetTextBaselineMetrics();
 
   const pageCount = getMeasuredPageCount(article, viewport);
+  const viewportTop = viewport.getBoundingClientRect().top;
+  const bodyRects = getBodyTextRects(article);
+  const pageRects = collectReaderPageFlowRects(article).reduce(
+    (grouped, rect) => {
+      const page = getRectPage(rect, viewport);
+      (grouped[page] ||= []).push(rect);
+      return grouped;
+    },
+    {},
+  );
+  const contentRoot = article.querySelector(":scope > div");
+  const regularParagraph = contentRoot?.querySelector(":scope > p");
+  const referenceRect =
+    bodyRects.find(
+      (rect) => rect.textElement?.closest("p") === regularParagraph,
+    ) || bodyRects[0];
+  if (!referenceRect) return;
+  // 整章网格必须由普通正文定义。若第一页先出现小字号引用块，不能用它的
+  // 字体基线偏移带偏后续所有普通正文页面。
+  const baselineOffset =
+    calculateTextRectBaseline(referenceRect) - referenceRect.top;
+  pageBaselineOffset.value = baselineOffset;
+  const pendingAdjustments = [];
+
   for (let page = 1; page <= pageCount; page += 1) {
     if (token !== measureToken) return;
 
-    const rects = getPageBodyTextRects(article, viewport, page);
+    const rects = (pageRects[page] || []).sort(
+      (left, right) => left.top - right.top || left.left - right.left,
+    );
     if (!rects.length) continue;
 
     const firstRect = rects[0];
     const lastRect = rects.reduce((lowest, rect) =>
-      rect.bottom > lowest.bottom ? rect : lowest,
+      calculateReaderFlowBaseline(rect, baselineOffset) >
+      calculateReaderFlowBaseline(lowest, baselineOffset)
+        ? rect
+        : lowest,
     );
     const bodyBottom =
-      viewport.getBoundingClientRect().top +
+      viewportTop +
       pageHeight.value -
       PAGE_VERTICAL_PADDING -
       (reserves[page] || 0);
-    const availableGridHeight = bodyBottom - firstRect.bottom;
+    const firstGridBottom =
+      viewportTop + PAGE_VERTICAL_PADDING + baselineOffset;
+    const availableGridHeight = bodyBottom - firstGridBottom;
     if (availableGridHeight < 0) continue;
 
-    const targetLastBottom =
-      firstRect.bottom +
-      Math.floor((availableGridHeight + 0.5) / lineHeight) * lineHeight;
-    const missingHeight = targetLastBottom - lastRect.bottom;
-    const adjustment = missingHeight;
-
-    if (adjustment < 1 || adjustment > lineHeight * 1.05) {
-      continue;
-    }
-
+    // baseline 本身不能贴到正文底边：不同字号、字体和引用块在 baseline
+    // 下方仍有不同高度。先扣除当前末行的真实下沿，避免算出一个视觉上
+    // 已越界的目标，随后又被校验逻辑回滚，造成校正时有时无。
+    const lastBaselineToBottom = lastRect.flowBlock
+      ? 0
+      : Math.max(0, lastRect.bottom - calculateTextRectBaseline(lastRect));
+    const targetLastBaseline =
+      firstGridBottom +
+      Math.floor(
+        (availableGridHeight - lastBaselineToBottom + 0.5) / lineHeight,
+      ) *
+        lineHeight;
     const candidates = getPageBlockGapCandidates(
       article,
       viewport,
@@ -898,687 +1174,369 @@ const alignPageEdgeBaselines = async (article, viewport, reserves, token) => {
     );
     if (!candidates.length) continue;
 
-    const pageCountBefore = getMeasuredPageCount(article, viewport);
-    const footnotesBefore = getFootnoteLayoutSignature(
-      collectPageFootnotes(article),
+    const totalGapCapacity = candidates.reduce(
+      (total, element) =>
+        total +
+        (Number.parseFloat(window.getComputedStyle(element).marginBlockStart) ||
+          0),
+      0,
     );
-    const distributedAdjustment = adjustment / candidates.length;
-    candidates.forEach((candidate) => {
-      const baseMargin =
-        Number.parseFloat(
-          window.getComputedStyle(candidate).marginBlockStart,
-        ) || 0;
-      candidate.classList.add("mobile-page-baseline-adjusted");
-      candidate.style.setProperty(
-        "--reader-page-baseline-base-margin",
-        `${baseMargin}px`,
-      );
-      candidate.style.setProperty(
-        "--reader-page-baseline-adjust",
-        `${distributedAdjustment}px`,
-      );
-    });
-    await nextTick();
-    await waitForLayout();
-
-    const adjustedRects = getPageBodyTextRects(article, viewport, page);
-    const adjustedLastRect = adjustedRects.reduce(
-      (lowest, rect) => (rect.bottom > lowest.bottom ? rect : lowest),
-      adjustedRects[0],
-    );
-    const invalidAdjustment =
-      !adjustedLastRect ||
-      Math.abs(adjustedLastRect.bottom - targetLastBottom) > 2.5 ||
-      adjustedLastRect.bottom > bodyBottom + 1 ||
-      getMeasuredPageCount(article, viewport) !== pageCountBefore ||
-      getFootnoteLayoutSignature(collectPageFootnotes(article)) !==
-        footnotesBefore;
-
-    if (invalidAdjustment) {
-      candidates.forEach((candidate) => {
-        candidate.style.removeProperty("--reader-page-baseline-adjust");
-        candidate.style.removeProperty("--reader-page-baseline-base-margin");
-        candidate.classList.remove("mobile-page-baseline-adjusted");
-      });
-      await nextTick();
-      await waitForLayout();
-    }
-  }
-};
-
-const measureFootnoteReserve = async (notes) => {
-  if (!notes.length) return 0;
-
-  measuringFootnotes.value = notes;
-  await nextTick();
-  await waitForLayout();
-
-  const measuredHeight = footnoteMeasureRef.value?.scrollHeight || 0;
-  const lineHeight = pageLineHeight.value;
-  const contentLines = Math.max(
-    1,
-    Math.floor((pageHeight.value - PAGE_VERTICAL_PADDING * 2) / lineHeight),
-  );
-  const maxFootnoteLines = Math.max(
-    1,
-    contentLines - MIN_BODY_LINES_WITH_FOOTNOTES,
-  );
-  const maxFootnoteHeight = maxFootnoteLines * lineHeight;
-
-  // 正文按实际脚注高度避让；不再向上取整成完整正文行，避免紧凑脚注仍浪费近一行空间。
-  return Math.min(Math.max(1, measuredHeight), maxFootnoteHeight);
-};
-
-const findFootnoteBreakPosition = (article, viewport, page, reserve) => {
-  const footerTop =
-    viewport.getBoundingClientRect().top +
-    pageHeight.value -
-    PAGE_VERTICAL_PADDING -
-    reserve;
-  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
-      const parent = node.parentElement;
-      if (
-        !parent ||
-        parent.closest(
-          ".footnotes, .mobile-footnote-page-break, button, [aria-hidden='true']",
-        )
-      ) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      return NodeFilter.FILTER_ACCEPT;
-    },
-  });
-  const range = document.createRange();
-  let node = walker.nextNode();
-
-  while (node) {
-    range.selectNodeContents(node);
-    const hasOverflowingRect = Array.from(range.getClientRects()).some(
-      (rect) => getRectPage(rect, viewport) === page && rect.bottom > footerTop,
-    );
-
-    if (hasOverflowingRect) {
-      for (let offset = 0; offset < node.textContent.length; offset += 1) {
-        range.setStart(node, offset);
-        range.setEnd(node, offset + 1);
-        const rect = range.getClientRects()[0];
-        if (
-          rect &&
-          getRectPage(rect, viewport) === page &&
-          rect.bottom > footerTop
-        ) {
-          range.detach?.();
-          return { node, offset };
-        }
-      }
-    }
-
-    node = walker.nextNode();
-  }
-
-  range.detach?.();
-  return null;
-};
-
-const getParagraphTextForComments = (paragraph) => {
-  const clone = paragraph.cloneNode(true);
-  clone
-    .querySelectorAll(
-      ".comment-trigger, .paragraph-comment-count, .footnote-ref, [data-footnote-ref]",
-    )
-    .forEach((element) => element.remove());
-  return clone.textContent || "";
-};
-
-const splitParagraphAtFootnoteBreak = ({ node, offset }) => {
-  const footnoteReference = node.parentElement?.closest(".footnote-ref");
-  const paragraph = (footnoteReference || node.parentElement)?.closest("p");
-  if (!paragraph?.parentNode || !node.parentNode) return false;
-  const articleRoot = paragraph.closest(".mobile-page-article");
-  const contentRoot = articleRoot?.querySelector(":scope > div");
-  if (paragraph.parentElement !== contentRoot) return false;
-  const sourceWasContinuation = paragraph.classList.contains(
-    "mobile-footnote-continuation",
-  );
-  const paragraphStartIndent = window.getComputedStyle(paragraph).textIndent;
-
-  let splitToken = paragraph.dataset.mobileFootnoteSplit;
-  if (!splitToken) {
-    splitToken = `footnote-split-${(footnoteSplitSequence += 1)}`;
-    paragraph.dataset.mobileFootnoteSplit = splitToken;
-    paragraph.classList.add("mobile-footnote-split-source");
-    if (paragraph.id) {
-      paragraph.dataset.readerFullParagraphText =
-        getParagraphTextForComments(paragraph);
-    }
-  }
-
-  const range = document.createRange();
-  if (footnoteReference) {
-    range.setStartBefore(footnoteReference);
-  } else {
-    range.setStart(node, offset);
-  }
-  range.setEndAfter(paragraph.lastChild);
-  const trailingContent = range.extractContents();
-  range.detach?.();
-
-  if (!trailingContent.hasChildNodes()) return false;
-
-  const continuation = paragraph.cloneNode(false);
-  continuation.removeAttribute("id");
-  continuation.classList.remove(
-    "mobile-footnote-split-source",
-    "mobile-footnote-split-empty",
-    "mobile-footnote-paragraph-start",
-    "mobile-page-baseline-adjusted",
-  );
-  continuation.classList.add("mobile-footnote-continuation");
-  continuation.style.removeProperty("--reader-page-baseline-adjust");
-  continuation.style.removeProperty("--reader-page-baseline-base-margin");
-  continuation.style.removeProperty("--reader-footnote-continuation-indent");
-  continuation.dataset.mobileFootnoteSplit = splitToken;
-  delete continuation.dataset.readerFullParagraphText;
-  continuation.appendChild(trailingContent);
-  paragraph.after(continuation);
-
-  const sourceHasBodyText = Boolean(
-    getParagraphTextForComments(paragraph).trim(),
-  );
-  if (!sourceHasBodyText) {
-    paragraph.classList.add("mobile-footnote-split-empty");
-    // 切点落在原段段首时，迁移到下一页的是完整段落而非续写片段，
-    // 应保留该段原有的首行缩进。已经拆过的续段再次整体迁移则仍不缩进。
-    if (!sourceWasContinuation) {
-      continuation.classList.add("mobile-footnote-paragraph-start");
-      continuation.style.setProperty(
-        "--reader-footnote-continuation-indent",
-        paragraphStartIndent,
-      );
-    }
-  }
-  return true;
-};
-
-const insertFootnotePageBreak = (breakPosition) => {
-  if (splitParagraphAtFootnoteBreak(breakPosition)) return;
-
-  const { node, offset } = breakPosition;
-  const footnoteReference = node.parentElement?.closest(".footnote-ref");
-  const breakElement = document.createElement("span");
-  breakElement.className = "mobile-footnote-page-break";
-  breakElement.setAttribute("aria-hidden", "true");
-
-  if (footnoteReference?.parentNode) {
-    footnoteReference.parentNode.insertBefore(breakElement, footnoteReference);
-    return;
-  }
-
-  if (!node.parentNode) return;
-  if (offset <= 0) {
-    node.parentNode.insertBefore(breakElement, node);
-    return;
-  }
-
-  const trailingText = node.splitText(offset);
-  trailingText.parentNode?.insertBefore(breakElement, trailingText);
-};
-
-const rollbackIncompleteFootnoteLayout = (article) => {
-  if (!article?.isConnected) return;
-  clearPageBaselineAdjustments(article);
-  removeFootnotePageBreaks(article);
-  restoreFootnoteParagraphSplits(article);
-  footnotesByPage.value = {};
-  footnoteReservesByPage.value = {};
-  measuringFootnotes.value = [];
-};
-
-const paginatePageFootnotes = async (article, viewport, token) => {
-  footnotePaginationDepth += 1;
-  let completed = false;
-  try {
-    clearPageBaselineAdjustments(article);
-    removeFootnotePageBreaks(article);
-    restoreFootnoteParagraphSplits(article);
-    const headerReady = await alignChapterHeaderBlock(article, token);
-    if (!headerReady) return false;
-    footnotesByPage.value = {};
-    footnoteReservesByPage.value = {};
-    measuringFootnotes.value = [];
-    await nextTick();
-    await waitForLayout();
-
-    const reserveCache = new Map();
-    let page = 1;
-    let insertedBreaks = 0;
-
-    while (insertedBreaks < MAX_FOOTNOTE_LAYOUT_PASSES) {
-      if (token !== measureToken) return false;
-
-      totalPages.value = getMeasuredPageCount(article, viewport);
-      if (page > totalPages.value) break;
-
-      const grouped = collectPageFootnotes(article);
-      const notes = grouped[page] || [];
-      if (notes.length) {
-        const cacheKey = notes.map((note) => note.id).join("|");
-        let reserve = reserveCache.get(cacheKey);
-        if (reserve == null) {
-          reserve = await measureFootnoteReserve(notes);
-          reserveCache.set(cacheKey, reserve);
-        }
-        if (token !== measureToken) return false;
-
-        const breakPosition = findFootnoteBreakPosition(
-          article,
-          viewport,
-          page,
-          reserve,
-        );
-        if (breakPosition) {
-          insertFootnotePageBreak(breakPosition);
-          insertedBreaks += 1;
-          await nextTick();
-          await waitForLayout();
-        }
-      }
-
-      page += 1;
-    }
-
-    totalPages.value = getMeasuredPageCount(article, viewport);
-    const finalFootnotes = collectPageFootnotes(article);
-    const finalReserves = {};
-    for (const [pageNumber, notes] of Object.entries(finalFootnotes)) {
-      const cacheKey = notes.map((note) => note.id).join("|");
-      let reserve = reserveCache.get(cacheKey);
-      if (reserve == null) {
-        reserve = await measureFootnoteReserve(notes);
-        reserveCache.set(cacheKey, reserve);
-      }
-      finalReserves[pageNumber] = reserve;
-    }
-
-    if (token !== measureToken) return false;
-    await alignPageEdgeBaselines(article, viewport, finalReserves, token);
-    if (token !== measureToken) return false;
-
-    totalPages.value = getMeasuredPageCount(article, viewport);
-    footnotesByPage.value = collectPageFootnotes(article);
-    footnoteReservesByPage.value = finalReserves;
-    measuringFootnotes.value = [];
-    completed = true;
-    return true;
-  } finally {
-    // 字体、字号等设置或键盘状态可能在异步测量途中变化。未完成的
-    // 脚注布局不能留在可见 DOM 中，否则隐藏源段和强制换栏续段会制造空白首页。
-    if (!completed) rollbackIncompleteFootnoteLayout(article);
-    // MutationObserver 的回调晚于当前异步分页执行。这里主动丢弃本轮脚注
-    // 拆分和基线校正产生的记录，避免分页器把自己的 DOM 修改再次当成正文更新。
-    mutationObserver?.takeRecords();
-    footnotePaginationDepth = Math.max(0, footnotePaginationDepth - 1);
-  }
-};
-
-const normalizeChapterParagraphAnchor = (anchor, chapterUuid) => {
-  const token = String(anchor || "");
-  if (!token) return "";
-  if (/^\d+$/.test(token)) return `${chapterUuid}-${token}`;
-
-  const legacyMatch = token.match(LEGACY_PARAGRAPH_ID_PATTERN);
-  if (legacyMatch?.[1]?.toLowerCase() === chapterUuid.toLowerCase()) {
-    return `${chapterUuid}-${legacyMatch[2]}`;
-  }
-
-  return token;
-};
-
-const getInitialAnchor = () => {
-  const chapterUuid = String(props.chapter?.uuid || "");
-  const rawHash = String(route.hash || "").replace(/^#/, "");
-  let decodedHash = rawHash;
-  try {
-    decodedHash = decodeURIComponent(rawHash);
-  } catch {
-    // 保留无法解码的原始 hash。
-  }
-
-  if (decodedHash) {
-    return normalizeChapterParagraphAnchor(decodedHash, chapterUuid);
-  }
-
-  const stored = String(getState("READ_POS", "") || "");
-  const normalizedStored = normalizeChapterParagraphAnchor(stored, chapterUuid);
-  return normalizedStored.startsWith(`${chapterUuid}-`) ? normalizedStored : "";
-};
-
-const restorePage = () => {
-  const chapterUuid = String(props.chapter?.uuid || "");
-  if (!chapterUuid || restoredChapterUuid.value === chapterUuid) return;
-
-  const requestedEdge = window.history.state?.mobileReaderEdge;
-  if (
-    requestedEdge?.chapterUuid === chapterUuid &&
-    requestedEdge?.edge === "end"
-  ) {
-    currentPage.value = totalPages.value;
-    restoredChapterUuid.value = chapterUuid;
-
-    const nextHistoryState = { ...window.history.state };
-    delete nextHistoryState.mobileReaderEdge;
-    window.history.replaceState(nextHistoryState, "");
-    return;
-  }
-
-  const target = document.getElementById(getInitialAnchor());
-
-  currentPage.value = target ? getElementPage(target) : 1;
-  restoredChapterUuid.value = chapterUuid;
-};
-
-const measurePages = async () => {
-  if (keyboardPaginationFrozen) return;
-
-  if (measureInProgress) {
-    measureQueued = true;
-    return;
-  }
-
-  measureInProgress = true;
-
-  try {
-    const viewport = viewportRef.value;
-    if (!viewport || props.isLoading) return;
-
-    if (viewport.clientWidth <= 1 || viewport.clientHeight <= 1) {
-      isMeasuring.value = false;
-      return;
-    }
-
-    const token = ++measureToken;
-    const chapterUuid = String(props.chapter?.uuid || "");
-    isMeasuring.value = true;
-    const previousProgress =
-      totalPages.value > 1
-        ? (currentPage.value - 1) / (totalPages.value - 1)
-        : 0;
-
-    pageWidth.value = Math.max(1, Math.floor(viewport.clientWidth));
-    const pageLayout = getPageLayout(viewport);
-    pageHeight.value = pageLayout.height;
-    pageLineHeight.value = pageLayout.lineHeight;
-    await nextTick();
-    await waitForLayout();
-
-    if (keyboardPaginationFrozen) {
-      isMeasuring.value = false;
-      return;
-    }
+    // 页尾需要命中本页最下方的目标基线，而不是任意一条同相位网格线。
+    // 旧逻辑会在 target - 1/2 个行高处优先选中 0 调整量，导致页面虽然
+    // “在网格上”，末行却高低不一；直接使用到目标末基线的实际距离。
+    const adjustment =
+      targetLastBaseline -
+      calculateReaderFlowBaseline(lastRect, baselineOffset);
 
     if (
-      token !== measureToken ||
-      chapterUuid !== String(props.chapter?.uuid || "")
+      !Number.isFinite(adjustment) ||
+      Math.abs(adjustment) < 0.25 ||
+      adjustment < -totalGapCapacity - 0.5 ||
+      // 末页保持自然收尾，避免把少量正文拉伸到整页高度；其余页面允许
+      // 引用块等不可拆分元素造成的多行留白被均匀分摊到现有块间距。
+      (page === pageCount && adjustment > lineHeight * 1.05)
     ) {
-      return;
+      continue;
     }
 
-    const article = getArticleElement();
-    const contentRoot = article?.querySelector(":scope > div");
-    const hasBodyContent = Boolean(
-      contentRoot?.textContent?.trim() ||
-      contentRoot?.querySelector("img, video, svg, canvas, table, pre"),
+    const adjustmentRecords = distributePageGapAdjustment(
+      candidates,
+      adjustment,
     );
-    if (!article || (String(props.content || "").trim() && !hasBodyContent)) {
-      isMeasuring.value = false;
-      return;
-    }
+    if (!adjustmentRecords.length) continue;
+    pendingAdjustments.push({
+      page,
+      bodyBottom,
+      targetLastBaseline,
+      adjustmentRecords,
+    });
+  }
 
-    const footnotesReady = await paginatePageFootnotes(
-      article,
-      viewport,
-      token,
+  if (!pendingAdjustments.length || token !== measureToken) return;
+  const footnotesBefore = createFootnoteLayoutSignature(
+    collectPageFootnotes(article),
+  );
+  pendingAdjustments.forEach(({ adjustmentRecords }) =>
+    applyPageGapRecords(adjustmentRecords),
+  );
+  await nextTick();
+  await waitForLayout();
+  if (token !== measureToken) return;
+
+  // 负向校正可能把原本位于下一栏的末段（甚至连续短段）拉回本页。
+  // 这些新进入本页的块不在首次候选集合中，需要按分页后的真实成员重新
+  // 计算统一段距；否则页尾保留原段距，而前面的段距已经被收紧。
+  for (let pass = 0; pass < 3; pass += 1) {
+    const convergingPageRects = collectReaderPageFlowRects(article).reduce(
+      (grouped, rect) => {
+        const page = getRectPage(rect, viewport);
+        (grouped[page] ||= []).push(rect);
+        return grouped;
+      },
+      {},
     );
-    if (!footnotesReady || token !== measureToken) return;
+    let changed = false;
 
-    measuredChapterUuid.value = chapterUuid;
-
-    if (restoredChapterUuid.value !== String(props.chapter?.uuid || "")) {
-      restorePage();
-    } else {
-      currentPage.value = normalizePage(
-        Math.round(previousProgress * (totalPages.value - 1)) + 1,
+    pendingAdjustments.forEach((record) => {
+      const rects = (convergingPageRects[record.page] || []).sort(
+        (left, right) => left.top - right.top || left.left - right.left,
       );
-    }
+      if (!rects.length) return;
 
-    await nextTick();
-    await waitForLayout();
-    if (token !== measureToken) return;
+      const firstRect = rects[0];
+      const lastRect = rects.reduce((lowest, rect) =>
+        calculateReaderFlowBaseline(rect, baselineOffset) >
+        calculateReaderFlowBaseline(lowest, baselineOffset)
+          ? rect
+          : lowest,
+      );
+      const remainingAdjustment =
+        record.targetLastBaseline -
+        calculateReaderFlowBaseline(lastRect, baselineOffset);
+      const candidates = getPageBlockGapCandidates(
+        article,
+        viewport,
+        record.page,
+        firstRect,
+      );
+      const nextRecords = distributePageGapAdjustment(
+        candidates,
+        remainingAdjustment,
+      );
+      if (!nextRecords.length) return;
 
-    const firstPageHasContent = pageHasVisibleContent(article, viewport, 1);
-    const currentPageHasContent = pageHasVisibleContent(
-      article,
-      viewport,
-      currentPage.value,
-    );
-    if (!firstPageHasContent || !currentPageHasContent) {
-      if (emptyPageRecoveryPasses < MAX_EMPTY_PAGE_RECOVERY_PASSES) {
-        emptyPageRecoveryPasses += 1;
-        hasMeasured.value = false;
-        rollbackIncompleteFootnoteLayout(article);
-        measureQueued = true;
+      const targetMargin = nextRecords[0].targetMargin;
+      const hasNewCandidate = nextRecords.some(
+        ({ element }) =>
+          !record.adjustmentRecords.some(
+            ({ element: currentElement }) => currentElement === element,
+          ),
+      );
+      const hasUnevenMargin = nextRecords.some(
+        ({ element }) =>
+          Math.abs(
+            (Number.parseFloat(
+              window.getComputedStyle(element).marginBlockStart,
+            ) || 0) - targetMargin,
+          ) > 0.25,
+      );
+      if (
+        Math.abs(remainingAdjustment) <= 0.75 &&
+        !hasNewCandidate &&
+        !hasUnevenMargin
+      ) {
         return;
       }
 
-      if (!currentPageHasContent) {
-        currentPage.value = findNearestContentPage(
-          article,
-          viewport,
-          currentPage.value,
-        );
-      }
-    }
+      const elements = new Map(
+        record.adjustmentRecords.map((item) => [item.element, item]),
+      );
+      nextRecords.forEach((item) => elements.set(item.element, item));
+      record.adjustmentRecords = [...elements.values()];
+      applyPageGapRecords(nextRecords);
+      changed = true;
+    });
 
-    emptyPageRecoveryPasses = 0;
-
-    hasMeasured.value = true;
-    isMeasuring.value = false;
-    emitProgress();
-    void revealMeasuredChapter();
-  } finally {
-    measureInProgress = false;
-
-    if (measureQueued && !keyboardPaginationFrozen) {
-      measureQueued = false;
-      scheduleMeasure();
-    }
-  }
-};
-
-const scheduleMeasure = () => {
-  if (keyboardPaginationFrozen || measureInProgress) {
-    measureQueued = true;
-    return;
+    if (!changed) break;
+    await nextTick();
+    await waitForLayout();
+    if (token !== measureToken) return;
   }
 
-  measureQueued = false;
-  if (measureFrame) window.cancelAnimationFrame(measureFrame);
-  measureFrame = window.requestAnimationFrame(() => {
-    measureFrame = 0;
-    void measurePages();
-  });
-};
-
-const scheduleFreshMeasure = () => {
-  // 立即作废仍在等待字体、脚注高度或双 rAF 布局的旧任务，确保它只能回滚，
-  // 不能在新排版设置生效后提交混合了两套参数的分页结果。
-  measureToken += 1;
-  scheduleMeasure();
-};
-
-const scheduleViewportMeasure = () => {
-  if (keyboardPaginationFrozen) return;
-
-  window.clearTimeout(viewportResizeTimer);
-  viewportResizeTimer = window.setTimeout(
-    scheduleMeasure,
-    VIEWPORT_SETTLE_DELAY,
+  const adjustedPageRects = collectReaderPageFlowRects(article).reduce(
+    (grouped, rect) => {
+      const page = getRectPage(rect, viewport);
+      (grouped[page] ||= []).push(rect);
+      return grouped;
+    },
+    {},
   );
-};
-
-const getVisualViewportHeight = () =>
-  window.visualViewport?.height || window.innerHeight;
-
-const getKeyboardHeightThreshold = () =>
-  Math.max(
-    KEYBOARD_MIN_HEIGHT_DELTA,
-    Math.round(keyboardBaselineHeight * 0.15),
+  const footnotesChanged =
+    createFootnoteLayoutSignature(collectPageFootnotes(article)) !==
+    footnotesBefore;
+  const invalidRecords = pendingAdjustments.filter(
+    ({ page, bodyBottom, targetLastBaseline }) => {
+      const adjustedRects = adjustedPageRects[page] || [];
+      const adjustedLastRect = adjustedRects.reduce(
+        (lowest, rect) =>
+          !lowest ||
+          calculateReaderFlowBaseline(rect, baselineOffset) >
+            calculateReaderFlowBaseline(lowest, baselineOffset)
+            ? rect
+            : lowest,
+        null,
+      );
+      return (
+        footnotesChanged ||
+        !adjustedLastRect ||
+        Math.abs(
+          calculateReaderFlowBaseline(adjustedLastRect, baselineOffset) -
+            targetLastBaseline,
+        ) > 0.75 ||
+        adjustedLastRect.bottom > bodyBottom + 1
+      );
+    },
   );
 
-const freezeKeyboardPagination = () => {
-  keyboardPaginationFrozen = true;
-  window.clearTimeout(keyboardReleaseTimer);
-  window.clearTimeout(viewportResizeTimer);
-  measureToken += 1;
-  if (measureFrame) {
-    window.cancelAnimationFrame(measureFrame);
-    measureFrame = 0;
-  }
-  isMeasuring.value = false;
-};
-
-const isKeyboardInput = (element) => {
-  if (!(element instanceof HTMLElement)) return false;
-  if (
-    element.matches("textarea, [contenteditable=''], [contenteditable='true']")
-  ) {
-    return true;
-  }
-  if (!(element instanceof HTMLInputElement)) return false;
-
-  return ![
-    "button",
-    "checkbox",
-    "color",
-    "file",
-    "hidden",
-    "image",
-    "radio",
-    "range",
-    "reset",
-    "submit",
-  ].includes(element.type);
-};
-
-const releaseKeyboardPagination = () => {
-  keyboardPaginationFrozen = false;
-  keyboardBaselineHeight = getVisualViewportHeight();
-  window.clearTimeout(keyboardReleaseTimer);
-  scheduleViewportMeasure();
-};
-
-const scheduleKeyboardRelease = () => {
-  window.clearTimeout(keyboardReleaseTimer);
-  keyboardReleaseTimer = window.setTimeout(() => {
-    const heightDelta = keyboardBaselineHeight - getVisualViewportHeight();
-    if (heightDelta <= getKeyboardHeightThreshold() / 2) {
-      releaseKeyboardPagination();
-    }
-  }, VIEWPORT_SETTLE_DELAY);
-};
-
-const handleKeyboardFocusIn = (event) => {
-  if (!isKeyboardInput(event.target)) return;
-
-  window.clearTimeout(keyboardReleaseTimer);
-  if (!keyboardPaginationFrozen) {
-    keyboardBaselineHeight = getVisualViewportHeight();
-  }
-  freezeKeyboardPagination();
-};
-
-const handleKeyboardFocusOut = (event) => {
-  if (!isKeyboardInput(event.target)) return;
-
-  window.setTimeout(() => {
-    if (isKeyboardInput(document.activeElement)) return;
-    scheduleKeyboardRelease();
+  if (!invalidRecords.length) return;
+  invalidRecords.forEach(({ adjustmentRecords }) => {
+    adjustmentRecords.forEach(({ element }) => {
+      element.style.removeProperty("--reader-page-edge-margin");
+      element.classList.remove("mobile-page-edge-adjusted");
+    });
   });
+  await nextTick();
+  await waitForLayout();
 };
 
-const handleVisualViewportChange = () => {
-  const currentHeight = getVisualViewportHeight();
+const {
+  collectPageFootnotes,
+  isPaginating: isFootnotePaginationActive,
+  paginatePageFootnotes,
+  resetPaginationLayout,
+  rollbackIncompleteFootnoteLayout,
+} = usePagedFootnoteLayout({
+  footnoteMeasureRef,
+  footnotesByPage,
+  footnoteReservesByPage,
+  measuringFootnotes,
+  totalPages,
+  pageHeight,
+  pageLineHeight,
+  leadingEmptyPages,
+  paginationLayoutResetting,
+  pageVerticalPadding: PAGE_VERTICAL_PADDING,
+  minimumBodyLines: MIN_BODY_LINES_WITH_FOOTNOTES,
+  maximumPasses: MAX_FOOTNOTE_LAYOUT_PASSES,
+  getElementPage,
+  getRectPage,
+  getMeasuredPageCount,
+  clearPageBaselineAdjustments,
+  clearPageFlowGridAdjustments,
+  prepareMobileTables,
+  restoreMobileTables,
+  splitMobileTables: (article, viewport, token) =>
+    splitMobileTables({
+      article,
+      viewport,
+      pageHeight: pageHeight.value,
+      pageVerticalPadding: PAGE_VERTICAL_PADDING,
+      lineHeight: pageLineHeight.value,
+      isCurrent: () => token === measureToken,
+    }),
+  alignChapterHeaderBlock,
+  alignPageFlowBlocksToGrid,
+  alignPageStartBaselines,
+  normalizeLeadingEmptyPages,
+  alignPageEdgeBaselines,
+  waitForLayout,
+  isCurrent: (token) => token === measureToken,
+  takeMutationRecords: () => takeMutationRecords(),
+});
 
-  if (!keyboardPaginationFrozen) {
-    keyboardBaselineHeight = currentHeight;
-    scheduleViewportMeasure();
-    return;
-  }
-
-  window.clearTimeout(viewportResizeTimer);
-  if (!isKeyboardInput(document.activeElement)) scheduleKeyboardRelease();
-};
-
-const findVisibleAnchor = () => {
+const measurePages = async () => {
+  if (isKeyboardPaginationFrozen()) return;
   const viewport = viewportRef.value;
+  if (!viewport || props.isLoading) return;
+
+  if (viewport.clientWidth <= 1 || viewport.clientHeight <= 1) {
+    isMeasuring.value = false;
+    return;
+  }
+
+  const token = ++measureToken;
+  const chapterUuid = String(props.chapter?.uuid || "");
+  isMeasuring.value = true;
+  const previousProgress =
+    totalPages.value > 1 ? (currentPage.value - 1) / (totalPages.value - 1) : 0;
+
+  pageWidth.value = Math.max(1, Math.floor(viewport.clientWidth));
+  const pageLayout = getPageLayout(viewport);
+  pageHeight.value = pageLayout.height;
+  pageLineHeight.value = pageLayout.lineHeight;
+  await nextTick();
+  await waitForLayout();
+
+  if (isKeyboardPaginationFrozen()) {
+    isMeasuring.value = false;
+    return;
+  }
+
+  if (
+    token !== measureToken ||
+    chapterUuid !== String(props.chapter?.uuid || "")
+  ) {
+    return;
+  }
+
   const article = getArticleElement();
-  if (!viewport || !article) return null;
-
-  const viewportRect = viewport.getBoundingClientRect();
-  const candidates = article.querySelectorAll(
-    "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id], p[id]",
+  const contentRoot = article?.querySelector(":scope > div");
+  const hasBodyContent = Boolean(
+    contentRoot?.textContent?.trim() ||
+    contentRoot?.querySelector("img, video, svg, canvas, table, pre"),
   );
+  if (!article || (String(props.content || "").trim() && !hasBodyContent)) {
+    isMeasuring.value = false;
+    return;
+  }
 
-  return Array.from(candidates).find((element) =>
-    Array.from(element.getClientRects()).some(
-      (rect) =>
-        rect.right > viewportRect.left + 4 &&
-        rect.left < viewportRect.right - 4 &&
-        rect.bottom > viewportRect.top + 4 &&
-        rect.top < viewportRect.bottom - 4,
-    ),
+  if (forcePaginationResetPending) {
+    const resetReady = await resetPaginationLayout(article, token);
+    if (!resetReady || token !== measureToken) {
+      forcePaginationResetPending = true;
+      return;
+    }
+    forcePaginationResetPending = false;
+  }
+
+  const footnotesReady = await paginatePageFootnotes(article, viewport, token);
+  if (!footnotesReady || token !== measureToken) return;
+
+  measuredChapterUuid.value = chapterUuid;
+
+  if (restoredChapterUuid.value !== String(props.chapter?.uuid || "")) {
+    restorePage();
+  } else {
+    currentPage.value = normalizePage(
+      Math.round(previousProgress * (totalPages.value - 1)) + 1,
+    );
+  }
+
+  await nextTick();
+  await waitForLayout();
+  if (token !== measureToken) return;
+
+  const firstPageHasContent = pageHasVisibleContent(article, viewport, 1);
+  const currentPageHasContent = pageHasVisibleContent(
+    article,
+    viewport,
+    currentPage.value,
   );
+  if (!firstPageHasContent || !currentPageHasContent) {
+    if (emptyPageRecoveryPasses < MAX_EMPTY_PAGE_RECOVERY_PASSES) {
+      emptyPageRecoveryPasses += 1;
+      hasMeasured.value = false;
+      rollbackIncompleteFootnoteLayout(article);
+      forcePaginationResetPending = true;
+      requestMeasureRerun();
+      return;
+    }
+
+    if (!currentPageHasContent) {
+      currentPage.value = findNearestContentPage(
+        article,
+        viewport,
+        currentPage.value,
+      );
+    }
+  }
+
+  emptyPageRecoveryPasses = 0;
+
+  hasMeasured.value = true;
+  isMeasuring.value = false;
+  emitProgress();
+  void revealMeasuredChapter();
 };
 
-const persistCurrentPosition = () => {
-  const anchor = findVisibleAnchor();
-  if (!anchor?.id) return;
+const {
+  cancelPending: cancelPendingMeasure,
+  requestRerun: requestMeasureRerun,
+  scheduleDelayedMeasure,
+  scheduleFreshMeasure,
+  scheduleMeasure,
+  scheduleViewportMeasure,
+} = usePaginationScheduler({
+  measure: measurePages,
+  isFrozen: () => isKeyboardPaginationFrozen(),
+  onInvalidate: () => {
+    measureToken += 1;
+  },
+  viewportDelay: VIEWPORT_SETTLE_DELAY,
+});
 
-  setState("READ_POS", anchor.id);
-};
-
-const persistPosition = () => {
-  window.clearTimeout(persistTimer);
-  persistTimer = window.setTimeout(persistCurrentPosition, 240);
-};
+const { isFrozen: isKeyboardPaginationFrozen, isKeyboardInput } =
+  usePaginationKeyboardFreeze({
+    settleDelay: VIEWPORT_SETTLE_DELAY,
+    minimumHeightDelta: KEYBOARD_MIN_HEIGHT_DELTA,
+    onFreeze: () => {
+      cancelPendingMeasure({ invalidate: true });
+      isMeasuring.value = false;
+    },
+    onRelease: scheduleViewportMeasure,
+    onViewportChange: scheduleViewportMeasure,
+  });
 
 const emitProgress = () => {
   emit("progress", pageProgress.value);
 };
 
 const triggerReaderHint = () => {
-  showNavigationHint.value = true;
   setState("MOBILE_PAGE_HINT_SEEN", true);
-  window.clearTimeout(hintTimer);
-  hintTimer = window.setTimeout(() => {
-    showNavigationHint.value = false;
-  }, 6000);
+  showReaderHint();
 };
 
-const dismissReaderHint = () => {
-  window.clearTimeout(hintTimer);
-  showNavigationHint.value = false;
-};
-
-const handleReadingProgressChange = (progress) => {
-  const normalizedProgress = Math.min(100, Math.max(0, Number(progress) || 0));
-  pendingReadingProgress.value = normalizedProgress;
-  if (!chapterSnapshotVisible.value) {
-    totalReadingProgress.value = normalizedProgress;
-  }
-};
+const dismissReaderHint = hideReaderHint;
 
 const setReaderControlsOpen = (open) => {
   const nextOpen = Boolean(open);
@@ -1594,22 +1552,6 @@ const goToPage = (page) => {
   currentPage.value = target;
   emitProgress();
   persistPosition();
-};
-
-const beginChapterNavigation = (direction = 0) => {
-  chapterNavigationPending.value = true;
-  chapterLoadingOverlayVisible.value = true;
-  chapterTransitionDirection.value = direction;
-  captureChapterSnapshot();
-
-  window.clearTimeout(chapterNavigationTimer);
-  chapterNavigationTimer = window.setTimeout(() => {
-    if (!chapterNavigationPending.value) return;
-    chapterNavigationPending.value = false;
-    chapterLoadingOverlayVisible.value = false;
-    chapterTransitionDirection.value = 0;
-    void revealMeasuredChapter();
-  }, 12000);
 };
 
 const turnChapter = (direction) => {
@@ -1628,13 +1570,7 @@ const turnChapter = (direction) => {
 
   const navigation =
     normalizedDirection < 0 ? handlePrev({ lastPage: true }) : handleNext();
-  Promise.resolve(navigation).catch(() => {
-    window.clearTimeout(chapterNavigationTimer);
-    chapterNavigationPending.value = false;
-    chapterLoadingOverlayVisible.value = false;
-    chapterTransitionDirection.value = 0;
-    void revealMeasuredChapter();
-  });
+  Promise.resolve(navigation).catch(cancelChapterNavigation);
 };
 
 const turnPage = (direction) => {
@@ -1660,109 +1596,11 @@ const turnPage = (direction) => {
   goToPage(target);
 };
 
-const pointer = {
-  id: null,
-  x: 0,
-  y: 0,
-  startedAt: 0,
-  active: false,
-};
-
-const resetPointer = () => {
-  pointer.id = null;
-  pointer.active = false;
-};
-
-const isInteractiveTarget = (event) => {
-  const path = event.composedPath?.() || [event.target];
-  return path.some(
-    (node) =>
-      node instanceof Element &&
-      node.matches(
-        "a, button, input, select, textarea, summary, [role='button'], [contenteditable='true'], [data-paragraph-id], [data-reader-interactive]",
-      ),
-  );
-};
-
-const topPullGesture = {
-  id: null,
-  x: 0,
-  y: 0,
-  active: false,
-  triggered: false,
-};
-
-const resetTopPullGesture = () => {
-  topPullGesture.id = null;
-  topPullGesture.active = false;
-  topPullGesture.triggered = false;
-};
-
-const getTrackedTouch = (touches) =>
-  Array.from(touches || []).find(
-    (touch) => touch.identifier === topPullGesture.id,
-  );
-
-const handleTopPullStart = (event) => {
-  if (
-    event.touches.length !== 1 ||
-    showChapterLoadingOverlay.value ||
-    props.controlsOpen ||
-    isInteractiveTarget(event)
-  ) {
-    resetTopPullGesture();
-    return;
-  }
-
-  const touch = event.touches[0];
-  if (touch.clientY > NAVBAR_PULL_START_ZONE) {
-    resetTopPullGesture();
-    return;
-  }
-
-  topPullGesture.id = touch.identifier;
-  topPullGesture.x = touch.clientX;
-  topPullGesture.y = touch.clientY;
-  topPullGesture.active = true;
-  topPullGesture.triggered = false;
-};
-
-const handleTopPullMove = (event) => {
-  if (!topPullGesture.active) return;
-
-  const touch = getTrackedTouch(event.touches);
-  if (!touch) {
-    resetTopPullGesture();
-    return;
-  }
-
-  const deltaX = touch.clientX - topPullGesture.x;
-  const deltaY = touch.clientY - topPullGesture.y;
-  const isDownwardPull =
-    deltaY > 0 &&
-    Math.abs(deltaY) >= Math.abs(deltaX) * NAVBAR_PULL_DIRECTION_RATIO;
-
-  if (Math.abs(deltaX) > 16 && Math.abs(deltaX) > Math.abs(deltaY)) {
-    resetTopPullGesture();
-    return;
-  }
-
-  if (isDownwardPull && deltaY > 8 && event.cancelable) {
-    event.preventDefault();
-  }
-
-  if (
-    topPullGesture.triggered ||
-    !isDownwardPull ||
-    deltaY < NAVBAR_PULL_DISTANCE
-  ) {
-    return;
-  }
-
-  topPullGesture.triggered = true;
-  dismissReaderHint();
-  window.dispatchEvent(new Event(MOBILE_READER_NAVBAR_SHOW_EVENT));
-};
+const {
+  getSelectionContext,
+  handleContextMenu: handleTextContextMenu,
+  isInteractiveEvent: isInteractiveTarget,
+} = useReaderTextContext({ getRoot: getArticleElement, emit });
 
 const handleViewportClick = (event) => {
   if (!(event.target instanceof Element)) return;
@@ -1771,94 +1609,19 @@ const handleViewportClick = (event) => {
   }
 };
 
-const isNearCommentTrigger = (clientX, clientY) => {
-  const article = getArticleElement();
-  if (!article) return false;
-
-  return Array.from(article.querySelectorAll(".comment-trigger")).some(
-    (trigger) => {
-      const rect = trigger.getBoundingClientRect();
-      return (
-        clientX >= rect.left - COMMENT_EXCLUSION_RADIUS &&
-        clientX <= rect.right + COMMENT_EXCLUSION_RADIUS &&
-        clientY >= rect.top - COMMENT_EXCLUSION_RADIUS &&
-        clientY <= rect.bottom + COMMENT_EXCLUSION_RADIUS
-      );
-    },
-  );
-};
-
-const isProtectedPointerEvent = (event) =>
-  isInteractiveTarget(event) ||
-  isNearCommentTrigger(event.clientX, event.clientY);
-
-const handlePointerDown = (event) => {
-  if (event.button !== 0) return;
-  if (isProtectedPointerEvent(event)) return;
-
-  pointer.id = event.pointerId;
-  pointer.x = event.clientX;
-  pointer.y = event.clientY;
-  pointer.startedAt = performance.now();
-  pointer.active = true;
-  event.currentTarget.setPointerCapture?.(event.pointerId);
-};
-
-const handlePointerMove = (event) => {
-  if (!pointer.active || pointer.id !== event.pointerId) return;
-  const deltaX = event.clientX - pointer.x;
-  const deltaY = event.clientY - pointer.y;
-  if (Math.abs(deltaX) > Math.abs(deltaY) && event.cancelable) {
-    event.preventDefault();
-  }
-};
-
-const handlePointerUp = (event) => {
-  if (!pointer.active || pointer.id !== event.pointerId) return;
-
-  const deltaX = event.clientX - pointer.x;
-  const deltaY = event.clientY - pointer.y;
-  const pressDuration = performance.now() - pointer.startedAt;
-  const protectedInteraction = isProtectedPointerEvent(event);
-  resetPointer();
-
-  if (protectedInteraction) return;
-
-  if (
-    Math.abs(deltaX) >= SWIPE_DISTANCE &&
-    Math.abs(deltaX) >= Math.abs(deltaY) * 1.2
-  ) {
-    turnPage(deltaX < 0 ? 1 : -1);
-    return;
-  }
-
-  const isTap =
-    pressDuration < 350 && Math.abs(deltaX) < 12 && Math.abs(deltaY) < 12;
-  const selection = window.getSelection?.();
-  if (!isTap || (selection && !selection.isCollapsed)) return;
-
-  const viewportRect = viewportRef.value?.getBoundingClientRect();
-  if (!viewportRect?.width) return;
-
-  const relativeX = (event.clientX - viewportRect.left) / viewportRect.width;
-  if (relativeX <= TAP_EDGE_RATIO) {
-    turnPage(-1);
-  } else if (relativeX >= 1 - TAP_EDGE_RATIO) {
-    turnPage(1);
-  }
-};
-
-const handleKeydown = (event) => {
-  if (isKeyboardInput(event.target) || showChapterLoadingOverlay.value) return;
-
-  if (["ArrowRight", "PageDown", " "].includes(event.key)) {
-    event.preventDefault();
-    turnPage(1);
-  } else if (["ArrowLeft", "PageUp"].includes(event.key)) {
-    event.preventDefault();
-    turnPage(-1);
-  }
-};
+const { handlePointerDown, handlePointerMove, handlePointerUp, resetPointer } =
+  usePagedReaderInput({
+    viewportRef,
+    tapZones: toRef(props, "tapZones"),
+    wheelEnabled: toRef(props, "wheelPagination"),
+    turnPage,
+    emitAction: (action) => emit("reader-action", action),
+    isBlocked: showChapterLoadingOverlay,
+    isKeyboardInput,
+    isInteractiveEvent: isInteractiveTarget,
+    getSelectionContext,
+    swipeDistance: SWIPE_DISTANCE,
+  });
 
 watch(
   () => [route.params.volumeSlug, route.params.chapterSlug],
@@ -1895,15 +1658,16 @@ watch(
   () => [props.chapter?.uuid, props.content, props.isLoading],
   ([chapterUuid], [previousChapterUuid]) => {
     if (chapterUuid !== previousChapterUuid) {
-      window.clearTimeout(chapterNavigationTimer);
       setReaderControlsOpen(false);
       measuredChapterUuid.value = "";
-      restoredChapterUuid.value = "";
+      resetRestoredChapter();
       footnotesByPage.value = {};
       footnoteReservesByPage.value = {};
       measuringFootnotes.value = [];
       hasMeasured.value = false;
+      leadingEmptyPages.value = 0;
       emptyPageRecoveryPasses = 0;
+      forcePaginationResetPending = true;
     }
     scheduleFreshMeasure();
   },
@@ -1921,7 +1685,8 @@ watch(
   () => {
     // 排版控件连续变化时保留最后一个完整页面，直到新布局通过首页与当前页校验。
     if (hasMeasured.value && !props.isLoading) captureChapterSnapshot();
-    scheduleFreshMeasure();
+    measureToken += 1;
+    scheduleDelayedMeasure(TYPOGRAPHY_SETTLE_DELAY);
   },
   { flush: "sync" },
 );
@@ -1951,222 +1716,16 @@ watch(
   { immediate: true },
 );
 
-defineExpose({ triggerReaderHint, goToPage, turnChapter });
+defineExpose({ triggerReaderHint, goToPage, turnChapter, turnPage });
 
-onMounted(() => {
-  const viewport = viewportRef.value;
-  if (!viewport) return;
-
-  keyboardBaselineHeight = getVisualViewportHeight();
-
-  resizeObserver = new ResizeObserver(scheduleViewportMeasure);
-  resizeObserver.observe(viewport);
-  if (sectionRef.value) resizeObserver.observe(sectionRef.value);
-  const dock = document.querySelector("[data-mobile-reader-dock]");
-  if (dock) resizeObserver.observe(dock);
-
-  mutationObserver = new MutationObserver((records) => {
-    if (footnotePaginationDepth > 0) return;
-
-    const article = getArticleElement();
-    if (
-      article &&
-      records.some(
-        (record) =>
-          record.target === article || article.contains(record.target),
-      )
-    ) {
-      scheduleMeasure();
-    }
-  });
-  mutationObserver.observe(viewport, { childList: true, subtree: true });
-
-  viewport.addEventListener("load", scheduleMeasure, true);
-  window.addEventListener("keydown", handleKeydown);
-  document.addEventListener("focusin", handleKeyboardFocusIn, true);
-  document.addEventListener("focusout", handleKeyboardFocusOut, true);
-  window.visualViewport?.addEventListener("resize", handleVisualViewportChange);
-  window.visualViewport?.addEventListener("scroll", handleVisualViewportChange);
-  document.fonts?.ready.then(scheduleMeasure);
-  scheduleMeasure();
-});
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect();
-  mutationObserver?.disconnect();
-  viewportRef.value?.removeEventListener("load", scheduleMeasure, true);
-  window.removeEventListener("keydown", handleKeydown);
-  document.removeEventListener("focusin", handleKeyboardFocusIn, true);
-  document.removeEventListener("focusout", handleKeyboardFocusOut, true);
-  window.visualViewport?.removeEventListener(
-    "resize",
-    handleVisualViewportChange,
-  );
-  window.visualViewport?.removeEventListener(
-    "scroll",
-    handleVisualViewportChange,
-  );
-  window.clearTimeout(persistTimer);
-  window.clearTimeout(hintTimer);
-  window.clearTimeout(viewportResizeTimer);
-  window.clearTimeout(keyboardReleaseTimer);
-  window.clearTimeout(chapterRevealTimer);
-  window.clearTimeout(chapterNavigationTimer);
-  persistCurrentPosition();
-  measureToken += 1;
-  if (measureFrame) window.cancelAnimationFrame(measureFrame);
-});
+({ takeMutationRecords } = usePaginationObservers({
+  viewportRef,
+  sectionRef,
+  getArticleElement,
+  shouldIgnoreMutations: isFootnotePaginationActive,
+  scheduleMeasure,
+  scheduleViewportMeasure,
+}));
 </script>
 
-<style scoped>
-.mobile-page-viewport {
-  touch-action: pan-y;
-  transition: opacity 180ms ease;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article) {
-  box-sizing: border-box;
-  height: var(--reader-page-height);
-  min-height: var(--reader-page-height);
-  max-height: var(--reader-page-height);
-  width: var(--reader-page-width);
-  max-width: none;
-  column-width: var(--reader-page-width);
-  column-gap: var(--reader-page-gap);
-  column-fill: auto;
-  padding-block-start: var(--reader-page-padding-block);
-  padding-block-end: var(--reader-page-padding-block);
-  overflow: visible;
-  transform: translate3d(
-    calc(var(--reader-chapter-offset, 0px) - var(--reader-page-offset)),
-    0,
-    0
-  );
-  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  will-change: transform;
-}
-
-.mobile-page-viewport.chapter-transition-preparing :deep(.mobile-page-article) {
-  transition: none;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article p) {
-  line-height: var(--reader-page-line-height);
-  orphans: 1;
-  widows: 1;
-}
-
-/* 移动端把段间距量化成半行，兼顾段落节奏与分页基线。 */
-.mobile-page-viewport :deep(.mobile-page-article > div > p) {
-  margin-block: 0;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article > div > p ~ p) {
-  margin-block-start: var(--reader-paragraph-gap);
-}
-
-.mobile-page-viewport
-  :deep(.mobile-page-article > div > .mobile-page-baseline-adjusted) {
-  margin-block-start: calc(
-    var(--reader-page-baseline-base-margin, 0px) +
-      var(--reader-page-baseline-adjust, 0px)
-  ) !important;
-}
-
-/* 脚注避让从溢出行处分出续段，保留本页已经容纳的正文行。 */
-.mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      > div
-      > p.mobile-footnote-split-source:not(.mobile-footnote-split-empty)
-  ) {
-  /* DOM 拆段会让浏览器误把分页处视为段尾；实际仍有续文，末行应保持两端对齐。 */
-  text-align-last: justify;
-}
-
-.mobile-page-viewport
-  :deep(.mobile-page-article > div > p.mobile-footnote-continuation) {
-  margin-block-start: 0;
-  break-before: column;
-  -webkit-column-break-before: always;
-}
-
-.mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      > div
-      > p.mobile-footnote-continuation:not(.mobile-footnote-paragraph-start)
-  ) {
-  text-indent: 0 !important;
-}
-
-.mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      > div
-      > p.mobile-footnote-continuation.mobile-footnote-paragraph-start
-  ) {
-  text-indent: var(
-    --reader-footnote-continuation-indent,
-    var(--para-text-indent)
-  ) !important;
-}
-
-.mobile-page-viewport
-  :deep(.mobile-page-article > div > p.mobile-footnote-split-empty) {
-  display: none;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article .footnotes-sep),
-.mobile-page-viewport :deep(.mobile-page-article .footnotes) {
-  display: none;
-}
-
-.mobile-page-viewport :deep(.mobile-footnote-page-break) {
-  display: block;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
-  break-before: column;
-  -webkit-column-break-before: always;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article li),
-.mobile-page-viewport :deep(.mobile-page-article blockquote) {
-  line-height: var(--reader-page-line-height);
-}
-
-.mobile-page-viewport :deep(.mobile-page-article > *) {
-  max-width: 100%;
-}
-
-.mobile-page-viewport :deep(.mobile-pagination-end) {
-  display: block;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  line-height: 0;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article h1),
-.mobile-page-viewport :deep(.mobile-page-article h2),
-.mobile-page-viewport :deep(.mobile-page-article h3),
-.mobile-page-viewport :deep(.mobile-page-article h4),
-.mobile-page-viewport :deep(.mobile-page-article h5),
-.mobile-page-viewport :deep(.mobile-page-article h6),
-.mobile-page-viewport :deep(.mobile-page-article figure),
-.mobile-page-viewport :deep(.mobile-page-article pre),
-.mobile-page-viewport :deep(.mobile-page-article table),
-.mobile-page-viewport :deep(.mobile-page-article details) {
-  break-inside: avoid-column;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mobile-page-viewport,
-  .mobile-page-viewport :deep(.mobile-page-article) {
-    transition: none;
-  }
-}
-</style>
+<style scoped src="@/assets/mobile-reader.css"></style>

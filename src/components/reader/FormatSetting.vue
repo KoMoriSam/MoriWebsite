@@ -31,47 +31,19 @@
         </select>
       </StyleMenu>
 
-      <StyleMenu title="字体大小" configKey="fontSize">
+      <StyleMenu
+        v-for="control in READER_TYPOGRAPHY_CONTROLS"
+        :key="control.key"
+        :title="control.label"
+        :config-key="control.key"
+      >
         <NumberController
-          :modelValue="styleConfigs.fontSize"
-          :step="1"
-          :places="0"
-          :min="16"
-          :max="32"
-          @update:modelValue="(val) => store.setStyle('fontSize', val)"
-        />
-      </StyleMenu>
-
-      <StyleMenu title="字间距" configKey="fontGap">
-        <NumberController
-          :modelValue="styleConfigs.fontGap"
-          :step="0.01"
-          :places="2"
-          :min="-1"
-          :max="1"
-          @update:modelValue="(val) => store.setStyle('fontGap', val)"
-        />
-      </StyleMenu>
-
-      <StyleMenu title="行间距" configKey="lineHeight">
-        <NumberController
-          :modelValue="styleConfigs.lineHeight"
-          :step="0.01"
-          :places="2"
-          :min="1"
-          :max="3"
-          @update:modelValue="(val) => store.setStyle('lineHeight', val)"
-        />
-      </StyleMenu>
-
-      <StyleMenu title="段间距" configKey="paraHeight">
-        <NumberController
-          :modelValue="styleConfigs.paraHeight"
-          :step="0.5"
-          :places="1"
-          :min="0"
-          :max="3"
-          @update:modelValue="(val) => store.setStyle('paraHeight', val)"
+          :model-value="styleConfigs[control.key]"
+          :step="control.step"
+          :places="control.places"
+          :min="control.min"
+          :max="control.max"
+          @update:modelValue="(val) => store.setStyle(control.key, val)"
         />
       </StyleMenu>
     </section>
@@ -81,7 +53,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useReaderStore } from "@/stores/readerStore";
-import { FONTS } from "@/constants/reader";
+import { FONTS, READER_TYPOGRAPHY_CONTROLS } from "@/constants/reader";
 
 import StyleMenu from "@/components/reader/StyleMenu.vue";
 import NumberController from "@/components/ui/input/NumberController.vue";

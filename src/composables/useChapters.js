@@ -95,7 +95,10 @@ export function useChapters() {
     if (permalink.routeCode) {
       query.c = permalink.routeCode;
     }
-    const navigation = router.push({
+    const navigate = options.replaceDialogHistory
+      ? router.replace
+      : router.push;
+    const navigation = navigate.call(router, {
       name: "novel-reader",
       params: {
         volumeSlug: permalink.volumeSlug,
@@ -148,6 +151,7 @@ export function useChapters() {
 
       handleChapter(targetUuid, {
         hash: resumeHash,
+        replaceDialogHistory: options.replaceDialogHistory,
       });
       return;
     }
@@ -155,18 +159,22 @@ export function useChapters() {
     if (uuid === currentChapterUuid.value && isReaderRoute.value) {
       toast.info("已经是当前章啦！");
     } else {
-      handleChapter(uuid);
+      handleChapter(uuid, {
+        replaceDialogHistory: options.replaceDialogHistory,
+      });
     }
   };
 
-  const handleRecentChapter = () => {
+  const handleRecentChapter = (options = {}) => {
     if (
       latestChapter.value.uuid === currentChapterUuid.value &&
       isReaderRoute.value
     ) {
       toast.info("已经是最新章啦！");
     } else {
-      handleChapter(latestChapter.value.uuid);
+      handleChapter(latestChapter.value.uuid, {
+        replaceDialogHistory: options.replaceDialogHistory,
+      });
     }
   };
 

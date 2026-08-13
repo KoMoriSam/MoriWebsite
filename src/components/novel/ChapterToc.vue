@@ -204,6 +204,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  beforeSelect: {
+    type: Function,
+    default: null,
+  },
 });
 
 const novelStore = useNovelStore();
@@ -347,15 +351,17 @@ const expandCurrentChapterVolume = () => {
   collapsedVolumeUuids.value = nextCollapsedVolumeUuids;
 };
 
-const onChapterSelect = (uuid) => {
+const onChapterSelect = async (uuid) => {
+  const navigationOptions = (await props.beforeSelect?.()) || {};
   tocFrame.value?.closeMenu();
-  handleClick(handleAnyChapter, uuid);
+  handleClick(handleAnyChapter, uuid, navigationOptions);
   emit("select");
 };
 
-const onLatestChapterSelect = () => {
+const onLatestChapterSelect = async () => {
+  const navigationOptions = (await props.beforeSelect?.()) || {};
   tocFrame.value?.closeMenu();
-  handleClick(handleRecentChapter);
+  handleClick(handleRecentChapter, navigationOptions);
   emit("select");
 };
 

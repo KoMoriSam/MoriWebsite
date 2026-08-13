@@ -1,43 +1,33 @@
 <template>
   <section
-    class="scroll-reader absolute inset-x-0 top-0 flex min-h-0 flex-col overflow-hidden"
+    ref="scrollContainerRef"
+    class="scroll-reader absolute inset-x-0 top-0 bottom-6 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
     aria-label="上下滚动阅读器"
-    :aria-busy="isLoading"
-    :style="{
-      bottom:
-        'max(0px, calc(var(--mobile-reader-dock-clearance) - var(--mobile-reader-shell-padding-bottom)))',
-    }"
-    @touchstart.passive="handleTopPullStart"
-    @touchmove="handleTopPullMove"
-    @touchend.passive="resetTopPullGesture"
-    @touchcancel.passive="resetTopPullGesture"
+    :aria-busy="showChapterLoadingOverlay"
+    @scroll.passive="handleScroll"
+    @click="handleTapClick"
+    @contextmenu.capture.prevent="handleTextContextMenu"
+    @wheel.passive="markReadingInteraction"
   >
-    <div
-      ref="scrollContainerRef"
-      class="min-h-0 flex-1 touch-pan-y overflow-y-scroll overscroll-y-contain [-webkit-overflow-scrolling:touch]"
-      @scroll.passive="handleScroll"
-      @pointerdown.passive="markReadingInteraction"
-      @wheel.passive="markReadingInteraction"
+    <Markdown
+      :content="content"
+      :is-loading="isLoading"
+      :show-loading="false"
+      :header-data="headerData"
+      :style-configs="styleConfigs"
+      :manage-route-anchor="false"
+      class="scroll-reader-article"
+      @render-ready="handleMarkdownRenderReady"
     >
-      <Markdown
-        :content="content"
-        :is-loading="isLoading"
-        :header-data="headerData"
-        :style-configs="styleConfigs"
-        :manage-route-anchor="false"
-        class="scroll-reader-article"
-        @render-ready="handleMarkdownRenderReady"
-      >
-        <template #before>
-          <ChapterHeader
-            v-if="chapter"
-            :chapter="chapter"
-            :stats="chapterStats"
-            class="mobile-chapter-header not-prose break-inside-avoid-column"
-          />
-        </template>
-      </Markdown>
-    </div>
+      <template #before>
+        <ChapterHeader
+          v-if="chapter"
+          :chapter="chapter"
+          :stats="chapterStats"
+          class="mobile-chapter-header not-prose break-inside-avoid-column"
+        />
+      </template>
+    </Markdown>
 
     <ChapterToc
       mobile
@@ -55,26 +45,68 @@
       leave-from-class="translate-y-0 opacity-100"
       leave-to-class="translate-y-2 opacity-0"
     >
-      <button
+      <div
         v-if="showNavigationHint"
-        type="button"
-        class="alert alert-soft absolute bottom-[var(--mobile-reader-content-padding-block)] left-1/2 z-20 block w-[calc(100%_-_1.5rem)] max-w-sm -translate-x-1/2 cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
-        aria-label="上下滚动阅读提示：可在底部阅读控制切换为左右翻页，从顶部下滑调出导航栏，在导航栏区域上滑可收起，点击关闭"
-        @click="dismissReaderHint"
+        class="pointer-events-none fixed inset-0 z-40 grid place-items-center"
       >
-        <span class="flex items-center gap-3">
-          <i
-            class="ri-arrow-up-down-line text-2xl text-base-content/70"
-            aria-hidden="true"
-          ></i>
-          <span class="min-w-0 flex-1">
-            <span class="block font-semibold">上下滚动阅读</span>
-            <span class="mt-0.5 block text-xs text-base-content/60">
-              直接上下滑动阅读；点击底部“滚动阅读”可切换回左右翻页；从页面最顶部下滑可唤出导航栏，在导航栏区域上滑可收起。
+        <button
+          type="button"
+          class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
+          aria-label="上下滚动阅读提示：轻触九宫格区域执行对应操作，上下滑动滚动，点击关闭"
+          @click="dismissReaderHint"
+        >
+          <span class="block w-full">
+            <span class="flex items-baseline justify-between gap-3">
+              <span class="text-sm font-semibold">阅读操作</span>
+              <span class="text-[0.6875rem] text-base-content/45">
+                轻触提示可关闭
+              </span>
+            </span>
+
+            <span class="mt-2.5 grid grid-cols-2 gap-2">
+              <span class="rounded-box bg-base-200/75 px-2.5 py-2 text-center">
+                <i
+                  class="ri-arrow-up-down-line block text-xl leading-none text-base-content/75"
+                  aria-hidden="true"
+                ></i>
+                <span class="mt-1.5 block text-xs font-semibold">
+                  上下滚动
+                </span>
+                <span
+                  class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                >
+                  正文区域<br />上下滑动阅读
+                </span>
+              </span>
+
+              <span class="rounded-box bg-base-200/75 px-2.5 py-2 text-center">
+                <i
+                  class="ri-grid-line block text-xl leading-none text-base-content/75"
+                  aria-hidden="true"
+                ></i>
+                <span class="mt-1.5 block text-xs font-semibold">
+                  轻触操作（可自定义）
+                </span>
+                <span
+                  class="mt-0.5 block text-[0.6875rem] text-base-content/55"
+                >
+                  中央展开菜单<br />
+                  四周翻页
+                </span>
+              </span>
+            </span>
+
+            <span
+              class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
+            >
+              <span class="shrink-0 font-semibold">更多控制</span>
+              <span class="text-base-content/60">
+                九宫格区域可设为菜单、上一章、下一章、目录、搜索、帮助等操作
+              </span>
             </span>
           </span>
-        </span>
-      </button>
+        </button>
+      </div>
     </Transition>
 
     <Transition
@@ -84,7 +116,7 @@
       leave-to-class="opacity-0"
     >
       <div
-        v-if="isLoading"
+        v-if="showChapterLoadingOverlay"
         class="absolute inset-0 z-30 grid place-items-center bg-base-100/80 backdrop-blur-[1px]"
         role="status"
         aria-live="assertive"
@@ -102,20 +134,17 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 import { useChapters } from "@/composables/useChapters";
-import { MOBILE_READER_NAVBAR_SHOW_EVENT } from "@/constants/reader";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 import { alignMobileChapterHeaderBlock } from "@/utils/reader/align-header";
-
-const NAVBAR_PULL_START_ZONE = 72;
-const NAVBAR_PULL_DISTANCE = 48;
-const NAVBAR_PULL_DIRECTION_RATIO = 1.25;
+import { useReaderHint } from "@/composables/novel/useReaderHint";
+import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 
 const props = defineProps({
   content: {
@@ -146,9 +175,19 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  restoreChapterStart: {
+    type: Boolean,
+    default: false,
+  },
+  tapZones: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(["controller-state"]);
+const emit = defineEmits([
+  "controller-state",
+  "reader-action",
+  "text-context",
+  "chapter-start-restored",
+]);
 const route = useRoute();
 const { getState, setState } = useReadingStateStorage();
 const { handlePrev, handleNext } = useChapters();
@@ -156,13 +195,26 @@ const { handlePrev, handleNext } = useChapters();
 const scrollContainerRef = ref(null);
 const chapterScrollProgress = ref(0);
 const totalReadingProgress = ref(0);
-const showNavigationHint = ref(false);
+const currentViewportPage = ref(1);
+const totalViewportPages = ref(1);
+const {
+  visible: showNavigationHint,
+  show: triggerReaderHint,
+  dismiss: dismissReaderHint,
+} = useReaderHint();
+const renderedChapterUuid = ref("");
+const showChapterLoadingOverlay = computed(
+  () =>
+    props.isLoading ||
+    renderedChapterUuid.value !== String(props.chapter?.uuid || ""),
+);
 
 let scrollFrame = 0;
 let persistTimer = 0;
-let hintTimer = 0;
 let restoreToken = 0;
 let restoreOnRender = true;
+let restoredChapterUuid = "";
+let lastScrollAt = 0;
 
 const updateScrollProgress = () => {
   const container = scrollContainerRef.value;
@@ -176,6 +228,17 @@ const updateScrollProgress = () => {
     scrollRange > 0
       ? Math.min(100, Math.max(0, (container.scrollTop / scrollRange) * 100))
       : 100;
+  totalViewportPages.value = Math.max(
+    1,
+    Math.ceil(container.scrollHeight / Math.max(1, container.clientHeight)),
+  );
+  currentViewportPage.value = Math.min(
+    totalViewportPages.value,
+    Math.max(
+      1,
+      Math.floor(container.scrollTop / Math.max(1, container.clientHeight)) + 1,
+    ),
+  );
 };
 
 const findReadingAnchor = () => {
@@ -198,6 +261,12 @@ const findReadingAnchor = () => {
 };
 
 const persistCurrentPosition = () => {
+  const container = scrollContainerRef.value;
+  if (container && container.scrollTop <= 1) {
+    setState("READ_POS", "");
+    return;
+  }
+
   const anchor = findReadingAnchor();
   if (anchor?.id) setState("READ_POS", anchor.id);
 };
@@ -208,6 +277,8 @@ const persistPosition = () => {
 };
 
 const handleScroll = () => {
+  lastScrollAt = performance.now();
+  markReadingInteraction();
   if (!scrollFrame) {
     scrollFrame = window.requestAnimationFrame(() => {
       scrollFrame = 0;
@@ -281,8 +352,10 @@ const restorePosition = async () => {
   await alignChapterHeaderBlock();
   if (token !== restoreToken || container !== scrollContainerRef.value) return;
 
-  const anchorId =
-    decodeAnchor(route.hash) || String(getState("READ_POS", "") || "").trim();
+  const restoreChapterStart = props.restoreChapterStart;
+  const anchorId = restoreChapterStart
+    ? ""
+    : decodeAnchor(route.hash) || String(getState("READ_POS", "") || "").trim();
   const target = findAnchorInContainer(container, anchorId);
 
   if (target) {
@@ -297,23 +370,31 @@ const restorePosition = async () => {
   if (token !== restoreToken || container !== scrollContainerRef.value) return;
   clampScrollTop(container);
   updateScrollProgress();
+  if (restoreChapterStart) emit("chapter-start-restored");
 };
 
 const markReadingInteraction = () => {
   restoreOnRender = false;
 };
 
-const handleMarkdownRenderReady = () => {
+const handleMarkdownRenderReady = async () => {
   const container = scrollContainerRef.value;
   if (!container || props.isLoading) return;
 
-  if (restoreOnRender) {
-    void restorePosition();
+  const chapterUuid = String(props.chapter?.uuid || "");
+  if (restoreOnRender && chapterUuid !== restoredChapterUuid) {
+    restoredChapterUuid = chapterUuid;
+    restoreOnRender = false;
+    await restorePosition();
+    if (chapterUuid === String(props.chapter?.uuid || "") && !props.isLoading) {
+      renderedChapterUuid.value = chapterUuid;
+    }
     return;
   }
 
   clampScrollTop(container);
   updateScrollProgress();
+  renderedChapterUuid.value = chapterUuid;
 };
 
 const turnChapter = (direction) => {
@@ -325,113 +406,100 @@ const turnChapter = (direction) => {
   void handleNext();
 };
 
-const triggerReaderHint = () => {
-  showNavigationHint.value = true;
-  window.clearTimeout(hintTimer);
-  hintTimer = window.setTimeout(dismissReaderHint, 6000);
-};
+const getArticleElement = () =>
+  scrollContainerRef.value?.querySelector(":scope > .markdown-content");
+const {
+  getSelectionContext,
+  handleContextMenu: handleTextContextMenu,
+  isInteractiveEvent: isInteractiveTarget,
+} = useReaderTextContext({ getRoot: getArticleElement, emit });
 
-const dismissReaderHint = () => {
-  window.clearTimeout(hintTimer);
-  showNavigationHint.value = false;
-};
+const handleTapClick = (event) => {
+  markReadingInteraction();
+  if (
+    event.button !== 0 ||
+    isInteractiveTarget(event) ||
+    performance.now() - lastScrollAt < 180 ||
+    getSelectionContext()
+  ) {
+    return;
+  }
 
-const topPullGesture = {
-  id: null,
-  x: 0,
-  y: 0,
-  active: false,
-  triggered: false,
-};
-
-const resetTopPullGesture = () => {
-  topPullGesture.id = null;
-  topPullGesture.active = false;
-  topPullGesture.triggered = false;
-};
-
-const handleTopPullStart = (event) => {
   const container = scrollContainerRef.value;
-  if (
-    event.touches.length !== 1 ||
-    props.isLoading ||
-    props.controlsOpen ||
-    (container?.scrollTop || 0) > 0
-  ) {
-    resetTopPullGesture();
-    return;
-  }
-
-  const touch = event.touches[0];
-  if (touch.clientY > NAVBAR_PULL_START_ZONE) {
-    resetTopPullGesture();
-    return;
-  }
-
-  topPullGesture.id = touch.identifier;
-  topPullGesture.x = touch.clientX;
-  topPullGesture.y = touch.clientY;
-  topPullGesture.active = true;
-  topPullGesture.triggered = false;
+  const rect = container?.getBoundingClientRect();
+  if (!rect?.width || !rect.height) return;
+  const x = Math.min(
+    0.999,
+    Math.max(0, (event.clientX - rect.left) / rect.width),
+  );
+  const y = Math.min(
+    0.999,
+    Math.max(0, (event.clientY - rect.top) / rect.height),
+  );
+  const action =
+    props.tapZones[Math.floor(y * 3) * 3 + Math.floor(x * 3)] || "none";
+  if (action !== "none") emit("reader-action", action);
 };
 
-const handleTopPullMove = (event) => {
-  if (!topPullGesture.active) return;
+const turnPage = (direction) => {
+  const container = scrollContainerRef.value;
+  if (!container || props.isLoading) return;
 
-  const touch = Array.from(event.touches || []).find(
-    (item) => item.identifier === topPullGesture.id,
+  const maxScrollTop = Math.max(
+    0,
+    container.scrollHeight - container.clientHeight,
   );
-  if (!touch) {
-    resetTopPullGesture();
+  const atTop = container.scrollTop <= 0;
+  const atBottom = maxScrollTop > 0 && container.scrollTop >= maxScrollTop - 1;
+
+  // 到达滚动边界时切换章节；否则在当前章内滚动。
+  if (direction < 0 && atTop) {
+    void handlePrev();
+    return;
+  }
+  if (direction > 0 && atBottom) {
+    void handleNext();
     return;
   }
 
-  const deltaX = touch.clientX - topPullGesture.x;
-  const deltaY = touch.clientY - topPullGesture.y;
-  const isDownwardPull =
-    deltaY > 0 &&
-    Math.abs(deltaY) >= Math.abs(deltaX) * NAVBAR_PULL_DIRECTION_RATIO;
-
-  if (isDownwardPull && deltaY > 8 && event.cancelable) {
-    event.preventDefault();
-  }
-  if (
-    topPullGesture.triggered ||
-    !isDownwardPull ||
-    deltaY < NAVBAR_PULL_DISTANCE
-  ) {
-    return;
-  }
-
-  topPullGesture.triggered = true;
-  dismissReaderHint();
-  window.dispatchEvent(new Event(MOBILE_READER_NAVBAR_SHOW_EVENT));
+  container.scrollBy({
+    top: direction * container.clientHeight * 0.9,
+    behavior: "smooth",
+  });
 };
 
 watch(
-  () => [
-    props.chapter?.uuid,
-    props.content,
-    props.isLoading,
-    props.styleConfigs.fontStyle,
-    props.styleConfigs.fontSize,
-    props.styleConfigs.fontGap,
-    props.styleConfigs.lineHeight,
-    props.styleConfigs.paraHeight,
-  ],
-  () => {
+  () => props.chapter?.uuid,
+  (chapterUuid, previousChapterUuid) => {
+    if (!chapterUuid || chapterUuid === previousChapterUuid) return;
     restoreOnRender = true;
-    void restorePosition();
+    restoredChapterUuid = "";
+    renderedChapterUuid.value = "";
   },
-  { flush: "post" },
+  { flush: "sync" },
 );
 
 watch(
-  [() => props.isLoading, totalReadingProgress, chapterScrollProgress],
-  ([loading, readingProgress, pageProgress]) => {
+  () => props.isLoading,
+  (loading, wasLoading) => {
+    if (loading) renderedChapterUuid.value = "";
+    if (!loading && wasLoading) restoreOnRender = true;
+  },
+  { flush: "sync" },
+);
+
+watch(
+  [
+    showChapterLoadingOverlay,
+    totalReadingProgress,
+    chapterScrollProgress,
+    currentViewportPage,
+    totalViewportPages,
+  ],
+  ([loading, readingProgress, pageProgress, currentPage, totalPages]) => {
     emit("controller-state", {
-      currentPage: 1,
-      totalPages: 1,
+      currentPage,
+      totalPages,
       paginationReady: !loading,
       readingProgress,
       pageProgress,
@@ -440,30 +508,25 @@ watch(
   { immediate: true },
 );
 
-defineExpose({ triggerReaderHint, turnChapter });
-
-onMounted(() => {
-  void restorePosition();
+defineExpose({
+  triggerReaderHint,
+  turnChapter,
+  turnPage,
+  goToPage: (progress) => {
+    const container = scrollContainerRef.value;
+    if (!container) return;
+    const range = Math.max(0, container.scrollHeight - container.clientHeight);
+    container.scrollTop =
+      (range * Math.min(100, Math.max(0, Number(progress) || 0))) / 100;
+  },
 });
 
 onBeforeUnmount(() => {
   restoreToken += 1;
   window.cancelAnimationFrame(scrollFrame);
   window.clearTimeout(persistTimer);
-  window.clearTimeout(hintTimer);
   persistCurrentPosition();
 });
 </script>
 
-<style scoped>
-.scroll-reader :deep(.scroll-reader-article) {
-  padding-block-start: var(--mobile-reader-content-padding-block);
-  padding-block-end: var(--mobile-reader-content-padding-block);
-}
-
-/* 分页模式会清除首段的上外边距；滚动模式也采用同一规则，避免切换时
-   ChapterHeader 与首段之间的距离发生跳变。 */
-.scroll-reader :deep(.scroll-reader-article > div > p:first-of-type) {
-  margin-block-start: 0;
-}
-</style>
+<style scoped src="@/assets/mobile-reader.css"></style>

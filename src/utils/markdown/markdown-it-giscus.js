@@ -78,7 +78,7 @@ export const useParagraphComments = () => {
 
       if (count > 0) {
         node.classList.remove("hidden");
-        node.textContent = `${count}`;
+        node.textContent = count > 99 ? "99+" : `${count}`;
         node.closest(".comment-trigger")?.classList.add("has-count");
       } else {
         node.classList.add("hidden");
@@ -88,15 +88,7 @@ export const useParagraphComments = () => {
     });
   };
 
-  const handleCommentClick = (e) => {
-    const trigger = e.target.closest("[data-paragraph-id]");
-    if (!trigger) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const paragraphId = trigger.dataset.paragraphId;
-    const sourceType = trigger.dataset.sourceType || "article";
+  const openParagraphComment = (paragraphId, sourceType = "article") => {
     if (!paragraphId) {
       console.error("段落 ID 未找到");
       return;
@@ -125,6 +117,25 @@ export const useParagraphComments = () => {
     });
   };
 
+  const handleCommentClick = (e) => {
+    const trigger = e.target.closest("[data-paragraph-id]");
+    if (!trigger) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    openParagraphComment(
+      trigger.dataset.paragraphId,
+      trigger.dataset.sourceType || "article",
+    );
+  };
+
+  const handleCommentOpen = (event) => {
+    openParagraphComment(
+      event.detail?.paragraphId,
+      event.detail?.sourceType || "article",
+    );
+  };
+
   const handleParagraphMetadata = (event) => {
     const paragraphId = event?.detail?.paragraphId;
     const sourceType = event?.detail?.sourceType || "article";
@@ -150,6 +161,8 @@ export const useParagraphComments = () => {
       handleParagraphMetadata,
       false,
     );
+  const { addEventListener: addParagraphOpenListener } =
+    useGlobalEventListener("paragraph-comment-open", handleCommentOpen, false);
 
   const paragraphPlugin = (uuid, sourceType = "article") => {
     return (md) => {
@@ -194,6 +207,8 @@ export const useParagraphComments = () => {
         state.stack.push(paragraphId);
 
         tokens[idx].attrSet("id", paragraphId);
+        tokens[idx].attrSet("data-reader-paragraph-id", paragraphId);
+        tokens[idx].attrSet("data-source-type", sourceType);
         tokens[idx].attrJoin("class", "group");
         tokens[idx].attrSet("tabindex", "0");
         tokens[idx].meta = {
@@ -237,6 +252,7 @@ export const useParagraphComments = () => {
 
   addEventListener();
   addParagraphMetadataListener();
+  addParagraphOpenListener();
 
   return paragraphPlugin;
 };

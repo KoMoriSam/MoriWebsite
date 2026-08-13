@@ -19,7 +19,6 @@
 @import "./theme.css";
 
 @plugin "@tailwindcss/typography";
-@import "./reader.css";
 
 @import "./animate.css";
 @import "./font.css";

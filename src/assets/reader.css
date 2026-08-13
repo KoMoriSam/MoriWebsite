@@ -1,5 +1,19 @@
+@reference "./main.css";
+
 @layer utilities {
-  .markdown-content.prose > .mobile-chapter-header {
+  .markdown-content.prose {
+    color: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-body: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-headings: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-lead: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-bold: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-counters: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-bullets: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-quotes: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-captions: var(--reader-text-color, var(--color-base-content));
+  }
+
+  .markdown-content.prose :deep(> .mobile-chapter-header) {
     margin: 0 0
       var(
         --reader-chapter-header-spacing,
@@ -9,7 +23,7 @@
   }
 
   /* 标题样式 */
-  .markdown-content.prose h1 {
+  .markdown-content.prose :deep(h1) {
     @apply font-serif pt-3 pb-2 my-0
     text-balance
     text-[calc(var(--para-font-size)*1.25)]
@@ -17,14 +31,14 @@
     tracking-[calc(var(--para-letter-spacing)*1.25)];
   }
 
-  .markdown-content.prose h2 {
+  .markdown-content.prose :deep(h2) {
     @apply font-serif font-semibold pt-3 pb-2 my-0 text-balance
     text-[calc(var(--para-font-size)*1.125)]
     leading-[calc(var(--para-font-size)*1.5)]
     tracking-[calc(var(--para-letter-spacing)*1.125)];
   }
 
-  .markdown-content.prose h3 {
+  .markdown-content.prose :deep(h3) {
     @apply font-serif font-medium text-base-content pt-2 pb-1 my-0
     text-balance
     text-(length:--para-font-size)
@@ -32,9 +46,9 @@
     tracking-(--para-letter-spacing);
   }
 
-  .markdown-content.prose h4,
-  .markdown-content.prose h5,
-  .markdown-content.prose h6 {
+  .markdown-content.prose :deep(h4),
+  .markdown-content.prose :deep(h5),
+  .markdown-content.prose :deep(h6) {
     @apply font-serif font-normal pt-2 pb-0 my-0
     text-balance
     text-(length:--para-font-size) 
@@ -43,7 +57,7 @@
   }
 
   /* 段落与列表 */
-  .markdown-content.prose p {
+  .markdown-content.prose :deep(p) {
     @apply text-pretty text-justify
     text-(length:--para-font-size) 
     leading-(--para-line-height) 
@@ -52,115 +66,117 @@
     tracking-(--para-letter-spacing);
   }
 
-  .markdown-content.prose p.signature {
-    @apply indent-0 font-serif font-semibold text-right italic;
+  .markdown-content.prose :deep(p.signature) {
+    @apply indent-0 font-serif font-semibold text-right italic
+    ps-[calc(var(--para-text-indent)/2)]
+    pe-[calc(var(--para-text-indent)/2)];
   }
 
-  .markdown-content.prose ul {
+  .markdown-content.prose :deep(ul) {
     @apply list-disc;
   }
 
-  .markdown-content.prose ul ul {
+  .markdown-content.prose :deep(ul ul) {
     @apply list-[circle];
   }
 
-  .markdown-content.prose ul ul ul {
+  .markdown-content.prose :deep(ul ul ul) {
     @apply list-[square];
   }
 
-  .markdown-content.prose ol {
+  .markdown-content.prose :deep(ol) {
     @apply list-decimal;
   }
 
-  .markdown-content.prose ol ol {
+  .markdown-content.prose :deep(ol ol) {
     @apply list-[lower-alpha];
   }
 
-  .markdown-content.prose ol ol ol {
+  .markdown-content.prose :deep(ol ol ol) {
     @apply list-[lower-roman];
   }
 
-  .markdown-content.prose ul,
-  .markdown-content.prose ol {
+  .markdown-content.prose :deep(ul),
+  .markdown-content.prose :deep(ol) {
     @apply ps-0;
   }
 
-  .markdown-content.prose li {
+  .markdown-content.prose :deep(li) {
     @apply text-(length:--para-font-size) tracking-(--para-letter-spacing)
     ms-(--para-text-indent)
     md:ms-[calc(var(--para-text-indent)*1.5)]
     ps-0 indent-0;
   }
 
-  .markdown-content.prose li > :is(ul, ol) li {
+  .markdown-content.prose :deep(li > :is(ul, ol) li) {
     @apply ms-[calc(var(--para-text-indent)*0.5)];
   }
 
-  .markdown-content.prose li p {
+  .markdown-content.prose :deep(li p) {
     @apply indent-0;
   }
 
-  .markdown-content.prose table,
-  .markdown-content.prose ul,
-  .markdown-content.prose ol,
-  .markdown-content.prose blockquote,
-  .markdown-content.prose pre {
+  .markdown-content.prose :deep(table),
+  .markdown-content.prose :deep(ul),
+  .markdown-content.prose :deep(ol),
+  .markdown-content.prose :deep(blockquote),
+  .markdown-content.prose :deep(pre) {
     @apply my-[var(--para-margin-inline)] mx-0;
   }
 
-  .markdown-content.prose p,
-  .markdown-content.prose h1,
-  .markdown-content.prose h2,
-  .markdown-content.prose h3,
-  .markdown-content.prose h4,
-  .markdown-content.prose h5,
-  .markdown-content.prose h6,
-  .markdown-content.prose li,
-  .markdown-content.prose blockquote,
-  .markdown-content.prose a {
+  .markdown-content.prose :deep(p),
+  .markdown-content.prose :deep(h1),
+  .markdown-content.prose :deep(h2),
+  .markdown-content.prose :deep(h3),
+  .markdown-content.prose :deep(h4),
+  .markdown-content.prose :deep(h5),
+  .markdown-content.prose :deep(h6),
+  .markdown-content.prose :deep(li),
+  .markdown-content.prose :deep(blockquote),
+  .markdown-content.prose :deep(a) {
     @apply min-w-0 max-w-full break-words;
     line-break: strict;
     word-break: normal;
   }
 
-  .markdown-content.prose :not(pre) code {
+  .markdown-content.prose :deep(:not(pre) code) {
     @apply min-w-0 max-w-full break-words [overflow-wrap:anywhere];
     white-space: normal;
     word-break: break-word;
   }
 
-  .markdown-content.prose pre code {
+  .markdown-content.prose :deep(pre code) {
     white-space: pre;
   }
 
-  .markdown-content.prose img,
-  .markdown-content.prose video,
-  .markdown-content.prose svg,
-  .markdown-content.prose canvas {
+  .markdown-content.prose :deep(img),
+  .markdown-content.prose :deep(video),
+  .markdown-content.prose :deep(svg),
+  .markdown-content.prose :deep(canvas) {
     @apply max-w-full h-auto;
   }
 
-  .markdown-content.prose iframe {
+  .markdown-content.prose :deep(iframe) {
     @apply w-full max-w-full h-auto;
   }
 
-  .markdown-content.prose .markdown-table-wrapper {
+  .markdown-content.prose :deep(.markdown-table-wrapper) {
     @apply w-full max-w-full min-w-0 overflow-x-auto;
   }
 
-  .markdown-content.prose .markdown-table-wrapper table {
+  .markdown-content.prose :deep(.markdown-table-wrapper table) {
     width: max-content;
     min-width: 100%;
     max-width: none;
   }
 
-  .markdown-content.prose th,
-  .markdown-content.prose td {
+  .markdown-content.prose :deep(th),
+  .markdown-content.prose :deep(td) {
     @apply whitespace-normal;
   }
 
   /* 段落评论按钮 */
-  .markdown-content.prose button.comment-trigger {
+  .markdown-content.prose :deep(button.comment-trigger) {
     @apply whitespace-nowrap
     relative overflow-visible
     inline-flex items-center justify-center
@@ -185,80 +201,80 @@
     active:before:mask-bubble-fill;
   }
 
-  .markdown-content.prose button.comment-trigger i {
+  .markdown-content.prose :deep(button.comment-trigger i) {
     @apply z-10;
   }
 
-  .markdown-content.prose button.comment-trigger.has-count {
+  .markdown-content.prose :deep(button.comment-trigger.has-count) {
     @apply opacity-100;
   }
 
-  .markdown-content.prose button.comment-trigger.has-count i {
+  .markdown-content.prose :deep(button.comment-trigger.has-count i) {
     @apply hidden;
   }
 
-  .markdown-content.prose button.comment-trigger .paragraph-comment-count {
+  .markdown-content.prose :deep(button.comment-trigger .paragraph-comment-count) {
     @apply whitespace-nowrap
     text-xs leading-none
     font-sans font-bold z-10;
   }
 
-  .markdown-content.prose hr {
+  .markdown-content.prose :deep(hr) {
     @apply my-[calc(var(--para-font-size)*1.5)] mx-0;
   }
 
   /* 包裹元素与标题锚点 (.heading-wrapper) */
-  .markdown-content.prose .heading-wrapper {
+  .markdown-content.prose :deep(.heading-wrapper) {
     @apply flex items-center gap-2;
   }
 
-  .markdown-content.prose .heading-wrapper a.header-anchor {
+  .markdown-content.prose :deep(.heading-wrapper a.header-anchor) {
     @apply badge badge-md hover:badge-accent hover:text-accent-content 
     no-underline opacity-0 px-2 translate-y-0.75 group-hover:opacity-100 
     group-focus-within:opacity-100 transition-opacity;
   }
 
   /* Alert 警告框样式 */
-  .markdown-content.prose details.alert {
+  .markdown-content.prose :deep(details.alert) {
     @apply block w-full max-w-full box-border
     border border-base-300
     text-left justify-items-stretch 
     my-[var(--para-margin-inline)];
   }
 
-  .markdown-content.prose details.alert > summary.alert-title {
+  .markdown-content.prose :deep(details.alert > summary.alert-title) {
     @apply flex w-full max-w-full min-w-0
     items-center box-border gap-2 p-0 text-left;
   }
 
-  .markdown-content.prose details.alert > summary.alert-title i {
+  .markdown-content.prose :deep(details.alert > summary.alert-title i) {
     @apply text-[calc(var(--para-font-size)*0.875)];
   }
 
-  .markdown-content.prose details.alert > summary.alert-title h6 {
+  .markdown-content.prose :deep(details.alert > summary.alert-title h6) {
     @apply flex-1 min-w-0 p-0
       indent-0 font-serif
       text-[calc(var(--para-font-size)*0.875)]
       text-inherit leading-[calc(var(--para-line-height)*0.875)];
   }
 
-  .markdown-content.prose details.alert.collapse > summary.alert-title {
+  .markdown-content.prose :deep(details.alert.collapse > summary.alert-title) {
     @apply w-full;
   }
 
-  .markdown-content.prose details.alert > :not(summary.alert-title) {
+  .markdown-content.prose :deep(details.alert > :not(summary.alert-title)) {
     @apply w-full text-justify;
   }
 
-  .markdown-content.prose details.alert > p,
-  .markdown-content.prose details.alert > ul,
-  .markdown-content.prose details.alert > ol {
+  .markdown-content.prose :deep(details.alert > p),
+  .markdown-content.prose :deep(details.alert > ul),
+  .markdown-content.prose :deep(details.alert > ol) {
     @apply w-full;
   }
 
-  .markdown-content.prose details.alert p,
-  .markdown-content.prose details.alert ul li,
-  .markdown-content.prose details.alert ol li {
+  .markdown-content.prose :deep(details.alert p),
+  .markdown-content.prose :deep(details.alert ul li),
+  .markdown-content.prose :deep(details.alert ol li) {
     @apply indent-0 text-base-content px-2 py-0 mt-2 mb-1
     text-[calc(var(--para-font-size)*0.75)]
     leading-(--para-line-height)
@@ -266,40 +282,40 @@
   }
 
   /* Chat 聊天样式 */
-  .markdown-content.prose .chat {
+  .markdown-content.prose :deep(.chat) {
     @apply mx-6 md:mx-16 overflow-visible;
   }
 
-  .markdown-content.prose .chat a {
+  .markdown-content.prose :deep(.chat a) {
     @apply no-underline hover:font-bold;
   }
 
-  .markdown-content.prose .chat-bar {
+  .markdown-content.prose :deep(.chat-bar) {
     @apply flex items-center gap-2 mb-4 bg-base-200/75 p-2 rounded-xl mx-4 md:mx-12
     text-[calc(var(--para-font-size)*0.75)]
     leading-[calc(var(--para-line-height)*0.75)]
     tracking-[calc(var(--para-letter-spacing)*0.75)];
   }
 
-  .markdown-content.prose .chat-content > p.chat-info {
+  .markdown-content.prose :deep(.chat-content p.chat-info) {
     @apply indent-0 text-center text-base-content/60
     text-[calc(var(--para-font-size)*0.75)]
     leading-[calc(var(--para-line-height)*0.75)]
     tracking-[calc(var(--para-letter-spacing)*0.75)];
   }
 
-  .markdown-content.prose .chat-bubble {
+  .markdown-content.prose :deep(.chat-bubble) {
     @apply px-1 py-2 bg-base-200/75 overflow-visible;
   }
 
-  .markdown-content.prose .chat-bubble p {
+  .markdown-content.prose :deep(.chat-bubble p) {
     @apply indent-0 m-1 text-justify relative
     text-[calc(var(--para-font-size)*0.75)]
     leading-[calc(var(--para-line-height)*0.75)]
     tracking-[calc(var(--para-letter-spacing)*0.75)];
   }
 
-  .markdown-content.prose .chat-end .chat-bubble p button.comment-trigger {
+  .markdown-content.prose :deep(.chat-end .chat-bubble p button.comment-trigger) {
     @apply absolute right-full top-0 
     -translate-x-4 translate-y-0.75 
     scale-x-[-1] 
@@ -307,165 +323,164 @@
     active:scale-y-[80%];
   }
 
-  .markdown-content.prose .chat-start .chat-bubble p button.comment-trigger {
+  .markdown-content.prose :deep(.chat-start .chat-bubble p button.comment-trigger) {
     @apply absolute left-full top-0 
     translate-x-4 translate-y-0.75;
   }
 
-  .markdown-content.prose .chat-bubble img {
+  .markdown-content.prose :deep(.chat-bubble img) {
     @apply rounded-lg max-w-24 min-w-8;
   }
 
-  .markdown-content.prose .chat-bubble:has(img) {
+  .markdown-content.prose :deep(.chat-bubble:has(img)) {
     @apply p-1;
   }
 
-  .markdown-content.prose .chat-bubble-primary {
+  .markdown-content.prose :deep(.chat-bubble-primary) {
     @apply bg-primary;
   }
 
-  .markdown-content.prose .chat-bubble-primary a {
+  .markdown-content.prose :deep(.chat-bubble-primary a) {
     @apply text-primary-content;
   }
 
-  .markdown-content.prose .chat-header {
+  .markdown-content.prose :deep(.chat-header) {
     @apply mb-1
     text-[calc(var(--para-font-size)*0.5)]
     leading-[calc(var(--para-line-height)*0.5)]
     tracking-[calc(var(--para-letter-spacing)*0.5)];
   }
 
-  .markdown-content.prose .chat-footer {
+  .markdown-content.prose :deep(.chat-footer) {
     @apply text-[calc(var(--para-font-size)*0.5)]
     leading-[calc(var(--para-line-height)*0.5)]
     tracking-[calc(var(--para-letter-spacing)*0.5)];
   }
 
-  .markdown-content.prose .chat img,
-  .markdown-content.prose .chat-image img {
+  .markdown-content.prose :deep(.chat img),
+  .markdown-content.prose :deep(.chat-image img) {
     @apply m-0;
   }
 
   /* Moments 朋友圈样式 */
-  .markdown-content.prose .moments-card {
+  .markdown-content.prose :deep(.moments-card) {
     @apply card bg-base-200/60 border border-base-300 mb-4;
   }
 
-  .markdown-content.prose .moments-header {
+  .markdown-content.prose :deep(.moments-header) {
     @apply flex-1;
   }
 
-  .markdown-content.prose .moments-header .header-title {
+  .markdown-content.prose :deep(.moments-header .header-title) {
     @apply font-bold
     text-[calc(var(--para-font-size)*0.75)];
   }
 
-  .markdown-content.prose .moments-header .header-info {
+  .markdown-content.prose :deep(.moments-header .header-info) {
     @apply opacity-70 flex gap-2
     text-[calc(var(--para-font-size)*0.5)];
   }
 
-  .markdown-content.prose .moments-actions {
+  .markdown-content.prose :deep(.moments-actions) {
     @apply flex justify-between mt-1 pt-2 border-t border-base-300;
   }
 
-  .markdown-content.prose .moments-content p {
+  .markdown-content.prose :deep(.moments-content p) {
     @apply indent-0 my-0 text-justify;
   }
 
-  .markdown-content.prose .moments-content blockquote p {
+  .markdown-content.prose :deep(.moments-content blockquote p) {
     @apply border-l-3 border-base-content/25 pl-3 text-[calc(var(--para-font-size)*0.75)];
   }
 
-  .markdown-content.prose .moments-content .moments-images {
+  .markdown-content.prose :deep(.moments-content .moments-images) {
     @apply grid grid-cols-3 gap-1 mt-2;
   }
 
-  .markdown-content.prose
-    .moments-content
-    .moments-images:has(> :nth-child(4):last-child) {
+  .markdown-content.prose :deep(.moments-content
+    .moments-images:has(> :nth-child(4):last-child)) {
     @apply grid-cols-2 w-[calc(100%*2/3)];
   }
 
-  .markdown-content.prose .moments-content .moments-images img {
+  .markdown-content.prose :deep(.moments-content .moments-images img) {
     @apply w-full aspect-square object-cover;
   }
 
-  .markdown-content.prose .moments-comments p {
+  .markdown-content.prose :deep(.moments-comments p) {
     @apply indent-0
     text-[calc(var(--para-font-size)*0.75)]
     leading-[calc(var(--para-line-height)*0.75)];
   }
 
-  .markdown-content.prose .moments-comments .comments-info {
+  .markdown-content.prose :deep(.moments-comments .comments-info) {
     @apply flex items-center gap-1;
   }
 
-  .markdown-content.prose .moments-comments .user-name {
+  .markdown-content.prose :deep(.moments-comments .user-name) {
     @apply font-bold text-primary/80 hover:text-primary text-nowrap
     text-[calc(var(--para-font-size)*0.6)];
   }
 
-  .markdown-content.prose .moments-comments .comment-time {
+  .markdown-content.prose :deep(.moments-comments .comment-time) {
     @apply opacity-50 text-nowrap
     text-[calc(var(--para-font-size)*0.5)];
   }
 
   /* 引用与强调文本 */
-  .markdown-content.prose blockquote {
+  .markdown-content.prose :deep(blockquote) {
     @apply [quotes:none] font-serif font-extralight
     ps-[calc(var(--para-text-indent)*0.25)]
     md:ps-[calc(var(--para-text-indent)*0.5)];
   }
 
-  .markdown-content.prose em {
+  .markdown-content.prose :deep(em) {
     @apply italic font-serif;
   }
 
-  .markdown-content.prose blockquote p,
-  .markdown-content.prose .footnotes p {
+  .markdown-content.prose :deep(blockquote p),
+  .markdown-content.prose :deep(.footnotes p) {
     @apply indent-0 text-justify text-pretty not-italic
     text-[calc(var(--para-font-size)*0.875)];
   }
 
-  .markdown-content.prose strong {
+  .markdown-content.prose :deep(strong) {
     @apply font-bold text-inherit;
   }
 
-  .markdown-content.prose mark {
+  .markdown-content.prose :deep(mark) {
     @apply bg-warning text-warning-content px-2 py-1 rounded;
   }
 
   /* 脚注样式 */
-  .markdown-content.prose .footnote-ref {
+  .markdown-content.prose :deep(.footnote-ref) {
     @apply whitespace-nowrap
     before:content-['\2060']
     after:content-['\2060'];
   }
 
-  .markdown-content.prose .footnote-ref a {
+  .markdown-content.prose :deep(.footnote-ref a) {
     @apply badge badge-sm hover:badge-info hover:text-info-content
     no-underline indent-0 px-1.5 font-serif;
   }
 
-  .markdown-content.prose .footnote-backref {
+  .markdown-content.prose :deep(.footnote-backref) {
     @apply badge badge-xs hover:badge-info hover:text-info-content no-underline;
   }
 
-  .markdown-content.prose .footnotes p {
+  .markdown-content.prose :deep(.footnotes p) {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)]
     leading-(--para-line-height)
     mx-0 text-left text-pretty;
   }
 
-  .markdown-content.prose li.footnote-item::marker {
+  .markdown-content.prose :deep(li.footnote-item::marker) {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)] list-decimal;
   }
 
-  .markdown-content.prose li.footnote-item ul,
-  .markdown-content.prose li.footnote-item ul li {
+  .markdown-content.prose :deep(li.footnote-item ul),
+  .markdown-content.prose :deep(li.footnote-item ul li) {
     @apply text-[calc(var(--para-font-size)*0.75)];
   }
 
@@ -494,30 +509,30 @@
   } */
 
   /* Task List 任务列表 */
-  .markdown-content.prose ul.contains-task-list {
+  .markdown-content.prose :deep(ul.contains-task-list) {
     @apply list-none ps-[0.5em];
   }
 
-  .markdown-content.prose li.task-list-item {
+  .markdown-content.prose :deep(li.task-list-item) {
     @apply ms-[calc(var(--para-text-indent)*0.75)]
     md:ms-[calc(var(--para-text-indent)*1.25)]
     indent-[calc(var(--para-text-indent)*-0.625)];
   }
 
-  .markdown-content.prose input.task-list-item-checkbox {
+  .markdown-content.prose :deep(input.task-list-item-checkbox) {
     @apply checkbox checkbox-primary checkbox-sm mb-1;
   }
 
   /* KaTeX 数学公式 */
-  .markdown-content.prose span.katex {
+  .markdown-content.prose :deep(span.katex) {
     @apply max-sm:text-lg;
   }
 
-  .markdown-content.prose p:has(span.katex-display) {
+  .markdown-content.prose :deep(p:has(span.katex-display)) {
     @apply indent-0 text-center;
   }
 
-  .markdown-content.prose span.katex-html {
+  .markdown-content.prose :deep(span.katex-html) {
     @apply hidden;
   }
 }

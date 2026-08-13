@@ -200,8 +200,7 @@ function renderChatBar(md, headLine) {
           </span>
           ${infoLine}
           <i class="ri-menu-line ml-auto mr-0.5 sm:mr-2"></i>
-        </div>
-        <div class="chat-content">`;
+        </div>`;
 }
 
 function parseChatMessages(lines) {
@@ -272,7 +271,9 @@ function renderChatMessage(md, message, options, env, self) {
     const contentHTML = lines.join("<br/>");
 
     return `
-        <p class="chat-info">${contentHTML}</p>`;
+        <div class="chat-page-block">
+          <p class="chat-info">${contentHTML}</p>
+        </div>`;
   }
 
   const username = message.username || "用户";
@@ -288,7 +289,8 @@ function renderChatMessage(md, message, options, env, self) {
     : "";
 
   return `
-        <div class="chat ${isSelf ? "chat-end" : "chat-start"}">
+        <div class="chat-page-block">
+          <div class="chat ${isSelf ? "chat-end" : "chat-start"}">
           <div class="chat-image avatar">
             <div class="w-10 rounded-full">
               <img alt="${escapeHtml(md, username)}" src="${avatar}"/>
@@ -301,6 +303,7 @@ function renderChatMessage(md, message, options, env, self) {
           ${footerHTML}
           <div class="chat-bubble ${isSelf ? "chat-bubble-primary" : ""}">
             ${contentHTML}
+          </div>
           </div>
         </div>`;
 }
@@ -340,15 +343,31 @@ function prepareChatMessagesOnly(md, lines, env) {
 }
 
 function renderChatMessages(md, messages, options, env, self) {
-  return messages
-    .map((message) => renderChatMessage(md, message, options, env, self))
-    .join("\n");
+  return messages.map((message) =>
+    renderChatMessage(md, message, options, env, self),
+  );
 }
 
 function renderChatCallout(md, prepared, options, env, self) {
+  const renderedMessages = renderChatMessages(
+    md,
+    prepared.messages,
+    options,
+    env,
+    self,
+  );
+  // 聊天栏头部只与它紧接的一个元素组成防孤行组；该元素既可能是
+  // 系统提示，也可能是气泡。后续元素全部恢复为各自独立的分页块。
+  const leadingMessage = renderedMessages[0] || "";
+  const remainingMessages = renderedMessages.slice(1).join("\n");
+
   return `
-        ${renderChatBar(md, prepared.headLine)}
-        ${renderChatMessages(md, prepared.messages, options, env, self)}
+        <div class="chat-content">
+          <div class="chat-leading-group">
+            ${renderChatBar(md, prepared.headLine)}
+            ${leadingMessage}
+          </div>
+          ${remainingMessages}
         </div>
 `;
 }
@@ -356,7 +375,7 @@ function renderChatCallout(md, prepared, options, env, self) {
 function renderChatMessagesOnly(md, prepared, options, env, self) {
   return `
         <div class="chat-content">
-          ${renderChatMessages(md, prepared.messages, options, env, self)}
+          ${renderChatMessages(md, prepared.messages, options, env, self).join("\n")}
         </div>
 `;
 }

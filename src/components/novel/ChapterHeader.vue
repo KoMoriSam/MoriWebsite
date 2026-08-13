@@ -6,9 +6,9 @@
     <div class="chapter-header-main group min-w-0 max-w-full flex-1">
       <div
         v-if="chapter?.volumeTitle"
-        class="chapter-header-volume mb-2 flex min-w-0 max-w-full items-center"
+        class="chapter-header-volume max-lg:hidden mb-2 flex min-w-0 max-w-full items-center"
       >
-        <div class="tooltip tooltip-right max-lg:hidden" data-tip="返回封面页">
+        <div class="tooltip tooltip-right" data-tip="返回封面页">
           <RouterLink
             to="/novel"
             class="btn btn-outline btn-primary btn-xs btn-circle mr-2"
