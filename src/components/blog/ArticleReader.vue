@@ -5,6 +5,11 @@
       v-if="article && (loading || content)"
       :ref="scrollRef"
       class="min-w-0 w-full max-w-full"
+      @pointerdown.capture="handleArticlePointerDown"
+      @pointermove.capture="handleArticlePointerMove"
+      @pointerup.capture="handleArticlePointerUp"
+      @pointercancel.capture="handleArticlePointerCancel"
+      @contextmenu.capture="handleArticleTextContextMenu"
     >
       <!-- 文章正文：保留头图、标签、别名和阅读时长 -->
       <!-- 文章头图 -->
@@ -115,6 +120,10 @@
 
           <!-- 标题 -->
           <h1
+            :id="headerParagraphId || undefined"
+            :data-reader-paragraph-id="headerParagraphId || undefined"
+            data-source-type="article"
+            :tabindex="headerParagraphId ? 0 : undefined"
             data-pagefind-body
             data-pagefind-meta="title"
             data-pagefind-weight="10"
@@ -122,6 +131,11 @@
             :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
           >
             {{ article?.title }}
+            <CommentTrigger
+              v-if="headerParagraphId"
+              :paragraph-id="headerParagraphId"
+              source-type="article"
+            />
           </h1>
 
           <p
@@ -322,6 +336,12 @@
       <p>文章不存在或加载失败</p>
     </div>
 
+    <TextContextMenu
+      v-model="articleTextContextOpen"
+      :context="articleTextContext"
+      @search="openArticleContextSearch"
+    />
+
     <template #floating>
       <aside class="max-lg:dock shadow-sm">
         <FloatingActionButton :actions="fabActions" main-icon="ri-menu-line" />
@@ -357,12 +377,14 @@
 import { computed, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import Giscus from "@giscus/vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { useDateFormat } from "@vueuse/core";
 
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
+import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 import { normalizeArticleDate } from "@/composables/useArticleFilter";
 import CONFIG from "@/constants/config";
 
@@ -370,6 +392,8 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
+import CommentTrigger from "@/components/reader/CommentTrigger.vue";
+import TextContextMenu from "@/components/novel/mobile/TextContextMenu.vue";
 
 const readerRef = ref(null);
 
@@ -399,6 +423,8 @@ const props = defineProps({
 const emit = defineEmits(["back", "refresh", "navigate"]);
 
 const { GISCUS } = CONFIG;
+const route = useRoute();
+const router = useRouter();
 
 const readerStore = useReaderStore();
 const { styleConfigs } = storeToRefs(readerStore);
@@ -407,6 +433,41 @@ const themeStore = useThemeStore();
 const { giscusTheme } = storeToRefs(themeStore);
 
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
+const articleTextContextOpen = ref(false);
+const articleTextContext = ref({});
+const headerParagraphId = computed(() => {
+  const uuid = String(props.article?.id ?? "").trim();
+  return uuid ? `${uuid}-0` : "";
+});
+const openArticleTextContextMenu = (context) => {
+  if (!context) {
+    articleTextContextOpen.value = false;
+    articleTextContext.value = {};
+    return;
+  }
+
+  articleTextContext.value = context;
+  articleTextContextOpen.value = true;
+};
+const {
+  handleContextMenu: handleArticleTextContextMenu,
+  handlePointerCancel: handleArticlePointerCancel,
+  handlePointerDown: handleArticlePointerDown,
+  handlePointerMove: handleArticlePointerMove,
+  handlePointerUp: handleArticlePointerUp,
+} = useReaderTextContext({
+  getRoot: () => scrollRef.value,
+  emit: (_eventName, context) => openArticleTextContextMenu(context),
+});
+const openArticleContextSearch = (keyword) => {
+  void router.replace({
+    query: {
+      ...route.query,
+      search: "1",
+      q: String(keyword || "").trim() || undefined,
+    },
+  });
+};
 
 const bannerUrl = computed(() => String(props.article?.banner || "").trim());
 const bannerImage = ref(null);

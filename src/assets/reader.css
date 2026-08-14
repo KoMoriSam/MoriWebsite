@@ -209,6 +209,10 @@
     @apply opacity-100;
   }
 
+  .markdown-content.prose :deep(button.comment-trigger.hidden) {
+    display: none;
+  }
+
   .markdown-content.prose :deep(button.comment-trigger.has-count i) {
     @apply hidden;
   }
@@ -495,8 +499,8 @@
   }
 
   /* 代码块样式 */
-  .markdown-content.prose :deep(.code-wrapper) {
-    @apply mockup-code w-full max-w-full overflow-x-auto mx-0 my-(--para-margin-inline) pb-0 relative;
+  .markdown-content.prose :deep(.code-block) {
+    @apply my-(--para-margin-inline);
   }
 
   /* Task List 任务列表 */
