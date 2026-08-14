@@ -4,9 +4,15 @@
 
     <div
       v-if="showToc"
+      ref="mobileTocBoundaryElement"
+      aria-hidden="true"
+      class="relative -top-2 h-0 xl:hidden"
+    ></div>
+    <div
+      v-if="showToc"
       :class="[
-        'sticky z-10 transition-[top,margin] duration-300 ease-out motion-reduce:transition-none xl:hidden',
-        mobileTocCompact ? 'top-0 mb-1' : 'top-2 mb-4',
+        'sticky z-10 transition-[top] duration-300 ease-out motion-reduce:transition-none xl:hidden',
+        mobileTocCompact ? 'top-0' : 'top-2',
       ]"
       @pointerdown="handleMobileTocPointerDown"
       @pointermove="handleMobileTocPointerMove"
@@ -48,6 +54,14 @@
         />
       </div>
     </div>
+    <div
+      v-if="showToc"
+      aria-hidden="true"
+      :class="[
+        'transition-[height] duration-300 ease-out motion-reduce:transition-none xl:hidden',
+        mobileTocCompact ? 'h-1' : 'h-4',
+      ]"
+    ></div>
 
     <div
       :class="[
@@ -127,14 +141,20 @@ const asideElement = ref(null);
 const { maskImage: asideMaskImage } = useScrollMask(asideElement);
 
 const readerContentElement = ref(null);
+const mobileTocBoundaryElement = ref(null);
 const mobileTocCompact = ref(false);
-const manualExpandAutoCollapseDelay = 3000;
-let contentBoundaryFrame = 0;
-let contentBoundaryReached = null;
-let contentBoundaryObserver;
-let mobileTocCollapseTimer;
+const mobileTocScrollDirectionThreshold = 24;
+const mobileTocAutoTransitionLockDuration = 400;
+let mobileTocBoundaryFrame = 0;
+let mobileTocBoundaryObserver;
+let mobileTocBoundaryReached = false;
 let mobileTocClickSuppressionTimer;
 let mobileTocMenuOpen = false;
+let lastMobileTocScrollY = 0;
+let mobileTocScrollDirection = 0;
+let mobileTocScrollDistance = 0;
+let mobileTocScrollPending = false;
+let mobileTocAutoTransitionLockedUntil = 0;
 let suppressNextMobileTocClick = false;
 const mobileTocPointerStart = {
   id: null,
@@ -165,53 +185,27 @@ const handleMobileTocClickCapture = (event) => {
   event.stopPropagation();
 };
 
-const clearMobileTocAutoCollapse = () => {
-  window.clearTimeout(mobileTocCollapseTimer);
-  mobileTocCollapseTimer = undefined;
-};
-
-const scheduleMobileTocAutoCollapse = () => {
-  clearMobileTocAutoCollapse();
-  if (
-    mobileTocCompact.value ||
-    mobileTocMenuOpen ||
-    getContentBoundaryState() !== true
-  ) {
-    return;
-  }
-
-  mobileTocCollapseTimer = window.setTimeout(() => {
-    mobileTocCollapseTimer = undefined;
-    if (!mobileTocMenuOpen && getContentBoundaryState() === true) {
-      mobileTocCompact.value = true;
-    }
-  }, manualExpandAutoCollapseDelay);
-};
-
-const setMobileTocCompact = (compact, autoCollapseAfterExpand = false) => {
-  const nextCompact = Boolean(compact);
+const setMobileTocCompact = (compact) => {
+  const nextCompact =
+    Boolean(compact) && getMobileTocBoundaryState() === true;
+  const compactChanged = nextCompact !== mobileTocCompact.value;
 
   mobileTocCompact.value = nextCompact;
   if (nextCompact) mobileTocMenuOpen = false;
-  clearMobileTocAutoCollapse();
 
-  if (!nextCompact && autoCollapseAfterExpand) {
-    scheduleMobileTocAutoCollapse();
+  if (compactChanged && typeof window !== "undefined") {
+    mobileTocAutoTransitionLockedUntil =
+      window.performance.now() + mobileTocAutoTransitionLockDuration;
+    lastMobileTocScrollY = Math.max(0, window.scrollY);
+    resetMobileTocScrollDirection();
   }
 };
 
 const setMobileTocMenuOpen = (open) => {
   mobileTocMenuOpen = Boolean(open);
-  clearMobileTocAutoCollapse();
-
-  if (!mobileTocMenuOpen && !mobileTocCompact.value) {
-    scheduleMobileTocAutoCollapse();
-  }
 };
 
 const handleMobileTocPointerDown = (event) => {
-  if (!mobileTocCompact.value) scheduleMobileTocAutoCollapse();
-
   const target = event.target;
   const handle =
     target instanceof Element
@@ -263,58 +257,111 @@ const handleMobileTocPointerEnd = (event) => {
 
   suppressMobileTocSyntheticClick();
   const compact = deltaY < 0;
-  setMobileTocCompact(compact, !compact);
+  setMobileTocCompact(compact);
 };
 
 const expandMobileToc = () => {
-  setMobileTocCompact(false, true);
+  setMobileTocCompact(false);
 };
 
 const toggleMobileToc = () => {
   const compact = !mobileTocCompact.value;
-  setMobileTocCompact(compact, !compact);
+  setMobileTocCompact(compact);
 };
 
-const getContentBoundaryState = () => {
-  if (!props.showToc || !readerContentElement.value) return null;
+const getMobileTocBoundaryState = () => {
+  if (!props.showToc || !mobileTocBoundaryElement.value) return null;
 
-  const contentBoundaryElement =
-    readerContentElement.value.querySelector(".markdown-content");
-  if (!contentBoundaryElement) return null;
-
-  return contentBoundaryElement.getBoundingClientRect().top <= 0;
+  return mobileTocBoundaryElement.value.getBoundingClientRect().top <= 0;
 };
 
-const updateMobileTocAtContentBoundary = () => {
-  const reachedContent = getContentBoundaryState();
-  if (reachedContent === null) return;
-
-  if (reachedContent === contentBoundaryReached) return;
-
-  contentBoundaryReached = reachedContent;
-  setMobileTocCompact(reachedContent);
+const resetMobileTocScrollDirection = () => {
+  mobileTocScrollDirection = 0;
+  mobileTocScrollDistance = 0;
 };
 
-const scheduleMobileTocBoundaryUpdate = () => {
-  if (contentBoundaryFrame) return;
+const updateMobileTocAtBoundary = (trackScrollDirection = false) => {
+  const currentScrollY = Math.max(0, window.scrollY);
+  const scrollDelta = currentScrollY - lastMobileTocScrollY;
+  lastMobileTocScrollY = currentScrollY;
 
-  contentBoundaryFrame = window.requestAnimationFrame(() => {
-    contentBoundaryFrame = 0;
-    updateMobileTocAtContentBoundary();
+  const reachedTocBoundary = getMobileTocBoundaryState();
+  if (reachedTocBoundary === null) return;
+  const enteredStickyBoundary =
+    reachedTocBoundary && !mobileTocBoundaryReached;
+  mobileTocBoundaryReached = reachedTocBoundary;
+
+  if (!reachedTocBoundary) {
+    resetMobileTocScrollDirection();
+    setMobileTocCompact(false);
+    return;
+  }
+
+  const autoTransitionLocked =
+    window.performance.now() < mobileTocAutoTransitionLockedUntil;
+
+  if (
+    enteredStickyBoundary &&
+    trackScrollDirection &&
+    scrollDelta > 0 &&
+    !autoTransitionLocked
+  ) {
+    resetMobileTocScrollDirection();
+    if (!mobileTocMenuOpen && !mobileTocCompact.value) {
+      setMobileTocCompact(true);
+    }
+    return;
+  }
+
+  if (!trackScrollDirection || scrollDelta === 0 || autoTransitionLocked) {
+    if (autoTransitionLocked) resetMobileTocScrollDirection();
+    return;
+  }
+
+  const direction = Math.sign(scrollDelta);
+  if (direction !== mobileTocScrollDirection) {
+    mobileTocScrollDirection = direction;
+    mobileTocScrollDistance = 0;
+  }
+
+  mobileTocScrollDistance += Math.abs(scrollDelta);
+  if (mobileTocScrollDistance < mobileTocScrollDirectionThreshold) return;
+
+  mobileTocScrollDistance = 0;
+
+  if (direction > 0) {
+    if (!mobileTocMenuOpen && !mobileTocCompact.value) {
+      setMobileTocCompact(true);
+    }
+  } else if (mobileTocCompact.value) {
+    setMobileTocCompact(false);
+  }
+};
+
+const scheduleMobileTocBoundaryUpdate = (event) => {
+  if (event?.type === "scroll") mobileTocScrollPending = true;
+  if (mobileTocBoundaryFrame) return;
+
+  mobileTocBoundaryFrame = window.requestAnimationFrame(() => {
+    mobileTocBoundaryFrame = 0;
+    const trackScrollDirection = mobileTocScrollPending;
+    mobileTocScrollPending = false;
+    updateMobileTocAtBoundary(trackScrollDirection);
   });
 };
 
 onMounted(() => {
+  lastMobileTocScrollY = Math.max(0, window.scrollY);
   window.addEventListener("scroll", scheduleMobileTocBoundaryUpdate, {
     passive: true,
   });
   window.addEventListener("resize", scheduleMobileTocBoundaryUpdate);
 
   if (readerContentElement.value) {
-    contentBoundaryObserver = new MutationObserver(
+    mobileTocBoundaryObserver = new MutationObserver(
       scheduleMobileTocBoundaryUpdate,
     );
-    contentBoundaryObserver.observe(readerContentElement.value, {
+    mobileTocBoundaryObserver.observe(readerContentElement.value, {
       childList: true,
       subtree: true,
     });
@@ -324,13 +371,12 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  clearMobileTocAutoCollapse();
   window.clearTimeout(mobileTocClickSuppressionTimer);
-  contentBoundaryObserver?.disconnect();
+  mobileTocBoundaryObserver?.disconnect();
   window.removeEventListener("scroll", scheduleMobileTocBoundaryUpdate);
   window.removeEventListener("resize", scheduleMobileTocBoundaryUpdate);
-  if (contentBoundaryFrame) {
-    window.cancelAnimationFrame(contentBoundaryFrame);
+  if (mobileTocBoundaryFrame) {
+    window.cancelAnimationFrame(mobileTocBoundaryFrame);
   }
 });
 </script>
