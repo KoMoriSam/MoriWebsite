@@ -190,6 +190,10 @@ const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const katexPlugin = ref(null);
 let codeBlockRoot = null;
+const headerParagraphId = computed(() => {
+  const uuid = String(props.headerData?.uuid || "").trim();
+  return uuid ? `${uuid}-0` : "";
+});
 const combinedContent = computed(() => {
   if (String(props.content || "").trim()) return props.content;
 
@@ -290,13 +294,23 @@ const collectPrefetchParagraphIds = () => {
     return [];
   }
 
-  const triggerNodes = articleRef.value.querySelectorAll(
-    "button.comment-trigger[data-paragraph-id]",
+  const commentableNodes = articleRef.value.querySelectorAll(
+    "[data-reader-paragraph-id]",
   );
-
-  return Array.from(triggerNodes)
-    .map((node) => node.dataset.paragraphId)
+  const paragraphIds = Array.from(commentableNodes)
+    .map(
+      (node) => node.dataset.readerParagraphId || node.getAttribute("id") || "",
+    )
     .filter(Boolean);
+
+  if (
+    headerParagraphId.value &&
+    document.getElementById(headerParagraphId.value)
+  ) {
+    paragraphIds.unshift(headerParagraphId.value);
+  }
+
+  return [...new Set(paragraphIds)];
 };
 
 const emitBatchCounts = (paragraphIds, counts) => {
