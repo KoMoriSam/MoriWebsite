@@ -47,7 +47,9 @@
         </div>
       </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+      <div
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin p-3"
+      >
         <div
           v-if="mobile"
           role="tablist"
@@ -91,7 +93,7 @@
           <label
             v-for="control in READER_TYPOGRAPHY_CONTROLS"
             :key="control.key"
-            class="col-span-1 xl:col-span-2 md:my-2 min-w-0"
+            class="col-span-1 xl:col-span-2 md:my-1 min-w-0"
           >
             <span class="label block text-xs md:text-sm">
               {{ control.shortLabel }} {{ formatNumericValue(control) }}
@@ -101,7 +103,7 @@
               :min="control.min"
               :max="control.max"
               :step="control.step"
-              class="range range-xs xl:range-sm mt-2 w-full"
+              class="range range-xs xl:range-sm mt-1 w-full"
               :value="styleConfigs[control.key]"
               @input="store.setStyle(control.key, Number($event.target.value))"
             />
@@ -169,6 +171,31 @@
             </label>
           </div>
         </template>
+
+        <fieldset v-else class="mt-4">
+          <legend class="label block text-xs md:text-sm">站点主题</legend>
+          <div class="mt-2 grid grid-cols-5 gap-2">
+            <button
+              v-for="theme in siteThemeOptions"
+              :key="theme.value"
+              type="button"
+              class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
+              :class="{
+                'outline-2 outline-primary': selectedSiteTheme === theme.value,
+              }"
+              :data-theme="theme.value === 'default' ? undefined : theme.value"
+              :title="theme.description"
+              :aria-label="`切换站点主题：${theme.label}，${theme.description}`"
+              :aria-pressed="selectedSiteTheme === theme.value"
+              @click="themeStore.setTheme(theme.value)"
+            >
+              <i :class="theme.icon" aria-hidden="true"></i>
+              <span class="max-w-full truncate text-[0.625rem]">
+                {{ theme.label }}
+              </span>
+            </button>
+          </div>
+        </fieldset>
       </div>
 
       <footer
@@ -267,6 +294,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useReaderStore } from "@/stores/readerStore";
+import { useThemeStore } from "@/stores/themeStore";
 import {
   FONTS,
   MOBILE_READING_MODE_OPTIONS,
@@ -289,6 +317,7 @@ const props = defineProps({
 });
 
 const store = useReaderStore();
+const themeStore = useThemeStore();
 const {
   styleConfigs,
   mobileReadingMode,
@@ -296,7 +325,22 @@ const {
   isMobileLayoutDefault,
   isReaderLayoutDefault,
 } = storeToRefs(store);
+const { theme: selectedSiteTheme, themeList: siteThemeList } =
+  storeToRefs(themeStore);
 const presetName = ref("");
+
+const siteThemeOptions = computed(() => [
+  {
+    value: "default",
+    label: "跟随系统",
+    description: "自动匹配系统的浅色或深色外观",
+    icon: "ri-contrast-line",
+  },
+  ...siteThemeList.value.map((theme) => ({
+    ...theme,
+    label: theme.name,
+  })),
+]);
 
 const isLayoutDefault = computed(() =>
   props.mobile ? isMobileLayoutDefault.value : isReaderLayoutDefault.value,
