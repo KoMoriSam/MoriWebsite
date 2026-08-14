@@ -12,7 +12,7 @@
 @import "@fontsource-variable/noto-serif-sinhala";
 @import "@fontsource/maname";
 @import "@fontsource-variable/jetbrains-mono";
-@import "highlight.js/styles/github-dark.css";
+@import "./highlight.css";
 
 @import "tailwindcss";
 
@@ -88,6 +88,12 @@
   mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   mask-size: 100%;
+}
+
+@utility code-block {
+  @apply mockup-code w-full relative scrollbar-thin pb-0
+  border border-base-300
+  bg-(--hljs-background) text-(--hljs-foreground);
 }
 
 @layer base {

@@ -65,13 +65,74 @@ const languageAliases = {
   zsh: "shell",
 };
 
+const languageDisplayNames = {
+  bash: "Bash",
+  c: "C",
+  "c#": "C#",
+  "c++": "C++",
+  cplusplus: "C++",
+  cpp: "C++",
+  cs: "C#",
+  csharp: "C#",
+  css: "CSS",
+  cxx: "C++",
+  diff: "Diff",
+  dockerfile: "Dockerfile",
+  go: "Go",
+  graphql: "GraphQL",
+  h: "C",
+  hpp: "C++",
+  html: "HTML",
+  ini: "INI",
+  java: "Java",
+  javascript: "JavaScript",
+  js: "JavaScript",
+  json: "JSON",
+  jsx: "JSX",
+  kotlin: "Kotlin",
+  less: "Less",
+  lua: "Lua",
+  makefile: "Makefile",
+  markdown: "Markdown",
+  md: "Markdown",
+  nginx: "NGINX",
+  objc: "Objective-C",
+  objectivec: "Objective-C",
+  perl: "Perl",
+  php: "PHP",
+  plaintext: "Plain Text",
+  powershell: "PowerShell",
+  ps1: "PowerShell",
+  py: "Python",
+  python: "Python",
+  r: "R",
+  rb: "Ruby",
+  ruby: "Ruby",
+  rust: "Rust",
+  scss: "SCSS",
+  sh: "Shell",
+  shell: "Shell",
+  shellscript: "Shell",
+  sql: "SQL",
+  swift: "Swift",
+  text: "Plain Text",
+  ts: "TypeScript",
+  tsx: "TSX",
+  typescript: "TypeScript",
+  vue: "Vue",
+  xml: "XML",
+  yaml: "YAML",
+  yml: "YAML",
+  zsh: "Zsh",
+};
+
 const FENCE_INFO_REGEX = /^(```|~~~)\s*([^\n]*)/gm;
 const MATH_BLOCK_REGEX =
   /\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\begin\{(?:align|equation|gather|cd|alignat)\}/;
 const MATH_INLINE_REGEX =
   /(^|[^\\])\$(?:[^$\n]|\\\$)+\$|\\\((?:[^\n]|\\\))+\\\)/;
 
-export const normalizeLanguage = (rawLanguage = "") => {
+const getLanguageToken = (rawLanguage = "") => {
   const firstToken = String(rawLanguage || "")
     .trim()
     .split(/\s+/)[0]
@@ -86,6 +147,16 @@ export const normalizeLanguage = (rawLanguage = "") => {
     return "";
   }
 
+  return sanitized;
+};
+
+export const normalizeLanguage = (rawLanguage = "") => {
+  const sanitized = getLanguageToken(rawLanguage);
+
+  if (!sanitized) {
+    return "";
+  }
+
   if (sanitized === "c++") {
     return "cpp";
   }
@@ -95,6 +166,21 @@ export const normalizeLanguage = (rawLanguage = "") => {
   }
 
   return languageAliases[sanitized] || sanitized;
+};
+
+export const getLanguageDisplayName = (rawLanguage = "") => {
+  const languageToken = getLanguageToken(rawLanguage);
+
+  if (!languageToken) {
+    return "";
+  }
+
+  const normalizedLanguage = normalizeLanguage(languageToken);
+  return (
+    languageDisplayNames[languageToken] ||
+    languageDisplayNames[normalizedLanguage] ||
+    languageToken
+  );
 };
 
 export const collectFenceLanguages = (markdown = "") => {

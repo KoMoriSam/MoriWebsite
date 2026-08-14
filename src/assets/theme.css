@@ -57,3 +57,147 @@
   --depth: 1;
   --noise: 0;
 }
+
+:root {
+  --hljs-background: color-mix(
+    in oklab,
+    var(--color-base-100) 55%,
+    var(--color-base-200)
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hljs-background: var(--color-base-200);
+  }
+}
+
+:root:has(input.theme-controller[value="lemonade"]:checked),
+[data-theme="lemonade"],
+:root:has(input.theme-controller[value="corporate"]:checked),
+[data-theme="corporate"] {
+  --hljs-background: color-mix(
+    in oklab,
+    var(--color-base-100) 55%,
+    var(--color-base-200)
+  );
+}
+
+:root:has(input.theme-controller[value="forest"]:checked),
+[data-theme="forest"],
+:root:has(input.theme-controller[value="dim"]:checked),
+[data-theme="dim"] {
+  --hljs-background: var(--color-base-200);
+}
+
+:root,
+:root:has(input.theme-controller[value="lemonade"]:checked),
+[data-theme="lemonade"],
+:root:has(input.theme-controller[value="forest"]:checked),
+[data-theme="forest"],
+:root:has(input.theme-controller[value="corporate"]:checked),
+[data-theme="corporate"],
+:root:has(input.theme-controller[value="dim"]:checked),
+[data-theme="dim"] {
+  --hljs-foreground: var(--color-base-content);
+  --hljs-keyword: color-mix(
+    in oklab,
+    var(--color-primary) 72%,
+    var(--color-base-content)
+  );
+  --hljs-title: color-mix(
+    in oklab,
+    var(--color-secondary) 68%,
+    var(--color-base-content)
+  );
+  --hljs-constant: color-mix(
+    in oklab,
+    var(--color-info) 65%,
+    var(--color-base-content)
+  );
+  --hljs-string: color-mix(
+    in oklab,
+    var(--color-accent) 68%,
+    var(--color-base-content)
+  );
+  --hljs-symbol: color-mix(
+    in oklab,
+    var(--color-warning) 72%,
+    var(--color-base-content)
+  );
+  --hljs-comment: color-mix(
+    in oklab,
+    var(--color-base-content) 52%,
+    transparent
+  );
+  --hljs-tag: color-mix(
+    in oklab,
+    var(--color-success) 72%,
+    var(--color-base-content)
+  );
+  --hljs-bullet: color-mix(
+    in oklab,
+    var(--color-warning) 72%,
+    var(--color-base-content)
+  );
+  --hljs-addition: color-mix(
+    in oklab,
+    var(--color-success) 72%,
+    var(--color-base-content)
+  );
+  --hljs-addition-background: color-mix(
+    in oklab,
+    var(--color-success) 18%,
+    var(--hljs-background)
+  );
+  --hljs-deletion: color-mix(
+    in oklab,
+    var(--color-error) 72%,
+    var(--color-base-content)
+  );
+  --hljs-deletion-background: color-mix(
+    in oklab,
+    var(--color-error) 18%,
+    var(--hljs-background)
+  );
+}
+
+:root:has(input.theme-controller[value="lemonade"]:checked),
+[data-theme="lemonade"] {
+  --hljs-keyword: oklch(42% 0.17 138);
+  --hljs-title: oklch(45% 0.15 112);
+  --hljs-constant: oklch(46% 0.13 205);
+  --hljs-string: oklch(44% 0.14 75);
+  --hljs-symbol: oklch(48% 0.17 55);
+  --hljs-tag: oklch(43% 0.16 155);
+  --hljs-bullet: oklch(48% 0.17 55);
+  --hljs-addition: oklch(43% 0.16 155);
+  --hljs-deletion: oklch(47% 0.19 28);
+}
+
+:root:has(input.theme-controller[value="corporate"]:checked),
+[data-theme="corporate"] {
+  --hljs-keyword: oklch(45% 0.2 255);
+  --hljs-title: oklch(46% 0.18 292);
+  --hljs-constant: oklch(47% 0.15 225);
+  --hljs-string: oklch(43% 0.15 165);
+  --hljs-symbol: oklch(50% 0.18 65);
+  --hljs-tag: oklch(44% 0.16 185);
+  --hljs-bullet: oklch(50% 0.18 65);
+  --hljs-addition: oklch(44% 0.17 150);
+  --hljs-deletion: oklch(48% 0.2 25);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --hljs-keyword: oklch(42% 0.17 138);
+    --hljs-title: oklch(45% 0.15 112);
+    --hljs-constant: oklch(46% 0.13 205);
+    --hljs-string: oklch(44% 0.14 75);
+    --hljs-symbol: oklch(48% 0.17 55);
+    --hljs-tag: oklch(43% 0.16 155);
+    --hljs-bullet: oklch(48% 0.17 55);
+    --hljs-addition: oklch(43% 0.16 155);
+    --hljs-deletion: oklch(47% 0.19 28);
+  }
+}

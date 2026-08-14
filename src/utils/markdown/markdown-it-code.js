@@ -72,7 +72,7 @@ export function codePlugin(md) {
       self,
     );
 
-    return `<section class="code-wrapper" data-markdown-code-block data-code="${encodeURIComponent(
+    return `<section class="code-block" data-markdown-code-block data-code="${encodeURIComponent(
       token.content,
     )}" data-language="${encodeURIComponent(token.info.trim())}">
     ${highlightedHtml}

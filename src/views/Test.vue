@@ -380,14 +380,10 @@
 
       <div id="codeblock" class="scroll-mt-24 xl:col-span-2">
         <TestCard title="CodeBlock（带复制）">
-          <section
-            class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
-          >
+          <section class="code-block my-2">
             <CodeBlock language="typescript" :code="sampleCode" />
           </section>
-          <section
-            class="mockup-code w-full max-w-full overflow-x-auto mx-0 my-2 pb-0 relative"
-          >
+          <section class="code-block my-2">
             <CodeBlock
               language=""
               code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
