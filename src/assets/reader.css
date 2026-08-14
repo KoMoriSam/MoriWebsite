@@ -67,7 +67,8 @@
   }
 
   .markdown-content.prose :deep(p.signature) {
-    @apply indent-0 font-serif font-semibold text-center text-balance italic ps-[50%];
+    @apply indent-0 font-serif font-semibold text-center text-balance
+    ps-[25%] mt-[calc(var(--para-margin-inline)+var(--para-line-height)*var(--para-font-size))];
   }
 
   .markdown-content.prose :deep(ul) {

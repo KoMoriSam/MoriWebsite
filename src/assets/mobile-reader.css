@@ -63,9 +63,7 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not(
-        .chat-content *
-      )
+      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not(.chat-content *)
   ) {
   line-height: var(--reader-page-line-height);
   orphans: 1;
@@ -78,6 +76,11 @@
 
 .mobile-page-viewport :deep(.mobile-page-article .comment-trigger.has-count) {
   display: inline-flex;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article p.signature::before),
+.scroll-reader :deep(.scroll-reader-article p.signature::before) {
+  content: "\3000";
 }
 
 /* 移动分页不能继承桌面 prose 中各元素不同的垂直节奏，否则标题、引用、
@@ -129,10 +132,7 @@
 }
 
 .mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      :is(h1, h2, h3, h4, h5, h6):not(.chat-content *)
-  ) {
+  :deep(.mobile-page-article :is(h1, h2, h3, h4, h5, h6):not(.chat-content *)) {
   margin-block: 0;
   padding-block: 0;
 }
@@ -147,8 +147,7 @@
 
 /* 聊天栏头部只与其紧接的一个元素组成防孤行组；头部和每条消息仍分别以完整
    外框对齐。消息内部沿用聊天组件自己的紧凑行距，不逐行套用正文基线。 */
-.mobile-page-viewport
-  :deep(.mobile-page-article .chat-content) {
+.mobile-page-viewport :deep(.mobile-page-article .chat-content) {
   /* 容器本身不生成分栏盒，避免浏览器把整组聊天记录作为一个块迁移。
      真正参与分页的只有下面的 leading group 和单条消息外框。 */
   display: contents;
@@ -174,17 +173,13 @@
 
 .mobile-page-viewport
   :deep(
-    .mobile-page-article
-      > div
-      > .chat-content:not(:first-child)
-      > :first-child
+    .mobile-page-article > div > .chat-content:not(:first-child) > :first-child
   ) {
   /* display: contents 后父容器的顶层段距不再产生盒子，由首个分页原子承接。 */
   margin-block-start: var(--reader-paragraph-gap);
 }
 
-.mobile-page-viewport
-  :deep(.mobile-page-article .mobile-page-edge-adjusted) {
+.mobile-page-viewport :deep(.mobile-page-article .mobile-page-edge-adjusted) {
   margin-block-start: var(--reader-page-edge-margin, 0px) !important;
 }
 
@@ -246,17 +241,12 @@
   display: none;
 }
 
-.mobile-page-viewport
-  :deep(.mobile-page-article .markdown-table-wrapper) {
+.mobile-page-viewport :deep(.mobile-page-article .markdown-table-wrapper) {
   overflow-x: auto;
 }
 
 .mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      .markdown-table-wrapper
-      table
-  ) {
+  :deep(.mobile-page-article .markdown-table-wrapper table) {
   width: fit-content;
   min-width: 100%;
   max-width: none;
@@ -283,7 +273,9 @@
 }
 
 .mobile-page-viewport
-  :deep(.mobile-page-article .markdown-table-wrapper.mobile-table-fragment table) {
+  :deep(
+    .mobile-page-article .markdown-table-wrapper.mobile-table-fragment table
+  ) {
   width: fit-content;
   min-width: 100%;
 }
@@ -301,8 +293,7 @@
 
 /* 拆表时每个续片都按一整页的可用高度分组，因此续片必须从新栏开始。
    否则浏览器会把多个续片接着塞进同一栏，并把每片复制的 thead 都显示出来。 */
-.mobile-page-viewport
-  :deep(.mobile-page-article .mobile-table-continuation) {
+.mobile-page-viewport :deep(.mobile-page-article .mobile-table-continuation) {
   break-before: column;
   -webkit-column-break-before: always;
 }
@@ -318,10 +309,7 @@
 }
 
 .mobile-page-viewport
-  :deep(
-    .mobile-page-article
-      :is(ul, ol, li, blockquote):not(.chat-content *)
-  ) {
+  :deep(.mobile-page-article :is(ul, ol, li, blockquote):not(.chat-content *)) {
   line-height: var(--reader-page-line-height);
 }
 
