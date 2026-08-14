@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.19.1</strong>
+  Current version: <strong>1.20.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,13 +56,13 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.19.1 Highlights
+## Version 1.20.0 Highlights
 
-- continued decoupling reader components and unified cross-device typography and Markdown rendering
-- migrated callouts, chat, moments, and code blocks to mountable Vue Markdown components
-- improved reading-position tracking with viewport-based saving and precise restoration, retaining position across reader-mode switches
-- unified modal dismissal and browser back-history handling to avoid route and scroll jumps when closing dialogs
-- refined mobile TOC gestures, reading progress bar, chapter controls, and article paging interactions
+- expanded the site theme picker and added site-theme switching inside reading settings
+- refactored code blocks to adapt to multiple theme-highlighting color schemes
+- unified cross-device text selection and long-press action menus for richer selected-text interactions
+- extended paragraph comments to headings, lists, and chapter headers
+- mobile TOC now switches state based on scroll direction, with refined article paging navigation
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
