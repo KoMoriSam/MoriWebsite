@@ -16,41 +16,48 @@
         @pointerdown.stop
         @contextmenu.prevent
       >
-          <li>
-            <button type="button" :disabled="!context.text" @click="copyText">
-              <i class="ri-file-copy-line" aria-hidden="true"></i>
-              <span>复制</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" :disabled="!context.text" @click="searchText">
-              <i class="ri-search-line" aria-hidden="true"></i>
-              <span>全文搜索</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" :disabled="!context.text" @click="shareText">
-              <i class="ri-share-forward-line" aria-hidden="true"></i>
-              <span>分享</span>
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              :disabled="!context.paragraphId"
-              @click="openComment"
-            >
-              <i class="ri-chat-quote-line" aria-hidden="true"></i>
-              <span>评论</span>
-            </button>
-          </li>
+        <li>
+          <button type="button" :disabled="!context.text" @click="copyText">
+            <i class="ri-file-copy-line" aria-hidden="true"></i>
+            <span>复制</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" :disabled="!context.text" @click="searchText">
+            <i class="ri-search-line" aria-hidden="true"></i>
+            <span>搜索</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" :disabled="!context.text" @click="shareText">
+            <i class="ri-share-forward-line" aria-hidden="true"></i>
+            <span>分享</span>
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            :disabled="!context.paragraphId"
+            @click="openComment"
+          >
+            <i class="ri-chat-quote-line" aria-hidden="true"></i>
+            <span>评论</span>
+          </button>
+        </li>
       </ul>
     </Transition>
   </Teleport>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { useToast } from "@/composables/useToast";
 
 const props = defineProps({
@@ -76,13 +83,16 @@ const positionMenu = async () => {
   const visualViewport = window.visualViewport;
   const viewportLeft = visualViewport?.offsetLeft || 0;
   const viewportTop = visualViewport?.offsetTop || 0;
-  const viewportRight = viewportLeft + (visualViewport?.width || window.innerWidth);
-  const viewportBottom = viewportTop + (visualViewport?.height || window.innerHeight);
+  const viewportRight =
+    viewportLeft + (visualViewport?.width || window.innerWidth);
+  const viewportBottom =
+    viewportTop + (visualViewport?.height || window.innerHeight);
   const anchor = props.context.anchorRect;
   const anchorLeft = anchor
     ? anchor.left + anchor.width / 2
     : Number(props.context.clientX || viewportLeft + margin);
-  const anchorTop = anchor?.top ?? Number(props.context.clientY || viewportTop + margin);
+  const anchorTop =
+    anchor?.top ?? Number(props.context.clientY || viewportTop + margin);
   const anchorBottom = anchor?.bottom ?? anchorTop;
   const desiredLeft = anchorLeft - rect.width / 2;
   const spaceAbove = anchorTop - viewportTop - margin - 10;

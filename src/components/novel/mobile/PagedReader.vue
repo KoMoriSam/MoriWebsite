@@ -1600,6 +1600,10 @@ const turnPage = (direction) => {
 const {
   getSelectionContext,
   handleContextMenu: handleTextContextMenu,
+  handlePointerCancel: handleTextPointerCancel,
+  handlePointerDown: handleTextPointerDown,
+  handlePointerMove: handleTextPointerMove,
+  handlePointerUp: handleTextPointerUp,
   isInteractiveEvent: isInteractiveTarget,
 } = useReaderTextContext({ getRoot: getArticleElement, emit });
 
@@ -1610,8 +1614,12 @@ const handleViewportClick = (event) => {
   }
 };
 
-const { handlePointerDown, handlePointerMove, handlePointerUp, resetPointer } =
-  usePagedReaderInput({
+const {
+  handlePointerDown: handlePagedPointerDown,
+  handlePointerMove: handlePagedPointerMove,
+  handlePointerUp: handlePagedPointerUp,
+  resetPointer: resetPagedPointer,
+} = usePagedReaderInput({
     viewportRef,
     tapZones: toRef(props, "tapZones"),
     wheelEnabled: toRef(props, "wheelPagination"),
@@ -1623,6 +1631,23 @@ const { handlePointerDown, handlePointerMove, handlePointerUp, resetPointer } =
     getSelectionContext,
     swipeDistance: SWIPE_DISTANCE,
   });
+
+const handlePointerDown = (event) => {
+  handleTextPointerDown(event);
+  handlePagedPointerDown(event);
+};
+const handlePointerMove = (event) => {
+  handleTextPointerMove(event);
+  handlePagedPointerMove(event);
+};
+const handlePointerUp = (event) => {
+  handleTextPointerUp(event);
+  handlePagedPointerUp(event);
+};
+const resetPointer = () => {
+  handleTextPointerCancel();
+  resetPagedPointer();
+};
 
 watch(
   () => [route.params.volumeSlug, route.params.chapterSlug],

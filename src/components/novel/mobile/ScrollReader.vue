@@ -4,6 +4,10 @@
     class="scroll-reader absolute inset-x-0 top-0 bottom-6 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
     aria-label="上下滚动阅读器"
     :aria-busy="showChapterLoadingOverlay"
+    @pointerdown.capture="handleTextPointerDown"
+    @pointermove.capture="handleTextPointerMove"
+    @pointerup.capture="handleTextPointerUp"
+    @pointercancel.capture="handleTextPointerCancel"
     @scroll.passive="handleScroll"
     @click="handleTapClick"
     @contextmenu.capture.prevent="handleTextContextMenu"
@@ -412,6 +416,10 @@ const getArticleElement = () =>
 const {
   getSelectionContext,
   handleContextMenu: handleTextContextMenu,
+  handlePointerCancel: handleTextPointerCancel,
+  handlePointerDown: handleTextPointerDown,
+  handlePointerMove: handleTextPointerMove,
+  handlePointerUp: handleTextPointerUp,
   isInteractiveEvent: isInteractiveTarget,
 } = useReaderTextContext({ getRoot: getArticleElement, emit });
 

@@ -18,6 +18,11 @@
       :ref="scrollRef"
       class="min-w-0 w-full max-w-full overflow-x-clip"
       :class="{ 'relative flex h-full min-h-0 flex-col': isMobileReader }"
+      @pointerdown.capture="handleReaderPointerDown"
+      @pointermove.capture="handleReaderPointerMove"
+      @pointerup.capture="handleReaderPointerUp"
+      @pointercancel.capture="handleReaderPointerCancel"
+      @contextmenu.capture="handleReaderContextMenu"
       :style="
         isMobileReader
           ? {
@@ -99,13 +104,15 @@
       />
 
       <TextContextMenu
-        v-if="isMobileReader"
-        v-model="mobileTextContextOpen"
-        :context="mobileTextContext"
+        v-model="textContextOpen"
+        :context="textContext"
         @search="openContextSearch"
       />
 
-      <div v-else-if="currentChapter" class="min-w-0 w-full max-w-full">
+      <div
+        v-if="currentChapter && !isMobileReader"
+        class="min-w-0 w-full max-w-full"
+      >
         <Markdown
           :content="currentChapterContent"
           :is-loading="isLoadingContent"
@@ -191,6 +198,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
+import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 import {
   getChapterContextTitle,
   getChapterDisplayTitle,
@@ -238,8 +246,8 @@ const stopNovelPosTracker = ref(null);
 const readerRef = ref(null);
 const trackedReaderContext = ref("");
 const mobileReaderControlsOpen = ref(false);
-const mobileTextContextOpen = ref(false);
-const mobileTextContext = ref({});
+const textContextOpen = ref(false);
+const textContext = ref({});
 const activeMobileReaderRef = ref(null);
 const mobileReaderControlsRef = ref(null);
 const restoreMobileScrollToChapterStart = ref(false);
@@ -298,15 +306,26 @@ const handleMobileReaderAction = (action) => {
 };
 const openTextContextMenu = (context) => {
   if (!context) {
-    mobileTextContextOpen.value = false;
-    mobileTextContext.value = {};
+    textContextOpen.value = false;
+    textContext.value = {};
     return;
   }
-  mobileTextContext.value = context || {};
-  mobileTextContextOpen.value = true;
+  textContext.value = context || {};
+  textContextOpen.value = true;
 };
 const openContextSearch = (keyword) => {
-  void openMobileControl("search", keyword);
+  if (isMobileReader.value) {
+    void openMobileControl("search", keyword);
+    return;
+  }
+
+  void router.replace({
+    query: {
+      ...route.query,
+      search: "1",
+      q: String(keyword || "").trim() || undefined,
+    },
+  });
 };
 const handleNativeVolumeKey = (event) => {
   if (!isMobileReader.value || !mobileVolumePagination.value) return;
@@ -328,6 +347,31 @@ const handleVolumeKeydown = (event) => {
   }
 };
 const isMobileReader = useMediaQuery("(max-width: 1023px)");
+const {
+  handleContextMenu: handleDesktopTextContextMenu,
+  handlePointerCancel: handleDesktopPointerCancel,
+  handlePointerDown: handleDesktopPointerDown,
+  handlePointerMove: handleDesktopPointerMove,
+  handlePointerUp: handleDesktopPointerUp,
+} = useReaderTextContext({
+  getRoot: () => (isMobileReader.value ? null : scrollRef.value),
+  emit: (_eventName, context) => openTextContextMenu(context),
+});
+const handleReaderContextMenu = (event) => {
+  if (!isMobileReader.value) handleDesktopTextContextMenu(event);
+};
+const handleReaderPointerDown = (event) => {
+  if (!isMobileReader.value) handleDesktopPointerDown(event);
+};
+const handleReaderPointerMove = (event) => {
+  if (!isMobileReader.value) handleDesktopPointerMove(event);
+};
+const handleReaderPointerUp = (event) => {
+  if (!isMobileReader.value) handleDesktopPointerUp(event);
+};
+const handleReaderPointerCancel = () => {
+  if (!isMobileReader.value) handleDesktopPointerCancel();
+};
 const isPagedMobileReader = computed(
   () => mobileReadingMode.value === MOBILE_READING_MODES.PAGED,
 );
