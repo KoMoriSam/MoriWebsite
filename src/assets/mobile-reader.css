@@ -78,11 +78,6 @@
   display: inline-flex;
 }
 
-.mobile-page-viewport :deep(.mobile-page-article p.signature::before),
-.scroll-reader :deep(.scroll-reader-article p.signature::before) {
-  content: "\3000";
-}
-
 /* 移动分页不能继承桌面 prose 中各元素不同的垂直节奏，否则标题、引用、
    列表等任意一个块都会把后续正文推离页面网格。所有顶层流块统一由同一
    段距控制；元素内部只允许完整页面行高，不再引入额外上下 margin。 */
