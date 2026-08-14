@@ -247,17 +247,17 @@
 
       <nav
         v-if="previousArticle || nextArticle"
-        class="mt-12 flex border-t border-base-300 pt-6 justify-between"
+        class="mt-12 flex gap-2 border-t border-base-300 pt-6 flex-col md:flex-row md:justify-between"
         aria-label="文章翻页"
       >
         <RouterLink
           v-if="previousArticle"
           :to="getArticleRoute(previousArticle)"
-          class="btn btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3"
+          class="btn btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3 justify-start"
           :aria-label="`上一篇：${previousArticle.title}`"
           @click="handleArticleNavigation(previousArticle, $event)"
         >
-          <i class="ri-arrow-left-s-line"></i>
+          <i class="ri-arrow-left-s-line text-lg md:text-xl"></i>
           <div class="flex flex-col items-start gap-0.5 leading-[1.1]">
             <span
               class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
@@ -270,7 +270,7 @@
             <time
               v-if="getArticleDate(previousArticle)"
               :datetime="getArticleDate(previousArticle)"
-              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+              class="text-base-content/50 text-[0.5625rem] font-semibold tracking-wide"
             >
               发布于 {{ formatArticleDate(previousArticle) }}
             </time>
@@ -280,7 +280,7 @@
         <RouterLink
           v-if="nextArticle"
           :to="getArticleRoute(nextArticle)"
-          class="btn btn-neutral btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3"
+          class="btn btn-neutral btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3 justify-end"
           :aria-label="`下一篇：${nextArticle.title}`"
           @click="handleArticleNavigation(nextArticle, $event)"
         >
@@ -296,12 +296,12 @@
             <time
               v-if="getArticleDate(nextArticle)"
               :datetime="getArticleDate(nextArticle)"
-              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+              class="text-neutral-content/50 text-[0.5625rem] font-semibold tracking-wide"
             >
               发布于 {{ formatArticleDate(nextArticle) }}
             </time>
           </div>
-          <i class="ri-arrow-right-s-line"></i>
+          <i class="ri-arrow-right-s-line text-lg md:text-xl"></i>
         </RouterLink>
       </nav>
     </article>
