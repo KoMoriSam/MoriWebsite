@@ -51,7 +51,7 @@
         <div class="divider my-3 justify-between">
           <h2 class="text-base-content/55 text-xs font-bold">
             项目
-            <span class="badge badge-ghost badge-xs">
+            <span class="badge badge-ghost badge-xs mb-0.75">
               {{ PROJECTS.length }}
             </span>
           </h2>
@@ -59,7 +59,7 @@
             :href="PROJECTS_GITHUB_URL"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-ghost btn-sm"
+            class="btn btn-ghost btn-sm mb-0.75"
             @click="closeMenu"
           >
             <i class="ri-github-fill text-base"></i>
