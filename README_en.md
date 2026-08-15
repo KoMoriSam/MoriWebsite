@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.20.0</strong>
+  Current version: <strong>1.20.1</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,13 +56,12 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.20.0 Highlights
+## Version 1.20.1 Highlights
 
-- expanded the site theme picker and added site-theme switching inside reading settings
-- refactored code blocks to adapt to multiple theme-highlighting color schemes
-- unified cross-device text selection and long-press action menus for richer selected-text interactions
-- extended paragraph comments to headings, lists, and chapter headers
-- mobile TOC now switches state based on scroll direction, with refined article paging navigation
+- refactored font loading and centralized CJK, Latin, and Sinhala font schemes
+- replaced the previous Latin fonts with Inter and Petrona for better Western typography
+- added Zhi Mang Xing and Sarasa Gothic italic support, enriching font options
+- refined font source and license documentation
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 

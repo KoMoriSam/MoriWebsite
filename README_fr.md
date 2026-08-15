@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.20.0</strong>
+  Version actuelle : <strong>1.20.1</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,13 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.20.0
+## Points clés de la version 1.20.1
 
-- extension du sélecteur de thème du site et ajout du changement de thème du site depuis les réglages de lecture
-- refonte des blocs de code pour s'adapter à plusieurs schémas de couleurs de surbrillance
-- unification de la sélection de texte et des menus d'action par appui long entre appareils
-- extension des commentaires de paragraphe aux titres, listes et en-têtes de chapitre
-- le sommaire mobile change d'état selon la direction de défilement, avec une navigation de pagination d'articles affinée
+- refonte du chargement des polices et centralisation des schémas de polices CJK, latines et singhalaises
+- remplacement des polices latines précédentes par Inter et Petrona pour une meilleure typographie occidentale
+- ajout du support de Zhi Mang Xing et de l'italique Sarasa Gothic, enrichissant les options de polices
+- amélioration de la documentation des sources et licences des polices
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
