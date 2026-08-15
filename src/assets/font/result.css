@@ -1,0 +1,79 @@
+@import url("https://raw.komori.cc/kaiming/index.css");
+/* @import url("https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-neo-zhi-song-chs-regular-lxgw-neo-zhi-song@latest/font.min.css"); */
+/* LXGW Neo Zhisong */
+@import url("https://fontsapi.zeoseven.com/22/plus/result.css");
+/* LXGW Neo Xihei */
+/* @import url("https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-neo-xi-hei-regular@latest/font.min.css"); */
+@import url("https://fontsapi.zeoseven.com/19/plus/result.css");
+/* LXGW Wenkai GB */
+/* @import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-gb-web@latest/style.css"); */
+@import url("https://fontsapi.zeoseven.com/292/gb-light/result.css");
+@import url("https://fontsapi.zeoseven.com/292/gb-medium/result.css");
+@import url("https://fontsapi.zeoseven.com/292/gb-regular/result.css");
+/* Zhuque Fangsong */
+@import url("https://fontsapi.zeoseven.com/7/main/result.css");
+
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/inter/wght-italic.css";
+
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-serif-sc";
+@import "@fontsource/zhi-mang-xing";
+
+@import "./cjk.css";
+@import "./latin.css";
+@import "./sinhala.css";
+
+@theme {
+  --font-sans:
+    "Kaiming Punctuation Sans", "Inter Variable", "Inter",
+    "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  --font-serif:
+    "Kaiming Punctuation Serif", "Petrona Variable", "Petrona",
+    "Noto Serif SC Variable", "Noto Serif SC", "Source Han Serif SC Variable",
+    "Source Han Serif SC", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
+    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --font-mono:
+    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --font-song:
+    "Kaiming Punctuation Serif", "LXGW Neo ZhiSong Plus", "LXGW Neo ZhiSong",
+    "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
+    serif;
+  --font-hei:
+    "Kaiming Punctuation Sans", "LXGW Neo XiHei Plus", "LXGW Neo XiHei",
+    "STHeiti", "STXihei", "SimHei", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", sans-serif;
+  --font-kai:
+    "Kaiming Punctuation Serif", "LXGW WenKai GB", "LXGW WenKai GB Lite",
+    "STKaiti", "KaiTi", "Maname", cursive;
+  --font-fang:
+    "Kaiming Punctuation Serif", "Zhuque Fangsong (technical preview)",
+    "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STFangsong", "FangSong",
+    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
+
+  --font-script: "Zhi Mang Xing";
+}
+
+@layer base {
+  :root {
+    /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
+    line-break: strict;
+    text-spacing-trim: trim-both;
+    hanging-punctuation: first last;
+  }
+}
+
+@supports not (text-spacing-trim: trim-both) {
+  @supports (hanging-punctuation: first force-end last) {
+    :root {
+      /* Fallback for engines without contextual CJK line-edge trimming. */
+      hanging-punctuation: first force-end last;
+    }
+  }
+}

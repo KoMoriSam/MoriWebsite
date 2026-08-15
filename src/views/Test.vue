@@ -692,7 +692,7 @@ const mdSamples = [
   {
     name: "行内与扩展",
     content: [
-      "普通文本、**粗体**、*斜体*、***粗斜体***、~~删除线~~、==高亮文本==。",
+      "普通文本、**粗体aBc123**、*斜体aBc123*、***粗斜体aBc123***、~~删除线~~、==高亮文本==。",
       "",
       "行内代码 `const answer = 42`，转义字符 \\*不会变成斜体\\*。",
       "",
@@ -777,6 +777,7 @@ const mdSamples = [
       "行内代码：`npm run build`。",
       "",
       "~~~javascript",
+      "// 这是一段 JavaScript 代码",
       "function fibonacci(n) {",
       "  if (n <= 1) return n;",
       "  return fibonacci(n - 1) + fibonacci(n - 2);",

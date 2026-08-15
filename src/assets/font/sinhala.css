@@ -1,0 +1,35 @@
+@font-face {
+  font-family: "Noto Serif Sinhala Variable";
+  src: url("@fontsource-variable/noto-serif-sinhala/files/noto-serif-sinhala-sinhala-wght-normal.woff2")
+    format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 90%;
+}
+
+@font-face {
+  font-family: "Noto Sans Sinhala Variable";
+  src: url("@fontsource-variable/noto-sans-sinhala/files/noto-sans-sinhala-sinhala-wght-normal.woff2")
+    format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 90%;
+}
+
+@font-face {
+  font-family: "Maname";
+  src: url("@fontsource/maname/files/maname-sinhala-400-normal.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 105%;
+}

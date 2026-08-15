@@ -218,8 +218,8 @@ const activeFamilyLabel = computed(
 const demoStyle = computed(() => ({
   fontFamily:
     family.value === "serif"
-      ? "'Kaiming Punctuation Serif', 'Fraunces Variable', 'Fraunces', 'Noto Serif SC Variable', 'Noto Serif SC', 'Source Han Serif SC Variable', 'Source Han Serif SC', 'Noto Serif Sinhala Variable', 'Noto Serif Sinhala', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif"
-      : "'Kaiming Punctuation Sans', 'Manrope Variable', 'Manrope', 'Noto Sans SC Variable', 'Noto Sans SC', 'Noto Sans Sinhala Variable', 'Noto Sans Sinhala', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
+      ? "'Kaiming Punctuation Serif', 'Petrona Variable', 'Petrona', 'Noto Serif SC Variable', 'Noto Serif SC', 'Source Han Serif SC Variable', 'Source Han Serif SC', 'Noto Serif Sinhala Variable', 'Noto Serif Sinhala', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif"
+      : "'Kaiming Punctuation Sans', 'Inter Variable', 'Inter', 'Noto Sans SC Variable', 'Noto Sans SC', 'Noto Sans Sinhala Variable', 'Noto Sans Sinhala', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'",
   fontWeight: weight.value,
   fontVariationSettings: `"wght" ${weight.value}`,
 }));
@@ -282,21 +282,3 @@ const downloads = [
   },
 ];
 </script>
-
-<style>
-@font-face {
-  font-family: "Kaiming Sans Variable Demo";
-  src: url("https://raw.komori.cc/kaiming/Sans-VF.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Kaiming Serif Variable Demo";
-  src: url("https://raw.komori.cc/kaiming/Serif-VF.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-</style>

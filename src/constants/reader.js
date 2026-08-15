@@ -235,11 +235,11 @@ export const STYLE_CONFIG_KEYS = Object.freeze([
 
 export const FONTS = Object.freeze([
   Object.freeze({
-    name: "无衬线（Noto Sans SC + Manrope）",
+    name: "Inter",
     style: "font-sans",
   }),
   Object.freeze({
-    name: "衬线体（Noto Serif SC + Fraunces）",
+    name: "Petrona",
     style: "font-serif",
   }),
   Object.freeze({ name: "霞鹜文楷", style: "font-kai" }),

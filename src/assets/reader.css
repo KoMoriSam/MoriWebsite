@@ -67,8 +67,10 @@
   }
 
   .markdown-content.prose :deep(p.signature) {
-    @apply indent-0 font-serif font-semibold text-center text-balance
-    ps-[25%] mt-[calc(var(--para-margin-inline)+var(--para-line-height)*var(--para-font-size))];
+    @apply indent-0 font-script text-center text-balance
+    ps-[25%] md:ps-[50%] text-[calc(var(--para-font-size)*1.125)]
+    leading-(--para-line-height)
+    mt-[calc(var(--para-margin-inline)+var(--para-line-height)*var(--para-font-size))];
   }
 
   .markdown-content.prose :deep(ul) {
@@ -445,10 +447,6 @@
     @apply [quotes:none] font-serif font-extralight
     ps-[calc(var(--para-text-indent)*0.25)]
     md:ps-[calc(var(--para-text-indent)*0.5)];
-  }
-
-  .markdown-content.prose :deep(em) {
-    @apply italic font-serif;
   }
 
   .markdown-content.prose :deep(blockquote p),

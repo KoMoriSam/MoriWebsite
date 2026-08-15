@@ -15,14 +15,15 @@
     "push": "git push origin main:cl-pages --force"
   },
   "dependencies": {
-    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "@fontsource-variable/manrope": "^5.2.8",
     "@fontsource-variable/noto-sans-sc": "^5.2.10",
     "@fontsource-variable/noto-sans-sinhala": "^5.2.10",
     "@fontsource-variable/noto-serif-sc": "^5.2.10",
     "@fontsource-variable/noto-serif-sinhala": "^5.2.8",
+    "@fontsource-variable/petrona": "^5.3.0",
     "@fontsource/maname": "^5.2.7",
+    "@fontsource/zhi-mang-xing": "^5.3.0",
     "@giscus/vue": "^3.1.1",
     "@highlightjs/vue-plugin": "^2.1.0",
     "@tailwindcss/vite": "^4.3.3",
