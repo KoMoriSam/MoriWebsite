@@ -4,17 +4,12 @@
     title="开发测试面板"
     description="集中验证页面布局、基础组件、组合式函数与数据服务在当前设计系统中的行为。"
   >
-    <template #actions>
+    <template #badges>
       <span class="badge badge-warning badge-soft badge-lg">仅开发环境</span>
       <span class="badge badge-dash badge-lg">
         {{ testSections.length }} 个检查项
       </span>
-      <router-link class="btn btn-sm" to="/">
-        <i class="ri-arrow-left-line" aria-hidden="true"></i>
-        返回主页
-      </router-link>
     </template>
-
     <nav
       class="sticky top-3 z-10 mt-8 mb-6 overflow-x-auto rounded-box border border-base-300 bg-base-100/90 p-2 shadow-sm backdrop-blur"
       aria-label="测试项目快速导航"
