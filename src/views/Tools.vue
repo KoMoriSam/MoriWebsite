@@ -59,7 +59,7 @@ const tools = [
   {
     name: "sinhala-font-converter",
     title: "僧伽罗字体编码转换器",
-    description: "在标准 Unicode 与 FM/DL 传统字体编码之间双向转换。",
+    description: "在标准 Unicode 与 ASCII 传统字体编码之间双向转换。",
     category: "文本编码转换",
     icon: "ri-code-s-slash-line",
     to: { name: "sinhala-font-converter" },

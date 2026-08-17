@@ -2,7 +2,7 @@
   <ContentPage
     eyebrow="Sinhala Unicode–ASCII Font Converter"
     title="僧伽罗字体编码转换器"
-    description="在标准 Unicode 与 FM/DL 传统字体编码之间双向转换，所有处理均在浏览器本地完成。"
+    description="在标准 Unicode 与 ASCII 传统字体编码之间双向转换，所有处理均在浏览器本地完成。"
   >
     <section class="card card-border overflow-hidden bg-base-100">
       <div
@@ -32,7 +32,7 @@
 
       <div class="grid lg:grid-cols-2">
         <section
-          class="flex min-w-0 flex-col p-2 sm:p-4 lg:border-r lg:border-base-300"
+          class="flex min-w-0 flex-col p-4 lg:border-r lg:border-base-300"
         >
           <label
             for="sinhala-unicode-text"
@@ -78,7 +78,7 @@
         </section>
 
         <section
-          class="flex min-w-0 flex-col border-t border-base-300 p-2 sm:p-4 lg:border-t-0"
+          class="flex min-w-0 flex-col border-t border-base-300 p-4 lg:border-t-0"
         >
           <label
             for="sinhala-fm-text"
@@ -87,7 +87,7 @@
             <span>
               <span class="block font-serif text-lg font-bold">ASCII Text</span>
               <span class="text-xs text-base-content/55">
-                FM/DL 传统字体编码与字形预览
+                ASCII 传统字体编码与字形预览
               </span>
             </span>
             <button
@@ -106,7 +106,7 @@
               id="sinhala-fm-text-preview"
               v-model="fmText"
               class="join-item min-h-23 lg:min-h-31 textarea w-full resize-y bg-base-200/35 font-[FM_Abhaya_Libre_Legacy,Abhaya_Libre,serif] placeholder:font-serif text-lg leading-7 focus:outline-primary"
-              placeholder="在此输入或粘贴 FM/DL 传统字体编码……"
+              placeholder="在此输入或粘贴 ASCII 传统字体编码……"
               aria-describedby="sinhala-converter-hint"
               lang="si"
               spellcheck="false"
@@ -153,7 +153,7 @@
             </h2>
 
             <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
-              FM/DL 传统字体编码与标准 Unicode 有什么区别？
+              ASCII 传统字体编码与标准 Unicode 有什么区别？
             </p>
           </hgroup>
         </summary>
@@ -174,13 +174,13 @@
           >
             <!-- FM / DL -->
             <div
-              class="min-w-0 rounded-box border border-base-300 bg-base-100 p-3 sm:p-4"
+              class="min-w-0 rounded-box border border-base-300 bg-base-200/25 p-3 sm:p-4"
             >
               <div
                 class="mb-1 flex items-center gap-2 text-xs text-base-content/75"
               >
                 <i class="ri-file-text-line"></i>
-                FM/DL 传统字体编码
+                ASCII 传统字体编码
               </div>
 
               <div class="mt-2 w-full text-xl">
@@ -188,9 +188,9 @@
                   class="grid min-w-0 grid-cols-1 gap-y-2 sm:grid-cols-[max-content_minmax(0,1fr)] sm:items-stretch sm:gap-y-0"
                 >
                   <span
-                    class="badge badge-xs w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
                   >
-                    缺少字体
+                    Default
                   </span>
 
                   <span
@@ -200,7 +200,7 @@
                   </span>
 
                   <span
-                    class="badge badge-xs w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
                   >
                     FM Abhaya
                   </span>
@@ -210,17 +210,31 @@
                   >
                     › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
                   </span>
+
+                  <span
+                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                  >
+                    FM Gemunu
+                  </span>
+
+                  <span
+                    class="min-w-0 break-words text-left font-[FM_Gemunu_Libre_Legacy] font-bold text-base sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
+                  >
+                    › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
+                  </span>
                 </div>
               </div>
 
               <p
-                class="mt-3 text-xs leading-relaxed text-base-content/75 text-justify text-pretty"
+                class="mt-3 leading-relaxed text-sm text-base-content/75 text-justify text-pretty"
               >
                 实际保存的是 ASCII
                 字符，需要配合对应的传统字体才能显示为僧伽罗文字形；在缺少相应字体的环境中，会直接显示底层
                 ASCII 字符。
                 <br />
-                <small class="grid grid-cols-[auto_minmax(0,1fr)] items-start">
+                <small
+                  class="grid grid-cols-[auto_minmax(0,1fr)] items-start mt-2"
+                >
                   <span>注：</span>
 
                   <span class="space-y-1">
@@ -264,7 +278,7 @@
 
             <!-- 箭头 -->
             <i
-              class="ri-arrow-down-line justify-self-center text-xl sm:-rotate-90"
+              class="ri-arrow-up-down-line justify-self-center text-xl sm:-rotate-90"
               aria-hidden="true"
             ></i>
 
@@ -276,7 +290,7 @@
                 class="mb-1 flex items-center gap-2 text-xs text-base-content/70"
               >
                 <i class="ri-code-s-slash-line"></i>
-                常见的标准 Unicode 字体
+                标准 Unicode 字体
               </div>
 
               <ul
@@ -284,23 +298,9 @@
               >
                 <li class="contents">
                   <span
-                    class="badge badge-xs w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
                   >
-                    Abhaya Libre
-                  </span>
-                  <p
-                    class="min-w-0 text-left text-base text-base-content font-[Abhaya_Libre] sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
-                    lang="si"
-                  >
-                    ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි.
-                  </p>
-                </li>
-
-                <li class="contents">
-                  <span
-                    class="badge badge-xs w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
-                  >
-                    系统默认（Sans）
+                    sans-serif
                   </span>
                   <p
                     class="min-w-0 text-left text-base text-base-content font-sinhala-sans sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
@@ -312,9 +312,9 @@
 
                 <li class="contents">
                   <span
-                    class="badge badge-xs w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
                   >
-                    系统默认（Serif）
+                    serif
                   </span>
                   <p
                     class="min-w-0 text-left text-base text-base-content font-sinhala-serif sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
@@ -326,30 +326,31 @@
               </ul>
 
               <p
-                class="mt-3 text-xs leading-relaxed text-base-content/75 text-justify text-pretty"
+                class="mt-3 leading-relaxed text-sm text-base-content/75 text-justify text-pretty"
               >
                 实际保存的是标准 Unicode
                 僧伽罗语字符，字符本身具有明确语义；如上所示，现代操作系统通常已提供可用于显示僧伽罗语的字体。
                 <br />
-                <small class="grid grid-cols-[auto_minmax(0,1fr)] items-start">
+                <small
+                  class="grid grid-cols-[auto_minmax(0,1fr)] items-start mt-2"
+                >
                   <span>注：</span>
                   <span>
                     系统默认字体会因操作系统而异，常见对应如下。
                     <ul class="ml-2.45 ps-0 space-y-1 list-[circle]">
                       <li>
                         <strong>Windows：</strong>
-                        Nirmala UI 为无衬线/UI 风格字体，自 Windows 8
-                        起成为僧伽罗语的主要界面与回退字体； Iskoola Pota
-                        则更接近传统正文/衬线风格，早期 Windows
-                        中曾承担主要僧伽罗语字体的角色。 自 Windows 10
-                        起，Iskoola Pota
+                        Nirmala UI 为无衬线 / UI 风格字体（Windows 8
+                        及以上）；Iskoola Pota 则更接近传统正文 /
+                        衬线风格，为早期 Windows 的僧伽罗语默认字体。自 Windows
+                        10 起，Iskoola Pota
                         作为僧伽罗语补充字体提供，安装相应语言支持后通常会一并安装。
                       </li>
 
                       <li>
                         <strong>macOS / iOS：</strong>
-                        Sinhala Sangam MN 偏现代无衬线/UI 风格，Sinhala MN
-                        偏传统正文风格。 Apple
+                        Sinhala Sangam MN 偏现代无衬线 / UI 风格，Sinhala MN
+                        偏传统正文风格。Apple
                         在系统中同时提供这两套僧伽罗语字体，但并未明确将它们定义为一组
                         serif / sans-serif 系统回退字体。
                       </li>
@@ -357,9 +358,9 @@
                       <li>
                         <strong>Android / AOSP：</strong>
                         Noto Sans Sinhala
-                        为无衬线字体，通常用于僧伽罗语的主要系统回退； Noto
-                        Serif Sinhala 为衬线字体，并在 AOSP 字体配置中明确作为
-                        serif 回退字体。 不同 Android
+                        为无衬线字体，通常用于僧伽罗语的主要系统回退；Noto Serif
+                        Sinhala 为衬线字体，并在 AOSP 字体配置中明确作为 serif
+                        回退字体。不同 Android
                         厂商可能调整系统字体配置，因此实际使用的字体可能有所不同。
                       </li>
                     </ul>
@@ -370,7 +371,7 @@
           </div>
 
           <p>
-            两者在屏幕上都可以呈现相同的僧伽罗语内容，但保存方式并不相同。FM/DL
+            两者在屏幕上都可以呈现相同的僧伽罗语内容，但保存方式并不相同。ASCII
             传统字体编码保存的是映射到特定字形的 ASCII 字符，而 Unicode
             保存的则是标准僧伽罗语字符。因此，传统编码文本在缺少对应字体时可能显示为英文字母或符号，并且难以直接用于搜索、文本分析、机器翻译和自然语言处理。
           </p>
@@ -404,7 +405,7 @@
         >
           <p>
             <strong>僧伽罗字体编码转换器</strong>
-            用于在这两种表示方式之间转换实际保存的字符数据。将 FM/DL
+            用于在这两种表示方式之间转换实际保存的字符数据。将 ASCII
             传统字体编码转换为 Unicode
             后，文本可以脱离特定旧字体，更方便地用于网页、数据库、搜索、机器翻译和自然语言处理；反向转换则可以生成传统字体所需的
             ASCII 编码，用于仍依赖这类字体的旧版软件、排版文件和既有工作流程。
@@ -432,11 +433,11 @@
             ></i>
 
             <h2 class="min-w-0 font-serif text-base font-bold sm:text-lg">
-              关于本页面所使用的 FM Abhaya 字体
+              关于本页面所使用的 FM 字体
             </h2>
 
             <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
-              本页面使用的是原版 FM Abhaya 字体吗？是否有版权/使用权问题？
+              是否为原版字体？是否有版权/使用权风险？
             </p>
           </hgroup>
         </summary>
@@ -444,14 +445,15 @@
         <p
           class="collapse-content prose max-md:prose-sm max-w-none prose-p:text-justify"
         >
-          ASCII 编辑区与编码简介中的字形预览使用基于 Abhaya Libre
-          制作的内置传统编码兼容字体（详见<a
+          ASCII 编辑区与编码简介中的字形预览使用基于 Abhaya Libre 和 Gemunu
+          Libre 制作的内置传统编码兼容字体（详见<a
             href="/licenses"
             target="_blank"
             rel="noopener noreferrer"
             class="not-prose link link-primary link-hover"
             >第三方协议<i class="ri-arrow-right-up-line"></i></a
-          >），仅用于模拟 FM/DL 字体的字符映射效果，并非原版 FM Abhaya 字体。
+          >），仅用于模拟 ASCII 字体的字符映射效果，并非原版 FM Abhaya / Gemunu
+          字体。
         </p>
       </details>
     </section>

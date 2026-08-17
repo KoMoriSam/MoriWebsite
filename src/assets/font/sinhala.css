@@ -14,6 +14,33 @@
 }
 
 @font-face {
+  font-family: "FM Abhaya Libre Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("./abhaya-libre/fm-abhaya-libre-bold-legacy.woff2") format("woff2");
+  size-adjust: 130%;
+}
+
+@font-face {
+  font-family: "FM Gemunu Libre Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./gemunu-libre/fm-gemunu-libre-legacy.woff2") format("woff2");
+  size-adjust: 145%;
+}
+
+@font-face {
+  font-family: "FM Gemunu Libre Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("./gemunu-libre/fm-gemunu-libre-bold-legacy.woff2") format("woff2");
+  size-adjust: 145%;
+}
+
+@font-face {
   font-family: "Noto Serif Sinhala Variable";
   font-style: normal;
   font-display: swap;

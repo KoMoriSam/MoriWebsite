@@ -1,7 +1,15 @@
-"""Generate an FM-encoded display font from the OFL Abhaya Libre font.
+"""Generate FM-encoded display fonts from OFL Google Fonts sources.
+
+Builds legacy-encoding display fonts whose outlines come from open Google
+Fonts Sinhala families but whose character map follows the legacy FM encoding
+used by the Sinhala converter:
+  * FM Abhaya Libre Legacy (Regular and Bold, from the static Abhaya Libre
+    fonts committed under scripts/font-sources/abhaya-libre)
+  * FM Gemunu Libre Legacy (Regular and Bold, from the static Gemunu Libre
+    1.100 fonts committed under scripts/font-sources/gemunu-libre)
 
 Requirements: fonttools[brotli] and uharfbuzz.
-The generated font is committed as a web asset; this script is not part of the
+The generated fonts are committed as web assets; this script is not part of the
 normal site build.
 """
 
@@ -9,10 +17,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import subprocess
-import tempfile
-import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 import uharfbuzz as hb
@@ -25,42 +33,138 @@ from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_URL = (
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/abhayalibre/"
-    "AbhayaLibre-Regular.ttf"
-)
-SOURCE_SHA256 = "d4279d38a0012fa54d340979694e70e3235266220dedc0d7000131345fb33bd4"
-DEFAULT_OUTPUT = (
-    ROOT / "src/assets/font/abhaya-libre/fm-abhaya-libre-legacy.woff2"
-)
-LICENSE_SOURCE = ROOT / "node_modules/@fontsource/abhaya-libre/LICENSE"
-LICENSE_OUTPUT = ROOT / "src/assets/font/abhaya-libre/OFL.txt"
-FONT_FAMILY = "FM Abhaya Libre Legacy"
+
+# Static Google Fonts builds committed locally (hash-pinned).  Abhaya Libre is
+# published as static weights upstream; Gemunu Libre 1.100 static fonts were
+# supplied by the project maintainer because Google Fonts only publishes the
+# variable build.
+ABHAYA_SOURCE_BASENAME = "AbhayaLibre-{weight}.ttf"
+ABHAYA_SOURCE_SHA256 = {
+    "Regular": "d4279d38a0012fa54d340979694e70e3235266220dedc0d7000131345fb33bd4",
+    "Bold": "01fb4cd74841c5f108372737a74cfedeaf0a722ca23e2275dc69f411dc0ad5a6",
+}
+
+GEMUNU_SOURCE_BASENAME = "GemunuLibre-{weight}.ttf"
+GEMUNU_SOURCE_SHA256 = {
+    "Regular": "76e776da632f19cc180563c96cd90e7f597e1b107120fbed69a82decefc87e8f",
+    "Bold": "7150feaadef0135739f1b5137ed74621912cad006d864b8344c2ed172273fd2c",
+}
+
+
+@dataclass(frozen=True)
+class FontSpec:
+    """Everything the generator needs for one FM legacy display font."""
+
+    family: str
+    source_sha256: str
+    source_filename: str
+    output: Path
+    license_source: Path
+    license_output: Path
+    glyph_overrides: dict[str, str]
+    # Legacy weight of the generated face; used for font naming only.
+    weight: str = "Regular"
+    weight_class: int = 400
+
+    @property
+    def ps_name(self) -> str:
+        return f"{''.join(self.family.split())}-{self.weight}"
+
+
+ABHAYA_SPECS: dict[str, FontSpec] = {
+    weight: FontSpec(
+        family="FM Abhaya Libre Legacy",
+        source_sha256=ABHAYA_SOURCE_SHA256[weight],
+        source_filename=ABHAYA_SOURCE_BASENAME.format(weight=weight),
+        output=ROOT
+        / "src/assets/font/abhaya-libre"
+        / (
+            "fm-abhaya-libre-legacy.woff2"
+            if weight == "Regular"
+            else f"fm-abhaya-libre-{weight.lower()}-legacy.woff2"
+        ),
+        license_source=ROOT / "node_modules/@fontsource/abhaya-libre/LICENSE",
+        license_output=ROOT / "src/assets/font/abhaya-libre/OFL.txt",
+        glyph_overrides={
+            # These two FM slots are contextual pieces rather than independent
+            # Unicode characters.  Keeping the original Abhaya component glyphs
+            # also preserves the old single-code-point behaviour when no
+            # sequence rule fires.
+            "%": "si_Rakar",
+            "H": "si_Ya.post",
+        },
+        weight=weight,
+        weight_class=400 if weight == "Regular" else 700,
+    )
+    for weight in ("Regular", "Bold")
+}
+
+GEMUNU_SPECS: dict[str, FontSpec] = {
+    weight: FontSpec(
+        family="FM Gemunu Libre Legacy",
+        source_sha256=GEMUNU_SOURCE_SHA256[weight],
+        source_filename=GEMUNU_SOURCE_BASENAME.format(weight=weight),
+        output=ROOT
+        / "src/assets/font/gemunu-libre"
+        / (
+            "fm-gemunu-libre-legacy.woff2"
+            if weight == "Regular"
+            else f"fm-gemunu-libre-{weight.lower()}-legacy.woff2"
+        ),
+        license_source=ROOT / "node_modules/@fontsource/gemunu-libre/LICENSE",
+        license_output=ROOT / "src/assets/font/gemunu-libre/OFL.txt",
+        glyph_overrides={
+            # Gemunu names its rakar and post-base ya components sinRakar and
+            # sinYansaya respectively, unlike Abhaya's si_Rakar / si_Ya.post.
+            "%": "sinRakar",
+            "H": "sinYansaya",
+        },
+        weight=weight,
+        weight_class=400 if weight == "Regular" else 700,
+    )
+    for weight in ("Regular", "Bold")
+}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--source-font",
+        "--abhaya-source-dir",
         type=Path,
-        help="Use an existing official AbhayaLibre-Regular.ttf instead of downloading it.",
+        default=ROOT / "scripts" / "font-sources" / "abhaya-libre",
+        help=(
+            "Directory containing the local Abhaya Libre static fonts "
+            "(AbhayaLibre-Regular.ttf and AbhayaLibre-Bold.ttf)."
+        ),
     )
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--gemunu-source-dir",
+        type=Path,
+        default=ROOT / "scripts" / "font-sources" / "gemunu-libre",
+        help=(
+            "Directory containing the local Gemunu Libre 1.100 static fonts "
+            "(GemunuLibre-Regular.ttf and GemunuLibre-Bold.ttf)."
+        ),
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Override the output directory for the generated WOFF2 files.",
+    )
     return parser.parse_args()
 
 
-def ensure_source_font(source_font: Path | None) -> Path:
-    if source_font:
-        path = source_font.resolve()
-    else:
-        path = Path(tempfile.gettempdir()) / "AbhayaLibre-Regular.ttf"
-        if not path.exists():
-            urllib.request.urlretrieve(SOURCE_URL, path)
-
-    digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    if digest != SOURCE_SHA256:
+def ensure_source_font(spec: FontSpec, source_font: Path) -> Path:
+    path = source_font.resolve()
+    if not path.exists():
         raise RuntimeError(
-            f"Unexpected Abhaya Libre source hash: {digest}; expected {SOURCE_SHA256}"
+            f"Missing source font for {spec.family} {spec.weight}: {path}"
+        )
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec.source_sha256:
+        raise RuntimeError(
+            f"Unexpected {spec.family} {spec.weight} source hash: {digest}; "
+            f"expected {spec.source_sha256}"
         )
     return path
 
@@ -75,15 +179,15 @@ def load_legacy_mapping() -> list[dict[str, str]]:
     return json.loads(output)
 
 
-def set_font_name(font: TTFont) -> None:
+def set_font_name(font: TTFont, spec: FontSpec) -> None:
     name_table = font["name"]
     values = {
-        1: FONT_FAMILY,
-        2: "Regular",
-        3: f"{FONT_FAMILY} Regular 1.000",
-        4: FONT_FAMILY,
+        1: spec.family,
+        2: spec.weight,
+        3: f"{spec.family} {spec.weight} 1.000",
+        4: spec.family,
         5: "Version 1.000",
-        6: "FMAbhayaLibreLegacy-Regular",
+        6: spec.ps_name,
     }
     for name_id, value in values.items():
         name_table.setName(value, name_id, 3, 1, 0x409)
@@ -157,7 +261,7 @@ def add_composite_glyph(
     shaped: list[tuple[str, int, int, int, int]],
 ) -> str:
     glyph_set = font.getGlyphSet()
-    pen = TTGlyphPen(None)
+    pen = TTGlyphPen(glyph_set)
     cursor_x = 0
     cursor_y = 0
     for component_name, x_advance, y_advance, x_offset, y_offset in shaped:
@@ -175,23 +279,19 @@ def add_composite_glyph(
     return glyph_name
 
 
-def build_font(source: Path, output: Path) -> tuple[int, int, int]:
+def build_font(spec: FontSpec, source: Path, output: Path) -> tuple[int, int, int]:
     font = TTFont(source, recalcBBoxes=True, recalcTimestamp=False)
-    source_bytes = source.read_bytes()
-    hb_face = hb.Face(source_bytes)
+    # Shape against the same static outline the rest of the build uses.
+    saved = io.BytesIO()
+    font.save(saved)
+    hb_face = hb.Face(saved.getvalue())
     hb_font = hb.Font(hb_face)
     hb_font.scale = (hb_face.upem, hb_face.upem)
     source_glyph_order = font.getGlyphOrder()
     cmap: dict[int, str] = {}
     composites = 0
 
-    # These two FM slots are contextual pieces rather than independent Unicode
-    # characters.  Keeping the original Abhaya component glyphs also preserves
-    # the old single-code-point behaviour when no sequence rule fires.
-    glyph_overrides = {
-        "%": "si_Rakar",
-        "H": "si_Ya.post",
-    }
+    glyph_overrides = spec.glyph_overrides
 
     raw_entries = load_legacy_mapping()
     single_targets: dict[str, str] = {}
@@ -292,13 +392,16 @@ def build_font(source: Path, output: Path) -> tuple[int, int, int]:
 
     # The source font's Sinhala layout tables target Unicode input.  Legacy FM
     # input is ASCII/Windows-1252, so discard those tables and install our own
-    # required-ligature table for legacy character sequences.
-    for table_tag in ("GDEF", "GPOS", "GSUB"):
+    # required-ligature table for legacy character sequences.  STAT (which can
+    # survive instancing a variable source) has no meaning once the variable
+    # axes are gone and is removed too.
+    for table_tag in ("GDEF", "GPOS", "GSUB", "STAT"):
         if table_tag in font:
             del font[table_tag]
     add_required_ligatures(font, sequence_rules)
 
-    set_font_name(font)
+    set_font_name(font, spec)
+    font["OS/2"].usWeightClass = spec.weight_class
     font["OS/2"].ulCodePageRange1 = 1
     font["OS/2"].ulCodePageRange2 = 0
 
@@ -318,15 +421,36 @@ def build_font(source: Path, output: Path) -> tuple[int, int, int]:
 
 def main() -> None:
     args = parse_args()
-    source = ensure_source_font(args.source_font)
-    mapping_count, composite_count, sequence_count = build_font(
-        source, args.output.resolve()
-    )
-    LICENSE_OUTPUT.write_text(LICENSE_SOURCE.read_text(encoding="utf-8"), encoding="utf-8")
-    print(
-        f"Generated {args.output} with {mapping_count} FM code points "
-        f"({composite_count} composite glyphs, {sequence_count} sequence rules)."
-    )
+
+    source_dirs = {
+        "abhaya": args.abhaya_source_dir.resolve(),
+        "gemunu": args.gemunu_source_dir.resolve(),
+    }
+    all_specs = {
+        **ABHAYA_SPECS,
+        **GEMUNU_SPECS,
+    }
+    output_dir = args.output
+
+    jobs: list[tuple[FontSpec, Path, Path]] = []
+    for family in ("abhaya", "gemunu"):
+        specs = ABHAYA_SPECS if family == "abhaya" else GEMUNU_SPECS
+        for spec in specs.values():
+            output = spec.output if output_dir is None else output_dir / spec.output.name
+            jobs.append((spec, source_dirs[family] / spec.source_filename, output))
+
+    for spec, source_font, output in jobs:
+        source = ensure_source_font(spec, source_font)
+        mapping_count, composite_count, sequence_count = build_font(
+            spec, source, output.resolve()
+        )
+        spec.license_output.write_text(
+            spec.license_source.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+        print(
+            f"Generated {output} with {mapping_count} FM code points "
+            f"({composite_count} composite glyphs, {sequence_count} sequence rules)."
+        )
 
 
 if __name__ == "__main__":

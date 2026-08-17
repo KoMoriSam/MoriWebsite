@@ -1,18 +1,26 @@
 # FM Abhaya Libre Legacy
 
-`fm-abhaya-libre-legacy.woff2` is a modified display font generated from
-Abhaya Libre Regular. Its character map follows the legacy FM encoding used by
-the Sinhala converter, while the outlines come from Abhaya Libre.
+`fm-abhaya-libre-legacy.woff2` (Regular) and
+`fm-abhaya-libre-bold-legacy.woff2` (Bold) are modified display fonts
+generated from the static Abhaya Libre fonts. Their character maps follow the
+legacy FM encoding used by the Sinhala converter, while the outlines come from
+Abhaya Libre.
 
-The font is licensed under the SIL Open Font License 1.1. See `OFL.txt`.
+The fonts are licensed under the SIL Open Font License 1.1. See `OFL.txt`.
 
-Regenerate it from the repository root with:
+Regenerate them from the repository root with:
 
 ```powershell
 python -m pip install fonttools brotli uharfbuzz
-python scripts/generate-fm-abhaya-compatible.py
+python scripts/generate-fm-fonts-compatible.py
 ```
 
-The generator downloads a hash-pinned Abhaya Libre source font from the
-official Google Fonts repository. It is intentionally not part of the regular
-site build because the generated WOFF2 asset is committed.
+The static Abhaya Libre source fonts (`AbhayaLibre-Regular.ttf` and
+`AbhayaLibre-Bold.ttf`) are committed under `scripts/font-sources/abhaya-libre`
+and hash-pinned in the generator.
+
+The same script also generates `FM Gemunu Libre Legacy` (Regular and Bold)
+from the static Gemunu Libre 1.100 fonts
+(see `src/assets/font/gemunu-libre/GENERATED.md`). All faces share the legacy
+FM character map; only the outlines differ. The generated WOFF2 assets are
+committed and intentionally not part of the regular site build.

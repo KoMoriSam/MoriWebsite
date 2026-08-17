@@ -45,7 +45,7 @@ const PAGE_DESCRIPTIONS = {
   "server-status":
     "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
   "sinhala-font-converter":
-    "在标准 Unicode 与 FM/DL 传统字体编码之间双向转换。",
+    "在标准 Unicode 与 ASCII 传统字体编码之间双向转换。",
   kaiming:
     "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
   NotFound: "未找到请求的页面。",
