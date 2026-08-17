@@ -48,7 +48,7 @@
             {{ greeting }}{{ description }}
           </p>
           <section
-            class="flex flex-col lg:flex-row gap-4 justify-center mt-6 md:mt-8 lg:mt-12"
+            class="flex flex-col lg:flex-row gap-4 justify-center items-center mt-6 md:mt-8 lg:mt-12"
           >
             <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
               <i class="ri-article-fill font-normal"></i>阅读博客
@@ -66,7 +66,7 @@
               视奸小说
             </router-link>
             <router-link
-              to="/tools"
+              to="/tools/server-status"
               class="btn btn-primary btn-soft w-64 lg:w-fit group"
             >
               <i
@@ -169,15 +169,18 @@
             </aside>
             <h2 class="card-title font-serif font-bold">工具集</h2>
             <p>
-              Minecraft 服务器状态查询
+              一些有用没用的小工具捏
               <br />
-              <small>是的，目前只有这一个毫无技术含量的调用 API 工具</small>
+              <small
+                >持续更新中……<br />现已支持<i class="ri-arrow-down-line"></i
+              ></small>
             </p>
             <div class="flex flex-wrap gap-1.5">
-              <span class="badge badge-outline badge-sm"> 服务器查询 </span>
               <span class="badge badge-outline badge-sm">
-                僧伽罗字体转换器
-                <small>待开发</small>
+                Minecraft 服务器查询
+              </span>
+              <span class="badge badge-outline badge-sm">
+                僧伽罗字体编码转换器
               </span>
             </div>
             <router-link to="/tools" class="btn btn-primary btn-soft btn-sm">

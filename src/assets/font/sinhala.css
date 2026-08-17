@@ -1,35 +1,97 @@
+@import "./abhaya-libre/400.css";
+@import "./abhaya-libre/500.css";
+@import "./abhaya-libre/600.css";
+@import "./abhaya-libre/700.css";
+@import "./abhaya-libre/800.css";
+
 @font-face {
-  font-family: "Noto Serif Sinhala Variable";
-  src: url("@fontsource-variable/noto-serif-sinhala/files/noto-serif-sinhala-sinhala-wght-normal.woff2")
-    format("woff2-variations");
-  font-weight: 100 900;
+  font-family: "FM Abhaya Libre Legacy";
   font-style: normal;
   font-display: swap;
+  font-weight: 400;
+  src: url("./abhaya-libre/fm-abhaya-libre-legacy.woff2") format("woff2");
+  size-adjust: 130%;
+}
+
+@font-face {
+  font-family: "Noto Serif Sinhala Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-serif-sinhala/files/noto-serif-sinhala-sinhala-wght-normal.woff2")
+    format("woff2-variations");
   unicode-range:
     U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
-  size-adjust: 90%;
+  size-adjust: 95%;
 }
 
 @font-face {
   font-family: "Noto Sans Sinhala Variable";
-  src: url("@fontsource-variable/noto-sans-sinhala/files/noto-sans-sinhala-sinhala-wght-normal.woff2")
-    format("woff2-variations");
-  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-sans-sinhala/files/noto-sans-sinhala-sinhala-wght-normal.woff2")
+    format("woff2-variations");
   unicode-range:
     U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
-  size-adjust: 90%;
+  size-adjust: 95%;
 }
 
 @font-face {
   font-family: "Maname";
-  src: url("@fontsource/maname/files/maname-sinhala-400-normal.woff2")
-    format("woff2");
+  src:
+    url("@fontsource/maname/files/maname-sinhala-400-normal.woff2")
+      format("woff2"),
+    url("@fontsource/maname/files/maname-sinhala-400-normal.woff")
+      format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
   unicode-range:
     U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
-  size-adjust: 105%;
+  size-adjust: 110%;
+}
+
+@font-face {
+  font-family: "Nirmala UI";
+  src: local("Nirmala UI"), local("Nirmala UI Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 90%;
+}
+
+@font-face {
+  font-family: "Iskoola Pota";
+  src: local("Iskoola Pota"), local("Iskoola Pota Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 115%;
+}
+
+@font-face {
+  font-family: "Sinhala Sangam MN";
+  src: local("Sinhala Sangam MN"), local("Sinhala Sangam MN Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 115%;
+}
+
+@font-face {
+  font-family: "Sinhala MN";
+  src: local("Sinhala MN"), local("Sinhala MN Regular");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0964-0965, U+0D81-0DF4, U+1CF2, U+200C-200D, U+25CC, U+111E1-111F4;
+  size-adjust: 110%;
 }

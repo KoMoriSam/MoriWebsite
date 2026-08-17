@@ -15,8 +15,7 @@ if (
   window.addEventListener(
     "popstate",
     (event) => {
-      const handleModalFallback =
-        globalThis.__moriModalFallbackPopstateHandler;
+      const handleModalFallback = globalThis.__moriModalFallbackPopstateHandler;
       if (typeof handleModalFallback !== "function") return;
 
       event.stopImmediatePropagation();
@@ -91,15 +90,27 @@ export const routes = [
     },
   },
   {
-    path: "/tools/:toolSlug?",
+    path: "/tools",
     name: "tools",
     component: () => import("@/views/Tools.vue"),
-    meta: { title: "工具 | 远方之森", navName: "tools" },
+    meta: { title: "工具集 | 远方之森", navName: "tools" },
+  },
+  {
+    path: "/tools/server-status",
+    name: "server-status",
+    component: () => import("@/views/tools/ServerStatus.vue"),
+    meta: { title: "Minecraft 服务器状态 | 远方之森", navName: "tools" },
+  },
+  {
+    path: "/tools/sinhala-font-converter",
+    name: "sinhala-font-converter",
+    component: () => import("@/views/tools/SinhalaFontConverter.vue"),
+    meta: { title: "僧伽罗字体编码转换器 | 远方之森", navName: "tools" },
   },
   {
     path: "/kaiming",
     name: "kaiming",
-    component: () => import("@/views/Kaiming.vue"),
+    component: () => import("@/views/projects/Kaiming.vue"),
     meta: { title: "开明标点 | 远方之森" },
   },
   // 仅开发环境可见，生产构建自动移除

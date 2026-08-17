@@ -42,6 +42,10 @@ const PAGE_DESCRIPTIONS = {
   novel: "在线阅读远方之森创作的原创小说《向远方》。",
   "novel-reader": "在线阅读远方之森 创作的原创小说《向远方》。",
   tools: "使用远方之森制作的在线小工具与服务查询功能。",
+  "server-status":
+    "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
+  "sinhala-font-converter":
+    "在标准 Unicode 与 FM/DL 传统字体编码之间双向转换。",
   kaiming:
     "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
   NotFound: "未找到请求的页面。",

@@ -29,6 +29,9 @@ importers:
       '@fontsource-variable/petrona':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/abhaya-libre':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/maname':
         specifier: ^5.2.7
         version: 5.2.7
@@ -939,6 +942,9 @@ packages:
 
   '@fontsource-variable/petrona@5.3.0':
     resolution: {integrity: sha512-GgXjpWkw/7xnWfBDE1CqPPybuND11bn8WICzTyrRe48F91/+5ElGAaf3OxzN1+bbWWOLas771FeCNkwfHv/e6Q==}
+
+  '@fontsource/abhaya-libre@5.3.0':
+    resolution: {integrity: sha512-4T/+zRKIvpzBa235ihU4f8DicGMsFYvy9yoS2HT7s+MRw20ewX4ugawE1M3gCTKMcbLbv9WZ4AnwWzMyIIhcjg==}
 
   '@fontsource/maname@5.2.7':
     resolution: {integrity: sha512-wM3CqttPFbVrz9r6njEbHiIOrqqfaZWON2Kv0Mig00xFganVPV37R/8C4MX+WnpOoQP+DiCP1rC/8VULWdaQ/g==}
@@ -3659,6 +3665,8 @@ snapshots:
   '@fontsource-variable/noto-serif-sinhala@5.2.8': {}
 
   '@fontsource-variable/petrona@5.3.0': {}
+
+  '@fontsource/abhaya-libre@5.3.0': {}
 
   '@fontsource/maname@5.2.7': {}
 

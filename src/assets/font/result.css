@@ -39,25 +39,38 @@
 
   --font-mono:
     "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular,
-    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace,
+    "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala";
 
   --font-song:
     "Kaiming Punctuation Serif", "LXGW Neo ZhiSong Plus", "LXGW Neo ZhiSong",
     "STSong", "SimSun", "Noto Serif Sinhala Variable", "Noto Serif Sinhala",
     serif;
+
   --font-hei:
     "Kaiming Punctuation Sans", "LXGW Neo XiHei Plus", "LXGW Neo XiHei",
     "STHeiti", "STXihei", "SimHei", "Noto Sans Sinhala Variable",
     "Noto Sans Sinhala", sans-serif;
+
   --font-kai:
     "Kaiming Punctuation Serif", "LXGW WenKai GB", "LXGW WenKai GB Lite",
     "STKaiti", "KaiTi", "Maname", cursive;
+
   --font-fang:
     "Kaiming Punctuation Serif", "Zhuque Fangsong (technical preview)",
     "LXGW Neo ZhiSong CHS", "LXGW Neo ZhiSong", "STFangsong", "FangSong",
-    "Noto Serif Sinhala Variable", "Noto Serif Sinhala", serif;
+    "Maname", serif;
 
   --font-script: "Zhi Mang Xing";
+
+  --font-sinhala-sans:
+    "Nirmala UI", "Sinhala Sangam MN", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", sans-serif;
+
+  --font-sinhala-serif:
+    "Iskoola Pota", "Sinhala MN", "Noto Serif Sinhala Variable",
+    "Noto Serif Sinhala", serif;
 }
 
 @layer base {
