@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.21.0</strong>
+  当前版本：<strong>1.21.1</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,12 +56,11 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.21.0 版本重点
+## 1.21.1 版本重点
 
-- 新增僧伽罗语字体转换器工具页，支持 Unicode 与 FM/DL 编码互转及实时输入输出
-- 新增 Abhaya Libre 字体显示，并生成模拟 FM Abhaya 显示的兼容字体
-- 内容页新增面包屑导航，优化标题样式
-- 工具页增强为展示可用工具列表，附带描述与图标
+- 新增 Gemunu Libre 兼容字体，模拟 FM Gemunu Libre 的显示效果
+- 扩展字体生成脚本，从 Abhaya Libre 与 Gemunu Libre 源字体生成 Regular / Bold 兼容字体
+- 僧伽罗语字体转换器统一编码术语为 ASCII，微调布局与样式
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 

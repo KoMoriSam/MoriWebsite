@@ -1,9 +1,23 @@
 {
+  "1.21.1": {
+    "date": "2026-08-17",
+    "changes": {
+      "improve": [
+        "新增 Gemunu Libre 兼容字体，模拟 FM Gemunu 的显示效果",
+        "扩展字体生成脚本，同时从 Abhaya Libre 与 Gemunu Libre 源字体生成 Regular / Bold 兼容字体",
+        "僧伽罗语字体转换器统一编码术语为 ASCII，微调布局与样式"
+      ],
+      "chore": [
+        "新增字体源文件与生成产物，更新相关说明文档",
+        "更新第三方声明，新增 @fontsource/gemunu-libre 依赖"
+      ]
+    }
+  },
   "1.21.0": {
     "date": "2026-08-17",
     "changes": {
       "feature": [
-        "新增僧伽罗语字体转换器，支持 Unicode 与 FM/DL 传统编码互转及实时输入输出，并附有 Unicode 与 FM/DL 编码差异的说明信息",
+        "新增僧伽罗语字体转换器，支持 Unicode 与 ASCII 传统编码互转及实时输入输出，并附有 Unicode 与 ASCII 编码差异的说明信息",
         "新增 Abhaya Libre 字体显示，并生成模拟 FM Abhaya 显示的兼容字体",
         "内容页新增面包屑导航，优化标题样式",
         "工具页增强为展示可用工具列表，附带描述与图标"
