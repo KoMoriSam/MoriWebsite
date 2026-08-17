@@ -172,12 +172,10 @@ const primaryActionLabel = computed(() =>
   hasReadingHistory.value ? "继续上次阅读" : "开始阅读",
 );
 const primaryChapter = computed(() =>
-  hasReadingHistory.value
-    ? currentChapter.value
-    : flatChapters.value[0],
+  hasReadingHistory.value ? currentChapter.value : flatChapters.value[0],
 );
-const primaryChapterTitle = computed(() =>
-  getChapterDisplayTitle(primaryChapter.value) || "加载中……",
+const primaryChapterTitle = computed(
+  () => getChapterDisplayTitle(primaryChapter.value) || "加载中……",
 );
 const latestChapterTitle = computed(
   () => getChapterDisplayTitle(latestChapter.value) || "加载中……",

@@ -1,6 +1,6 @@
 <template>
   <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
-    <template #actions>
+    <template #badges>
       <span class="badge badge-dash badge-lg font-semibold">
         共 {{ articles.length }} 篇文章
       </span>

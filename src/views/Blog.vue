@@ -1,20 +1,22 @@
 <template>
-  <ArticleList
-    v-if="currentComponent === 'ArticleList'"
-    :articles="articles"
-    :loading="loadingList"
-  />
-  <ArticleDetail
-    v-else
-    :article="currentArticle"
-    :articles="articles"
-    :content="articleContent"
-    :loading="loadingContent"
-    :error="errorContent"
-    @navigate="prepareArticleNavigation"
-    @refresh="refreshCurrentArticle"
-    @back="goToList"
-  />
+  <KeepAlive>
+    <ArticleList
+      v-if="currentComponent === 'ArticleList'"
+      :articles="articles"
+      :loading="loadingList"
+    />
+    <ArticleDetail
+      v-else
+      :article="currentArticle"
+      :articles="articles"
+      :content="articleContent"
+      :loading="loadingContent"
+      :error="errorContent"
+      @navigate="prepareArticleNavigation"
+      @refresh="refreshCurrentArticle"
+      @back="goToList"
+    />
+  </KeepAlive>
 </template>
 
 <script setup>
@@ -26,8 +28,8 @@ import { fetchBlogSearchArticles } from "@/services/search-content";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { usePosTracker } from "@/composables/usePosTracker";
 
-import ArticleList from "@/components/blog/ArticleList.vue";
-import ArticleDetail from "@/components/blog/ArticleReader.vue";
+import ArticleList from "@/views/blog/ArticleList.vue";
+import ArticleDetail from "@/views/blog/ArticleReader.vue";
 
 const route = useRoute();
 const router = useRouter();
