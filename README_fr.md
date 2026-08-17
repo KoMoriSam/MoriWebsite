@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.20.1</strong>
+  Version actuelle : <strong>1.21.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,12 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.20.1
+## Points clés de la version 1.21.0
 
-- refonte du chargement des polices et centralisation des schémas de polices CJK, latines et singhalaises
-- remplacement des polices latines précédentes par Inter et Petrona pour une meilleure typographie occidentale
-- ajout du support de Zhi Mang Xing et de l'italique Sarasa Gothic, enrichissant les options de polices
-- amélioration de la documentation des sources et licences des polices
+- ajout d'une page d'outil de conversion de polices singhalaises avec conversion Unicode ↔ FM/DL et saisie/sortie en temps réel
+- ajout du rendu de la police Abhaya Libre, ainsi que d'une police de compatibilité simulant l'affichage FM Abhaya
+- ajout d'une navigation fil d'Ariane et affinage des styles de titres sur les pages de contenu
+- amélioration de la page des outils pour lister les outils disponibles avec descriptions et icônes
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 

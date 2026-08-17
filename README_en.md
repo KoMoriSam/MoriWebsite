@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.20.1</strong>
+  Current version: <strong>1.21.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,12 +56,12 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.20.1 Highlights
+## Version 1.21.0 Highlights
 
-- refactored font loading and centralized CJK, Latin, and Sinhala font schemes
-- replaced the previous Latin fonts with Inter and Petrona for better Western typography
-- added Zhi Mang Xing and Sarasa Gothic italic support, enriching font options
-- refined font source and license documentation
+- added a Sinhala font converter tool page with Unicode ↔ FM/DL conversion and real-time input/output
+- added Abhaya Libre font rendering, plus a compatibility font that simulates FM Abhaya display
+- added breadcrumb navigation and refined title styles on content pages
+- enhanced the tools page to list available tools with descriptions and icons
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 

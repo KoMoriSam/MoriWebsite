@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.20.1</strong>
+  当前版本：<strong>1.21.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,12 +56,12 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.20.1 版本重点
+## 1.21.0 版本重点
 
-- 重构字体加载方式，集中管理中文、拉丁文与僧伽罗文字体方案
-- 使用 Inter 与 Petrona 替换原有西文字体，优化西文排版
-- 新增志莽行书与更纱黑体斜体支持，丰富字体选项
-- 完善字体来源与许可证说明
+- 新增僧伽罗语字体转换器工具页，支持 Unicode 与 FM/DL 编码互转及实时输入输出
+- 新增 Abhaya Libre 字体显示，并生成模拟 FM Abhaya 显示的兼容字体
+- 内容页新增面包屑导航，优化标题样式
+- 工具页增强为展示可用工具列表，附带描述与图标
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 
