@@ -261,26 +261,31 @@
 
       <nav
         v-if="previousArticle || nextArticle"
-        class="mt-12 flex gap-2 border-t border-base-300 pt-6 flex-col md:flex-row md:justify-between"
+        class="mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
         aria-label="文章翻页"
       >
         <RouterLink
           v-if="previousArticle"
           :to="getArticleRoute(previousArticle)"
-          class="btn btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3 justify-start"
+          class="btn btn-sm md:btn-md h-fit min-w-0 max-w-full gap-2 py-1 justify-start lg:gap-3 md:max-w-[calc(50%-0.25rem)]"
           :aria-label="`上一篇：${previousArticle.title}`"
           @click="handleArticleNavigation(previousArticle, $event)"
         >
-          <i class="ri-arrow-left-s-line text-lg md:text-xl"></i>
-          <div class="flex flex-col items-start gap-0.5 leading-[1.1]">
+          <i class="ri-arrow-left-s-line shrink-0 text-lg md:text-xl"></i>
+
+          <div
+            class="flex min-w-0 flex-1 flex-col items-start gap-0.5 leading-[1.1]"
+          >
             <span
               class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
             >
               上一篇
             </span>
-            <span class="text-left text-balance">
+
+            <span class="max-w-full truncate text-left">
               {{ previousArticle.title }}
             </span>
+
             <time
               v-if="getArticleDate(previousArticle)"
               :datetime="getArticleDate(previousArticle)"
@@ -294,19 +299,23 @@
         <RouterLink
           v-if="nextArticle"
           :to="getArticleRoute(nextArticle)"
-          class="btn btn-neutral btn-sm md:btn-md h-fit py-1 gap-2 lg:gap-3 justify-end"
+          class="btn btn-neutral btn-sm md:btn-md h-fit min-w-0 max-w-full self-end gap-2 py-1 justify-end lg:gap-3 md:ml-auto md:self-auto md:max-w-[calc(50%-0.25rem)]"
           :aria-label="`下一篇：${nextArticle.title}`"
           @click="handleArticleNavigation(nextArticle, $event)"
         >
-          <div class="flex flex-col items-end gap-0.5 leading-[1.1]">
+          <div
+            class="flex min-w-0 flex-1 flex-col items-end gap-0.5 leading-[1.1]"
+          >
             <span
               class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
             >
               下一篇
             </span>
-            <span>
-              {{ nextArticle.title || "已经是最新推文" }}
+
+            <span class="max-w-full truncate text-right">
+              {{ nextArticle.title }}
             </span>
+
             <time
               v-if="getArticleDate(nextArticle)"
               :datetime="getArticleDate(nextArticle)"
@@ -315,7 +324,8 @@
               发布于 {{ formatArticleDate(nextArticle) }}
             </time>
           </div>
-          <i class="ri-arrow-right-s-line text-lg md:text-xl"></i>
+
+          <i class="ri-arrow-right-s-line shrink-0 text-lg md:text-xl"></i>
         </RouterLink>
       </nav>
     </article>
