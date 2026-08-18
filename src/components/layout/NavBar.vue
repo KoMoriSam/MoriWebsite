@@ -21,27 +21,21 @@
       </a>
       <MobileNav />
     </nav>
-    <client-only>
-      <nav class="navbar-center">
-        <a @click="router.push('/')" class="lg:hidden btn btn-ghost text-xl">
-          <img
-            src="/assets/images/icons/logo.webp"
-            alt="KoMoriSam"
-            class="h-8"
-          />
-        </a>
-        <div class="hidden items-center lg:flex">
-          <ul class="menu menu-horizontal px-1">
-            <NavLinks />
-          </ul>
-          <ProjectMenu />
-        </div>
-      </nav>
-      <nav class="navbar-end">
-        <GlobalSearch />
-        <ThemeController />
-      </nav>
-    </client-only>
+    <nav class="navbar-center">
+      <a @click="router.push('/')" class="lg:hidden btn btn-ghost text-xl">
+        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
+      </a>
+      <div class="hidden items-center lg:flex">
+        <ul class="menu menu-horizontal px-1">
+          <NavLinks />
+        </ul>
+        <ProjectMenu />
+      </div>
+    </nav>
+    <nav class="navbar-end">
+      <GlobalSearch />
+      <ThemeController />
+    </nav>
   </header>
 </template>
 
