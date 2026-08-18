@@ -102,6 +102,7 @@
         ref="asideElement"
         :class="[
           'lg:sticky lg:self-start',
+          'max-lg:mb-12',
           'max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto',
           'scrollbar-none',
           asideClass,
@@ -186,8 +187,7 @@ const handleMobileTocClickCapture = (event) => {
 };
 
 const setMobileTocCompact = (compact) => {
-  const nextCompact =
-    Boolean(compact) && getMobileTocBoundaryState() === true;
+  const nextCompact = Boolean(compact) && getMobileTocBoundaryState() === true;
   const compactChanged = nextCompact !== mobileTocCompact.value;
 
   mobileTocCompact.value = nextCompact;
@@ -287,8 +287,7 @@ const updateMobileTocAtBoundary = (trackScrollDirection = false) => {
 
   const reachedTocBoundary = getMobileTocBoundaryState();
   if (reachedTocBoundary === null) return;
-  const enteredStickyBoundary =
-    reachedTocBoundary && !mobileTocBoundaryReached;
+  const enteredStickyBoundary = reachedTocBoundary && !mobileTocBoundaryReached;
   mobileTocBoundaryReached = reachedTocBoundary;
 
   if (!reachedTocBoundary) {
