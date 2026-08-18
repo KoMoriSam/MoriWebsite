@@ -34,9 +34,16 @@ export function mountAlertBlocks(root) {
   root.querySelectorAll(ALERT_SELECTOR).forEach((element) => {
     if (mounts.has(element) || !root.contains(element)) return;
 
+    // SSR 预渲染已输出 summary 标题栏，挂载时需排除它，避免
+    // Alert.vue 的 RenderedContent 将 summary 重复渲染为正文。
+    const summary = element.querySelector(":scope > summary.alert-title");
+    const contentHtml = summary
+      ? element.innerHTML.slice(summary.outerHTML.length)
+      : element.innerHTML;
+
     const app = createApp(Alert, {
       ...decodeProps(element.dataset.props),
-      contentHtml: element.innerHTML,
+      contentHtml,
     });
     app.mount(element);
     mounts.set(element, app);
@@ -353,7 +360,17 @@ export function alertPlugin(md) {
       foldable: alert.foldable,
     });
 
-    return `<details role="alert" class="${classes.join(" ")}" data-markdown-alert data-props="${props}"${openAttr}>`;
+    // 与客户端 Alert.vue 渲染结果一致：SSR 预渲染直接输出标题栏 summary，
+    // 避免 hydration 后结构跳变（首屏缺少图标/标题）。
+    const summaryClass = alert.foldable
+      ? "alert-title collapse-title"
+      : "alert-title select-none pointer-events-none cursor-default";
+    const summary =
+      summaryTitle || alert.hasTitle
+        ? `<summary class="${summaryClass}"><i class="${alert.icon}"></i><h6>${summaryTitle}</h6></summary>`
+        : "";
+
+    return `<details role="alert" class="${classes.join(" ")}" data-markdown-alert data-props="${props}"${openAttr}>${summary}`;
   };
 
   md.renderer.rules.blockquote_close = function (
