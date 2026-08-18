@@ -4,10 +4,12 @@
       class="grid items-center gap-8 border-b border-base-300 pb-10 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)] md:gap-12 lg:gap-16 lg:pb-14"
     >
       <figure class="relative mx-auto w-full max-w-72 md:max-w-none">
-        <div
-          v-show="!imageLoaded"
-          class="skeleton absolute inset-0 z-10 aspect-12/17 w-full rounded-lg"
-        ></div>
+        <client-only>
+          <div
+            v-show="!imageLoaded"
+            class="skeleton absolute inset-0 z-10 aspect-12/17 w-full rounded-lg"
+          ></div>
+        </client-only>
         <img
           v-fade-in
           src="/assets/images/covers/theHorizon.webp"
