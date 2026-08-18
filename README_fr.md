@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.21.1</strong>
+  Version actuelle : <strong>1.21.2</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,11 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.21.1
+## Points clés de la version 1.21.2
 
-- ajout d'une police de compatibilité Gemunu Libre simulant l'affichage FM Gemunu Libre
-- extension du script de génération de polices pour créer des polices compatibles Regular/Bold à partir des sources Abhaya Libre et Gemunu Libre
-- unification de la terminologie du convertisseur de polices singhalaises vers ASCII et affinage de sa mise en page et de ses styles
+- correction des boutons article précédent/suivant non rendus lors du SSR sur les pages de lecture
+- correction des incohérences de rendu SSR/client dans les composants Markdown (encadrés, blocs de code, chats)
+- correction de la superposition de bannière et de l'espacement des couvertures de tweets sur les pages pré-rendues SSG
+- affinage des espaces réservés de chargement d'images, du corps du lecteur et des styles de l'accueil
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 

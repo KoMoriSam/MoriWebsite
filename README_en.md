@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.21.1</strong>
+  Current version: <strong>1.21.2</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,11 +56,12 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.21.1 Highlights
+## Version 1.21.2 Highlights
 
-- added a Gemunu Libre compatibility font that simulates FM Gemunu Libre display
-- extended the font generation script to build Regular/Bold compatibility fonts from both Abhaya Libre and Gemunu Libre sources
-- unified the Sinhala font converter terminology to ASCII and refined its layout and styles
+- fixed the previous/next article buttons not rendering during SSR on reading pages
+- fixed SSR/client rendering mismatches in Markdown components (callouts, code blocks, chat)
+- fixed the banner overlay and spacing of tweet covers on SSG-prerendered pages
+- refined image-loading placeholders, reader body, and homepage styles
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.21.1</strong>
+  当前版本：<strong>1.21.2</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,11 +56,12 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.21.1 版本重点
+## 1.21.2 版本重点
 
-- 新增 Gemunu Libre 兼容字体，模拟 FM Gemunu Libre 的显示效果
-- 扩展字体生成脚本，从 Abhaya Libre 与 Gemunu Libre 源字体生成 Regular / Bold 兼容字体
-- 僧伽罗语字体转换器统一编码术语为 ASCII，微调布局与样式
+- 修复阅读页上下篇按钮 SSR 阶段不渲染的问题
+- 修复 Markdown 组件（提示块、代码块、聊天）SSR 与客户端渲染不一致的问题
+- 修复 SSG 预渲染页面推文封面 banner 遮罩与边距显示
+- 优化小说详情页图像加载占位符、阅读器正文与首页样式
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 
