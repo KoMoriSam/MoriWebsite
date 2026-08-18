@@ -7,10 +7,10 @@
       embedded
         ? 'flex h-full min-h-0 flex-col'
         : mobile
-        ? popupOnly
-          ? 'contents'
-          : 'relative'
-        : 'flex h-full min-h-0 flex-col',
+          ? popupOnly
+            ? 'contents'
+            : 'relative'
+          : 'flex h-full min-h-0 flex-col',
     ]"
     :role="mobile && popupOnly && !embedded ? 'navigation' : undefined"
     :aria-label="mobile && !popupOnly && !embedded ? undefined : ariaLabel"
@@ -135,10 +135,10 @@
         embedded
           ? desktopContentClass
           : mobile
-          ? popupOnly
-            ? 'fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-h-[min(70dvh,36rem)] max-w-lg overflow-hidden rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
-            : 'absolute inset-x-0 top-full z-30 mt-2 rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
-          : desktopContentClass
+            ? popupOnly
+              ? 'fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-h-[min(70dvh,36rem)] max-w-lg overflow-hidden rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
+              : 'absolute inset-x-0 top-full z-30 mt-2 rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
+            : desktopContentClass
       "
     >
       <slot />
@@ -205,12 +205,7 @@ watch(contentVisible, (visible) => emit("visibility-change", visible), {
 });
 
 onClickOutside(rootElement, () => {
-  if (
-    props.mobile &&
-    !props.popupOnly &&
-    !props.embedded &&
-    expanded.value
-  ) {
+  if (props.mobile && !props.popupOnly && !props.embedded && expanded.value) {
     expanded.value = false;
   }
 });

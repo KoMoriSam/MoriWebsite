@@ -185,13 +185,20 @@ const formatSettingModal = useModalClose({
 
 const showToc = computed(
   () =>
-    props.toc &&
-    (headings.value.length > 0 ||
-      Boolean(slots.toc) ||
-      Boolean(slots["mobile-toc"])),
+    // SSR 预渲染阶段保留左栏空位作为宽屏下的左边距
+    (typeof window === "undefined" && props.toc) ||
+    (props.toc &&
+      (headings.value.length > 0 ||
+        Boolean(slots.toc) ||
+        Boolean(slots["mobile-toc"]))),
 );
 
-const showAside = computed(() => props.aside && Boolean(slots.aside));
+const showAside = computed(
+  () =>
+    // SSR 预渲染阶段保留右栏空位作为宽屏下的右边距
+    (typeof window === "undefined" && props.aside) ||
+    (props.aside && Boolean(slots.aside)),
+);
 
 const readingProgress = computed(() => readingProgressValue.value);
 

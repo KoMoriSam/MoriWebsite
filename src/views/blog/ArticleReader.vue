@@ -1,5 +1,5 @@
 <template>
-  <Reader ref="readerRef" toc :aside="Boolean(content && article?.id != null)">
+  <Reader ref="readerRef" toc :aside="showReaderAside">
     <!-- 文章内容 -->
     <article
       v-if="article && (loading || content)"
@@ -29,7 +29,7 @@
           <img
             v-fade-in
             :key="bannerUrl"
-            ref="bannerImage"
+            :ref="setBannerImageRef"
             :src="bannerUrl"
             :alt="article.title"
             loading="eager"
@@ -86,28 +86,25 @@
             v-if="article?.tags?.length"
             class="mb-3 flex flex-wrap gap-2 items-center"
           >
-            <div
-              class="tooltip tooltip-right max-lg:hidden"
-              data-tip="返回文章列表"
-            >
-              <button
-                class="btn btn-sm btn-circle"
+            <div class="tooltip tooltip-right" data-tip="返回文章列表">
+              <RouterLink
+                class="btn btn-xs lg:btn-sm btn-circle"
                 :class="
                   hasVisibleBanner
                     ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
                     : 'btn-primary btn-soft'
                 "
-                @click="handleBack"
+                to="/blog"
               >
                 <i class="ri-arrow-left-line"></i>
-              </button>
+              </RouterLink>
             </div>
             <span
               v-for="tag in article.tags"
               :key="tag"
               data-pagefind-body
               data-pagefind-filter="tag"
-              class="badge badge-sm"
+              class="badge max-lg:badge-sm"
               :class="
                 hasVisibleBanner
                   ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
@@ -479,9 +476,18 @@ const openArticleContextSearch = (keyword) => {
   });
 };
 
+// 右栏评论区：SSG 预渲染时保留右栏空位作为宽屏下的左右边距
+// （Giscus 为客户端懒加载，预渲染 HTML 中右侧仅留空列充当边距）
+const showReaderAside = computed(
+  () =>
+    typeof window === "undefined" || // 预渲染阶段保留右栏空位
+    (Boolean(props.content) && props.article?.id != null),
+);
+
 const bannerUrl = computed(() => String(props.article?.banner || "").trim());
-const bannerImage = ref(null);
-const bannerLoaded = ref(false);
+const bannerImageRef = ref(null);
+// SSG 预渲染阶段视为已加载，确保预渲染 HTML 中遮罩默认可见
+const bannerLoaded = ref(typeof window === "undefined");
 const bannerFailed = ref(false);
 const hasVisibleBanner = computed(
   () => Boolean(bannerUrl.value) && !bannerFailed.value,
@@ -498,7 +504,9 @@ function handleBannerError() {
 }
 
 function syncBannerImageState() {
-  const image = bannerImage.value;
+  if (!bannerImageRef.value) return;
+
+  const image = bannerImageRef.value;
 
   if (!image?.complete) return;
 
@@ -509,9 +517,19 @@ function syncBannerImageState() {
   }
 }
 
+// 函数式 ref：图片绑定到 DOM 时立即同步加载状态，
+// 覆盖预渲染/缓存图片不再触发 load 事件的情况
+function setBannerImageRef(element) {
+  bannerImageRef.value = element;
+  syncBannerImageState();
+}
+
 watch(
   bannerUrl,
   async () => {
+    // SSR 预渲染阶段保持 bannerLoaded 初始值，遮罩默认可见
+    if (typeof window === "undefined") return;
+
     bannerLoaded.value = false;
     bannerFailed.value = false;
 

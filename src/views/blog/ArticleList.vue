@@ -970,6 +970,9 @@ function hasBanner(item) {
 }
 
 function isBannerLoaded(item) {
+  // SSG 预渲染阶段视为已加载，确保预渲染 HTML 中遮罩默认可见
+  if (typeof window === "undefined") return true;
+
   return loadedBanners.has(getBannerKey(item));
 }
 
