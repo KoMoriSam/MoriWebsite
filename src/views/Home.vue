@@ -11,11 +11,9 @@
       <figure class="max-w-md select-none">
         <img
           v-fade-in
-          v-show="imageLoaded"
           src="/assets/images/animates/idle.gif"
           alt="idle"
-          draggable="false"
-          class="w-32 md:w-40 lg:w-48 mx-auto object-cover"
+          class="w-42 md:w-48 lg:w-56 mx-auto object-cover"
           @load="handleImageLoad"
         />
         <figcaption
@@ -113,17 +111,18 @@
   <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
-        <h2 class="font-serif text-3xl font-bold mb-3">我在做什么</h2>
-        <figure class="my-4 lg:my-8 p-0 mx-auto w-fit lg:w-52">
-          <div
-            v-show="!imageLoaded"
-            class="skeleton h-52 lg:w-52 lg:h-auto rounded-lg z-10"
-          ></div>
+        <hgroup>
+          <span
+            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
+            >What am I doing?</span
+          >
+          <h2 class="font-serif text-3xl font-bold mb-3">我在做什么</h2>
+        </hgroup>
+        <figure class="p-0 mx-auto w-42 lg:w-56">
           <img
             v-fade-in
-            v-show="imageLoaded"
-            src="/assets/images/profile/me1.webp"
-            class="h-52 lg:w-52 lg:h-auto object-cover rounded-lg z-0"
+            src="/assets/images/animates/mine.gif"
+            class="w-42 lg:w-56 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
@@ -197,17 +196,18 @@
   <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
-        <h2 class="font-serif text-3xl font-bold mb-3">关于我</h2>
-        <figure class="my-4 lg:my-8 p-0 mx-auto w-fit lg:w-52">
-          <div
-            v-show="!imageLoaded"
-            class="skeleton h-52 lg:w-52 lg:h-auto rounded-lg z-10"
-          ></div>
+        <hgroup>
+          <span
+            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
+            >About me</span
+          >
+          <h2 class="font-serif text-3xl font-bold mb-3">关于我</h2>
+        </hgroup>
+        <figure class="p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            v-show="imageLoaded"
-            src="/assets/images/profile/me2.webp"
-            class="h-52 lg:w-52 lg:h-auto object-cover rounded-lg z-0"
+            src="/assets/images/animates/turn.gif"
+            class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
@@ -236,17 +236,18 @@
   <section class="py-24 px-6 sm:px-8 lg:px-10">
     <section class="max-w-6xl mx-auto">
       <section class="text-center mb-14">
-        <h2 class="font-serif text-3xl font-bold mb-3">关注 & 联系</h2>
-        <figure class="my-4 lg:my-8 p-0 mx-auto w-fit lg:w-52">
-          <div
-            v-show="!imageLoaded"
-            class="skeleton h-52 lg:w-52 lg:h-auto rounded-lg z-10"
-          ></div>
+        <hgroup>
+          <span
+            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
+            >Follow & Contact Me</span
+          >
+          <h2 class="font-serif text-3xl font-bold mb-3">关注 & 联系我</h2>
+        </hgroup>
+        <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            v-show="imageLoaded"
-            src="/assets/images/profile/me3.webp"
-            class="h-52 lg:w-52 lg:h-auto object-cover rounded-lg z-0"
+            src="/assets/images/animates/thanks.gif"
+            class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
