@@ -10,6 +10,7 @@
       :article="currentArticle"
       :articles="articles"
       :content="articleContent"
+      :list-route="lastListRoute"
       :loading="loadingContent"
       :error="errorContent"
       @navigate="prepareArticleNavigation"
@@ -60,6 +61,7 @@ const articleContent = ref(initialContent);
 const loadingContent = ref(false);
 const errorContent = ref("");
 const pendingNavigationArticleId = ref("");
+const lastListRoute = ref(route.meta.blogList ? route.fullPath : "/blog");
 
 const stopBlogPosTracker = ref(null);
 const trackedArticleId = ref("");
@@ -122,7 +124,7 @@ const loadArticles = async () => {
 const goToList = () => {
   pendingNavigationArticleId.value = "";
   currentComponent.value = "ArticleList";
-  router.push({ name: "blog" });
+  router.push(lastListRoute.value);
   scrollToTop();
 };
 
@@ -188,6 +190,16 @@ const refreshCurrentArticle = async () => {
 
   await loadArticleContent(String(id));
 };
+
+watch(
+  () => [route.name, route.fullPath],
+  () => {
+    if (route.meta.blogList) {
+      lastListRoute.value = route.fullPath;
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => [route.params.articleId, route.meta.article?.id],

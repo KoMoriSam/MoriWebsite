@@ -1,3 +1,8 @@
+import {
+  getBlogPagePaths,
+  getBlogTotalPages,
+} from "@/constants/blog-pagination";
+
 /**
  * 构建期生成的统一 SSG 数据。
  *
@@ -23,6 +28,14 @@ export const generatedArticleList = generatedArticles.map((entry) => ({
   content: entry.content,
   frontmatter: entry.article,
 }));
+
+export const generatedBlogTotalPages = getBlogTotalPages(
+  generatedArticleList.length,
+);
+
+export const generatedBlogPagePaths = getBlogPagePaths(
+  generatedArticleList.length,
+);
 
 export const articleRoutes = generatedArticles.map((entry) => ({
   path: entry.path,

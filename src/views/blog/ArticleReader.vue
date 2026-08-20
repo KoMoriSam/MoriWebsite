@@ -94,7 +94,7 @@
                     ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
                     : 'btn-primary btn-soft'
                 "
-                to="/blog"
+                :to="listRoute"
               >
                 <i class="ri-arrow-left-line"></i>
               </RouterLink>
@@ -416,6 +416,10 @@ const props = defineProps({
   content: {
     type: String,
     default: "",
+  },
+  listRoute: {
+    type: String,
+    default: "/blog",
   },
   loading: {
     type: Boolean,

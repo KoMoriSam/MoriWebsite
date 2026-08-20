@@ -109,6 +109,18 @@ defineProps({
 const crumbs = computed(() => {
   if (route.path === "/") return [];
 
+  if (route.meta.blogList) {
+    return [
+      { name: "home", label: "home", to: { name: "home" } },
+      { name: "blog", label: "blog" },
+      {
+        name: "blog-page",
+        label: route.params.page || 1,
+        path: route.path,
+      },
+    ];
+  }
+
   const segments = route.path.split("/").filter(Boolean);
 
   const result = [{ name: "home", label: "home", to: { name: "home" } }];

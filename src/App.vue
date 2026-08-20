@@ -13,6 +13,7 @@ import { storeToRefs } from "pinia";
 import NavBar from "@/components/layout/NavBar.vue";
 import ToTop from "./components/base/ToTop.vue";
 import { useNovelStore } from "@/stores/novelStore";
+import { getBlogPagePath } from "@/constants/blog-pagination";
 
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
@@ -55,6 +56,23 @@ const PAGE_DESCRIPTIONS = {
 const routeName = computed(() => String(route.name || ""));
 const article = computed(() => route.meta.article || null);
 const isArticle = computed(() => Boolean(article.value));
+const blogPageNumber = computed(() => {
+  if (!route.meta.blogList) return 1;
+
+  const page = Number(route.params.page);
+  return Number.isSafeInteger(page) && page > 1 ? page : 1;
+});
+const hasBlogFilters = computed(() => {
+  if (!route.meta.blogList) return false;
+
+  return ["q", "tag", "year"].some((key) => {
+    const values = Array.isArray(route.query[key])
+      ? route.query[key]
+      : [route.query[key]];
+
+    return values.some((value) => String(value || "").trim());
+  });
+});
 const isIndexable = computed(
   () => !["NotFound", "test"].includes(routeName.value),
 );
@@ -62,10 +80,17 @@ const isIndexable = computed(
 const pageTitle = computed(() => {
   if (routeName.value === "home") return DEFAULT_TITLE;
   if (routeName.value === "novel-reader") return novelTitle.value;
+  if (route.meta.blogList && blogPageNumber.value > 1) {
+    return `博客 · 第 ${blogPageNumber.value} 页 | 远方之森`;
+  }
   return String(route.meta.title || DEFAULT_TITLE);
 });
 
 const pageDescription = computed(() => {
+  if (route.meta.blogList && blogPageNumber.value > 1) {
+    return `阅读远方之森的技术探索、生活随笔与读书笔记。当前为第 ${blogPageNumber.value} 页。`;
+  }
+
   const description =
     article.value?.summary ||
     PAGE_DESCRIPTIONS[routeName.value] ||
@@ -77,6 +102,36 @@ const pageDescription = computed(() => {
 const canonicalUrl = computed(() => {
   const path = routeName.value === "home" ? "/" : route.path;
   return new URL(path, `${SITE_URL}/`).href;
+});
+
+const headLinks = computed(() => {
+  if (!isIndexable.value) return [];
+
+  const links = [{ rel: "canonical", href: canonicalUrl.value }];
+
+  if (!route.meta.blogList || hasBlogFilters.value) return links;
+
+  const totalPages = Math.max(
+    1,
+    Math.trunc(Number(route.meta.blogTotalPages) || 1),
+  );
+  const currentPage = Math.min(totalPages, blogPageNumber.value);
+
+  if (currentPage > 1) {
+    links.push({
+      rel: "prev",
+      href: new URL(getBlogPagePath(currentPage - 1), `${SITE_URL}/`).href,
+    });
+  }
+
+  if (currentPage < totalPages) {
+    links.push({
+      rel: "next",
+      href: new URL(getBlogPagePath(currentPage + 1), `${SITE_URL}/`).href,
+    });
+  }
+
+  return links;
 });
 
 const structuredData = computed(() => {
@@ -156,9 +211,7 @@ useHead(() => {
     htmlAttrs: {
       lang: "zh-CN",
     },
-    link: isIndexable.value
-      ? [{ rel: "canonical", href: canonicalUrl.value }]
-      : [],
+    link: headLinks.value,
     meta: [
       { name: "description", content: pageDescription.value },
       { name: "keywords", content: KEYWORDS },

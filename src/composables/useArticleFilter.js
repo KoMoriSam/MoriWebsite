@@ -1,7 +1,9 @@
-import { computed, ref, toValue, watch } from "vue";
+import { computed, onBeforeUnmount, ref, toValue, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { getBlogPagePath } from "@/constants/blog-pagination";
 
-const SEARCH_QUERY_KEYS = ["q", "tag", "year"];
+const FILTER_QUERY_KEYS = ["q", "tag", "year"];
+const SEARCH_QUERY_KEYS = ["q", "tag", "year", "page"];
 
 export const normalizeArticleTag = (tag) => {
   return String(tag || "")
@@ -178,6 +180,15 @@ const getQueryText = (value) => {
     : String(value || "").trim();
 };
 
+const getQueryPage = (value) => {
+  const text = getQueryText(value);
+
+  if (!/^[1-9]\d*$/.test(text)) return 1;
+
+  const page = Number(text);
+  return Number.isSafeInteger(page) ? page : 1;
+};
+
 const sameList = (left, right) => {
   return (
     left.length === right.length &&
@@ -203,17 +214,43 @@ const compareNewest = (a, b) => {
   return b.timestamp - a.timestamp || a.index - b.index;
 };
 
-export function useArticleFilter(articles, { syncUrl = true } = {}) {
+export function useArticleFilter(
+  articles,
+  { syncUrl = true, pageSize = 0, loading = false } = {},
+) {
   const route = useRoute();
   const router = useRouter();
+  const normalizedPageSize = Math.max(0, Math.trunc(Number(pageSize) || 0));
 
   const keyword = ref(getQueryText(route.query.q));
   const selectedTags = ref(getQueryList(route.query.tag));
   const selectedYears = ref(getQueryList(route.query.year));
+  const isListRouteActive = () => Boolean(route.meta.blogList);
+  const routeHasFilter = () =>
+    FILTER_QUERY_KEYS.some((key) => {
+      if (key === "q") return Boolean(getQueryText(route.query[key]));
+      return getQueryList(route.query[key]).length > 0;
+    });
+  const getRequestedPageFromRoute = () => {
+    if (routeHasFilter()) return getQueryPage(route.query.page);
+
+    const pathPage = getQueryText(route.params.page);
+    if (pathPage) return getQueryPage(pathPage);
+
+    return getQueryPage(route.query.page);
+  };
+  const currentPage = ref(
+    normalizedPageSize > 0 ? getRequestedPageFromRoute() : 1,
+  );
   let applyingRouteState = false;
   let urlSyncTimer;
 
-  const buildScopedQuery = () => {
+  const hasActiveFilter = () =>
+    Boolean(keyword.value.trim()) ||
+    selectedTags.value.length > 0 ||
+    selectedYears.value.length > 0;
+
+  const buildScopedQuery = ({ page = currentPage.value } = {}) => {
     const query = {};
     const normalizedKeyword = keyword.value.trim();
 
@@ -225,8 +262,26 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
     if (selectedTags.value.length) query.tag = [...selectedTags.value];
     if (selectedYears.value.length) query.year = [...selectedYears.value];
     if (normalizedKeyword) query.q = normalizedKeyword;
+    if (normalizedPageSize > 0 && hasActiveFilter() && page > 1) {
+      query.page = String(page);
+    }
 
     return query;
+  };
+
+  const getPageRoute = (page = currentPage.value) => {
+    const targetPage = Math.max(1, Math.trunc(Number(page) || 1));
+
+    return {
+      path: hasActiveFilter() ? "/blog" : getBlogPagePath(targetPage),
+      query: buildScopedQuery({ page: targetPage }),
+    };
+  };
+
+  const isCurrentListLocation = (location) => {
+    const currentFullPath = route.fullPath.split("#")[0];
+    const targetFullPath = router.resolve(location).fullPath.split("#")[0];
+    return currentFullPath === targetFullPath;
   };
 
   const indexedArticles = computed(() => {
@@ -320,6 +375,40 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
       .map(({ article }) => article);
   });
 
+  const totalPages = computed(() => {
+    if (normalizedPageSize <= 0) return 1;
+
+    return Math.max(
+      1,
+      Math.ceil(filteredArticles.value.length / normalizedPageSize),
+    );
+  });
+
+  const normalizePage = (page) => {
+    return Math.min(
+      totalPages.value,
+      Math.max(1, Math.trunc(Number(page) || 1)),
+    );
+  };
+
+  const paginatedArticles = computed(() => {
+    if (normalizedPageSize <= 0) return filteredArticles.value;
+
+    const page = normalizePage(currentPage.value);
+    const start = (page - 1) * normalizedPageSize;
+    return filteredArticles.value.slice(start, start + normalizedPageSize);
+  });
+
+  const setCurrentPage = async (page, { replace = false } = {}) => {
+    const targetPage = normalizePage(page);
+    currentPage.value = targetPage;
+
+    if (!syncUrl || !isListRouteActive()) return;
+
+    const location = getPageRoute(targetPage);
+    await (replace ? router.replace(location) : router.push(location));
+  };
+
   const removeTag = (tag) => {
     selectedTags.value = selectedTags.value.filter((item) => item !== tag);
   };
@@ -372,13 +461,18 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
 
   watch(
     () => [
+      route.name,
+      route.path,
+      route.params.page,
       route.query.search,
       route.query.q,
       route.query.type,
       route.query.tag,
       route.query.year,
+      route.query.page,
     ],
     () => {
+      if (!isListRouteActive()) return;
       if (route.query.search === "1") return;
 
       const nextKeyword = getQueryText(route.query.q);
@@ -391,6 +485,9 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
       const nextYears = getQueryList(route.query.year);
       const nextTypes = getQueryList(route.query.type);
       const expectedTypes = nextTags.length ? ["blog"] : [];
+      const requestedPage =
+        normalizedPageSize > 0 ? getRequestedPageFromRoute() : 1;
+      const isLoading = Boolean(toValue(loading));
 
       applyingRouteState = true;
 
@@ -399,16 +496,26 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
       if (!sameList(selectedYears.value, nextYears)) {
         selectedYears.value = nextYears;
       }
+      const nextPage = isLoading ? requestedPage : normalizePage(requestedPage);
+      if (currentPage.value !== nextPage) currentPage.value = nextPage;
 
       applyingRouteState = false;
 
-      if (
-        syncUrl &&
+      const normalizedLocation = getPageRoute(nextPage);
+      const shouldNormalizeLocation =
+        normalizedPageSize > 0 &&
+        !isLoading &&
+        !isCurrentListLocation(normalizedLocation);
+      const shouldNormalizeFilters =
         canValidateTags &&
         (!sameList(nextTypes, expectedTypes) ||
-          !sameList(routeTags, nextTags))
+          !sameList(routeTags, nextTags));
+
+      if (
+        syncUrl &&
+        (shouldNormalizeFilters || shouldNormalizeLocation)
       ) {
-        router.replace({ query: buildScopedQuery() });
+        router.replace(normalizedLocation);
       }
     },
     { immediate: true },
@@ -417,18 +524,55 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
   watch(
     [keyword, selectedTags, selectedYears],
     () => {
-      if (!syncUrl || applyingRouteState || typeof window === "undefined") {
+      if (
+        !syncUrl ||
+        applyingRouteState ||
+        !isListRouteActive() ||
+        typeof window === "undefined"
+      ) {
         return;
       }
 
+      currentPage.value = 1;
       window.clearTimeout(urlSyncTimer);
       urlSyncTimer = window.setTimeout(() => {
-        if (route.query.search === "1") return;
-        router.replace({ query: buildScopedQuery() });
+        if (route.query.search === "1" || !isListRouteActive()) return;
+        router.replace(getPageRoute(1));
       }, 120);
     },
-    { deep: true },
+    { deep: true, flush: "sync" },
   );
+
+  watch(
+    [totalPages, () => Boolean(toValue(loading))],
+    ([, isLoading]) => {
+      if (
+        normalizedPageSize <= 0 ||
+        applyingRouteState ||
+        isLoading ||
+        !isListRouteActive()
+      ) {
+        return;
+      }
+
+      const normalizedPage = normalizePage(currentPage.value);
+      const normalizedLocation = getPageRoute(normalizedPage);
+
+      if (
+        currentPage.value !== normalizedPage ||
+        !isCurrentListLocation(normalizedLocation)
+      ) {
+        void setCurrentPage(normalizedPage, { replace: true });
+      }
+    },
+    { flush: "sync", immediate: true },
+  );
+
+  onBeforeUnmount(() => {
+    if (typeof window !== "undefined") {
+      window.clearTimeout(urlSyncTimer);
+    }
+  });
 
   return {
     keyword,
@@ -441,6 +585,11 @@ export function useArticleFilter(articles, { syncUrl = true } = {}) {
     advancedFilterCount,
     hasFilter,
     filteredArticles,
+    paginatedArticles,
+    currentPage,
+    totalPages,
+    getPageRoute,
+    setCurrentPage,
     removeTag,
     removeYear,
     clearKeyword,

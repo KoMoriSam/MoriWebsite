@@ -1,4 +1,8 @@
-import { articleRoutes, generatedArticleList } from "./ssg-data";
+import {
+  articleRoutes,
+  generatedArticleList,
+  generatedBlogTotalPages,
+} from "./ssg-data";
 
 import {
   createRouter,
@@ -48,6 +52,20 @@ export const routes = [
     meta: {
       title: "博客 | 远方之森",
       navName: "blog",
+      blogList: true,
+      blogTotalPages: generatedBlogTotalPages,
+      articles: generatedArticleList,
+    },
+  },
+  {
+    path: "/blog/page/:page(\\d+)",
+    name: "blog-page",
+    component: () => import("@/views/Blog.vue"),
+    meta: {
+      title: "博客 | 远方之森",
+      navName: "blog",
+      blogList: true,
+      blogTotalPages: generatedBlogTotalPages,
       articles: generatedArticleList,
     },
   },

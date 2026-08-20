@@ -239,22 +239,29 @@
       >
         <p>
           <template v-if="hasFilter">
-            当前显示
+            当前筛选共
             <strong class="font-semibold text-base-content">
               {{ filteredArticles.length }}
             </strong>
             篇文章
           </template>
 
-          <template v-else> 浏览全部文章 </template>
+          <template v-else>共 {{ filteredArticles.length }} 篇文章</template>
         </p>
 
-        <p v-if="keyword.trim()">
-          搜索：
-          <span class="font-medium text-base-content">
-            “{{ keyword.trim() }}”
-          </span>
-        </p>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p v-if="filteredArticles.length">
+            显示 {{ pageStart }}–{{ pageEnd }} · 第 {{ currentPage }} /
+            {{ totalPages }} 页
+          </p>
+
+          <p v-if="keyword.trim()">
+            搜索：
+            <span class="font-medium text-base-content">
+              “{{ keyword.trim() }}”
+            </span>
+          </p>
+        </div>
       </div>
 
       <div id="article-results" :aria-busy="loading">
@@ -270,11 +277,11 @@
           <span class="sr-only">文章列表加载中</span>
 
           <div
-            class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:gap-6"
+            class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
             aria-hidden="true"
           >
             <article
-              v-for="index in 4"
+              v-for="index in BLOG_PAGE_SIZE"
               :key="index"
               class="card card-border min-w-0 overflow-hidden bg-base-100"
             >
@@ -302,16 +309,18 @@
         </section>
 
         <!-- 文章列表 -->
-        <div
+        <template
           v-else-if="filteredArticles.length"
-          class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:gap-6"
         >
-          <RouterLink
-            v-for="item in filteredArticles"
-            :key="getArticleKey(item)"
-            :to="getArticleRoute(item)"
-            class="group card card-border min-w-0 cursor-pointer overflow-hidden bg-base-100 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          <div
+            class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
           >
+            <RouterLink
+              v-for="item in paginatedArticles"
+              :key="getArticleKey(item)"
+              :to="getArticleRoute(item)"
+              class="group card card-border min-w-0 cursor-pointer overflow-hidden bg-base-100 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            >
             <!-- 封面 -->
             <div
               class="relative h-48 shrink-0 overflow-hidden bg-base-200 sm:h-52"
@@ -495,8 +504,18 @@
                 </span>
               </div>
             </div>
-          </RouterLink>
-        </div>
+            </RouterLink>
+          </div>
+
+          <nav v-if="totalPages > 1" class="mt-8" aria-label="文章列表分页">
+            <Pagination
+              :current-page="currentPage"
+              :total-pages="totalPages"
+              :get-page-route="getPageRoute"
+              @change="handlePageChange"
+            />
+          </nav>
+        </template>
 
         <!-- 无匹配结果 -->
         <div
@@ -554,6 +573,8 @@ import { useDateFormat } from "@vueuse/core";
 
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
+import Pagination from "@/components/base/Pagination.vue";
+import { BLOG_PAGE_SIZE } from "@/constants/blog-pagination";
 import {
   formatArticleTag,
   normalizeArticleTag,
@@ -584,11 +605,55 @@ const {
   advancedFilterCount,
   hasFilter,
   filteredArticles,
+  paginatedArticles,
+  currentPage,
+  totalPages,
+  getPageRoute,
+  setCurrentPage,
   removeTag,
   removeYear,
   clearKeyword,
   resetFilter: clearFilter,
-} = useArticleFilter(toRef(props, "articles"));
+} = useArticleFilter(toRef(props, "articles"), {
+  pageSize: BLOG_PAGE_SIZE,
+  loading: toRef(props, "loading"),
+});
+
+const pageStart = computed(() => {
+  if (!filteredArticles.value.length) return 0;
+  return (currentPage.value - 1) * BLOG_PAGE_SIZE + 1;
+});
+const pageEnd = computed(() => {
+  return Math.min(
+    currentPage.value * BLOG_PAGE_SIZE,
+    filteredArticles.value.length,
+  );
+});
+
+const handlePageChange = async (page) => {
+  await setCurrentPage(page);
+  await nextTick();
+
+  if (typeof window === "undefined") return;
+
+  window.requestAnimationFrame(() => {
+    const results = document.getElementById("article-results");
+    if (!results) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const top = Math.max(
+      0,
+      window.scrollY + results.getBoundingClientRect().top - 96,
+    );
+
+    window.scrollTo({
+      top,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  });
+};
 
 const formatTag = formatArticleTag;
 const highlightParts = (value) => {
