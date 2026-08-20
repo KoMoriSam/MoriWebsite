@@ -117,10 +117,6 @@
 
           <!-- 标题 -->
           <h1
-            :id="headerParagraphId || undefined"
-            :data-reader-paragraph-id="headerParagraphId || undefined"
-            data-source-type="article"
-            :tabindex="headerParagraphId ? 0 : undefined"
             data-pagefind-body
             data-pagefind-meta="title"
             data-pagefind-weight="10"
@@ -128,11 +124,6 @@
             :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
           >
             {{ article?.title }}
-            <CommentTrigger
-              v-if="headerParagraphId"
-              :paragraph-id="headerParagraphId"
-              source-type="article"
-            />
           </h1>
 
           <p
@@ -400,7 +391,6 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
-import CommentTrigger from "@/components/reader/CommentTrigger.vue";
 import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 
 const readerRef = ref(null);
@@ -447,10 +437,6 @@ const { giscusTheme } = storeToRefs(themeStore);
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
 const articleTextContextOpen = ref(false);
 const articleTextContext = ref({});
-const headerParagraphId = computed(() => {
-  const uuid = String(props.article?.id ?? "").trim();
-  return uuid ? `${uuid}-0` : "";
-});
 const openArticleTextContextMenu = (context) => {
   if (!context) {
     articleTextContextOpen.value = false;

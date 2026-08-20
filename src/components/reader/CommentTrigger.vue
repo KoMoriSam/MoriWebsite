@@ -39,6 +39,7 @@ const props = defineProps({
     default: "article",
   },
 });
+const emit = defineEmits(["open"]);
 
 const { getCount } = useParagraphCommentsStorage();
 const count = ref(0);
@@ -75,8 +76,11 @@ const { addEventListener: addParagraphMetadataListener } =
 addParagraphMetadataListener();
 
 const requestOpen = (event) => {
-  event.preventDefault();
   event.stopPropagation();
+  emit("open", event);
+  if (event.defaultPrevented) return;
+
+  event.preventDefault();
   document.dispatchEvent(
     new CustomEvent("paragraph-comment-open", {
       detail: {

@@ -67,7 +67,7 @@ const props = defineProps({
   context: { type: Object, default: () => ({}) },
   shareMeta: { type: Object, default: () => ({}) },
 });
-const emit = defineEmits(["update:modelValue", "search"]);
+const emit = defineEmits(["update:modelValue", "search", "comment"]);
 const toast = useToast({ position: "center", closable: false });
 const menuRef = ref(null);
 const shareDialogRef = ref(null);
@@ -166,6 +166,12 @@ const shareText = () => {
   close();
 };
 const openComment = () => {
+  if (props.context.commentScope === "chapter") {
+    emit("comment", props.context);
+    close();
+    return;
+  }
+
   document.dispatchEvent(
     new CustomEvent("paragraph-comment-open", {
       detail: {

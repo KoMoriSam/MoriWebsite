@@ -38,6 +38,7 @@
         v-if="currentChapter && !isMobileReader"
         :chapter="currentChapter"
         :stats="chapterStats"
+        @open-comments="handleChapterComments"
       />
 
       <PagedReader
@@ -56,6 +57,7 @@
         @reader-action="handleMobileReaderAction"
         @text-context="openTextContextMenu"
         @controller-state="updateMobileControllerState"
+        @open-comments="handleChapterComments"
       />
 
       <ScrollReader
@@ -74,6 +76,7 @@
         @reader-action="handleMobileReaderAction"
         @text-context="openTextContextMenu"
         @chapter-start-restored="restoreMobileScrollToChapterStart = false"
+        @open-comments="handleChapterComments"
       />
 
       <ReaderStatusBar
@@ -108,6 +111,7 @@
         :context="textContext"
         :share-meta="textShareMeta"
         @search="openContextSearch"
+        @comment="handleChapterComments"
       />
 
       <div
@@ -128,7 +132,7 @@
       <section
         class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
       >
-        <h2 class="min-w-0 text-2xl font-bold break-words">
+        <h2 class="min-w-0 text-2xl font-serif font-bold break-words">
           {{ currentMapping === "title" ? "本章说" : "本书说" }}
         </h2>
 
@@ -169,6 +173,50 @@
       <FormatSetting />
     </template>
   </Reader>
+
+  <dialog
+    v-if="!isMobileReader"
+    ref="chapterCommentsDialogRef"
+    class="modal"
+    @cancel.prevent="requestPlatformCloseChapterComments"
+  >
+    <section class="modal-box flex max-h-[82dvh] flex-col p-0">
+      <header
+        class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
+      >
+        <h2 class="text-xl font-serif font-bold">本章说</h2>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm btn-circle"
+          aria-label="关闭本章说"
+          @click="requestCloseChapterComments"
+        >
+          <i class="ri-close-line text-xl" aria-hidden="true"></i>
+        </button>
+      </header>
+      <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
+        <Giscus
+          :key="`chapter-comments-dialog-${giscusKey}`"
+          :repo="GISCUS.novelRepo.name"
+          :repo-id="GISCUS.novelRepo.id"
+          :category="GISCUS.categories.general.name"
+          :category-id="GISCUS.categories.general.id"
+          :mapping="giscusMapping"
+          :term="getChapterContextTitle(currentChapter)"
+          strict="0"
+          reactions-enabled="1"
+          emit-metadata="0"
+          input-position="bottom"
+          :theme="giscusTheme"
+          lang="zh-CN"
+          loading="lazy"
+        />
+      </section>
+    </section>
+    <form method="dialog" class="modal-backdrop">
+      <button @click.prevent="requestCloseChapterComments">关闭本章说</button>
+    </form>
+  </dialog>
 </template>
 
 <script setup>
@@ -200,6 +248,7 @@ import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
+import { useModalClose } from "@/composables/useModal";
 import {
   getChapterContextTitle,
   getChapterDisplayTitle,
@@ -251,6 +300,7 @@ const textContextOpen = ref(false);
 const textContext = ref({});
 const activeMobileReaderRef = ref(null);
 const mobileReaderControlsRef = ref(null);
+const chapterCommentsDialogRef = ref(null);
 const restoreMobileScrollToChapterStart = ref(false);
 let mobileControlOpenTimer = 0;
 const mobileControllerState = ref({
@@ -272,7 +322,7 @@ const callMobileReaderAction = (name, ...args) => {
   const action = activeMobileReaderRef.value?.[name];
   if (typeof action === "function") action(...args);
 };
-const openMobileControl = async (name, keyword = "") => {
+const openMobileControl = async (name, keyword = "", mapping = "") => {
   mobileReaderControlsOpen.value = true;
   window.dispatchEvent(new Event("mobile-reader:show-navbar"));
   await nextTick();
@@ -281,8 +331,37 @@ const openMobileControl = async (name, keyword = "") => {
   // 避免刚生成的 backdrop 接收到这次点击并立即把 modal 关闭。
   window.clearTimeout(mobileControlOpenTimer);
   mobileControlOpenTimer = window.setTimeout(() => {
-    void mobileReaderControlsRef.value?.openControl({ name, keyword });
+    void mobileReaderControlsRef.value?.openControl({ name, keyword, mapping });
   }, 0);
+};
+const closeChapterCommentsImmediately = () => {
+  if (chapterCommentsDialogRef.value?.open) {
+    chapterCommentsDialogRef.value.close();
+  }
+};
+const chapterCommentsModal = useModalClose({
+  onClose: closeChapterCommentsImmediately,
+});
+const openDesktopChapterComments = async () => {
+  await nextTick();
+  const dialog = chapterCommentsDialogRef.value;
+  if (!dialog || dialog.open) return;
+
+  chapterCommentsModal.activate();
+  dialog.showModal();
+};
+const requestCloseChapterComments = () => chapterCommentsModal.requestClose();
+const requestPlatformCloseChapterComments = () =>
+  chapterCommentsModal.requestPlatformClose();
+const handleChapterComments = (event) => {
+  event?.preventDefault?.();
+  currentMapping.value = "title";
+  if (!isMobileReader.value) {
+    void openDesktopChapterComments();
+    return;
+  }
+
+  void openMobileControl("comments", "", "title");
 };
 const handleMobileReaderAction = (action) => {
   if (action === "menu") {
@@ -566,6 +645,8 @@ const chapterHeaderData = computed(() => ({
   uuid: currentChapterUuid.value,
   page: 1,
   sourceType: "novel",
+  commentScope: "chapter",
+  commentTerm: getChapterContextTitle(currentChapter.value),
   meta: currentChapter.value?.volumeTitle,
 }));
 

@@ -32,6 +32,7 @@
         :id="headerParagraphId || undefined"
         :data-reader-paragraph-id="headerParagraphId || undefined"
         data-source-type="novel"
+        data-reader-comment-scope="chapter"
         :tabindex="headerParagraphId ? 0 : undefined"
         class="chapter-header-title text-base-content m-0! min-w-0 max-w-full flex-1 p-0! text-left! text-pretty! text-3xl! leading-tight! font-serif font-bold tracking-normal! break-words indent-0! [overflow-wrap:anywhere] md:text-4xl!"
       >
@@ -40,6 +41,7 @@
           v-if="headerParagraphId"
           :paragraph-id="headerParagraphId"
           source-type="novel"
+          @open="openComments"
         />
       </h1>
     </div>
@@ -82,8 +84,15 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["open-comments"]);
+
 const headerParagraphId = computed(() => {
   const uuid = String(props.chapter?.uuid || "").trim();
   return uuid ? `${uuid}-0` : "";
 });
+
+const openComments = (event) => {
+  event?.preventDefault();
+  emit("open-comments", event);
+};
 </script>

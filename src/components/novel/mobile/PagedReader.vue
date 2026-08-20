@@ -56,6 +56,7 @@
             :chapter="chapter"
             :stats="chapterStats"
             class="mobile-chapter-header not-prose break-inside-avoid-column"
+            @open-comments="emit('open-comments', $event)"
           />
         </template>
         <template #after>
@@ -308,6 +309,7 @@ const emit = defineEmits([
   "controller-state",
   "reader-action",
   "text-context",
+  "open-comments",
 ]);
 const route = useRoute();
 const { getState, setState } = useReadingStateStorage();

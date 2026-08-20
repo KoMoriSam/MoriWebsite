@@ -254,7 +254,7 @@
             </button>
           </template>
         </DialogHeader>
-        <section class="min-h-0 flex-1 overflow-y-auto p-4">
+        <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
           <Giscus
             :key="giscusKey"
             :repo="GISCUS.novelRepo.name"
@@ -457,8 +457,14 @@ const refreshContent = () => {
 const openControl = (detail) => {
   const request =
     typeof detail === "string" ? { name: detail, keyword: "" } : detail || {};
-  if (!["toc", "search"].includes(request.name)) return;
+  if (!["toc", "search", "comments"].includes(request.name)) return;
   if (request.name === "search") searchKeyword.value = request.keyword || "";
+  if (
+    request.name === "comments" &&
+    ["title", "specific"].includes(request.mapping)
+  ) {
+    currentMapping.value = request.mapping;
+  }
   return openDialog(request.name);
 };
 const handleExternalDialogRequest = (event) => void openControl(event.detail);

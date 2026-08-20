@@ -195,6 +195,7 @@ export const useParagraphComments = () => {
 
     modal.info(titleNode, h(ParaGiscus, { paragraphId, sourceType }), {
       buttonMode: "close",
+      scrollContent: true,
     });
   };
 
@@ -202,7 +203,12 @@ export const useParagraphComments = () => {
     const trigger = e.target.closest(
       "button.comment-trigger.has-count[data-paragraph-id]",
     );
-    if (!trigger) return;
+    if (
+      !trigger ||
+      trigger.closest("[data-reader-comment-scope='chapter']")
+    ) {
+      return;
+    }
 
     e.preventDefault();
     e.stopPropagation();

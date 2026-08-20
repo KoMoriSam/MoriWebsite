@@ -178,6 +178,7 @@ import {
   preloadHighlightLanguages,
 } from "@/utils/markdown/load-markdown-features";
 import {
+  fetchDiscussionCountsBatch,
   fetchParagraphCountsBatch,
   hasParagraphCountsApi,
 } from "@/services/api-paragraph-comments";
@@ -295,7 +296,7 @@ const collectPrefetchParagraphIds = () => {
   }
 
   const commentableNodes = articleRef.value.querySelectorAll(
-    "[data-reader-paragraph-id]",
+    "[data-reader-paragraph-id]:not([data-reader-comment-scope='chapter'])",
   );
   const paragraphIds = Array.from(commentableNodes)
     .map(
@@ -305,6 +306,7 @@ const collectPrefetchParagraphIds = () => {
 
   if (
     headerParagraphId.value &&
+    props.headerData?.commentScope !== "chapter" &&
     document.getElementById(headerParagraphId.value)
   ) {
     paragraphIds.unshift(headerParagraphId.value);
@@ -350,6 +352,36 @@ const loadBatchCounts = async (paragraphIds, token) => {
     return true;
   } catch (error) {
     console.error("段评批量查询失败（未回退元数据模式）", error);
+    return false;
+  }
+};
+
+const loadHeaderDiscussionCount = async (token) => {
+  const paragraphId = headerParagraphId.value;
+  const discussionTerm = String(props.headerData?.commentTerm || "").trim();
+  if (
+    !hasParagraphCountsApi ||
+    props.headerData?.commentScope !== "chapter" ||
+    !paragraphId ||
+    !discussionTerm
+  ) {
+    return false;
+  }
+
+  try {
+    const counts = await fetchDiscussionCountsBatch({
+      sourceType: props.headerData.sourceType,
+      discussionTerms: [discussionTerm],
+    });
+
+    if (token !== latestBatchToken.value || !counts) return false;
+
+    emitBatchCounts([paragraphId], {
+      [paragraphId]: counts[discussionTerm] ?? 0,
+    });
+    return true;
+  } catch (error) {
+    console.error("本章说评论数量查询失败", error);
     return false;
   }
 };
@@ -482,6 +514,8 @@ watch(
     combinedContent.value,
     props.headerData.uuid,
     props.headerData.sourceType,
+    props.headerData.commentScope,
+    props.headerData.commentTerm,
   ],
   async ([isLoading, isPreparing]) => {
     // immediate watch 在 SSG 阶段也会执行；段评统计依赖浏览器 DOM 和 RAF。
@@ -513,7 +547,10 @@ watch(
     await nextTick();
     window.requestAnimationFrame(async () => {
       const paragraphIds = collectPrefetchParagraphIds();
-      await loadBatchCounts(paragraphIds, token);
+      await Promise.all([
+        loadBatchCounts(paragraphIds, token),
+        loadHeaderDiscussionCount(token),
+      ]);
 
       if (token !== latestBatchToken.value) {
         return;

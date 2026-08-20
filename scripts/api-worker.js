@@ -108,8 +108,18 @@ function jsonResponse(
   });
 }
 
-function getSourceConfig(env, sourceType) {
+function getSourceConfig(env, sourceType, scope = "paragraph") {
   if (sourceType === "novel") {
+    if (scope === "chapter") {
+      return {
+        owner: env.NOVEL_REPO_OWNER,
+        repo: env.NOVEL_REPO_NAME,
+        categoryId: env.NOVEL_CHAPTER_CATEGORY_ID,
+        categorySlug: env.NOVEL_CHAPTER_CATEGORY_SLUG || "general",
+        maxPages: Number(env.NOVEL_CHAPTER_MAX_PAGES || env.MAX_PAGES || 20),
+      };
+    }
+
     return {
       owner: env.NOVEL_REPO_OWNER,
       repo: env.NOVEL_REPO_NAME,
@@ -124,6 +134,51 @@ function getSourceConfig(env, sourceType) {
     categoryId: env.ARTICLE_CATEGORY_ID,
     maxPages: Number(env.ARTICLE_MAX_PAGES || env.MAX_PAGES || 20),
   };
+}
+
+async function fetchDiscussionCategoryId({ token, owner, repo, slug }) {
+  const query = `
+    query(
+      $owner: String!,
+      $repo: String!,
+      $slug: String!
+    ) {
+      repository(owner: $owner, name: $repo) {
+        discussionCategory(slug: $slug) {
+          id
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(GITHUB_GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/vnd.github+json",
+      "User-Agent": GITHUB_USER_AGENT,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      query,
+      variables: { owner, repo, slug },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub 讨论分类查询失败：${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (payload.errors?.length) {
+    throw new Error(
+      `GitHub 讨论分类查询错误：${payload.errors
+        .map((error) => error.message)
+        .join("; ")}`,
+    );
+  }
+
+  return payload.data?.repository?.discussionCategory?.id || "";
 }
 
 async function fetchDiscussionPage({ token, owner, repo, categoryId, cursor }) {
@@ -149,9 +204,19 @@ async function fetchDiscussionPage({ token, owner, repo, categoryId, cursor }) {
             endCursor
           }
           nodes {
+            id
             title
-            comments {
+            comments(first: 100) {
               totalCount
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              nodes {
+                replies {
+                  totalCount
+                }
+              }
             }
           }
         }
@@ -199,6 +264,87 @@ async function fetchDiscussionPage({ token, owner, repo, categoryId, cursor }) {
   return payload.data?.repository?.discussions;
 }
 
+async function fetchDiscussionCommentPage({ token, discussionId, cursor }) {
+  const query = `
+    query(
+      $discussionId: ID!,
+      $cursor: String
+    ) {
+      node(id: $discussionId) {
+        ... on Discussion {
+          comments(first: 100, after: $cursor) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              replies {
+                totalCount
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(GITHUB_GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/vnd.github+json",
+      "User-Agent": GITHUB_USER_AGENT,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      query,
+      variables: { discussionId, cursor },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub 评论回复查询失败：${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (payload.errors?.length) {
+    throw new Error(
+      `GitHub 评论回复查询错误：${payload.errors
+        .map((error) => error.message)
+        .join("; ")}`,
+    );
+  }
+
+  return payload.data?.node?.comments;
+}
+
+function sumReplyCounts(comments) {
+  return (comments?.nodes || []).reduce((total, comment) => {
+    const count = Number(comment?.replies?.totalCount ?? 0);
+    return total + (Number.isFinite(count) ? Math.max(0, count) : 0);
+  }, 0);
+}
+
+async function fetchDiscussionReplyCount({ token, discussionId, comments }) {
+  let replyCount = sumReplyCounts(comments);
+  let hasNextPage = Boolean(comments?.pageInfo?.hasNextPage);
+  let cursor = comments?.pageInfo?.endCursor || null;
+
+  while (hasNextPage && cursor) {
+    const nextComments = await fetchDiscussionCommentPage({
+      token,
+      discussionId,
+      cursor,
+    });
+
+    replyCount += sumReplyCounts(nextComments);
+    hasNextPage = Boolean(nextComments?.pageInfo?.hasNextPage);
+    cursor = nextComments?.pageInfo?.endCursor || null;
+  }
+
+  return replyCount;
+}
+
 async function fetchAllDiscussionCounts({
   token,
   owner,
@@ -223,13 +369,23 @@ async function fetchAllDiscussionCounts({
 
     const nodes = discussions?.nodes || [];
 
-    nodes.forEach((node) => {
-      if (!node?.title) return;
+    for (const node of nodes) {
+      if (!node?.title) continue;
 
-      const count = Number(node?.comments?.totalCount ?? 0);
+      const commentCount = Number(node?.comments?.totalCount ?? 0);
+      const replyCount = node?.id
+        ? await fetchDiscussionReplyCount({
+            token,
+            discussionId: node.id,
+            comments: node.comments,
+          })
+        : 0;
+      const count =
+        (Number.isFinite(commentCount) ? Math.max(0, commentCount) : 0) +
+        replyCount;
 
       counts[node.title] = Number.isFinite(count) ? Math.max(0, count) : 0;
-    });
+    }
 
     if (!discussions?.pageInfo?.hasNextPage) {
       break;
@@ -245,8 +401,8 @@ async function fetchAllDiscussionCounts({
   return counts;
 }
 
-async function getCountsMap(env, sourceType) {
-  const cacheKey = sourceType;
+async function getCountsMap(env, sourceType, scope = "paragraph") {
+  const cacheKey = `${sourceType}:${scope}`;
   const now = Date.now();
   const cached = memoryCache.get(cacheKey);
 
@@ -254,15 +410,29 @@ async function getCountsMap(env, sourceType) {
     return cached.counts;
   }
 
-  const sourceConfig = getSourceConfig(env, sourceType);
-  const { owner, repo, categoryId, maxPages } = sourceConfig;
+  const sourceConfig = getSourceConfig(env, sourceType, scope);
+  const { owner, repo, categorySlug, maxPages } = sourceConfig;
+  let { categoryId } = sourceConfig;
 
-  if (!owner || !repo || !categoryId) {
-    throw new Error("缺少仓库或分类配置");
+  if (!owner || !repo) {
+    throw new Error("缺少仓库配置");
   }
 
   if (!env.GITHUB_TOKEN) {
     throw new Error("缺少 GITHUB_TOKEN");
+  }
+
+  if (!categoryId && categorySlug) {
+    categoryId = await fetchDiscussionCategoryId({
+      token: env.GITHUB_TOKEN,
+      owner,
+      repo,
+      slug: categorySlug,
+    });
+  }
+
+  if (!categoryId) {
+    throw new Error("缺少讨论分类配置");
   }
 
   const counts = await fetchAllDiscussionCounts({
@@ -297,19 +467,25 @@ async function handleParagraphCounts(request, env, corsOrigin) {
     const body = await request.json();
 
     const sourceType = body?.sourceType === "novel" ? "novel" : "article";
+    const scope =
+      sourceType === "novel" && body?.scope === "chapter"
+        ? "chapter"
+        : "paragraph";
 
-    const paragraphIds = [
+    const identifiers = [
       ...new Set(
-        (body?.paragraphIds || []).filter(
-          (id) => typeof id === "string" && id.trim(),
-        ),
+        (scope === "chapter"
+          ? body?.discussionTerms || []
+          : body?.paragraphIds || []
+        ).filter((id) => typeof id === "string" && id.trim()),
       ),
     ];
 
-    if (!paragraphIds.length) {
+    if (!identifiers.length) {
       return jsonResponse(
         {
           sourceType,
+          scope,
           counts: {},
           cachedAt: Date.now(),
         },
@@ -318,10 +494,10 @@ async function handleParagraphCounts(request, env, corsOrigin) {
       );
     }
 
-    const allCounts = await getCountsMap(env, sourceType);
+    const allCounts = await getCountsMap(env, sourceType, scope);
     const counts = {};
 
-    paragraphIds.forEach((id) => {
+    identifiers.forEach((id) => {
       const value = Number(allCounts[id] ?? 0);
 
       counts[id] = Number.isFinite(value) ? Math.max(0, value) : 0;
@@ -330,6 +506,7 @@ async function handleParagraphCounts(request, env, corsOrigin) {
     return jsonResponse(
       {
         sourceType,
+        scope,
         counts,
         cachedAt: Date.now(),
       },

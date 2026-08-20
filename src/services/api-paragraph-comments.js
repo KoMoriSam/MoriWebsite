@@ -10,15 +10,12 @@ const TIMEOUT = Number(paragraphCountsApi.timeout || 8000);
 
 export const hasParagraphCountsApi = Boolean(ENDPOINT);
 
-export async function fetchParagraphCountsBatch({
-  sourceType = "article",
-  paragraphIds = [],
-}) {
+async function fetchCountsBatch({ body, identifiers = [] }) {
   if (!hasParagraphCountsApi) {
     return null;
   }
 
-  const ids = [...new Set((paragraphIds || []).filter(Boolean))];
+  const ids = [...new Set((identifiers || []).filter(Boolean))];
   if (!ids.length) {
     return {};
   }
@@ -34,10 +31,7 @@ export async function fetchParagraphCountsBatch({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        sourceType,
-        paragraphIds: ids,
-      }),
+      body: JSON.stringify(body(ids)),
       signal: controller.signal,
     });
 
@@ -62,4 +56,28 @@ export async function fetchParagraphCountsBatch({
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export function fetchParagraphCountsBatch({
+  sourceType = "article",
+  paragraphIds = [],
+}) {
+  return fetchCountsBatch({
+    identifiers: paragraphIds,
+    body: (ids) => ({ sourceType, paragraphIds: ids }),
+  });
+}
+
+export function fetchDiscussionCountsBatch({
+  sourceType = "novel",
+  discussionTerms = [],
+}) {
+  return fetchCountsBatch({
+    identifiers: discussionTerms,
+    body: (terms) => ({
+      sourceType,
+      scope: "chapter",
+      discussionTerms: terms,
+    }),
+  });
 }

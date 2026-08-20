@@ -162,6 +162,7 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     paragraphText,
     paragraphId,
     sourceType: paragraph?.dataset.sourceType || "novel",
+    commentScope: paragraph?.dataset.readerCommentScope || "paragraph",
     shareContent,
   };
 };
