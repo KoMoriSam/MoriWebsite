@@ -1,6 +1,6 @@
 <template>
   <ContentPage eyebrow="Release Notes &amp; Maintenance" title="更新日志">
-    <template #actions>
+    <template #badges>
       <template v-if="totalVersions">
         <span class="badge badge-primary badge-soft badge-lg font-semibold">
           当前版本&nbsp; {{ latestVersion }}
