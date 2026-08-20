@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.21.2</strong>
+  Current version: <strong>1.22.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,12 +56,12 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.21.2 Highlights
+## Version 1.22.0 Highlights
 
-- fixed the previous/next article buttons not rendering during SSR on reading pages
-- fixed SSR/client rendering mismatches in Markdown components (callouts, code blocks, chat)
-- fixed the banner overlay and spacing of tweet covers on SSG-prerendered pages
-- refined image-loading placeholders, reader body, and homepage styles
+- added image share cards in the reader that serialize selected text with its context into shareable content
+- added pagination to the blog list with dynamic routes and page navigation
+- enabled independent scrolling for long content inside modals
+- added a chapter-comments entry on novel chapter titles and included discussion replies in paragraph-comment counts
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
