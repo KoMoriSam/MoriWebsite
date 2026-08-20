@@ -5,7 +5,13 @@
     class="modal modal-bottom sm:modal-middle"
     @cancel="handleNativeCancel"
   >
-    <section ref="modalRef" class="modal-box relative scrollbar-thin">
+    <section
+      ref="modalRef"
+      class="modal-box relative scrollbar-thin"
+      :class="{
+        'flex max-h-[82dvh] flex-col overflow-hidden p-0': scrollContent,
+      }"
+    >
       <form v-if="!isConfirm && buttonMode === 'close'" method="dialog">
         <button
           class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
@@ -17,17 +23,28 @@
         </button>
       </form>
       <header
-        class="mb-4"
-        :class="{ 'pr-10': !isConfirm && buttonMode === 'close' }"
+        :class="{
+          'mb-4': !scrollContent,
+          'shrink-0 border-b border-base-300 px-5 py-4': scrollContent,
+          'pr-10':
+            !scrollContent && !isConfirm && buttonMode === 'close',
+          'pe-14': scrollContent && !isConfirm && buttonMode === 'close',
+        }"
       >
         <slot name="title">
           <h3 class="text-lg font-bold">{{ title }}</h3>
         </slot>
       </header>
-      <slot name="description">
-        {{ description }}
-        <!-- fallback -->
-      </slot>
+      <section
+        :class="{
+          'scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5': scrollContent,
+        }"
+      >
+        <slot name="description">
+          {{ description }}
+          <!-- fallback -->
+        </slot>
+      </section>
       <form v-if="isConfirm" method="dialog" class="modal-action">
         <slot name="leading-action"></slot>
         <button class="btn btn-primary" type="button" @click="handleSubmit">
@@ -84,6 +101,10 @@ const props = defineProps({
     validator: (value) => ["default", "confirm"].includes(value),
   },
   visible: {
+    type: Boolean,
+    default: false,
+  },
+  scrollContent: {
     type: Boolean,
     default: false,
   },
