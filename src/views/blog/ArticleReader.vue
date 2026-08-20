@@ -400,7 +400,7 @@ import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
 import CommentTrigger from "@/components/reader/CommentTrigger.vue";
-import TextContextMenu from "@/components/novel/mobile/TextContextMenu.vue";
+import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 
 const readerRef = ref(null);
 

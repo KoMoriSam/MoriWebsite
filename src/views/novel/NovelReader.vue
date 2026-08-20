@@ -184,7 +184,7 @@ import ChapterHeader from "@/components/novel/ChapterHeader.vue";
 import PagedReader from "@/components/novel/mobile/PagedReader.vue";
 import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
 import ReaderControls from "@/components/novel/mobile/ReaderControls.vue";
-import TextContextMenu from "@/components/novel/mobile/TextContextMenu.vue";
+import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import ReaderStatusBar from "@/components/novel/mobile/ReaderStatusBar.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
