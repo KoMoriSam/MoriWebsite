@@ -1,3 +1,5 @@
+import { createReaderShareContent } from "@/utils/reader/create-reader-share-content";
+
 const IGNORED_TEXT_SELECTOR = [
   ".comment-trigger",
   ".paragraph-comment-count",
@@ -144,6 +146,10 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   const selectedText = selectionDetails?.text || "";
   const paragraphText = extractParagraphText(paragraph);
   const text = selectedText || paragraphText;
+  const shareContent = createReaderShareContent({
+    range: selectionDetails?.range,
+    element: paragraph,
+  });
 
   if (!text && !paragraphId) return null;
 
@@ -156,6 +162,7 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     paragraphText,
     paragraphId,
     sourceType: paragraph?.dataset.sourceType || "novel",
+    shareContent,
   };
 };
 

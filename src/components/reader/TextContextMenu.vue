@@ -47,6 +47,7 @@
       </ul>
     </Transition>
   </Teleport>
+  <ReaderShareCardDialog ref="shareDialogRef" />
 </template>
 
 <script setup>
@@ -59,14 +60,17 @@ import {
   watch,
 } from "vue";
 import { useToast } from "@/composables/useToast";
+import ReaderShareCardDialog from "@/components/reader/ReaderShareCardDialog.vue";
 
 const props = defineProps({
   modelValue: Boolean,
   context: { type: Object, default: () => ({}) },
+  shareMeta: { type: Object, default: () => ({}) },
 });
 const emit = defineEmits(["update:modelValue", "search"]);
 const toast = useToast({ position: "center", closable: false });
 const menuRef = ref(null);
+const shareDialogRef = ref(null);
 const position = ref({ left: 8, top: 8 });
 const menuPosition = computed(() => ({
   left: `${position.value.left}px`,
@@ -152,22 +156,13 @@ const searchText = () => {
   emit("search", props.context.text);
   close();
 };
-const shareText = async () => {
-  const shareData = {
-    title: document.title,
+const shareText = () => {
+  void shareDialogRef.value?.open({
     text: props.context.text,
-    url: window.location.href,
-  };
-
-  try {
-    if (navigator.share) await navigator.share(shareData);
-    else {
-      await copyToClipboard(`${shareData.text}\n${shareData.url}`);
-      toast.success("分享内容已复制");
-    }
-  } catch (error) {
-    if (error?.name !== "AbortError") toast.error("暂时无法分享");
-  }
+    paragraphId: props.context.paragraphId,
+    shareContent: props.context.shareContent,
+    meta: { ...props.shareMeta },
+  });
   close();
 };
 const openComment = () => {

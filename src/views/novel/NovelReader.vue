@@ -106,6 +106,7 @@
       <TextContextMenu
         v-model="textContextOpen"
         :context="textContext"
+        :share-meta="textShareMeta"
         @search="openContextSearch"
       />
 
@@ -592,6 +593,31 @@ const chapterStats = computed(() => {
   });
 
   return stats;
+});
+
+const textShareMeta = computed(() => {
+  const chapterMetadata = chapterStats.value
+    .map(({ text }) => text)
+    .filter(Boolean);
+  const detailLines = chapterMetadata;
+  const sourceLabel = ["《向远方》", currentChapter.value?.volumeTitle]
+    .filter(Boolean)
+    .join(" · ");
+
+  return {
+    sourceLabel,
+    title: currentChapter.value?.title || "",
+    detail: detailLines.join(" · "),
+    detailLines,
+    detailList: true,
+    excludeFromContent: [
+      currentChapter.value?.volumeTitle,
+      ...chapterMetadata,
+      chapterMetadata.join(" "),
+      detailLines.join(" "),
+    ].filter(Boolean),
+    path: route.path,
+  };
 });
 
 const handleRefreshContent = async () => {

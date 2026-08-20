@@ -346,6 +346,7 @@
     <TextContextMenu
       v-model="articleTextContextOpen"
       :context="articleTextContext"
+      :share-meta="articleShareMeta"
       @search="openArticleContextSearch"
     />
 
@@ -569,6 +570,55 @@ const aliasList = computed(() => {
   }
 
   return [];
+});
+
+const articleShareMeta = computed(() => {
+  const date = normalizeArticleDate(props.article?.date);
+  const length = Number(props.article?.length);
+  const tags = Array.isArray(props.article?.tags)
+    ? props.article.tags.map((tag) => String(tag).trim()).filter(Boolean)
+    : [];
+  const tagsText = tags.join(" · ");
+  const displayDate = date
+    ? useDateFormat(props.article?.date, "YYYY/M/D").value
+    : "";
+  const lengthText =
+    Number.isFinite(length) && length > 0 ? `${length} 字` : "";
+  const readingTimeText = lengthText
+    ? `${estimateReadingTime(length)} 分钟阅读`
+    : "";
+  const aliasesText = aliasList.value.join(" ");
+  const renderedMetadata = [displayDate, lengthText, readingTimeText].filter(
+    Boolean,
+  );
+  const publicationInfo = [
+    date ? `发布于 ${date}` : "",
+    Number.isFinite(length) && length > 0
+      ? `${length.toLocaleString("zh-CN")} 字`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const detailLines = [
+    tagsText ? `标签：${tagsText}` : "",
+    publicationInfo,
+  ].filter(Boolean);
+
+  return {
+    sourceLabel: "远方之森 · 博客",
+    title: props.article?.title || "",
+    detail: detailLines.join(" · "),
+    detailLines,
+    excludeFromContent: [
+      ...aliasList.value,
+      aliasesText,
+      ...tags,
+      tags.join(" "),
+      ...renderedMetadata,
+      renderedMetadata.join(" "),
+    ].filter(Boolean),
+    path: route.path,
+  };
 });
 
 const articleTagsText = computed(() => {
