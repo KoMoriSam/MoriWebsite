@@ -529,7 +529,7 @@ async function copyText(field) {
     await writeClipboard(text);
     copiedField.value = field;
     liveMessage.value =
-      field === "unicode" ? "Unicode 文本已复制" : "FM 编码文本已复制";
+      field === "unicode" ? "Unicode 文本已复制" : "ASCII 编码文本已复制";
   } catch {
     copyFailedField.value = field;
     liveMessage.value = "无法自动复制，请手动选择文本";
@@ -541,7 +541,7 @@ async function copyText(field) {
 function copyLabel(field) {
   if (copiedField.value === field) return "已复制";
   if (copyFailedField.value === field) return "复制失败";
-  return field === "unicode" ? "复制 Unicode 文本" : "复制 ASCII 文本";
+  return field === "unicode" ? "复制 Unicode 文本" : "复制 编码文本";
 }
 
 function copyIcon(field) {
