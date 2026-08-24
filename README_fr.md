@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.22.0</strong>
+  Version actuelle : <strong>1.23.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,12 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.22.0
+## Points clés de la version 1.23.0
 
-- ajout de cartes de partage d'images dans le lecteur, sérialisant le texte sélectionné et son contexte en contenu partageable
-- ajout de la pagination à la liste du blog avec des routes dynamiques et une navigation par pages
-- activation du défilement indépendant pour les longs contenus dans les modales
-- ajout d'une entrée de commentaires de chapitre sur les titres de chapitres du roman et inclusion des réponses de discussion dans le nombre de commentaires de paragraphe
+- ajout de statistiques de visites et de lecture basées sur Cloudflare D1 avec des statistiques de lecture de contenu par lot
+- passage des formules Markdown au rendu SVG MathJax avec copie LaTeX et prise en charge des cartes de partage
+- affichage des statistiques de lecture/commentaires pour les articles et chapitres, en regroupant les commentaires principaux, les commentaires de paragraphe et les réponses
+- correction des rendus en double dans les cartes de partage, de la restauration de la position de lecture du roman sur ordinateur et des problèmes de premier rendu LaTeX
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
