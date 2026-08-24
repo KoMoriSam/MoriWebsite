@@ -516,16 +516,25 @@
     @apply checkbox checkbox-primary checkbox-sm mb-1;
   }
 
-  /* KaTeX 数学公式 */
-  .markdown-content.prose :deep(span.katex) {
-    @apply max-sm:text-lg;
+  /* MathJax 输出自包含的 SVG path */
+  .markdown-content.prose :deep(mjx-container[data-reader-latex-source]) {
+    @apply max-w-full;
+    font-size: 1em;
+    color: inherit;
   }
 
-  .markdown-content.prose :deep(p:has(span.katex-display)) {
+  .markdown-content.prose :deep(mjx-container[data-reader-latex-source][display="true"]) {
+    @apply block max-w-full overflow-x-auto overflow-y-hidden text-center;
+    font-size: var(--para-font-size);
+  }
+
+  .markdown-content.prose :deep(mjx-container[data-reader-latex-source] > svg) {
+    @apply inline-block max-w-none;
+    color: inherit;
+  }
+
+  .markdown-content.prose
+    :deep(p:has(mjx-container[display="true"])) {
     @apply indent-0 text-center;
-  }
-
-  .markdown-content.prose :deep(span.katex-html) {
-    @apply hidden;
   }
 }

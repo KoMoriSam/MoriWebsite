@@ -54,6 +54,7 @@ import { useRoute } from "vue-router";
 import VueMarkdown from "vue-markdown-render";
 import Loading from "@/components/base/Loading.vue";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
+import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 
 const props = defineProps({
   // 内容数据
@@ -189,7 +190,7 @@ const articleRef = ref(null);
 const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
-const katexPlugin = ref(null);
+const mathJaxPlugin = ref(null);
 let markdownFeatureRequestId = 0;
 let codeBlockRoot = null;
 const headerParagraphId = computed(() => {
@@ -414,20 +415,24 @@ const tableWrapperPlugin = (md) => {
 const loadMarkdownFeaturePlugins = async (content = "") => {
   const markdownText = String(content || "");
   const languages = collectFenceLanguages(markdownText);
+  const featureTasks = [];
 
   if (languages.length) {
-    await preloadHighlightLanguages(languages);
+    featureTasks.push(preloadHighlightLanguages(languages));
   }
 
-  if (katexPlugin.value || !hasMathSyntax(markdownText)) {
-    return;
+  if (hasMathSyntax(markdownText) && !mathJaxPlugin.value) {
+    featureTasks.push(
+      loadMathJaxPlugin().then((plugin) => {
+        mathJaxPlugin.value = plugin;
+      }),
+    );
   }
 
   try {
-    const katexModule = await import("@vscode/markdown-it-katex");
-    katexPlugin.value = katexModule?.default || katexModule;
+    await Promise.all(featureTasks);
   } catch (error) {
-    console.warn("KaTeX 插件加载失败，已跳过数学公式渲染", error);
+    console.warn("数学公式 SVG 渲染器加载失败，已跳过公式渲染", error);
   }
 };
 
@@ -453,7 +458,7 @@ const sharedPlugins = computed(() => [
   MarkdownItSub,
   MarkdownItSup,
   MarkdownItTaskLists,
-  ...(katexPlugin.value ? [katexPlugin.value] : []),
+  ...(mathJaxPlugin.value ? [mathJaxPlugin.value] : []),
   MarkdownItMark,
   tableWrapperPlugin,
 ]);
