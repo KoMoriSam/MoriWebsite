@@ -564,6 +564,7 @@ const getSemanticBlock = (node, fallback) => {
   return (
     element.closest("[data-markdown-code-block]") ||
     element.closest("[data-markdown-alert]") ||
+    element.closest("li.footnote-item") ||
     getOutermostQuote(element) ||
     element.closest(BLOCK_SELECTOR) ||
     fallback
