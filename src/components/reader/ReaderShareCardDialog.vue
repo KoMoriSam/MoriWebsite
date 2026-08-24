@@ -10,7 +10,7 @@
       @contextmenu.prevent
     >
       <section
-        class="modal-box flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-box p-0 sm:rounded-box"
+        class="modal-box flex flex-col overflow-hidden rounded-t-box p-0 sm:rounded-box"
       >
         <header
           class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4 py-3 sm:px-5"
@@ -22,9 +22,7 @@
             >
               分享图片
             </h2>
-            <p class="mt-0.5 text-xs text-base-content/55">
-              1080 × 1350 PNG
-            </p>
+            <p class="mt-0.5 text-xs text-base-content/55">1080 × 1350 PNG</p>
           </div>
           <button
             type="button"
@@ -37,7 +35,7 @@
         </header>
 
         <div
-          class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 p-4 scrollbar-thin sm:p-6"
+          class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 scrollbar-thin"
         >
           <div
             v-if="loading"
@@ -78,7 +76,10 @@
               v-if="truncated"
               class="mt-3 flex items-start justify-center gap-1.5 text-center text-xs text-warning"
             >
-              <i class="ri-information-line mt-px shrink-0" aria-hidden="true"></i>
+              <i
+                class="ri-information-line mt-px shrink-0"
+                aria-hidden="true"
+              ></i>
               <span>选文较长，图片已省略未能完整收录的内容。</span>
             </figcaption>
           </figure>
