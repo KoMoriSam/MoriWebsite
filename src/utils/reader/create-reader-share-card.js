@@ -52,6 +52,10 @@ const KINSOKU_LINE_START = new Set(
   ),
 );
 const KINSOKU_LINE_END = new Set(Array.from("（〔［｛〈《「『【〖〘〚‘“«([{"));
+const SPACED_WORD_CORE = /[\p{L}\p{N}\p{M}]/u;
+const UNSPACED_WORD_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Bopomofo}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u;
+const WORD_CONNECTOR = /^[\u0026'\u002b,\-./:=?@_\u2019%#]$/u;
 
 let faviconPromise;
 
@@ -78,13 +82,53 @@ const isKinsokuLineStart = (value) =>
 const isKinsokuLineEnd = (value) =>
   KINSOKU_LINE_END.has(getLastGrapheme(value));
 
-const takeKinsokuCarry = (items, nextValue, getValue) => {
+const isSpacedWordCore = (value) =>
+  SPACED_WORD_CORE.test(value) && !UNSPACED_WORD_SCRIPT.test(value);
+
+const getSpacedWordStart = (items, nextValue, getValue) => {
+  const nextIsCore = isSpacedWordCore(nextValue);
+  const nextIsConnector = WORD_CONNECTOR.test(nextValue);
+  if (
+    !nextIsCore &&
+    !(nextIsConnector && isSpacedWordCore(getValue(items.at(-1))))
+  ) {
+    return items.length;
+  }
+
+  let index = items.length - 1;
+  while (index >= 0) {
+    if (isSpacedWordCore(getValue(items[index]))) {
+      index -= 1;
+      continue;
+    }
+    if (
+      WORD_CONNECTOR.test(getValue(items[index])) &&
+      index > 0 &&
+      isSpacedWordCore(getValue(items[index - 1]))
+    ) {
+      index -= 1;
+      continue;
+    }
+    break;
+  }
+  return index + 1;
+};
+
+const takeLineCarry = (items, nextValue, getValue, applyKinsoku = true) => {
   while (items.length && /^\s+$/u.test(getValue(items.at(-1)))) items.pop();
   const carry = [];
-  if (isKinsokuLineStart(nextValue) && items.length > 1) {
+  const wordStart = getSpacedWordStart(items, nextValue, getValue);
+  if (wordStart > 0 && wordStart < items.length) {
+    carry.unshift(...items.splice(wordStart));
+  }
+  if (applyKinsoku && isKinsokuLineStart(nextValue) && items.length > 1) {
     carry.unshift(items.pop());
   }
-  while (items.length > 1 && isKinsokuLineEnd(getValue(items.at(-1)))) {
+  while (
+    applyKinsoku &&
+    items.length > 1 &&
+    isKinsokuLineEnd(getValue(items.at(-1)))
+  ) {
     carry.unshift(items.pop());
   }
   return carry;
@@ -549,9 +593,12 @@ const wrapRuns = (context, runs, config, appearance) => {
       return;
     }
     if (tokens.length && width + token.width > config.width) {
-      const carry = config.codeBlock
-        ? []
-        : takeKinsokuCarry(tokens, token.text, ({ text }) => text);
+      const carry = takeLineCarry(
+        tokens,
+        token.text,
+        ({ text }) => text,
+        !config.codeBlock,
+      );
       width = tokens.reduce((total, item) => total + item.width, 0);
       if (tokens.length) {
         commitLine();
@@ -954,7 +1001,7 @@ const wrapPlainText = (context, value, maxWidth, maxLines) => {
   for (const grapheme of graphemes) {
     const graphemeWidth = context.measureText(grapheme).width;
     if (line.length && lineWidth + graphemeWidth > maxWidth) {
-      const carry = takeKinsokuCarry(line, grapheme, (item) => item);
+      const carry = takeLineCarry(line, grapheme, (item) => item);
       lineWidth = context.measureText(line.join("")).width;
       if (line.length) {
         lines.push(line.join("").trimEnd());
