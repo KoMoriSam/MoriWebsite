@@ -24,32 +24,6 @@
         </router-link>
       </small>
     </aside>
-    <nav>
-      <h6 class="footer-title">社交帐号</h6>
-      <address class="grid grid-flow-col gap-4">
-        <a href="https://github.com/KoMoriSam">
-          <i class="ri-github-fill text-2xl"></i>
-        </a>
-        <a href="https://space.bilibili.com/71104942">
-          <i class="ri-bilibili-fill text-2xl"></i>
-        </a>
-        <a href="https://weibo.com/u/5281976456">
-          <i class="ri-weibo-fill text-2xl"></i>
-        </a>
-      </address>
-      <br />
-      <small class="text-xs text-base-content/50">
-        在找旧版网页？
-        <a
-          class="link link-primary no-underline hover:underline"
-          href="/archive/home/index.html"
-          target="_blank"
-        >
-          这里跳转
-          <i class="ri-arrow-right-up-line"></i>
-        </a>
-      </small>
-    </nav>
     <nav v-if="analyticsAvailable" aria-labelledby="site-statistics-title">
       <h6 id="site-statistics-title" class="footer-title">站点统计</h6>
       <dl
@@ -84,10 +58,7 @@
           </dd>
         </div>
       </dl>
-      <small
-        v-if="startedAtLabel"
-        class="mt-1 text-xs text-base-content/50"
-      >
+      <small v-if="startedAtLabel" class="mt-1 text-xs text-base-content/50">
         统计自 {{ startedAtLabel }}
       </small>
       <small
@@ -95,6 +66,32 @@
         class="mt-1 text-xs text-base-content/50"
       >
         统计暂不可用
+      </small>
+    </nav>
+    <nav>
+      <h6 class="footer-title">社交帐号</h6>
+      <address class="grid grid-flow-col gap-4">
+        <a href="https://github.com/KoMoriSam">
+          <i class="ri-github-fill text-2xl"></i>
+        </a>
+        <a href="https://space.bilibili.com/71104942">
+          <i class="ri-bilibili-fill text-2xl"></i>
+        </a>
+        <a href="https://weibo.com/u/5281976456">
+          <i class="ri-weibo-fill text-2xl"></i>
+        </a>
+      </address>
+      <br />
+      <small class="text-xs text-base-content/50">
+        在找旧版网页？
+        <a
+          class="link link-primary no-underline hover:underline"
+          href="/archive/home/index.html"
+          target="_blank"
+        >
+          这里跳转
+          <i class="ri-arrow-right-up-line"></i>
+        </a>
       </small>
     </nav>
   </footer>
