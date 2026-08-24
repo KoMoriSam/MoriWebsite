@@ -11,6 +11,7 @@ const PIXABAY_API_ENDPOINT = "https://pixabay.com/api/";
 
 const ANALYTICS_MAX_BODY_BYTES = 2048;
 const ANALYTICS_CONTENT_ID_MAX_LENGTH = 128;
+const ANALYTICS_CONTENT_BATCH_MAX = 50;
 const ANALYTICS_EVENT_RETENTION_MS = 48 * 60 * 60 * 1000;
 const ANALYTICS_CLEANUP_LIMIT = 5000;
 const ANALYTICS_CONTENT_TYPES = new Set(["article", "novel"]);
@@ -263,7 +264,48 @@ function normalizeAnalyticsCount(value) {
   return Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
 }
 
-function createAnalyticsSnapshot(results, contentRequested) {
+function normalizeAnalyticsStatsQuery(url) {
+  const contentType = String(url.searchParams.get("contentType") || "").trim();
+  const requestedIds = url.searchParams.getAll("contentId");
+
+  if (!contentType && requestedIds.length === 0) {
+    return { contentType: "", contentIds: [] };
+  }
+
+  if (!ANALYTICS_CONTENT_TYPES.has(contentType)) {
+    throw createAnalyticsError(
+      "INVALID_CONTENT_TYPE",
+      "contentType 仅支持 article 或 novel。",
+    );
+  }
+
+  if (requestedIds.length > ANALYTICS_CONTENT_BATCH_MAX) {
+    throw createAnalyticsError(
+      "TOO_MANY_CONTENT_IDS",
+      `单次最多查询 ${ANALYTICS_CONTENT_BATCH_MAX} 个 contentId。`,
+    );
+  }
+
+  const contentIds = [];
+  const seen = new Set();
+  for (const requestedId of requestedIds) {
+    const { contentId } = normalizeAnalyticsContent(
+      contentType,
+      requestedId,
+      true,
+    );
+    if (seen.has(contentId)) continue;
+    seen.add(contentId);
+    contentIds.push(contentId);
+  }
+
+  return { contentType, contentIds };
+}
+
+function createAnalyticsSnapshot(
+  results,
+  { contentType = "", contentIds = [] } = {},
+) {
   const totals = results[0]?.results?.[0] || {};
   const daily = results[1]?.results?.[0] || {};
   const snapshot = {
@@ -273,10 +315,31 @@ function createAnalyticsSnapshot(results, contentRequested) {
     startedAt: String(totals.started_at || ""),
   };
 
-  if (contentRequested) {
-    snapshot.contentReads = normalizeAnalyticsCount(
-      results[2]?.results?.[0]?.reads,
+  let resultIndex = 2;
+
+  if (contentType) {
+    snapshot.contentTypeReads = normalizeAnalyticsCount(
+      results[resultIndex]?.results?.[0]?.reads,
     );
+    resultIndex += 1;
+  }
+
+  if (contentType && contentIds.length > 0) {
+    const contentReadsById = Object.fromEntries(
+      contentIds.map((contentId) => [contentId, 0]),
+    );
+
+    for (const row of results[resultIndex]?.results || []) {
+      const contentId = String(row?.content_id || "");
+      if (Object.hasOwn(contentReadsById, contentId)) {
+        contentReadsById[contentId] = normalizeAnalyticsCount(row.reads);
+      }
+    }
+
+    snapshot.contentReadsById = contentReadsById;
+    if (contentIds.length === 1) {
+      snapshot.contentReads = contentReadsById[contentIds[0]];
+    }
   }
 
   return snapshot;
@@ -285,8 +348,8 @@ function createAnalyticsSnapshot(results, contentRequested) {
 function createAnalyticsSnapshotStatements(
   env,
   statDate,
-  contentType,
-  contentId,
+  contentType = "",
+  contentIds = [],
 ) {
   const statements = [
     env.ANALYTICS_DB.prepare(
@@ -301,13 +364,24 @@ function createAnalyticsSnapshotStatements(
     ).bind(statDate),
   ];
 
-  if (contentType && contentId) {
+  if (contentType) {
     statements.push(
       env.ANALYTICS_DB.prepare(
-        `SELECT reads
+        `SELECT COALESCE(SUM(reads), 0) AS reads
          FROM analytics_content
-         WHERE content_type = ?1 AND content_id = ?2`,
-      ).bind(contentType, contentId),
+         WHERE content_type = ?1`,
+      ).bind(contentType),
+    );
+  }
+
+  if (contentType && contentIds.length > 0) {
+    const placeholders = contentIds.map(() => "?").join(", ");
+    statements.push(
+      env.ANALYTICS_DB.prepare(
+        `SELECT content_id, reads
+         FROM analytics_content
+         WHERE content_type = ? AND content_id IN (${placeholders})`,
+      ).bind(contentType, ...contentIds),
     );
   }
 
@@ -341,22 +415,19 @@ async function handleAnalyticsStats(request, env, corsOrigin) {
 
   try {
     const url = new URL(request.url);
-    const { contentType, contentId } = normalizeAnalyticsContent(
-      url.searchParams.get("contentType"),
-      url.searchParams.get("contentId"),
-    );
+    const { contentType, contentIds } = normalizeAnalyticsStatsQuery(url);
     const statDate = getAnalyticsDateKey(env);
     const results = await env.ANALYTICS_DB.batch(
       createAnalyticsSnapshotStatements(
         env,
         statDate,
         contentType,
-        contentId,
+        contentIds,
       ),
     );
 
     return analyticsJsonResponse(
-      createAnalyticsSnapshot(results, Boolean(contentType && contentId)),
+      createAnalyticsSnapshot(results, { contentType, contentIds }),
       200,
       corsOrigin,
     );
@@ -455,7 +526,7 @@ async function handleAnalyticsEvents(request, env, corsOrigin) {
         env,
         statDate,
         eventType === "read" ? contentType : "",
-        eventType === "read" ? contentId : "",
+        eventType === "read" ? [contentId] : [],
       ),
     ]);
     const accepted = normalizeAnalyticsCount(results[0]?.meta?.changes) > 0;
@@ -463,10 +534,10 @@ async function handleAnalyticsEvents(request, env, corsOrigin) {
     return analyticsJsonResponse(
       {
         accepted,
-        ...createAnalyticsSnapshot(
-          results.slice(1),
-          eventType === "read",
-        ),
+        ...createAnalyticsSnapshot(results.slice(1), {
+          contentType: eventType === "read" ? contentType : "",
+          contentIds: eventType === "read" ? [contentId] : [],
+        }),
       },
       200,
       corsOrigin,

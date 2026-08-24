@@ -30,6 +30,19 @@ const normalizePayload = (payload = {}) => {
     normalized.contentReads = normalizeCount(payload.contentReads);
   }
 
+  if (Object.hasOwn(payload, "contentTypeReads")) {
+    normalized.contentTypeReads = normalizeCount(payload.contentTypeReads);
+  }
+
+  if (payload.contentReadsById && typeof payload.contentReadsById === "object") {
+    normalized.contentReadsById = Object.fromEntries(
+      Object.entries(payload.contentReadsById).map(([contentId, reads]) => [
+        String(contentId),
+        normalizeCount(reads),
+      ]),
+    );
+  }
+
   return normalized;
 };
 
@@ -81,13 +94,22 @@ async function requestJson(path, options = {}, { retry = false } = {}) {
 export async function fetchAnalyticsStats({
   contentType = "",
   contentId = "",
+  contentIds = [],
 } = {}) {
   if (!hasAnalyticsApi || typeof window === "undefined") return null;
 
   const params = new URLSearchParams();
-  if (contentType && contentId) {
+  if (contentType) {
     params.set("contentType", contentType);
-    params.set("contentId", contentId);
+  }
+  const requestedIds =
+    Array.isArray(contentIds) && contentIds.length > 0
+      ? contentIds
+      : contentId
+        ? [contentId]
+        : [];
+  for (const requestedId of requestedIds) {
+    params.append("contentId", requestedId);
   }
 
   const query = params.size ? `?${params.toString()}` : "";

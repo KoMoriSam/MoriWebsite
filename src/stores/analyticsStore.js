@@ -10,6 +10,7 @@ import {
 const SESSION_STORAGE_KEY = "ANALYTICS_SESSION_V1";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
 const SESSION_PERSIST_INTERVAL_MS = 60 * 1000;
+const CONTENT_STATS_BATCH_SIZE = 50;
 const SESSION_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -47,7 +48,9 @@ export const useAnalyticsStore = defineStore("analytics", () => {
   const sessionId = ref("");
   const globalStatus = ref(hasAnalyticsApi ? "idle" : "disabled");
   const contentReads = reactive({});
+  const contentTypeReads = reactive({});
   const contentStatus = reactive({});
+  const contentTypeStatus = reactive({});
 
   const analyticsAvailable = computed(() => hasAnalyticsApi);
   const visitPromises = new Map();
@@ -58,7 +61,12 @@ export const useAnalyticsStore = defineStore("analytics", () => {
   let lastPersistedAt = 0;
   let trackingStarted = false;
 
-  const applyPayload = (payload, contentType = "", contentId = "") => {
+  const applyPayload = (
+    payload,
+    contentType = "",
+    contentId = "",
+    requestedContentIds = [],
+  ) => {
     if (!payload) return;
 
     todayVisits.value = payload.todayVisits;
@@ -71,6 +79,20 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     if (key && Object.hasOwn(payload, "contentReads")) {
       contentReads[key] = payload.contentReads;
       contentStatus[key] = "ready";
+    }
+
+    if (contentType && Object.hasOwn(payload, "contentTypeReads")) {
+      contentTypeReads[contentType] = payload.contentTypeReads;
+      contentTypeStatus[contentType] = "ready";
+    }
+
+    if (contentType && payload.contentReadsById) {
+      for (const requestedContentId of requestedContentIds) {
+        const requestedKey = getContentKey(contentType, requestedContentId);
+        contentReads[requestedKey] =
+          payload.contentReadsById[requestedContentId] ?? 0;
+        contentStatus[requestedKey] = "ready";
+      }
     }
   };
 
@@ -159,6 +181,59 @@ export const useAnalyticsStore = defineStore("analytics", () => {
 
     statsPromises.set(requestKey, request);
     return request;
+  };
+
+  const loadContentStats = async (contentType, contentIds = []) => {
+    if (!hasAnalyticsApi || typeof window === "undefined") return null;
+
+    const type = String(contentType || "").trim();
+    const ids = [...new Set(contentIds.map((id) => String(id || "").trim()))]
+      .filter(Boolean);
+    const chunks = [];
+
+    if (ids.length === 0) {
+      chunks.push([]);
+    } else {
+      for (let index = 0; index < ids.length; index += CONTENT_STATS_BATCH_SIZE) {
+        chunks.push(ids.slice(index, index + CONTENT_STATS_BATCH_SIZE));
+      }
+    }
+
+    contentTypeStatus[type] = "loading";
+    for (const id of ids) {
+      const key = getContentKey(type, id);
+      if (contentStatus[key] !== "ready") contentStatus[key] = "loading";
+    }
+
+    const requests = chunks.map((chunk) => {
+      const requestKey = `batch:${type}:${chunk.join("\u001f")}`;
+      if (statsPromises.has(requestKey)) return statsPromises.get(requestKey);
+
+      const request = fetchAnalyticsStats({ contentType: type, contentIds: chunk })
+        .then((payload) => {
+          applyPayload(payload, type, "", chunk);
+          return payload;
+        })
+        .catch((error) => {
+          if (contentTypeStatus[type] !== "ready") {
+            contentTypeStatus[type] = "error";
+          }
+          for (const id of chunk) {
+            const key = getContentKey(type, id);
+            if (contentStatus[key] !== "ready") contentStatus[key] = "error";
+          }
+          console.warn("读取内容列表统计失败：", error);
+          return null;
+        })
+        .finally(() => {
+          statsPromises.delete(requestKey);
+        });
+
+      statsPromises.set(requestKey, request);
+      return request;
+    });
+
+    return Promise.all(requests);
   };
 
   const recordVisitForSession = async (sessionId) => {
@@ -295,6 +370,18 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     return key ? contentStatus[key] || "idle" : "disabled";
   };
 
+  const getContentTypeReads = (contentType) => {
+    const type = String(contentType || "").trim();
+    return type && Number.isFinite(contentTypeReads[type])
+      ? contentTypeReads[type]
+      : null;
+  };
+
+  const getContentTypeStatus = (contentType) => {
+    const type = String(contentType || "").trim();
+    return type ? contentTypeStatus[type] || "idle" : "disabled";
+  };
+
   return {
     analyticsAvailable,
     todayVisits,
@@ -303,12 +390,17 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     startedAt,
     sessionId,
     globalStatus,
+    contentTypeReads,
+    contentTypeStatus,
     loadStats,
+    loadContentStats,
     trackVisit,
     recordRead,
     startTracking,
     stopTracking,
     getContentReads,
     getContentStatus,
+    getContentTypeReads,
+    getContentTypeStatus,
   };
 });
