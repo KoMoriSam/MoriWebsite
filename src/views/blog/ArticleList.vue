@@ -5,6 +5,38 @@
         共 {{ articles.length }} 篇文章
       </span>
       <client-only>
+        <span
+          v-if="analyticsAvailable && articleReadsStatus !== 'error'"
+          class="badge badge-info badge-outline badge-lg gap-1.5 font-semibold"
+        >
+          <i class="ri-eye-line" aria-hidden="true"></i>
+          <template v-if="Number.isFinite(articleTotalReads)">
+            {{ formatReadCount(articleTotalReads) }}
+          </template>
+          <span
+            v-else
+            class="loading loading-dots loading-xs"
+            aria-label="正在读取文章总阅读量"
+          ></span>
+        </span>
+      </client-only>
+      <client-only>
+        <span
+          v-if="commentCountsAvailable && articleCommentsStatus !== 'error'"
+          class="badge badge-info badge-outline badge-lg gap-1.5 font-semibold"
+        >
+          <i class="ri-chat-3-line" aria-hidden="true"></i>
+          <template v-if="Number.isFinite(articleTotalComments)">
+            {{ formatReadCount(articleTotalComments) }}
+          </template>
+          <span
+            v-else
+            class="loading loading-dots loading-xs"
+            aria-label="正在读取文章总评论量"
+          ></span>
+        </span>
+      </client-only>
+      <client-only>
         <span v-if="hasFilter" class="badge badge-primary badge-soft badge-lg">
           找到 {{ filteredArticles.length }} 篇
         </span>
@@ -483,6 +515,48 @@
                     {{ item.length || 0 }} 字
                   </span>
 
+                  <client-only>
+                    <span
+                      v-if="
+                        analyticsAvailable &&
+                        getArticleReadStatus(item) !== 'error'
+                      "
+                      class="flex items-center gap-1.5"
+                    >
+                      <i class="ri-eye-line" aria-hidden="true"></i>
+                      <template v-if="Number.isFinite(getArticleReads(item))">
+                        {{ formatReadCount(getArticleReads(item)) }} 次阅读
+                      </template>
+                      <span
+                        v-else
+                        class="loading loading-dots loading-xs"
+                        :aria-label="`正在读取《${item.title}》的阅读量`"
+                      ></span>
+                    </span>
+                  </client-only>
+
+                  <client-only>
+                    <span
+                      v-if="
+                        commentCountsAvailable &&
+                        getArticleCommentStatus(item) !== 'error'
+                      "
+                      class="flex items-center gap-1.5"
+                    >
+                      <i class="ri-chat-3-line" aria-hidden="true"></i>
+                      <template
+                        v-if="Number.isFinite(getArticleComments(item))"
+                      >
+                        {{ formatReadCount(getArticleComments(item)) }} 条评论
+                      </template>
+                      <span
+                        v-else
+                        class="loading loading-dots loading-xs"
+                        :aria-label="`正在读取《${item.title}》的评论量`"
+                      ></span>
+                    </span>
+                  </client-only>
+
                   <span
                     v-for="meta in getAdditionalMetadata(item)"
                     :key="`${item.id}-${meta.key}`"
@@ -568,6 +642,7 @@ import {
   watch,
 } from "vue";
 import { useDateFormat } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
@@ -580,6 +655,8 @@ import {
   useArticleFilter,
 } from "@/composables/useArticleFilter";
 import { createSearchExcerpt } from "@/services/search-content";
+import { useAnalyticsStore } from "@/stores/analyticsStore";
+import { useCommentCountsStore } from "@/stores/commentCountsStore";
 
 const props = defineProps({
   articles: {
@@ -616,6 +693,73 @@ const {
   pageSize: BLOG_PAGE_SIZE,
   loading: toRef(props, "loading"),
 });
+
+const analyticsStore = useAnalyticsStore();
+const commentCountsStore = useCommentCountsStore();
+const { analyticsAvailable } = storeToRefs(analyticsStore);
+const { commentCountsAvailable } = storeToRefs(commentCountsStore);
+const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const formatReadCount = (value) => readCountFormatter.format(Number(value));
+const articleTotalReads = computed(() =>
+  analyticsStore.getContentTypeReads("article"),
+);
+const articleReadsStatus = computed(() =>
+  analyticsStore.getContentTypeStatus("article"),
+);
+const getArticleAnalyticsId = (article) => String(article?.id ?? "").trim();
+const getArticleReads = (article) =>
+  analyticsStore.getContentReads("article", getArticleAnalyticsId(article));
+const getArticleReadStatus = (article) =>
+  analyticsStore.getContentStatus("article", getArticleAnalyticsId(article));
+const articleCommentContents = computed(() =>
+  props.articles
+    .map((article) => {
+      const contentId = getArticleAnalyticsId(article);
+      return { contentId, discussionTerm: contentId };
+    })
+    .filter(({ contentId }) => Boolean(contentId)),
+);
+const articleCommentIds = computed(() =>
+  articleCommentContents.value.map(({ contentId }) => contentId),
+);
+const articleTotalComments = computed(() =>
+  commentCountsStore.getContentCollectionTotal(
+    "article",
+    articleCommentIds.value,
+  ),
+);
+const articleCommentsStatus = computed(() =>
+  commentCountsStore.getContentCollectionStatus(
+    "article",
+    articleCommentIds.value,
+  ),
+);
+const getArticleComments = (article) =>
+  commentCountsStore.getContentCommentTotal(
+    "article",
+    getArticleAnalyticsId(article),
+  );
+const getArticleCommentStatus = (article) =>
+  commentCountsStore.getContentCommentStatus(
+    "article",
+    getArticleAnalyticsId(article),
+  );
+
+watch(
+  () => paginatedArticles.value.map(getArticleAnalyticsId).filter(Boolean),
+  (contentIds) => {
+    void analyticsStore.loadContentStats("article", contentIds);
+  },
+  { immediate: true },
+);
+
+watch(
+  articleCommentContents,
+  (contents) => {
+    void commentCountsStore.loadContentCommentTotals("article", contents);
+  },
+  { immediate: true },
+);
 
 const pageStart = computed(() => {
   if (!filteredArticles.value.length) return 0;

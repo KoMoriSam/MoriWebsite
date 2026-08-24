@@ -98,6 +98,36 @@
               <i class="ri-edit-line"></i>
               共 {{ totalWordCount }} 字
             </span>
+            <client-only v-if="analyticsAvailable || commentCountsAvailable">
+              <span
+                v-if="analyticsAvailable && novelReadsStatus !== 'error'"
+                class="inline-flex items-center gap-1.5"
+              >
+                <i class="ri-eye-line" aria-hidden="true"></i>
+                <template v-if="Number.isFinite(novelTotalReads)">
+                  {{ formatReadCount(novelTotalReads) }} 次阅读
+                </template>
+                <span
+                  v-else
+                  class="loading loading-dots loading-xs"
+                  aria-label="正在读取小说总阅读量"
+                ></span>
+              </span>
+              <span
+                v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
+                class="inline-flex items-center gap-1.5"
+              >
+                <i class="ri-chat-3-line" aria-hidden="true"></i>
+                <template v-if="Number.isFinite(novelTotalComments)">
+                  {{ formatReadCount(novelTotalComments) }} 条评论
+                </template>
+                <span
+                  v-else
+                  class="loading loading-dots loading-xs"
+                  aria-label="正在读取小说总评论量"
+                ></span>
+              </span>
+            </client-only>
           </section>
         </section>
       </section>
@@ -138,18 +168,23 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
-import { getChapterDisplayTitle } from "@/utils/format-chapter-label";
+import {
+  getChapterContextTitle,
+  getChapterDisplayTitle,
+} from "@/utils/format-chapter-label";
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
 import { storeToRefs } from "pinia";
 import { useNovelStore } from "@/stores/novelStore";
+import { useAnalyticsStore } from "@/stores/analyticsStore";
+import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
 
 import Chapters from "@/components/novel/ChapterList.vue";
@@ -164,6 +199,60 @@ const {
   totalWordCount,
 } = storeToRefs(novelStore);
 const themeStore = useThemeStore();
+const analyticsStore = useAnalyticsStore();
+const commentCountsStore = useCommentCountsStore();
+const { analyticsAvailable } = storeToRefs(analyticsStore);
+const { commentCountsAvailable } = storeToRefs(commentCountsStore);
+const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const formatReadCount = (value) => readCountFormatter.format(Number(value));
+const novelTotalReads = computed(() =>
+  analyticsStore.getContentTypeReads("novel"),
+);
+const novelReadsStatus = computed(() =>
+  analyticsStore.getContentTypeStatus("novel"),
+);
+const chapterCommentContents = computed(() =>
+  flatChapters.value
+    .map((chapter) => ({
+      contentId: String(chapter?.uuid || "").trim(),
+      discussionTerm: getChapterContextTitle(chapter),
+    }))
+    .filter(({ contentId, discussionTerm }) => contentId && discussionTerm),
+);
+const chapterCommentIds = computed(() =>
+  chapterCommentContents.value.map(({ contentId }) => contentId),
+);
+const novelTotalComments = computed(() =>
+  commentCountsStore.getContentCollectionTotal(
+    "novel",
+    chapterCommentIds.value,
+  ),
+);
+const novelCommentsStatus = computed(() =>
+  commentCountsStore.getContentCollectionStatus(
+    "novel",
+    chapterCommentIds.value,
+  ),
+);
+
+watch(
+  () =>
+    flatChapters.value
+      .map((chapter) => String(chapter?.uuid || "").trim())
+      .filter(Boolean),
+  (contentIds) => {
+    void analyticsStore.loadContentStats("novel", contentIds);
+  },
+  { immediate: true },
+);
+
+watch(
+  chapterCommentContents,
+  (contents) => {
+    void commentCountsStore.loadContentCommentTotals("novel", contents);
+  },
+  { immediate: true },
+);
 
 const { imageLoaded, handleImageLoad } = useImageLoad();
 

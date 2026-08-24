@@ -139,6 +139,56 @@
                       ></i>
                       {{ chapter.length }} 字
                     </span>
+                    <client-only>
+                      <span
+                        v-if="
+                          analyticsAvailable &&
+                          getChapterReadStatus(chapter.uuid) !== 'error'
+                        "
+                        class="inline-flex items-center gap-1"
+                      >
+                        <i
+                          class="ri-eye-line font-normal"
+                          aria-hidden="true"
+                        ></i>
+                        <template
+                          v-if="Number.isFinite(getChapterReads(chapter.uuid))"
+                        >
+                          {{ formatReadCount(getChapterReads(chapter.uuid)) }}
+                          次阅读
+                        </template>
+                        <span
+                          v-else
+                          class="loading loading-dots loading-xs"
+                          :aria-label="`正在读取《${chapter.title}》的阅读量`"
+                        ></span>
+                      </span>
+                    </client-only>
+                    <client-only>
+                      <span
+                        v-if="
+                          commentCountsAvailable &&
+                          getChapterCommentStatus(chapter) !== 'error'
+                        "
+                        class="inline-flex items-center gap-1"
+                      >
+                        <i
+                          class="ri-chat-3-line font-normal"
+                          aria-hidden="true"
+                        ></i>
+                        <template
+                          v-if="Number.isFinite(getChapterComments(chapter))"
+                        >
+                          {{ formatReadCount(getChapterComments(chapter)) }}
+                          条评论
+                        </template>
+                        <span
+                          v-else
+                          class="loading loading-dots loading-xs"
+                          :aria-label="`正在读取《${chapter.title}》的评论量`"
+                        ></span>
+                      </span>
+                    </client-only>
                   </span>
                 </span>
 
@@ -169,6 +219,8 @@ import { storeToRefs } from "pinia";
 import { useDateFormat } from "@vueuse/core";
 
 import { useNovelStore } from "@/stores/novelStore";
+import { useAnalyticsStore } from "@/stores/analyticsStore";
+import { useCommentCountsStore } from "@/stores/commentCountsStore";
 
 import { useChapters } from "@/composables/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
@@ -178,6 +230,20 @@ import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";
 import Submenu from "@/components/ui/menu/Submenu.vue";
 
 const novelStore = useNovelStore();
+const analyticsStore = useAnalyticsStore();
+const commentCountsStore = useCommentCountsStore();
+const { analyticsAvailable } = storeToRefs(analyticsStore);
+const { commentCountsAvailable } = storeToRefs(commentCountsStore);
+const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const formatReadCount = (value) => readCountFormatter.format(Number(value));
+const getChapterReads = (chapterId) =>
+  analyticsStore.getContentReads("novel", chapterId);
+const getChapterReadStatus = (chapterId) =>
+  analyticsStore.getContentStatus("novel", chapterId);
+const getChapterComments = (chapter) =>
+  commentCountsStore.getContentCommentTotal("novel", chapter?.uuid);
+const getChapterCommentStatus = (chapter) =>
+  commentCountsStore.getContentCommentStatus("novel", chapter?.uuid);
 const {
   chapterCount,
   chapterVolumes,

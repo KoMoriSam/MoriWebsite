@@ -197,7 +197,7 @@
               class="inline-flex items-center gap-1.5"
             >
               <i class="ri-file-text-line"></i>
-              {{ article.length }} 字
+              约 {{ article.length }} 字
             </span>
 
             <span
@@ -220,6 +220,21 @@
                 v-else
                 class="loading loading-dots loading-xs"
                 aria-label="正在读取文章阅读次数"
+              ></span>
+            </span>
+
+            <span
+              v-if="commentCountsAvailable && articleCommentStatus !== 'error'"
+              class="inline-flex items-center gap-1.5"
+            >
+              <i class="ri-chat-3-line" aria-hidden="true"></i>
+              <template v-if="Number.isFinite(articleComments)">
+                {{ formatReadCount(articleComments) }} 条评论
+              </template>
+              <span
+                v-else
+                class="loading loading-dots loading-xs"
+                aria-label="正在读取文章评论量"
               ></span>
             </span>
           </div>
@@ -396,6 +411,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useDateFormat } from "@vueuse/core";
 
 import { useReaderStore } from "@/stores/readerStore";
+import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
@@ -441,6 +457,14 @@ const props = defineProps({
 const emit = defineEmits(["back", "refresh", "navigate"]);
 
 const articleId = computed(() => String(props.article?.id || "").trim());
+const commentCountsStore = useCommentCountsStore();
+const { commentCountsAvailable } = storeToRefs(commentCountsStore);
+const articleComments = computed(() =>
+  commentCountsStore.getContentCommentTotal("article", articleId.value),
+);
+const articleCommentStatus = computed(() =>
+  commentCountsStore.getContentCommentStatus("article", articleId.value),
+);
 const articleReady = computed(
   () =>
     Boolean(articleId.value) &&
@@ -459,6 +483,17 @@ const {
 });
 const readCountFormatter = new Intl.NumberFormat("zh-CN");
 const formatReadCount = (value) => readCountFormatter.format(Number(value));
+
+watch(
+  articleId,
+  (contentId) => {
+    if (!contentId) return;
+    void commentCountsStore.loadContentCommentTotals("article", [
+      { contentId, discussionTerm: contentId },
+    ]);
+  },
+  { immediate: true },
+);
 
 const { GISCUS } = CONFIG;
 const route = useRoute();
