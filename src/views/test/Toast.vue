@@ -1,14 +1,20 @@
 <template>
   <TestPage section-id="toast">
-    <TestCard title="Toast 通知">
+    <section title="Toast 通知">
       <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
-        <button class="btn btn-sm btn-success" @click="toast.success('操作成功！')">
+        <button
+          class="btn btn-sm btn-success"
+          @click="toast.success('操作成功！')"
+        >
           Success
         </button>
         <button class="btn btn-sm btn-error" @click="toast.error('操作失败！')">
           Error
         </button>
-        <button class="btn btn-sm btn-warning" @click="toast.warning('请注意！')">
+        <button
+          class="btn btn-sm btn-warning"
+          @click="toast.warning('请注意！')"
+        >
           Warning
         </button>
         <button
@@ -35,13 +41,13 @@
           {{ position }}
         </button>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
 import { useToast } from "@/composables/useToast";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const toast = useToast({

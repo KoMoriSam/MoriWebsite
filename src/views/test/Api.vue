@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="api">
-    <TestCard title="API 测试">
+    <section class="min-w-0">
       <div class="mb-3 flex flex-wrap gap-2">
         <button
           class="btn btn-sm btn-primary"
@@ -34,14 +34,13 @@
         >{{ apiResult }}</pre
       >
       <p v-if="apiError" class="text-sm text-error">{{ apiError }}</p>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useChapterApi } from "@/services/api-chapters";
-import TestCard from "@/components/test/_TestCard.vue";
 import TestPage from "./_TestPage.vue";
 
 const apiLoading = ref(false);

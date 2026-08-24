@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="storage">
-    <TestCard title="localStorage">
+    <section title="localStorage">
       <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
         <div
           v-for="group in storageGroups"
@@ -22,7 +22,7 @@
           刷新
         </button>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
@@ -31,7 +31,7 @@ import { computed } from "vue";
 import { useGlobalStorage } from "@/utils/storage/use-global-storage";
 import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const { GLOBAL_INFO } = useGlobalStorage();

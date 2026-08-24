@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="page-layout">
-    <TestCard title="ContentPage 内容页">
+    <section title="ContentPage 内容页">
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div>
           <p class="max-w-3xl text-sm leading-relaxed text-base-content/70">
@@ -36,11 +36,10 @@
           </router-link>
         </div>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
-import TestCard from "@/components/test/_TestCard.vue";
 import TestPage from "./_TestPage.vue";
 </script>

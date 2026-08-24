@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="to-top">
-    <TestCard title="浮动按钮与回到顶部">
+    <section title="浮动按钮与回到顶部">
       <div class="flex min-h-[calc(100vh+24rem)] flex-col">
         <p class="text-sm text-base-content/60">
           向下滚动超过 300px 后，右下角应出现浮动按钮；点击后应返回页面顶部。
@@ -11,11 +11,10 @@
           已到达测试页底部
         </div>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
-import TestCard from "@/components/test/_TestCard.vue";
 import TestPage from "./_TestPage.vue";
 </script>

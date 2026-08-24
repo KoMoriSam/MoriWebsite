@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="loading">
-    <TestCard title="Loading 状态">
+    <section title="Loading 状态">
       <div class="mb-4 flex flex-wrap items-center gap-4">
         <button
           class="btn btn-sm btn-primary"
@@ -24,7 +24,7 @@
         <Loading v-if="loadingOn" size="my-4" />
         <p v-else class="opacity-50">点击按钮查看 Loading 组件</p>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
@@ -32,7 +32,7 @@
 import { onBeforeUnmount, ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import Loading from "@/components/base/Loading.vue";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const toast = useToast({

@@ -1,10 +1,12 @@
 <template>
   <TestPage section-id="modal">
-    <TestCard title="Modal 弹窗">
+    <section title="Modal 弹窗">
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article class="rounded-box border border-base-300 p-4">
           <h3 class="font-semibold">1. 无按钮</h3>
-          <p class="mt-1 text-sm opacity-70">应仅能通过 Esc 或点击弹窗外部关闭。</p>
+          <p class="mt-1 text-sm opacity-70">
+            应仅能通过 Esc 或点击弹窗外部关闭。
+          </p>
           <button class="btn btn-sm mt-3" @click="openNoButtonModal">
             测试无按钮 Modal
           </button>
@@ -58,7 +60,7 @@
         button-text="关闭"
         @close="inlineModal = false"
       />
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
@@ -67,7 +69,7 @@ import { ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import { useModal } from "@/composables/useModal";
 import Modal from "@/components/ui/Modal.vue";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const toast = useToast({

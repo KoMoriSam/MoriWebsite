@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="markdown">
-    <TestCard title="Markdown 渲染与阅读器样式设置">
+    <section title="Markdown 渲染与阅读器样式设置">
       <div
         class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)]"
       >
@@ -49,7 +49,9 @@
               v-for="sample in markdownSamples"
               :key="sample.name"
               class="btn btn-xs"
-              :class="currentSample === sample.name ? 'btn-primary' : 'btn-outline'"
+              :class="
+                currentSample === sample.name ? 'btn-primary' : 'btn-outline'
+              "
               @click="currentSample = sample.name"
             >
               {{ sample.name }}
@@ -63,7 +65,7 @@
           />
         </section>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
@@ -72,7 +74,7 @@ import { computed, ref } from "vue";
 import { useReaderStore } from "@/stores/readerStore";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const readerStore = useReaderStore();
@@ -364,9 +366,8 @@ const markdownHeaderData = computed(() => ({
   title: `Markdown 渲染测试：${currentSample.value}`,
   uuid: "markdown-test",
   page:
-    markdownSamples.findIndex(
-      (sample) => sample.name === currentSample.value,
-    ) + 1,
+    markdownSamples.findIndex((sample) => sample.name === currentSample.value) +
+    1,
   meta: "",
   sourceType: "article",
 }));

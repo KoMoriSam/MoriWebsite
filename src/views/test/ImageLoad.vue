@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="image-load">
-    <TestCard title="useImageLoad">
+    <section class="min-w-0">
       <div class="flex items-center gap-4">
         <div class="relative h-32 w-32 overflow-hidden rounded-lg bg-base-300">
           <div v-if="!imageLoaded" class="skeleton absolute inset-0 z-10"></div>
@@ -29,13 +29,13 @@
           </span>
         </p>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const imageLoaded = ref(false);

@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="routing">
-    <TestCard title="路由与导航">
+    <section title="路由与导航">
       <div class="mb-3 flex flex-wrap gap-2">
         <router-link
           v-for="item in routes"
@@ -14,14 +14,14 @@
       <p class="text-xs opacity-50">
         当前路由: <code>{{ $route.fullPath }}</code>
       </p>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import TestCard from "@/components/test/_TestCard.vue";
+
 import TestPage from "./_TestPage.vue";
 
 const router = useRouter();

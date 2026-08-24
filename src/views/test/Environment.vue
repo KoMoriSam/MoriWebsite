@@ -1,19 +1,18 @@
 <template>
   <TestPage section-id="environment">
-    <TestCard title="环境信息">
+    <section class="min-w-0">
       <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <template v-for="(value, key) in environmentInfo" :key="key">
           <span class="font-semibold">{{ key }}:</span>
           <code class="break-all text-xs">{{ value }}</code>
         </template>
       </div>
-    </TestCard>
+    </section>
   </TestPage>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import TestCard from "@/components/test/_TestCard.vue";
 import TestPage from "./_TestPage.vue";
 
 const environmentInfo = computed(() => ({
