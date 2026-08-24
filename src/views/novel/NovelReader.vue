@@ -625,7 +625,7 @@ const setupNovelPosTracker = () => {
       getContextId: () => String(currentChapterUuid.value || ""),
       isActive: () => router.currentRoute.value.name === "novel-reader",
       posSelector:
-        "#markdown-content h1[id], #markdown-content h2[id], #markdown-content h3[id], #markdown-content h4[id], #markdown-content h5[id], #markdown-content h6[id], #markdown-content p[id]",
+        ".markdown-content h1[id], .markdown-content h2[id], .markdown-content h3[id], .markdown-content h4[id], .markdown-content h5[id], .markdown-content h6[id], .markdown-content p[id]",
     },
   );
   trackedReaderContext.value = readerContext;
