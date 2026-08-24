@@ -309,9 +309,7 @@
         </section>
 
         <!-- 文章列表 -->
-        <template
-          v-else-if="filteredArticles.length"
-        >
+        <template v-else-if="filteredArticles.length">
           <div
             class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
           >
@@ -321,200 +319,200 @@
               :to="getArticleRoute(item)"
               class="group card card-border min-w-0 cursor-pointer overflow-hidden bg-base-100 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             >
-            <!-- 封面 -->
-            <div
-              class="relative h-48 shrink-0 overflow-hidden bg-base-200 sm:h-52"
-              :aria-busy="hasBanner(item) && !isBannerLoaded(item)"
-            >
-              <!-- 有封面图片 -->
-              <template v-if="hasBanner(item)">
-                <!-- daisyUI 骨架背景始终放在图片下方 -->
-                <div
-                  class="skeleton absolute inset-0 rounded-none"
-                  aria-hidden="true"
-                ></div>
-
-                <!-- 使用 img 才能准确监听加载状态 -->
-                <img
-                  v-fade-in
-                  :key="getBannerKey(item)"
-                  :ref="(element) => setBannerImageRef(item, element)"
-                  :src="resolveBannerUrl(item.banner)"
-                  :alt="item.title"
-                  loading="lazy"
-                  decoding="async"
-                  draggable="false"
-                  class="absolute inset-0 size-full object-cover object-center transition-[opacity,transform,scale] duration-500 ease-out motion-reduce:transition-none group-hover:scale-105"
-                  @load="handleBannerLoad(item)"
-                  @error="handleBannerError(item)"
-                />
-
-                <!-- 图片加载完成后再显示遮罩 -->
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500"
-                  :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
-                ></div>
-              </template>
-
-              <!-- 无封面或封面加载失败 -->
-              <template v-else>
-                <div
-                  class="absolute -right-10 -top-14 size-40 rounded-full bg-primary/10 blur-2xl transition-transform duration-500 group-hover:scale-125"
-                ></div>
-
-                <div
-                  class="absolute -bottom-16 -left-10 size-44 rounded-full bg-accent/15 blur-2xl transition-transform duration-500 group-hover:scale-125"
-                ></div>
-
-                <i
-                  class="ri-article-line absolute right-5 top-4 text-7xl text-base-content/5 transition-all duration-500 group-hover:-rotate-6 group-hover:scale-110"
-                ></i>
-
-                <div
-                  class="absolute inset-0 opacity-[0.04]"
-                  style="
-                    background-image: radial-gradient(
-                      currentColor 1px,
-                      transparent 1px
-                    );
-                    background-size: 16px 16px;
-                  "
-                ></div>
-              </template>
-
-              <!-- 文章信息 -->
+              <!-- 封面 -->
               <div
-                class="absolute inset-x-0 bottom-0 z-10 p-4 transition-colors duration-300 sm:p-5"
-                :class="
-                  hasBanner(item) && isBannerLoaded(item)
-                    ? 'text-white'
-                    : 'text-base-content'
-                "
+                class="relative h-48 shrink-0 overflow-hidden bg-base-200 sm:h-52"
+                :aria-busy="hasBanner(item) && !isBannerLoaded(item)"
               >
-                <div
-                  v-if="item.tags?.length"
-                  class="flex max-h-12 flex-wrap gap-1.5 overflow-hidden"
-                >
-                  <span
-                    v-for="tag in item.tags"
-                    :key="tag"
-                    class="badge badge-sm max-w-full transition-colors duration-300"
-                    :class="
-                      hasBanner(item) && isBannerLoaded(item)
-                        ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
-                        : 'badge-primary badge-soft'
-                    "
-                  >
-                    <span class="truncate">
-                      <template
-                        v-for="(part, partIndex) in highlightParts(
-                          formatTag(tag),
-                        )"
-                        :key="`${part.text}-${partIndex}`"
-                      >
-                        <mark
-                          v-if="part.match"
-                          class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
-                        >
-                          {{ part.text }}
-                        </mark>
-                        <template v-else>{{ part.text }}</template>
-                      </template>
-                    </span>
-                  </span>
-                </div>
+                <!-- 有封面图片 -->
+                <template v-if="hasBanner(item)">
+                  <!-- daisyUI 骨架背景始终放在图片下方 -->
+                  <div
+                    class="skeleton absolute inset-0 rounded-none"
+                    aria-hidden="true"
+                  ></div>
 
-                <h2
-                  class="mt-3 line-clamp-2 text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
+                  <!-- 使用 img 才能准确监听加载状态 -->
+                  <img
+                    v-fade-in
+                    :key="getBannerKey(item)"
+                    :ref="(element) => setBannerImageRef(item, element)"
+                    :src="resolveBannerUrl(item.banner)"
+                    :alt="item.title"
+                    loading="lazy"
+                    decoding="async"
+                    draggable="false"
+                    class="absolute inset-0 size-full object-cover object-center transition-[opacity,transform,scale] duration-500 ease-out motion-reduce:transition-none group-hover:scale-105"
+                    @load="handleBannerLoad(item)"
+                    @error="handleBannerError(item)"
+                  />
+
+                  <!-- 图片加载完成后再显示遮罩 -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500"
+                    :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
+                  ></div>
+                </template>
+
+                <!-- 无封面或封面加载失败 -->
+                <template v-else>
+                  <div
+                    class="absolute -right-10 -top-14 size-40 rounded-full bg-primary/10 blur-2xl transition-transform duration-500 group-hover:scale-125"
+                  ></div>
+
+                  <div
+                    class="absolute -bottom-16 -left-10 size-44 rounded-full bg-accent/15 blur-2xl transition-transform duration-500 group-hover:scale-125"
+                  ></div>
+
+                  <i
+                    class="ri-article-line absolute right-5 top-4 text-7xl text-base-content/5 transition-all duration-500 group-hover:-rotate-6 group-hover:scale-110"
+                  ></i>
+
+                  <div
+                    class="absolute inset-0 opacity-[0.04]"
+                    style="
+                      background-image: radial-gradient(
+                        currentColor 1px,
+                        transparent 1px
+                      );
+                      background-size: 16px 16px;
+                    "
+                  ></div>
+                </template>
+
+                <!-- 文章信息 -->
+                <div
+                  class="absolute inset-x-0 bottom-0 z-10 p-4 transition-colors duration-300 sm:p-5"
                   :class="
                     hasBanner(item) && isBannerLoaded(item)
-                      ? 'drop-shadow-sm'
-                      : ''
+                      ? 'text-white'
+                      : 'text-base-content'
                   "
                 >
+                  <div
+                    v-if="item.tags?.length"
+                    class="flex max-h-12 flex-wrap gap-1.5 overflow-hidden"
+                  >
+                    <span
+                      v-for="tag in item.tags"
+                      :key="tag"
+                      class="badge badge-sm max-w-full transition-colors duration-300"
+                      :class="
+                        hasBanner(item) && isBannerLoaded(item)
+                          ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
+                          : 'badge-primary badge-soft'
+                      "
+                    >
+                      <span class="truncate">
+                        <template
+                          v-for="(part, partIndex) in highlightParts(
+                            formatTag(tag),
+                          )"
+                          :key="`${part.text}-${partIndex}`"
+                        >
+                          <mark
+                            v-if="part.match"
+                            class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
+                          >
+                            {{ part.text }}
+                          </mark>
+                          <template v-else>{{ part.text }}</template>
+                        </template>
+                      </span>
+                    </span>
+                  </div>
+
+                  <h2
+                    class="mt-3 line-clamp-2 text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
+                    :class="
+                      hasBanner(item) && isBannerLoaded(item)
+                        ? 'drop-shadow-sm'
+                        : ''
+                    "
+                  >
+                    <template
+                      v-for="(part, partIndex) in highlightParts(item.title)"
+                      :key="`${part.text}-${partIndex}`"
+                    >
+                      <mark
+                        v-if="part.match"
+                        class="rounded-sm bg-primary/80 px-0.5 text-primary-content"
+                      >
+                        {{ part.text }}
+                      </mark>
+                      <template v-else>{{ part.text }}</template>
+                    </template>
+                  </h2>
+                </div>
+              </div>
+
+              <!-- 内容 -->
+              <div class="card-body not-prose min-w-0 gap-0 p-5 sm:p-6">
+                <p class="line-clamp-3 leading-relaxed text-base-content/65">
                   <template
-                    v-for="(part, partIndex) in highlightParts(item.title)"
+                    v-for="(part, partIndex) in highlightParts(
+                      getResultSummary(item),
+                    )"
                     :key="`${part.text}-${partIndex}`"
                   >
                     <mark
                       v-if="part.match"
-                      class="rounded-sm bg-primary/80 px-0.5 text-primary-content"
+                      class="rounded-sm bg-primary/65 px-0.5 text-primary-content"
                     >
                       {{ part.text }}
                     </mark>
                     <template v-else>{{ part.text }}</template>
                   </template>
-                </h2>
-              </div>
-            </div>
+                </p>
 
-            <!-- 内容 -->
-            <div class="card-body not-prose min-w-0 gap-0 p-5 sm:p-6">
-              <p class="line-clamp-3 leading-relaxed text-base-content/65">
-                <template
-                  v-for="(part, partIndex) in highlightParts(
-                    getResultSummary(item),
-                  )"
-                  :key="`${part.text}-${partIndex}`"
+                <div
+                  class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5 text-sm text-base-content/50"
                 >
-                  <mark
-                    v-if="part.match"
-                    class="rounded-sm bg-primary/65 px-0.5 text-primary-content"
+                  <time class="flex items-center gap-1.5">
+                    <i class="ri-calendar-line"></i>
+                    {{ useDateFormat(item.date, "YYYY/M/D") }}
+                  </time>
+
+                  <span class="flex items-center gap-1.5">
+                    <i class="ri-time-line"></i>
+                    {{ estimateReadingTime(item.length) }} 分钟
+                  </span>
+
+                  <span class="flex items-center gap-1.5">
+                    <i class="ri-file-text-line"></i>
+                    {{ item.length || 0 }} 字
+                  </span>
+
+                  <span
+                    v-for="meta in getAdditionalMetadata(item)"
+                    :key="`${item.id}-${meta.key}`"
+                    class="flex min-w-0 max-w-full items-center gap-1.5"
+                    :title="`${meta.label}：${meta.value}`"
                   >
-                    {{ part.text }}
-                  </mark>
-                  <template v-else>{{ part.text }}</template>
-                </template>
-              </p>
+                    <i class="shrink-0" :class="meta.icon"></i>
+                    <span class="shrink-0">{{ meta.label }}</span>
+                    <span class="max-w-48 truncate">{{ meta.value }}</span>
+                  </span>
 
-              <div
-                class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5 text-sm text-base-content/50"
-              >
-                <time class="flex items-center gap-1.5">
-                  <i class="ri-calendar-line"></i>
-                  {{ useDateFormat(item.date, "YYYY/M/D") }}
-                </time>
-
-                <span class="flex items-center gap-1.5">
-                  <i class="ri-time-line"></i>
-                  {{ estimateReadingTime(item.length) }} 分钟
-                </span>
-
-                <span class="flex items-center gap-1.5">
-                  <i class="ri-file-text-line"></i>
-                  {{ item.length || 0 }} 字
-                </span>
-
-                <span
-                  v-for="meta in getAdditionalMetadata(item)"
-                  :key="`${item.id}-${meta.key}`"
-                  class="flex min-w-0 max-w-full items-center gap-1.5"
-                  :title="`${meta.label}：${meta.value}`"
-                >
-                  <i class="shrink-0" :class="meta.icon"></i>
-                  <span class="shrink-0">{{ meta.label }}</span>
-                  <span class="max-w-48 truncate">{{ meta.value }}</span>
-                </span>
-
-                <span
-                  class="ml-auto flex items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5"
-                >
-                  阅读全文
-                  <i class="ri-arrow-right-line"></i>
-                </span>
+                  <span
+                    class="ml-auto flex items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5"
+                  >
+                    阅读全文
+                    <i class="ri-arrow-right-line"></i>
+                  </span>
+                </div>
               </div>
-            </div>
             </RouterLink>
           </div>
 
-          <nav v-if="totalPages > 1" class="mt-8" aria-label="文章列表分页">
-            <Pagination
-              :current-page="currentPage"
-              :total-pages="totalPages"
-              :get-page-route="getPageRoute"
-              @change="handlePageChange"
-            />
-          </nav>
+          <Pagination
+            v-if="totalPages > 1"
+            aria-label="文章列表分页"
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            :get-page-route="getPageRoute"
+            @change="handlePageChange"
+          />
         </template>
 
         <!-- 无匹配结果 -->

@@ -1,10 +1,10 @@
 <template>
-  <div
+  <nav
     ref="paginationRef"
-    class="relative flex w-full min-w-0 justify-center px-1 sm:px-2"
+    class="relative flex w-full min-w-0 justify-center px-1 sm:px-2 mt-4"
   >
     <!-- 分页按钮组 -->
-    <div class="join max-w-full">
+    <section class="join max-w-full">
       <!-- 上一页 -->
       <RouterLink
         v-if="getPageRoute && currentPage > 1"
@@ -28,9 +28,7 @@
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
         :disabled="currentPage <= 1 && !canNavigateBefore"
         :aria-label="
-          currentPage <= 1 && canNavigateBefore
-            ? beforeBoundaryLabel
-            : '上一页'
+          currentPage <= 1 && canNavigateBefore ? beforeBoundaryLabel : '上一页'
         "
         @click="requestPrevious"
       >
@@ -39,8 +37,9 @@
 
       <!-- 移动端中间按钮 -->
       <button
+        v-if="isCompactLayout"
         type="button"
-        class="btn join-item min-w-0 max-w-[calc(100vw-7rem)] gap-1 overflow-hidden px-2 text-xs h-10 min-h-10 sm:max-w-48 sm:px-3 sm:text-sm lg:hidden"
+        class="btn join-item h-10 min-h-10 min-w-0 max-w-[calc(100vw-7rem)] gap-1 overflow-hidden px-2 text-xs sm:max-w-48 sm:px-3 sm:text-sm"
         :class="{ 'btn-active': isPageMenuOpen }"
         :aria-expanded="isPageMenuOpen"
         aria-haspopup="dialog"
@@ -67,43 +66,45 @@
       </button>
 
       <!-- 桌面端页码 -->
-      <template v-for="item in visiblePages" :key="item.key">
-        <RouterLink
-          v-if="item.type === 'page' && getPageRoute"
-          :to="resolvePageRoute(item.page)"
-          custom
-          v-slot="{ href }"
-        >
-          <a
-            :href="href"
-            class="btn join-item hidden min-w-10 px-3 lg:flex"
+      <template v-if="!isCompactLayout">
+        <template v-for="item in visiblePages" :key="item.key">
+          <RouterLink
+            v-if="item.type === 'page' && getPageRoute"
+            :to="resolvePageRoute(item.page)"
+            custom
+            v-slot="{ href }"
+          >
+            <a
+              :href="href"
+              class="btn join-item min-w-10 px-3"
+              :class="{ 'btn-primary': item.page === currentPage }"
+              :aria-current="item.page === currentPage ? 'page' : undefined"
+              @click="requestLinkedPage(item.page, $event)"
+            >
+              {{ item.page }}
+            </a>
+          </RouterLink>
+
+          <button
+            v-else-if="item.type === 'page'"
+            type="button"
+            class="btn join-item min-w-10 px-3"
             :class="{ 'btn-primary': item.page === currentPage }"
             :aria-current="item.page === currentPage ? 'page' : undefined"
-            @click="requestLinkedPage(item.page, $event)"
+            @click="requestPage(item.page)"
           >
             {{ item.page }}
-          </a>
-        </RouterLink>
+          </button>
 
-        <button
-          v-else-if="item.type === 'page'"
-          type="button"
-          class="btn join-item hidden min-w-10 px-3 lg:flex"
-          :class="{ 'btn-primary': item.page === currentPage }"
-          :aria-current="item.page === currentPage ? 'page' : undefined"
-          @click="requestPage(item.page)"
-        >
-          {{ item.page }}
-        </button>
-
-        <button
-          v-else
-          type="button"
-          class="btn join-item hidden min-w-10 cursor-default px-1 lg:flex"
-          disabled
-        >
-          …
-        </button>
+          <button
+            v-else
+            type="button"
+            class="btn join-item min-w-10 cursor-default px-1"
+            disabled
+          >
+            …
+          </button>
+        </template>
       </template>
 
       <!-- 下一页 -->
@@ -137,190 +138,138 @@
       >
         <i class="ri-arrow-right-s-line text-lg"></i>
       </button>
-    </div>
+    </section>
 
-    <!-- 移动端页码弹层 -->
-    <Teleport to="body">
-      <Transition
-        enter-active-class="transition-opacity duration-200"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-opacity duration-150"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
+    <!-- 移动端页码弹窗 -->
+    <Modal
+      v-if="isCompactLayout && isPageMenuOpen"
+      :visible="true"
+      button-mode="close"
+      title="选择页码"
+      @close="closePageMenu"
+    >
+      <template #title>
+        <h3 class="text-lg font-bold">选择页码</h3>
+        <p class="mt-1 text-sm font-normal text-base-content/60">
+          当前第
+          <span class="font-medium text-base-content">{{ currentPage }}</span>
+          页，共
+          <span class="font-medium text-base-content">{{ totalPages }}</span>
+          页
+        </p>
+      </template>
+
+      <template #description>
+        <!-- 页码列表 -->
         <div
-          v-if="isPageMenuOpen"
-          class="fixed inset-0 z-[100] bg-black/40 lg:hidden"
-          @click.self="closePageMenu"
+          ref="pageListRef"
+          class="grid max-h-[min(24rem,calc(100dvh-15rem))] grid-cols-4 gap-2.5 overflow-y-auto overscroll-contain pr-1 scrollbar-thin min-[390px]:grid-cols-5 sm:grid-cols-6 sm:gap-3"
         >
-          <Transition
-            appear
-            enter-active-class="transition-transform duration-200 ease-out"
-            enter-from-class="translate-y-full"
-            enter-to-class="translate-y-0"
-            leave-active-class="transition-transform duration-150 ease-in"
-            leave-from-class="translate-y-0"
-            leave-to-class="translate-y-full"
-          >
-            <section
-              ref="pageMenuRef"
-              role="dialog"
-              aria-modal="true"
-              aria-label="选择页码"
-              class="fixed inset-x-3 bottom-3 z-[101] flex max-h-[min(38rem,calc(100dvh-1.5rem))] flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-2xl sm:left-1/2 sm:right-auto sm:w-[min(30rem,calc(100vw-2rem))] sm:-translate-x-1/2"
+          <template v-for="page in totalPages" :key="page">
+            <RouterLink
+              v-if="getPageRoute"
+              :to="resolvePageRoute(page)"
+              custom
+              v-slot="{ href }"
             >
-              <!-- 拖动提示 -->
-              <div class="flex shrink-0 justify-center pb-1 pt-2.5">
-                <span class="h-1 w-10 rounded-full bg-base-content/15"></span>
-              </div>
-
-              <!-- 头部 -->
-              <header
-                class="flex shrink-0 items-center justify-between gap-4 border-b border-base-300 px-4 pb-3 pt-2 sm:px-5 sm:pb-4"
+              <a
+                :href="href"
+                class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
+                :class="
+                  page === currentPage
+                    ? 'btn-primary'
+                    : 'btn-ghost bg-base-200/70 hover:bg-base-300'
+                "
+                :aria-current="page === currentPage ? 'page' : undefined"
+                @click="selectLinkedPage(page, $event)"
               >
-                <div class="min-w-0 flex-1">
-                  <h3 class="text-base font-semibold">选择页码</h3>
+                {{ page }}
+              </a>
+            </RouterLink>
 
-                  <p class="mt-1 text-sm text-base-content/60">
-                    当前第
-                    <span class="font-medium text-base-content">
-                      {{ currentPage }}
-                    </span>
-                    页，共
-                    <span class="font-medium text-base-content">
-                      {{ totalPages }}
-                    </span>
-                    页
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  class="btn btn-circle btn-ghost btn-sm shrink-0"
-                  aria-label="关闭页码列表"
-                  @click="closePageMenu"
-                >
-                  <i class="ri-close-line text-xl"></i>
-                </button>
-              </header>
-
-              <!-- 页码列表 -->
-              <div
-                ref="pageListRef"
-                class="grid min-h-0 flex-1 grid-cols-4 gap-2.5 overflow-y-auto overscroll-contain px-4 py-4 min-[390px]:grid-cols-5 sm:grid-cols-6 sm:gap-3 sm:px-5"
-              >
-                <template v-for="page in totalPages" :key="page">
-                  <RouterLink
-                    v-if="getPageRoute"
-                    :to="resolvePageRoute(page)"
-                    custom
-                    v-slot="{ href }"
-                  >
-                    <a
-                      :href="href"
-                      class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
-                      :class="
-                        page === currentPage
-                          ? 'btn-primary'
-                          : 'btn-ghost bg-base-200/70 hover:bg-base-300'
-                      "
-                      :aria-current="
-                        page === currentPage ? 'page' : undefined
-                      "
-                      @click="selectLinkedPage(page, $event)"
-                    >
-                      {{ page }}
-                    </a>
-                  </RouterLink>
-
-                  <button
-                    v-else
-                    type="button"
-                    class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
-                    :class="
-                      page === currentPage
-                        ? 'btn-primary'
-                        : 'btn-ghost bg-base-200/70 hover:bg-base-300'
-                    "
-                    :aria-current="
-                      page === currentPage ? 'page' : undefined
-                    "
-                    @click="selectPage(page)"
-                  >
-                    {{ page }}
-                  </button>
-                </template>
-              </div>
-
-              <!-- 底部快捷操作 -->
-              <footer
-                class="grid shrink-0 grid-cols-2 gap-3 border-t border-base-300 bg-base-200/40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-5"
-              >
-                <RouterLink
-                  v-if="getPageRoute && currentPage > 1"
-                  :to="resolvePageRoute(1)"
-                  custom
-                  v-slot="{ href }"
-                >
-                  <a
-                    :href="href"
-                    class="btn min-w-0 gap-2"
-                    @click="selectLinkedPage(1, $event)"
-                  >
-                    <i class="ri-skip-left-line shrink-0"></i>
-                    <span>第一页</span>
-                  </a>
-                </RouterLink>
-
-                <button
-                  v-else
-                  type="button"
-                  class="btn min-w-0 gap-2"
-                  :disabled="currentPage <= 1"
-                  @click="selectPage(1)"
-                >
-                  <i class="ri-skip-left-line shrink-0"></i>
-                  <span>第一页</span>
-                </button>
-
-                <RouterLink
-                  v-if="getPageRoute && currentPage < totalPages"
-                  :to="resolvePageRoute(totalPages)"
-                  custom
-                  v-slot="{ href }"
-                >
-                  <a
-                    :href="href"
-                    class="btn min-w-0 gap-2"
-                    @click="selectLinkedPage(totalPages, $event)"
-                  >
-                    <span>最后一页</span>
-                    <i class="ri-skip-right-line shrink-0"></i>
-                  </a>
-                </RouterLink>
-
-                <button
-                  v-else
-                  type="button"
-                  class="btn min-w-0 gap-2"
-                  :disabled="currentPage >= totalPages"
-                  @click="selectPage(totalPages)"
-                >
-                  <span>最后一页</span>
-                  <i class="ri-skip-right-line shrink-0"></i>
-                </button>
-              </footer>
-            </section>
-          </Transition>
+            <button
+              v-else
+              type="button"
+              class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
+              :class="
+                page === currentPage
+                  ? 'btn-primary'
+                  : 'btn-ghost bg-base-200/70 hover:bg-base-300'
+              "
+              :aria-current="page === currentPage ? 'page' : undefined"
+              @click="selectPage(page)"
+            >
+              {{ page }}
+            </button>
+          </template>
         </div>
-      </Transition>
-    </Teleport>
-  </div>
+
+        <!-- 底部快捷操作 -->
+        <footer
+          class="mt-4 grid grid-cols-2 gap-3 border-t border-base-300 pt-4"
+        >
+          <RouterLink
+            v-if="getPageRoute && currentPage > 1"
+            :to="resolvePageRoute(1)"
+            custom
+            v-slot="{ href }"
+          >
+            <a
+              :href="href"
+              class="btn min-w-0 gap-2"
+              @click="selectLinkedPage(1, $event)"
+            >
+              <i class="ri-skip-left-line shrink-0"></i>
+              <span>第一页</span>
+            </a>
+          </RouterLink>
+
+          <button
+            v-else
+            type="button"
+            class="btn min-w-0 gap-2"
+            :disabled="currentPage <= 1"
+            @click="selectPage(1)"
+          >
+            <i class="ri-skip-left-line shrink-0"></i>
+            <span>第一页</span>
+          </button>
+
+          <RouterLink
+            v-if="getPageRoute && currentPage < totalPages"
+            :to="resolvePageRoute(totalPages)"
+            custom
+            v-slot="{ href }"
+          >
+            <a
+              :href="href"
+              class="btn min-w-0 gap-2"
+              @click="selectLinkedPage(totalPages, $event)"
+            >
+              <span>最后一页</span>
+              <i class="ri-skip-right-line shrink-0"></i>
+            </a>
+          </RouterLink>
+
+          <button
+            v-else
+            type="button"
+            class="btn min-w-0 gap-2"
+            :disabled="currentPage >= totalPages"
+            @click="selectPage(totalPages)"
+          >
+            <span>最后一页</span>
+            <i class="ri-skip-right-line shrink-0"></i>
+          </button>
+        </footer>
+      </template>
+    </Modal>
+  </nav>
 </template>
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import Modal from "@/components/ui/Modal.vue";
 
 const props = defineProps({
   currentPage: {
@@ -363,17 +312,28 @@ const emit = defineEmits([
 ]);
 
 const paginationRef = ref(null);
-const pageMenuRef = ref(null);
 const pageListRef = ref(null);
 const isPageMenuOpen = ref(false);
-const maxVisibleItems = ref(9);
+const isCompactLayout = ref(true);
+const maxVisibleItems = ref(7);
+const COMPACT_LAYOUT_BREAKPOINT = 640;
+const NINE_ITEM_BREAKPOINT = 880;
+const ELEVEN_ITEM_BREAKPOINT = 1100;
 
 let resizeObserver;
 
-const updateVisibleCount = (width) => {
-  if (width < 1100) {
+const updatePaginationLayout = (width) => {
+  const shouldUseCompactLayout = width < COMPACT_LAYOUT_BREAKPOINT;
+
+  if (!shouldUseCompactLayout && isPageMenuOpen.value) {
+    isPageMenuOpen.value = false;
+  }
+
+  isCompactLayout.value = shouldUseCompactLayout;
+
+  if (width < NINE_ITEM_BREAKPOINT) {
     maxVisibleItems.value = 7;
-  } else if (width < 1280) {
+  } else if (width < ELEVEN_ITEM_BREAKPOINT) {
     maxVisibleItems.value = 9;
   } else {
     maxVisibleItems.value = 11;
@@ -384,9 +344,7 @@ const scrollToCurrentPage = async () => {
   await nextTick();
 
   const pageList = pageListRef.value;
-  const currentButton = pageList?.querySelector(
-    '[aria-current="page"]',
-  );
+  const currentButton = pageList?.querySelector('[aria-current="page"]');
 
   if (!pageList || !currentButton) return;
 
@@ -425,10 +383,7 @@ const isPlainPrimaryClick = (event) => {
 };
 
 const requestPage = (page) => {
-  const targetPage = Math.min(
-    props.totalPages,
-    Math.max(1, Math.trunc(page)),
-  );
+  const targetPage = Math.min(props.totalPages, Math.max(1, Math.trunc(page)));
 
   if (targetPage === props.currentPage) return;
 
@@ -473,40 +428,20 @@ const selectLinkedPage = (page, event) => {
   selectPage(page);
 };
 
-const handleClickOutside = (event) => {
-  if (
-    isPageMenuOpen.value &&
-    paginationRef.value &&
-    !paginationRef.value.contains(event.target)
-  ) {
-    closePageMenu();
-  }
-};
-
-const handleEscape = (event) => {
-  if (event.key === "Escape") {
-    closePageMenu();
-  }
-};
-
 onMounted(() => {
   if (paginationRef.value) {
+    updatePaginationLayout(paginationRef.value.getBoundingClientRect().width);
+
     resizeObserver = new ResizeObserver(([entry]) => {
-      updateVisibleCount(entry.contentRect.width);
+      updatePaginationLayout(entry.contentRect.width);
     });
 
     resizeObserver.observe(paginationRef.value);
   }
-
-  document.addEventListener("pointerdown", handleClickOutside);
-  document.addEventListener("keydown", handleEscape);
 });
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
-
-  document.removeEventListener("pointerdown", handleClickOutside);
-  document.removeEventListener("keydown", handleEscape);
 });
 
 const visiblePages = computed(() => {

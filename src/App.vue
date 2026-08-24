@@ -80,8 +80,8 @@ const isIndexable = computed(
 const pageTitle = computed(() => {
   if (routeName.value === "home") return DEFAULT_TITLE;
   if (routeName.value === "novel-reader") return novelTitle.value;
-  if (route.meta.blogList && blogPageNumber.value > 1) {
-    return `博客 · 第 ${blogPageNumber.value} 页 | 远方之森`;
+  if (route.meta.blogList) {
+    return `博客 | 远方之森 | p.${blogPageNumber.value} `;
   }
   return String(route.meta.title || DEFAULT_TITLE);
 });
