@@ -1,42 +1,34 @@
 {
-	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "komorisam-api",
-	"main": "./scripts/api-worker.js",
-	"compatibility_date": "2026-08-23",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"vars": {
-		"ALLOWED_ORIGIN": "https://komori.cc,https://www.komori.cc",
-		"ANALYTICS_TIME_ZONE": "Asia/Shanghai",
-	},
-	"kv_namespaces": [
-		{
-			"binding": "RATE_LIMIT_KV",
-			"id": "718b2a0ec81140ea90262e69afb71e8f"
-		}
-	],
-	"d1_databases": [
-		{
-			"binding": "ANALYTICS_DB",
-			"database_name": "komorisam-analytics",
-			"migrations_dir": "./migrations/analytics",
-			"database_id": "12e811c2-6fa8-44e1-a5f2-1fc525e3d672",
-		},
-		{
-			"binding": "komorisam_analytics",
-			"database_name": "komorisam-analytics",
-			"database_id": "12e811c2-6fa8-44e1-a5f2-1fc525e3d672",
-			"remote": true
-		},
-	],
-	"triggers": {
-		"crons": [
-			"30 20 * * *"
-		],
-	},
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1,
-	},
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "api",
+  "main": "./scripts/api-worker.js",
+  "compatibility_date": "2026-08-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "718b2a0ec81140ea90262e69afb71e8f",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "komorisam-analytics",
+      "migrations_dir": "./migrations/analytics",
+      "database_id": "12e811c2-6fa8-44e1-a5f2-1fc525e3d672",
+    },
+    {
+      "binding": "komorisam_analytics",
+      "database_name": "komorisam-analytics",
+      "database_id": "12e811c2-6fa8-44e1-a5f2-1fc525e3d672",
+      "remote": true,
+    },
+  ],
+  "triggers": {
+    "crons": ["30 20 * * *"],
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+  },
 }
