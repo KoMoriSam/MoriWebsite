@@ -3,10 +3,13 @@ export const TOAST_POSITIONS = {
   // 水平 + 垂直组合
   "start-top": "toast-start toast-top",
   "start-middle": "toast-start toast-middle",
+  "start-bottom": "toast-start toast-bottom",
   "center-top": "toast-center toast-top",
   "center-middle": "toast-center toast-middle",
+  "center-bottom": "toast-center toast-bottom",
   "end-top": "toast-end toast-top",
   "end-middle": "toast-end toast-middle",
+  "end-bottom": "toast-end toast-bottom",
 
   // 简写形式
   start: "toast-start",

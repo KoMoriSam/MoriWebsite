@@ -3,7 +3,7 @@ export const TEST_SECTIONS = [
     id: "page-layout",
     label: "页面布局",
     title: "ContentPage 内容页",
-    description: "检查通用内容页的标题、说明、操作区与响应式布局。",
+    description: "检查通用内容页的面包屑、标题、徽章区与响应式布局。",
   },
   {
     id: "routing",
@@ -15,19 +15,19 @@ export const TEST_SECTIONS = [
     id: "toast",
     label: "Toast",
     title: "Toast 通知",
-    description: "检查不同类型、位置与关闭策略的通知。",
+    description: "检查当前通知类型、预设位置、手动关闭与持续加载状态。",
   },
   {
     id: "modal",
     label: "Modal",
     title: "Modal 弹窗",
-    description: "检查弹窗按钮模式、关闭行为与回调。",
+    description: "检查弹窗按钮模式、关闭行为、回调与长内容独立滚动。",
   },
   {
     id: "markdown",
     label: "Markdown",
     title: "Markdown 渲染与阅读器样式设置",
-    description: "检查 Markdown 能力与阅读器样式的实时联动。",
+    description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
   },
   {
     id: "number-controller",
@@ -45,13 +45,13 @@ export const TEST_SECTIONS = [
     id: "pagination",
     label: "分页",
     title: "Pagination 分页",
-    description: "检查首页、中间页、末页与少量页场景。",
+    description: "检查页码切换、跨边界事件、路由链接与移动端页码菜单。",
   },
   {
     id: "codeblock",
     label: "CodeBlock",
     title: "CodeBlock（带复制）",
-    description: "检查代码高亮、纯文本回退与复制功能。",
+    description: "检查逐行编号、长行滚动、代码高亮、纯文本回退与复制。",
   },
   {
     id: "to-top",
@@ -69,13 +69,19 @@ export const TEST_SECTIONS = [
     id: "image-load",
     label: "图片加载",
     title: "useImageLoad",
-    description: "检查图片加载前后的占位与状态反馈。",
+    description: "检查图片加载成功、失败、重试与占位状态反馈。",
+  },
+  {
+    id: "reader-share",
+    label: "阅读分享",
+    title: "阅读器分享卡片",
+    description: "检查正文分享卡片的生成、长文截断、下载与系统分享回退。",
   },
   {
     id: "storage",
     label: "存储",
-    title: "localStorage",
-    description: "检查全局、阅读器设置与阅读状态存储。",
+    title: "存储状态",
+    description: "检查全局信息、阅读器设置、阅读状态与段评计数缓存。",
   },
   {
     id: "environment",
@@ -87,7 +93,7 @@ export const TEST_SECTIONS = [
     id: "api",
     label: "API",
     title: "API 测试",
-    description: "检查章节列表、正文与永久链接映射接口。",
+    description: "检查章节、文章与段评/本章说计数接口的当前契约。",
   },
 ];
 
@@ -104,6 +110,7 @@ export const TEST_SECTION_COMPONENTS = {
   "to-top": () => import("@/views/test/ToTop.vue"),
   "click-limit": () => import("@/views/test/ClickLimit.vue"),
   "image-load": () => import("@/views/test/ImageLoad.vue"),
+  "reader-share": () => import("@/views/test/ReaderShare.vue"),
   storage: () => import("@/views/test/Storage.vue"),
   environment: () => import("@/views/test/Environment.vue"),
   api: () => import("@/views/test/Api.vue"),

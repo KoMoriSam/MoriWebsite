@@ -12,7 +12,8 @@
         </router-link>
       </div>
       <p class="text-xs opacity-50">
-        当前路由: <code>{{ $route.fullPath }}</code>
+        当前路由: <code>{{ $route.fullPath }}</code> · 可直接访问的静态路由
+        {{ routes.length }} 个
       </p>
     </section>
   </TestPage>
@@ -26,14 +27,18 @@ import TestPage from "./_TestPage.vue";
 
 const router = useRouter();
 const routes = computed(() =>
-  router.options.routes
+  router
+    .getRoutes()
     .filter(
       (route) =>
-        route.name &&
+        typeof route.name === "string" &&
         route.name !== "test" &&
-        !route.name.startsWith("NotFound"),
+        !route.name.startsWith("NotFound") &&
+        !route.path.startsWith("/test/") &&
+        !route.path.includes(":"),
     )
     .map((route) => ({ name: route.name, path: route.path }))
-    .filter((route) => !route.path.includes("*")),
+    .filter((route) => !route.path.includes("*"))
+    .sort((left, right) => left.path.localeCompare(right.path, "zh-CN")),
 );
 </script>

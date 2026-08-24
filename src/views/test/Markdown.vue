@@ -56,6 +56,12 @@
             >
               {{ sample.name }}
             </button>
+            <button class="btn btn-xs btn-outline" @click="seedCommentCounts">
+              模拟段评计数
+            </button>
+            <button class="btn btn-xs btn-ghost" @click="clearCommentCounts">
+              清除模拟计数
+            </button>
           </div>
           <Markdown
             class="max-h-140 overflow-auto"
@@ -74,10 +80,43 @@ import { computed, ref } from "vue";
 import { useReaderStore } from "@/stores/readerStore";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
+import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 import TestPage from "./_TestPage.vue";
 
 const readerStore = useReaderStore();
+const { setCount } = useParagraphCommentsStorage();
+const testCommentCounts = {
+  "markdown-test-1": 3,
+  "markdown-test-2": 12,
+  "markdown-test-3": 108,
+};
+
+function updateCommentCounts(counts) {
+  Object.entries(counts).forEach(([paragraphId, count]) => {
+    setCount(paragraphId, count, "article");
+    document.dispatchEvent(
+      new CustomEvent("paragraph-comment-metadata", {
+        detail: {
+          paragraphId,
+          sourceType: "article",
+          totalCommentCount: count,
+        },
+      }),
+    );
+  });
+}
+
+function seedCommentCounts() {
+  updateCommentCounts(testCommentCounts);
+}
+
+function clearCommentCounts() {
+  updateCommentCounts(
+    Object.fromEntries(Object.keys(testCommentCounts).map((id) => [id, 0])),
+  );
+}
+
 const markdownSamples = [
   {
     name: "标题与段落",

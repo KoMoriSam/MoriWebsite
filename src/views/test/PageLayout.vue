@@ -4,7 +4,7 @@
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div>
           <p class="max-w-3xl text-sm leading-relaxed text-base-content/70">
-            当前页面就是通用布局组件的完整实例；眉题、标题、说明与操作区均由具名入口提供，正文继续保留自由组合能力。
+            当前页面就是通用布局组件的完整实例；面包屑由当前路由自动生成，眉题、标题、说明与徽章区沿用具名入口，正文继续保留自由组合能力。
           </p>
           <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
             <div class="rounded-box bg-base-200 p-3">
@@ -16,7 +16,7 @@
               <dd class="mt-1 font-semibold">语义化 h1</dd>
             </div>
             <div class="rounded-box bg-base-200 p-3">
-              <dt class="text-xs text-base-content/55">响应式操作区</dt>
+              <dt class="text-xs text-base-content/55">响应式正文操作</dt>
               <dd class="mt-1 font-semibold">自动换行与对齐</dd>
             </div>
           </dl>

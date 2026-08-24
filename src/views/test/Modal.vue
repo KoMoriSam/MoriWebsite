@@ -51,6 +51,16 @@
             {{ inlineModal ? "关闭声明式 Modal" : "打开声明式 Modal" }}
           </button>
         </article>
+
+        <article class="rounded-box border border-base-300 p-4 sm:col-span-2">
+          <h3 class="font-semibold">6. 长内容独立滚动</h3>
+          <p class="mt-1 text-sm opacity-70">
+            标题与关闭按钮应固定，只有正文区域滚动，弹窗高度不超过视口。
+          </p>
+          <button class="btn btn-sm mt-3" @click="openScrollableModal">
+            测试长内容 Modal
+          </button>
+        </article>
       </div>
       <Modal
         v-if="inlineModal"
@@ -65,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { h, ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import { useModal } from "@/composables/useModal";
 import Modal from "@/components/ui/Modal.vue";
@@ -117,5 +127,20 @@ function openConfirmModal() {
       onCancel: () => toast.info("已取消"),
     },
   );
+}
+
+function openScrollableModal() {
+  const paragraphs = Array.from({ length: 18 }, (_, index) =>
+    h(
+      "p",
+      { class: "mb-4 leading-relaxed last:mb-0" },
+      `第 ${index + 1} 段测试正文：滚动时标题栏与右上角关闭按钮应保持可见。`,
+    ),
+  );
+
+  modal.info("长内容独立滚动", h("div", paragraphs), {
+    buttonMode: "close",
+    scrollContent: true,
+  });
 }
 </script>

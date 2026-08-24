@@ -21,7 +21,16 @@ const environmentInfo = computed(() => ({
   PROD: import.meta.env.PROD,
   BASE_URL: import.meta.env.BASE_URL,
   "User Agent": `${navigator.userAgent.substring(0, 60)}...`,
+  Platform: navigator.userAgentData?.platform || navigator.platform,
   Screen: `${window.screen.width}x${window.screen.height}`,
+  Viewport: `${window.innerWidth}x${window.innerHeight}`,
+  "Device Pixel Ratio": window.devicePixelRatio,
   Language: navigator.language,
+  Online: navigator.onLine,
+  Touch: navigator.maxTouchPoints,
+  "Preferred Color Scheme": window.matchMedia("(prefers-color-scheme: dark)")
+    .matches
+    ? "dark"
+    : "light",
 }));
 </script>

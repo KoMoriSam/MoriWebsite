@@ -23,11 +23,14 @@
         >
           Info
         </button>
-        <button class="btn btn-sm btn-ghost" @click="toast.loading('加载中…')">
-          Loading
+        <button
+          class="btn btn-sm btn-ghost"
+          @click="loadingToast ? finishLoading() : startLoading()"
+        >
+          {{ loadingToast ? "结束 Loading" : "Loading" }}
         </button>
-        <button class="btn btn-sm btn-accent" @click="toast.star('发现彩蛋')">
-          Star
+        <button class="btn btn-sm" @click="showCustomToast">
+          自定义图标
         </button>
       </div>
       <p class="mb-2 text-xs font-semibold opacity-60">不同位置</p>
@@ -46,7 +49,9 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount, ref } from "vue";
 import { useToast } from "@/composables/useToast";
+import { TOAST_ICONS, TOAST_POSITIONS } from "@/constants/toast";
 
 import TestPage from "./_TestPage.vue";
 
@@ -56,17 +61,35 @@ const toast = useToast({
   closable: false,
 });
 
-const toastPositions = [
-  "start-top",
-  "center-top",
-  "end-top",
-  "start-middle",
-  "center-middle",
-  "end-middle",
-  "end-bottom",
-];
+const toastPositions = Object.keys(TOAST_POSITIONS).filter((position) =>
+  position.includes("-"),
+);
+const loadingToast = ref(null);
+
+function startLoading() {
+  loadingToast.value = toast.loading("加载中…");
+}
+
+function finishLoading() {
+  if (!loadingToast.value) return;
+  toast.remove(loadingToast.value.id, loadingToast.value.position);
+  loadingToast.value = null;
+  toast.success("加载完成");
+}
+
+function showCustomToast() {
+  toast.add("自定义图标通知", {
+    type: "info",
+    icon: TOAST_ICONS.star,
+  });
+}
 
 function testToastPos(position) {
   useToast({ position, duration: 1500, closable: false }).info(position);
 }
+
+onBeforeUnmount(() => {
+  if (!loadingToast.value) return;
+  toast.remove(loadingToast.value.id, loadingToast.value.position);
+});
 </script>
