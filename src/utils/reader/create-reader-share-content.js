@@ -657,12 +657,19 @@ const collectRangeBlocks = (range, fallback) => {
 
   return blocks.filter(
     (block) =>
-      !block.matches(
+      !blocks.some(
+        (container) =>
+          container !== block &&
+          container.matches("[data-markdown-alert]") &&
+          container.contains(block),
+      ) &&
+      (!block.matches(
         "[data-markdown-chat], [data-markdown-moment], blockquote",
       ) ||
-      !blocks.some(
-        (nestedBlock) => nestedBlock !== block && block.contains(nestedBlock),
-      ),
+        !blocks.some(
+          (nestedBlock) =>
+            nestedBlock !== block && block.contains(nestedBlock),
+        )),
   );
 };
 
