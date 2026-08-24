@@ -929,6 +929,7 @@ const drawWrappedDetail = (
   detail,
   detailLines,
   detailList,
+  detailLineLimit,
   baseline,
   appearance,
 ) => {
@@ -937,11 +938,19 @@ const drawWrappedDetail = (
     family: appearance.serifFontFamily,
     weight: "400",
   });
+  const defaultLineLimit = detailList ? 3 : 2;
+  const lineLimit = Math.min(
+    3,
+    Math.max(
+      1,
+      Math.trunc(Number(detailLineLimit)) || defaultLineLimit,
+    ),
+  );
   const explicitLines = Array.isArray(detailLines)
     ? detailLines
         .map(normalizeText)
         .filter(Boolean)
-        .slice(0, detailList ? 3 : 2)
+        .slice(0, lineLimit)
     : [];
   const lines = explicitLines.length
     ? explicitLines.map((line) => {
@@ -1130,6 +1139,7 @@ export const createReaderShareCard = async ({
       detail,
       detailLines,
       Boolean(meta.detailList),
+      meta.detailLineLimit,
       titleBaseline + 44,
       appearance,
     );

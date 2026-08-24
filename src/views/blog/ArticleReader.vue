@@ -648,24 +648,34 @@ const articleShareMeta = computed(() => {
   const renderedMetadata = [displayDate, lengthText, readingTimeText].filter(
     Boolean,
   );
-  const publicationInfo = [
-    date ? `发布于 ${date}` : "",
+  const publicationInfo = date ? `${displayDate} 发布` : "";
+  const contentInfo = [
     Number.isFinite(length) && length > 0
-      ? `${length.toLocaleString("zh-CN")} 字`
+      ? `约 ${length.toLocaleString("zh-CN")} 字`
       : "",
+    tagsText ? tagsText : "",
   ]
     .filter(Boolean)
     .join(" · ");
-  const detailLines = [
-    tagsText ? `标签：${tagsText}` : "",
-    publicationInfo,
+  const engagementItems = [
+    analyticsAvailable.value && Number.isFinite(articleReads.value)
+      ? `${formatReadCount(articleReads.value)} 次阅读`
+      : "",
+    commentCountsAvailable.value && Number.isFinite(articleComments.value)
+      ? `${formatReadCount(articleComments.value)} 条评论`
+      : "",
   ].filter(Boolean);
+  const engagementInfo = engagementItems.join(" · ");
+  const detailLines = [publicationInfo, contentInfo, engagementInfo].filter(
+    Boolean,
+  );
 
   return {
     sourceLabel: "远方之森 · 博客",
     title: props.article?.title || "",
     detail: detailLines.join(" · "),
     detailLines,
+    detailLineLimit: 3,
     excludeFromContent: [
       ...aliasList.value,
       aliasesText,
@@ -673,6 +683,10 @@ const articleShareMeta = computed(() => {
       tags.join(" "),
       ...renderedMetadata,
       renderedMetadata.join(" "),
+      publicationInfo,
+      contentInfo,
+      ...engagementItems,
+      engagementInfo,
     ].filter(Boolean),
     path: route.path,
   };

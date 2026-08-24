@@ -221,6 +221,7 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
+import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useNovelStore } from "@/stores/novelStore";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -273,6 +274,11 @@ const route = useRoute();
 const trackedChapterId = computed(() =>
   String(currentChapterUuid.value || "").trim(),
 );
+const commentCountsStore = useCommentCountsStore();
+const { commentCountsAvailable } = storeToRefs(commentCountsStore);
+const chapterComments = computed(() =>
+  commentCountsStore.getContentCommentTotal("novel", trackedChapterId.value),
+);
 const trackedChapterReady = computed(() => {
   const chapterId = trackedChapterId.value;
   const permalink = novelStore.getPermalinkByUuid(chapterId);
@@ -296,6 +302,20 @@ const {
   ready: trackedChapterReady,
 });
 const chapterReadCountFormatter = new Intl.NumberFormat("zh-CN");
+
+watch(
+  () => [
+    trackedChapterId.value,
+    getChapterContextTitle(currentChapter.value),
+  ],
+  ([contentId, discussionTerm]) => {
+    if (!contentId || !discussionTerm) return;
+    void commentCountsStore.loadContentCommentTotals("novel", [
+      { contentId, discussionTerm },
+    ]);
+  },
+  { immediate: true },
+);
 
 const readerStore = useReaderStore();
 const {
@@ -712,10 +732,29 @@ const chapterStats = computed(() => {
 });
 
 const textShareMeta = computed(() => {
-  const chapterMetadata = chapterStats.value
+  const publicationInfo =
+    chapterStats.value.find(({ icon }) => icon === "ri-time-line")?.text || "";
+  const contentItems = chapterStats.value
+    .filter(({ icon }) =>
+      ["ri-file-edit-line", "ri-file-text-line"].includes(icon),
+    )
     .map(({ text }) => text)
     .filter(Boolean);
-  const detailLines = chapterMetadata;
+  const contentInfo = contentItems.join(" · ");
+  const engagementItems = [
+    analyticsAvailable.value && Number.isFinite(chapterReads.value)
+      ? `${chapterReadCountFormatter.format(chapterReads.value)} 次阅读`
+      : "",
+    commentCountsAvailable.value && Number.isFinite(chapterComments.value)
+      ? `${chapterReadCountFormatter.format(chapterComments.value)} 条评论`
+      : "",
+  ].filter(Boolean);
+  const engagementInfo = engagementItems.join(" · ");
+  const detailLines = [
+    publicationInfo,
+    contentInfo,
+    engagementInfo,
+  ].filter(Boolean);
   const sourceLabel = ["《向远方》", currentChapter.value?.volumeTitle]
     .filter(Boolean)
     .join(" · ");
@@ -725,11 +764,14 @@ const textShareMeta = computed(() => {
     title: currentChapter.value?.title || "",
     detail: detailLines.join(" · "),
     detailLines,
-    detailList: true,
+    detailLineLimit: 3,
     excludeFromContent: [
       currentChapter.value?.volumeTitle,
-      ...chapterMetadata,
-      chapterMetadata.join(" "),
+      publicationInfo,
+      ...contentItems,
+      contentInfo,
+      ...engagementItems,
+      engagementInfo,
       detailLines.join(" "),
     ].filter(Boolean),
     path: route.path,
