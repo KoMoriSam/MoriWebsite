@@ -113,10 +113,10 @@ const crumbs = computed(() => {
     return [
       { name: "home", label: "home", to: { name: "home" } },
       { name: "blog", label: "blog" },
+      { name: "blog-page", label: "page" },
       {
-        name: "blog-page",
+        name: "page-num",
         label: route.params.page || 1,
-        path: route.path,
       },
     ];
   }
