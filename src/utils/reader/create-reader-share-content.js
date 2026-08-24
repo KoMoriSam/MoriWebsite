@@ -1,3 +1,5 @@
+import { getLatexFormula } from "@/utils/reader/reader-latex";
+
 const IGNORED_CONTENT_SELECTOR = [
   ".comment-trigger",
   ".paragraph-comment-count",
@@ -25,6 +27,7 @@ const IGNORED_CONTENT_SELECTOR = [
 
 const BLOCK_SELECTOR = [
   "[data-markdown-code-block]",
+  'mjx-container[data-reader-latex-source][display="true"]',
   "h1",
   "h2",
   "h3",
@@ -148,6 +151,10 @@ const RUN_STYLE_KEYS = [
   "fontWeight",
   "fontStyle",
   "textDecoration",
+  "latex",
+  "mathml",
+  "svg",
+  "mathDisplay",
 ];
 
 const sameRunStyle = (left, right) =>
@@ -172,6 +179,10 @@ const appendRun = (runs, text, style = {}) => {
     fontWeight: style.fontWeight || "",
     fontStyle: style.fontStyle || "",
     textDecoration: style.textDecoration || "",
+    latex: style.latex || "",
+    mathml: style.mathml || "",
+    svg: style.svg || "",
+    mathDisplay: Boolean(style.mathDisplay),
   };
   const previous = runs.at(-1);
   if (previous && sameRunStyle(previous, next)) previous.text += next.text;
@@ -230,8 +241,21 @@ function serializeInlineNode(
     );
     return;
   }
-  if (!(node instanceof Element) || isIgnoredElement(node)) return;
+  if (!(node instanceof Element)) return;
   if (!rangeIntersectsNode(range, node)) return;
+
+  const formula = getLatexFormula(node);
+  if (formula?.element === node) {
+    appendRun(runs, formula.text, {
+      ...createInlineStyle(node, inherited),
+      latex: formula.source,
+      mathml: formula.mathml,
+      svg: formula.svg,
+      mathDisplay: formula.display,
+    });
+    return;
+  }
+  if (isIgnoredElement(node)) return;
 
   const tag = node.tagName;
   if (tag === "BR") {
@@ -507,6 +531,17 @@ const getReaderFullParagraphText = (block) => {
 };
 
 const serializeBlock = (block, range) => {
+  const blockFormula = getLatexFormula(block);
+  if (blockFormula?.element === block && blockFormula.display) {
+    return {
+      ...getContextMeta(block),
+      style: getComputedTextStyle(block),
+      runs: serializeNodes([block], {
+        inherited: getComputedTextStyle(block),
+        range,
+      }),
+    };
+  }
   const codeBlock = block.matches("[data-markdown-code-block]")
     ? block
     : block.closest("[data-markdown-code-block]");
@@ -519,7 +554,10 @@ const serializeBlock = (block, range) => {
 
   const meta = getContextMeta(block);
   const fullParagraphText = range ? "" : getReaderFullParagraphText(block);
-  if (fullParagraphText) {
+  if (
+    fullParagraphText &&
+    !block.querySelector("mjx-container[data-reader-latex-source]")
+  ) {
     return {
       ...meta,
       style: getComputedTextStyle(block),
@@ -587,6 +625,14 @@ const collectRangeBlocks = (range, fallback) => {
     seen.add(block);
     blocks.push(block);
   };
+  const addFormula = (element) => {
+    const formula = getLatexFormula(element);
+    if (!formula || !rangeIntersectsNode(range, formula.element)) return;
+    const block = getSemanticBlock(formula.element, fallback);
+    if (!block || seen.has(block)) return;
+    seen.add(block);
+    blocks.push(block);
+  };
 
   if (common.nodeType === Node.TEXT_NODE) addTextNode(common);
   const walker = document.createTreeWalker(common, NodeFilter.SHOW_TEXT);
@@ -595,7 +641,19 @@ const collectRangeBlocks = (range, fallback) => {
     addTextNode(node);
     node = walker.nextNode();
   }
+  addFormula(common);
+  common
+    .querySelectorAll?.("mjx-container[data-reader-latex-source]")
+    .forEach(addFormula);
   if (!blocks.length) return fallback ? [fallback] : [];
+
+  blocks.sort((left, right) => {
+    if (left === right) return 0;
+    return left.compareDocumentPosition(right) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1;
+  });
 
   return blocks.filter(
     (block) =>

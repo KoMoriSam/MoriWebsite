@@ -1,3 +1,8 @@
+import {
+  createLatexSvg,
+  loadLatexSvgImage,
+} from "@/utils/reader/reader-latex";
+
 export const READER_SHARE_CARD_WIDTH = 1080;
 export const READER_SHARE_CARD_HEIGHT = 1350;
 
@@ -264,6 +269,11 @@ const normalizeRuns = (runs = []) =>
       fontWeight: String(run?.fontWeight || ""),
       fontStyle: String(run?.fontStyle || ""),
       textDecoration: String(run?.textDecoration || ""),
+      latex: String(run?.latex || ""),
+      mathml: String(run?.mathml || ""),
+      svg: String(run?.svg || ""),
+      mathDisplay: Boolean(run?.mathDisplay),
+      mathAsset: null,
     }))
     .filter(({ text }) => text);
 
@@ -341,6 +351,26 @@ const getRunFont = (run, config, appearance, size = config.fontSize) => {
           : appearance.contentFontWeight),
     italic: run.italic || /italic|oblique/u.test(run.fontStyle) || config.italic,
   };
+};
+
+const prepareLatexRuns = async (blocks, appearance) => {
+  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  await Promise.all(
+    runs.map(async (run) => {
+      if (!run.latex || !run.svg) return;
+      try {
+        const svg = createLatexSvg({
+          svg: run.svg,
+          source: run.latex,
+          display: run.mathDisplay,
+          color: appearance.foreground,
+        });
+        run.mathAsset = await loadLatexSvgImage(svg);
+      } catch {
+        run.mathAsset = null;
+      }
+    }),
+  );
 };
 
 const getBlockConfig = (block, baseSize, appearance) => {
@@ -443,6 +473,29 @@ const getBlockConfig = (block, baseSize, appearance) => {
 
 const createToken = (context, grapheme, run, config, appearance) => {
   const style = { ...run };
+  if (style.mathAsset) {
+    const targetHeight = Math.min(
+      config.fontSize * style.mathAsset.emHeight,
+      config.lineHeight * 0.92,
+    );
+    const scale = Math.min(
+      targetHeight / style.mathAsset.height,
+      config.width / style.mathAsset.width,
+    );
+    const width = style.mathAsset.width * scale;
+    const height = style.mathAsset.height * scale;
+    return {
+      text: grapheme,
+      style,
+      textWidth: width,
+      rubyWidth: 0,
+      width,
+      mathHeight: height,
+      mathBaselineShift:
+        style.mathAsset.baselineShiftEm *
+        (height / style.mathAsset.emHeight),
+    };
+  }
   setFont(context, getRunFont(style, config, appearance));
   const textWidth = context.measureText(grapheme).width;
   let rubyWidth = 0;
@@ -517,6 +570,12 @@ const wrapRuns = (context, runs, config, appearance) => {
   };
 
   runs.forEach((run) => {
+    if (run.mathAsset) {
+      if (run.mathDisplay && tokens.length) commitLine(true);
+      pushToken(createToken(context, run.text, run, config, appearance));
+      if (run.mathDisplay) commitLine(true);
+      return;
+    }
     if (run.ruby) {
       const token = createToken(context, run.text, run, config, appearance);
       pushToken(token);
@@ -666,7 +725,10 @@ const getTokenPositions = (line, config, justify) => {
     ? Math.max(0, config.width - line.width) / gapIndexes.length
     : 0;
   const gaps = new Set(gapIndexes);
-  let x = config.x;
+  let x =
+    line.tokens.length === 1 && line.tokens[0].style.mathDisplay
+      ? config.x + Math.max(0, config.width - line.width) / 2
+      : config.x;
   return line.tokens.map((token, index) => {
     const position = { token, x };
     x += token.width + (gaps.has(index) ? extra : 0);
@@ -736,6 +798,16 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
   drawTokenBackgrounds(context, positions, baseline, config, appearance);
 
   positions.forEach(({ token, x }) => {
+    if (token.style.mathAsset) {
+      context.drawImage(
+        token.style.mathAsset.image,
+        x,
+        baseline - token.mathHeight - token.mathBaselineShift,
+        token.width,
+        token.mathHeight,
+      );
+      return;
+    }
     setFont(context, getRunFont(token.style, config, appearance));
     const syntaxColor = resolveSyntaxColor(token.style.syntax, appearance);
     context.fillStyle = token.style.mark
@@ -1064,6 +1136,8 @@ export const createReaderShareCard = async ({
   canvas.height = READER_SHARE_CARD_HEIGHT;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("当前浏览器无法生成分享卡片");
+
+  await prepareLatexRuns(blocks, appearance);
 
   context.textBaseline = "alphabetic";
   context.fillStyle = appearance.background;

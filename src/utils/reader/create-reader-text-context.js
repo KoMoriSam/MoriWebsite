@@ -1,4 +1,8 @@
 import { createReaderShareContent } from "@/utils/reader/create-reader-share-content";
+import {
+  getLatexFormula,
+  getLatexSelection,
+} from "@/utils/reader/reader-latex";
 
 const IGNORED_TEXT_SELECTOR = [
   ".comment-trigger",
@@ -10,11 +14,118 @@ const IGNORED_TEXT_SELECTOR = [
   "[data-footnote-backref]",
 ].join(",");
 
+const TEXT_BLOCK_SELECTOR = [
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "p",
+  "li",
+  "pre",
+  "blockquote",
+  "th",
+  "td",
+].join(",");
+
 const normalizeReaderText = (value = "") =>
   String(value).replace(/\s+/g, " ").trim();
 
 const isIgnoredTextNode = (node) =>
   node?.parentElement?.closest(IGNORED_TEXT_SELECTOR);
+
+const getLatexFormulaAtPoint = ({ root, target, clientX, clientY }) => {
+  const candidates = [
+    target,
+    ...(document.elementsFromPoint?.(clientX, clientY) || []),
+  ];
+  for (const candidate of candidates) {
+    const formula = getLatexFormula(candidate);
+    if (formula && root?.contains(formula.element)) return formula;
+  }
+  return null;
+};
+
+const createFormulaRange = (formula) => {
+  if (!formula?.element) return null;
+  const range = document.createRange();
+  range.selectNode(formula.element);
+  return range;
+};
+
+const extractRangeText = (range) => {
+  const common =
+    range.commonAncestorContainer instanceof Element
+      ? range.commonAncestorContainer
+      : range.commonAncestorContainer.parentElement;
+  if (!common) return "";
+
+  const containingFormula = getLatexFormula(common);
+  if (containingFormula?.element.contains(common)) {
+    return containingFormula.text;
+  }
+
+  const pieces = [];
+  const seenFormulas = new Set();
+  let lastBlock = null;
+  const appendPiece = (value, element) => {
+    if (!value) return;
+    const block = element?.closest(TEXT_BLOCK_SELECTOR) || null;
+    if (pieces.length && block && lastBlock && block !== lastBlock) {
+      pieces.push(" ");
+    }
+    pieces.push(value);
+    if (block) lastBlock = block;
+  };
+  const intersects = (node) => {
+    try {
+      return range.intersectsNode(node);
+    } catch {
+      return false;
+    }
+  };
+  const appendNode = (node) => {
+    if (node instanceof Element) {
+      const formula = getLatexFormula(node);
+      if (formula?.element === node) {
+        if (!intersects(node)) return;
+        if (!seenFormulas.has(formula.element)) {
+          seenFormulas.add(formula.element);
+          appendPiece(formula.text, formula.element);
+        }
+        return;
+      }
+      node.childNodes.forEach(appendNode);
+      return;
+    }
+    if (
+      node.nodeType !== Node.TEXT_NODE ||
+      !node.textContent ||
+      !intersects(node)
+    ) {
+      return;
+    }
+    const formula = getLatexFormula(node.parentElement);
+    if (formula) {
+      if (!seenFormulas.has(formula.element)) {
+        seenFormulas.add(formula.element);
+        appendPiece(formula.text, formula.element);
+      }
+      return;
+    }
+    if (isIgnoredTextNode(node)) return;
+
+    let start = 0;
+    let end = node.textContent.length;
+    if (range.startContainer === node) start = range.startOffset;
+    if (range.endContainer === node) end = range.endOffset;
+    appendPiece(node.textContent.slice(start, end), node.parentElement);
+  };
+
+  appendNode(common);
+  return normalizeReaderText(pieces.join(""));
+};
 
 const getCaretAtPoint = (clientX, clientY) => {
   if (document.caretRangeFromPoint) {
@@ -114,7 +225,7 @@ const extractSelectionDetails = (root) => {
   const bottom = Math.max(...visibleRects.map((rect) => rect.bottom));
 
   return {
-    text: normalizeReaderText(selection.toString()),
+    text: extractRangeText(range),
     range,
     anchorRect: { left, right, top, bottom, width: right - left, height: bottom - top },
   };
@@ -128,6 +239,10 @@ const extractParagraphText = (commentable) => {
 
   const clone = commentable.cloneNode(true);
   clone.querySelectorAll(IGNORED_TEXT_SELECTOR).forEach((node) => node.remove());
+  clone.querySelectorAll("[data-reader-latex-source]").forEach((node) => {
+    const formula = getLatexFormula(node);
+    if (formula) node.replaceWith(document.createTextNode(formula.text));
+  });
   return normalizeReaderText(clone.textContent);
 };
 
@@ -135,19 +250,28 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   if (!root || !(target instanceof Element)) return null;
 
   const selectionDetails = extractSelectionDetails(root);
+  const pointedFormula = selectionDetails
+    ? null
+    : getLatexFormulaAtPoint({ root, target, clientX, clientY });
+  const activeRange =
+    selectionDetails?.range || createFormulaRange(pointedFormula);
   const selectionNode = selectionDetails?.range.startContainer;
   const selectionElement =
     selectionNode instanceof Element ? selectionNode : selectionNode?.parentElement;
-  const paragraph = (selectionElement || target).closest(
+  const paragraph = (selectionElement || pointedFormula?.element || target).closest(
     "[data-reader-paragraph-id]",
   );
   const paragraphId =
     paragraph?.dataset.readerParagraphId || paragraph?.id || "";
-  const selectedText = selectionDetails?.text || "";
+  const selectedText = selectionDetails?.text || pointedFormula?.text || "";
+  const latex = activeRange
+    ? getLatexSelection(activeRange) ||
+      (pointedFormula ? { ...pointedFormula, pure: true } : null)
+    : null;
   const paragraphText = extractParagraphText(paragraph);
   const text = selectedText || paragraphText;
   const shareContent = createReaderShareContent({
-    range: selectionDetails?.range,
+    range: activeRange,
     element: paragraph,
   });
 
@@ -156,13 +280,17 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   return {
     clientX,
     clientY,
-    anchorRect: selectionDetails?.anchorRect || null,
+    anchorRect:
+      selectionDetails?.anchorRect ||
+      pointedFormula?.element.getBoundingClientRect() ||
+      null,
     text,
     selectedText,
     paragraphText,
     paragraphId,
     sourceType: paragraph?.dataset.sourceType || "novel",
     commentScope: paragraph?.dataset.readerCommentScope || "paragraph",
+    latex,
     shareContent,
   };
 };
@@ -193,6 +321,21 @@ export const selectReaderTextAtPoint = ({
 
   const commentable = target.closest("[data-reader-paragraph-id]");
   if (!commentable || !root.contains(commentable)) return null;
+
+  const pointedFormula = getLatexFormulaAtPoint({
+    root,
+    target,
+    clientX,
+    clientY,
+  });
+  if (pointedFormula && commentable.contains(pointedFormula.element)) {
+    const range = createFormulaRange(pointedFormula);
+    const selection = window.getSelection?.();
+    if (!range || !selection) return null;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return createReaderSelectionContext(root);
+  }
 
   const caret = getCaretAtPoint(clientX, clientY);
   let textNode = caret?.node;

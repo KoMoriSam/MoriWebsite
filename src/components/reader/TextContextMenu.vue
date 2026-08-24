@@ -16,7 +16,19 @@
         @pointerdown.stop
         @contextmenu.prevent
       >
-        <li>
+        <li v-if="context.latex?.pure">
+          <button type="button" @click="copyLatexSource">
+            <i class="ri-braces-line" aria-hidden="true"></i>
+            <span>复制 LaTeX</span>
+          </button>
+        </li>
+        <li v-if="context.latex?.pure">
+          <button type="button" @click="copyLatexAsSvg">
+            <i class="ri-shapes-line" aria-hidden="true"></i>
+            <span>复制 SVG</span>
+          </button>
+        </li>
+        <li v-else>
           <button type="button" :disabled="!context.text" @click="copyText">
             <i class="ri-file-copy-line" aria-hidden="true"></i>
             <span>复制</span>
@@ -61,6 +73,7 @@ import {
 } from "vue";
 import { useToast } from "@/composables/useToast";
 import ReaderShareCardDialog from "@/components/reader/ReaderShareCardDialog.vue";
+import { copyLatexSvg } from "@/utils/reader/reader-latex";
 
 const props = defineProps({
   modelValue: Boolean,
@@ -149,6 +162,29 @@ const copyText = async () => {
     toast.success("已复制正文");
   } catch {
     toast.error("复制失败，请手动选择文字");
+  }
+  close();
+};
+const copyLatexSource = async () => {
+  try {
+    await copyToClipboard(props.context.latex?.text || "");
+    toast.success("已复制 LaTeX 源码");
+  } catch {
+    toast.error("复制失败，请手动选择公式");
+  }
+  close();
+};
+const copyLatexAsSvg = async () => {
+  try {
+    await copyLatexSvg({
+      svg: props.context.latex?.svg,
+      source: props.context.latex?.source,
+      display: props.context.latex?.display,
+      color: getComputedStyle(document.documentElement).color,
+    });
+    toast.success("已复制 SVG");
+  } catch {
+    toast.error("当前浏览器无法复制 SVG");
   }
   close();
 };
