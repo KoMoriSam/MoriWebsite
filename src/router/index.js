@@ -9,6 +9,10 @@ import {
   createWebHistory,
   createMemoryHistory,
 } from "vue-router";
+import {
+  TEST_SECTIONS,
+  TEST_SECTION_COMPONENTS,
+} from "@/constants/test-sections";
 
 if (
   !import.meta.env.SSR &&
@@ -140,6 +144,15 @@ export const routes = [
           component: () => import("@/views/Test.vue"),
           meta: { title: "测试 | 远方之森" },
         },
+        ...TEST_SECTIONS.map((section) => ({
+          path: `/test/${section.id}`,
+          name: section.id,
+          component: TEST_SECTION_COMPONENTS[section.id],
+          meta: {
+            title: `${section.title}测试 | 远方之森`,
+            navName: "test",
+          },
+        })),
       ]
     : []),
   {
