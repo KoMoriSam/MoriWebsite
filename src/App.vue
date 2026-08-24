@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import { useHead } from "@unhead/vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
@@ -13,6 +13,7 @@ import { storeToRefs } from "pinia";
 import NavBar from "@/components/layout/NavBar.vue";
 import ToTop from "./components/base/ToTop.vue";
 import { useNovelStore } from "@/stores/novelStore";
+import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { getBlogPagePath } from "@/constants/blog-pagination";
 
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
@@ -23,7 +24,9 @@ import { useDiscardStorage } from "@/utils/storage/discard-storage";
 
 const route = useRoute();
 const novelStore = useNovelStore();
+const analyticsStore = useAnalyticsStore();
 const { title: novelTitle } = storeToRefs(novelStore);
+let stopAnalyticsRouteWatch = null;
 useSearchResultHighlight();
 
 const SITE_URL = "https://komori.cc";
@@ -272,5 +275,18 @@ onMounted(() => {
   migrateStorage();
 
   useDiscardStorage();
+
+  analyticsStore.startTracking();
+  stopAnalyticsRouteWatch = watch(
+    () => route.fullPath,
+    () => {
+      void analyticsStore.trackVisit();
+    },
+  );
+});
+
+onBeforeUnmount(() => {
+  stopAnalyticsRouteWatch?.();
+  analyticsStore.stopTracking();
 });
 </script>

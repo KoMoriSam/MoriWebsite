@@ -248,6 +248,7 @@ import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
+import { useContentReadTracking } from "@/composables/useContentReadTracking";
 import { useModalClose } from "@/composables/useModal";
 import {
   getChapterContextTitle,
@@ -268,6 +269,33 @@ const {
 
 const router = useRouter();
 const route = useRoute();
+
+const trackedChapterId = computed(() =>
+  String(currentChapterUuid.value || "").trim(),
+);
+const trackedChapterReady = computed(() => {
+  const chapterId = trackedChapterId.value;
+  const permalink = novelStore.getPermalinkByUuid(chapterId);
+
+  return Boolean(
+    chapterId &&
+      permalink &&
+      route.name === "novel-reader" &&
+      route.params.volumeSlug === permalink.volumeSlug &&
+      route.params.chapterSlug === permalink.chapterSlug &&
+      !isLoadingContent.value &&
+      currentChapterContent.value.length > 0,
+  );
+});
+const {
+  analyticsAvailable,
+  contentReads: chapterReads,
+} = useContentReadTracking({
+  contentType: "novel",
+  contentId: trackedChapterId,
+  ready: trackedChapterReady,
+});
+const chapterReadCountFormatter = new Intl.NumberFormat("zh-CN");
 
 const readerStore = useReaderStore();
 const {
@@ -672,6 +700,13 @@ const chapterStats = computed(() => {
     icon: "ri-file-text-line",
     text: `约 ${currentChapter.value?.length || 0} 字`,
   });
+
+  if (analyticsAvailable.value && Number.isFinite(chapterReads.value)) {
+    stats.push({
+      icon: "ri-eye-line",
+      text: `${chapterReadCountFormatter.format(chapterReads.value)} 次阅读`,
+    });
+  }
 
   return stats;
 });

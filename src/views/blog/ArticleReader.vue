@@ -207,6 +207,21 @@
               <i class="ri-time-line"></i>
               {{ estimateReadingTime(article.length) }} 分钟阅读
             </span>
+
+            <span
+              v-if="analyticsAvailable && articleReadStatus !== 'error'"
+              class="inline-flex items-center gap-1.5"
+            >
+              <i class="ri-eye-line" aria-hidden="true"></i>
+              <template v-if="Number.isFinite(articleReads)">
+                {{ formatReadCount(articleReads) }} 次阅读
+              </template>
+              <span
+                v-else
+                class="loading loading-dots loading-xs"
+                aria-label="正在读取文章阅读次数"
+              ></span>
+            </span>
           </div>
         </div>
       </header>
@@ -384,6 +399,7 @@ import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
+import { useContentReadTracking } from "@/composables/useContentReadTracking";
 import { normalizeArticleDate } from "@/composables/useArticleFilter";
 import CONFIG from "@/constants/config";
 
@@ -423,6 +439,26 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["back", "refresh", "navigate"]);
+
+const articleId = computed(() => String(props.article?.id || "").trim());
+const articleReady = computed(
+  () =>
+    Boolean(articleId.value) &&
+    Boolean(props.content) &&
+    !props.loading &&
+    !props.error,
+);
+const {
+  analyticsAvailable,
+  contentReads: articleReads,
+  contentReadStatus: articleReadStatus,
+} = useContentReadTracking({
+  contentType: "article",
+  contentId: articleId,
+  ready: articleReady,
+});
+const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const formatReadCount = (value) => readCountFormatter.format(Number(value));
 
 const { GISCUS } = CONFIG;
 const route = useRoute();

@@ -50,5 +50,89 @@
         </a>
       </small>
     </nav>
+    <nav v-if="analyticsAvailable" aria-labelledby="site-statistics-title">
+      <h6 id="site-statistics-title" class="footer-title">站点统计</h6>
+      <dl
+        class="grid min-w-44 gap-2 text-sm text-base-content/70"
+        aria-live="polite"
+      >
+        <div class="flex items-center justify-between gap-6">
+          <dt class="inline-flex items-center gap-1.5">
+            <i class="ri-calendar-check-line" aria-hidden="true"></i>
+            今日访问
+          </dt>
+          <dd class="font-mono font-semibold tabular-nums text-base-content">
+            {{ formatCount(todayVisits) }}
+          </dd>
+        </div>
+        <div class="flex items-center justify-between gap-6">
+          <dt class="inline-flex items-center gap-1.5">
+            <i class="ri-global-line" aria-hidden="true"></i>
+            总访问
+          </dt>
+          <dd class="font-mono font-semibold tabular-nums text-base-content">
+            {{ formatCount(totalVisits) }}
+          </dd>
+        </div>
+        <div class="flex items-center justify-between gap-6">
+          <dt class="inline-flex items-center gap-1.5">
+            <i class="ri-book-open-line" aria-hidden="true"></i>
+            总阅读
+          </dt>
+          <dd class="font-mono font-semibold tabular-nums text-base-content">
+            {{ formatCount(totalReads) }}
+          </dd>
+        </div>
+      </dl>
+      <small
+        v-if="startedAtLabel"
+        class="mt-1 text-xs text-base-content/50"
+      >
+        统计自 {{ startedAtLabel }}
+      </small>
+      <small
+        v-else-if="globalStatus === 'error'"
+        class="mt-1 text-xs text-base-content/50"
+      >
+        统计暂不可用
+      </small>
+    </nav>
   </footer>
 </template>
+
+<script setup>
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+
+import { useAnalyticsStore } from "@/stores/analyticsStore";
+
+const analyticsStore = useAnalyticsStore();
+const {
+  analyticsAvailable,
+  globalStatus,
+  startedAt,
+  todayVisits,
+  totalReads,
+  totalVisits,
+} = storeToRefs(analyticsStore);
+
+const numberFormatter = new Intl.NumberFormat("zh-CN");
+
+const formatCount = (value) => {
+  return Number.isFinite(value) ? numberFormatter.format(value) : "—";
+};
+
+const startedAtLabel = computed(() => {
+  if (!startedAt.value) return "";
+
+  const date = new Date(startedAt.value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).format(date);
+});
+</script>
