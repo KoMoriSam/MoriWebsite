@@ -5,6 +5,8 @@ const IGNORED_CONTENT_SELECTOR = [
   ".footnote-backref",
   ".header-anchor",
   ".alert-title",
+  ".chat-bar",
+  ".chat-header",
   ".sr-only",
   ".chapter-header-volume",
   ".chapter-header-stats",
@@ -42,8 +44,7 @@ const BLOCK_SELECTOR = [
 const normalizeInlineText = (value = "") =>
   String(value).replace(/[\t\n\r ]+/gu, " ");
 
-const normalizeLabel = (value = "") =>
-  normalizeInlineText(value).trim();
+const normalizeLabel = (value = "") => normalizeInlineText(value).trim();
 
 const toElement = (node) =>
   node instanceof Element ? node : node?.parentElement || null;
@@ -116,8 +117,7 @@ const createInlineStyle = (element, inherited = {}) => {
       tag === "DEL" ||
       tag === "S" ||
       decoration.includes("line-through"),
-    underline:
-      inherited.underline || decoration.includes("underline"),
+    underline: inherited.underline || decoration.includes("underline"),
     mark: inherited.mark || tag === "MARK",
     link: inherited.link || tag === "A",
     code: inherited.code || tag === "CODE",
@@ -197,7 +197,10 @@ const serializeRuby = (element, runs, inherited, range) => {
     .forEach((node) =>
       serializeInlineNode(node, baseRuns, inherited, range, false),
     );
-  const baseText = baseRuns.map(({ text }) => text).join("").trim();
+  const baseText = baseRuns
+    .map(({ text }) => text)
+    .join("")
+    .trim();
   if (!baseText) return;
   const ruby = normalizeLabel(
     Array.from(element.querySelectorAll(":scope > rt"))
@@ -591,7 +594,17 @@ const collectRangeBlocks = (range, fallback) => {
     addTextNode(node);
     node = walker.nextNode();
   }
-  return blocks.length ? blocks : fallback ? [fallback] : [];
+  if (!blocks.length) return fallback ? [fallback] : [];
+
+  return blocks.filter(
+    (block) =>
+      !block.matches(
+        "[data-markdown-chat], [data-markdown-moment], blockquote",
+      ) ||
+      !blocks.some(
+        (nestedBlock) => nestedBlock !== block && block.contains(nestedBlock),
+      ),
+  );
 };
 
 export const createReaderShareContent = ({ range, element } = {}) => {
