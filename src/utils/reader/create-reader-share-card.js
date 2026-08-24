@@ -1,7 +1,4 @@
-import {
-  createLatexSvg,
-  loadLatexSvgImage,
-} from "@/utils/reader/reader-latex";
+import { createLatexSvg, loadLatexSvgImage } from "@/utils/reader/reader-latex";
 
 export const READER_SHARE_CARD_WIDTH = 1080;
 export const READER_SHARE_CARD_HEIGHT = 1350;
@@ -50,11 +47,11 @@ const SYNTAX_COLOR_KEYS = [
   "variable",
 ];
 const KINSOKU_LINE_START = new Set(
-  Array.from("、。，．？！‼⁇⁈⁉：；…‥—～ー·）〕］｝〉》」』】〗〙〛’”»％‰℃°′″!?;:,.%)]}"),
+  Array.from(
+    "、。，．？！‼⁇⁈⁉：；…‥—～ー·）〕］｝〉》」』】〗〙〛’”»％‰℃°′″!?;:,.%)]}",
+  ),
 );
-const KINSOKU_LINE_END = new Set(
-  Array.from("（〔［｛〈《「『【〖〘〚‘“«([{"),
-);
+const KINSOKU_LINE_END = new Set(Array.from("（〔［｛〈《「『【〖〘〚‘“«([{"));
 
 let faviconPromise;
 
@@ -187,7 +184,7 @@ const resolveAppearance = () => {
   const background = themeColor("--color-base-100", DEFAULT_BACKGROUND);
   const foreground = themeColor("--color-base-content", DEFAULT_FOREGROUND);
   const accent = themeColor("--color-primary", DEFAULT_ACCENT);
-  const base = themeColor("--color-base-200", foreground);
+  const base = themeColor("--color-base-100", foreground);
   const baseContent = themeColor("--color-base-content", background);
   const syntax = Object.fromEntries(
     SYNTAX_COLOR_KEYS.map((key) => [
@@ -200,8 +197,8 @@ const resolveAppearance = () => {
     background,
     foreground,
     accent,
-    base,
     baseContent,
+    base,
     base200: themeColor("--color-base-200", background),
     base300: themeColor("--color-base-300", background),
     warning: themeColor("--color-warning", accent),
@@ -219,7 +216,7 @@ const resolveAppearance = () => {
       'ui-serif, "Noto Serif SC", "Source Han Serif SC", serif',
     uiFontFamily:
       rootComputed.getPropertyValue("--font-sans").trim() ||
-      'ui-sans-serif, system-ui, sans-serif',
+      "ui-sans-serif, system-ui, sans-serif",
     serifFontFamily:
       rootComputed.getPropertyValue("--font-serif").trim() ||
       'ui-serif, "Noto Serif SC", serif',
@@ -349,7 +346,8 @@ const getRunFont = (run, config, appearance, size = config.fontSize) => {
         : inlineCode
           ? "600"
           : appearance.contentFontWeight),
-    italic: run.italic || /italic|oblique/u.test(run.fontStyle) || config.italic,
+    italic:
+      run.italic || /italic|oblique/u.test(run.fontStyle) || config.italic,
   };
 };
 
@@ -492,8 +490,7 @@ const createToken = (context, grapheme, run, config, appearance) => {
       width,
       mathHeight: height,
       mathBaselineShift:
-        style.mathAsset.baselineShiftEm *
-        (height / style.mathAsset.emHeight),
+        style.mathAsset.baselineShiftEm * (height / style.mathAsset.emHeight),
     };
   }
   setFont(context, getRunFont(style, config, appearance));
@@ -1013,16 +1010,10 @@ const drawWrappedDetail = (
   const defaultLineLimit = detailList ? 3 : 2;
   const lineLimit = Math.min(
     3,
-    Math.max(
-      1,
-      Math.trunc(Number(detailLineLimit)) || defaultLineLimit,
-    ),
+    Math.max(1, Math.trunc(Number(detailLineLimit)) || defaultLineLimit),
   );
   const explicitLines = Array.isArray(detailLines)
-    ? detailLines
-        .map(normalizeText)
-        .filter(Boolean)
-        .slice(0, lineLimit)
+    ? detailLines.map(normalizeText).filter(Boolean).slice(0, lineLimit)
     : [];
   const lines = explicitLines.length
     ? explicitLines.map((line) => {
@@ -1108,8 +1099,10 @@ const sanitizeFileName = (value) =>
 
 export const buildReaderShareUrl = ({ path, paragraphId } = {}) => {
   const url = new URL(path || window.location.pathname, window.location.origin);
+  const normalizedParagraphId = normalizeText(paragraphId);
+  const shortParagraphId = normalizedParagraphId.match(/-(\d+)$/u)?.[1];
   url.search = "";
-  url.hash = paragraphId || "";
+  url.hash = shortParagraphId || normalizedParagraphId;
   return url.href;
 };
 
