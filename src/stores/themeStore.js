@@ -87,14 +87,14 @@ export const useThemeStore = defineStore("theme", () => {
   const currentTheme = computed(() => {
     if (followSystem.value) {
       return {
-        name: "跟随系统",
+        name: "System",
         icon: "ri-contrast-line",
         value: DEFAULT_THEME,
       };
     }
     return (
       themeList.value.find((t) => t.value === theme.value) || {
-        name: "跟随系统",
+        name: "System",
         icon: "ri-contrast-line",
         value: DEFAULT_THEME,
       }
