@@ -608,6 +608,16 @@ function getSourceConfig(env, sourceType, scope = "paragraph") {
     };
   }
 
+  if (scope === "content") {
+    return {
+      owner: env.ARTICLE_REPO_OWNER,
+      repo: env.ARTICLE_REPO_NAME,
+      categoryId: env.ARTICLE_CONTENT_CATEGORY_ID,
+      categorySlug: env.ARTICLE_CONTENT_CATEGORY_SLUG || "announcements",
+      maxPages: Number(env.ARTICLE_CONTENT_MAX_PAGES || env.MAX_PAGES || 20),
+    };
+  }
+
   return {
     owner: env.ARTICLE_REPO_OWNER,
     repo: env.ARTICLE_REPO_NAME,
@@ -931,6 +941,69 @@ async function getCountsMap(env, sourceType, scope = "paragraph") {
   return counts;
 }
 
+function normalizeContentCommentItems(items) {
+  const normalized = [];
+  const seen = new Set();
+
+  for (const item of Array.isArray(items) ? items : []) {
+    const contentId = String(item?.contentId || "").trim();
+    const discussionTerm = String(item?.discussionTerm || "").trim();
+    if (!contentId || !discussionTerm || seen.has(contentId)) continue;
+
+    seen.add(contentId);
+    normalized.push({ contentId, discussionTerm });
+  }
+
+  return normalized;
+}
+
+function getParagraphContentId(paragraphTerm) {
+  const term = String(paragraphTerm || "");
+  const separatorIndex = term.lastIndexOf("-");
+  if (separatorIndex <= 0) return "";
+
+  const paragraphIndex = term.slice(separatorIndex + 1);
+  if (!/^[1-9]\d*$/.test(paragraphIndex)) return "";
+  return term.slice(0, separatorIndex);
+}
+
+async function getContentCommentTotals(env, sourceType, contentItems) {
+  const primaryScope = sourceType === "novel" ? "chapter" : "content";
+  const [primaryCounts, paragraphCounts] = await Promise.all([
+    getCountsMap(env, sourceType, primaryScope),
+    getCountsMap(env, sourceType, "paragraph"),
+  ]);
+  const targetContentIds = new Set(
+    contentItems.map(({ contentId }) => contentId),
+  );
+  const paragraphTotals = Object.fromEntries(
+    contentItems.map(({ contentId }) => [contentId, 0]),
+  );
+
+  for (const [paragraphTerm, count] of Object.entries(paragraphCounts)) {
+    const contentId = getParagraphContentId(paragraphTerm);
+    if (!targetContentIds.has(contentId)) continue;
+
+    const normalizedCount = Number(count);
+    if (Number.isFinite(normalizedCount) && normalizedCount > 0) {
+      paragraphTotals[contentId] += normalizedCount;
+    }
+  }
+
+  return Object.fromEntries(
+    contentItems.map(({ contentId, discussionTerm }) => {
+      const primaryCount = Number(primaryCounts[discussionTerm] ?? 0);
+      const normalizedPrimaryCount = Number.isFinite(primaryCount)
+        ? Math.max(0, primaryCount)
+        : 0;
+      return [
+        contentId,
+        normalizedPrimaryCount + paragraphTotals[contentId],
+      ];
+    }),
+  );
+}
+
 async function handleParagraphCounts(request, env, corsOrigin) {
   if (request.method !== "POST") {
     return jsonResponse(
@@ -948,15 +1021,25 @@ async function handleParagraphCounts(request, env, corsOrigin) {
 
     const sourceType = body?.sourceType === "novel" ? "novel" : "article";
     const scope =
-      sourceType === "novel" && body?.scope === "chapter"
-        ? "chapter"
-        : "paragraph";
+      body?.scope === "content-total"
+        ? "content-total"
+        : sourceType === "novel" && body?.scope === "chapter"
+          ? "chapter"
+          : sourceType === "article" && body?.scope === "content"
+            ? "content"
+            : "paragraph";
+    const contentItems =
+      scope === "content-total"
+        ? normalizeContentCommentItems(body?.contents)
+        : [];
 
     const identifiers = [
       ...new Set(
-        (scope === "chapter"
-          ? body?.discussionTerms || []
-          : body?.paragraphIds || []
+        (scope === "content-total"
+          ? contentItems.map(({ contentId }) => contentId)
+          : scope !== "paragraph"
+            ? body?.discussionTerms || []
+            : body?.paragraphIds || []
         ).filter((id) => typeof id === "string" && id.trim()),
       ),
     ];
@@ -974,7 +1057,10 @@ async function handleParagraphCounts(request, env, corsOrigin) {
       );
     }
 
-    const allCounts = await getCountsMap(env, sourceType, scope);
+    const allCounts =
+      scope === "content-total"
+        ? await getContentCommentTotals(env, sourceType, contentItems)
+        : await getCountsMap(env, sourceType, scope);
     const counts = {};
 
     identifiers.forEach((id) => {
@@ -996,7 +1082,7 @@ async function handleParagraphCounts(request, env, corsOrigin) {
   } catch (error) {
     return jsonResponse(
       {
-        error: "段评批量接口执行失败",
+        error: "评论批量接口执行失败",
         message: String(error?.message || error),
       },
       500,

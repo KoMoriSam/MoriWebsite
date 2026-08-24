@@ -36,7 +36,7 @@ async function fetchCountsBatch({ body, identifiers = [] }) {
     });
 
     if (!response.ok) {
-      throw new Error(`段评批量接口请求失败：${response.status}`);
+      throw new Error(`评论批量接口请求失败：${response.status}`);
     }
 
     const payload = await response.json();
@@ -70,14 +70,37 @@ export function fetchParagraphCountsBatch({
 
 export function fetchDiscussionCountsBatch({
   sourceType = "novel",
+  scope = sourceType === "novel" ? "chapter" : "content",
   discussionTerms = [],
 }) {
   return fetchCountsBatch({
     identifiers: discussionTerms,
     body: (terms) => ({
       sourceType,
-      scope: "chapter",
+      scope,
       discussionTerms: terms,
+    }),
+  });
+}
+
+export function fetchContentCommentTotalsBatch({
+  sourceType = "article",
+  contents = [],
+}) {
+  const contentById = new Map();
+  for (const content of contents) {
+    const contentId = String(content?.contentId || "").trim();
+    const discussionTerm = String(content?.discussionTerm || "").trim();
+    if (!contentId || !discussionTerm || contentById.has(contentId)) continue;
+    contentById.set(contentId, { contentId, discussionTerm });
+  }
+
+  return fetchCountsBatch({
+    identifiers: [...contentById.keys()],
+    body: (contentIds) => ({
+      sourceType,
+      scope: "content-total",
+      contents: contentIds.map((contentId) => contentById.get(contentId)),
     }),
   });
 }
