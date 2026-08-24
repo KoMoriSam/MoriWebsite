@@ -190,6 +190,7 @@ const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const katexPlugin = ref(null);
+let markdownFeatureRequestId = 0;
 let codeBlockRoot = null;
 const headerParagraphId = computed(() => {
   const uuid = String(props.headerData?.uuid || "").trim();
@@ -472,6 +473,8 @@ const renderedPages = computed(() =>
 watch(
   combinedContent,
   async (content) => {
+    const requestId = ++markdownFeatureRequestId;
+
     if (!content) {
       markdownPreparing.value = false;
       return;
@@ -487,21 +490,22 @@ watch(
     if (!markdownRenderVersion.value) {
       markdownPreparing.value = false;
       loadMarkdownFeaturePlugins(content).then(() => {
+        if (requestId !== markdownFeatureRequestId) return;
         markdownRenderVersion.value += 1;
       });
       return;
     }
 
-    const currentVersion = markdownRenderVersion.value + 1;
-    markdownRenderVersion.value = currentVersion;
     markdownPreparing.value = true;
 
     await loadMarkdownFeaturePlugins(content);
 
-    if (currentVersion !== markdownRenderVersion.value) {
+    if (requestId !== markdownFeatureRequestId) {
       return;
     }
 
+    // vue-markdown-render 只在创建实例时注册插件，需在异步插件加载完成后重建。
+    markdownRenderVersion.value += 1;
     markdownPreparing.value = false;
   },
   { immediate: true },
