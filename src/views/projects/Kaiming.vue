@@ -3,24 +3,35 @@
     eyebrow="Kaiming Punctuation"
     title="开明标点"
     description="一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。"
+    badgesLabel="字体规格"
   >
     <template #badges>
-      <ul class="flex flex-wrap md:justify-end gap-2" aria-label="字体规格">
-        <li class="badge badge-outline">wght 100–900</li>
-        <li class="badge badge-outline">Sans / Serif</li>
-        <li class="badge badge-outline">WOFF2 Variable</li>
-        <li class="badge badge-outline">SIL OFL 1.1</li>
-        <a
-          class="btn btn-ghost btn-xs"
-          href="https://github.com/KoMoriSam/Kaiming"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <i class="ri-github-fill text-xl font-normal"></i>
-          查看源码
-          <i class="ri-arrow-right-up-line font-normal"></i>
-        </a>
-      </ul>
+      <li class="inline-flex items-center gap-1">
+        <i class="ri-font-sans-serif"></i>
+        wght 100–900
+      </li>
+      <li class="inline-flex items-center gap-1">
+        <i class="ri-font-serif"></i>
+        Sans / Serif
+      </li>
+      <li class="inline-flex items-center gap-1">
+        <i class="ri-file-line"></i>
+        WOFF2 Variable
+      </li>
+      <li class="inline-flex items-center gap-1">
+        <i class="ri-creative-commons-by-line"></i>
+        SIL OFL 1.1
+      </li>
+      <a
+        class="link link-primary link-hover"
+        href="https://github.com/KoMoriSam/Kaiming"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="ri-github-fill font-normal"></i>
+        查看源码
+        <i class="ri-arrow-right-up-line font-normal"></i>
+      </a>
     </template>
 
     <section

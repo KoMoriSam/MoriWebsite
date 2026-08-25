@@ -86,22 +86,22 @@
           <section
             class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
           >
-            <span class="inline-flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-1">
               <i class="ri-book-open-line"></i>
               {{ readChapters.length }} 章已读
             </span>
-            <span class="inline-flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-1">
               <i class="ri-stack-line"></i>
               {{ flatChapters.length }} 章收录
             </span>
-            <span class="inline-flex items-center gap-1.5">
+            <span class="inline-flex items-center gap-1">
               <i class="ri-edit-line"></i>
               共 {{ totalWordCount }} 字
             </span>
             <client-only v-if="analyticsAvailable || commentCountsAvailable">
               <span
                 v-if="analyticsAvailable && novelReadsStatus !== 'error'"
-                class="inline-flex items-center gap-1.5"
+                class="inline-flex items-center gap-1"
               >
                 <i class="ri-eye-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalReads)">
@@ -115,7 +115,7 @@
               </span>
               <span
                 v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
-                class="inline-flex items-center gap-1.5"
+                class="inline-flex items-center gap-1"
               >
                 <i class="ri-chat-3-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalComments)">

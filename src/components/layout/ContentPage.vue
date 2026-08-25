@@ -55,7 +55,8 @@
 
         <aside
           v-if="$slots.badges"
-          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
+          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60 md:justify-end"
+          :aria-label="badgesLabel"
         >
           <slot name="badges"></slot>
         </aside>
@@ -93,6 +94,11 @@ defineProps({
   showHeader: {
     type: Boolean,
     default: true,
+  },
+  badgesLabel: {
+    type: String,
+    required: false,
+    default: "",
   },
 });
 

@@ -187,30 +187,24 @@
             class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
             :class="hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'"
           >
-            <time v-if="article?.date" class="inline-flex items-center gap-1.5">
+            <time v-if="article?.date" class="inline-flex items-center gap-1">
               <i class="ri-calendar-line"></i>
               {{ useDateFormat(article.date, "YYYY/M/D") }}
             </time>
 
-            <span
-              v-if="article?.length"
-              class="inline-flex items-center gap-1.5"
-            >
+            <span v-if="article?.length" class="inline-flex items-center gap-1">
               <i class="ri-file-text-line"></i>
               约 {{ article.length }} 字
             </span>
 
-            <span
-              v-if="article?.length"
-              class="inline-flex items-center gap-1.5"
-            >
+            <span v-if="article?.length" class="inline-flex items-center gap-1">
               <i class="ri-time-line"></i>
               {{ estimateReadingTime(article.length) }} 分钟阅读
             </span>
 
             <span
               v-if="analyticsAvailable && articleReadStatus !== 'error'"
-              class="inline-flex items-center gap-1.5"
+              class="inline-flex items-center gap-1"
             >
               <i class="ri-eye-line" aria-hidden="true"></i>
               <template v-if="Number.isFinite(articleReads)">
@@ -225,7 +219,7 @@
 
             <span
               v-if="commentCountsAvailable && articleCommentStatus !== 'error'"
-              class="inline-flex items-center gap-1.5"
+              class="inline-flex items-center gap-1"
             >
               <i class="ri-chat-3-line" aria-hidden="true"></i>
               <template v-if="Number.isFinite(articleComments)">

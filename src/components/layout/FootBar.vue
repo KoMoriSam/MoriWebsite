@@ -31,7 +31,7 @@
         aria-live="polite"
       >
         <div class="flex items-center justify-between gap-6">
-          <dt class="inline-flex items-center gap-1.5">
+          <dt class="inline-flex items-center gap-1">
             <i class="ri-calendar-check-line" aria-hidden="true"></i>
             今日访问
           </dt>
@@ -40,7 +40,7 @@
           </dd>
         </div>
         <div class="flex items-center justify-between gap-6">
-          <dt class="inline-flex items-center gap-1.5">
+          <dt class="inline-flex items-center gap-1">
             <i class="ri-global-line" aria-hidden="true"></i>
             总访问
           </dt>
@@ -49,7 +49,7 @@
           </dd>
         </div>
         <div class="flex items-center justify-between gap-6">
-          <dt class="inline-flex items-center gap-1.5">
+          <dt class="inline-flex items-center gap-1">
             <i class="ri-book-open-line" aria-hidden="true"></i>
             总阅读
           </dt>

@@ -1,14 +1,14 @@
 <template>
   <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
     <template #badges>
-      <span class="inline-flex items-center gap-1.5">
+      <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
         {{ articles.length }} 文章
       </span>
       <client-only>
         <span
           v-if="analyticsAvailable && articleReadsStatus !== 'error'"
-          class="inline-flex items-center gap-1.5"
+          class="inline-flex items-center gap-1"
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
@@ -24,7 +24,7 @@
       <client-only>
         <span
           v-if="commentCountsAvailable && articleCommentsStatus !== 'error'"
-          class="inline-flex items-center gap-1.5"
+          class="inline-flex items-center gap-1"
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
