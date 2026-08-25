@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.23.0</strong>
+  Version actuelle : <strong>1.24.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,12 +56,11 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.23.0
+## Points clés de la version 1.24.0
 
-- ajout de statistiques de visites et de lecture basées sur Cloudflare D1 avec des statistiques de lecture de contenu par lot
-- passage des formules Markdown au rendu SVG MathJax avec copie LaTeX et prise en charge des cartes de partage
-- affichage des statistiques de lecture/commentaires pour les articles et chapitres, en regroupant les commentaires principaux, les commentaires de paragraphe et les réponses
-- correction des rendus en double dans les cartes de partage, de la restauration de la position de lecture du roman sur ordinateur et des problèmes de premier rendu LaTeX
+- ajout du support des diagrammes Mermaid aux composants Markdown, couvrant organigrammes, diagrammes de séquence, diagrammes de classes, etc.
+- ajout de la coloration syntaxique Mermaid et d'utilitaires de montage/démontage des diagrammes
+- boutons de copie des blocs de code désormais rendus uniquement côté client, et affinage de l'ordre des polices et des formulations
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 

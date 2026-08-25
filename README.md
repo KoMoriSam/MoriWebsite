@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.23.0</strong>
+  当前版本：<strong>1.24.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,12 +56,11 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.23.0 版本重点
+## 1.24.0 版本重点
 
-- 新增基于 Cloudflare D1 的访问与阅读统计，支持批量查询内容阅读统计
-- Markdown 公式改用 MathJax SVG 渲染，支持 LaTeX 复制与分享卡片渲染
-- 展示文章与章节的阅读评论统计，汇总主评论、段评与回复
-- 修复分享卡片重复渲染、桌面端阅读位置恢复、LaTeX 首屏渲染等问题
+- Markdown 组件新增 Mermaid 图表支持，涵盖流程图、时序图、类图等示例
+- 新增 Mermaid 语法高亮与图表挂载/卸载工具
+- 代码块复制按钮改为仅客户端渲染，优化字体顺序与文本表述
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 

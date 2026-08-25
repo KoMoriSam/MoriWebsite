@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.23.0</strong>
+  Current version: <strong>1.24.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,12 +56,11 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.23.0 Highlights
+## Version 1.24.0 Highlights
 
-- added Cloudflare D1-based visit and reading analytics with batch content-reading statistics
-- switched Markdown math to MathJax SVG rendering with LaTeX copy and share-card support
-- displayed reading/comment statistics for articles and chapters, aggregating main comments, paragraph comments, and replies
-- fixed duplicate rendering in share cards, desktop novel reading-position restoration, and LaTeX first-paint issues
+- added Mermaid diagram support to Markdown components, covering flowcharts, sequence diagrams, class diagrams, and more
+- added Mermaid syntax highlighting and diagram mount/unmount utilities
+- made code-block copy buttons client-side only, and refined font ordering and text wording
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
