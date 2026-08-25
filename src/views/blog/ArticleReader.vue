@@ -214,7 +214,7 @@
             >
               <i class="ri-eye-line" aria-hidden="true"></i>
               <template v-if="Number.isFinite(articleReads)">
-                {{ formatReadCount(articleReads) }} 次阅读
+                {{ formatReadCount(articleReads) }} 阅读
               </template>
               <span
                 v-else
@@ -229,7 +229,7 @@
             >
               <i class="ri-chat-3-line" aria-hidden="true"></i>
               <template v-if="Number.isFinite(articleComments)">
-                {{ formatReadCount(articleComments) }} 条评论
+                {{ formatReadCount(articleComments) }} 评论
               </template>
               <span
                 v-else
@@ -659,10 +659,10 @@ const articleShareMeta = computed(() => {
     .join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(articleReads.value)
-      ? `${formatReadCount(articleReads.value)} 次阅读`
+      ? `${formatReadCount(articleReads.value)} 阅读`
       : "",
     commentCountsAvailable.value && Number.isFinite(articleComments.value)
-      ? `${formatReadCount(articleComments.value)} 条评论`
+      ? `${formatReadCount(articleComments.value)} 评论`
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");

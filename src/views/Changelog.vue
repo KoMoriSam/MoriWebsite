@@ -2,10 +2,12 @@
   <ContentPage eyebrow="Release Notes &amp; Maintenance" title="更新日志">
     <template #badges>
       <template v-if="totalVersions">
-        <span class="badge badge-primary badge-soft badge-lg font-semibold">
-          当前版本&nbsp; {{ latestVersion }}
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ri-git-commit-line"></i>
+          当前版本 {{ latestVersion }}
         </span>
-        <span class="badge badge-dash badge-lg">
+        <span class="inline-flex items-center gap-1.5">
+          <i class="ri-git-branch-line"></i>
           {{ totalVersions }} 次版本记录
         </span>
       </template>

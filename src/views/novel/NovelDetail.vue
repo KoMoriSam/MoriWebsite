@@ -105,7 +105,7 @@
               >
                 <i class="ri-eye-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalReads)">
-                  {{ formatReadCount(novelTotalReads) }} 次阅读
+                  {{ formatReadCount(novelTotalReads) }} 阅读
                 </template>
                 <span
                   v-else
@@ -119,7 +119,7 @@
               >
                 <i class="ri-chat-3-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalComments)">
-                  {{ formatReadCount(novelTotalComments) }} 条评论
+                  {{ formatReadCount(novelTotalComments) }} 评论
                 </template>
                 <span
                   v-else

@@ -155,7 +155,7 @@
                           v-if="Number.isFinite(getChapterReads(chapter.uuid))"
                         >
                           {{ formatReadCount(getChapterReads(chapter.uuid)) }}
-                          次阅读
+                          阅读
                         </template>
                         <span
                           v-else
@@ -180,7 +180,7 @@
                           v-if="Number.isFinite(getChapterComments(chapter))"
                         >
                           {{ formatReadCount(getChapterComments(chapter)) }}
-                          条评论
+                          评论
                         </template>
                         <span
                           v-else

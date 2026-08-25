@@ -285,29 +285,24 @@ const trackedChapterReady = computed(() => {
 
   return Boolean(
     chapterId &&
-      permalink &&
-      route.name === "novel-reader" &&
-      route.params.volumeSlug === permalink.volumeSlug &&
-      route.params.chapterSlug === permalink.chapterSlug &&
-      !isLoadingContent.value &&
-      currentChapterContent.value.length > 0,
+    permalink &&
+    route.name === "novel-reader" &&
+    route.params.volumeSlug === permalink.volumeSlug &&
+    route.params.chapterSlug === permalink.chapterSlug &&
+    !isLoadingContent.value &&
+    currentChapterContent.value.length > 0,
   );
 });
-const {
-  analyticsAvailable,
-  contentReads: chapterReads,
-} = useContentReadTracking({
-  contentType: "novel",
-  contentId: trackedChapterId,
-  ready: trackedChapterReady,
-});
+const { analyticsAvailable, contentReads: chapterReads } =
+  useContentReadTracking({
+    contentType: "novel",
+    contentId: trackedChapterId,
+    ready: trackedChapterReady,
+  });
 const chapterReadCountFormatter = new Intl.NumberFormat("zh-CN");
 
 watch(
-  () => [
-    trackedChapterId.value,
-    getChapterContextTitle(currentChapter.value),
-  ],
+  () => [trackedChapterId.value, getChapterContextTitle(currentChapter.value)],
   ([contentId, discussionTerm]) => {
     if (!contentId || !discussionTerm) return;
     void commentCountsStore.loadContentCommentTotals("novel", [
@@ -724,7 +719,7 @@ const chapterStats = computed(() => {
   if (analyticsAvailable.value && Number.isFinite(chapterReads.value)) {
     stats.push({
       icon: "ri-eye-line",
-      text: `${chapterReadCountFormatter.format(chapterReads.value)} 次阅读`,
+      text: `${chapterReadCountFormatter.format(chapterReads.value)} 阅读`,
     });
   }
 
@@ -743,18 +738,16 @@ const textShareMeta = computed(() => {
   const contentInfo = contentItems.join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(chapterReads.value)
-      ? `${chapterReadCountFormatter.format(chapterReads.value)} 次阅读`
+      ? `${chapterReadCountFormatter.format(chapterReads.value)} 阅读`
       : "",
     commentCountsAvailable.value && Number.isFinite(chapterComments.value)
-      ? `${chapterReadCountFormatter.format(chapterComments.value)} 条评论`
+      ? `${chapterReadCountFormatter.format(chapterComments.value)} 评论`
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");
-  const detailLines = [
-    publicationInfo,
-    contentInfo,
-    engagementInfo,
-  ].filter(Boolean);
+  const detailLines = [publicationInfo, contentInfo, engagementInfo].filter(
+    Boolean,
+  );
   const sourceLabel = ["《向远方》", currentChapter.value?.volumeTitle]
     .filter(Boolean)
     .join(" · ");

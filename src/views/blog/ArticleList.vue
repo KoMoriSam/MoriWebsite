@@ -1,17 +1,18 @@
 <template>
   <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
     <template #badges>
-      <span class="badge badge-dash badge-lg font-semibold">
-        共 {{ articles.length }} 篇文章
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-stack-line"></i>
+        {{ articles.length }} 文章
       </span>
       <client-only>
         <span
           v-if="analyticsAvailable && articleReadsStatus !== 'error'"
-          class="badge badge-info badge-outline badge-lg gap-1.5 font-semibold"
+          class="inline-flex items-center gap-1.5"
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
-            {{ formatReadCount(articleTotalReads) }}
+            {{ formatReadCount(articleTotalReads) }} 阅读
           </template>
           <span
             v-else
@@ -23,22 +24,17 @@
       <client-only>
         <span
           v-if="commentCountsAvailable && articleCommentsStatus !== 'error'"
-          class="badge badge-info badge-outline badge-lg gap-1.5 font-semibold"
+          class="inline-flex items-center gap-1.5"
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
-            {{ formatReadCount(articleTotalComments) }}
+            {{ formatReadCount(articleTotalComments) }} 评论
           </template>
           <span
             v-else
             class="loading loading-dots loading-xs"
             aria-label="正在读取文章总评论量"
           ></span>
-        </span>
-      </client-only>
-      <client-only>
-        <span v-if="hasFilter" class="badge badge-primary badge-soft badge-lg">
-          找到 {{ filteredArticles.length }} 篇
         </span>
       </client-only>
     </template>
@@ -264,36 +260,52 @@
 
       <!-- 结果信息 -->
       <div
-        class="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/55"
+        class="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-base-content/70"
         role="status"
         aria-live="polite"
         aria-atomic="true"
       >
-        <p>
-          <template v-if="hasFilter">
-            当前筛选共
-            <strong class="font-semibold text-base-content">
-              {{ filteredArticles.length }}
-            </strong>
-            篇文章
+        <!-- 左侧：一句话概括全部关键信息 -->
+        <p class="flex flex-wrap items-center gap-x-1 gap-y-0">
+          <template v-if="filteredArticles.length === 0">
+            <span
+              v-if="keyword.trim()"
+              class="font-medium text-base-content/75"
+            >
+              没有找到与“{{ keyword.trim() }}”相关的文章
+            </span>
           </template>
 
-          <template v-else>共 {{ filteredArticles.length }} 篇文章</template>
+          <template v-else>
+            <span>
+              <span v-if="!hasFilter">共 </span>
+              <span v-else>找到 </span>
+              <strong class="font-semibold text-base-content">
+                {{ filteredArticles.length }}
+              </strong>
+              篇
+              <span
+                v-if="filteredArticles.length > 1"
+                class="text-base-content/50"
+              >
+                （当前查看{{ pageDisplayText }}）
+              </span>
+            </span>
+
+            <span v-if="keyword.trim()" class="ml-2">
+              关键词：
+              <span class="badge badge-primary badge-soft badge-xs">
+                {{ keyword.trim() }}
+              </span>
+            </span>
+          </template>
         </p>
 
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <p v-if="filteredArticles.length">
-            显示 {{ pageStart }}–{{ pageEnd }} · 第 {{ currentPage }} /
-            {{ totalPages }} 页
-          </p>
-
-          <p v-if="keyword.trim()">
-            搜索：
-            <span class="font-medium text-base-content">
-              “{{ keyword.trim() }}”
-            </span>
-          </p>
-        </div>
+        <p class="text-xs text-base-content/50">
+          <template v-if="filteredArticles.length">
+            第 {{ currentPage }} / {{ totalPages }} 页
+          </template>
+        </p>
       </div>
 
       <div id="article-results" :aria-busy="loading">
@@ -320,12 +332,6 @@
               <div class="skeleton h-48 w-full rounded-none sm:h-52"></div>
 
               <div class="card-body min-w-0 gap-0 p-5 sm:p-6">
-                <!-- <div class="flex gap-2">
-                  <div class="skeleton h-5 w-16"></div>
-                  <div class="skeleton h-5 w-20"></div>
-                </div>
-
-                <div class="skeleton mt-4 h-7 w-4/5"></div> -->
                 <div class="skeleton mt-2 h-4 w-full"></div>
                 <div class="skeleton mt-2 h-4 w-11/12"></div>
                 <div class="skeleton mt-2 h-4 w-3/5"></div>
@@ -525,7 +531,7 @@
                     >
                       <i class="ri-eye-line" aria-hidden="true"></i>
                       <template v-if="Number.isFinite(getArticleReads(item))">
-                        {{ formatReadCount(getArticleReads(item)) }} 次阅读
+                        {{ formatReadCount(getArticleReads(item)) }} 阅读
                       </template>
                       <span
                         v-else
@@ -547,7 +553,7 @@
                       <template
                         v-if="Number.isFinite(getArticleComments(item))"
                       >
-                        {{ formatReadCount(getArticleComments(item)) }} 条评论
+                        {{ formatReadCount(getArticleComments(item)) }} 评论
                       </template>
                       <span
                         v-else
@@ -765,11 +771,19 @@ const pageStart = computed(() => {
   if (!filteredArticles.value.length) return 0;
   return (currentPage.value - 1) * BLOG_PAGE_SIZE + 1;
 });
+
 const pageEnd = computed(() => {
   return Math.min(
     currentPage.value * BLOG_PAGE_SIZE,
     filteredArticles.value.length,
   );
+});
+
+const pageDisplayText = computed(() => {
+  if (pageStart.value === pageEnd.value) {
+    return `第 ${pageStart.value} 篇`;
+  }
+  return `第 ${pageStart.value}-${pageEnd.value} 篇`;
 });
 
 const handlePageChange = async (page) => {

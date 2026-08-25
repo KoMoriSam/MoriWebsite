@@ -5,16 +5,19 @@
     description="项目的 MIT 许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。"
   >
     <template #badges>
-      <span class="badge badge-lg badge-primary badge-soft">
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-puzzle-line"></i>
         {{ licenseData.dependencyCount }} 个依赖版本
       </span>
-      <span class="badge badge-lg badge-outline">
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-certificate-line"></i>
         {{ licenseData.supplementalLicenses.length }} 份补充许可
       </span>
       <span
         v-if="licenseData.missingLicenseFileCount"
-        class="badge badge-lg badge-dash"
+        class="inline-flex items-center gap-1.5"
       >
+        <i class="ri-certificate-2-line"></i>
         {{ licenseData.missingLicenseFileCount }} 个包未附顶层许可文件
       </span>
     </template>

@@ -55,7 +55,7 @@
 
         <aside
           v-if="$slots.badges"
-          class="flex max-w-full flex-wrap items-center gap-2 md:max-w-md md:justify-end"
+          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
         >
           <slot name="badges"></slot>
         </aside>
