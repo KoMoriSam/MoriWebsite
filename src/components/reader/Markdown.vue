@@ -150,6 +150,7 @@ import MarkdownItSub from "markdown-it-sub";
 import MarkdownItSup from "markdown-it-sup";
 import MarkdownItTaskLists from "markdown-it-task-lists";
 import MarkdownItMark from "markdown-it-mark";
+import MarkdownItMermaid from "@markslides/markdown-it-mermaid";
 
 // 引入自定义插件
 import { anchorPlugin } from "@/utils/markdown/markdown-it-anchor";
@@ -170,6 +171,10 @@ import {
   mountCodeBlocks,
   unmountCodeBlocks,
 } from "@/utils/markdown/markdown-it-code";
+import {
+  mountMermaidDiagrams,
+  unmountMermaidDiagrams,
+} from "@/utils/markdown/markdown-it-mermaid";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
 import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
 import {
@@ -191,8 +196,11 @@ const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const mathJaxPlugin = ref(null);
+const MERMAID_GANTT_WIDTH = 720;
 let markdownFeatureRequestId = 0;
 let codeBlockRoot = null;
+let renderMermaidDiagrams = null;
+let mermaidRenderQueue = Promise.resolve();
 const headerParagraphId = computed(() => {
   const uuid = String(props.headerData?.uuid || "").trim();
   return uuid ? `${uuid}-0` : "";
@@ -226,6 +234,7 @@ const syncMarkdownComponents = async () => {
     unmountAlertBlocks(codeBlockRoot);
     unmountChatBlocks(codeBlockRoot);
     unmountCodeBlocks(codeBlockRoot);
+    unmountMermaidDiagrams(codeBlockRoot);
   }
 
   codeBlockRoot = nextRoot;
@@ -236,6 +245,20 @@ const syncMarkdownComponents = async () => {
   mountAlertBlocks(codeBlockRoot);
   mountChatBlocks(codeBlockRoot);
   mountCodeBlocks(codeBlockRoot);
+  mountMermaidDiagrams(codeBlockRoot);
+
+  if (renderMermaidDiagrams) {
+    const renderer = renderMermaidDiagrams;
+    mermaidRenderQueue = mermaidRenderQueue
+      .catch(() => undefined)
+      .then(() => renderer())
+      .catch((error) => {
+        console.warn("Mermaid 图表渲染失败", error);
+      });
+    await mermaidRenderQueue;
+  }
+  mountMermaidDiagrams(codeBlockRoot, { renderComplete: true });
+
   emit("render-ready");
 };
 
@@ -244,6 +267,7 @@ onBeforeUnmount(() => {
   unmountAlertBlocks(codeBlockRoot);
   unmountChatBlocks(codeBlockRoot);
   unmountCodeBlocks(codeBlockRoot);
+  unmountMermaidDiagrams(codeBlockRoot);
 });
 
 watch(
@@ -442,6 +466,86 @@ const rubyPlugin = (md) => {
   });
 };
 
+const mermaidPlugin = (md) => {
+  MarkdownItMermaid(md, {
+    startOnLoad: false,
+    securityLevel: "strict",
+    fontFamily: "var(--font-mono)",
+    themeVariables: {
+      fontSize: "14px",
+    },
+    flowchart: {
+      diagramPadding: 8,
+      nodeSpacing: 50,
+      rankSpacing: 50,
+      padding: 15,
+      htmlLabels: false,
+      useMaxWidth: true,
+    },
+    class: {
+      diagramPadding: 8,
+      nodeSpacing: 50,
+      rankSpacing: 50,
+      padding: 8,
+      htmlLabels: false,
+    },
+    state: {
+      nodeSpacing: 50,
+      rankSpacing: 50,
+      padding: 8,
+      miniPadding: 4,
+      noteMargin: 10,
+    },
+    er: {
+      diagramPadding: 20,
+      entityPadding: 15,
+      nodeSpacing: 140,
+      rankSpacing: 80,
+    },
+    block: {
+      padding: 8,
+    },
+    kanban: {
+      padding: 8,
+    },
+    gantt: {
+      useMaxWidth: true,
+      useWidth: MERMAID_GANTT_WIDTH,
+    },
+    sequence: {
+      diagramMarginX: 8,
+      diagramMarginY: 8,
+      actorMargin: 50,
+      width: 150,
+      height: 65,
+      boxMargin: 10,
+      boxTextMargin: 5,
+      noteMargin: 10,
+      messageMargin: 35,
+      useMaxWidth: true,
+    },
+  });
+
+  const mermaidFenceRenderer = md.renderer.rules.fence;
+  md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+    const rendered = mermaidFenceRenderer(tokens, idx, options, env, self);
+    const token = tokens[idx];
+
+    if (token.info.trim() !== "mermaid") return rendered;
+
+    const diagram = rendered.replace(
+      "<pre ",
+      `<pre aria-hidden="true" data-mermaid-source="${encodeURIComponent(token.content.trim())}" `,
+    );
+
+    return `<div data-mermaid-viewer aria-busy="true">
+      ${diagram}
+      <div data-mermaid-controls></div>
+    </div>`;
+  };
+  renderMermaidDiagrams = md.mermaid?.renderAll || null;
+};
+
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
   MarkdownItAttrs,
@@ -460,6 +564,7 @@ const sharedPlugins = computed(() => [
   MarkdownItTaskLists,
   ...(mathJaxPlugin.value ? [mathJaxPlugin.value] : []),
   MarkdownItMark,
+  mermaidPlugin,
   tableWrapperPlugin,
 ]);
 
