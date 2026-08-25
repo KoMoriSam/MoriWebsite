@@ -15,25 +15,27 @@
     ><code class="hljs p-0! text-sm md:text-base inline-block! overflow-visible!" :class="`language-${language}`" v-html="line"></code></pre>
   </div>
 
-  <aside
-    class="absolute right-2 top-2 tooltip tooltip-left font-mono"
-    :class="copied ? 'tooltip-success' : ''"
-    :data-tip="copied ? '复制成功' : '复制到剪贴板'"
-  >
-    <button
-      class="btn btn-sm btn-square"
-      @click="copy(code)"
-      :class="{
-        'btn-success': copied,
-        'btn-ghost': !copied,
-      }"
+  <client-only>
+    <aside
+      class="absolute right-2 top-2 tooltip tooltip-left font-mono"
+      :class="copied ? 'tooltip-success' : ''"
+      :data-tip="copied ? '复制成功' : '复制到剪贴板'"
     >
-      <i
-        class="font-normal"
-        :class="[copied ? 'ri-check-line' : 'ri-file-copy-line']"
-      ></i>
-    </button>
-  </aside>
+      <button
+        class="btn btn-sm btn-square"
+        @click="copy(code)"
+        :class="{
+          'btn-success': copied,
+          'btn-ghost': !copied,
+        }"
+      >
+        <i
+          class="font-normal"
+          :class="[copied ? 'ri-check-line' : 'ri-file-copy-line']"
+        ></i>
+      </button>
+    </aside>
+  </client-only>
 </template>
 
 <script setup>
