@@ -3,7 +3,6 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
-import legacy from "@vitejs/plugin-legacy";
 import tailwindcss from "@tailwindcss/vite";
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -16,10 +15,6 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     tailwindcss(),
-    legacy({
-      targets: ["ie>=11"],
-      additionalLegacyPolyfills: ["regenerator-runtime/runtime"],
-    }),
     {
       name: "copy-404",
       apply: "build",
