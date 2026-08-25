@@ -38,10 +38,10 @@
     ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   --font-mono:
-    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular,
-    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace,
-    "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
-    "Noto Sans Sinhala";
+    "JetBrains Mono Variable", "JetBrains Mono", "Noto Sans SC Variable",
+    "Noto Sans SC", "Noto Sans Sinhala Variable", "Noto Sans Sinhala",
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   --font-song:
     "Kaiming Punctuation Serif", "LXGW Neo ZhiSong Plus", "LXGW Neo ZhiSong",
