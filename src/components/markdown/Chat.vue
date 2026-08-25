@@ -48,6 +48,7 @@ const avatarMap = {
   "🈚️内👻，LG": "/assets/images/avatar/lg.webp",
   小群主: "/assets/images/avatar/komorisam.webp",
   Mori: "/assets/images/avatar/komorisam.webp",
+  KoMoriSam: "/assets/images/avatar/komorisam.webp",
   真正群主: "/assets/images/avatar/talloran.webp",
   牛子: "/assets/images/avatar/niuzi.webp",
   欢乐豆人: "/assets/images/avatar/joybean.webp",
@@ -58,6 +59,8 @@ const avatarMap = {
   赵天明老师: "/assets/images/avatar/zhaotianming.webp",
   爸: "/assets/images/avatar/dad.webp",
   妈: "/assets/images/avatar/mom.webp",
+  OpenAI: "/assets/images/avatar/openai.webp",
+  "GPT-5.6": "/assets/images/avatar/openai.webp",
 };
 const footerStyleMap = [
   ["已送达", "badge-info"],
@@ -160,10 +163,12 @@ const remainingMessages = computed(() =>
 const headerBadgeClass = computed(() => {
   if (!props.header?.extra || /^\d+$/.test(props.header.extra)) return "";
 
-  return {
-    在线: "badge-soft badge-success",
-    离线: "badge-soft badge-outline",
-    忙碌: "badge-soft badge-error",
-  }[props.header.extra] || "badge-soft";
+  return (
+    {
+      在线: "badge-soft badge-success",
+      离线: "badge-soft badge-outline",
+      忙碌: "badge-soft badge-error",
+    }[props.header.extra] || "badge-soft"
+  );
 });
 </script>
