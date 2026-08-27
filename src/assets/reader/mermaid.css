@@ -1,0 +1,781 @@
+/* Mermaid 样式 */
+
+@reference "../main.css";
+
+@layer utilities {
+  /* Mermaid 图表 */
+  .markdown-content.prose :deep([data-mermaid-viewer]) {
+    @apply relative mx-auto my-4 flex w-full flex-col max-w-full overflow-hidden
+    rounded-box border border-base-300 bg-base-100
+    font-sans text-[var(--reader-text-color,var(--color-base-content))];
+
+    --mermaid-text: var(--reader-text-color, var(--color-base-content));
+
+    --mermaid-node-fill: color-mix(
+      in oklab,
+      var(--color-primary) 14%,
+      var(--color-base-100)
+    );
+
+    --mermaid-node-border: color-mix(
+      in oklab,
+      var(--color-primary) 68%,
+      currentColor
+    );
+
+    --mermaid-line: color-mix(in oklab, var(--color-primary) 76%, currentColor);
+
+    --mermaid-muted-fill: color-mix(
+      in oklab,
+      currentColor 7%,
+      var(--color-base-100)
+    );
+  }
+
+  .markdown-content.prose :deep([data-mermaid-viewer] pre.mermaid) {
+    @apply m-0! flex h-full w-full max-w-full items-center justify-center
+    overflow-visible! rounded-none! border-0! bg-transparent! p-0!
+    font-sans text-sm leading-normal tracking-normal;
+
+    min-height: inherit;
+  }
+
+  .markdown-content.prose :deep([data-mermaid-viewer] .mermaid-svg-wrapper) {
+    @apply flex h-auto w-full! max-w-full items-center justify-center;
+
+    min-height: inherit;
+  }
+
+  .markdown-content.prose :deep([data-mermaid-viewer] pre.mermaid > svg),
+  .markdown-content.prose
+    :deep([data-mermaid-viewer] pre.mermaid > .mermaid-svg-wrapper > svg) {
+    @apply pointer-events-none m-0! block h-auto w-full!
+    max-w-none! overflow-hidden! select-none text-inherit;
+
+    min-height: inherit;
+  }
+
+  .markdown-content.prose :deep([data-mermaid-viewer]:fullscreen) {
+    @apply m-0! h-screen! w-screen! max-w-none! overflow-hidden
+    rounded-none border-0 bg-base-100 p-0! shadow-none;
+  }
+
+  .markdown-content.prose
+    :deep([data-mermaid-viewer]:fullscreen [data-mermaid-preview]) {
+    @apply min-h-0;
+  }
+
+  .markdown-content.prose
+    :deep([data-mermaid-viewer]:fullscreen .mermaid-svg-wrapper) {
+    @apply h-full! w-full! max-w-none!;
+  }
+
+  .markdown-content.prose
+    :deep([data-mermaid-viewer]:fullscreen pre.mermaid > svg),
+  .markdown-content.prose
+    :deep(
+      [data-mermaid-viewer]:fullscreen pre.mermaid > .mermaid-svg-wrapper > svg
+    ) {
+    @apply h-full! w-full! max-h-none! max-w-none!;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg :is(.nodeLabel, .edgeLabel) p) {
+    @apply m-0! min-h-0 p-0! indent-0! text-center! tracking-normal!;
+    font: inherit !important;
+    line-height: inherit !important;
+    white-space: inherit !important;
+    overflow-wrap: inherit !important;
+    word-break: inherit !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.label, .nodeLabel, .edgeLabel)) {
+    @apply text-center! tracking-normal!;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(text, text > tspan, .label, .nodeLabel, .edgeLabel, .cluster-label)
+    ) {
+    color: var(--mermaid-text) !important;
+    fill: var(--mermaid-text) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg :is(text, text > tspan)) {
+    stroke: none !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .sequenceNumber) {
+    color: var(--color-neutral-content) !important;
+    fill: var(--color-neutral-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg marker[id$="-sequencenumber"] circle) {
+    fill: var(--color-neutral) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(.node, .entityBox, .labelBox, .note)
+        :is(rect, circle, ellipse, polygon, path)
+    ) {
+    fill: var(--mermaid-node-fill) !important;
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(rect, circle, ellipse, polygon, path):is(
+          .actor,
+          .entityBox,
+          .labelBox,
+          .note,
+          .state-start
+        )
+    ) {
+    fill: var(--mermaid-node-fill) !important;
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .cluster :is(rect, circle, ellipse, polygon, path)) {
+    fill: var(--mermaid-muted-fill) !important;
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(
+          .edgePath path,
+          .flowchart-link,
+          .messageLine0,
+          .messageLine1,
+          .relationshipLine,
+          .relation,
+          .transition,
+          .actor-line,
+          .loopLine,
+          .task-line,
+          .edge
+        )
+    ) {
+    stroke: var(--mermaid-line) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg marker :is(path, polygon, circle)) {
+    fill: var(--mermaid-line) !important;
+    stroke: var(--mermaid-line) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .edgeLabel .label rect.background) {
+    fill: var(--color-base-100) !important;
+    opacity: 0.9 !important;
+    stroke: none !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .edgeLabel foreignObject .labelBkg) {
+    background-color: var(--color-base-100) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .actor-man :is(line, circle)) {
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .actor-man circle) {
+    fill: var(--mermaid-node-fill) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .divider) {
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  /* 甘特图：主题主色表示进行中，状态色保留任务语义。 */
+  .markdown-content.prose :deep(pre.mermaid svg :is(.section0, .section2)) {
+    fill: var(--color-base-200) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg :is(.section1, .section3)) {
+    fill: var(--color-base-100) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg rect.task) {
+    fill: var(--mermaid-node-fill) !important;
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg rect[class*="active"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-secondary) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg rect[class*="done"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-success) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-success) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg rect[class*="crit"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-error) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-error) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg line.today) {
+    stroke: var(--color-error) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg rect.exclude-range) {
+    fill: var(--color-base-300) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .grid .tick) {
+    stroke: var(--color-base-300) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .today) {
+    stroke: var(--color-error) !important;
+  }
+
+  /* 数据图：使用当前 daisyUI 主题的语义色序列。 */
+  .markdown-content.prose :deep(pre.mermaid svg rect.background) {
+    fill: transparent !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg circle.pieOuterCircle) {
+    stroke: var(--color-base-300) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 1)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 1 of .legend) rect) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 2)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 2 of .legend) rect) {
+    fill: var(--color-secondary) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 3)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 3 of .legend) rect) {
+    fill: var(--color-accent) !important;
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 4)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 4 of .legend) rect) {
+    fill: var(--color-info) !important;
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 5)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 5 of .legend) rect) {
+    fill: var(--color-success) !important;
+    stroke: var(--color-success) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 6)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 6 of .legend) rect) {
+    fill: var(--color-warning) !important;
+    stroke: var(--color-warning) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 7)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 7 of .legend) rect) {
+    fill: var(--color-error) !important;
+    stroke: var(--color-error) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .pieCircle:nth-of-type(8n + 8)),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .legend:nth-child(8n + 8 of .legend) rect) {
+    fill: var(--color-neutral) !important;
+    stroke: var(--color-neutral) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 1 of .slice)) {
+    fill: var(--color-primary-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 2 of .slice)) {
+    fill: var(--color-secondary-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 3 of .slice)) {
+    fill: var(--color-accent-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 4 of .slice)) {
+    fill: var(--color-info-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 5 of .slice)) {
+    fill: var(--color-success-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 6 of .slice)) {
+    fill: var(--color-warning-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 7 of .slice)) {
+    fill: var(--color-error-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .slice:nth-child(8n + 8 of .slice)) {
+    fill: var(--color-neutral-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .bar-plot-0 rect) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .line-plot-1 path) {
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .quadrant:nth-child(1) rect) {
+    fill: color-mix(
+      in oklab,
+      var(--color-primary) 18%,
+      var(--color-base-100)
+    ) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .quadrant:nth-child(2) rect) {
+    fill: color-mix(
+      in oklab,
+      var(--color-secondary) 18%,
+      var(--color-base-100)
+    ) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .quadrant:nth-child(3) rect) {
+    fill: color-mix(
+      in oklab,
+      var(--color-accent) 18%,
+      var(--color-base-100)
+    ) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .quadrant:nth-child(4) rect) {
+    fill: color-mix(
+      in oklab,
+      var(--color-info) 18%,
+      var(--color-base-100)
+    ) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .data-point :is(circle, rect)) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .border line) {
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.axis-line, .axisl-line, .ticks) path) {
+    stroke: var(--mermaid-line) !important;
+  }
+
+  /* 分支、思维导图与时间线沿用同一主题色序列。 */
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit0, .branch0, .section-edge-0)) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit1, .branch1, .section-edge-1)) {
+    fill: var(--color-secondary) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit2, .branch2, .section-edge-2)) {
+    fill: var(--color-accent) !important;
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit3, .branch3, .section-edge-3)) {
+    fill: var(--color-info) !important;
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit4, .branch4, .section-edge-4)) {
+    fill: var(--color-success) !important;
+    stroke: var(--color-success) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit5, .branch5, .section-edge-5)) {
+    fill: var(--color-warning) !important;
+    stroke: var(--color-warning) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit6, .branch6, .section-edge-6)) {
+    fill: var(--color-error) !important;
+    stroke: var(--color-error) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit7, .branch7, .section-edge-7)) {
+    fill: var(--color-neutral) !important;
+    stroke: var(--color-neutral) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .commit-arrows .arrow0) {
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .commit-arrows .arrow1) {
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .commit-arrows .arrow2) {
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .commit-arrows .arrow3) {
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label0) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label0 :is(text, tspan)) {
+    color: var(--color-primary-content) !important;
+    fill: var(--color-primary-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label1) {
+    fill: var(--color-secondary) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label1 :is(text, tspan)) {
+    color: var(--color-secondary-content) !important;
+    fill: var(--color-secondary-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label2) {
+    fill: var(--color-accent) !important;
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label2 :is(text, tspan)) {
+    color: var(--color-accent-content) !important;
+    fill: var(--color-accent-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label3) {
+    fill: var(--color-info) !important;
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label3 :is(text, tspan)) {
+    color: var(--color-info-content) !important;
+    fill: var(--color-info-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label4) {
+    fill: var(--color-success) !important;
+    stroke: var(--color-success) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label4 :is(text, tspan)) {
+    color: var(--color-success-content) !important;
+    fill: var(--color-success-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label5) {
+    fill: var(--color-warning) !important;
+    stroke: var(--color-warning) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label5 :is(text, tspan)) {
+    color: var(--color-warning-content) !important;
+    fill: var(--color-warning-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label6) {
+    fill: var(--color-error) !important;
+    stroke: var(--color-error) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label6 :is(text, tspan)) {
+    color: var(--color-error-content) !important;
+    fill: var(--color-error-content) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .branchLabelBkg.label7) {
+    fill: var(--color-neutral) !important;
+    stroke: var(--color-neutral) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .branch-label7 :is(text, tspan)) {
+    color: var(--color-neutral-content) !important;
+    fill: var(--color-neutral-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit-label-bkg, .tag-label-bkg)) {
+    fill: var(--color-base-200) !important;
+    stroke: var(--color-base-300) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.commit-label, .tag-label)) {
+    color: var(--mermaid-text) !important;
+    fill: var(--mermaid-text) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(
+          .mindmap-node.section-root,
+          .mindmap-node.section-0,
+          .timeline-node.section--1
+        )
+        :is(rect, circle, ellipse, polygon, path)
+    ) {
+    fill: color-mix(
+      in oklab,
+      var(--color-primary) 18%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(.mindmap-node.section-1, .timeline-node.section-0)
+        :is(rect, circle, ellipse, polygon, path)
+    ) {
+    fill: color-mix(
+      in oklab,
+      var(--color-secondary) 18%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(.mindmap-node.section-2, .timeline-node.section-1)
+        :is(rect, circle, ellipse, polygon, path)
+    ) {
+    fill: color-mix(
+      in oklab,
+      var(--color-accent) 18%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(.mindmap-node.section-3, .timeline-node.section-2)
+        :is(rect, circle, ellipse, polygon, path)
+    ) {
+    fill: color-mix(
+      in oklab,
+      var(--color-info) 18%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg
+        :is(.mindmap-node.section-root, .mindmap-node.section-0)
+        [class*="node-line-"]
+    ),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .timeline-node.section--1 [class*="node-line-"]) {
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .mindmap-node.section-1 [class*="node-line-"]),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .timeline-node.section-0 [class*="node-line-"]) {
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .mindmap-node.section-2 [class*="node-line-"]),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .timeline-node.section-1 [class*="node-line-"]) {
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg .mindmap-node.section-3 [class*="node-line-"]),
+  .markdown-content.prose
+    :deep(pre.mermaid svg .timeline-node.section-2 [class*="node-line-"]) {
+    stroke: var(--color-info) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.journey-section, .task)[class*="type-0"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-primary) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.journey-section, .task)[class*="type-1"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-secondary) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg :is(.journey-section, .task)[class*="type-2"]) {
+    fill: color-mix(
+      in oklab,
+      var(--color-accent) 22%,
+      var(--color-base-100)
+    ) !important;
+    stroke: var(--color-accent) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg[aria-roledescription="journey"] circle.actor-0) {
+    fill: var(--color-primary) !important;
+    stroke: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg[aria-roledescription="journey"] circle.actor-1) {
+    fill: var(--color-secondary) !important;
+    stroke: var(--color-secondary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(pre.mermaid svg[aria-roledescription="journey"] circle.face) {
+    fill: var(--mermaid-muted-fill) !important;
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg[aria-roledescription="journey"]
+        .face
+        + g
+        :is(circle, path, line)
+    ) {
+    fill: var(--mermaid-text) !important;
+    stroke: var(--mermaid-text) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .node-bkg) {
+    stroke: var(--mermaid-node-border) !important;
+  }
+
+  .markdown-content.prose :deep(pre.mermaid svg .architecture .arrow),
+  .markdown-content.prose :deep(pre.mermaid svg .arrowMarkerPath) {
+    fill: var(--mermaid-line) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg[aria-roledescription="architecture"]
+        svg
+        [style*="fill: #087ebf"]
+    ) {
+    fill: var(--color-primary) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg[aria-roledescription="architecture"]
+        svg
+        [style*="fill: #fff"]
+    ) {
+    fill: var(--color-primary-content) !important;
+  }
+
+  .markdown-content.prose
+    :deep(
+      pre.mermaid
+        svg[aria-roledescription="architecture"]
+        svg
+        [style*="stroke: #fff"]
+    ) {
+    stroke: var(--color-primary-content) !important;
+  }
+}

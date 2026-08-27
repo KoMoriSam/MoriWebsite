@@ -1,0 +1,337 @@
+/* 移动端分页、基线、脚注拆分、续表、分页动画 */
+
+.mobile-page-baseline-grid {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--reader-page-line-height) - 1px),
+    color-mix(in oklab, var(--color-info) 38%, transparent)
+      calc(var(--reader-page-line-height) - 1px),
+    color-mix(in oklab, var(--color-info) 38%, transparent)
+      var(--reader-page-line-height)
+  );
+  background-position-y: calc(
+    var(--reader-page-padding-block) + var(--reader-page-baseline-offset) -
+      var(--reader-page-line-height)
+  );
+}
+
+.mobile-page-viewport {
+  touch-action: pan-y;
+  transition: opacity 180ms ease;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article) {
+  box-sizing: border-box;
+  height: var(--reader-page-height);
+  min-height: var(--reader-page-height);
+  max-height: var(--reader-page-height);
+  width: var(--reader-page-width);
+  max-width: none;
+  column-width: var(--reader-page-width);
+  column-gap: var(--reader-page-gap);
+  column-fill: auto;
+  padding-block-start: var(--reader-page-padding-block);
+  padding-block-end: var(--reader-page-padding-block);
+  overflow: visible;
+  transform: translate3d(
+    calc(var(--reader-chapter-offset, 0px) - var(--reader-page-offset)),
+    0,
+    0
+  );
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.mobile-page-viewport.chapter-transition-preparing :deep(.mobile-page-article) {
+  transition: none;
+}
+
+.mobile-page-viewport.pagination-measuring :deep(.mobile-page-article) {
+  transition: none;
+}
+
+.mobile-page-viewport.pagination-layout-resetting :deep(.mobile-page-article) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  column-width: auto;
+  column-count: 1;
+  column-gap: 0;
+  transform: none;
+  visibility: hidden;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not(.chat-content *)
+  ) {
+  line-height: var(--reader-page-line-height);
+  orphans: 1;
+  widows: 1;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .comment-trigger) {
+  display: none;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .comment-trigger.has-count) {
+  display: inline-flex;
+}
+
+/* 移动分页不能继承桌面 prose 中各元素不同的垂直节奏，否则标题、引用、
+   列表等任意一个块都会把后续正文推离页面网格。所有顶层流块统一由同一
+   段距控制；元素内部只允许完整页面行高，不再引入额外上下 margin。 */
+.mobile-page-viewport :deep(.mobile-page-article > *) {
+  margin-block: 0;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      > *:not(.footnotes, .footnotes-sep, .mobile-footnote-split-empty)
+      + *:not(
+        .footnotes,
+        .footnotes-sep,
+        .mobile-footnote-continuation,
+        .mobile-table-continuation,
+        .mobile-table-force-next-page
+      )
+  ) {
+  margin-block-start: var(--reader-paragraph-gap);
+}
+
+/* 段落定位锚点不属于可见排版流。若它也带段距，会与后续正文的 margin
+   折叠：放大正文间距有效，收紧却会被锚点原始间距托住，页尾便无法校正。 */
+.mobile-page-viewport :deep(.mobile-page-article > [aria-hidden="true"]) {
+  margin-block: 0 !important;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      :is(blockquote, ul, ol, li):not(.chat-content *)
+      > :is(p, ul, ol, blockquote):not(.chat-content *)
+  ) {
+  margin-block: 0;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      :is(blockquote, li):not(.chat-content *)
+      > :is(p, ul, ol, blockquote):not(.chat-content *)
+      + :is(p, ul, ol, blockquote):not(.chat-content *)
+  ) {
+  margin-block-start: var(--reader-paragraph-gap);
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article :is(h1, h2, h3, h4, h5, h6):not(.chat-content *)) {
+  margin-block: 0;
+  padding-block: 0;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .mobile-page-baseline-adjusted) {
+  margin-block-start: calc(
+    var(--reader-page-baseline-base-margin, 0px) +
+      var(--reader-page-baseline-adjust, 0px)
+  ) !important;
+}
+
+/* 聊天栏头部只与其紧接的一个元素组成防孤行组；头部和每条消息仍分别以完整
+   外框对齐。消息内部沿用聊天组件自己的紧凑行距，不逐行套用正文基线。 */
+.mobile-page-viewport :deep(.mobile-page-article .chat-content) {
+  /* 容器本身不生成分栏盒，避免浏览器把整组聊天记录作为一个块迁移。
+     真正参与分页的只有下面的 leading group 和单条消息外框。 */
+  display: contents;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      .chat-content
+      > :is(.chat-leading-group, .chat-page-block)
+  ) {
+  display: flow-root;
+  break-before: auto;
+  break-after: auto;
+  /*
+   * 分页原子从第一次浏览器分栏起就必须生效，不能等测量后再补 class。
+   * chat-leading-group = 头部 + 紧接元素；chat-page-block = 单条提示或气泡。
+   * 内部 DaisyUI chat 网格保持原样，仅由这个外框参与分页与基线补齐。
+   */
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article > .chat-content:not(:first-child) > :first-child) {
+  /* display: contents 后父容器的顶层段距不再产生盒子，由首个分页原子承接。 */
+  margin-block-start: var(--reader-paragraph-gap);
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .mobile-page-edge-adjusted) {
+  margin-block-start: var(--reader-page-edge-margin, 0px) !important;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .mobile-page-flow-grid-adjusted) {
+  box-sizing: border-box;
+  padding-block-end: calc(
+    var(--reader-flow-grid-base-padding, 0px) +
+      var(--reader-flow-grid-adjust, 0px)
+  ) !important;
+}
+
+/* 脚注避让从溢出行处分出续段，保留本页已经容纳的正文行。 */
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      > p.mobile-footnote-split-source:not(.mobile-footnote-split-empty)
+  ) {
+  /* DOM 拆段会让浏览器误把分页处视为段尾；实际仍有续文，末行应保持两端对齐。 */
+  text-align-last: justify;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article > p.mobile-footnote-continuation) {
+  margin-block-start: 0;
+  break-before: column;
+  -webkit-column-break-before: always;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      > p.mobile-footnote-continuation:not(.mobile-footnote-paragraph-start)
+  ) {
+  text-indent: 0 !important;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article
+      > p.mobile-footnote-continuation.mobile-footnote-paragraph-start
+  ) {
+  text-indent: var(
+    --reader-footnote-continuation-indent,
+    var(--para-text-indent)
+  ) !important;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article > p.mobile-footnote-split-empty) {
+  display: none;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .footnotes-sep),
+.mobile-page-viewport :deep(.mobile-page-article .footnotes) {
+  display: none;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .markdown-table-wrapper) {
+  overflow-x: auto;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .markdown-table-wrapper table) {
+  width: fit-content;
+  min-width: 100%;
+  max-width: none;
+  /* 页间距由顶层阅读流统一提供，避免 typography 的 table 上下 margin
+     在每个续表片段里重复占掉两段正文高度。 */
+  margin-block: 0;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article .mobile-table-flow-marker) {
+  display: block;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .markdown-table-wrapper.mobile-table-fragment) {
+  box-sizing: border-box;
+  overflow-x: auto;
+  padding-block-end: var(--reader-table-grid-adjust, 0px);
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+}
+
+.mobile-page-viewport
+  :deep(
+    .mobile-page-article .markdown-table-wrapper.mobile-table-fragment table
+  ) {
+  width: fit-content;
+  min-width: 100%;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .mobile-table-force-next-page) {
+  break-before: column;
+  -webkit-column-break-before: always;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article .mobile-table-continuation thead) {
+  display: table-header-group;
+}
+
+/* 拆表时每个续片都按一整页的可用高度分组，因此续片必须从新栏开始。
+   否则浏览器会把多个续片接着塞进同一栏，并把每片复制的 thead 都显示出来。 */
+.mobile-page-viewport :deep(.mobile-page-article .mobile-table-continuation) {
+  break-before: column;
+  -webkit-column-break-before: always;
+}
+
+.mobile-page-viewport :deep(.mobile-footnote-page-break) {
+  display: block;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  break-before: column;
+  -webkit-column-break-before: always;
+}
+
+.mobile-page-viewport
+  :deep(.mobile-page-article :is(ul, ol, li, blockquote):not(.chat-content *)) {
+  line-height: var(--reader-page-line-height);
+}
+
+.mobile-page-viewport :deep(.mobile-page-article > *) {
+  max-width: 100%;
+}
+
+.mobile-page-viewport :deep(.mobile-pagination-end) {
+  display: block;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+}
+
+.mobile-page-viewport :deep(.mobile-page-article h1),
+.mobile-page-viewport :deep(.mobile-page-article h2),
+.mobile-page-viewport :deep(.mobile-page-article h3),
+.mobile-page-viewport :deep(.mobile-page-article h4),
+.mobile-page-viewport :deep(.mobile-page-article h5),
+.mobile-page-viewport :deep(.mobile-page-article h6),
+.mobile-page-viewport :deep(.mobile-page-article figure),
+.mobile-page-viewport :deep(.mobile-page-article pre),
+.mobile-page-viewport :deep(.mobile-page-article details) {
+  break-inside: avoid-column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-page-viewport,
+  .mobile-page-viewport :deep(.mobile-page-article) {
+    transition: none;
+  }
+}

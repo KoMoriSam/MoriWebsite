@@ -1,63 +1,4 @@
-import { createApp } from "vue";
-
-import Alert from "@/components/markdown/Alert.vue";
-
-const ALERT_SELECTOR = "[data-markdown-alert]";
-const mountedAlerts = new WeakMap();
-
 const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
-
-const decodeProps = (value = "") => {
-  try {
-    return JSON.parse(decodeURIComponent(value));
-  } catch {
-    return {};
-  }
-};
-
-export function mountAlertBlocks(root) {
-  if (!root || import.meta.env.SSR) return;
-
-  let mounts = mountedAlerts.get(root);
-  if (!mounts) {
-    mounts = new Map();
-    mountedAlerts.set(root, mounts);
-  }
-
-  for (const [element, app] of mounts) {
-    if (!root.contains(element)) {
-      app.unmount();
-      mounts.delete(element);
-    }
-  }
-
-  root.querySelectorAll(ALERT_SELECTOR).forEach((element) => {
-    if (mounts.has(element) || !root.contains(element)) return;
-
-    // SSR 预渲染已输出 summary 标题栏，挂载时需排除它，避免
-    // Alert.vue 的 RenderedContent 将 summary 重复渲染为正文。
-    const summary = element.querySelector(":scope > summary.alert-title");
-    const contentHtml = summary
-      ? element.innerHTML.slice(summary.outerHTML.length)
-      : element.innerHTML;
-
-    const app = createApp(Alert, {
-      ...decodeProps(element.dataset.props),
-      contentHtml,
-    });
-    app.mount(element);
-    mounts.set(element, app);
-  });
-}
-
-export function unmountAlertBlocks(root) {
-  const mounts = root ? mountedAlerts.get(root) : null;
-  if (!mounts) return;
-
-  mounts.forEach((app) => app.unmount());
-  mounts.clear();
-  mountedAlerts.delete(root);
-}
 
 // GitHub Callout 类型与现有 alert 类型/图标/默认标题映射
 const CALLOUT_META = {
@@ -223,16 +164,16 @@ function installInlineCollector(md) {
   md.renderer.rules.komorisam_collect_inline = () => "";
 }
 
-function createPreparedInlineToken(state, content) {
-  const token = new state.Token("inline", "", 0);
+function createPreparedInlineToken(Token, content) {
+  const token = new Token("inline", "", 0);
   token.content = content || "";
   token.children = [];
   token.meta = { ...(token.meta || {}), komorisamPreparedInline: true };
   return token;
 }
 
-function createInlineCollectorToken(state, targetToken) {
-  const token = new state.Token("komorisam_collect_inline", "", 0);
+function createInlineCollectorToken(Token, targetToken) {
+  const token = new Token("komorisam_collect_inline", "", 0);
   token.content = targetToken.content || "";
   token.children = [];
   token.meta = { ...(token.meta || {}), targetToken };
@@ -244,69 +185,74 @@ function renderPreparedInlineToken(token, options, env, self) {
   return self.renderInline(token.children, options, env);
 }
 
+function prepareAlertTokens(md, tokens, env) {
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (token.type !== "blockquote_open" || token.meta?.alert) continue;
+
+    const closeIndex = findBlockquoteCloseIndex(tokens, i);
+    if (closeIndex === -1) continue;
+    const closeToken = tokens[closeIndex];
+
+    const firstInlineIndex = i + 2;
+    if (
+      tokens[i + 1]?.type !== "paragraph_open" ||
+      tokens[firstInlineIndex]?.type !== "inline"
+    ) {
+      continue;
+    }
+
+    const firstInline = tokens[firstInlineIndex];
+    const parsed = parseCalloutHeader(firstInline.content);
+    if (!parsed) continue;
+
+    const remainingBody = firstInline.content.slice(parsed.headerLength);
+    retokenizeInline(md, firstInline, remainingBody, env);
+
+    if (!remainingBody.trim()) {
+      tokens[i + 1].hidden = true;
+      firstInline.hidden = true;
+      if (tokens[firstInlineIndex + 1]?.type === "paragraph_close") {
+        tokens[firstInlineIndex + 1].hidden = true;
+      }
+    }
+
+    const title = parsed.customTitle || parsed.meta.title;
+    const hasTitle = !!title;
+    const titleToken = createPreparedInlineToken(token.constructor, title);
+    const titleCollectorToken = createInlineCollectorToken(
+      token.constructor,
+      titleToken,
+    );
+
+    token.meta = {
+      alert: {
+        type: parsed.meta.type,
+        icon: parsed.meta.icon,
+        title,
+        titleToken,
+        hasTitle,
+        foldable: parsed.foldable,
+        collapsed: parsed.collapsed,
+      },
+    };
+    closeToken.meta = token.meta;
+
+    // 让标题里的 [^x] 按原文位置参与全局脚注收集；
+    // collector 只负责解析，不负责输出，避免标题在 summary 外重复渲染。
+    tokens.splice(i + 1, 0, titleCollectorToken);
+    i += 1;
+  }
+}
+
 export function alertPlugin(md) {
   installInlineCollector(md);
+  md.__komorisamPrepareAlertTokens = (tokens, env) =>
+    prepareAlertTokens(md, tokens, env);
 
-  md.core.ruler.after("block", "github_callout_to_alert", (state) => {
-    const { tokens } = state;
-
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i];
-      if (token.type !== "blockquote_open") continue;
-
-      const closeIndex = findBlockquoteCloseIndex(tokens, i);
-      if (closeIndex === -1) continue;
-      const closeToken = tokens[closeIndex];
-
-      const firstInlineIndex = i + 2;
-      if (
-        tokens[i + 1]?.type !== "paragraph_open" ||
-        tokens[firstInlineIndex]?.type !== "inline"
-      ) {
-        continue;
-      }
-
-      const firstInline = tokens[firstInlineIndex];
-      const parsed = parseCalloutHeader(firstInline.content);
-      if (!parsed) {
-        continue;
-      }
-
-      const remainingBody = firstInline.content.slice(parsed.headerLength);
-      retokenizeInline(md, firstInline, remainingBody, state.env);
-
-      if (!remainingBody.trim()) {
-        tokens[i + 1].hidden = true;
-        firstInline.hidden = true;
-        if (tokens[firstInlineIndex + 1]?.type === "paragraph_close") {
-          tokens[firstInlineIndex + 1].hidden = true;
-        }
-      }
-
-      const title = parsed.customTitle || parsed.meta.title;
-      const hasTitle = !!title;
-      const titleToken = createPreparedInlineToken(state, title);
-      const titleCollectorToken = createInlineCollectorToken(state, titleToken);
-
-      token.meta = {
-        alert: {
-          type: parsed.meta.type,
-          icon: parsed.meta.icon,
-          title,
-          titleToken,
-          hasTitle,
-          foldable: parsed.foldable,
-          collapsed: parsed.collapsed,
-        },
-      };
-      closeToken.meta = token.meta;
-
-      // 让标题里的 [^x] 按原文位置参与全局脚注收集；
-      // collector 只负责解析，不负责输出，避免标题在 summary 外重复渲染。
-      tokens.splice(i + 1, 0, titleCollectorToken);
-      i += 1;
-    }
-  });
+  md.core.ruler.after("block", "github_callout_to_alert", (state) =>
+    prepareAlertTokens(md, state.tokens, state.env),
+  );
 
   const defaultBlockquoteOpen =
     md.renderer.rules.blockquote_open ||
@@ -338,39 +284,15 @@ export function alertPlugin(md) {
     );
     const summaryTitle = alert.hasTitle ? title : "";
 
-    const classes = [
-      "alert",
-      `alert-${alert.type}`,
-      "alert-soft",
-      "alert-vertical",
-      "sm:gap-2",
-      ...(alert.foldable
-        ? [
-            "border",
-            `border-${alert.type}-content`,
-            "collapse",
-            "collapse-arrow",
-          ]
-        : []),
-    ];
-    const openAttr = !alert.foldable || !alert.collapsed ? " open" : "";
     const props = encodeProps({
+      type: alert.type,
       icon: alert.icon,
       titleHtml: summaryTitle,
       foldable: alert.foldable,
+      collapsed: alert.collapsed,
     });
 
-    // 与客户端 Alert.vue 渲染结果一致：SSR 预渲染直接输出标题栏 summary，
-    // 避免 hydration 后结构跳变（首屏缺少图标/标题）。
-    const summaryClass = alert.foldable
-      ? "alert-title collapse-title"
-      : "alert-title select-none pointer-events-none cursor-default";
-    const summary =
-      summaryTitle || alert.hasTitle
-        ? `<summary class="${summaryClass}"><i class="${alert.icon}"></i><h6>${summaryTitle}</h6></summary>`
-        : "";
-
-    return `<details role="alert" class="${classes.join(" ")}" data-markdown-alert data-props="${props}"${openAttr}>${summary}`;
+    return `<markdown-alert data-markdown-props="${props}">`;
   };
 
   md.renderer.rules.blockquote_close = function (
@@ -383,6 +305,6 @@ export function alertPlugin(md) {
     const alert = tokens[idx].meta?.alert;
     if (!alert) return defaultBlockquoteClose(tokens, idx, options, env, self);
 
-    return "</details>\n";
+    return "</markdown-alert>\n";
   };
 }

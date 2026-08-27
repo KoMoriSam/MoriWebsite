@@ -67,64 +67,218 @@ const languageAliases = {
 };
 
 const languageDisplayNames = {
+  angular: "Angular",
+  asm: "Assembly",
+  assembly: "Assembly",
+
   bash: "Bash",
+
+  bat: "Batch",
+  batch: "Batch",
+  cmd: "Batch",
+
   c: "C",
+  h: "C",
+
   "c#": "C#",
+  cs: "C#",
+  csharp: "C#",
+
   "c++": "C++",
   cplusplus: "C++",
   cpp: "C++",
-  cs: "C#",
-  csharp: "C#",
-  css: "CSS",
   cxx: "C++",
-  diff: "Diff",
-  dockerfile: "Dockerfile",
-  go: "Go",
-  graphql: "GraphQL",
-  h: "C",
   hpp: "C++",
+
+  clojure: "Clojure",
+  clj: "Clojure",
+
+  coffee: "CoffeeScript",
+  coffeescript: "CoffeeScript",
+
+  crystal: "Crystal",
+
+  css: "CSS",
+
+  dart: "Dart",
+
+  diff: "Diff",
+
+  docker: "Dockerfile",
+  dockerfile: "Dockerfile",
+
+  elixir: "Elixir",
+  ex: "Elixir",
+  exs: "Elixir",
+
+  elm: "Elm",
+
+  erlang: "Erlang",
+  erl: "Erlang",
+
+  fish: "Fish",
+
+  fortran: "Fortran",
+  f90: "Fortran",
+  f95: "Fortran",
+
+  fsharp: "F#",
+  fs: "F#",
+
+  gdscript: "GDScript",
+
+  go: "Go",
+  golang: "Go",
+
+  graphql: "GraphQL",
+  gql: "GraphQL",
+
+  groovy: "Groovy",
+
+  h: "C",
+
+  handlebars: "Handlebars",
+  hbs: "Handlebars",
+
+  haskell: "Haskell",
+  hs: "Haskell",
+
   html: "HTML",
+
   ini: "INI",
+  cfg: "INI",
+  conf: "INI",
+
   java: "Java",
+
   javascript: "JavaScript",
   js: "JavaScript",
+
   json: "JSON",
+  json5: "JSON5",
+  jsonc: "JSON with Comments",
+
   jsx: "JSX",
+
+  julia: "Julia",
+  jl: "Julia",
+
   kotlin: "Kotlin",
+  kt: "Kotlin",
+  kts: "Kotlin",
+
+  latex: "LaTeX",
+  tex: "LaTeX",
+
   less: "Less",
+
+  lisp: "Lisp",
+
   lua: "Lua",
+
+  make: "Makefile",
   makefile: "Makefile",
+
   markdown: "Markdown",
   md: "Markdown",
+
   mermaid: "Mermaid",
+
   nginx: "NGINX",
+
+  nim: "Nim",
+
+  nix: "Nix",
+
   objc: "Objective-C",
   objectivec: "Objective-C",
+
+  ocaml: "OCaml",
+  ml: "OCaml",
+
+  pascal: "Pascal",
+
   perl: "Perl",
+  pl: "Perl",
+
   php: "PHP",
+
   plaintext: "Plain Text",
+  text: "Plain Text",
+  txt: "txt",
+
   powershell: "PowerShell",
   ps1: "PowerShell",
+
+  properties: "Properties",
+
+  protobuf: "Protocol Buffers",
+  proto: "Protocol Buffers",
+
+  pug: "Pug",
+
   py: "Python",
   python: "Python",
+
   r: "R",
+
+  racket: "Racket",
+
   rb: "Ruby",
   ruby: "Ruby",
+
+  react: "React",
+
   rust: "Rust",
+  rs: "Rust",
+
+  sass: "Sass",
   scss: "SCSS",
+
+  scala: "Scala",
+
+  scheme: "Scheme",
+
   sh: "Shell",
   shell: "Shell",
   shellscript: "Shell",
+
+  solidity: "Solidity",
+  sol: "Solidity",
+
   sql: "SQL",
+
+  svelte: "Svelte",
+
   swift: "Swift",
-  text: "Plain Text",
+
+  toml: "TOML",
+
   ts: "TypeScript",
-  tsx: "TSX",
   typescript: "TypeScript",
+
+  tsx: "TSX",
+
+  vb: "Visual Basic",
+  vbnet: "Visual Basic",
+
+  verilog: "Verilog",
+  v: "Verilog",
+
+  vhdl: "VHDL",
+
   vue: "Vue",
+
+  wasm: "WebAssembly",
+  wat: "WebAssembly",
+
   xml: "XML",
+
   yaml: "YAML",
   yml: "YAML",
+
+  zig: "Zig",
+
   zsh: "Zsh",
 };
 

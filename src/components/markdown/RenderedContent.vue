@@ -1,24 +1,11 @@
 <script>
-import { Fragment, h } from "vue";
+import { computed, Fragment, h, inject, provide } from "vue";
 
-const renderDomNode = (node, key) => {
-  if (node.nodeType === Node.TEXT_NODE) return node.textContent;
-  if (node.nodeType !== Node.ELEMENT_NODE) return null;
-
-  const attributes = {};
-  for (const { name, value } of node.attributes) {
-    // Markdown 渲染结果不需要内联事件；事件由页面现有的委托逻辑处理。
-    if (!name.toLowerCase().startsWith("on")) attributes[name] = value;
-  }
-
-  return h(
-    node.localName,
-    { ...attributes, key },
-    Array.from(node.childNodes).map((child, index) =>
-      renderDomNode(child, `${key}-${index}`),
-    ),
-  );
-};
+import {
+  MARKDOWN_COMPONENT_RESOLVER,
+  parseHtmlFragment,
+  renderHtmlFragment,
+} from "@/utils/markdown/render-html-vnodes";
 
 export default {
   name: "RenderedContent",
@@ -27,18 +14,31 @@ export default {
       type: String,
       default: "",
     },
+    resolver: {
+      type: Function,
+      default: null,
+    },
+    fontStyle: {
+      type: String,
+      default: "font-sans",
+    },
   },
   setup(props) {
-    return () => {
-      if (!props.html || typeof DOMParser === "undefined") return null;
+    const inheritedResolver = inject(MARKDOWN_COMPONENT_RESOLVER, null);
+    const activeResolver = computed(
+      () => props.resolver || inheritedResolver || null,
+    );
+    const resolveComponent = (context) => activeResolver.value?.(context);
+    const fragment = computed(() => parseHtmlFragment(props.html));
 
-      const document = new DOMParser().parseFromString(props.html, "text/html");
-      const children = Array.from(document.body.childNodes).map((node, index) =>
-        renderDomNode(node, `markdown-node-${index}`),
+    provide(MARKDOWN_COMPONENT_RESOLVER, resolveComponent);
+
+    return () =>
+      h(
+        Fragment,
+        null,
+        renderHtmlFragment(fragment.value, activeResolver.value),
       );
-
-      return h(Fragment, null, children);
-    };
   },
 };
 </script>

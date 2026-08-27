@@ -98,11 +98,9 @@
 
       <article class="card card-border bg-base-100" :lang="noticeLanguage">
         <div class="card-body">
-          <VueMarkdown
-            class="prose max-w-none"
-            :source="renderedNotices"
-            :options="markdownOptions"
-          />
+          <div class="prose max-w-none">
+            <RenderedContent :html="renderedNoticesHtml" />
+          </div>
         </div>
       </article>
     </section>
@@ -233,11 +231,12 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
-import VueMarkdown from "vue-markdown-render";
+import MarkdownIt from "markdown-it";
 import { useRoute } from "vue-router";
 
 import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
+import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import licenseData from "@/router/license-data";
 import { createLicenseAnchor } from "@/utils/create-license-anchor";
 
@@ -268,6 +267,9 @@ const renderedNotices = computed(() =>
       "(/legal/THIRD_PARTY_NOTICES.txt)",
     )
     .replaceAll("(./licenses/", "(/legal/licenses/"),
+);
+const renderedNoticesHtml = computed(() =>
+  new MarkdownIt(markdownOptions).render(renderedNotices.value),
 );
 
 const rawNoticeUrl = computed(() =>

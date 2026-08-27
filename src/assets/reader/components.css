@@ -1,0 +1,352 @@
+/* 段评按钮、标题锚点、Alert、Chat、Moments、引用、脚注、代码块 */
+
+@reference "../main.css";
+
+@utility mask-bubble {
+  -webkit-mask-box-image-source: url("/assets/images/icons/review-bubble.svg");
+  -webkit-mask-box-image-slice: 4 5 4 6;
+  -webkit-mask-box-image-width: 4px 5px 4px 6px;
+  -webkit-mask-box-image-repeat: stretch;
+
+  mask-border-source: url("/assets/images/icons/review-bubble.svg");
+  mask-border-slice: 4 5 4 6;
+  mask-border-width: 4px 5px 4px 6px;
+  mask-border-repeat: stretch;
+}
+
+@utility mask-bubble-fill {
+  -webkit-mask-box-image-source: url("/assets/images/icons/review-bubble-fill.svg");
+  -webkit-mask-box-image-slice: 4 5 4 6 fill;
+  -webkit-mask-box-image-width: 4px 5px 4px 6px;
+  -webkit-mask-box-image-repeat: stretch;
+
+  mask-border-source: url("/assets/images/icons/review-bubble-fill.svg");
+  mask-border-slice: 4 5 4 6 fill;
+  mask-border-width: 4px 5px 4px 6px;
+  mask-border-repeat: stretch;
+}
+
+@layer utilities {
+  /* 段落评论按钮 */
+  @layer utilities {
+    /* 段落评论按钮 */
+    .markdown-content.prose :deep(button.comment-trigger) {
+      @apply whitespace-nowrap
+    relative overflow-visible
+    inline-flex items-center justify-center
+    h-4 min-h-0 min-w-6 w-auto ps-1.25 pe-1 ml-1
+    opacity-0 group-hover:opacity-100
+    group-focus-within:opacity-100
+    transition-[opacity,scale]
+    -translate-y-0.5
+    text-primary
+    z-0
+
+    before:content-['']
+    before:absolute before:inset-0
+    before:bg-primary
+    before:mask-bubble
+
+    hover:text-primary-content
+    hover:before:mask-bubble-fill
+
+    active:scale-80
+    active:text-primary-content
+    active:before:mask-bubble-fill;
+    }
+  }
+
+  .markdown-content.prose :deep(button.comment-trigger i) {
+    @apply z-10;
+  }
+
+  .markdown-content.prose :deep(button.comment-trigger.has-count) {
+    @apply opacity-100;
+  }
+
+  .markdown-content.prose :deep(button.comment-trigger.hidden) {
+    display: none;
+  }
+
+  .markdown-content.prose :deep(button.comment-trigger.has-count i) {
+    @apply hidden;
+  }
+
+  .markdown-content.prose
+    :deep(button.comment-trigger .paragraph-comment-count) {
+    @apply whitespace-nowrap
+    text-xs leading-none
+    font-sans font-bold z-10;
+  }
+
+  /* 包裹元素与标题锚点 (.heading-wrapper) */
+  .markdown-content.prose :deep(.heading-wrapper) {
+    @apply flex items-center gap-2;
+  }
+
+  .markdown-content.prose :deep(.heading-wrapper a.header-anchor) {
+    @apply badge badge-md hover:badge-accent hover:text-accent-content 
+    no-underline opacity-0 px-2 translate-y-0.75 group-hover:opacity-100 
+    group-focus-within:opacity-100 transition-opacity;
+  }
+
+  /* Alert 警告框样式 */
+  .markdown-content.prose :deep(details.alert) {
+    @apply block w-full max-w-full box-border
+    border border-base-300
+    text-left justify-items-stretch 
+    my-(--para-margin-inline);
+  }
+
+  .markdown-content.prose :deep(details.alert > summary.alert-title) {
+    @apply flex w-full max-w-full min-w-0
+    items-center box-border gap-2 p-0 text-left;
+  }
+
+  .markdown-content.prose :deep(details.alert > summary.alert-title i) {
+    @apply text-[calc(var(--para-font-size)*0.875)];
+  }
+
+  .markdown-content.prose :deep(details.alert > summary.alert-title h6) {
+    @apply flex-1 min-w-0 p-0
+      indent-0 font-serif
+      text-[calc(var(--para-font-size)*0.875)]
+      text-inherit leading-[calc(var(--para-line-height)*0.875)];
+  }
+
+  .markdown-content.prose :deep(details.alert.collapse > summary.alert-title) {
+    @apply w-full;
+  }
+
+  .markdown-content.prose :deep(details.alert > :not(summary.alert-title)) {
+    @apply w-full text-justify;
+  }
+
+  .markdown-content.prose :deep(details.alert > p),
+  .markdown-content.prose :deep(details.alert > ul),
+  .markdown-content.prose :deep(details.alert > ol) {
+    @apply w-full;
+  }
+
+  .markdown-content.prose :deep(details.alert p),
+  .markdown-content.prose :deep(details.alert ul li),
+  .markdown-content.prose :deep(details.alert ol li) {
+    @apply indent-0 text-base-content py-0 mt-2 mb-1
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-(--para-line-height)
+    tracking-[calc(var(--para-letter-spacing)*0.75)];
+  }
+
+  .markdown-content.prose :deep(details.alert ul li),
+  .markdown-content.prose :deep(details.alert ol li) {
+    @apply ms-[calc(var(--para-text-indent)*0.75)]
+    md:ms-[calc(var(--para-text-indent)*1.125)]
+    ps-0 indent-0;
+  }
+
+  /* Chat 聊天样式 */
+  .markdown-content.prose :deep(.chat) {
+    @apply sm:mx-8 md:mx-16 lg:mx-24 xl:mx-12 overflow-visible;
+  }
+
+  .markdown-content.prose :deep(.chat a) {
+    @apply no-underline hover:font-bold;
+  }
+
+  .markdown-content.prose :deep(.chat-bar) {
+    @apply flex items-center gap-2 mb-4 bg-base-200/75 p-2 rounded-xl mx-4 md:mx-12
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-[calc(var(--para-line-height)*0.75)]
+    tracking-[calc(var(--para-letter-spacing)*0.75)];
+  }
+
+  .markdown-content.prose :deep(.chat-content p.chat-info) {
+    @apply indent-0 text-center text-base-content/60
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-[calc(var(--para-line-height)*0.75)]
+    tracking-[calc(var(--para-letter-spacing)*0.75)];
+  }
+
+  .markdown-content.prose :deep(.chat-bubble) {
+    @apply px-1 py-2 bg-base-200/75 overflow-visible;
+  }
+
+  .markdown-content.prose :deep(.chat-bubble p) {
+    @apply indent-0 m-1 text-justify relative
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-[calc(var(--para-line-height)*0.75)]
+    tracking-[calc(var(--para-letter-spacing)*0.75)];
+  }
+
+  .markdown-content.prose
+    :deep(.chat-end .chat-bubble p button.comment-trigger) {
+    @apply absolute right-full top-0 
+    -translate-x-4 translate-y-0.75 ps-1 pe-1.25
+    before:scale-x-[-1] 
+    active:before:scale-x-[-80%]
+    active:before:scale-y-[80%];
+  }
+
+  .markdown-content.prose
+    :deep(.chat-start .chat-bubble p button.comment-trigger) {
+    @apply absolute left-full top-0 
+    translate-x-4 translate-y-0.75;
+  }
+
+  .markdown-content.prose :deep(.chat-bubble img) {
+    @apply rounded-lg max-w-24 min-w-8;
+  }
+
+  .markdown-content.prose :deep(.chat-bubble:has(img)) {
+    @apply p-1;
+  }
+
+  .markdown-content.prose :deep(.chat-bubble-primary) {
+    @apply bg-primary;
+  }
+
+  .markdown-content.prose :deep(.chat-bubble-primary a) {
+    @apply text-primary-content;
+  }
+
+  .markdown-content.prose :deep(.chat-header) {
+    @apply mb-1
+    text-[calc(var(--para-font-size)*0.5)]
+    leading-[calc(var(--para-line-height)*0.5)]
+    tracking-[calc(var(--para-letter-spacing)*0.5)];
+  }
+
+  .markdown-content.prose :deep(.chat-footer) {
+    @apply text-[calc(var(--para-font-size)*0.5)]
+    leading-[calc(var(--para-line-height)*0.5)]
+    tracking-[calc(var(--para-letter-spacing)*0.5)];
+  }
+
+  .markdown-content.prose :deep(.chat img),
+  .markdown-content.prose :deep(.chat-image img) {
+    @apply m-0;
+  }
+
+  /* Moments 朋友圈样式 */
+  .markdown-content.prose :deep(.moments-card) {
+    @apply card card-body bg-base-200/60 border border-base-300 mb-4;
+  }
+
+  .markdown-content.prose :deep(.moments-header) {
+    @apply flex-1;
+  }
+
+  .markdown-content.prose :deep(.moments-header .header-title) {
+    @apply font-bold
+    text-[calc(var(--para-font-size)*0.75)];
+  }
+
+  .markdown-content.prose :deep(.moments-header .header-info) {
+    @apply opacity-70 flex gap-2
+    text-[calc(var(--para-font-size)*0.5)];
+  }
+
+  .markdown-content.prose :deep(.moments-actions) {
+    @apply flex justify-between mt-1 pt-2 border-t border-base-300;
+  }
+
+  .markdown-content.prose :deep(.moments-content p) {
+    @apply indent-0 my-0 text-justify;
+  }
+
+  .markdown-content.prose :deep(.moments-content blockquote p) {
+    @apply border-l-3 border-base-content/25 pl-3 text-[calc(var(--para-font-size)*0.75)];
+  }
+
+  .markdown-content.prose :deep(.moments-content .moments-images) {
+    @apply grid grid-cols-3 gap-1 mt-2;
+  }
+
+  .markdown-content.prose
+    :deep(.moments-content .moments-images:has(> :nth-child(4):last-child)) {
+    @apply grid-cols-2 w-[calc(100%*2/3)];
+  }
+
+  .markdown-content.prose :deep(.moments-content .moments-images img) {
+    @apply w-full aspect-square object-cover;
+  }
+
+  .markdown-content.prose :deep(.moments-comments p) {
+    @apply indent-0
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-[calc(var(--para-line-height)*0.75)];
+  }
+
+  .markdown-content.prose :deep(.moments-comments .comments-info) {
+    @apply flex items-center gap-1;
+  }
+
+  .markdown-content.prose :deep(.moments-comments .user-name) {
+    @apply font-bold text-primary/80 hover:text-primary text-nowrap
+    text-[calc(var(--para-font-size)*0.6)];
+  }
+
+  .markdown-content.prose :deep(.moments-comments .comment-time) {
+    @apply opacity-50 text-nowrap
+    text-[calc(var(--para-font-size)*0.5)];
+  }
+
+  /* 引用与强调文本 */
+  .markdown-content.prose :deep(blockquote) {
+    @apply [quotes:none] font-serif font-extralight
+    ps-[calc(var(--para-text-indent)*0.25)]
+    md:ps-[calc(var(--para-text-indent)*0.5)];
+  }
+
+  .markdown-content.prose :deep(blockquote p),
+  .markdown-content.prose :deep(.footnotes p) {
+    @apply indent-0 text-justify text-pretty not-italic
+    text-[calc(var(--para-font-size)*0.875)];
+  }
+
+  .markdown-content.prose :deep(strong) {
+    @apply font-bold text-inherit;
+  }
+
+  .markdown-content.prose :deep(mark) {
+    @apply bg-warning text-warning-content;
+  }
+
+  /* 脚注样式 */
+  .markdown-content.prose :deep(.footnote-ref) {
+    @apply whitespace-nowrap
+    before:content-['\2060']
+    after:content-['\2060'];
+  }
+
+  .markdown-content.prose :deep(.footnote-ref a) {
+    @apply badge badge-sm hover:badge-info hover:text-info-content
+    no-underline indent-0 px-1.5 font-serif;
+  }
+
+  .markdown-content.prose :deep(.footnote-backref) {
+    @apply badge badge-xs hover:badge-info hover:text-info-content no-underline;
+  }
+
+  .markdown-content.prose :deep(.footnotes p) {
+    @apply font-serif
+    text-[calc(var(--para-font-size)*0.75)]
+    leading-(--para-line-height)
+    mx-0 text-left text-pretty;
+  }
+
+  .markdown-content.prose :deep(li.footnote-item::marker) {
+    @apply font-serif
+    text-[calc(var(--para-font-size)*0.75)] list-decimal;
+  }
+
+  .markdown-content.prose :deep(li.footnote-item ul),
+  .markdown-content.prose :deep(li.footnote-item ul li) {
+    @apply text-[calc(var(--para-font-size)*0.75)];
+  }
+
+  /* 代码块样式 */
+  .markdown-content.prose :deep(.code-block) {
+    @apply my-(--para-margin-inline);
+  }
+}

@@ -1,0 +1,20 @@
+/* 移动端滚动阅读模式 */
+
+.scroll-reader :deep(.scroll-reader-article) {
+  padding-block-start: var(--mobile-reader-content-padding-block);
+  padding-block-end: var(--mobile-reader-content-padding-block);
+}
+
+.scroll-reader :deep(.scroll-reader-article .comment-trigger) {
+  display: none;
+}
+
+.scroll-reader :deep(.scroll-reader-article .comment-trigger.has-count) {
+  display: inline-flex;
+}
+
+/* 分页模式会清除首段的上外边距；滚动模式也采用同一规则，避免切换时
+   ChapterHeader 与首段之间的距离发生跳变。 */
+.scroll-reader :deep(.scroll-reader-article > p:first-of-type) {
+  margin-block-start: 0;
+}

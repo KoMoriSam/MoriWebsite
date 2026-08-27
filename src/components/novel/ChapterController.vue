@@ -1,12 +1,13 @@
 <template>
   <nav
-    class="mt-12 flex border-t border-base-300 pt-6 justify-between"
+    class="mt-12 flex border-t border-base-300 pt-6 justify-between font-sans"
     aria-label="章节导航"
   >
     <button
+      v-if="hasPrevious"
       type="button"
       class="btn btn-sm md:btn-md gap-2 lg:gap-3"
-      :disabled="!hasPrevious || isLoadingContent || isDisabled"
+      :disabled="isLoadingContent || isDisabled"
       @click="onHandlePrev"
     >
       <i class="ri-arrow-left-s-line"></i>
@@ -16,14 +17,15 @@
         >
           上一章
         </span>
-        <span>{{ previousChapter?.title || "已经是第一章" }}</span>
+        <span>{{ previousChapter?.title }}</span>
       </div>
     </button>
 
     <button
+      v-if="hasNext"
       type="button"
       class="btn btn-neutral btn-sm md:btn-md gap-2 lg:gap-3"
-      :disabled="!hasNext || isLoadingContent || isDisabled"
+      :disabled="isLoadingContent || isDisabled"
       @click="onHandleNext"
     >
       <div class="flex flex-col items-end gap-0.5 leading-[1.1]">
@@ -32,7 +34,7 @@
         >
           下一章
         </span>
-        <span>{{ nextChapter?.title || "已经是最新章" }}</span>
+        <span>{{ nextChapter?.title }}</span>
       </div>
       <i class="ri-arrow-right-s-line"></i>
     </button>

@@ -1,0 +1,253 @@
+/* 阅读器颜色、章节头、标题、段落、列表、基础媒体与表格 */
+
+@reference "../main.css";
+
+@layer utilities {
+  .markdown-content.prose.reader-colors {
+    color: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-body: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-headings: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-lead: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-bold: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-counters: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-bullets: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-quotes: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-captions: var(--reader-text-color, var(--color-base-content));
+  }
+
+  .markdown-content.prose :deep(> .mobile-chapter-header) {
+    margin: 0 0
+      var(
+        --reader-chapter-header-spacing,
+        calc(var(--para-font-size) * var(--para-line-height))
+      );
+    padding: 0;
+  }
+
+  /* 标题样式 */
+  .markdown-content.prose
+    :deep(
+      :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply font-serif pt-3 pb-2 my-0
+    text-balance font-extrabold
+    text-[calc(var(--para-font-size)*1.25)]
+    leading-[calc(var(--para-font-size)*1.75)]
+    tracking-[calc(var(--para-letter-spacing)*1.25)];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(h2):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply font-serif font-bold pt-3 pb-2 my-0 text-balance
+    text-[calc(var(--para-font-size)*1.125)]
+    leading-[calc(var(--para-font-size)*1.5)]
+    tracking-[calc(var(--para-letter-spacing)*1.125)];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(h3):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply font-serif font-semibold text-base-content pt-2 pb-1 my-0
+    text-balance
+    text-(length:--para-font-size)
+    leading-[calc(var(--para-font-size)*1.25)]
+    tracking-(--para-letter-spacing);
+  }
+
+  .markdown-content.prose
+    :deep(:where(h4):not(:where([class~="not-prose"], [class~="not-prose"] *))),
+  .markdown-content.prose
+    :deep(:where(h5):not(:where([class~="not-prose"], [class~="not-prose"] *))),
+  .markdown-content.prose
+    :deep(
+      :where(h6):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply font-serif font-medium pt-2 pb-0 my-0
+    text-balance
+    text-(length:--para-font-size) 
+    leading-[calc(var(--para-font-size)*1.25)]
+    tracking-(--para-letter-spacing);
+  }
+
+  /* 段落与列表 */
+  .markdown-content.prose
+    :deep(:where(p):not(:where([class~="not-prose"], [class~="not-prose"] *))) {
+    @apply text-pretty text-justify
+    text-(length:--para-font-size) 
+    leading-(--para-line-height) 
+    my-(--para-margin-inline) 
+    indent-(--para-text-indent) 
+    tracking-(--para-letter-spacing);
+  }
+
+  .markdown-content.prose :deep(p.signature) {
+    @apply indent-0 font-script text-center text-balance
+    ps-[25%] md:ps-[50%] text-[calc(var(--para-font-size)*1.125)]
+    leading-(--para-line-height)
+    mt-[calc(var(--para-margin-inline)+var(--para-line-height)*var(--para-font-size))];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ul):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-disc;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ul ul):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-[circle];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ul ul ul):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-[square];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ol):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-decimal;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ol ol):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-[lower-alpha];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(ol ol ol):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply list-[lower-roman];
+  }
+
+  .markdown-content.prose
+    :deep(:where(ul):not(:where([class~="not-prose"], [class~="not-prose"] *))),
+  .markdown-content.prose
+    :deep(
+      :where(ol):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply ps-0;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(li):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply text-(length:--para-font-size) tracking-(--para-letter-spacing)
+    leading-(--para-line-height)
+    ms-(--para-text-indent)
+    md:ms-[calc(var(--para-text-indent)*1.5)]
+    ps-0 my-(--para-margin-inline) indent-0;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(li > :is(ul, ol) li):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ) {
+    @apply ms-[calc(var(--para-text-indent)*0.5)];
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(li p):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply indent-0;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(table):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ),
+  .markdown-content.prose
+    :deep(:where(ul):not(:where([class~="not-prose"], [class~="not-prose"] *))),
+  .markdown-content.prose
+    :deep(:where(ol):not(:where([class~="not-prose"], [class~="not-prose"] *))),
+  .markdown-content.prose
+    :deep(
+      :where(blockquote):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ),
+  .markdown-content.prose
+    :deep(
+      :where(pre):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply my-(--para-margin-inline) mx-0;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(p, h1, h2, h3, h4, h5, h6, li, blockquote, a):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ) {
+    @apply min-w-0 max-w-full break-words;
+    line-break: strict;
+    word-break: normal;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :not(pre) code:not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply min-w-0 max-w-full break-words [overflow-wrap:anywhere];
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .markdown-content.prose
+    :deep(pre code:not(:where([class~="not-prose"], [class~="not-prose"] *))) {
+    white-space: pre;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(img, video, svg, canvas):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ) {
+    @apply max-w-full h-auto;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(iframe):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply w-full max-w-full h-auto;
+  }
+
+  .markdown-content.prose :deep(.markdown-table-wrapper) {
+    @apply w-full max-w-full min-w-0 overflow-x-auto;
+  }
+
+  .markdown-content.prose :deep(.markdown-table-wrapper table) {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+  }
+
+  .markdown-content.prose
+    :deep(
+      :where(th, td):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply whitespace-normal;
+  }
+
+  .markdown-content.prose :deep(hr) {
+    @apply my-[calc(var(--para-margin-inline)+var(--para-font-size)*var(--para-line-height)*0.5)] mx-0;
+  }
+}

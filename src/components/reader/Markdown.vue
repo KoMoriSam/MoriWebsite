@@ -1,9 +1,6 @@
 <template>
-  <Loading v-if="isLoading && showLoading" :size="`my-64`" />
-
   <article
     ref="articleRef"
-    v-else-if="!isLoading"
     :id="contentId"
     :class="[
       {
@@ -23,36 +20,46 @@
         Math.max(1, Number(styleConfigs.lineHeight) || 1.6)
       }px`,
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
-      + ${styleConfigs.fontGap * 0.7}rem)`,
+        + ${styleConfigs.fontGap * 0.7}rem)`,
       '--reader-text-color': resolvedTextColor || undefined,
     }"
   >
     <slot name="before" />
-    <vue-markdown
-      v-for="page in renderedPages"
-      :key="`${headerData.uuid}-v${markdownRenderVersion}`"
-      :source="page.source"
-      :options="options"
-      :plugins="page.plugins"
-    />
+
+    <template v-if="isLoading">
+      <Loading v-if="showLoading" :size="`my-64`" />
+
+      <slot v-else name="loading" />
+    </template>
+
+    <template v-else>
+      <RenderedContent
+        v-for="page in renderedPages"
+        :key="`${headerData.uuid}-v${markdownRenderVersion}`"
+        :html="page.html"
+        :resolver="resolveMarkdownComponent"
+      />
+
+      <h1 v-if="!renderedPages.length">加载失败，请稍后重试。</h1>
+    </template>
+
     <slot name="after" />
-    <h1 v-if="!renderedPages.length">加载失败，请稍后重试。</h1>
   </article>
 </template>
 
 <script setup>
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, h, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import MarkdownIt from "markdown-it";
 
-import VueMarkdown from "vue-markdown-render";
 import Loading from "@/components/base/Loading.vue";
+import Alert from "@/components/markdown/Alert.vue";
+import Chat from "@/components/markdown/Chat.vue";
+import CodeBlock from "@/components/markdown/CodeBlock.vue";
+import LinkIcon from "@/components/markdown/LinkIcon.vue";
+import Mermaid from "@/components/markdown/Mermaid.vue";
+import Moment from "@/components/markdown/Moment.vue";
+import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 
@@ -148,35 +155,22 @@ import { full as emojiPlugin } from "markdown-it-emoji";
 import MarkdownItRuby from "markdown-it-ruby";
 import MarkdownItSub from "markdown-it-sub";
 import MarkdownItSup from "markdown-it-sup";
-import MarkdownItTaskLists from "markdown-it-task-lists";
 import MarkdownItMark from "markdown-it-mark";
-import MarkdownItMermaid from "@markslides/markdown-it-mermaid";
 
 // 引入自定义插件
 import { anchorPlugin } from "@/utils/markdown/markdown-it-anchor";
-import {
-  alertPlugin,
-  mountAlertBlocks,
-  unmountAlertBlocks,
-} from "@/utils/markdown/markdown-it-alert";
+import { alertPlugin } from "@/utils/markdown/markdown-it-alert";
 import {
   chatHeaderPlugin,
   chatContainerPlugin,
-  mountChatBlocks,
   momentsPlugin,
-  unmountChatBlocks,
 } from "@/utils/markdown/markdown-it-chat";
-import {
-  codePlugin,
-  mountCodeBlocks,
-  unmountCodeBlocks,
-} from "@/utils/markdown/markdown-it-code";
-import {
-  mountMermaidDiagrams,
-  unmountMermaidDiagrams,
-} from "@/utils/markdown/markdown-it-mermaid";
+import { codePlugin } from "@/utils/markdown/markdown-it-code";
+import { linkIconPlugin } from "@/utils/markdown/markdown-it-link-icon";
+import { mermaidPlugin } from "@/utils/markdown/markdown-it-mermaid";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
 import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
+import { taskStatusPlugin } from "@/utils/markdown/markdown-it-task-status";
 import {
   collectFenceLanguages,
   hasMathSyntax,
@@ -196,11 +190,7 @@ const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
 const mathJaxPlugin = ref(null);
-const MERMAID_GANTT_WIDTH = 720;
 let markdownFeatureRequestId = 0;
-let codeBlockRoot = null;
-let renderMermaidDiagrams = null;
-let mermaidRenderQueue = Promise.resolve();
 const headerParagraphId = computed(() => {
   const uuid = String(props.headerData?.uuid || "").trim();
   return uuid ? `${uuid}-0` : "";
@@ -220,55 +210,76 @@ const anchoredPages = computed(() =>
     : [],
 );
 
-const syncMarkdownComponents = async () => {
-  if (import.meta.env.SSR) {
-    return;
+const decodeMarkdownProps = (value = "") => {
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    return {};
   }
+};
+
+let renderReadyCycle = 0;
+let emittedRenderReadyCycle = -1;
+
+const syncRenderReady = async (cycle = renderReadyCycle) => {
+  if (import.meta.env.SSR || props.isLoading) return;
 
   await nextTick();
+  if (cycle !== renderReadyCycle || emittedRenderReadyCycle === cycle) return;
 
-  const nextRoot = articleRef.value;
-  if (!nextRoot) return;
+  const root = articleRef.value;
+  if (!root) return;
+  if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
 
-  if (codeBlockRoot && codeBlockRoot !== nextRoot) {
-    unmountAlertBlocks(codeBlockRoot);
-    unmountChatBlocks(codeBlockRoot);
-    unmountCodeBlocks(codeBlockRoot);
-    unmountMermaidDiagrams(codeBlockRoot);
-  }
-
-  codeBlockRoot = nextRoot;
-  // Alert 与聊天正文都可能继续包含另一种 Markdown 组件，重复两轮可让
-  // 新插入的嵌套挂载点也完成初始化，再处理最内层代码块。
-  mountAlertBlocks(codeBlockRoot);
-  mountChatBlocks(codeBlockRoot);
-  mountAlertBlocks(codeBlockRoot);
-  mountChatBlocks(codeBlockRoot);
-  mountCodeBlocks(codeBlockRoot);
-  mountMermaidDiagrams(codeBlockRoot);
-
-  if (renderMermaidDiagrams) {
-    const renderer = renderMermaidDiagrams;
-    mermaidRenderQueue = mermaidRenderQueue
-      .catch(() => undefined)
-      .then(() => renderer())
-      .catch((error) => {
-        console.warn("Mermaid 图表渲染失败", error);
-      });
-    await mermaidRenderQueue;
-  }
-  mountMermaidDiagrams(codeBlockRoot, { renderComplete: true });
-
+  emittedRenderReadyCycle = cycle;
   emit("render-ready");
 };
 
-onMounted(syncMarkdownComponents);
-onBeforeUnmount(() => {
-  unmountAlertBlocks(codeBlockRoot);
-  unmountChatBlocks(codeBlockRoot);
-  unmountCodeBlocks(codeBlockRoot);
-  unmountMermaidDiagrams(codeBlockRoot);
-});
+const handleMermaidRenderComplete = () => syncRenderReady(renderReadyCycle);
+
+const resolveMarkdownComponent = ({
+  tagName,
+  props: nodeProps,
+  children,
+  key,
+}) => {
+  if (!tagName.startsWith("markdown-")) return undefined;
+
+  const componentProps = decodeMarkdownProps(nodeProps["data-markdown-props"]);
+
+  if (tagName === "markdown-alert") {
+    return h(Alert, { ...componentProps, key }, { default: () => children });
+  }
+  if (tagName === "markdown-chat") {
+    return h(Chat, { ...componentProps, key });
+  }
+  if (tagName === "markdown-moment") {
+    return h(Moment, { ...componentProps, key });
+  }
+  if (tagName === "markdown-code") {
+    return h(CodeBlock, { ...componentProps, key });
+  }
+  if (tagName === "markdown-link-icon") {
+    return h(LinkIcon, { ...componentProps, key });
+  }
+  if (tagName === "markdown-mermaid") {
+    return h(Mermaid, {
+      ...componentProps,
+      key,
+      onRenderComplete: handleMermaidRenderComplete,
+    });
+  }
+
+  return undefined;
+};
+
+const beginRenderReadyCycle = () => {
+  renderReadyCycle += 1;
+  emittedRenderReadyCycle = -1;
+  syncRenderReady(renderReadyCycle);
+};
+
+onMounted(() => syncRenderReady(renderReadyCycle));
 
 watch(
   () => [
@@ -277,8 +288,8 @@ watch(
     props.headerData.uuid,
     markdownRenderVersion.value,
   ],
-  syncMarkdownComponents,
-  { flush: "post" },
+  beginRenderReadyCycle,
+  { flush: "post", immediate: true },
 );
 
 const getRouteAnchorId = () => {
@@ -466,86 +477,6 @@ const rubyPlugin = (md) => {
   });
 };
 
-const mermaidPlugin = (md) => {
-  MarkdownItMermaid(md, {
-    startOnLoad: false,
-    securityLevel: "strict",
-    fontFamily: "var(--font-mono)",
-    themeVariables: {
-      fontSize: "14px",
-    },
-    flowchart: {
-      diagramPadding: 8,
-      nodeSpacing: 50,
-      rankSpacing: 50,
-      padding: 15,
-      htmlLabels: false,
-      useMaxWidth: true,
-    },
-    class: {
-      diagramPadding: 8,
-      nodeSpacing: 50,
-      rankSpacing: 50,
-      padding: 8,
-      htmlLabels: false,
-    },
-    state: {
-      nodeSpacing: 50,
-      rankSpacing: 50,
-      padding: 8,
-      miniPadding: 4,
-      noteMargin: 10,
-    },
-    er: {
-      diagramPadding: 20,
-      entityPadding: 15,
-      nodeSpacing: 140,
-      rankSpacing: 80,
-    },
-    block: {
-      padding: 8,
-    },
-    kanban: {
-      padding: 8,
-    },
-    gantt: {
-      useMaxWidth: true,
-      useWidth: MERMAID_GANTT_WIDTH,
-    },
-    sequence: {
-      diagramMarginX: 8,
-      diagramMarginY: 8,
-      actorMargin: 50,
-      width: 150,
-      height: 65,
-      boxMargin: 10,
-      boxTextMargin: 5,
-      noteMargin: 10,
-      messageMargin: 35,
-      useMaxWidth: true,
-    },
-  });
-
-  const mermaidFenceRenderer = md.renderer.rules.fence;
-  md.renderer.rules.fence = (tokens, idx, options, env, self) => {
-    const rendered = mermaidFenceRenderer(tokens, idx, options, env, self);
-    const token = tokens[idx];
-
-    if (token.info.trim() !== "mermaid") return rendered;
-
-    const diagram = rendered.replace(
-      "<pre ",
-      `<pre aria-hidden="true" data-mermaid-source="${encodeURIComponent(token.content.trim())}" `,
-    );
-
-    return `<div data-mermaid-viewer aria-busy="true">
-      ${diagram}
-      <div data-mermaid-controls></div>
-    </div>`;
-  };
-  renderMermaidDiagrams = md.mermaid?.renderAll || null;
-};
-
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
   MarkdownItAttrs,
@@ -561,23 +492,36 @@ const sharedPlugins = computed(() => [
   rubyPlugin,
   MarkdownItSub,
   MarkdownItSup,
-  MarkdownItTaskLists,
+  taskStatusPlugin,
   ...(mathJaxPlugin.value ? [mathJaxPlugin.value] : []),
   MarkdownItMark,
   mermaidPlugin,
   tableWrapperPlugin,
+  linkIconPlugin,
 ]);
 
+const renderMarkdown = (source, plugins) => {
+  const md = new MarkdownIt(options);
+  plugins.forEach((plugin) => md.use(plugin));
+  return md.render(source);
+};
+
 // 正文只创建一个 Markdown 渲染实例，段落序号在整篇内容内连续递增。
-const renderedPages = computed(() =>
-  anchoredPages.value.map((page) => ({
-    ...page,
-    plugins: [
+const renderedPages = computed(() => {
+  markdownRenderVersion.value;
+
+  return anchoredPages.value.map((page) => {
+    const plugins = [
       paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
       ...sharedPlugins.value,
-    ],
-  })),
-);
+    ];
+
+    return {
+      ...page,
+      html: renderMarkdown(page.source, plugins),
+    };
+  });
+});
 
 // 运行时 content 变化：异步加载特性插件后渲染
 watch(
@@ -614,7 +558,7 @@ watch(
       return;
     }
 
-    // vue-markdown-render 只在创建实例时注册插件，需在异步插件加载完成后重建。
+    // 异步插件加载完成后重建 MarkdownIt 输出。
     markdownRenderVersion.value += 1;
     markdownPreparing.value = false;
   },

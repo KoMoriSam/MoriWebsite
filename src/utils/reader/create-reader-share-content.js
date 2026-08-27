@@ -44,6 +44,26 @@ const BLOCK_SELECTOR = [
   "[data-markdown-moment]",
 ].join(",");
 
+const TASK_STATUS_MARKERS = {
+  " ": "○",
+  x: "✓",
+  X: "✓",
+  "-": "×",
+  "/": "◐",
+  ">": "→",
+  "<": "◷",
+  "?": "?",
+  "!": "!",
+  "*": "★",
+  '"': "”",
+  l: "⌖",
+  b: "◆",
+  i: "i",
+  S: "$",
+  p: "★",
+  c: "−",
+};
+
 const normalizeInlineText = (value = "") =>
   String(value).replace(/[\t\n\r ]+/gu, " ");
 
@@ -313,7 +333,46 @@ const getOrderedMarker = (item, list) => {
   return `${start + Math.max(0, siblings.indexOf(item))}.`;
 };
 
+const getGeneratedIcon = (element) => {
+  if (!(element instanceof Element)) return null;
+  const computed = getComputedStyle(element, "::before");
+  const content = String(computed.content || "").trim();
+  if (!content || content === "none" || content === "normal") return null;
+  const unquoted =
+    content.length >= 2 &&
+    ["\"", "'"].includes(content[0]) &&
+    content[0] === content.at(-1)
+      ? content.slice(1, -1)
+      : content;
+  const glyph = unquoted
+    .replace(/\\([0-9a-f]{1,6})\s?/giu, (_, codePoint) =>
+      String.fromCodePoint(Number.parseInt(codePoint, 16)),
+    )
+    .replace(/\\(["'\\])/gu, "$1");
+  return glyph
+    ? { glyph, fontFamily: computed.fontFamily || "remixicon" }
+    : null;
+};
+
+const getTaskMeta = (item) => {
+  if (!item.hasAttribute("data-task-status")) return null;
+  const status = item.getAttribute("data-task-status") || " ";
+  const statusElement = item.querySelector(
+    ":scope > .task-list-item-status, :scope > p > .task-list-item-status",
+  );
+  const icon = getGeneratedIcon(statusElement?.querySelector(":scope > i"));
+  return {
+    status,
+    tone: statusElement?.dataset.taskTone || "muted",
+    marker: TASK_STATUS_MARKERS[status] || "•",
+    markerGlyph: icon?.glyph || "",
+    markerFontFamily: icon?.fontFamily || "",
+  };
+};
+
 const getListMarker = (item) => {
+  const task = getTaskMeta(item);
+  if (task) return task.marker;
   const checkbox = item.querySelector(
     ":scope > input[type='checkbox'], :scope > p > input[type='checkbox']",
   );
@@ -369,10 +428,15 @@ const getContextMeta = (block) => {
     return { type: "heading", level: Number(block.tagName.slice(1)) };
   }
   if (block.tagName === "LI") {
+    const task = getTaskMeta(block);
     return {
       type: "list-item",
       depth: getListDepth(block),
-      marker: getListMarker(block),
+      marker: task?.marker || getListMarker(block),
+      taskStatus: task?.status ?? null,
+      taskTone: task?.tone || "",
+      markerGlyph: task?.markerGlyph || "",
+      markerFontFamily: task?.markerFontFamily || "",
     };
   }
   if (block.closest("blockquote")) return { type: "quote" };
@@ -599,10 +663,16 @@ const getOutermostQuote = (element) => {
 const getSemanticBlock = (node, fallback) => {
   const element = toElement(node);
   if (!element) return fallback;
+  const closestListItem = element.closest("li");
+  const priorityListItem = closestListItem?.matches(
+    "[data-task-status], .footnote-item",
+  )
+    ? closestListItem
+    : null;
   return (
     element.closest("[data-markdown-code-block]") ||
     element.closest("[data-markdown-alert]") ||
-    element.closest("li.footnote-item") ||
+    priorityListItem ||
     getOutermostQuote(element) ||
     element.closest(BLOCK_SELECTOR) ||
     fallback

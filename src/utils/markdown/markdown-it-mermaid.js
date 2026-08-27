@@ -1,119 +1,112 @@
-import { createApp, reactive } from "vue";
+const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
 
-import Mermaid from "@/components/markdown/Mermaid.vue";
-
-const MERMAID_SELECTOR = "[data-mermaid-viewer] pre.mermaid";
-const mountedMermaid = new WeakMap();
-
-const decodeMermaidSource = (value = "") => {
-  try {
-    const bytes = Uint8Array.from(atob(value), (character) =>
-      character.charCodeAt(0),
-    );
-    return new TextDecoder().decode(bytes);
-  } catch {
-    return "";
-  }
+const MERMAID_CONFIG = {
+  startOnLoad: false,
+  securityLevel: "strict",
+  fontFamily: "var(--font-mono)",
+  themeVariables: {
+    fontSize: "14px",
+  },
+  flowchart: {
+    diagramPadding: 8,
+    nodeSpacing: 50,
+    rankSpacing: 50,
+    padding: 15,
+    htmlLabels: false,
+    useMaxWidth: true,
+  },
+  class: {
+    diagramPadding: 8,
+    nodeSpacing: 50,
+    rankSpacing: 50,
+    padding: 8,
+    htmlLabels: false,
+  },
+  state: {
+    nodeSpacing: 50,
+    rankSpacing: 50,
+    padding: 8,
+    miniPadding: 4,
+    noteMargin: 10,
+  },
+  er: {
+    diagramPadding: 20,
+    entityPadding: 15,
+    nodeSpacing: 140,
+    rankSpacing: 80,
+  },
+  block: {
+    padding: 8,
+  },
+  kanban: {
+    padding: 8,
+  },
+  gantt: {
+    useMaxWidth: true,
+    useWidth: 720,
+  },
+  sequence: {
+    diagramMarginX: 8,
+    diagramMarginY: 8,
+    actorMargin: 50,
+    width: 150,
+    height: 65,
+    boxMargin: 10,
+    boxTextMargin: 5,
+    noteMargin: 10,
+    messageMargin: 35,
+    useMaxWidth: true,
+  },
 };
 
-const getMermaidSource = (element) => {
-  const encodedSource = element.dataset.mermaidSource;
+let mermaidPromise = null;
+let renderQueue = Promise.resolve();
 
-  if (encodedSource) {
-    try {
-      return decodeURIComponent(encodedSource);
-    } catch {
-      // 继续尝试插件原始的 Base64 数据。
-    }
-  }
-
-  return decodeMermaidSource(element.dataset.mermaidCode);
-};
-
-const getRenderStatus = (element, renderComplete) => {
-  if (element.querySelector("svg")) return "ready";
-  if (element.querySelector(".mermaid-error") || renderComplete) return "error";
-  return "loading";
-};
-
-const syncRenderStatus = (mount, renderComplete) => {
-  const status = getRenderStatus(mount.element, renderComplete);
-
-  mount.renderState.status = status;
-  mount.viewer.setAttribute("aria-busy", String(status === "loading"));
-
-  if (status === "ready") {
-    mount.element.removeAttribute("aria-hidden");
-  }
-};
-
-export function mountMermaidDiagrams(root, { renderComplete = false } = {}) {
-  if (!root || import.meta.env.SSR) return;
-
-  let mounts = mountedMermaid.get(root);
-
-  if (!mounts) {
-    mounts = new Map();
-    mountedMermaid.set(root, mounts);
-  }
-
-  for (const [element, mount] of mounts) {
-    if (!root.contains(element)) {
-      mount.app.unmount();
-      mount.mountPoint.remove();
-      mounts.delete(element);
-    }
-  }
-
-  root.querySelectorAll(MERMAID_SELECTOR).forEach((element) => {
-    const currentMount = mounts.get(element);
-
-    if (
-      currentMount &&
-      currentMount.viewer.contains(element) &&
-      currentMount.viewer.contains(currentMount.mountPoint)
-    ) {
-      syncRenderStatus(currentMount, renderComplete);
-      return;
-    }
-
-    if (currentMount) {
-      currentMount.app.unmount();
-      currentMount.mountPoint.remove();
-      mounts.delete(element);
-    }
-
-    const viewer = element.closest("[data-mermaid-viewer]");
-    const mountPoint = viewer?.querySelector(
-      ":scope > [data-mermaid-controls]",
-    );
-    if (!viewer || !mountPoint) return;
-
-    const renderState = reactive({
-      status: getRenderStatus(element, renderComplete),
+const loadMermaid = async () => {
+  if (!mermaidPromise) {
+    mermaidPromise = import("mermaid").then((module) => {
+      const mermaid = module.default || module;
+      mermaid.initialize(MERMAID_CONFIG);
+      mermaid.registerIconPacks?.([
+        {
+          name: "logos",
+          loader: () =>
+            fetch("https://unpkg.com/@iconify-json/logos@1/icons.json").then(
+              (response) => response.json(),
+            ),
+        },
+      ]);
+      return mermaid;
     });
-    const app = createApp(Mermaid, {
-      target: viewer,
-      diagram: element,
-      source: getMermaidSource(element),
-      renderState,
-    });
-    app.mount(mountPoint);
-    const mount = { app, element, mountPoint, renderState, viewer };
-    mounts.set(element, mount);
-    syncRenderStatus(mount, renderComplete);
-  });
-}
+  }
 
-export function unmountMermaidDiagrams(root) {
-  const mounts = root ? mountedMermaid.get(root) : null;
+  return mermaidPromise;
+};
 
-  if (!mounts) return;
+export const renderMermaidSource = (id, source) => {
+  const renderTask = async () => {
+    const mermaid = await loadMermaid();
+    await mermaid.parse(source, { suppressErrors: false });
+    return mermaid.render(id, source);
+  };
+  const result = renderQueue.catch(() => undefined).then(renderTask);
+  renderQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+};
 
-  mounts.forEach(({ app, mountPoint }) => {
-    app.unmount();
-    mountPoint.remove();
-  });
-  mounts.clear();
-  mountedMermaid.delete(root);
+export function mermaidPlugin(md) {
+  const defaultFenceRenderer = md.renderer.rules.fence;
+
+  md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    if (token.info.trim() !== "mermaid") {
+      return defaultFenceRenderer(tokens, idx, options, env, self);
+    }
+
+    const props = encodeProps({ source: token.content.trim() });
+    return `<markdown-mermaid data-markdown-props="${props}"></markdown-mermaid>\n`;
+  };
 }

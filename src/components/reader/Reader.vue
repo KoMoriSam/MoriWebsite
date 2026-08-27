@@ -4,6 +4,8 @@
     :style="pageStyle"
     :data-theme="pageTheme || undefined"
   >
+    <slot name="before" />
+
     <ReaderBody
       :container-class="containerClass"
       :grid-class="resolvedGridClass"
@@ -13,9 +15,8 @@
       :sticky-top="stickyTop"
       :show-toc="showToc"
       :show-aside="showAside"
-      :reader-id="readerId"
+      @content-ready="handleContentReady"
     >
-      <template #before><slot name="before" /></template>
       <template #mobile-toc="{ compact, expand, toggle, setMenuOpen }">
         <slot
           name="mobile-toc"
@@ -53,9 +54,9 @@
       </template>
       <template #default><slot /></template>
       <template #aside><slot name="aside" /></template>
-      <template #after><slot name="after" /></template>
     </ReaderBody>
 
+    <slot name="after" />
     <slot name="floating" />
   </main>
 
@@ -65,11 +66,11 @@
     class="modal modal-bottom lg:modal-start"
     @cancel.prevent="requestPlatformCloseFormatSetting"
   >
-    <section
-      class="modal-box flex h-full w-full lg:w-96 max-w-2xl flex-col overflow-hidden p-0 max-lg:mx-auto"
+    <div
+      class="modal-box flex h-full w-full max-w-2xl flex-col overflow-hidden p-0 max-lg:mx-auto lg:w-96"
     >
       <slot name="format-setting" />
-    </section>
+    </div>
     <form method="dialog" class="modal-backdrop">
       <button
         aria-label="关闭阅读排版设置"
@@ -346,6 +347,24 @@ const scrollToHeading = (id) => {
   window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
 };
 
+const handleContentReady = async (element) => {
+  mutationObserver?.disconnect();
+  contentElement.value = element || null;
+
+  await nextTick();
+  collectHeadings();
+  scheduleProgressUpdate();
+
+  if (contentElement.value) {
+    mutationObserver = new MutationObserver(scheduleCollectHeadings);
+    mutationObserver.observe(contentElement.value, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+};
+
 const openFormatSetting = () => {
   const dialog = formatSettingDialogRef.value;
   if (!dialog || dialog.open) return;
@@ -358,25 +377,10 @@ const requestCloseFormatSetting = () => formatSettingModal.requestClose();
 const requestPlatformCloseFormatSetting = () =>
   formatSettingModal.requestPlatformClose();
 
-onMounted(async () => {
-  await nextTick();
-  contentElement.value = document.querySelector(
-    `[data-reader-content="${readerId}"]`,
-  );
-  collectHeadings();
+onMounted(() => {
   scheduleProgressUpdate();
-
   window.addEventListener("scroll", scheduleProgressUpdate, { passive: true });
   window.addEventListener("resize", scheduleProgressUpdate);
-
-  if (contentElement.value) {
-    mutationObserver = new MutationObserver(scheduleCollectHeadings);
-    mutationObserver.observe(contentElement.value, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-  }
 });
 
 watch(
@@ -394,8 +398,6 @@ onBeforeUnmount(() => {
     window.cancelAnimationFrame(progressFrame);
   }
 });
-
-const readerId = `reader-${Math.random().toString(36).slice(2, 10)}`;
 
 defineExpose({ openFormatSetting });
 </script>

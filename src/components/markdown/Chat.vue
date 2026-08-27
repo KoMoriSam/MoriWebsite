@@ -1,30 +1,32 @@
 <template>
-  <div v-if="header" class="chat-leading-group">
-    <div class="chat-bar">
-      <i class="ri-arrow-left-wide-line ml-0.5 sm:ml-2 mr-0"></i>
-      <div class="chat-image avatar">
-        <div class="w-8 sm:w-10 rounded-full">
-          <img :alt="header.title" :src="avatarFor(header.title)" />
+  <div class="chat-content" data-markdown-chat>
+    <div v-if="header" class="chat-leading-group">
+      <div class="chat-bar">
+        <i class="ri-arrow-left-wide-line ml-0.5 sm:ml-2 mr-0"></i>
+        <div class="chat-image avatar">
+          <div class="w-8 sm:w-10 rounded-full">
+            <img :alt="header.title" :src="avatarFor(header.title)" />
+          </div>
         </div>
+        <span class="font-bold">{{ header.title }}</span>
+        <span
+          v-if="header.extra"
+          class="badge max-sm:badge-xs"
+          :class="headerBadgeClass"
+        >
+          {{ header.extra }}
+        </span>
+        <i class="ri-menu-line ml-auto mr-0.5 sm:mr-2"></i>
       </div>
-      <span class="font-bold">{{ header.title }}</span>
-      <span
-        v-if="header.extra"
-        class="badge max-sm:badge-xs"
-        :class="headerBadgeClass"
-      >
-        {{ header.extra }}
-      </span>
-      <i class="ri-menu-line ml-auto mr-0.5 sm:mr-2"></i>
+      <ChatMessage v-if="messages[0]" :message="messages[0]" />
     </div>
-    <ChatMessage v-if="messages[0]" :message="messages[0]" />
-  </div>
 
-  <ChatMessage
-    v-for="(message, index) in remainingMessages"
-    :key="`${message.type}-${message.username || 'system'}-${index}`"
-    :message="message"
-  />
+    <ChatMessage
+      v-for="(message, index) in remainingMessages"
+      :key="`${message.type}-${message.username || 'system'}-${index}`"
+      :message="message"
+    />
+  </div>
 </template>
 
 <script setup>

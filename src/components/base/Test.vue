@@ -50,12 +50,9 @@
         transform: `translateX(-${translateX}px)`,
       }"
     >
-      <vue-markdown
-        v-if="content"
-        :source="content"
-        :options="options"
-        :plugins="plugins"
-      />
+      <div v-if="content">
+        <RenderedContent :html="renderedContent" />
+      </div>
     </article>
   </section>
   <ChapterController>
@@ -91,10 +88,11 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import VueMarkdown from "vue-markdown-render";
+import MarkdownIt from "markdown-it";
 import ChapterController from "@/components/novel/ChapterController.vue";
+import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
-defineProps({
+const props = defineProps({
   // 文章内容
   content: {
     type: String,
@@ -288,4 +286,9 @@ const plugins = [
   markdownItTaskLists,
   markdownItHighlightjs,
 ];
+const renderedContent = computed(() => {
+  const md = new MarkdownIt(options);
+  plugins.forEach((plugin) => md.use(plugin));
+  return md.render(props.content);
+});
 </script>

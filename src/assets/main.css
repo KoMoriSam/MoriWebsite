@@ -55,28 +55,6 @@
   user-select: none;
 }
 
-@utility mask-bubble {
-  -webkit-mask-image: url("/assets/images/icons/review-bubble.svg");
-  mask-image: url("/assets/images/icons/review-bubble.svg");
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  mask-size: 100%;
-}
-
-@utility mask-bubble-fill {
-  -webkit-mask-image: url("/assets/images/icons/review-bubble-fill.svg");
-  mask-image: url("/assets/images/icons/review-bubble-fill.svg");
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  mask-size: 100%;
-}
-
 @utility code-block {
   @apply mockup-code w-full relative scrollbar-thin pb-0
   border border-base-300

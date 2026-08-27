@@ -5,7 +5,10 @@
     :description="section?.description"
   >
     <template #badges>
-      <span class="badge badge-warning badge-soft badge-lg">仅开发环境</span>
+      <span class="inline-flex items-center gap-1">
+        <i class="ri-test-tube-line"></i>
+        仅开发环境
+      </span>
     </template>
 
     <slot></slot>

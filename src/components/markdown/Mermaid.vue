@@ -1,101 +1,111 @@
 <template>
   <section
-    class="flex w-full flex-col"
+    ref="viewerRoot"
+    data-mermaid-viewer
+    class="not-prose"
     :class="isFullscreen ? 'h-full min-h-0' : ''"
+    :aria-busy="renderStatus === 'loading'"
   >
     <header
       class="flex shrink-0 select-none items-center justify-between gap-2 border-b border-base-300 bg-base-100 py-0.5 ps-3 pe-2"
     >
-      <div
+      <hgroup
         class="flex min-w-0 items-center text-sm font-medium text-base-content"
       >
         <i
           class="ri-flow-chart me-2 text-lg font-normal"
           aria-hidden="true"
         ></i>
-        <span class="truncate">Mermaid</span>
-      </div>
+        <h2 class="truncate">Mermaid</h2>
+      </hgroup>
 
-      <div class="flex shrink-0 items-center gap-1">
-        <div
-          role="tablist"
-          aria-label="Mermaid 视图切换"
-          class="tabs tabs-box tabs-xs shrink-0"
+      <client-only>
+        <nav
+          class="flex shrink-0 items-center gap-1"
+          aria-label="Mermaid 图表工具"
         >
-          <button
-            role="tab"
-            class="tab"
-            :class="viewMode === 'code' ? 'tab-active' : ''"
-            aria-label="查看 Mermaid 代码"
-            :aria-pressed="viewMode === 'code'"
-            title="代码"
-            @click="viewMode = 'code'"
+          <div
+            role="tablist"
+            aria-label="Mermaid 视图切换"
+            class="tabs tabs-box tabs-xs shrink-0"
           >
-            <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-          </button>
-          <button
-            role="tab"
-            class="tab"
-            :class="viewMode === 'preview' ? 'tab-active' : ''"
-            aria-label="查看 Mermaid 预览"
-            :aria-pressed="viewMode === 'preview'"
-            title="预览"
-            @click="viewMode = 'preview'"
+            <button
+              role="tab"
+              class="tab"
+              :class="viewMode === 'code' ? 'tab-active' : ''"
+              aria-label="查看 Mermaid 代码"
+              :aria-pressed="viewMode === 'code'"
+              title="代码"
+              @click="viewMode = 'code'"
+            >
+              <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+            </button>
+            <button
+              role="tab"
+              class="tab"
+              :class="viewMode === 'preview' ? 'tab-active' : ''"
+              aria-label="查看 Mermaid 预览"
+              :aria-pressed="viewMode === 'preview'"
+              title="预览"
+              @click="viewMode = 'preview'"
+            >
+              <i class="ri-image-line" aria-hidden="true"></i>
+            </button>
+          </div>
+          <aside
+            class="tooltip tooltip-left font-mono"
+            :class="copied ? 'tooltip-success' : ''"
+            :data-tip="
+              viewMode === 'preview'
+                ? isFullscreen
+                  ? '退出全屏'
+                  : '全屏'
+                : copied
+                  ? '复制成功'
+                  : '复制代码'
+            "
           >
-            <i class="ri-image-line" aria-hidden="true"></i>
-          </button>
-        </div>
-        <aside
-          class="tooltip tooltip-left font-mono"
-          :class="copied ? 'tooltip-success' : ''"
-          :data-tip="
-            viewMode === 'preview'
-              ? isFullscreen
-                ? '退出全屏'
-                : '全屏'
-              : copied
-                ? '复制成功'
-                : '复制代码'
-          "
-        >
-          <button
-            v-if="viewMode === 'preview'"
-            type="button"
-            class="btn btn-sm btn-circle btn-ghost shrink-0"
-            :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
-            :aria-pressed="isFullscreen"
-            :title="isFullscreen ? '退出全屏' : '全屏'"
-            :disabled="!canFullscreen"
-            @click="toggleFullscreen"
-          >
-            <i
-              :class="
-                isFullscreen ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line'
-              "
-              aria-hidden="true"
-            ></i>
-          </button>
-          <button
-            v-else
-            type="button"
-            class="btn btn-sm btn-circle shrink-0"
-            :class="copied ? 'btn-success' : 'btn-ghost'"
-            :aria-label="copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'"
-            :title="copied ? '复制成功' : '复制代码'"
-            @click="copy(source)"
-          >
-            <i
-              :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
-              aria-hidden="true"
-            ></i>
-          </button>
-        </aside>
-      </div>
+            <button
+              v-if="viewMode === 'preview'"
+              type="button"
+              class="btn btn-sm btn-circle btn-ghost shrink-0"
+              :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
+              :aria-pressed="isFullscreen"
+              :title="isFullscreen ? '退出全屏' : '全屏'"
+              :disabled="!canFullscreen"
+              @click="toggleFullscreen"
+            >
+              <i
+                :class="
+                  isFullscreen
+                    ? 'ri-fullscreen-exit-line'
+                    : 'ri-fullscreen-line'
+                "
+                aria-hidden="true"
+              ></i>
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-sm btn-circle shrink-0"
+              :class="copied ? 'btn-success' : 'btn-ghost'"
+              :aria-label="copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'"
+              :title="copied ? '复制成功' : '复制代码'"
+              @click="copy(source)"
+            >
+              <i
+                :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
+                aria-hidden="true"
+              ></i>
+            </button>
+          </aside>
+        </nav>
+      </client-only>
     </header>
 
-    <div
+    <figure
       data-mermaid-preview
-      class="group relative min-w-0 bg-base-200/50"
+      class="group relative min-w-0 bg-base-200/50 m-0!"
       :class="[
         isFullscreen ? 'min-h-0 flex-1' : '',
         !isFullscreen && viewMode === 'preview' ? 'min-h-36 md:min-h-56' : '',
@@ -141,6 +151,7 @@
           'cursor-grab active:cursor-grabbing',
         ]"
         @keydown="handleCanvasKeydown"
+        @wheel.prevent="handleCanvasWheel"
         @pointerdown="startPan"
         @pointermove="movePan"
         @pointerup="endPan"
@@ -150,7 +161,13 @@
           ref="diagramHost"
           class="flex min-h-[inherit] w-full items-center justify-center"
           :class="isFullscreen ? 'h-full' : ''"
-        ></div>
+        >
+          <pre
+            ref="diagramElement"
+            class="mermaid"
+            :aria-hidden="renderStatus === 'ready' ? undefined : 'true'"
+          ></pre>
+        </div>
       </div>
 
       <pre
@@ -185,7 +202,7 @@
           <i class="ri-subtract-line" aria-hidden="true"></i>
         </button>
       </div>
-    </div>
+    </figure>
   </section>
 </template>
 
@@ -201,25 +218,15 @@ import {
   watch,
 } from "vue";
 import { preloadHighlightLanguages } from "@/utils/markdown/load-markdown-features";
+import { renderMermaidSource } from "@/utils/markdown/markdown-it-mermaid";
 
 const props = defineProps({
-  target: {
-    type: Object,
-    required: true,
-  },
-  diagram: {
-    type: Object,
-    required: true,
-  },
   source: {
     type: String,
     default: "",
   },
-  renderState: {
-    type: Object,
-    required: true,
-  },
 });
+const emit = defineEmits(["render-complete"]);
 
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 5;
@@ -236,29 +243,30 @@ const defaultZoom = ref(MIN_ZOOM);
 const panX = ref(0);
 const panY = ref(0);
 const dragging = ref(false);
+const viewerRoot = ref(null);
 const previewCanvas = ref(null);
 const diagramHost = ref(null);
+const diagramElement = ref(null);
 const sourceCode = ref(null);
 const isFullscreen = ref(false);
 const canFullscreen = ref(false);
+const renderStatus = ref("loading");
 let panStart = null;
 let pinchStart = null;
 let resizeObserver = null;
 let svgElement = null;
 let diagramViewport = null;
 let initialViewBox = null;
-let renderedViewBox = null;
 let defaultRenderScale = 1;
 let sourceLabelFontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
 let desktopMediaQuery = null;
+let renderRequestId = 0;
 const activePointers = new Map();
 
 const { copy, copied } = useClipboard({
   source: computed(() => props.source),
   legacy: true,
 });
-
-const renderStatus = computed(() => props.renderState.status);
 
 const diagramType = computed(() => {
   const source = props.source.trimStart();
@@ -279,8 +287,6 @@ const diagramType = computed(() => {
 
   return null;
 });
-
-const isGanttDiagram = computed(() => diagramType.value === "gantt");
 
 const isLeftToRightDiagram = computed(() => {
   const source = props.source;
@@ -399,6 +405,67 @@ const highlightSource = async () => {
   hljs.highlightElement(sourceCode.value);
 };
 
+const resetRenderedDiagram = () => {
+  if (svgElement) resizeObserver?.unobserve(svgElement);
+  svgElement = null;
+  diagramViewport = null;
+  initialViewBox = null;
+  defaultRenderScale = 1;
+  sourceLabelFontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
+  zoom.value = MIN_ZOOM;
+  defaultZoom.value = MIN_ZOOM;
+  panX.value = 0;
+  panY.value = 0;
+};
+
+const insertRenderedSvg = (svg) => {
+  if (!diagramElement.value) return false;
+
+  const parsed = new DOMParser().parseFromString(svg, "image/svg+xml");
+  const parsedSvg = parsed.querySelector("svg");
+  if (!parsedSvg) return false;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "mermaid-svg-wrapper";
+  wrapper.appendChild(document.importNode(parsedSvg, true));
+  diagramElement.value.replaceChildren(wrapper);
+  return true;
+};
+
+const renderDiagram = async () => {
+  const requestId = ++renderRequestId;
+  const source = props.source.trim();
+  renderStatus.value = "loading";
+  resetRenderedDiagram();
+  diagramElement.value?.replaceChildren();
+
+  if (!source) {
+    renderStatus.value = "error";
+    emit("render-complete", { status: "error" });
+    return;
+  }
+
+  try {
+    const renderId = `mermaid-viewer-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}`;
+    const { svg, bindFunctions } = await renderMermaidSource(renderId, source);
+    if (requestId !== renderRequestId || source !== props.source.trim()) return;
+    if (!insertRenderedSvg(svg)) throw new Error("Mermaid 未返回有效 SVG");
+
+    bindFunctions?.(diagramElement.value);
+    renderStatus.value = "ready";
+    await nextTick();
+    initializeSvgViewport();
+    emit("render-complete", { status: "ready" });
+  } catch (error) {
+    if (requestId !== renderRequestId || source !== props.source.trim()) return;
+    console.warn("Mermaid 图表渲染失败", error);
+    renderStatus.value = "error";
+    emit("render-complete", { status: "error" });
+  }
+};
+
 const syncSvgViewport = () => {
   if (!svgElement || !diagramViewport || !initialViewBox) return;
 
@@ -420,21 +487,11 @@ const syncSvgViewport = () => {
   );
 };
 
-const syncSvgWidth = () => {
-  if (!svgElement || !initialViewBox) return;
+const syncSvgCanvasWidth = () => {
+  if (!svgElement) return;
 
-  if (isFullscreen.value) {
-    svgElement.style.removeProperty("max-width");
-    return;
-  }
-
-  const edgeInset = getDiagramEdgeInset();
-  const widthBounds = isGanttDiagram.value ? renderedViewBox : initialViewBox;
-  svgElement.style.setProperty(
-    "max-width",
-    `${widthBounds.width * defaultRenderScale + edgeInset * 2}px`,
-    "important",
-  );
+  svgElement.style.setProperty("width", "100%", "important");
+  svgElement.style.setProperty("max-width", "none", "important");
 };
 
 const syncSvgDimensions = () => {
@@ -451,7 +508,7 @@ const syncSvgDimensions = () => {
 
   svgElement.style.aspectRatio = "auto";
   svgElement.style.height = `${viewportHeight}px`;
-  syncSvgWidth();
+  syncSvgCanvasWidth();
 };
 
 const initializeSvgViewport = () => {
@@ -464,12 +521,6 @@ const initializeSvgViewport = () => {
   if (!viewBox || viewBox.width <= 0 || viewBox.height <= 0) return;
 
   svgElement = nextSvg;
-  renderedViewBox = {
-    x: viewBox.x,
-    y: viewBox.y,
-    width: viewBox.width,
-    height: viewBox.height,
-  };
   sourceLabelFontSize = getLabelFontSize(nextSvg);
   let contentBounds = null;
   try {
@@ -618,6 +669,11 @@ const handleCanvasKeydown = (event) => {
   }
 };
 
+const handleCanvasWheel = (event) => {
+  if (event.deltaY === 0) return;
+  changeZoom(event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
+};
+
 const startPan = (event) => {
   if (event.pointerType === "touch") {
     activePointers.set(event.pointerId, {
@@ -742,9 +798,9 @@ const endPan = (event) => {
 };
 
 const syncFullscreenState = () => {
-  isFullscreen.value = document.fullscreenElement === props.target;
+  isFullscreen.value = document.fullscreenElement === viewerRoot.value;
   nextTick(() => {
-    syncSvgWidth();
+    syncSvgCanvasWidth();
     initializeSvgViewport();
     syncResponsiveViewport();
     clampPan();
@@ -755,18 +811,17 @@ const syncFullscreenState = () => {
 const toggleFullscreen = async () => {
   if (!canFullscreen.value) return;
 
-  if (document.fullscreenElement === props.target) {
+  if (document.fullscreenElement === viewerRoot.value) {
     await document.exitFullscreen();
     return;
   }
 
-  await props.target.requestFullscreen();
+  await viewerRoot.value.requestFullscreen();
 };
 
 onMounted(() => {
   desktopMediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
   desktopMediaQuery.addEventListener("change", syncResponsiveLabelScale);
-  diagramHost.value?.appendChild(props.diagram);
   highlightSource();
 
   if (typeof ResizeObserver !== "undefined") {
@@ -777,22 +832,26 @@ onMounted(() => {
     });
     if (previewCanvas.value) resizeObserver.observe(previewCanvas.value);
   }
-  initializeSvgViewport();
-
   canFullscreen.value = Boolean(
-    props.target?.requestFullscreen && document.exitFullscreen,
+    viewerRoot.value?.requestFullscreen && document.exitFullscreen,
   );
   syncFullscreenState();
   document.addEventListener("fullscreenchange", syncFullscreenState);
+  renderDiagram();
 });
 
 watch([zoom, panX, panY], syncSvgViewport, { flush: "post" });
-watch(renderStatus, (status) => {
-  if (status === "ready") nextTick(initializeSvgViewport);
-});
-watch(() => props.source, highlightSource, { flush: "post" });
+watch(
+  () => props.source,
+  () => {
+    highlightSource();
+    renderDiagram();
+  },
+  { flush: "post" },
+);
 
 onBeforeUnmount(() => {
+  renderRequestId += 1;
   resizeObserver?.disconnect();
   desktopMediaQuery?.removeEventListener("change", syncResponsiveLabelScale);
   document.removeEventListener("fullscreenchange", syncFullscreenState);

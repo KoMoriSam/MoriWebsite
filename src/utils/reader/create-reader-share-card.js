@@ -339,6 +339,22 @@ const normalizeShareContent = (
           level: Math.min(6, Math.max(1, Number(block?.level) || 1)),
           depth: Math.max(0, Number(block?.depth) || 0),
           marker: normalizeText(block?.marker),
+          markerGlyph: String(block?.markerGlyph || ""),
+          markerFontFamily: String(block?.markerFontFamily || ""),
+          taskStatus:
+            typeof block?.taskStatus === "string"
+              ? block.taskStatus.slice(0, 1)
+              : null,
+          taskTone: [
+            "info",
+            "success",
+            "warning",
+            "error",
+            "accent",
+            "muted",
+          ].includes(block?.taskTone)
+            ? block.taskTone
+            : "muted",
           label: normalizeText(block?.label),
           language: normalizeText(block?.language),
           tone: ["info", "success", "warning", "error", "accent"].includes(
@@ -909,6 +925,71 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
   });
 };
 
+const getTaskMarkerColor = (block, appearance) =>
+  block.taskTone === "muted"
+    ? appearance.foreground
+    : appearance[block.taskTone] || appearance.accent;
+
+const drawTaskMarker = (context, block, config, baseline, appearance) => {
+  const color = getTaskMarkerColor(block, appearance);
+  const centerX = config.markerX + config.fontSize * 0.3;
+  const centerY = baseline - config.fontSize * 0.34;
+  const radius = config.fontSize * 0.27;
+  const completed = block.taskStatus === "x" || block.taskStatus === "X";
+  const cancelled = block.taskStatus === "-";
+  const opacity = block.taskTone === "muted" ? 0.58 : 1;
+
+  context.save();
+  if (block.markerGlyph && block.markerFontFamily) {
+    setFont(context, {
+      size: Math.round(config.fontSize * 0.82),
+      family: block.markerFontFamily,
+    });
+    context.fillStyle = withAlpha(color, opacity);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(block.markerGlyph, centerX, centerY + 1);
+    context.restore();
+    return;
+  }
+
+  context.lineWidth = Math.max(2.5, config.fontSize * 0.065);
+  context.strokeStyle = withAlpha(color, opacity);
+  context.fillStyle = withAlpha(color, opacity);
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  if (completed) context.fill();
+  else {
+    if (block.taskStatus !== " ") {
+      context.fillStyle = withAlpha(color, opacity * 0.14);
+      context.fill();
+    }
+    context.stroke();
+  }
+
+  if (completed) {
+    context.strokeStyle = appearance.successContent;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo(centerX - radius * 0.48, centerY);
+    context.lineTo(centerX - radius * 0.12, centerY + radius * 0.34);
+    context.lineTo(centerX + radius * 0.52, centerY - radius * 0.4);
+    context.stroke();
+  } else if (block.taskStatus !== " ") {
+    setFont(context, {
+      size: Math.round(config.fontSize * (cancelled ? 0.62 : 0.5)),
+      family: appearance.uiFontFamily,
+      weight: "700",
+    });
+    context.fillStyle = withAlpha(color, opacity);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(block.marker || "•", centerX, centerY + 1);
+  }
+  context.restore();
+};
+
 const drawBodyLayout = (context, bodyLayout, appearance) => {
   let y = TEXT_TOP;
   bodyLayout.layouts.forEach((layout, blockIndex) => {
@@ -962,15 +1043,24 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
       const baseline =
         y + config.paddingTop + config.fontSize + lineIndex * config.lineHeight;
       if (block.type === "list-item" && lineIndex === 0) {
-        setFont(context, {
-          size: config.fontSize,
-          family: config.family,
-          weight: "600",
-        });
-        context.fillStyle = appearance.accent;
-        context.fillText(block.marker || "•", config.markerX, baseline);
+        if (block.taskStatus !== null) {
+          drawTaskMarker(context, block, config, baseline, appearance);
+        } else {
+          setFont(context, {
+            size: config.fontSize,
+            family: config.family,
+            weight: "600",
+          });
+          context.fillStyle = appearance.accent;
+          context.fillText(block.marker || "•", config.markerX, baseline);
+        }
+      }
+      context.save();
+      if (["x", "X", "-"].includes(block.taskStatus)) {
+        context.globalAlpha *= 0.5;
       }
       drawRichLine(context, line, baseline, layout, appearance);
+      context.restore();
     });
 
     y += layout.height;

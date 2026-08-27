@@ -91,33 +91,3 @@ const requestOpen = (event) => {
   );
 };
 </script>
-
-<style scoped>
-@reference "@/assets/main.css";
-
-.reader-header-comment-trigger {
-  @apply relative z-0 ml-1 hidden h-4 min-h-0 w-6 min-w-6 -translate-y-0.5
-    items-center justify-center overflow-visible pb-0.25 pl-0.5 whitespace-nowrap
-    text-primary opacity-0 transition-[opacity,scale]
-    before:absolute before:inset-0 before:bg-primary before:content-[''] before:mask-bubble
-    hover:text-primary-content hover:before:mask-bubble-fill
-    active:scale-80 active:text-primary-content active:before:mask-bubble-fill;
-}
-
-.reader-header-comment-trigger.has-count {
-  @apply inline-flex opacity-100;
-}
-
-.reader-header-comment-trigger.has-count i {
-  @apply hidden;
-}
-
-.reader-header-comment-trigger i,
-.reader-header-comment-trigger .paragraph-comment-count {
-  @apply z-10;
-}
-
-.reader-header-comment-trigger .paragraph-comment-count {
-  @apply font-sans text-xs leading-none font-bold whitespace-nowrap;
-}
-</style>

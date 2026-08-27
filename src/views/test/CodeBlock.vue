@@ -4,18 +4,15 @@
       <p class="mb-3 text-sm text-base-content/60">
         第一段包含跨行高亮与超长行；窄屏时应只滚动代码区域，行号保持可见。
       </p>
-      <section class="code-block my-2">
-        <CodeBlock language="typescript" :code="sampleCode" />
-      </section>
+      <CodeBlock class="my-2" language="typescript" :code="sampleCode" />
       <p class="mt-6 mb-3 text-sm text-base-content/60">
         第二段不声明语言，用于验证纯文本回退和复制内容。
       </p>
-      <section class="code-block my-2">
-        <CodeBlock
-          language=""
-          code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
-        />
-      </section>
+      <CodeBlock
+        class="my-2"
+        language=""
+        code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
+      />
     </section>
   </TestPage>
 </template>

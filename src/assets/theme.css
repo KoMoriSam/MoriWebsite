@@ -11,6 +11,14 @@
   --border: 1px;
   --depth: 1;
   --noise: 0;
+  --color-info: oklch(70% 0.165 254.624);
+  --color-info-content: oklch(0% 0 0);
+  --color-success: oklch(69% 0.17 162.48);
+  --color-success-content: oklch(0% 0 0);
+  --color-warning: oklch(79% 0.184 86.047);
+  --color-warning-content: oklch(17.238% 0.009 102.15);
+  --color-error: oklch(51% 0.222 16.935);
+  --color-error-content: oklch(100% 0 0);
 }
 
 @plugin "daisyui/theme" {

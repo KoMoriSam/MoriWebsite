@@ -1,245 +1,251 @@
 <template>
   <Reader ref="readerRef" toc :aside="showReaderAside">
     <!-- 文章内容 -->
-    <article
+    <Markdown
       v-if="article && (loading || content)"
       :ref="scrollRef"
-      class="min-w-0 w-full max-w-full"
+      :content="content"
+      :is-loading="loading"
+      :show-loading="false"
+      :header-data="headerData"
+      :style-configs="styleConfigs"
       @pointerdown.capture="handleArticlePointerDown"
       @pointermove.capture="handleArticlePointerMove"
       @pointerup.capture="handleArticlePointerUp"
       @pointercancel.capture="handleArticlePointerCancel"
       @contextmenu.capture="handleArticleTextContextMenu"
     >
-      <!-- 文章正文：保留头图、标签、别名和阅读时长 -->
-      <!-- 文章头图 -->
-      <header
-        id="blog-reading-start"
-        class="relative min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80"
-      >
-        <!-- Banner -->
-        <template v-if="bannerUrl && !bannerFailed">
-          <!-- Skeleton -->
-          <div
-            v-if="!bannerLoaded"
-            class="skeleton absolute inset-0 rounded-none"
-          ></div>
-
-          <!-- 图片 -->
-          <img
-            v-fade-in
-            :key="bannerUrl"
-            :ref="setBannerImageRef"
-            :src="bannerUrl"
-            :alt="article.title"
-            loading="eager"
-            decoding="async"
-            draggable="false"
-            class="absolute inset-0 size-full object-cover object-center transition-opacity duration-700"
-            @load="handleBannerLoad"
-            @error="handleBannerError"
-          />
-
-          <!-- 遮罩 -->
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 transition-opacity duration-700"
-            :class="bannerLoaded ? 'opacity-100' : 'opacity-0'"
-          ></div>
-        </template>
-
-        <!-- 无 Banner / 加载失败背景 -->
-        <div
-          v-else
-          class="absolute inset-0 bg-gradient-to-br from-accent/25 to-primary/20"
+      <template #before>
+        <header
+          id="blog-reading-start"
+          class="not-prose font-sans relative mb-8 min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80"
         >
-          <div
-            class="absolute -top-20 -right-16 size-64 rounded-full bg-primary/15 blur-3xl"
-          ></div>
+          <template v-if="bannerUrl && !bannerFailed">
+            <div
+              v-if="!bannerLoaded"
+              class="skeleton absolute inset-0 rounded-none"
+            ></div>
+
+            <img
+              v-fade-in
+              :key="bannerUrl"
+              :ref="setBannerImageRef"
+              :src="bannerUrl"
+              :alt="article.title"
+              loading="eager"
+              decoding="async"
+              draggable="false"
+              class="absolute inset-0 size-full object-cover object-center transition-opacity duration-700"
+              @load="handleBannerLoad"
+              @error="handleBannerError"
+            />
+
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 transition-opacity duration-700"
+              :class="bannerLoaded ? 'opacity-100' : 'opacity-0'"
+            ></div>
+          </template>
 
           <div
-            class="absolute -bottom-24 -left-16 size-72 rounded-full bg-accent/20 blur-3xl"
-          ></div>
-
-          <i
-            class="ri-article-line absolute top-6 right-6 text-8xl text-base-content/5 sm:top-8 sm:right-8 sm:text-9xl"
-          ></i>
-
-          <div
-            class="absolute inset-0 opacity-[0.04]"
-            style="
-              background-image: radial-gradient(
-                currentColor 1px,
-                transparent 1px
-              );
-              background-size: 18px 18px;
-            "
-          ></div>
-        </div>
-
-        <!-- 头图内容 -->
-        <div
-          class="relative flex min-h-72 flex-col justify-end p-5 sm:min-h-80 sm:p-8"
-          :class="hasVisibleBanner ? 'text-white' : 'text-base-content'"
-        >
-          <!-- 标签 -->
-          <div
-            v-if="article?.tags?.length"
-            class="mb-3 flex flex-wrap gap-2 items-center"
+            v-else
+            class="absolute inset-0 bg-gradient-to-br from-accent/25 to-primary/20"
           >
-            <div class="tooltip tooltip-right" data-tip="返回文章列表">
-              <RouterLink
-                class="btn btn-xs lg:btn-sm btn-circle"
+            <div
+              class="absolute -top-20 -right-16 size-64 rounded-full bg-primary/15 blur-3xl"
+            ></div>
+
+            <div
+              class="absolute -bottom-24 -left-16 size-72 rounded-full bg-accent/20 blur-3xl"
+            ></div>
+
+            <i
+              class="ri-article-line absolute top-6 right-6 text-8xl text-base-content/5 sm:top-8 sm:right-8 sm:text-9xl"
+            ></i>
+
+            <div
+              class="absolute inset-0 opacity-[0.04]"
+              style="
+                background-image: radial-gradient(
+                  currentColor 1px,
+                  transparent 1px
+                );
+                background-size: 18px 18px;
+              "
+            ></div>
+          </div>
+
+          <div
+            class="relative flex min-h-72 flex-col justify-end p-5 sm:min-h-80 sm:p-8"
+            :class="hasVisibleBanner ? 'text-white' : 'text-base-content'"
+          >
+            <div
+              v-if="article?.tags?.length"
+              class="mb-3 flex flex-wrap items-center gap-2"
+            >
+              <nav class="tooltip tooltip-right" data-tip="返回文章列表">
+                <RouterLink
+                  class="btn btn-xs btn-circle lg:btn-sm"
+                  :class="
+                    hasVisibleBanner
+                      ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
+                      : 'btn-primary btn-soft'
+                  "
+                  :to="listRoute"
+                >
+                  <i class="ri-arrow-left-line"></i>
+                </RouterLink>
+              </nav>
+
+              <span
+                v-for="tag in article.tags"
+                :key="tag"
+                data-pagefind-body
+                data-pagefind-filter="tag"
+                class="badge max-lg:badge-sm"
                 :class="
                   hasVisibleBanner
                     ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
-                    : 'btn-primary btn-soft'
+                    : 'badge-primary badge-soft'
                 "
-                :to="listRoute"
               >
-                <i class="ri-arrow-left-line"></i>
-              </RouterLink>
+                {{ tag }}
+              </span>
             </div>
-            <span
-              v-for="tag in article.tags"
-              :key="tag"
+
+            <h1
               data-pagefind-body
-              data-pagefind-filter="tag"
-              class="badge max-lg:badge-sm"
-              :class="
-                hasVisibleBanner
-                  ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
-                  : 'badge-primary badge-soft'
-              "
+              data-pagefind-meta="title"
+              data-pagefind-weight="10"
+              class="max-w-4xl text-balance font-serif text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-5xl"
+              :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
             >
-              {{ tag }}
-            </span>
-          </div>
+              {{ article?.title }}
+            </h1>
 
-          <!-- 标题 -->
-          <h1
-            data-pagefind-body
-            data-pagefind-meta="title"
-            data-pagefind-weight="10"
-            class="max-w-4xl text-3xl leading-tight font-black font-serif tracking-tight sm:text-4xl lg:text-5xl text-balance"
-            :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
-          >
-            {{ article?.title }}
-          </h1>
+            <p
+              v-if="article?.summary"
+              data-pagefind-body
+              data-pagefind-meta="summary"
+              data-pagefind-weight="2"
+              class="sr-only"
+            >
+              {{ article.summary }}
+            </p>
 
-          <p
-            v-if="article?.summary"
-            data-pagefind-body
-            data-pagefind-meta="summary"
-            data-pagefind-weight="2"
-            class="sr-only"
-          >
-            {{ article.summary }}
-          </p>
-
-          <span
-            v-if="articleTagsText"
-            data-pagefind-meta="tags"
-            class="sr-only"
-          >
-            {{ articleTagsText }}
-          </span>
-
-          <span
-            v-if="publicationYear"
-            data-pagefind-filter="year"
-            class="sr-only"
-          >
-            {{ publicationYear }}
-          </span>
-
-          <time
-            v-if="publicationDate"
-            :datetime="publicationDate"
-            data-pagefind-meta="date"
-            data-pagefind-sort="date"
-            class="sr-only"
-          >
-            {{ publicationDate }}
-          </time>
-
-          <!-- 别名或副标题 -->
-          <p
-            v-if="aliasList.length"
-            class="mt-3 flex max-w-3xl flex-wrap text-sm leading-relaxed sm:text-base"
-          >
             <span
-              v-for="alias in aliasList"
-              :key="alias"
-              :title="alias"
-              class="mr-2 mb-2 inline-flex max-w-full items-center justify-start overflow-x-auto whitespace-nowrap text-left font-bold badge scrollbar-none px-2"
-              :class="
-                hasVisibleBanner
-                  ? 'border-white/15 bg-white/10 text-white/85'
-                  : 'border-base-300 bg-base-100 text-base-content/75'
-              "
+              v-if="articleTagsText"
+              data-pagefind-meta="tags"
+              class="sr-only"
             >
-              <span class="min-w-max">{{ alias }}</span>
+              {{ articleTagsText }}
             </span>
-          </p>
 
-          <!-- 元数据 -->
-          <div
-            class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-            :class="hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'"
-          >
-            <time v-if="article?.date" class="inline-flex items-center gap-1">
-              <i class="ri-calendar-line"></i>
-              {{ useDateFormat(article.date, "YYYY/M/D") }}
+            <span
+              v-if="publicationYear"
+              data-pagefind-filter="year"
+              class="sr-only"
+            >
+              {{ publicationYear }}
+            </span>
+
+            <time
+              v-if="publicationDate"
+              :datetime="publicationDate"
+              data-pagefind-meta="date"
+              data-pagefind-sort="date"
+              class="sr-only"
+            >
+              {{ publicationDate }}
             </time>
 
-            <span v-if="article?.length" class="inline-flex items-center gap-1">
-              <i class="ri-file-text-line"></i>
-              约 {{ article.length }} 字
-            </span>
-
-            <span v-if="article?.length" class="inline-flex items-center gap-1">
-              <i class="ri-time-line"></i>
-              {{ estimateReadingTime(article.length) }} 分钟阅读
-            </span>
-
-            <span
-              v-if="analyticsAvailable && articleReadStatus !== 'error'"
-              class="inline-flex items-center gap-1"
+            <p
+              v-if="aliasList.length"
+              class="mt-3 flex max-w-3xl flex-wrap text-sm leading-relaxed sm:text-base"
             >
-              <i class="ri-eye-line" aria-hidden="true"></i>
-              <template v-if="Number.isFinite(articleReads)">
-                {{ formatReadCount(articleReads) }} 阅读
-              </template>
               <span
-                v-else
-                class="loading loading-dots loading-xs"
-                aria-label="正在读取文章阅读次数"
-              ></span>
-            </span>
+                v-for="alias in aliasList"
+                :key="alias"
+                :title="alias"
+                class="badge scrollbar-none mr-2 mb-2 inline-flex max-w-full items-center justify-start overflow-x-auto px-2 text-left font-bold whitespace-nowrap"
+                :class="
+                  hasVisibleBanner
+                    ? 'border-white/15 bg-white/10 text-white/85'
+                    : 'border-base-300 bg-base-100 text-base-content/75'
+                "
+              >
+                <span class="min-w-max">{{ alias }}</span>
+              </span>
+            </p>
 
-            <span
-              v-if="commentCountsAvailable && articleCommentStatus !== 'error'"
-              class="inline-flex items-center gap-1"
+            <div
+              class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+              :class="
+                hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'
+              "
             >
-              <i class="ri-chat-3-line" aria-hidden="true"></i>
-              <template v-if="Number.isFinite(articleComments)">
-                {{ formatReadCount(articleComments) }} 评论
-              </template>
+              <time v-if="article?.date" class="inline-flex items-center gap-1">
+                <i class="ri-calendar-line"></i>
+                {{ useDateFormat(article.date, "YYYY/M/D") }}
+              </time>
+
               <span
-                v-else
-                class="loading loading-dots loading-xs"
-                aria-label="正在读取文章评论量"
-              ></span>
-            </span>
+                v-if="article?.length"
+                class="inline-flex items-center gap-1"
+              >
+                <i class="ri-file-text-line"></i>
+                约 {{ article.length }} 字
+              </span>
+
+              <span
+                v-if="article?.length"
+                class="inline-flex items-center gap-1"
+              >
+                <i class="ri-time-line"></i>
+                {{ estimateReadingTime(article.length) }} 分钟阅读
+              </span>
+
+              <span
+                v-if="analyticsAvailable && articleReadStatus !== 'error'"
+                class="inline-flex items-center gap-1"
+              >
+                <i class="ri-eye-line" aria-hidden="true"></i>
+
+                <template v-if="Number.isFinite(articleReads)">
+                  {{ formatReadCount(articleReads) }} 阅读
+                </template>
+
+                <span
+                  v-else
+                  class="loading loading-dots loading-xs"
+                  aria-label="正在读取文章阅读次数"
+                ></span>
+              </span>
+
+              <span
+                v-if="
+                  commentCountsAvailable && articleCommentStatus !== 'error'
+                "
+                class="inline-flex items-center gap-1"
+              >
+                <i class="ri-chat-3-line" aria-hidden="true"></i>
+
+                <template v-if="Number.isFinite(articleComments)">
+                  {{ formatReadCount(articleComments) }} 评论
+                </template>
+
+                <span
+                  v-else
+                  class="loading loading-dots loading-xs"
+                  aria-label="正在读取文章评论量"
+                ></span>
+              </span>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </template>
 
-      <!-- Markdown 正文 -->
-      <div class="mt-8 min-w-0">
-        <!-- 加载状态仅替换正文阅读区 -->
+      <template #loading>
         <section
-          v-if="loading"
           class="min-w-0 w-full max-w-full"
           role="status"
           aria-live="polite"
@@ -254,6 +260,7 @@
             <div v-for="index in 4" :key="index" class="space-y-3">
               <div class="skeleton h-5 w-full"></div>
               <div class="skeleton h-5 w-11/12"></div>
+
               <div
                 class="skeleton h-5"
                 :class="index % 2 === 0 ? 'w-3/4' : 'w-4/5'"
@@ -261,86 +268,80 @@
             </div>
           </div>
         </section>
+      </template>
 
-        <Markdown
-          v-else
-          :content="content"
-          :is-loading="false"
-          :header-data="headerData"
-          :style-configs="styleConfigs"
-        />
-      </div>
-
-      <nav
-        v-if="previousArticle || nextArticle"
-        class="mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
-        aria-label="文章翻页"
-      >
-        <RouterLink
-          v-if="previousArticle"
-          :to="getArticleRoute(previousArticle)"
-          class="btn btn-sm md:btn-md h-fit min-w-0 max-w-full gap-2 py-1 justify-start lg:gap-3 md:max-w-[calc(50%-0.25rem)]"
-          :aria-label="`上一篇：${previousArticle.title}`"
-          @click="handleArticleNavigation(previousArticle, $event)"
+      <template #after>
+        <nav
+          v-if="previousArticle || nextArticle"
+          class="font-sans mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
+          aria-label="文章翻页"
         >
-          <i class="ri-arrow-left-s-line shrink-0 text-lg md:text-xl"></i>
-
-          <div
-            class="flex min-w-0 flex-1 flex-col items-start gap-0.5 leading-[1.1]"
+          <RouterLink
+            v-if="previousArticle"
+            :to="getArticleRoute(previousArticle)"
+            class="btn btn-sm h-fit min-w-0 max-w-full justify-start gap-2 py-1 md:btn-md md:max-w-[calc(50%-0.25rem)] lg:gap-3"
+            :aria-label="`上一篇：${previousArticle.title}`"
+            @click="handleArticleNavigation(previousArticle, $event)"
           >
-            <span
-              class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+            <i class="ri-arrow-left-s-line shrink-0 text-lg md:text-xl"></i>
+
+            <div
+              class="flex min-w-0 flex-1 flex-col items-start gap-0.5 leading-[1.1]"
             >
-              上一篇
-            </span>
+              <span
+                class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+              >
+                上一篇
+              </span>
 
-            <span class="max-w-full truncate text-left">
-              {{ previousArticle.title }}
-            </span>
+              <span class="max-w-full truncate text-left">
+                {{ previousArticle.title }}
+              </span>
 
-            <time
-              v-if="getArticleDate(previousArticle)"
-              :datetime="getArticleDate(previousArticle)"
-              class="text-base-content/50 text-[0.5625rem] font-semibold tracking-wide"
-            >
-              发布于 {{ formatArticleDate(previousArticle) }}
-            </time>
-          </div>
-        </RouterLink>
+              <time
+                v-if="getArticleDate(previousArticle)"
+                :datetime="getArticleDate(previousArticle)"
+                class="text-base-content/50 text-[0.5625rem] font-semibold tracking-wide"
+              >
+                发布于 {{ formatArticleDate(previousArticle) }}
+              </time>
+            </div>
+          </RouterLink>
 
-        <RouterLink
-          v-if="nextArticle"
-          :to="getArticleRoute(nextArticle)"
-          class="btn btn-neutral btn-sm md:btn-md h-fit min-w-0 max-w-full self-end gap-2 py-1 justify-end lg:gap-3 md:ml-auto md:self-auto md:max-w-[calc(50%-0.25rem)]"
-          :aria-label="`下一篇：${nextArticle.title}`"
-          @click="handleArticleNavigation(nextArticle, $event)"
-        >
-          <div
-            class="flex min-w-0 flex-1 flex-col items-end gap-0.5 leading-[1.1]"
+          <RouterLink
+            v-if="nextArticle"
+            :to="getArticleRoute(nextArticle)"
+            class="btn btn-neutral btn-sm h-fit min-w-0 max-w-full self-end justify-end gap-2 py-1 md:btn-md md:ml-auto md:max-w-[calc(50%-0.25rem)] md:self-auto lg:gap-3"
+            :aria-label="`下一篇：${nextArticle.title}`"
+            @click="handleArticleNavigation(nextArticle, $event)"
           >
-            <span
-              class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+            <div
+              class="flex min-w-0 flex-1 flex-col items-end gap-0.5 leading-[1.1]"
             >
-              下一篇
-            </span>
+              <span
+                class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
+              >
+                下一篇
+              </span>
 
-            <span class="max-w-full truncate text-right">
-              {{ nextArticle.title }}
-            </span>
+              <span class="max-w-full truncate text-right">
+                {{ nextArticle.title }}
+              </span>
 
-            <time
-              v-if="getArticleDate(nextArticle)"
-              :datetime="getArticleDate(nextArticle)"
-              class="text-neutral-content/50 text-[0.5625rem] font-semibold tracking-wide"
-            >
-              发布于 {{ formatArticleDate(nextArticle) }}
-            </time>
-          </div>
+              <time
+                v-if="getArticleDate(nextArticle)"
+                :datetime="getArticleDate(nextArticle)"
+                class="text-neutral-content/50 text-[0.5625rem] font-semibold tracking-wide"
+              >
+                发布于 {{ formatArticleDate(nextArticle) }}
+              </time>
+            </div>
 
-          <i class="ri-arrow-right-s-line shrink-0 text-lg md:text-xl"></i>
-        </RouterLink>
-      </nav>
-    </article>
+            <i class="ri-arrow-right-s-line shrink-0 text-lg md:text-xl"></i>
+          </RouterLink>
+        </nav>
+      </template>
+    </Markdown>
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="alert alert-error my-16">

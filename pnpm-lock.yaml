@@ -47,9 +47,6 @@ importers:
       '@highlightjs/vue-plugin':
         specifier: ^2.1.0
         version: 2.1.0(highlight.js@11.11.1)(vue@3.5.40)
-      '@markslides/markdown-it-mermaid':
-        specifier: ^0.4.6
-        version: 0.4.6
       '@mdit/plugin-mathjax':
         specifier: 1.1.1
         version: 1.1.1(markdown-it@14.3.0)
@@ -77,6 +74,9 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
+      markdown-it:
+        specifier: ^14.3.0
+        version: 14.3.0
       markdown-it-abbr:
         specifier: ^2.0.0
         version: 2.0.0
@@ -113,6 +113,12 @@ importers:
       markdown-it-task-lists:
         specifier: ^2.1.1
         version: 2.1.1
+      mermaid:
+        specifier: ^11.17.1
+        version: 11.17.1
+      parse5:
+        specifier: ^8.0.1
+        version: 8.0.1
       pinia:
         specifier: ^3.0.1
         version: 3.0.1(vue@3.5.40)
@@ -137,9 +143,6 @@ importers:
       vue:
         specifier: ^3.5.40
         version: 3.5.40
-      vue-markdown-render:
-        specifier: ^2.3.1
-        version: 2.3.1(vue@3.5.40)
       vue-router:
         specifier: ^4.5.0
         version: 4.5.0(vue@3.5.40)
@@ -1402,9 +1405,6 @@ packages:
 
   '@lit/reactive-element@2.0.4':
     resolution: {integrity: sha512-GFn91inaUa2oHLak8awSIigYz0cU0Payr1rcFsrkf5OJ5eSPxElyZfKh0f2p9FsTiZWXQdWGJeXZICEfXXYSXQ==}
-
-  '@markslides/markdown-it-mermaid@0.4.6':
-    resolution: {integrity: sha512-3nJccuCk97MuL57uj/462keWyGN1veIUR8VBFlQHGBQW26HxoC78NGaMkYIS8PlNgLMK7+Dq1+rawwjq2oDZXQ==}
 
   '@mathjax/mathjax-newcm-font@4.1.3':
     resolution: {integrity: sha512-gzAB3dFHilHX1l5x2xUqRL+1jDQt3Fyza1DkEMVXWC4E8SvsGdlgEza47HYi2WhVcgfkvf4zgUGzuhbq3Pjlew==}
@@ -3683,11 +3683,6 @@ packages:
       yaml:
         optional: true
 
-  vue-markdown-render@2.3.1:
-    resolution: {integrity: sha512-NzQfxEYLlSx+IYlb/p7ATucPrZb8BTfQWG8fEqa2V3DjLdu/0BjYoiEL5ar9nM6FjGv30c3geYoF8pitbENMnw==}
-    peerDependencies:
-      vue: ^3.3.4
-
   vue-router@4.5.0:
     resolution: {integrity: sha512-HDuk+PuH5monfNuY+ct49mNmkCRK4xJAV9Ts4z9UFc4rzdDnxQLyCMGGc8pKhZhHTVzfanpNwB/lwqevcBwI4w==}
     peerDependencies:
@@ -4953,10 +4948,6 @@ snapshots:
   '@lit/reactive-element@2.0.4':
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.3.0
-
-  '@markslides/markdown-it-mermaid@0.4.6':
-    dependencies:
-      mermaid: 11.17.1
 
   '@mathjax/mathjax-newcm-font@4.1.3': {}
 
@@ -7215,11 +7206,6 @@ snapshots:
       sass: 1.86.3
       terser: 5.39.0
       yaml: 2.7.1
-
-  vue-markdown-render@2.3.1(vue@3.5.40):
-    dependencies:
-      markdown-it: 14.3.0
-      vue: 3.5.40
 
   vue-router@4.5.0(vue@3.5.40):
     dependencies:

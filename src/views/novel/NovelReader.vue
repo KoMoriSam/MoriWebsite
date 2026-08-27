@@ -34,13 +34,6 @@
           : undefined
       "
     >
-      <ChapterHeader
-        v-if="currentChapter && !isMobileReader"
-        :chapter="currentChapter"
-        :stats="chapterStats"
-        @open-comments="handleChapterComments"
-      />
-
       <PagedReader
         v-if="currentChapter && isMobileReader && isPagedMobileReader"
         ref="activeMobileReaderRef"
@@ -114,18 +107,26 @@
         @comment="handleChapterComments"
       />
 
-      <div
+      <Markdown
         v-if="currentChapter && !isMobileReader"
-        class="min-w-0 w-full max-w-full"
+        :content="currentChapterContent"
+        :is-loading="isLoadingContent"
+        :header-data="chapterHeaderData"
+        :style-configs="styleConfigs"
       >
-        <Markdown
-          :content="currentChapterContent"
-          :is-loading="isLoadingContent"
-          :header-data="chapterHeaderData"
-          :style-configs="styleConfigs"
-        />
-        <ChapterController v-if="!isLoadingContent" />
-      </div>
+        <template #before>
+          <ChapterHeader
+            class="not-prose"
+            :chapter="currentChapter"
+            :stats="chapterStats"
+            @open-comments="handleChapterComments"
+          />
+        </template>
+
+        <template #after>
+          <ChapterController v-if="!isLoadingContent" class="not-prose" />
+        </template>
+      </Markdown>
     </section>
 
     <template #aside>

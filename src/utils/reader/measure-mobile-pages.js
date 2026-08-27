@@ -13,7 +13,10 @@ export const findLastTextRect = (article) => {
   let node = walker.nextNode();
 
   while (node) {
-    if (node.textContent?.trim() && !node.parentElement?.closest(".footnotes")) {
+    if (
+      node.textContent?.trim() &&
+      !node.parentElement?.closest(".footnotes")
+    ) {
       lastTextNode = node;
     }
     node = walker.nextNode();
@@ -31,17 +34,18 @@ export const findLastTextRect = (article) => {
 };
 
 export const collectReaderBodyTextRects = (article) => {
-  const contentRoot = article.querySelector(":scope > div");
-  if (!contentRoot) return [];
+  if (!article) return [];
 
-  const walker = document.createTreeWalker(contentRoot, NodeFilter.SHOW_TEXT, {
+  // 正文直接挂在 article 下（渲染层不再包裹额外 div）。章节头不是正文，
+  // 其文字不能混入正文基线集合，否则第一页的首末行定位会被标题带偏。
+  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
       const parent = node.parentElement;
       if (
         !parent ||
         parent.closest(
-          ".chat-content, .footnotes, .footnote-ref, .mobile-footnote-page-break, button, [aria-hidden='true']",
+          ".mobile-chapter-header, .chat-content, .footnotes, .footnote-ref, .mobile-footnote-page-break, button, [aria-hidden='true']",
         )
       ) {
         return NodeFilter.FILTER_REJECT;
@@ -77,7 +81,7 @@ export const collectReaderBodyTextRects = (article) => {
 export const collectReaderChatFlowRects = (article) =>
   Array.from(
     article.querySelectorAll(
-      ":scope > div > .chat-content > .chat-leading-group, :scope > div > .chat-content > .chat-page-block",
+      ":scope > .chat-content > .chat-leading-group, :scope > .chat-content > .chat-page-block",
     ),
   ).flatMap((element) => {
     const style = window.getComputedStyle(element);
@@ -101,6 +105,26 @@ export const collectReaderPageFlowRects = (article) => [
   ...collectReaderBodyTextRects(article),
   ...collectReaderChatFlowRects(article),
 ];
+
+// Markdown 渲染层不再为正文包裹额外 div（RenderedContent 以 Fragment 直接
+// 挂载到 article）。移动分页遍历“正文顶层块”时直接使用 article 的直接
+// 子元素，但排除章节头与末尾定位点这两个非正文成员。
+export const collectMarkdownBodyChildren = (article) =>
+  Array.from(article?.children || []).filter(
+    (element) =>
+      !element.classList.contains("mobile-chapter-header") &&
+      !element.classList.contains("mobile-pagination-end"),
+  );
+
+// 正文直接挂在 article 下，媒体元素可能出现在任意深度（p、figure、div 等）。
+// 旧结构用 `:scope > div img` 这样的后代选择器；现在以 article 为根做后代
+// 查询即可得到同样的集合。
+export const collectReaderMediaElements = (article) =>
+  Array.from(
+    article.querySelectorAll(
+      "img, video, svg, canvas, table, pre, .chat-leading-group, .chat-content > .chat-page-block",
+    ),
+  );
 
 let metricsContext;
 let baselineMetricsCache = new WeakMap();
@@ -154,8 +178,7 @@ export const calculateRawColumnPage = ({
     renderedOffset -
     chapterOffset;
   return (
-    Math.floor((Math.max(0, rawLogicalLeft) + PAGE_INDEX_EPSILON) / stride) +
-    1
+    Math.floor((Math.max(0, rawLogicalLeft) + PAGE_INDEX_EPSILON) / stride) + 1
   );
 };
 

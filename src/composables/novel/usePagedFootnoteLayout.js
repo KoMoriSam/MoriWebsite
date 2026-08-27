@@ -118,10 +118,9 @@ export const usePagedFootnoteLayout = ({
     const footnoteReference = node.parentElement?.closest(".footnote-ref");
     const paragraph = (footnoteReference || node.parentElement)?.closest("p");
     if (!paragraph?.parentNode || !node.parentNode) return false;
-    const contentRoot = paragraph
-      .closest(".mobile-page-article")
-      ?.querySelector(":scope > div");
-    if (paragraph.parentElement !== contentRoot) return false;
+    // 渲染层不再包裹额外 div，正文段落直接挂在 .mobile-page-article 下。
+    const article = paragraph.closest(".mobile-page-article");
+    if (paragraph.parentElement !== article) return false;
 
     const sourceWasContinuation = paragraph.classList.contains(
       "mobile-footnote-continuation",

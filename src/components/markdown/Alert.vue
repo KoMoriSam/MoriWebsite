@@ -1,25 +1,36 @@
 <template>
-  <summary
-    class="alert-title"
-    :class="
-      foldable
-        ? 'collapse-title'
-        : 'select-none pointer-events-none cursor-default'
-    "
+  <details
+    role="alert"
+    class="alert alert-soft alert-vertical sm:gap-2"
+    :class="[
+      `alert-${type}`,
+      foldable && ['border', 'collapse', 'collapse-arrow'],
+    ]"
+    :style="{ borderColor: `var(--color-${type})` }"
+    :open="!foldable || !collapsed"
+    data-markdown-alert
   >
-    <i :class="icon"></i>
-    <h6><RenderedContent :html="titleHtml" /></h6>
-  </summary>
-  <RenderedContent :html="contentHtml" />
+    <summary
+      class="alert-title"
+      :class="
+        foldable ? 'collapse-title' : 'pointer-events-none cursor-default'
+      "
+    >
+      <i :class="icon"></i>
+      <h6><RenderedContent :html="titleHtml" /></h6>
+    </summary>
+    <slot />
+  </details>
 </template>
 
 <script setup>
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
 defineProps({
+  type: { type: String, default: "info" },
   icon: { type: String, default: "ri-information-line" },
   titleHtml: { type: String, default: "" },
-  contentHtml: { type: String, default: "" },
   foldable: { type: Boolean, default: false },
+  collapsed: { type: Boolean, default: false },
 });
 </script>

@@ -172,9 +172,7 @@
         class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]"
       >
         <article class="card overflow-hidden">
-          <section class="code-block my-2">
-            <CodeBlock :code="usageCode" language="css" />
-          </section>
+          <CodeBlock class="my-2" :code="usageCode" language="css" />
         </article>
 
         <article class="card border border-base-200 bg-base-200/10">

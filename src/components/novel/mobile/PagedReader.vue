@@ -231,7 +231,9 @@ import {
   calculateRawColumnPage,
   calculateReaderFlowBaseline,
   calculateTextRectBaseline,
+  collectMarkdownBodyChildren,
   collectReaderBodyTextRects,
+  collectReaderMediaElements,
   collectReaderPageFlowRects,
   createFootnoteLayoutSignature,
   findLastTextRect,
@@ -566,14 +568,13 @@ const alignPageFlowBlocksToGrid = async (article, token) => {
   await waitForLayout();
   if (token !== measureToken) return false;
 
-  const contentRoot = article.querySelector(":scope > div");
   const viewport = viewportRef.value;
   const lineHeight = pageLineHeight.value;
-  if (!contentRoot || !viewport || lineHeight <= 0) return true;
+  if (!viewport || lineHeight <= 0) return true;
 
   resetTextBaselineMetrics();
   const bodyRects = getBodyTextRects(article);
-  const regularParagraph = contentRoot.querySelector(":scope > p");
+  const regularParagraph = article.querySelector(":scope > p");
   const referenceRect =
     bodyRects.find(
       (rect) => rect.textElement?.closest("p") === regularParagraph,
@@ -586,7 +587,9 @@ const alignPageFlowBlocksToGrid = async (article, token) => {
     PAGE_VERTICAL_PADDING +
     baselineOffset;
 
-  const flowBlocks = Array.from(contentRoot.children).flatMap((element) => {
+  // 正文直接挂在 article 下（渲染层不再包裹 div）。直接遍历 article 的
+  // 子元素，排除章节头与末尾定位点这些非正文成员。
+  const flowBlocks = collectMarkdownBodyChildren(article).flatMap((element) => {
     if (element.classList.contains("moments-card")) return [];
     if (!element.classList.contains("chat-content")) return [element];
     return Array.from(
@@ -778,11 +781,9 @@ const getFirstContentRawPage = (article, viewport) => {
         .querySelector(":scope > .mobile-chapter-header")
         ?.getClientRects() || [],
     ),
-    ...Array.from(
-      article.querySelectorAll(
-        ":scope > div img, :scope > div video, :scope > div svg, :scope > div canvas, :scope > div table, :scope > div pre, :scope > div .chat-leading-group, :scope > div .chat-content > .chat-page-block",
-      ),
-    ).flatMap((element) => Array.from(element.getClientRects())),
+    ...collectReaderMediaElements(article).flatMap((element) =>
+      Array.from(element.getClientRects()),
+    ),
   ].filter((rect) => rect.width > 0 && rect.height > 0);
 
   if (!contentRects.length) return 1;
@@ -820,11 +821,7 @@ const pageHasVisibleContent = (article, viewport, page) => {
     return true;
   }
 
-  return Array.from(
-    article.querySelectorAll(
-      ":scope > div img, :scope > div video, :scope > div svg, :scope > div canvas, :scope > div table, :scope > div pre, :scope > div .chat-leading-group, :scope > div .chat-content > .chat-page-block",
-    ),
-  ).some((element) =>
+  return collectReaderMediaElements(article).some((element) =>
     Array.from(element.getClientRects()).some(
       (rect) =>
         rect.width > 0 &&
@@ -857,11 +854,8 @@ const findNearestContentPage = (article, viewport, requestedPage) => {
 };
 
 const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
-  const contentRoot = article.querySelector(":scope > div");
-  if (!contentRoot) return [];
-
   const flowBlocks = [
-    ...Array.from(contentRoot.children).flatMap((element) =>
+    ...collectMarkdownBodyChildren(article).flatMap((element) =>
       element.classList.contains("chat-content")
         ? Array.from(
             element.querySelectorAll(
@@ -871,7 +865,7 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
         : [element],
     ),
     ...Array.from(
-      contentRoot.querySelectorAll(
+      article.querySelectorAll(
         "blockquote > p, blockquote > ul, blockquote > ol",
       ),
     ),
@@ -912,12 +906,12 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
   });
 };
 
-const getPageStartGapElement = (contentRoot, firstRect, viewport, page) => {
+const getPageStartGapElement = (article, firstRect, viewport, page) => {
   let element = firstRect.textElement;
-  while (element && element !== contentRoot) {
+  while (element && element !== article) {
     const parent = element.parentElement;
     const isTopLevelGap =
-      parent === contentRoot &&
+      parent === article &&
       element.previousElementSibling &&
       !element.matches(
         ".footnotes, .footnotes-sep, .mobile-footnote-continuation, .mobile-footnote-split-empty, [aria-hidden='true']",
@@ -978,14 +972,13 @@ const getFeasibleGridAdjustment = (
 // later end-of-page pass can then distribute only the remaining bottom error.
 const alignPageStartBaselines = async (article, viewport, token) => {
   const lineHeight = pageLineHeight.value;
-  const contentRoot = article.querySelector(":scope > div");
   const bodyRects = getBodyTextRects(article);
-  const regularParagraph = contentRoot?.querySelector(":scope > p");
+  const regularParagraph = article.querySelector(":scope > p");
   const referenceRect =
     bodyRects.find(
       (rect) => rect.textElement?.closest("p") === regularParagraph,
     ) || bodyRects[0];
-  if (!contentRoot || !referenceRect || lineHeight <= 0) return true;
+  if (!referenceRect || lineHeight <= 0) return true;
 
   const viewportTop = viewport.getBoundingClientRect().top;
   const baselineOffset =
@@ -1010,7 +1003,7 @@ const alignPageStartBaselines = async (article, viewport, token) => {
       if (!firstRect) continue;
 
       const gapElement = getPageStartGapElement(
-        contentRoot,
+        article,
         firstRect,
         viewport,
         page,
@@ -1024,8 +1017,7 @@ const alignPageStartBaselines = async (article, viewport, token) => {
       const firstFlowElement = firstRect.textElement?.closest(
         "h1, h2, h3, h4, h5, h6",
       );
-      const alignsSpecialBlockTop =
-        firstFlowElement?.parentElement === contentRoot;
+      const alignsSpecialBlockTop = firstFlowElement?.parentElement === article;
       const measuredBaseline = alignsSpecialBlockTop
         ? firstFlowElement.getClientRects()[0]?.top
         : calculateTextRectBaseline(firstRect);
@@ -1118,8 +1110,7 @@ const alignPageEdgeBaselines = async (article, viewport, reserves, token) => {
     },
     {},
   );
-  const contentRoot = article.querySelector(":scope > div");
-  const regularParagraph = contentRoot?.querySelector(":scope > p");
+  const regularParagraph = article.querySelector(":scope > p");
   const referenceRect =
     bodyRects.find(
       (rect) => rect.textElement?.closest("p") === regularParagraph,
@@ -1433,10 +1424,9 @@ const measurePages = async () => {
   }
 
   const article = getArticleElement();
-  const contentRoot = article?.querySelector(":scope > div");
   const hasBodyContent = Boolean(
-    contentRoot?.textContent?.trim() ||
-    contentRoot?.querySelector("img, video, svg, canvas, table, pre"),
+    article?.textContent?.trim() ||
+    article?.querySelector("img, video, svg, canvas, table, pre"),
   );
   if (!article || (String(props.content || "").trim() && !hasBodyContent)) {
     isMeasuring.value = false;
@@ -1622,17 +1612,17 @@ const {
   handlePointerUp: handlePagedPointerUp,
   resetPointer: resetPagedPointer,
 } = usePagedReaderInput({
-    viewportRef,
-    tapZones: toRef(props, "tapZones"),
-    wheelEnabled: toRef(props, "wheelPagination"),
-    turnPage,
-    emitAction: (action) => emit("reader-action", action),
-    isBlocked: showChapterLoadingOverlay,
-    isKeyboardInput,
-    isInteractiveEvent: isInteractiveTarget,
-    getSelectionContext,
-    swipeDistance: SWIPE_DISTANCE,
-  });
+  viewportRef,
+  tapZones: toRef(props, "tapZones"),
+  wheelEnabled: toRef(props, "wheelPagination"),
+  turnPage,
+  emitAction: (action) => emit("reader-action", action),
+  isBlocked: showChapterLoadingOverlay,
+  isKeyboardInput,
+  isInteractiveEvent: isInteractiveTarget,
+  getSelectionContext,
+  swipeDistance: SWIPE_DISTANCE,
+});
 
 const handlePointerDown = (event) => {
   handleTextPointerDown(event);

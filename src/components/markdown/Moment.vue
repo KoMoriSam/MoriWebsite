@@ -1,6 +1,6 @@
 <template>
-  <div class="card-body">
-    <div class="flex items-center gap-3">
+  <section class="moments-card" data-markdown-moment>
+    <header class="flex items-center gap-3">
       <div class="avatar">
         <div class="w-12 rounded-full">
           <img class="m-0!" :src="avatarFor(username)" :alt="username" />
@@ -16,7 +16,7 @@
         </div>
       </div>
       <i v-if="isSelf(username)" class="ri-more-2-line"></i>
-    </div>
+    </header>
 
     <div class="moments-content mt-3">
       <RenderedContent :html="contentHtml" />
@@ -46,10 +46,10 @@
     </div>
 
     <div v-if="comments.length" class="moments-comments">
-      <div class="flex items-center gap-2 mb-2 w-full">
+      <div class="flex items-center gap-2 mb-2 w-full not-prose">
         <div class="avatar">
           <div class="w-8 rounded-full">
-            <img :src="avatarFor('小群主')" alt="小群主" />
+            <img :src="avatarFor('KoMoriSam')" alt="KoMoriSam" />
           </div>
         </div>
         <div class="join w-full">
@@ -67,7 +67,7 @@
           v-for="(comment, commentIndex) in comments"
           :key="`${comment.username}-${commentIndex}`"
         >
-          <div class="flex items-center gap-2 not-prose">
+          <div class="flex items-center gap-2">
             <div class="avatar">
               <div class="w-8 h-8 rounded-full">
                 <img
@@ -83,7 +83,7 @@
           <div
             v-for="(reply, replyIndex) in comment.replies || []"
             :key="`${reply.replier}-${replyIndex}`"
-            class="flex items-center gap-2 ml-10 -translate-y-1.5 not-prose"
+            class="flex items-center gap-2 ml-10 -translate-y-1.5"
           >
             <div class="avatar">
               <div class="w-8 h-8 rounded-full">
@@ -99,7 +99,7 @@
         </template>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -122,6 +122,7 @@ const avatarMap = {
   "🈚️内👻，LG": "/assets/images/avatar/lg.webp",
   小群主: "/assets/images/avatar/komorisam.webp",
   Mori: "/assets/images/avatar/komorisam.webp",
+  KoMoriSam: "/assets/images/avatar/komorisam.webp",
   真正群主: "/assets/images/avatar/talloran.webp",
   牛子: "/assets/images/avatar/niuzi.webp",
   欢乐豆人: "/assets/images/avatar/joybean.webp",
@@ -132,6 +133,8 @@ const avatarMap = {
   赵天明老师: "/assets/images/avatar/zhaotianming.webp",
   爸: "/assets/images/avatar/dad.webp",
   妈: "/assets/images/avatar/mom.webp",
+  OpenAI: "/assets/images/avatar/openai.webp",
+  "GPT-5.6": "/assets/images/avatar/openai.webp",
 };
 const DEFAULT_AVATAR = "/assets/images/avatar/default.webp";
 
@@ -177,6 +180,10 @@ const replyHtml = (reply) => {
 const actions = computed(() => [
   { label: "点赞", icon: "ri-thumb-up-line", value: props.stats.like || "" },
   { label: "评论", icon: "ri-chat-3-line", value: props.stats.comment || "" },
-  { label: "分享", icon: "ri-share-forward-line", value: props.stats.share || "" },
+  {
+    label: "分享",
+    icon: "ri-share-forward-line",
+    value: props.stats.share || "",
+  },
 ]);
 </script>

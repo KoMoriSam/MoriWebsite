@@ -1,0 +1,103 @@
+/* Task List 与 MathJax */
+
+@reference "../main.css";
+
+@layer utilities {
+  /* Task List 任务列表 */
+  .markdown-content.prose :deep(ul.contains-task-list) {
+    @apply list-none ps-0;
+  }
+
+  .markdown-content.prose :deep(li.task-list-item) {
+    @apply ms-(--para-text-indent)
+    md:ms-[calc(var(--para-text-indent)*1.5)];
+    text-indent: calc((1.25rem + 0.35em) * -1);
+  }
+
+  .markdown-content.prose :deep(li > :is(ul, ol) li.task-list-item) {
+    @apply ms-[calc(var(--para-text-indent)*0.5)];
+  }
+
+  .markdown-content.prose :deep(.task-list-item-marker) {
+    @apply me-[0.35em] size-5 align-middle;
+  }
+
+  .markdown-content.prose :deep(input.task-list-item-native) {
+    @apply sr-only;
+  }
+
+  .markdown-content.prose :deep(.task-list-item-status) {
+    @apply inline-flex shrink-0 items-center justify-center mb-[0.15em]
+    indent-0 text-[1em] leading-none text-base-content/60;
+  }
+
+  .markdown-content.prose :deep(.task-list-item-status[data-task-tone="info"]) {
+    @apply text-info;
+  }
+
+  .markdown-content.prose
+    :deep(.task-list-item-status[data-task-tone="success"]) {
+    @apply text-success;
+  }
+
+  .markdown-content.prose
+    :deep(.task-list-item-status[data-task-tone="warning"]) {
+    @apply text-warning;
+  }
+
+  .markdown-content.prose
+    :deep(.task-list-item-status[data-task-tone="error"]) {
+    @apply text-error;
+  }
+
+  .markdown-content.prose
+    :deep(.task-list-item-status[data-task-tone="accent"]) {
+    @apply text-accent;
+  }
+
+  .markdown-content.prose
+    :deep(li.task-list-item[data-task-status="x"] > .task-list-item-content),
+  .markdown-content.prose
+    :deep(
+      li.task-list-item[data-task-status="x"] > p > .task-list-item-content
+    ),
+  .markdown-content.prose
+    :deep(li.task-list-item[data-task-status="X"] > .task-list-item-content),
+  .markdown-content.prose
+    :deep(
+      li.task-list-item[data-task-status="X"] > p > .task-list-item-content
+    ) {
+    @apply text-base-content/50;
+  }
+
+  .markdown-content.prose
+    :deep(li.task-list-item[data-task-status="-"] > .task-list-item-content),
+  .markdown-content.prose
+    :deep(
+      li.task-list-item[data-task-status="-"] > p > .task-list-item-content
+    ) {
+    @apply text-base-content/50 line-through decoration-base-content/40;
+  }
+
+  /* MathJax 输出自包含的 SVG path */
+  .markdown-content.prose :deep(mjx-container[data-reader-latex-source]) {
+    @apply max-w-full;
+    font-size: 1em;
+    color: inherit;
+  }
+
+  .markdown-content.prose
+    :deep(mjx-container[data-reader-latex-source][display="true"]) {
+    @apply block max-w-full overflow-x-auto overflow-y-hidden text-center;
+    font-size: var(--para-font-size);
+  }
+
+  .markdown-content.prose :deep(mjx-container[data-reader-latex-source] > svg) {
+    @apply inline-block max-w-none;
+    color: inherit;
+  }
+
+  .markdown-content.prose :deep(p:has(mjx-container[display="true"])) {
+    @apply indent-0 text-center;
+  }
+}

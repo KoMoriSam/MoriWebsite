@@ -182,7 +182,7 @@ export const prepareMobileTables = (article) => {
   restoreMobileTables(article);
   article
     ?.querySelectorAll(
-      ":scope > div > .markdown-table-wrapper:not([aria-hidden='true'])",
+      ":scope > .markdown-table-wrapper:not([aria-hidden='true'])",
     )
     .forEach((wrapper) => {
       const marker = document.createElement("span");
@@ -203,7 +203,7 @@ export const splitMobileTables = ({
 }) => {
   const wrappers = Array.from(
     article.querySelectorAll(
-      ":scope > div > .markdown-table-wrapper:not([aria-hidden='true'])",
+      ":scope > .markdown-table-wrapper:not([aria-hidden='true'])",
     ),
   );
   if (!wrappers.length) return true;
