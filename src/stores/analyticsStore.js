@@ -40,6 +40,11 @@ const getContentKey = (contentType, contentId) => {
   return type && id ? `${type}:${id}` : "";
 };
 
+const mergeCumulativeCount = (currentValue, nextValue) =>
+  Number.isFinite(currentValue)
+    ? Math.max(currentValue, nextValue)
+    : nextValue;
+
 export const useAnalyticsStore = defineStore("analytics", () => {
   const todayVisits = ref(null);
   const totalVisits = ref(null);
@@ -70,27 +75,41 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     if (!payload) return;
 
     todayVisits.value = payload.todayVisits;
-    totalVisits.value = payload.totalVisits;
-    totalReads.value = payload.totalReads;
+    totalVisits.value = mergeCumulativeCount(
+      totalVisits.value,
+      payload.totalVisits,
+    );
+    totalReads.value = mergeCumulativeCount(
+      totalReads.value,
+      payload.totalReads,
+    );
     startedAt.value = payload.startedAt;
     globalStatus.value = "ready";
 
     const key = getContentKey(contentType, contentId);
     if (key && Object.hasOwn(payload, "contentReads")) {
-      contentReads[key] = payload.contentReads;
+      contentReads[key] = mergeCumulativeCount(
+        contentReads[key],
+        payload.contentReads,
+      );
       contentStatus[key] = "ready";
     }
 
     if (contentType && Object.hasOwn(payload, "contentTypeReads")) {
-      contentTypeReads[contentType] = payload.contentTypeReads;
+      contentTypeReads[contentType] = mergeCumulativeCount(
+        contentTypeReads[contentType],
+        payload.contentTypeReads,
+      );
       contentTypeStatus[contentType] = "ready";
     }
 
     if (contentType && payload.contentReadsById) {
       for (const requestedContentId of requestedContentIds) {
         const requestedKey = getContentKey(contentType, requestedContentId);
-        contentReads[requestedKey] =
-          payload.contentReadsById[requestedContentId] ?? 0;
+        contentReads[requestedKey] = mergeCumulativeCount(
+          contentReads[requestedKey],
+          payload.contentReadsById[requestedContentId] ?? 0,
+        );
         contentStatus[requestedKey] = "ready";
       }
     }
@@ -160,9 +179,10 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     const key = getContentKey(contentType, contentId);
     const requestKey = key || "global";
     if (statsPromises.has(requestKey)) return statsPromises.get(requestKey);
+    const hasContentSnapshot = key && Number.isFinite(contentReads[key]);
 
     if (globalStatus.value !== "ready") globalStatus.value = "loading";
-    if (key) contentStatus[key] = "loading";
+    if (key && !hasContentSnapshot) contentStatus[key] = "loading";
 
     const request = fetchAnalyticsStats({ contentType, contentId })
       .then((payload) => {
@@ -171,7 +191,11 @@ export const useAnalyticsStore = defineStore("analytics", () => {
       })
       .catch((error) => {
         if (globalStatus.value !== "ready") globalStatus.value = "error";
-        if (key) contentStatus[key] = "error";
+        if (key) {
+          contentStatus[key] = Number.isFinite(contentReads[key])
+            ? "ready"
+            : "error";
+        }
         console.warn("读取访问统计失败：", error);
         return null;
       })
@@ -288,14 +312,14 @@ export const useAnalyticsStore = defineStore("analytics", () => {
     const key = getContentKey(contentType, contentId);
     if (!key) return false;
 
-    const session = ensureSession();
-    const sessionReadKey = `${session.id}:${key}`;
-    if (recordedReads.has(sessionReadKey)) return true;
-
-    await recordVisitForSession(session.id);
-    contentStatus[key] = "loading";
-
     try {
+      const session = ensureSession();
+      const sessionReadKey = `${session.id}:${key}`;
+      if (recordedReads.has(sessionReadKey)) return true;
+
+      await recordVisitForSession(session.id);
+      if (!Number.isFinite(contentReads[key])) contentStatus[key] = "loading";
+
       const payload = await recordAnalyticsEvent({
         eventType: "read",
         sessionId: session.id,
@@ -308,7 +332,9 @@ export const useAnalyticsStore = defineStore("analytics", () => {
       applyPayload(payload, contentType, contentId);
       return true;
     } catch (error) {
-      contentStatus[key] = "error";
+      contentStatus[key] = Number.isFinite(contentReads[key])
+        ? "ready"
+        : "error";
       console.warn("记录阅读统计失败：", error);
       return false;
     }

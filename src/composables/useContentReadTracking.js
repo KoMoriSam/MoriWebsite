@@ -11,6 +11,8 @@ import {
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 
 const READ_VISIBLE_DURATION_MS = 10 * 1000;
+const READ_RECORD_RETRY_DELAY_MS = 15 * 1000;
+const READ_RECORD_RETRY_LIMIT = 1;
 
 export function useContentReadTracking({ contentType, contentId, ready }) {
   const analyticsStore = useAnalyticsStore();
@@ -23,6 +25,7 @@ export function useContentReadTracking({ contentType, contentId, ready }) {
   let generation = 0;
   let recording = false;
   let recorded = false;
+  let retryCount = 0;
 
   const resolveContent = () => ({
     type: String(toValue(contentType) || "").trim(),
@@ -43,26 +46,7 @@ export function useContentReadTracking({ contentType, contentId, ready }) {
     visibleStartedAt = 0;
   };
 
-  const complete = async () => {
-    pause();
-    if (recording || recorded) return;
-
-    const content = resolveContent();
-    const key = `${content.type}:${content.id}`;
-    if (!content.ready || !content.type || !content.id || key !== trackedKey) {
-      return;
-    }
-
-    const requestGeneration = generation;
-    recording = true;
-    const success = await analyticsStore.recordRead(content.type, content.id);
-    if (requestGeneration !== generation) return;
-
-    recorded = success;
-    recording = false;
-  };
-
-  const schedule = () => {
+  const schedule = (delayOverride = null) => {
     if (
       !mounted ||
       !active ||
@@ -85,9 +69,42 @@ export function useContentReadTracking({ contentType, contentId, ready }) {
       0,
       READ_VISIBLE_DURATION_MS - visibleDuration,
     );
-    timer = window.setTimeout(() => {
-      void complete();
-    }, remaining);
+    timer = window.setTimeout(
+      () => {
+        void complete();
+      },
+      delayOverride ?? remaining,
+    );
+  };
+
+  const complete = async () => {
+    pause();
+    if (recording || recorded) return;
+
+    const content = resolveContent();
+    const key = `${content.type}:${content.id}`;
+    if (!content.ready || !content.type || !content.id || key !== trackedKey) {
+      return;
+    }
+
+    const requestGeneration = generation;
+    recording = true;
+    let success = false;
+    try {
+      success = await analyticsStore.recordRead(content.type, content.id);
+    } catch (error) {
+      console.warn("记录阅读统计失败：", error);
+    }
+
+    if (requestGeneration !== generation) return;
+
+    recorded = success;
+    recording = false;
+
+    if (!success && retryCount < READ_RECORD_RETRY_LIMIT) {
+      retryCount += 1;
+      schedule(READ_RECORD_RETRY_DELAY_MS);
+    }
   };
 
   const reset = () => {
@@ -96,6 +113,7 @@ export function useContentReadTracking({ contentType, contentId, ready }) {
     visibleDuration = 0;
     recording = false;
     recorded = false;
+    retryCount = 0;
 
     const content = resolveContent();
     trackedKey =
