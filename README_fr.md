@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.24.0</strong>
+  Version actuelle : <strong>1.24.1</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,11 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.24.0
+## Points clés de la version 1.24.1
 
-- ajout du support des diagrammes Mermaid aux composants Markdown, couvrant organigrammes, diagrammes de séquence, diagrammes de classes, etc.
-- ajout de la coloration syntaxique Mermaid et d'utilitaires de montage/démontage des diagrammes
-- boutons de copie des blocs de code désormais rendus uniquement côté client, et affinage de l'ordre des polices et des formulations
+- refonte du pipeline de rendu Markdown, unification des structures du lecteur de blog et de roman, et division des styles de lecture
+- correction de la disparition des compteurs de lecture après des mises à jour échouées et de la plage de glissement de l'aperçu Mermaid non plein écran
+- ajout du zoom à la molette Mermaid, du rendu des cases de remplacement de style Obsidian et des favicons des liens externes
+- suppression de la dépendance au plugin legacy et abandon du support d'IE11
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
