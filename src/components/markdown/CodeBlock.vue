@@ -14,7 +14,7 @@
           class="me-2 text-lg font-normal"
           aria-hidden="true"
         ></i>
-        <h2 v-if="languageLabel" class="truncate">{{ languageLabel }}</h2>
+        <h6 v-if="languageLabel" class="truncate">{{ languageLabel }}</h6>
       </hgroup>
 
       <client-only>

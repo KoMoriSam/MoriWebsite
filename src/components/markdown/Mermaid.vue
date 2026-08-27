@@ -16,7 +16,7 @@
           class="ri-flow-chart me-2 text-lg font-normal"
           aria-hidden="true"
         ></i>
-        <h2 class="truncate">Mermaid</h2>
+        <h6 class="truncate">Mermaid</h6>
       </hgroup>
 
       <client-only>
