@@ -5,7 +5,7 @@
     :class="[
       'not-prose me-[0.25em] inline-grid size-[0.75em] shrink-0 place-items-center',
       'overflow-hidden rounded-full bg-white',
-      'ring-1 ring-black/25',
+      'ring-1 ring-black/25 transition-opacity',
       iconLoaded ? 'opacity-100' : 'opacity-0',
     ]"
   >
