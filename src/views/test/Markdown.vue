@@ -2,18 +2,20 @@
   <TestPage section-id="markdown">
     <section title="Markdown 渲染与阅读器样式设置">
       <div role="tablist" aria-label="Markdown 示例" class="tabs tabs-border">
-        <button
+        <router-link
           v-for="sample in markdownSamples"
           :key="sample.name"
-          type="button"
+          :to="{
+            name: 'markdown-sample',
+            params: { sample: sample.slug },
+          }"
           role="tab"
           class="tab shrink-0 whitespace-nowrap"
-          :class="{ 'tab-active': currentSample === sample.name }"
-          :aria-selected="currentSample === sample.name"
-          @click="currentSample = sample.name"
+          :class="{ 'tab-active': currentSample.slug === sample.slug }"
+          :aria-selected="currentSample.slug === sample.slug"
         >
           {{ sample.name }}
-        </button>
+        </router-link>
       </div>
 
       <div
@@ -96,7 +98,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
@@ -106,6 +109,7 @@ import TestPage from "./_TestPage.vue";
 import markdownSampleSource from "./MarkdownSample.md?raw";
 
 const readerStore = useReaderStore();
+const route = useRoute();
 const { setCount } = useParagraphCommentsStorage();
 const testCommentCounts = {
   "markdown-test-1": 3,
@@ -138,34 +142,54 @@ function clearCommentCounts() {
   );
 }
 
+const markdownSampleSlugs = {
+  标题与段落: "headings-paragraphs",
+  行内与扩展: "inline-extensions",
+  列表与复选框: "lists-tasks",
+  链接与媒体: "links-media",
+  表格: "tables",
+  代码块: "code-blocks",
+  提示与折叠: "alerts-details",
+  脚注与锚点: "footnotes-anchors",
+  数学公式: "math",
+  Mermaid: "mermaid",
+  "原生 HTML": "native-html",
+  聊天记录: "chat",
+  空间动态: "moment",
+  边界情况: "edge-cases",
+};
+
 function parseMarkdownSamples(source) {
   const matches = [...source.matchAll(/^<!--\s*sample:(.+?)\s*-->\r?$/gm)];
 
-  return matches.map((match, index) => ({
-    name: match[1].trim(),
-    content: source
-      .slice(
-        match.index + match[0].length,
-        matches[index + 1]?.index ?? source.length,
-      )
-      .trim(),
-  }));
+  return matches.map((match, index) => {
+    const name = match[1].trim();
+
+    return {
+      name,
+      slug: markdownSampleSlugs[name] || name,
+      content: source
+        .slice(
+          match.index + match[0].length,
+          matches[index + 1]?.index ?? source.length,
+        )
+        .trim(),
+    };
+  });
 }
 
 const markdownSamples = parseMarkdownSamples(markdownSampleSource);
 
-const currentSample = ref("标题与段落");
-const markdownContent = computed(
+const currentSample = computed(
   () =>
-    markdownSamples.find((sample) => sample.name === currentSample.value)
-      ?.content || "",
+    markdownSamples.find((sample) => sample.slug === route.params.sample) ||
+    markdownSamples[0],
 );
+const markdownContent = computed(() => currentSample.value?.content || "");
 const markdownHeaderData = computed(() => ({
-  title: `Markdown 渲染测试：${currentSample.value}`,
+  title: `Markdown 渲染测试：${currentSample.value?.name || ""}`,
   uuid: "markdown-test",
-  page:
-    markdownSamples.findIndex((sample) => sample.name === currentSample.value) +
-    1,
+  page: markdownSamples.indexOf(currentSample.value) + 1,
   meta: "",
   sourceType: "article",
 }));

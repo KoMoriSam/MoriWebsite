@@ -153,6 +153,15 @@ export const routes = [
             navName: "test",
           },
         })),
+        {
+          path: "/test/markdown/:sample",
+          name: "markdown-sample",
+          component: TEST_SECTION_COMPONENTS.markdown,
+          meta: {
+            title: "Markdown 渲染与阅读器样式设置测试 | 远方之森",
+            navName: "test",
+          },
+        },
       ]
     : []),
   {
