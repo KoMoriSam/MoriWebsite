@@ -93,9 +93,11 @@
   /* Alert 警告框样式 */
   .markdown-content.prose :deep(details.alert) {
     @apply block w-full max-w-full box-border
-    border border-base-300
+    border-l-4 border-0 rounded-s-none
     text-left justify-items-stretch 
-    my-(--para-margin-inline);
+    my-[calc(var(--para-margin-inline)+var(--para-font-size)*var(--para-line-height)*0.5)]
+    px-[calc(var(--para-text-indent)*0.5)]
+    py-[calc(var(--para-margin-inline)*0.5+var(--para-font-size)*var(--para-line-height)*0.25)];
   }
 
   .markdown-content.prose :deep(details.alert > summary.alert-title) {

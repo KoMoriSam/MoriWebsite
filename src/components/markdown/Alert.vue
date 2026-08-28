@@ -3,18 +3,15 @@
     role="alert"
     class="alert alert-soft alert-vertical sm:gap-2"
     :class="[
-      `alert-${type}`,
-      foldable && ['border', 'collapse', 'collapse-arrow'],
+      `alert-${type} border-[color:var(--alert-color)]`,
+      foldable && ['collapse', 'collapse-arrow'],
     ]"
-    :style="{ borderColor: `var(--color-${type})` }"
     :open="!foldable || !collapsed"
     data-markdown-alert
   >
     <summary
       class="alert-title"
-      :class="
-        foldable ? 'collapse-title' : 'pointer-events-none cursor-default'
-      "
+      :class="foldable ? 'collapse-title' : 'pointer-events-none'"
     >
       <i :class="icon"></i>
       <h6><RenderedContent :html="titleHtml" /></h6>

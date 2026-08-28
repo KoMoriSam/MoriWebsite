@@ -9,7 +9,7 @@ const CALLOUT_META = {
   },
   INFO: {
     type: "info",
-    icon: "ri-information-line",
+    icon: "ri-star-line",
     title: "信息",
   },
   TIP: {
@@ -29,7 +29,7 @@ const CALLOUT_META = {
   },
   CAUTION: {
     type: "error",
-    icon: "ri-close-circle-line",
+    icon: "ri-alarm-warning-line",
     title: "注意",
   },
   SUCCESS: {
@@ -44,17 +44,17 @@ const CALLOUT_META = {
   },
   DANGER: {
     type: "error",
-    icon: "ri-close-circle-line",
+    icon: "ri-fire-line",
     title: "危险",
   },
   QUOTE: {
-    type: "accent",
-    icon: "ri-chat-quote-line",
+    type: "muted",
+    icon: "ri-double-quotes-l",
     title: "引用",
   },
   SUMMARY: {
     type: "info",
-    icon: "ri-list-check-2",
+    icon: "ri-survey-line",
     title: "摘要",
   },
 };
