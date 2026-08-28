@@ -10,9 +10,7 @@ const getFaviconUrl = (href = "") => {
 
     if (!["http:", "https:"].includes(url.protocol)) return "";
 
-    return `https://icons.duckduckgo.com/ip3/${encodeURIComponent(
-      url.hostname,
-    )}.ico`;
+    return `https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${encodeURIComponent(url.hostname)}&size=32`;
   } catch {
     return "";
   }
