@@ -10,7 +10,7 @@ const getFaviconUrl = (href = "") => {
 
     if (!["http:", "https:"].includes(url.protocol)) return "";
 
-    return `https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${encodeURIComponent(url.hostname)}&size=32`;
+    return `https://favicone.com/${encodeURIComponent(url.hostname)}?s=32`;
   } catch {
     return "";
   }

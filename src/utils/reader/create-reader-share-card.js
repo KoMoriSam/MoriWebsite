@@ -61,6 +61,7 @@ const WORD_CONNECTOR = /^[\u0026'\u002b,\-./:=?@_\u2019%#]$/u;
 
 let faviconPromise;
 const fontDataUrlPromises = new Map();
+const linkIconPromises = new Map();
 
 const normalizeText = (value = "") =>
   String(value).replace(/\s+/gu, " ").trim();
@@ -231,6 +232,7 @@ const resolveAppearance = () => {
   const background = themeColor("--color-base-100", DEFAULT_BACKGROUND);
   const foreground = themeColor("--color-base-content", DEFAULT_FOREGROUND);
   const accent = themeColor("--color-primary", DEFAULT_ACCENT);
+  const primaryContent = themeColor("--color-primary-content", background);
   const base = themeColor("--color-base-100", foreground);
   const baseContent = themeColor("--color-base-content", background);
   const syntax = Object.fromEntries(
@@ -244,6 +246,7 @@ const resolveAppearance = () => {
     background,
     foreground,
     accent,
+    primaryContent,
     baseContent,
     base,
     base200: themeColor("--color-base-200", background),
@@ -294,6 +297,21 @@ const loadFavicon = () => {
   return faviconPromise;
 };
 
+const loadLinkIcon = (src) => {
+  if (!src) return Promise.resolve(null);
+  if (linkIconPromises.has(src)) return linkIconPromises.get(src);
+  const promise = new Promise((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.referrerPolicy = "no-referrer";
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+  linkIconPromises.set(src, promise);
+  return promise;
+};
+
 const normalizeRuns = (runs = []) =>
   runs
     .map((run) => ({
@@ -318,6 +336,8 @@ const normalizeRuns = (runs = []) =>
       svg: String(run?.svg || ""),
       mathDisplay: Boolean(run?.mathDisplay),
       mathAsset: null,
+      linkIconSrc: String(run?.linkIconSrc || ""),
+      linkIconAsset: null,
     }))
     .filter(({ text }) => text);
 
@@ -437,6 +457,16 @@ const prepareLatexRuns = async (blocks, appearance) => {
       } catch {
         run.mathAsset = null;
       }
+    }),
+  );
+};
+
+const prepareLinkIconRuns = async (blocks) => {
+  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  await Promise.all(
+    runs.map(async (run) => {
+      if (!run.linkIconSrc) return;
+      run.linkIconAsset = await loadLinkIcon(run.linkIconSrc);
     }),
   );
 };
@@ -835,6 +865,18 @@ const createToken = (context, grapheme, run, config, appearance) => {
   };
 };
 
+const createLinkIconToken = (run, config) => {
+  const iconSize = config.fontSize * 0.75;
+  return {
+    text: "\ufffc",
+    style: { ...run, linkIcon: true },
+    textWidth: iconSize,
+    rubyWidth: 0,
+    width: iconSize + config.fontSize * 0.25,
+    iconSize,
+  };
+};
+
 const trimLineEnd = (tokens) => {
   const trimmed = [...tokens];
   while (trimmed.length && /^\s+$/u.test(trimmed.at(-1).text)) trimmed.pop();
@@ -873,12 +915,15 @@ const wrapRuns = (context, runs, config, appearance) => {
         ({ text }) => text,
         !config.codeBlock,
       );
+      if (tokens.at(-1)?.style.linkIcon) {
+        carry.unshift(tokens.pop());
+      }
       width = tokens.reduce((total, item) => total + item.width, 0);
       if (tokens.length) {
         commitLine();
-        tokens = carry;
-        width = carry.reduce((total, item) => total + item.width, 0);
       }
+      tokens = carry;
+      width = carry.reduce((total, item) => total + item.width, 0);
     }
     if (!tokens.length && /^\s+$/u.test(token.text) && !config.codeBlock) {
       return;
@@ -888,6 +933,9 @@ const wrapRuns = (context, runs, config, appearance) => {
   };
 
   runs.forEach((run) => {
+    if (run.linkIconAsset) {
+      pushToken(createLinkIconToken(run, config));
+    }
     if (run.mathAsset) {
       if (run.mathDisplay && tokens.length) commitLine(true);
       pushToken(createToken(context, run.text, run, config, appearance));
@@ -1145,6 +1193,42 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
   drawTokenBackgrounds(context, positions, baseline, config, appearance);
 
   positions.forEach(({ token, x }) => {
+    if (token.style.linkIcon && token.style.linkIconAsset) {
+      const iconSize = token.iconSize;
+      const imageSize = config.fontSize * 0.5;
+      const iconY = baseline - iconSize * 0.86;
+      const image = token.style.linkIconAsset;
+      const naturalWidth = image.naturalWidth || image.width || 1;
+      const naturalHeight = image.naturalHeight || image.height || 1;
+      const scale = Math.min(
+        imageSize / naturalWidth,
+        imageSize / naturalHeight,
+      );
+      const width = naturalWidth * scale;
+      const height = naturalHeight * scale;
+
+      context.save();
+      context.fillStyle = "#ffffff";
+      context.strokeStyle = mixColors(
+        appearance.primaryContent,
+        appearance.accent,
+        0.5,
+      );
+      context.lineWidth = Math.max(1, config.fontSize / 48);
+      drawRoundedRect(context, x, iconY, iconSize, iconSize, iconSize / 2);
+      context.fill();
+      context.stroke();
+      context.clip();
+      context.drawImage(
+        image,
+        x + (iconSize - width) / 2,
+        iconY + (iconSize - height) / 2,
+        width,
+        height,
+      );
+      context.restore();
+      return;
+    }
     if (token.style.mathAsset) {
       context.drawImage(
         token.style.mathAsset.image,
@@ -1568,6 +1652,7 @@ export const createReaderShareCard = async ({
 
   await Promise.all([
     prepareLatexRuns(blocks, appearance),
+    prepareLinkIconRuns(blocks),
     prepareMermaidBlocks(blocks),
   ]);
 

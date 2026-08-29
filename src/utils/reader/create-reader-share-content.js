@@ -205,6 +205,7 @@ const RUN_STYLE_KEYS = [
   "mathml",
   "svg",
   "mathDisplay",
+  "linkIconSrc",
 ];
 
 const sameRunStyle = (left, right) =>
@@ -233,6 +234,7 @@ const appendRun = (runs, text, style = {}) => {
     mathml: style.mathml || "",
     svg: style.svg || "",
     mathDisplay: Boolean(style.mathDisplay),
+    linkIconSrc: style.linkIconSrc || "",
   };
   const previous = runs.at(-1);
   if (previous && sameRunStyle(previous, next)) previous.text += next.text;
@@ -324,10 +326,28 @@ function serializeInlineNode(
   if (["UL", "OL"].includes(tag)) return;
   if (tag === "INPUT") return;
 
-  const style = createInlineStyle(node, inherited);
+  const linkIcon =
+    tag === "A"
+      ? node.querySelector(":scope > [data-reader-link-icon] img[src]")
+      : null;
+  const linkIconSrc =
+    linkIcon?.currentSrc || linkIcon?.getAttribute("src") || "";
+  const style = {
+    ...createInlineStyle(node, inherited),
+    linkIconSrc,
+  };
+  const runStart = runs.length;
   node.childNodes.forEach((child) =>
     serializeInlineNode(child, runs, style, range, preserveWhitespace),
   );
+  if (linkIconSrc) {
+    const linkRuns = runs
+      .slice(runStart)
+      .filter(({ link, text }) => link && text.trim());
+    linkRuns.slice(1).forEach((run) => {
+      run.linkIconSrc = "";
+    });
+  }
 }
 
 const serializeNodes = (

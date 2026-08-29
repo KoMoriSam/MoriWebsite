@@ -2,6 +2,7 @@
   <span
     v-if="iconAvailable"
     aria-hidden="true"
+    data-reader-link-icon
     :class="[
       'not-prose me-[0.25em] inline-grid size-[0.75em] shrink-0 place-items-center',
       'overflow-hidden rounded-full bg-white',
@@ -12,6 +13,7 @@
     <img
       :src="src"
       alt=""
+      crossorigin="anonymous"
       decoding="async"
       loading="lazy"
       referrerpolicy="no-referrer"
