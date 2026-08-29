@@ -35,8 +35,8 @@ Ruby 注音：{小森|コモリ}、{远方|yuǎnfāng}、{汉字|かんじ}。
 
 HTML 和 CSS 都可以使用缩写提示。
 
-*[HTML]: HyperText Markup Language
-*[CSS]: Cascading Style Sheets
+_[HTML]: HyperText Markup Language
+_[CSS]: Cascading Style Sheets
 
 这是一段签名样式测试。{.signature}
 
@@ -935,18 +935,18 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 > [!chat] **李焰老师** · 在线
 >
 > > **Mori** 10:30 · 已送达
-> > 老师，这是包含 *斜体*、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com) 的消息。
+> > 老师，这是包含 _斜体_、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com) 的消息。
 >
 > *对方*已加入**会话**
 >
 > > **李焰老师** 10:31 · 已读 · 👍
-> > 收到，*斜体*、**粗体**、`代码`、~~删除线~~、[链接](https://example.com)、聊天气泡与状态徽章渲染正常。
+> > 收到，_斜体_、**粗体**、`代码`、~~删除线~~、[链接](https://example.com)、聊天气泡与状态徽章渲染正常。
 > >
 > > 第二行消息用于测试气泡内的多段内容。
 
 ## 仅聊天消息
 
-> [!chat] 
+> [!chat]
 >
 > > **Mori** 10:30 · 已送达
 > > 康神开播了，真的假的😲
@@ -955,7 +955,7 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 
 > [!moment] **Mori** · 2026-08-06 10:30 · 昆明
 >
-> 今天在测试自定义 **空间动态** 渲染，正文支持 *斜体*、**粗体**、`代码`、~~删除线~~、[链接](https://example.com) 和 :tada:。
+> 今天在测试自定义 **空间动态** 渲染，正文支持 _斜体_、**粗体**、`代码`、~~删除线~~、[链接](https://example.com) 和 :tada:。
 >
 > ![动态配图](https://picsum.photos/200/300?random=1)
 > ![动态配图](https://picsum.photos/200/300?random=2)
@@ -973,13 +973,160 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 >
 > - **李焰老师** 10:35：渲染效果不错。
 >   - **Mori** 回复 **李焰老师** 10:36：收到，谢谢！
-> - **小群主** 10:40：评论也支持 **行内格式**：*斜体*、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com)。
+> - **小群主** 10:40：评论也支持 **行内格式**：_斜体_、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com)。
+
+<!-- sample:XSS 注入 -->
+
+能被自动触发：
+
+```console
+VM62476:1 XSS-1: script tag executed
+VM62477:1 XSS-9: mixed case script executed
+VM62479:1 XSS-5: iframe javascript executed
+data:text/html,<script>console.log('XSS-11: object data javascript')</script>:1 XSS-11: object data javascript
+```
+
+能被手动触发：
+
+```console
+VM62208:1 XSS-4: javascript link executed
+VM62243:1 XSS-12: form action executed
+```
+
+- [-] 1. 基本 `<script>` 标签
+  - <script>console.log('XSS-1: script tag executed')</script>
+
+```html
+<script>
+  console.log("XSS-1: script tag executed");
+</script>
+```
+
+- [x] 2. `<img>` 标签的 `onerror` 事件
+  - <img src=x onerror="console.log('XSS-2: img onerror executed')">
+
+```html
+<img src="x" onerror="console.log('XSS-2: img onerror executed')" />
+```
+
+- [x] 3. `<svg>` 标签的 `onload` 事件
+  - <svg onload="console.log('XSS-3: svg onload executed')"></svg>
+
+```html
+<svg onload="console.log('XSS-3: svg onload executed')"></svg>
+```
+
+- [-] 4. `<a>` 标签的 `javascript:` 链接
+  - <a href="javascript:console.log('XSS-4: javascript link executed')">点击触发 XSS-4</a>
+
+```html
+<a href="javascript:console.log('XSS-4: javascript link executed')"
+  >点击触发 XSS-4</a
+>
+```
+
+- [-] 5. `<iframe>` 的 `src` 为 `javascript:`
+  - <iframe src="javascript:console.log('XSS-5: iframe javascript executed')"></iframe>
+
+```html
+<iframe
+  src="javascript:console.log('XSS-5: iframe javascript executed')"
+></iframe>
+```
+
+- [x] 6. `<video>` 标签的 `onerror` 事件
+  - <video src=x onerror="console.log('XSS-6: video onerror executed')"></video>
+
+```html
+<video src="x" onerror="console.log('XSS-6: video onerror executed')"></video>
+```
+
+- [-] 7. `<details>` 标签的 `ontoggle` 事件
+  - <details open ontoggle="console.log('XSS-7: details ontoggle executed')"></details>
+
+```html
+<details
+  open
+  ontoggle="console.log('XSS-7: details ontoggle executed')"
+></details>
+```
+
+- [x] 8. `<marquee>` 标签的 `onstart` 事件
+  - <marquee onstart="console.log('XSS-8: marquee onstart executed')"></marquee>
+
+```html
+<marquee onstart="console.log('XSS-8: marquee onstart executed')"></marquee>
+```
+
+- [-] 9. 大小写混淆的 `<script>`
+  - <ScRiPt>console.log('XSS-9: mixed case script executed')</ScRiPt>
+
+```html
+<script>
+  console.log("XSS-9: mixed case script executed");
+</script>
+```
+
+- [x] 10. HTML 实体编码绕过（`onerror` 中的代码被编码）
+  - <img src=x onerror="&#99;&#111;&#110;&#115;&#111;&#108;&#101;&#46;&#108;&#111;&#103;&#40;&#39;&#88;&#83;&#83;&#45;&#49;&#48;&#58;&#32;&#101;&#110;&#99;&#111;&#100;&#101;&#100;&#32;&#111;&#110;&#101;&#114;&#114;&#111;&#114;&#32;&#101;&#120;&#101;&#99;&#117;&#116;&#101;&#100;&#39;&#41;">
+
+```html
+<img
+  src="x"
+  onerror="&#99;&#111;&#110;&#115;&#111;&#108;&#101;&#46;&#108;&#111;&#103;&#40;&#39;&#88;&#83;&#83;&#45;&#49;&#48;&#58;&#32;&#101;&#110;&#99;&#111;&#100;&#101;&#100;&#32;&#111;&#110;&#101;&#114;&#114;&#111;&#114;&#32;&#101;&#120;&#101;&#99;&#117;&#116;&#101;&#100;&#39;&#41;"
+/>
+```
+
+- [-] 11. 使用 `data:` 协议的 `<object>` 标签
+  - <object data="data:text/html,<script>console.log('XSS-11: object data javascript')</script>"></object>
+
+```html
+<object
+  data="data:text/html,<script>console.log('XSS-11: object data javascript')</script>"
+></object>
+```
+
+- [-] 12. 使用 `form` 标签的 `action` 和 `onsubmit`
+  - <form action="javascript:console.log('XSS-12: form action executed')" onsubmit="console.log('XSS-12: form onsubmit executed')"><input type="submit" class="btn"></form>
+
+```html
+<form
+  action="javascript:console.log('XSS-12: form action executed')"
+  onsubmit="console.log('XSS-12: form onsubmit executed')"
+>
+  <input type="submit" />
+</form>
+```
+
+- [x] 13. 使用 `body` 标签的 `onload`（部分渲染器允许）
+  - <body onload="console.log('XSS-13: body onload executed')"></body>
+
+```html
+<body onload="console.log('XSS-13: body onload executed')"></body>
+```
+
+- [x] 14. 使用 `input` 标签的 `onfocus` 和 `autofocus`
+  - <input onfocus="console.log('XSS-14: input onfocus executed')" autofocus class="input">
+
+```html
+<input onfocus="console.log('XSS-14: input onfocus executed')" autofocus />
+```
+
+- [x] 15. 使用 `textarea` 的 `onfocus` 和 `autofocus`
+  - <textarea onfocus="console.log('XSS-15: textarea onfocus executed')" autofocus class="textarea"></textarea>
+
+```html
+<textarea
+  onfocus="console.log('XSS-15: textarea onfocus executed')"
+  autofocus
+></textarea>
+```
 
 <!-- sample:边界情况 -->
 
 ## 中英文与标点
 
-中文English混排，数字1234567890，全角标点：，。！？；：“”‘’（）【】——……
+中文 English 混排，数字1234567890，全角标点：，。！？；：“”‘’（）【】——……
 
 超长连续文本用于检查换行：LooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooongWord
 

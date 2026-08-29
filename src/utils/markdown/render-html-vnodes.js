@@ -1,5 +1,6 @@
 import { h } from "vue";
 import { parseFragment } from "parse5";
+import { sanitizeMarkdownHtml } from "./sanitize-html.js";
 
 export const MARKDOWN_COMPONENT_RESOLVER = Symbol(
   "markdown-component-resolver",
@@ -56,7 +57,7 @@ const getVNodeProps = (node) => {
 };
 
 export const parseHtmlFragment = (html = "") =>
-  parseFragment(String(html || ""));
+  parseFragment(sanitizeMarkdownHtml(html));
 
 const renderNode = (node, resolver, key) => {
   if (node.nodeName === "#text") return node.value || "";
@@ -74,6 +75,7 @@ const renderNode = (node, resolver, key) => {
     key,
   });
 
+  if (resolved === false) return null;
   if (resolved !== undefined && resolved !== null) return resolved;
 
   return h(node.tagName, { ...props, key }, children);

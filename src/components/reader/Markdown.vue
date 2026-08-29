@@ -62,6 +62,7 @@ import Moment from "@/components/markdown/Moment.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
+import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
 
 const props = defineProps({
   // 内容数据
@@ -207,14 +208,6 @@ const anchoredPages = computed(() =>
     : [],
 );
 
-const decodeMarkdownProps = (value = "") => {
-  try {
-    return JSON.parse(decodeURIComponent(value));
-  } catch {
-    return {};
-  }
-};
-
 let renderReadyCycle = 0;
 let emittedRenderReadyCycle = -1;
 
@@ -242,7 +235,11 @@ const resolveMarkdownComponent = ({
 }) => {
   if (!tagName.startsWith("markdown-")) return undefined;
 
-  const componentProps = decodeMarkdownProps(nodeProps["data-markdown-props"]);
+  const componentProps = projectMarkdownComponentProps(
+    tagName,
+    nodeProps["data-markdown-props"],
+  );
+  if (!componentProps) return false;
 
   if (tagName === "markdown-alert") {
     return h(Alert, { ...componentProps, key }, { default: () => children });
@@ -476,7 +473,7 @@ const rubyPlugin = (md) => {
 
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
-  MarkdownItAttrs,
+  [MarkdownItAttrs, { allowedAttributes: ["id", "class"] }],
   highlightLazyPlugin,
   anchorPlugin,
   alertPlugin,
@@ -499,7 +496,10 @@ const sharedPlugins = computed(() => [
 
 const renderMarkdown = (source, plugins) => {
   const md = new MarkdownIt(options);
-  plugins.forEach((plugin) => md.use(plugin));
+  plugins.forEach((plugin) => {
+    if (Array.isArray(plugin)) md.use(plugin[0], plugin[1]);
+    else md.use(plugin);
+  });
   return md.render(source);
 };
 
