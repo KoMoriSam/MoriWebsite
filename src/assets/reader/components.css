@@ -213,12 +213,15 @@
   }
 
   .markdown-content.prose :deep(.footnote-ref a) {
-    @apply badge badge-sm hover:badge-info hover:text-info-content
-    no-underline indent-0 px-1.5 font-serif;
+    @apply badge badge-xs hover:badge-info hover:text-info-content
+    indent-0 font-serif text-base-content no-underline
+    text-[calc(var(--para-font-size)*0.5)] px-1;
   }
 
   .markdown-content.prose :deep(.footnote-backref) {
-    @apply badge badge-xs hover:badge-info hover:text-info-content no-underline;
+    @apply badge badge-xs hover:badge-info hover:text-info-content
+    px-1 text-base-content no-underline select-none
+    text-[calc(var(--para-font-size)*0.375)];
   }
 
   .markdown-content.prose :deep(.footnotes p) {
