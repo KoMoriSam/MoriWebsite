@@ -64,10 +64,6 @@
     @apply opacity-100;
   }
 
-  .markdown-content.prose :deep(button.comment-trigger.hidden) {
-    display: none;
-  }
-
   .markdown-content.prose :deep(button.comment-trigger.has-count i) {
     @apply hidden;
   }

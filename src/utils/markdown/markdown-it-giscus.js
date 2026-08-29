@@ -144,31 +144,85 @@ export const useParagraphComments = () => {
     );
   };
 
-  const updateCountIndicators = (paragraphId, sourceType, count) => {
-    const indicators = document.querySelectorAll(
-      ".comment-trigger .paragraph-comment-count",
+  const getCommentCountLabel = (count) => (count > 99 ? "99+" : `${count}`);
+
+  const createCommentTrigger = (paragraphId, sourceType, count) => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "comment-trigger has-count group";
+    trigger.dataset.paragraphId = paragraphId;
+    trigger.dataset.sourceType = sourceType;
+    trigger.setAttribute("aria-label", "打开段评");
+
+    const icon = document.createElement("i");
+    icon.className = "ri-more-fill text-lg";
+    icon.setAttribute("aria-hidden", "true");
+
+    const indicator = document.createElement("span");
+    indicator.className = "paragraph-comment-count";
+    indicator.dataset.paragraphId = paragraphId;
+    indicator.dataset.sourceType = sourceType;
+    indicator.setAttribute("aria-label", "当前段评评论数");
+    indicator.textContent = getCommentCountLabel(count);
+
+    trigger.append(icon, indicator);
+    return trigger;
+  };
+
+  const getOwnedCommentTriggers = (commentable) =>
+    Array.from(commentable.querySelectorAll("button.comment-trigger")).filter(
+      (trigger) =>
+        trigger.closest("[data-reader-paragraph-id]") === commentable,
     );
 
-    indicators.forEach((node) => {
+  const insertCommentTrigger = (commentable, trigger) => {
+    if (!commentable.matches("li")) {
+      commentable.append(trigger);
+      return;
+    }
+
+    const paragraph = commentable.querySelector(":scope > p");
+    if (paragraph) {
+      paragraph.append(trigger);
+      return;
+    }
+
+    const nestedList = Array.from(commentable.children).find((child) =>
+      child.matches("ul, ol"),
+    );
+    commentable.insertBefore(trigger, nestedList || null);
+  };
+
+  const updateCountIndicators = (paragraphId, sourceType, count) => {
+    const commentableNodes = document.querySelectorAll(
+      "[data-reader-paragraph-id]:not([data-reader-comment-scope='chapter'])",
+    );
+
+    commentableNodes.forEach((node) => {
       if (
-        node.dataset.paragraphId !== paragraphId ||
-        node.dataset.sourceType !== sourceType
+        node.dataset.readerParagraphId !== paragraphId ||
+        (node.dataset.sourceType || "article") !== sourceType
       ) {
         return;
       }
 
+      const triggers = getOwnedCommentTriggers(node);
+
       if (count > 0) {
-        node.classList.remove("hidden");
-        node.textContent = count > 99 ? "99+" : `${count}`;
-        const trigger = node.closest(".comment-trigger");
-        trigger?.classList.remove("hidden");
-        trigger?.classList.add("has-count");
+        if (!triggers.length) {
+          insertCommentTrigger(
+            node,
+            createCommentTrigger(paragraphId, sourceType, count),
+          );
+          return;
+        }
+
+        triggers.forEach((trigger) => {
+          const indicator = trigger.querySelector(".paragraph-comment-count");
+          if (indicator) indicator.textContent = getCommentCountLabel(count);
+        });
       } else {
-        node.classList.add("hidden");
-        node.textContent = "";
-        const trigger = node.closest(".comment-trigger");
-        trigger?.classList.add("hidden");
-        trigger?.classList.remove("has-count");
+        triggers.forEach((trigger) => trigger.remove());
       }
     });
   };
@@ -203,10 +257,7 @@ export const useParagraphComments = () => {
     const trigger = e.target.closest(
       "button.comment-trigger.has-count[data-paragraph-id]",
     );
-    if (
-      !trigger ||
-      trigger.closest("[data-reader-comment-scope='chapter']")
-    ) {
+    if (!trigger || trigger.closest("[data-reader-comment-scope='chapter']")) {
       return;
     }
 
@@ -313,14 +364,9 @@ export const useParagraphComments = () => {
 
       const renderCommentTrigger = (paragraphId) => {
         const count = getCount(paragraphId, sourceType);
-        const countClass =
-          count > 0
-            ? "paragraph-comment-count"
-            : "paragraph-comment-count hidden";
-        const triggerClass =
-          count > 0 ? "comment-trigger has-count" : "comment-trigger hidden";
+        if (count <= 0) return "";
 
-        return `<button type="button" class="${triggerClass} group" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="打开段评"><i class="ri-more-fill text-lg" aria-hidden="true"></i><span class="${countClass}" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="当前段评评论数">${count > 0 && count < 100 ? `${count}` : ""}${count > 99 ? "99+" : ""}</span></button>`;
+        return `<button type="button" class="comment-trigger has-count group" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="打开段评"><i class="ri-more-fill text-lg" aria-hidden="true"></i><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="当前段评评论数">${getCommentCountLabel(count)}</span></button>`;
       };
 
       const assignCommentableAttributes = (
@@ -331,8 +377,6 @@ export const useParagraphComments = () => {
         if (!preserveId) token.attrSet("id", paragraphId);
         token.attrSet("data-reader-paragraph-id", paragraphId);
         token.attrSet("data-source-type", sourceType);
-        token.attrJoin("class", "group");
-        token.attrSet("tabindex", "0");
         token.meta = {
           ...(token.meta || {}),
           paragraphId,

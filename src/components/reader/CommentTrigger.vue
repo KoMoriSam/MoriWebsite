@@ -1,11 +1,8 @@
 <template>
   <button
+    v-if="count > 0"
     type="button"
-    class="comment-trigger reader-header-comment-trigger group"
-    :class="{
-      'has-count': count > 0,
-      hidden: count <= 0,
-    }"
+    class="comment-trigger reader-header-comment-trigger has-count group"
     :data-paragraph-id="paragraphId"
     :data-source-type="sourceType"
     aria-label="打开段评"
@@ -14,7 +11,6 @@
     <i class="ri-more-fill text-lg" aria-hidden="true"></i>
     <span
       class="paragraph-comment-count"
-      :class="{ hidden: count <= 0 }"
       :data-paragraph-id="paragraphId"
       :data-source-type="sourceType"
       aria-label="当前段评评论数"
