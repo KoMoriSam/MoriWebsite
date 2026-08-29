@@ -65,7 +65,7 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not(.chat-content *)
+      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not([data-markdown-chat] *)
   ) {
   line-height: var(--reader-page-line-height);
   orphans: 1;
@@ -111,8 +111,8 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(blockquote, ul, ol, li):not(.chat-content *)
-      > :is(p, ul, ol, blockquote):not(.chat-content *)
+      :is(blockquote, ul, ol, li):not([data-markdown-chat] *)
+      > :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
   ) {
   margin-block: 0;
 }
@@ -120,15 +120,17 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(blockquote, li):not(.chat-content *)
-      > :is(p, ul, ol, blockquote):not(.chat-content *)
-      + :is(p, ul, ol, blockquote):not(.chat-content *)
+      :is(blockquote, li):not([data-markdown-chat] *)
+      > :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
+      + :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
   ) {
   margin-block-start: var(--reader-paragraph-gap);
 }
 
 .mobile-page-viewport
-  :deep(.mobile-page-article :is(h1, h2, h3, h4, h5, h6):not(.chat-content *)) {
+  :deep(
+    .mobile-page-article :is(h1, h2, h3, h4, h5, h6):not([data-markdown-chat] *)
+  ) {
   margin-block: 0;
   padding-block: 0;
 }
@@ -141,34 +143,36 @@
   ) !important;
 }
 
-/* 聊天栏头部只与其紧接的一个元素组成防孤行组；头部和每条消息仍分别以完整
-   外框对齐。消息内部沿用聊天组件自己的紧凑行距，不逐行套用正文基线。 */
-.mobile-page-viewport :deep(.mobile-page-article .chat-content) {
+/* 聊天栏头部与每条消息都是独立分页外框；消息内部沿用聊天组件自己的
+   紧凑行距，不逐行套用正文基线。 */
+.mobile-page-viewport :deep(.mobile-page-article [data-markdown-chat]) {
   /* 容器本身不生成分栏盒，避免浏览器把整组聊天记录作为一个块迁移。
-     真正参与分页的只有下面的 leading group 和单条消息外框。 */
+     真正参与分页的只有下面的聊天栏与单条消息外框。 */
   display: contents;
 }
 
+/*
+   * 分页原子从第一次浏览器分栏起就必须生效，不能等测量后再补 class。
+   * chat-bar、chat-info 与 chat 分别对应聊天栏、系统提示和聊天气泡。
+   * 消息节点自身参与分页与基线补齐，不再依赖额外包装。
+*/
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      .chat-content
-      > :is(.chat-leading-group, .chat-page-block)
+      [data-markdown-chat]
+      > :is(.chat-bar, .chat-info, .chat, .chat-input)
   ) {
-  display: flow-root;
+  /* display: flow-root; */
   break-before: auto;
   break-after: auto;
-  /*
-   * 分页原子从第一次浏览器分栏起就必须生效，不能等测量后再补 class。
-   * chat-leading-group = 头部 + 紧接元素；chat-page-block = 单条提示或气泡。
-   * 内部 DaisyUI chat 网格保持原样，仅由这个外框参与分页与基线补齐。
-   */
   break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
 }
 
 .mobile-page-viewport
-  :deep(.mobile-page-article > .chat-content:not(:first-child) > :first-child) {
+  :deep(
+    .mobile-page-article > [data-markdown-chat]:not(:first-child) > :first-child
+  ) {
   /* display: contents 后父容器的顶层段距不再产生盒子，由首个分页原子承接。 */
   margin-block-start: var(--reader-paragraph-gap);
 }
@@ -300,7 +304,9 @@
 }
 
 .mobile-page-viewport
-  :deep(.mobile-page-article :is(ul, ol, li, blockquote):not(.chat-content *)) {
+  :deep(
+    .mobile-page-article :is(ul, ol, li, blockquote):not([data-markdown-chat] *)
+  ) {
   line-height: var(--reader-page-line-height);
 }
 

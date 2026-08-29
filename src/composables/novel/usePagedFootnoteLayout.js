@@ -76,7 +76,7 @@ export const usePagedFootnoteLayout = ({
         if (
           !parent ||
           parent.closest(
-            ".chat-content, .footnotes, .mobile-footnote-page-break, button, [aria-hidden='true']",
+            "[data-markdown-chat], .footnotes, .mobile-footnote-page-break, button, [aria-hidden='true']",
           )
         ) {
           return NodeFilter.FILTER_REJECT;

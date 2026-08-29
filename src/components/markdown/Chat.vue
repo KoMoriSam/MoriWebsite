@@ -1,41 +1,159 @@
 <template>
-  <div class="chat-content" data-markdown-chat>
-    <div v-if="header" class="chat-leading-group">
-      <div class="chat-bar">
-        <i class="ri-arrow-left-wide-line ml-0.5 sm:ml-2 mr-0"></i>
-        <div class="chat-image avatar">
-          <div class="w-8 sm:w-10 rounded-full">
-            <img :alt="header.title" :src="avatarFor(header.title)" />
-          </div>
-        </div>
-        <span class="font-bold">{{ header.title }}</span>
-        <span
-          v-if="header.extra"
-          class="badge max-sm:badge-xs"
-          :class="headerBadgeClass"
-        >
-          {{ header.extra }}
-        </span>
-        <i class="ri-menu-line ml-auto mr-0.5 sm:mr-2"></i>
-      </div>
-      <ChatMessage v-if="messages[0]" :message="messages[0]" />
-    </div>
+  <section
+    class="not-prose"
+    data-markdown-chat
+    :class="{ 'message-only': !ui }"
+  >
+    <header v-if="ui" class="chat-bar">
+      <figure class="avatar flex gap-2 items-center">
+        <button class="btn btn-ghost btn-square btn-sm">
+          <i class="ri-arrow-left-wide-line" aria-hidden="true"></i>
+        </button>
+        <img
+          class="w-8 sm:w-10 rounded-full"
+          :alt="ui.title"
+          :src="avatarFor(ui.title)"
+        />
+        <figcaption class="flex gap-2 items-center">
+          <span class="font-bold">{{ ui.title }}</span>
+          <span
+            v-if="ui.extra"
+            class="badge badge-xs sm:badge-sm"
+            :class="headerBadgeClass"
+          >
+            {{ ui.extra }}
+          </span>
+        </figcaption>
+      </figure>
+      <button class="btn btn-ghost btn-square btn-sm">
+        <i class="ri-menu-line" aria-hidden="true"></i>
+      </button>
+    </header>
 
-    <ChatMessage
-      v-for="(message, index) in remainingMessages"
+    <template
+      v-for="(message, index) in messages"
       :key="`${message.type}-${message.username || 'system'}-${index}`"
-      :message="message"
-    />
-  </div>
+    >
+      <div v-if="message.type === 'system'" class="chat-info">
+        <RenderedContent :html="message.contentHtml || ''" />
+      </div>
+
+      <article
+        v-else
+        :class="['chat', isSelf(message.username) ? 'chat-end' : 'chat-start']"
+      >
+        <aside class="chat-image avatar">
+          <div class="w-8 sm:w-10 rounded-full">
+            <img
+              :alt="message.username || '用户'"
+              :src="avatarFor(message.username || '用户')"
+            />
+          </div>
+        </aside>
+        <header class="chat-header">
+          {{ message.username || "用户" }}
+          <time class="opacity-50">{{ message.time || "" }}</time>
+        </header>
+        <div
+          :class="[
+            'chat-bubble',
+            isSelf(message.username) && 'chat-bubble-primary',
+          ]"
+        >
+          <RenderedContent :html="message.contentHtml || ''" />
+        </div>
+        <footer v-if="message.footers?.length" class="chat-footer join mt-1.5">
+          <span
+            v-for="footer in message.footers"
+            :key="footer"
+            :class="[
+              'join-item badge badge-sm badge-soft',
+              footerClass(footer),
+            ]"
+          >
+            {{ footer }}
+          </span>
+        </footer>
+      </article>
+    </template>
+
+    <footer v-if="ui" class="chat-input">
+      <!-- 麦克风 / 键盘 -->
+      <button
+        class="btn btn-ghost btn-square btn-sm"
+        :aria-label="voiceMode ? '切换到键盘输入' : '切换到语音输入'"
+        @click="voiceMode = !voiceMode"
+      >
+        <i :class="voiceMode ? 'ri-keyboard-line' : 'ri-mic-line'"></i>
+      </button>
+
+      <!-- 文字输入模式 -->
+      <input
+        v-if="!voiceMode"
+        v-model="inputText"
+        class="input input-sm min-w-0 w-full"
+        type="text"
+        placeholder="输入消息..."
+      />
+
+      <!-- 语音输入模式 -->
+      <button v-else class="btn btn-sm min-w-0 flex-1 select-none">
+        按住 说话
+      </button>
+
+      <!-- 表情 -->
+      <button class="btn btn-ghost btn-square btn-sm">
+        <i class="ri-emoji-sticker-line"></i>
+      </button>
+
+      <button
+        class="btn btn-sm relative overflow-hidden transition-all duration-200"
+        :class="
+          inputText.trim() && !voiceMode
+            ? 'btn-primary w-12'
+            : 'btn-ghost btn-square'
+        "
+      >
+        <!-- 加号 -->
+        <i
+          class="ri-add-large-line absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-[opacity,transform] duration-150"
+          :class="
+            inputText.trim() && !voiceMode
+              ? 'opacity-0 scale-75'
+              : 'opacity-100 scale-100 delay-75'
+          "
+        ></i>
+
+        <!-- 发送 -->
+        <span
+          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap transition-[opacity,transform] duration-150"
+          :class="
+            inputText.trim() && !voiceMode
+              ? 'opacity-100 scale-100 delay-75'
+              : 'opacity-0 scale-75'
+          "
+        >
+          发送
+        </span>
+      </button>
+    </footer>
+  </section>
 </template>
 
 <script setup>
-import { computed, defineComponent, h } from "vue";
+import { computed, ref } from "vue";
 
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
+import {
+  SELF_NAMES,
+  DEFAULT_AVATAR,
+  AVATAR_MAP,
+  FOOTER_MAP,
+} from "@/constants/markdown";
+
 const props = defineProps({
-  header: {
+  ui: {
     type: Object,
     default: null,
   },
@@ -45,132 +163,100 @@ const props = defineProps({
   },
 });
 
-const selfNames = new Set(["我", "小群主", "Mori", "KoMoriSam"]);
-const avatarMap = {
-  "🈚️内👻，LG": "/assets/images/avatar/lg.webp",
-  小群主: "/assets/images/avatar/komorisam.webp",
-  Mori: "/assets/images/avatar/komorisam.webp",
-  KoMoriSam: "/assets/images/avatar/komorisam.webp",
-  真正群主: "/assets/images/avatar/talloran.webp",
-  牛子: "/assets/images/avatar/niuzi.webp",
-  欢乐豆人: "/assets/images/avatar/joybean.webp",
-  天天: "/assets/images/avatar/smellycat7.webp",
-  量子: "/assets/images/avatar/quantum.webp",
-  泡泡冰: "/assets/images/avatar/paopao.webp",
-  李焰老师: "/assets/images/avatar/liyan.webp",
-  赵天明老师: "/assets/images/avatar/zhaotianming.webp",
-  爸: "/assets/images/avatar/dad.webp",
-  妈: "/assets/images/avatar/mom.webp",
-  OpenAI: "/assets/images/avatar/openai.webp",
-  "GPT-5.6": "/assets/images/avatar/openai.webp",
-};
-const footerStyleMap = [
-  ["已送达", "badge-info"],
-  ["已读", "badge-success"],
-  ["发送失败", "badge-error"],
-  ["已删除", "badge-neutral"],
-  ["已编辑", "badge-primary"],
-  ["已转发", "badge-secondary"],
-  ["已回复", "badge-accent"],
-  ["已引用", "badge-info"],
-  ["精华消息", "badge-secondary"],
-  ["👍", "badge-success"],
-  ["👎", "badge-error"],
-  ["💬", "badge-info"],
-  ["🔗", "badge-primary"],
-  ["📎", "badge-secondary"],
-  ["📷", "badge-accent"],
-  ["🎥", "badge-warning"],
-];
-const DEFAULT_AVATAR = "/assets/images/avatar/default.webp";
+const inputText = ref("");
+const voiceMode = ref(false);
 
 const avatarFor = (username = "") =>
-  avatarMap[String(username).trim()] || DEFAULT_AVATAR;
+  AVATAR_MAP[String(username).trim()] || DEFAULT_AVATAR;
 
 const footerClass = (footer = "") =>
-  footerStyleMap.find(([keyword]) => footer.includes(keyword))?.[1] || "";
+  FOOTER_MAP.find(([keyword]) => footer.includes(keyword))?.[1] || "";
 
-const ChatMessage = defineComponent({
-  name: "ChatMessage",
-  props: {
-    message: {
-      type: Object,
-      required: true,
-    },
-  },
-  setup(messageProps) {
-    return () => {
-      const message = messageProps.message;
-
-      if (message.type === "system") {
-        return h("div", { class: "chat-page-block" }, [
-          h(
-            "p",
-            { class: "chat-info" },
-            (message.lines || []).flatMap((line, index) =>
-              index ? [h("br"), line] : [line],
-            ),
-          ),
-        ]);
-      }
-
-      const username = message.username || "用户";
-      const isSelf = selfNames.has(username);
-
-      return h("div", { class: "chat-page-block" }, [
-        h("div", { class: ["chat", isSelf ? "chat-end" : "chat-start"] }, [
-          h("div", { class: "chat-image avatar" }, [
-            h("div", { class: "w-10 rounded-full" }, [
-              h("img", { alt: username, src: avatarFor(username) }),
-            ]),
-          ]),
-          h("div", { class: "chat-header" }, [
-            username,
-            " ",
-            h("time", { class: "opacity-50" }, message.time || ""),
-          ]),
-          message.footers?.length
-            ? h(
-                "div",
-                { class: "chat-footer join mt-1.5" },
-                message.footers.map((footer) =>
-                  h(
-                    "span",
-                    {
-                      class: [
-                        "join-item badge badge-soft",
-                        footerClass(footer),
-                      ],
-                    },
-                    footer,
-                  ),
-                ),
-              )
-            : null,
-          h(
-            "div",
-            { class: ["chat-bubble", isSelf && "chat-bubble-primary"] },
-            [h(RenderedContent, { html: message.contentHtml || "" })],
-          ),
-        ]),
-      ]);
-    };
-  },
-});
-
-const remainingMessages = computed(() =>
-  props.header ? props.messages.slice(1) : props.messages,
-);
+const isSelf = (username = "") => SELF_NAMES.has(username || "用户");
 
 const headerBadgeClass = computed(() => {
-  if (!props.header?.extra || /^\d+$/.test(props.header.extra)) return "";
+  if (!props.ui?.extra || /^\d+$/.test(props.ui.extra)) return "";
 
   return (
     {
       在线: "badge-soft badge-success",
       离线: "badge-soft badge-outline",
       忙碌: "badge-soft badge-error",
-    }[props.header.extra] || "badge-soft"
+    }[props.ui.extra] || "badge-soft"
   );
 });
 </script>
+
+<style scoped>
+@reference "@/assets/main.css";
+
+section[data-markdown-chat] {
+  @apply card gap-0 overflow-hidden border border-base-300 font-sans;
+}
+
+section[data-markdown-chat].message-only {
+  @apply border-none;
+}
+
+/* Chat 聊天样式 */
+.chat-bar {
+  @apply flex items-center justify-between gap-2 bg-base-200/50 border-b border-base-300 p-2 mb-2;
+}
+
+.chat-input {
+  @apply flex justify-between gap-2 bg-base-200/50 border-t border-base-300 p-2 mt-2;
+}
+
+.chat {
+  @apply px-4 sm:px-8 md:px-12 lg:px-16 xl:px-8 overflow-visible;
+}
+
+.chat-info :deep(p) {
+  @apply indent-0 text-center text-base-content/60;
+}
+
+.chat-bubble {
+  @apply px-1 py-2 bg-base-200/75 overflow-visible;
+}
+
+.chat-bubble :deep(p) {
+  @apply indent-0 m-1 text-justify relative;
+}
+
+.chat-bubble :deep(p code) {
+  @apply text-base-content;
+}
+
+.chat-bubble :deep(img) {
+  @apply rounded-lg max-w-24 min-w-8;
+}
+
+.chat-bubble:has(img) {
+  @apply p-1;
+}
+
+.chat-bubble-primary {
+  @apply bg-primary;
+}
+
+.chat :deep(a) {
+  @apply text-primary hover:font-bold;
+}
+
+.chat :deep(a span img) {
+  @apply rounded-none max-w-[unset] min-w-[unset];
+}
+
+.chat-bubble-primary :deep(a) {
+  @apply text-[color-mix(in_oklab,var(--color-primary-content)_65%,var(--color-primary))];
+}
+
+.chat-header {
+  @apply mb-1;
+}
+
+.chat img,
+.chat-image img {
+  @apply m-0;
+}
+</style>

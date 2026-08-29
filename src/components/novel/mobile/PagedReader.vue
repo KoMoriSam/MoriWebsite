@@ -591,11 +591,9 @@ const alignPageFlowBlocksToGrid = async (article, token) => {
   // 子元素，排除章节头与末尾定位点这些非正文成员。
   const flowBlocks = collectMarkdownBodyChildren(article).flatMap((element) => {
     if (element.classList.contains("moments-card")) return [];
-    if (!element.classList.contains("chat-content")) return [element];
+    if (!element.matches("[data-markdown-chat]")) return [element];
     return Array.from(
-      element.querySelectorAll(
-        ":scope > .chat-leading-group > .chat-bar, :scope > .chat-leading-group > .chat-page-block, :scope > .chat-page-block",
-      ),
+      element.querySelectorAll(":scope > :is(.chat-bar, .chat-info, .chat)"),
     );
   });
 
@@ -624,7 +622,7 @@ const alignPageFlowBlocksToGrid = async (article, token) => {
     };
 
     const isChatBlock = measurement.element.matches(
-      ".chat-bar, .chat-page-block",
+      ".chat-bar, .chat-info, .chat",
     );
     measurement.rects.forEach((rect) => {
       const page = getRectPage(rect, viewport);
@@ -702,7 +700,7 @@ const alignPageFlowBlocksToGrid = async (article, token) => {
 
     if (adjustment < 0.5 || adjustment > lineHeight - 0.5) continue;
 
-    const isChatBlock = element.matches(".chat-bar, .chat-page-block");
+    const isChatBlock = element.matches(".chat-bar, .chat-info, .chat");
     const elementPage = getRectPage(rects[0], viewport);
     const currentPageShift = plannedPageShift.get(elementPage) || 0;
     const { lastFollowingEntry, lastFollowingChatEntry } =
@@ -856,10 +854,10 @@ const findNearestContentPage = (article, viewport, requestedPage) => {
 const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
   const flowBlocks = [
     ...collectMarkdownBodyChildren(article).flatMap((element) =>
-      element.classList.contains("chat-content")
+      element.matches("[data-markdown-chat]")
         ? Array.from(
             element.querySelectorAll(
-              ":scope > .chat-leading-group, :scope > .chat-page-block",
+              ":scope > :is(.chat-bar, .chat-info, .chat)",
             ),
           )
         : [element],
@@ -873,9 +871,9 @@ const getPageBlockGapCandidates = (article, viewport, page, firstRect) => {
 
   return [...new Set(flowBlocks)].filter((element) => {
     const isFirstChatBlock =
-      element.matches(".chat-leading-group, .chat-page-block") &&
+      element.matches(".chat-bar, .chat-info, .chat") &&
       !element.previousElementSibling &&
-      element.parentElement?.classList.contains("chat-content");
+      element.parentElement?.matches("[data-markdown-chat]");
     if (
       (!element.previousElementSibling &&
         !(isFirstChatBlock && element.parentElement.previousElementSibling)) ||

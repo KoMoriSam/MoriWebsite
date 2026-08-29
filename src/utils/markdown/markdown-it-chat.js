@@ -177,10 +177,14 @@ function toChatMessageProps(message, options, env, self) {
   if (message.type === "system") {
     return {
       type: "system",
-      lines: String(message.content || "")
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean),
+      contentHtml: message.contentTokens?.length
+        ? renderPreparedMarkdownTokens(
+            message.contentTokens,
+            options,
+            env,
+            self,
+          )
+        : "",
     };
   }
 
@@ -207,10 +211,11 @@ function prepareChatMessages(md, lines, env) {
   const messages = parseChatMessages(lines);
 
   for (const message of messages) {
-    if (message.type === "system") continue;
     message.contentTokens = parsePreparedMarkdownTokens(
       md,
-      message.content,
+      message.type === "system"
+        ? message.content.replace(/\n/g, "  \n")
+        : message.content,
       env,
     );
   }
@@ -224,11 +229,7 @@ function prepareChatMessages(md, lines, env) {
 }
 
 function prepareChatMessagesOnly(md, lines, env) {
-  const messageLines = lines.map((line, index) =>
-    index === 0 ? line.replace(/^>\s*\[!chat\]\s*/i, "> ") : line,
-  );
-
-  return prepareChatMessages(md, messageLines, env);
+  return prepareChatMessages(md, lines.slice(1), env);
 }
 
 function renderChatMessages(messages, options, env, self) {
@@ -244,10 +245,10 @@ function renderChatCallout(prepared, options, env, self) {
     env,
     self,
   );
-  const header = parseChatHeader(prepared.headLine);
+  const ui = parseChatHeader(prepared.headLine);
 
   return `<markdown-chat data-markdown-props="${encodeProps({
-    header,
+    ui,
     messages: renderedMessages,
   })}"></markdown-chat>\n`;
 }
@@ -568,7 +569,7 @@ function installCalloutPlugin(md) {
       const startRaw = state.src.slice(startPos, startMax);
       const startText = stripOuterQuote(startRaw).trim();
       const fullType = startText.match(/^\[!(chat|moment)\]\s*/)?.[1];
-      const messagesOnly = /^>\s*\[!chat\]\s*/i.test(startText);
+      const messagesOnly = /^\[!chat\]\s*$/i.test(startText);
       const type = fullType || (messagesOnly ? "chat" : "");
 
       if (!type) return false;

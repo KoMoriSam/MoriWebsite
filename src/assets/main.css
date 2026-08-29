@@ -72,4 +72,8 @@
   .validator:has(:user-invalid) ~ .label-hint {
     @apply text-error hidden;
   }
+
+  button i {
+    @apply font-normal;
+  }
 }

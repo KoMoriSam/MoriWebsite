@@ -45,7 +45,7 @@ export const collectReaderBodyTextRects = (article) => {
       if (
         !parent ||
         parent.closest(
-          ".mobile-chapter-header, .chat-content, .footnotes, .footnote-ref, .mobile-footnote-page-break, button, [aria-hidden='true']",
+          ".mobile-chapter-header, [data-markdown-chat], .footnotes, .footnote-ref, .mobile-footnote-page-break, button, [aria-hidden='true']",
         )
       ) {
         return NodeFilter.FILTER_REJECT;
@@ -81,7 +81,7 @@ export const collectReaderBodyTextRects = (article) => {
 export const collectReaderChatFlowRects = (article) =>
   Array.from(
     article.querySelectorAll(
-      ":scope > .chat-content > .chat-leading-group, :scope > .chat-content > .chat-page-block",
+      ":scope > [data-markdown-chat] > :is(.chat-bar, .chat-info, .chat)",
     ),
   ).flatMap((element) => {
     const style = window.getComputedStyle(element);
@@ -122,7 +122,7 @@ export const collectMarkdownBodyChildren = (article) =>
 export const collectReaderMediaElements = (article) =>
   Array.from(
     article.querySelectorAll(
-      "img, video, svg, canvas, table, pre, .chat-leading-group, .chat-content > .chat-page-block",
+      "img, video, svg, canvas, table, pre, [data-markdown-chat] > :is(.chat-bar, .chat-info, .chat)",
     ),
   );
 
