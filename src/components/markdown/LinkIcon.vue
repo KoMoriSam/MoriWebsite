@@ -5,7 +5,7 @@
     :class="[
       'not-prose me-[0.25em] inline-grid size-[0.75em] shrink-0 place-items-center',
       'overflow-hidden rounded-full bg-white',
-      'ring-1 ring-black/25 transition-opacity',
+      'ring-1 ring-[color-mix(in_oklab,var(--color-primary-content)_50%,var(--color-primary))] transition-opacity',
       iconLoaded ? 'opacity-100' : 'opacity-0',
     ]"
   >

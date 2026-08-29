@@ -273,7 +273,7 @@
       <template #after>
         <nav
           v-if="previousArticle || nextArticle"
-          class="font-sans mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
+          class="not-prose font-sans mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
           aria-label="文章翻页"
         >
           <RouterLink

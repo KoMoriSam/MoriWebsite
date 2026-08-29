@@ -201,6 +201,11 @@
   }
 
   .markdown-content.prose
+    :deep(:where(a):not(:where([class~="not-prose"], [class~="not-prose"] *))) {
+    @apply no-underline text-primary hover:font-bold hover:underline;
+  }
+
+  .markdown-content.prose
     :deep(
       :not(pre) code:not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
