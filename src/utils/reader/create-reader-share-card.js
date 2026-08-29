@@ -12,6 +12,7 @@ const DEFAULT_BACKGROUND = "#ffffff";
 const DEFAULT_FOREGROUND = "#1f2937";
 const DEFAULT_ACCENT = "#6b7280";
 const FAVICON_PATH = "/favicon.webp";
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const BLOCK_TYPES = new Set([
   "paragraph",
   "heading",
@@ -22,6 +23,7 @@ const BLOCK_TYPES = new Set([
   "chat",
   "moment",
   "table",
+  "mermaid",
 ]);
 const SYNTAX_COLOR_KEYS = [
   "keyword",
@@ -58,6 +60,7 @@ const UNSPACED_WORD_SCRIPT =
 const WORD_CONNECTOR = /^[\u0026'\u002b,\-./:=?@_\u2019%#]$/u;
 
 let faviconPromise;
+const fontDataUrlPromises = new Map();
 
 const normalizeText = (value = "") =>
   String(value).replace(/\s+/gu, " ").trim();
@@ -362,6 +365,10 @@ const normalizeShareContent = (
           )
             ? block.tone
             : "accent",
+          svg: String(block?.svg || ""),
+          width: Math.max(1, Number(block?.width) || 1),
+          height: Math.max(1, Number(block?.height) || 1),
+          imageAsset: null,
           style: {
             fontFamily: String(block?.style?.fontFamily || ""),
             fontWeight: String(block?.style?.fontWeight || ""),
@@ -370,7 +377,10 @@ const normalizeShareContent = (
           },
           runs: normalizeRuns(block?.runs),
         }))
-        .filter(({ runs }) => runs.some(({ text }) => text.trim()))
+        .filter(
+          ({ type, svg, runs }) =>
+            (type === "mermaid" && svg) || runs.some(({ text }) => text.trim()),
+        )
         .filter(
           ({ runs }) =>
             !excludedContent.has(
@@ -426,6 +436,233 @@ const prepareLatexRuns = async (blocks, appearance) => {
         run.mathAsset = await loadLatexSvgImage(svg);
       } catch {
         run.mathAsset = null;
+      }
+    }),
+  );
+};
+
+const collectFontFaceRules = () => {
+  const entries = [];
+  const visitedSheets = new Set();
+  const visitRules = (rules) => {
+    Array.from(rules || []).forEach((rule) => {
+      if (rule.type === 5) {
+        entries.push({
+          rule,
+          baseUrl: rule.parentStyleSheet?.href || document.baseURI,
+        });
+        return;
+      }
+      if (rule.styleSheet) visitSheet(rule.styleSheet);
+      if (rule.cssRules) visitRules(rule.cssRules);
+    });
+  };
+  const visitSheet = (sheet) => {
+    if (!sheet || visitedSheets.has(sheet)) return;
+    visitedSheets.add(sheet);
+    try {
+      visitRules(sheet.cssRules);
+    } catch {
+      // 跨域样式表不可读取；本地打包字体仍可从同源样式表取得。
+    }
+  };
+
+  Array.from(document.styleSheets).forEach(visitSheet);
+  return entries;
+};
+
+const normalizeFontFamilyName = (value = "") =>
+  String(value)
+    .trim()
+    .replace(/^(["'])(.*)\1$/u, "$2")
+    .toLowerCase();
+
+const getSvgFontContext = (root) => {
+  const textElements = [
+    root,
+    ...root.querySelectorAll("text, tspan, textPath, foreignObject *"),
+  ];
+  const familyValues = textElements
+    .map((element) => element.style?.fontFamily || "")
+    .filter(Boolean)
+    .map((value) => value.toLowerCase());
+  const fontStyles = new Set(
+    textElements
+      .map((element) => element.style?.fontStyle || "normal")
+      .map((value) => value.toLowerCase()),
+  );
+  const text = [...root.querySelectorAll("text, foreignObject")]
+    .map((element) => element.textContent || "")
+    .join("");
+  const codePoints = new Set(
+    Array.from(text, (character) => character.codePointAt(0)),
+  );
+  return { familyValues, fontStyles, codePoints };
+};
+
+const parseUnicodeRange = (value) => {
+  const token = String(value).trim().replace(/^U\+/iu, "");
+  if (!token) return null;
+  if (token.includes("?")) {
+    return {
+      start: Number.parseInt(token.replaceAll("?", "0"), 16),
+      end: Number.parseInt(token.replaceAll("?", "F"), 16),
+    };
+  }
+  const [start, end = start] = token.split("-");
+  const parsedStart = Number.parseInt(start, 16);
+  const parsedEnd = Number.parseInt(end, 16);
+  return Number.isFinite(parsedStart) && Number.isFinite(parsedEnd)
+    ? { start: parsedStart, end: parsedEnd }
+    : null;
+};
+
+const fontRuleCoversText = (unicodeRange, codePoints) => {
+  if (!unicodeRange || !codePoints.size) return true;
+  const ranges = unicodeRange.split(",").map(parseUnicodeRange).filter(Boolean);
+  if (!ranges.length) return true;
+  return [...codePoints].some((codePoint) =>
+    ranges.some(({ start, end }) => start <= codePoint && codePoint <= end),
+  );
+};
+
+const fontRuleMatchesContext = (rule, context) => {
+  const family = normalizeFontFamilyName(
+    rule.style.getPropertyValue("font-family"),
+  );
+  if (
+    !family ||
+    !context.familyValues.some((value) => value.includes(family))
+  ) {
+    return false;
+  }
+
+  const faceStyle = (
+    rule.style.getPropertyValue("font-style") || "normal"
+  ).toLowerCase();
+  const styleMatches = faceStyle.includes("italic")
+    ? [...context.fontStyles].some((value) => value.includes("italic"))
+    : faceStyle.includes("oblique")
+      ? [...context.fontStyles].some((value) => value.includes("oblique"))
+      : [...context.fontStyles].some(
+          (value) => !value.includes("italic") && !value.includes("oblique"),
+        );
+  return (
+    styleMatches &&
+    fontRuleCoversText(
+      rule.style.getPropertyValue("unicode-range"),
+      context.codePoints,
+    )
+  );
+};
+
+const blobToDataUrl = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+
+const loadFontDataUrl = (url) => {
+  if (!fontDataUrlPromises.has(url)) {
+    fontDataUrlPromises.set(
+      url,
+      fetch(url)
+        .then((response) => {
+          if (!response.ok) throw new Error(`无法加载字体：${response.status}`);
+          return response.blob();
+        })
+        .then(blobToDataUrl)
+        .catch(() => ""),
+    );
+  }
+  return fontDataUrlPromises.get(url);
+};
+
+const embedFontRuleSources = async ({ rule, baseUrl }) => {
+  const cssText = rule.cssText;
+  const matches = [
+    ...cssText.matchAll(/url\(\s*(?:(["'])(.*?)\1|([^"')]+))\s*\)/giu),
+  ];
+  if (!matches.length) return "";
+
+  const replacements = await Promise.all(
+    matches.map(async (match) => {
+      const source = String(match[2] || match[3] || "").trim();
+      if (!source) return "";
+      if (source.startsWith("data:")) return source;
+      try {
+        return await loadFontDataUrl(new URL(source, baseUrl).href);
+      } catch {
+        return "";
+      }
+    }),
+  );
+  if (replacements.some((value) => !value)) return "";
+
+  let embedded = cssText;
+  for (let index = matches.length - 1; index >= 0; index -= 1) {
+    const match = matches[index];
+    embedded = `${embedded.slice(0, match.index)}url("${replacements[index]}")${embedded.slice(
+      match.index + match[0].length,
+    )}`;
+  }
+  return embedded;
+};
+
+const embedMermaidFonts = async (svg) => {
+  const documentNode = new DOMParser().parseFromString(svg, "image/svg+xml");
+  const root = documentNode.documentElement;
+  if (root.localName !== "svg") return svg;
+
+  const context = getSvgFontContext(root);
+  const matchingRules = collectFontFaceRules().filter(({ rule }) =>
+    fontRuleMatchesContext(rule, context),
+  );
+  const embeddedRules = (
+    await Promise.all(matchingRules.map(embedFontRuleSources))
+  ).filter(Boolean);
+  if (!embeddedRules.length) return svg;
+
+  const style = documentNode.createElementNS(SVG_NAMESPACE, "style");
+  style.setAttribute("data-reader-embedded-fonts", "");
+  style.textContent = embeddedRules.join("\n");
+  root.prepend(style);
+  return new XMLSerializer().serializeToString(root);
+};
+
+const loadShareSvgImage = async ({ svg, width, height }) => {
+  const embeddedSvg = await embedMermaidFonts(svg);
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const probe = document.createElement("canvas");
+        probe.width = 1;
+        probe.height = 1;
+        const context = probe.getContext("2d");
+        if (!context) throw new Error("当前浏览器无法验证 Mermaid 图片");
+        context.drawImage(image, 0, 0, 1, 1);
+        probe.toDataURL("image/png");
+        resolve({ image, width, height });
+      } catch {
+        reject(new Error("当前浏览器禁止导出 Mermaid 图片"));
+      }
+    };
+    image.onerror = () => reject(new Error("无法渲染 Mermaid 图表"));
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(embeddedSvg)}`;
+  });
+};
+
+const prepareMermaidBlocks = async (blocks) => {
+  await Promise.all(
+    blocks.map(async (block) => {
+      if (block.type !== "mermaid" || !block.svg) return;
+      try {
+        block.imageAsset = await loadShareSvgImage(block);
+      } catch {
+        block.imageAsset = null;
       }
     }),
   );
@@ -524,6 +761,27 @@ const getBlockConfig = (block, baseSize, appearance) => {
       gap: Math.round(baseSize * 0.45),
       panel: "table",
       justify: false,
+    };
+  }
+  if (block.type === "mermaid" && block.imageAsset) {
+    const maxWidth = TEXT_WIDTH;
+    const maxHeight = 640;
+    const scale = Math.min(
+      maxWidth / block.imageAsset.width,
+      maxHeight / block.imageAsset.height,
+    );
+    const imageWidth = block.imageAsset.width * scale;
+    const imageHeight = block.imageAsset.height * scale;
+    return {
+      ...common,
+      x: CARD_PADDING + (TEXT_WIDTH - imageWidth) / 2,
+      width: imageWidth,
+      paddingTop: 24,
+      paddingBottom: 24,
+      gap: Math.round(baseSize * 0.45),
+      justify: false,
+      imageWidth,
+      imageHeight,
     };
   }
   return common;
@@ -687,6 +945,15 @@ const appendEllipsis = (context, line, config, appearance) => {
 
 const createBlockLayout = (context, block, baseSize, appearance) => {
   const config = getBlockConfig(block, baseSize, appearance);
+  if (block.type === "mermaid" && block.imageAsset) {
+    return {
+      block,
+      config,
+      lines: [],
+      height: config.paddingTop + config.paddingBottom + config.imageHeight,
+      cjkDominant: false,
+    };
+  }
   const lines = wrapRuns(context, block.runs, config, appearance);
   return {
     block,
@@ -715,6 +982,25 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       continue;
     }
 
+    if (
+      block.type === "mermaid" &&
+      block.imageAsset &&
+      available > layout.config.paddingTop + layout.config.paddingBottom + 80
+    ) {
+      const imageRoom =
+        available - layout.config.paddingTop - layout.config.paddingBottom;
+      const scale = Math.min(1, imageRoom / layout.config.imageHeight);
+      layout.config.imageWidth *= scale;
+      layout.config.imageHeight *= scale;
+      layout.config.width = layout.config.imageWidth;
+      layout.config.x =
+        CARD_PADDING + (TEXT_WIDTH - layout.config.imageWidth) / 2;
+      layout.height = available;
+      layouts.push(layout);
+      usedHeight += gap + layout.height;
+      break;
+    }
+
     truncated = true;
     const lineRoom = Math.floor(
       (available - layout.config.paddingTop - layout.config.paddingBottom) /
@@ -735,7 +1021,8 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       layouts.push(layout);
       usedHeight += gap + layout.height;
     } else if (layouts.length) {
-      const previous = layouts.at(-1);
+      const previous = [...layouts].reverse().find(({ lines }) => lines.length);
+      if (!previous) break;
       previous.lines[previous.lines.length - 1] = appendEllipsis(
         context,
         previous.lines.at(-1),
@@ -1039,6 +1326,18 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
       context.fillText(label, config.x, y + 20 + config.fontSize * 0.48);
     }
 
+    if (block.type === "mermaid" && block.imageAsset) {
+      context.drawImage(
+        block.imageAsset.image,
+        config.x,
+        y + config.paddingTop,
+        config.imageWidth,
+        config.imageHeight,
+      );
+      y += layout.height;
+      return;
+    }
+
     lines.forEach((line, lineIndex) => {
       const baseline =
         y + config.paddingTop + config.fontSize + lineIndex * config.lineHeight;
@@ -1267,7 +1566,10 @@ export const createReaderShareCard = async ({
   const context = canvas.getContext("2d");
   if (!context) throw new Error("当前浏览器无法生成分享卡片");
 
-  await prepareLatexRuns(blocks, appearance);
+  await Promise.all([
+    prepareLatexRuns(blocks, appearance),
+    prepareMermaidBlocks(blocks),
+  ]);
 
   context.textBaseline = "alphabetic";
   context.fillStyle = appearance.background;

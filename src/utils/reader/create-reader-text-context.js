@@ -47,6 +47,24 @@ const getLatexFormulaAtPoint = ({ root, target, clientX, clientY }) => {
   return null;
 };
 
+const getMermaidViewerAtPoint = ({ root, target, clientX, clientY }) => {
+  const candidates = [
+    target,
+    ...(document.elementsFromPoint?.(clientX, clientY) || []),
+  ];
+  for (const candidate of candidates) {
+    const viewer = candidate?.closest?.("[data-mermaid-viewer]");
+    if (
+      viewer &&
+      root?.contains(viewer) &&
+      viewer.querySelector("[data-mermaid-preview] svg")
+    ) {
+      return viewer;
+    }
+  }
+  return null;
+};
+
 const createFormulaRange = (formula) => {
   if (!formula?.element) return null;
   const range = document.createRange();
@@ -250,14 +268,18 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   if (!root || !(target instanceof Element)) return null;
 
   const selectionDetails = extractSelectionDetails(root);
+  const selectionNode = selectionDetails?.range.startContainer;
+  const selectionElement =
+    selectionNode instanceof Element ? selectionNode : selectionNode?.parentElement;
+  const selectedMermaid = selectionElement?.closest("[data-mermaid-viewer]");
+  const pointedMermaid = selectionDetails
+    ? selectedMermaid
+    : getMermaidViewerAtPoint({ root, target, clientX, clientY });
   const pointedFormula = selectionDetails
     ? null
     : getLatexFormulaAtPoint({ root, target, clientX, clientY });
   const activeRange =
     selectionDetails?.range || createFormulaRange(pointedFormula);
-  const selectionNode = selectionDetails?.range.startContainer;
-  const selectionElement =
-    selectionNode instanceof Element ? selectionNode : selectionNode?.parentElement;
   const paragraph = (selectionElement || pointedFormula?.element || target).closest(
     "[data-reader-paragraph-id]",
   );
@@ -272,10 +294,11 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   const text = selectedText || paragraphText;
   const shareContent = createReaderShareContent({
     range: activeRange,
-    element: paragraph,
+    element: selectedMermaid || pointedMermaid || paragraph,
   });
+  const hasShareContent = Boolean(shareContent.blocks.length);
 
-  if (!text && !paragraphId) return null;
+  if (!text && !paragraphId && !hasShareContent) return null;
 
   return {
     clientX,
@@ -283,6 +306,7 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     anchorRect:
       selectionDetails?.anchorRect ||
       pointedFormula?.element.getBoundingClientRect() ||
+      pointedMermaid?.getBoundingClientRect() ||
       null,
     text,
     selectedText,
@@ -291,6 +315,7 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     sourceType: paragraph?.dataset.sourceType || "novel",
     commentScope: paragraph?.dataset.readerCommentScope || "paragraph",
     latex,
+    mermaid: Boolean(selectedMermaid || pointedMermaid),
     shareContent,
   };
 };
@@ -318,6 +343,16 @@ export const selectReaderTextAtPoint = ({
   clientY,
 }) => {
   if (!root || !(target instanceof Element)) return null;
+
+  const pointedMermaid = getMermaidViewerAtPoint({
+    root,
+    target,
+    clientX,
+    clientY,
+  });
+  if (pointedMermaid) {
+    return createReaderTextContext({ root, target, clientX, clientY });
+  }
 
   const commentable = target.closest("[data-reader-paragraph-id]");
   if (!commentable || !root.contains(commentable)) return null;

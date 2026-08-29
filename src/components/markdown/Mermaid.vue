@@ -8,89 +8,86 @@
   >
     <CodeHeader type="mermaid">
       <template #actions>
-
-          <nav
-            class="flex shrink-0 items-center gap-1"
-            aria-label="Mermaid 图表工具"
+        <nav
+          class="flex shrink-0 items-center gap-1"
+          aria-label="Mermaid 图表工具"
+        >
+          <div
+            role="tablist"
+            aria-label="Mermaid 视图切换"
+            class="tabs tabs-box tabs-xs shrink-0"
           >
-            <div
-              role="tablist"
-              aria-label="Mermaid 视图切换"
-              class="tabs tabs-box tabs-xs shrink-0"
+            <button
+              role="tab"
+              class="tab"
+              :class="viewMode === 'code' ? 'tab-active' : ''"
+              aria-label="查看 Mermaid 代码"
+              :aria-pressed="viewMode === 'code'"
+              title="代码"
+              @click="viewMode = 'code'"
             >
-              <button
-                role="tab"
-                class="tab"
-                :class="viewMode === 'code' ? 'tab-active' : ''"
-                aria-label="查看 Mermaid 代码"
-                :aria-pressed="viewMode === 'code'"
-                title="代码"
-                @click="viewMode = 'code'"
-              >
-                <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-              </button>
-              <button
-                role="tab"
-                class="tab"
-                :class="viewMode === 'preview' ? 'tab-active' : ''"
-                aria-label="查看 Mermaid 预览"
-                :aria-pressed="viewMode === 'preview'"
-                title="预览"
-                @click="viewMode = 'preview'"
-              >
-                <i class="ri-image-line" aria-hidden="true"></i>
-              </button>
-            </div>
-            <aside
-              class="tooltip tooltip-left mb-0.5 font-mono"
-              :class="copied ? 'tooltip-success' : ''"
-              :data-tip="
-                viewMode === 'preview'
-                  ? isFullscreen
-                    ? '退出全屏'
-                    : '全屏'
-                  : copied
-                    ? '复制成功'
-                    : '复制代码'
-              "
+              <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+            </button>
+            <button
+              role="tab"
+              class="tab"
+              :class="viewMode === 'preview' ? 'tab-active' : ''"
+              aria-label="查看 Mermaid 预览"
+              :aria-pressed="viewMode === 'preview'"
+              title="预览"
+              @click="viewMode = 'preview'"
             >
-              <button
-                v-if="viewMode === 'preview'"
-                type="button"
-                class="btn btn-sm btn-square btn-ghost shrink-0"
-                :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
-                :aria-pressed="isFullscreen"
-                :title="isFullscreen ? '退出全屏' : '全屏'"
-                :disabled="!canFullscreen"
-                @click="toggleFullscreen"
-              >
-                <i
-                  :class="
-                    isFullscreen
-                      ? 'ri-fullscreen-exit-line'
-                      : 'ri-fullscreen-line'
-                  "
-                  aria-hidden="true"
-                ></i>
-              </button>
-              <button
-                v-else
-                type="button"
-                class="btn btn-sm btn-square shrink-0"
-                :class="copied ? 'btn-success' : 'btn-ghost'"
-                :aria-label="
-                  copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'
+              <i class="ri-image-line" aria-hidden="true"></i>
+            </button>
+          </div>
+          <aside
+            class="tooltip tooltip-left mb-0.5 font-mono"
+            :class="copied ? 'tooltip-success' : ''"
+            :data-tip="
+              viewMode === 'preview'
+                ? isFullscreen
+                  ? '退出全屏'
+                  : '全屏'
+                : copied
+                  ? '复制成功'
+                  : '复制代码'
+            "
+          >
+            <button
+              v-if="viewMode === 'preview'"
+              type="button"
+              class="btn btn-sm btn-square btn-ghost shrink-0"
+              :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
+              :aria-pressed="isFullscreen"
+              :title="isFullscreen ? '退出全屏' : '全屏'"
+              :disabled="!canFullscreen"
+              @click="toggleFullscreen"
+            >
+              <i
+                :class="
+                  isFullscreen
+                    ? 'ri-fullscreen-exit-line'
+                    : 'ri-fullscreen-line'
                 "
-                :title="copied ? '复制成功' : '复制代码'"
-                @click="copy(source)"
-              >
-                <i
-                  :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
-                  aria-hidden="true"
-                ></i>
-              </button>
-            </aside>
-          </nav>
+                aria-hidden="true"
+              ></i>
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-sm btn-square shrink-0"
+              :class="copied ? 'btn-success' : 'btn-ghost'"
+              :aria-label="copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'"
+              :title="copied ? '复制成功' : '复制代码'"
+              @click="copy(source)"
+            >
+              <i
+                :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
+                aria-hidden="true"
+              ></i>
+            </button>
+          </aside>
+        </nav>
       </template>
     </CodeHeader>
 

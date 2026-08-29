@@ -26,6 +26,7 @@ const IGNORED_CONTENT_SELECTOR = [
 ].join(",");
 
 const BLOCK_SELECTOR = [
+  "[data-mermaid-viewer]",
   "[data-markdown-code-block]",
   'mjx-container[data-reader-latex-source][display="true"]',
   "h1",
@@ -43,6 +44,35 @@ const BLOCK_SELECTOR = [
   "[data-markdown-chat]",
   "[data-markdown-moment]",
 ].join(",");
+
+const MERMAID_STYLE_PROPERTIES = [
+  "color",
+  "fill",
+  "fill-opacity",
+  "stroke",
+  "stroke-opacity",
+  "stroke-width",
+  "stroke-dasharray",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "opacity",
+  "font-family",
+  "font-size",
+  "font-style",
+  "font-weight",
+  "line-height",
+  "text-align",
+  "text-anchor",
+  "dominant-baseline",
+  "paint-order",
+  "shape-rendering",
+  "white-space",
+  "background-color",
+  "border-color",
+  "border-style",
+  "border-width",
+  "border-radius",
+];
 
 const TASK_STATUS_MARKERS = {
   " ": "○",
@@ -594,7 +624,85 @@ const getReaderFullParagraphText = (block) => {
   return source?.dataset.readerFullParagraphText || "";
 };
 
+const getMermaidCaptureBounds = (svg, viewport) => {
+  let bounds = null;
+  try {
+    bounds = (viewport || svg).getBBox();
+  } catch {
+    // 不支持 getBBox 时沿用 Mermaid 提供的 viewBox。
+  }
+  if (bounds?.width > 0 && bounds?.height > 0) return bounds;
+
+  const viewBox = svg.viewBox?.baseVal;
+  if (viewBox?.width > 0 && viewBox?.height > 0) return viewBox;
+  return null;
+};
+
+const inlineMermaidStyles = (sourceSvg, clonedSvg) => {
+  const sourceElements = [sourceSvg, ...sourceSvg.querySelectorAll("*")];
+  const clonedElements = [clonedSvg, ...clonedSvg.querySelectorAll("*")];
+  sourceElements.forEach((source, index) => {
+    const clone = clonedElements[index];
+    if (!clone) return;
+    const computed = getComputedStyle(source);
+    MERMAID_STYLE_PROPERTIES.forEach((property) => {
+      const value = computed.getPropertyValue(property);
+      if (value) clone.style.setProperty(property, value);
+    });
+  });
+};
+
+const serializeMermaidBlock = (viewer) => {
+  const svg = viewer.querySelector(
+    "[data-mermaid-preview] .mermaid-svg-wrapper > svg, [data-mermaid-preview] pre.mermaid > svg",
+  );
+  if (!svg) return null;
+
+  const viewport = svg.querySelector("[data-mermaid-viewport]");
+  const bounds = getMermaidCaptureBounds(svg, viewport);
+  if (!bounds) return null;
+
+  const clone = svg.cloneNode(true);
+  inlineMermaidStyles(svg, clone);
+  clone.querySelector("[data-mermaid-viewport]")?.removeAttribute("transform");
+  clone.querySelectorAll("script").forEach((node) => node.remove());
+  clone.querySelectorAll("*").forEach((node) => {
+    Array.from(node.attributes).forEach(({ name }) => {
+      if (/^on/iu.test(name)) node.removeAttribute(name);
+    });
+  });
+
+  const padding = Math.min(
+    24,
+    Math.max(8, Math.min(bounds.width, bounds.height) * 0.03),
+  );
+  const width = bounds.width + padding * 2;
+  const height = bounds.height + padding * 2;
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.setAttribute(
+    "viewBox",
+    `${bounds.x - padding} ${bounds.y - padding} ${width} ${height}`,
+  );
+  clone.setAttribute("width", String(width));
+  clone.setAttribute("height", String(height));
+  clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  clone.style.setProperty("width", `${width}px`);
+  clone.style.setProperty("height", `${height}px`);
+  clone.style.setProperty("max-width", "none");
+
+  return {
+    type: "mermaid",
+    width,
+    height,
+    svg: new XMLSerializer().serializeToString(clone),
+    runs: [{ text: "Mermaid 图表" }],
+  };
+};
+
 const serializeBlock = (block, range) => {
+  if (block.matches("[data-mermaid-viewer]")) {
+    return serializeMermaidBlock(block);
+  }
   const blockFormula = getLatexFormula(block);
   if (blockFormula?.element === block && blockFormula.display) {
     return {
@@ -670,6 +778,7 @@ const getSemanticBlock = (node, fallback) => {
     ? closestListItem
     : null;
   return (
+    element.closest("[data-mermaid-viewer]") ||
     element.closest("[data-markdown-code-block]") ||
     element.closest("[data-markdown-alert]") ||
     priorityListItem ||
@@ -703,6 +812,11 @@ const collectRangeBlocks = (range, fallback) => {
     seen.add(block);
     blocks.push(block);
   };
+  const addMermaid = (viewer) => {
+    if (!rangeIntersectsNode(range, viewer) || seen.has(viewer)) return;
+    seen.add(viewer);
+    blocks.push(viewer);
+  };
 
   if (common.nodeType === Node.TEXT_NODE) addTextNode(common);
   const walker = document.createTreeWalker(common, NodeFilter.SHOW_TEXT);
@@ -715,6 +829,9 @@ const collectRangeBlocks = (range, fallback) => {
   common
     .querySelectorAll?.("mjx-container[data-reader-latex-source]")
     .forEach(addFormula);
+  const containingMermaid = common.closest?.("[data-mermaid-viewer]");
+  if (containingMermaid) addMermaid(containingMermaid);
+  common.querySelectorAll?.("[data-mermaid-viewer]").forEach(addMermaid);
   if (!blocks.length) return fallback ? [fallback] : [];
 
   blocks.sort((left, right) => {
@@ -730,7 +847,7 @@ const collectRangeBlocks = (range, fallback) => {
       !blocks.some(
         (container) =>
           container !== block &&
-          container.matches("[data-markdown-alert]") &&
+          container.matches("[data-markdown-alert], [data-mermaid-viewer]") &&
           container.contains(block),
       ) &&
       (!block.matches(
@@ -753,6 +870,11 @@ export const createReaderShareContent = ({ range, element } = {}) => {
       : [];
   const serialized = blocks
     .map((block) => serializeBlock(block, activeRange))
-    .filter(({ runs }) => runs?.some(({ text }) => text.trim()));
+    .filter(Boolean)
+    .filter(
+      (block) =>
+        (block.type === "mermaid" && block.svg) ||
+        block.runs?.some(({ text }) => text.trim()),
+    );
   return { blocks: serialized };
 };

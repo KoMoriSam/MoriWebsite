@@ -41,7 +41,11 @@
           </button>
         </li>
         <li>
-          <button type="button" :disabled="!context.text" @click="shareText">
+          <button
+            type="button"
+            :disabled="!context.text && !context.shareContent?.blocks?.length"
+            @click="shareText"
+          >
             <i class="ri-share-forward-line" aria-hidden="true"></i>
             <span>分享</span>
           </button>
