@@ -26,7 +26,7 @@ export const TEST_SECTIONS = [
   {
     id: "markdown",
     label: "Markdown",
-    title: "Markdown 渲染与阅读器样式设置",
+    title: "Markdown 渲染与样式测试",
     description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
   },
   {

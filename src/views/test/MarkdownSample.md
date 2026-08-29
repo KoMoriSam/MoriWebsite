@@ -35,8 +35,8 @@ Ruby 注音：{小森|コモリ}、{远方|yuǎnfāng}、{汉字|かんじ}。
 
 HTML 和 CSS 都可以使用缩写提示。
 
-_[HTML]: HyperText Markup Language
-_[CSS]: Cascading Style Sheets
+*[HTML]: HyperText Markup Language
+*[CSS]: Cascading Style Sheets
 
 这是一段签名样式测试。{.signature}
 
@@ -92,6 +92,27 @@ _[CSS]: Cascading Style Sheets
 [引用式链接][docs]
 
 [docs]: https://www.markdownguide.org/
+
+- [google.com](https://google.com)
+- [github.com](https://github.com)
+- [stackoverflow.com](https://stackoverflow.com)
+- [baidu.com](https://baidu.com)
+- [zhihu.com](https://zhihu.com)
+- [csdn.net](https://csdn.net)
+- [apple.com](https://apple.com)
+- [microsoft.com](https://microsoft.com)
+- [amazon.com](https://amazon.com)
+- [taobao.com](https://taobao.com)
+- [jd.com](https://jd.com)
+- [wikipedia.org](https://wikipedia.org)
+- [youtube.com](https://youtube.com)
+- [reddit.com](https://reddit.com)
+- [gitlab.com](https://gitlab.com)
+- [npmjs.com](https://npmjs.com)
+- [twitter.com](https://twitter.com)（现 X）
+- [weibo.com](https://weibo.com)
+- [iana.org](https://iana.org)（有经典图标）
+- [example.com](https://example.com)（无图标，测试降级）
 
 ## 图片
 
@@ -480,14 +501,40 @@ pub fn main() !void {
 > [!WARNING]- 默认折叠
 > 点击标题后才能看到这段警告内容。
 
-> [!CAUTION] 危险操作
-> 请确认 error 语义色、图标与正文对比度。
+<!-- 以下为所有 Callout 类型的示例，集中展示 -->
 
-> [!SUCCESS] 操作成功
-> success 类型的渲染效果。
+> [!NOTE]
+> 这是一个说明（NOTE）示例，默认标题为“说明”。
 
-> [!QUOTE] 自定义引用
-> 用于区别普通 blockquote 与项目提示块。
+> [!INFO]
+> 这是一个信息（INFO）示例，默认标题为“信息”。
+
+> [!TIP]
+> 这是一个提示（TIP）示例，默认标题为“提示”。
+
+> [!IMPORTANT]
+> 这是一个重要（IMPORTANT）示例，默认标题为“重要”。
+
+> [!WARNING]
+> 这是一个警告（WARNING）示例，默认标题为“警告”。
+
+> [!CAUTION]
+> 这是一个注意（CAUTION）示例，默认标题为“注意”。
+
+> [!SUCCESS]
+> 这是一个成功（SUCCESS）示例，默认标题为“成功”。
+
+> [!ERROR]
+> 这是一个错误（ERROR）示例，默认标题为“错误”。
+
+> [!DANGER]
+> 这是一个危险（DANGER）示例，默认标题为“危险”。
+
+> [!QUOTE]
+> 这是一个引用（QUOTE）示例，默认标题为“引用”。
+
+> [!SUMMARY]
+> 这是一个摘要（SUMMARY）示例，默认标题为“摘要”。
 
 [^1]: 用于区别普通 blockquote 与项目提示块。
 
@@ -879,32 +926,44 @@ kanban
 
 HTML 后的 **Markdown 正文** 应继续正常解析。
 
-<!-- sample:聊天记录 -->
+<!-- sample:社交媒体容器 -->
+
+## 聊天框
 
 > [!chat] **李焰老师** · 在线
 >
 > > **Mori** 10:30 · 已送达
-> > 老师，这是包含 **粗体**、`代码` 和 [链接](https://example.com) 的消息。
+> > 老师，这是包含 *斜体*、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com) 的消息。
 >
-> 对方已加入会话
+> *对方*已加入**会话**
 >
 > > **李焰老师** 10:31 · 已读 · 👍
-> > 收到，聊天气泡与状态徽章渲染正常。
+> > 收到，*斜体*、**粗体**、`代码`、~~删除线~~、[链接](https://example.com)、聊天气泡与状态徽章渲染正常。
 > >
 > > 第二行消息用于测试气泡内的多段内容。
 
-## 仅聊天消息（无 ChatBar）
+## 仅聊天消息
 
-> > [!chat] **Mori** 10:30 · 已送达
+> [!chat] 
+>
+> > **Mori** 10:30 · 已送达
 > > 康神开播了，真的假的😲
 
-<!-- sample:空间动态 -->
+## 空间动态 / 朋友圈
 
 > [!moment] **Mori** · 2026-08-06 10:30 · 昆明
 >
-> 今天在测试自定义 **空间动态** 渲染，正文支持 `Markdown` 和 :tada:。
+> 今天在测试自定义 **空间动态** 渲染，正文支持 *斜体*、**粗体**、`代码`、~~删除线~~、[链接](https://example.com) 和 :tada:。
 >
-> ![动态配图](/assets/images/avatar/komorisam.webp)
+> ![动态配图](https://picsum.photos/200/300?random=1)
+> ![动态配图](https://picsum.photos/200/300?random=2)
+> ![动态配图](https://picsum.photos/200/300?random=3)
+> ![动态配图](https://picsum.photos/200/300?random=4)
+> ![动态配图](https://picsum.photos/200/300?random=5)
+> ![动态配图](https://picsum.photos/200/300?random=6)
+> ![动态配图](https://picsum.photos/200/300?random=7)
+> ![动态配图](https://picsum.photos/200/300?random=8)
+> ![动态配图](https://picsum.photos/200/300?random=9)
 >
 > ❤️ 12 · 💬 2 · 🔁 3
 >
@@ -912,7 +971,7 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 >
 > - **李焰老师** 10:35：渲染效果不错。
 >   - **Mori** 回复 **李焰老师** 10:36：收到，谢谢！
-> - **小群主** 10:40：评论也支持 **行内格式**。
+> - **小群主** 10:40：评论也支持 **行内格式**：*斜体*、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com)。
 
 <!-- sample:边界情况 -->
 

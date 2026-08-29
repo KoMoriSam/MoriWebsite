@@ -1,6 +1,6 @@
 <template>
   <TestPage section-id="markdown">
-    <section title="Markdown 渲染与阅读器样式设置">
+    <section title="Markdown 渲染与样式测试">
       <div role="tablist" aria-label="Markdown 示例" class="tabs tabs-border">
         <router-link
           v-for="sample in markdownSamples"
@@ -115,6 +115,9 @@ const testCommentCounts = {
   "markdown-test-1": 3,
   "markdown-test-2": 12,
   "markdown-test-3": 108,
+  "markdown-test-4": 25,
+  "markdown-test-5": 64,
+  "markdown-test-6": 99,
 };
 
 function updateCommentCounts(counts) {
@@ -154,8 +157,7 @@ const markdownSampleSlugs = {
   数学公式: "math",
   Mermaid: "mermaid",
   "原生 HTML": "native-html",
-  聊天记录: "chat",
-  空间动态: "moment",
+  社交媒体容器: "chat-moment",
   边界情况: "edge-cases",
 };
 
