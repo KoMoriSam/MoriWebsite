@@ -40,6 +40,7 @@ const ALLOWED_TAGS = [
   "h5",
   "h6",
   "header",
+  "hgroup",
   "hr",
   "i",
   "img",
@@ -273,7 +274,10 @@ const sanitizeStyle = (tagName, value) => {
     if (separator < 1) continue;
 
     const property = declaration.slice(0, separator).trim().toLowerCase();
-    const propertyValue = declaration.slice(separator + 1).trim().toLowerCase();
+    const propertyValue = declaration
+      .slice(separator + 1)
+      .trim()
+      .toLowerCase();
 
     if (tagName === "img") {
       if (property === "max-width" && propertyValue === "100%") {
@@ -337,7 +341,10 @@ const sanitizeAttributes = (node) => {
 
     if (name.startsWith("data-") && !DATA_ATTRIBUTE_SET.has(name)) continue;
     if (name.startsWith("aria-") && !ARIA_ATTRIBUTE_SET.has(name)) continue;
-    if (name === "data-markdown-props" && !MARKDOWN_COMPONENT_TAG_SET.has(tagName)) {
+    if (
+      name === "data-markdown-props" &&
+      !MARKDOWN_COMPONENT_TAG_SET.has(tagName)
+    ) {
       continue;
     }
 
@@ -394,7 +401,11 @@ const sanitizeAttributes = (node) => {
       if (!value) continue;
     }
 
-    if (name === "type" && tagName === "input" && value.toLowerCase() !== "checkbox") {
+    if (
+      name === "type" &&
+      tagName === "input" &&
+      value.toLowerCase() !== "checkbox"
+    ) {
       continue;
     }
 
@@ -416,7 +427,10 @@ const sanitizeAttributes = (node) => {
     return true;
   }
 
-  if (tagName === "a" && attributes.some((attribute) => attribute.name === "href")) {
+  if (
+    tagName === "a" &&
+    attributes.some((attribute) => attribute.name === "href")
+  ) {
     const target = attributes.find((attribute) => attribute.name === "target");
     if (target?.value === "_blank") {
       const rel = attributes.find((attribute) => attribute.name === "rel");
