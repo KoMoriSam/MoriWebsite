@@ -2,6 +2,7 @@
   <section
     class="not-prose flex w-full flex-col relative mx-auto my-4 max-w-full overflow-hidden rounded-box border border-base-300 bg-base-100 font-sans"
     data-markdown-code-block
+    :data-language="language"
   >
     <CodeHeader type="code" :language="language">
       <template #actions>
