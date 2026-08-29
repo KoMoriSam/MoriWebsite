@@ -24,7 +24,7 @@
 
       <div class="shrink-0 border-b border-base-300 px-3 py-2.5">
         <div
-          class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-300 scrollbar-none shadow-inner"
+          class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
           :class="styleConfigs.fontStyle"
           :data-theme="mobile ? previewTheme || undefined : undefined"
           :style="[
