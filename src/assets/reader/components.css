@@ -35,8 +35,6 @@
     relative overflow-visible
     inline-flex items-center justify-center
     h-4 min-h-0 min-w-6 w-auto ps-1.25 pe-1 ml-1
-    opacity-0 group-hover:opacity-100
-    group-focus-within:opacity-100
     transition-[opacity,scale]
     -translate-y-0.5
     text-primary
@@ -46,26 +44,14 @@
     before:absolute before:inset-0
     before:bg-primary
     before:mask-bubble
-
+  
     hover:text-primary-content
     hover:before:mask-bubble-fill
-
+  
     active:scale-80
     active:text-primary-content
     active:before:mask-bubble-fill;
     }
-  }
-
-  .markdown-content.prose :deep(button.comment-trigger i) {
-    @apply z-10;
-  }
-
-  .markdown-content.prose :deep(button.comment-trigger.has-count) {
-    @apply opacity-100;
-  }
-
-  .markdown-content.prose :deep(button.comment-trigger.has-count i) {
-    @apply hidden;
   }
 
   .markdown-content.prose

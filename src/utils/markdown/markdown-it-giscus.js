@@ -149,14 +149,10 @@ export const useParagraphComments = () => {
   const createCommentTrigger = (paragraphId, sourceType, count) => {
     const trigger = document.createElement("button");
     trigger.type = "button";
-    trigger.className = "comment-trigger has-count group";
+    trigger.className = "comment-trigger";
     trigger.dataset.paragraphId = paragraphId;
     trigger.dataset.sourceType = sourceType;
     trigger.setAttribute("aria-label", "打开段评");
-
-    const icon = document.createElement("i");
-    icon.className = "ri-more-fill text-lg";
-    icon.setAttribute("aria-hidden", "true");
 
     const indicator = document.createElement("span");
     indicator.className = "paragraph-comment-count";
@@ -165,7 +161,7 @@ export const useParagraphComments = () => {
     indicator.setAttribute("aria-label", "当前段评评论数");
     indicator.textContent = getCommentCountLabel(count);
 
-    trigger.append(icon, indicator);
+    trigger.append(indicator);
     return trigger;
   };
 
@@ -255,7 +251,7 @@ export const useParagraphComments = () => {
 
   const handleCommentClick = (e) => {
     const trigger = e.target.closest(
-      "button.comment-trigger.has-count[data-paragraph-id]",
+      "button.comment-trigger[data-paragraph-id]",
     );
     if (!trigger || trigger.closest("[data-reader-comment-scope='chapter']")) {
       return;
@@ -366,7 +362,7 @@ export const useParagraphComments = () => {
         const count = getCount(paragraphId, sourceType);
         if (count <= 0) return "";
 
-        return `<button type="button" class="comment-trigger has-count group" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="打开段评"><i class="ri-more-fill text-lg" aria-hidden="true"></i><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="当前段评评论数">${getCommentCountLabel(count)}</span></button>`;
+        return `<button type="button" class="comment-trigger" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="打开段评"><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="当前段评评论数">${getCommentCountLabel(count)}</span></button>`;
       };
 
       const assignCommentableAttributes = (
