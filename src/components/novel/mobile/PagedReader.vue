@@ -90,6 +90,10 @@
         :style="{
           transform: chapterSnapshotTransform,
           backgroundColor: readerBackgroundColor || undefined,
+          backgroundImage: readerBackgroundImageStyle,
+          backgroundPosition: readerBackgroundImage ? 'center' : undefined,
+          backgroundRepeat: readerBackgroundImage ? 'no-repeat' : undefined,
+          backgroundSize: readerBackgroundImage ? 'cover' : undefined,
         }"
         aria-hidden="true"
       ></div>
@@ -191,28 +195,6 @@
     >
       <PageFootnotes :notes="measuringFootnotes" measure />
     </div>
-
-    <Transition
-      enter-active-class="transition-opacity duration-150"
-      enter-from-class="opacity-0"
-      leave-active-class="transition-opacity duration-150"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="showChapterLoadingOverlay"
-        class="absolute inset-0 z-30 grid place-items-center bg-base-100/80 backdrop-blur-[1px]"
-        role="status"
-        aria-live="assertive"
-        aria-label="正在加载章节"
-        @pointerdown.stop
-        @click.stop
-      >
-        <div class="flex flex-col items-center gap-3 text-base-content/70">
-          <span class="loading loading-spinner loading-lg"></span>
-          <span class="text-sm font-medium">正在加载章节…</span>
-        </div>
-      </div>
-    </Transition>
   </section>
 </template>
 
@@ -250,6 +232,7 @@ import { usePagedReadingPosition } from "@/composables/novel/usePagedReadingPosi
 import { usePaginationScheduler } from "@/composables/novel/usePaginationScheduler";
 import { usePaginationObservers } from "@/composables/novel/usePaginationObservers";
 import { usePagedFootnoteLayout } from "@/composables/novel/usePagedFootnoteLayout";
+import { getReaderBackgroundImageUrl } from "@/constants/reader";
 import {
   prepareMobileTables,
   restoreMobileTables,
@@ -312,6 +295,7 @@ const emit = defineEmits([
   "reader-action",
   "text-context",
   "open-comments",
+  "loading-overlay-change",
 ]);
 const route = useRoute();
 const { getState, setState } = useReadingStateStorage();
@@ -349,11 +333,19 @@ let takeMutationRecords = () => {};
 
 const pageStride = computed(() => pageWidth.value + PAGE_GAP);
 const readerBackgroundColor = computed(() =>
-  ["lemonade", "forest", "corporate", "dim"].includes(
-    props.styleConfigs.colorTheme,
-  )
+  props.styleConfigs.backgroundType === "image"
     ? ""
     : props.styleConfigs.backgroundColor || "",
+);
+const readerBackgroundImage = computed(() =>
+  props.styleConfigs.backgroundType === "image"
+    ? getReaderBackgroundImageUrl(props.styleConfigs.backgroundImage)
+    : "",
+);
+const readerBackgroundImageStyle = computed(() =>
+  readerBackgroundImage.value
+    ? `url("${readerBackgroundImage.value.replaceAll('"', '\\"')}")`
+    : undefined,
 );
 const pageOffset = computed(() => (currentPage.value - 1) * pageStride.value);
 // 移动端浏览器偶尔会在多栏布局稳定前保留一个没有内容的首栏。
@@ -431,6 +423,11 @@ const showChapterLoadingOverlay = computed(
     chapterLoadingOverlayVisible.value ||
     !hasMeasured.value ||
     measuredChapterUuid.value !== String(props.chapter?.uuid || ""),
+);
+watch(
+  showChapterLoadingOverlay,
+  (visible) => emit("loading-overlay-change", visible),
+  { immediate: true },
 );
 const pageProgress = computed(() =>
   totalPages.value <= 1

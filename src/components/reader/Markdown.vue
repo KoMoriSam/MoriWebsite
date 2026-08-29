@@ -4,12 +4,12 @@
     :id="contentId"
     :class="[
       {
-        'opacity-60': markdownPreparing,
+        'opacity-50': markdownPreparing,
         'reader-colors': useReaderColors,
       },
       styleConfigs.fontStyle,
     ]"
-    class="markdown-content prose prose-2xl min-w-0 w-full max-w-full"
+    class="markdown-content prose prose-2xl min-w-0 w-full max-w-full transition-opacity"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,
       '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,
@@ -136,10 +136,7 @@ const props = defineProps({
 const emit = defineEmits(["refresh", "render-ready"]);
 const resolvedTextColor = computed(() => {
   if (!props.useReaderColors) return "";
-  const colorTheme = props.styleConfigs.colorTheme;
-  return ["lemonade", "forest", "corporate", "dim"].includes(colorTheme)
-    ? ""
-    : props.styleConfigs.textColor || "";
+  return props.styleConfigs.textColor || "";
 });
 
 // Markdown 渲染选项

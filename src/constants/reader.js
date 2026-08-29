@@ -36,6 +36,39 @@ export const MOBILE_READER_COLOR_THEMES = Object.freeze([
   { value: "dim", label: "低光夜间", icon: "ri-moon-clear-line" },
 ]);
 
+export const READER_BACKGROUND_IMAGES = Object.freeze([
+  {
+    id: "kraft",
+    label: "牛皮纸",
+    textColor: "#151614",
+    tone: "dark",
+  },
+  {
+    id: "parchment",
+    label: "羊皮纸",
+    textColor: "#151614",
+    tone: "light",
+  },
+  {
+    id: "quiet-night",
+    label: "静夜",
+    textColor: "#b1ccd6",
+    tone: "dark",
+  },
+  {
+    id: "bamboo-shadow",
+    label: "竹影",
+    textColor: "#cac9c9",
+    tone: "dark",
+  },
+]);
+
+export const getReaderBackgroundImage = (id) =>
+  READER_BACKGROUND_IMAGES.find((image) => image.id === id);
+
+export const getReaderBackgroundImageUrl = (id) =>
+  getReaderBackgroundImage(id) ? `/assets/images/backgrounds/${id}.webp` : "";
+
 export const MOBILE_READER_ZONE_ACTIONS = Object.freeze([
   { value: "none", label: "无操作" },
   { value: "menu", label: "菜单" },
@@ -63,40 +96,22 @@ export const DEFAULT_MOBILE_READER_ZONES = Object.freeze([
 export const READER_SYSTEM_PRESETS = Object.freeze([
   {
     id: "system-comfortable",
-    name: "舒适",
+    name: "默认",
     description: "均衡的字号与行距，适合长时间阅读",
     mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-kai",
-      fontSize: 22,
-      fontGap: 0.05,
+      fontSize: 20,
+      fontGap: 0,
       lineHeight: 1.6,
       paraHeight: 0.5,
-      colorTheme: "site",
-      textColor: "",
-      backgroundColor: "",
-    },
-  },
-  {
-    id: "system-compact",
-    name: "紧凑",
-    description: "一屏容纳更多内容，适合碎片阅读",
-    mode: MOBILE_READING_MODES.PAGED,
-    styles: {
-      fontStyle: "font-hei",
-      fontSize: 18,
-      fontGap: -0.05,
-      lineHeight: 1.35,
-      paraHeight: 0.15,
-      colorTheme: "site",
-      textColor: "",
-      backgroundColor: "",
+      colorTheme: "corporate",
     },
   },
   {
     id: "system-paper",
     name: "纸张",
-    description: "低对比暖色纸张，减轻白底刺激",
+    description: "羊皮纸纹理背景，减轻纯色白底刺激",
     mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-fang",
@@ -105,15 +120,15 @@ export const READER_SYSTEM_PRESETS = Object.freeze([
       lineHeight: 1.6,
       paraHeight: 0.5,
       colorTheme: "lemonade",
-      textColor: "",
-      backgroundColor: "",
+      backgroundType: "image",
+      backgroundImage: "parchment",
     },
   },
   {
     id: "system-night",
     name: "暗光",
-    description: "深色低亮度配色，适合暗光环境",
-    mode: MOBILE_READING_MODES.SCROLL,
+    description: "静谧之夜，暗光环境",
+    mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-song",
       fontSize: 20,
@@ -121,24 +136,40 @@ export const READER_SYSTEM_PRESETS = Object.freeze([
       lineHeight: 1.6,
       paraHeight: 0.5,
       colorTheme: "dim",
-      textColor: "",
-      backgroundColor: "",
+      backgroundType: "image",
+      backgroundImage: "quiet-night",
+    },
+  },
+  {
+    id: "system-dark",
+    name: "黑夜",
+    description: "月下竹影，黑夜模式",
+    mode: MOBILE_READING_MODES.PAGED,
+    styles: {
+      fontStyle: "font-song",
+      fontSize: 20,
+      fontGap: 0,
+      lineHeight: 1.6,
+      paraHeight: 0.5,
+      colorTheme: "forest",
+      backgroundType: "image",
+      backgroundImage: "bamboo-shadow",
     },
   },
   {
     id: "system-big",
-    name: "大字号",
+    name: "大字",
     description: "内容集中，眼部友好",
     mode: MOBILE_READING_MODES.SCROLL,
     styles: {
-      fontStyle: "font-kai",
+      fontStyle: "font-hei",
       fontSize: 24,
       fontGap: 0,
       lineHeight: 1.5,
       paraHeight: 0.5,
-      colorTheme: "site",
-      textColor: "",
-      backgroundColor: "",
+      colorTheme: "lemonade",
+      backgroundType: "image",
+      backgroundImage: "kraft",
     },
   },
 ]);
@@ -229,6 +260,16 @@ export const STYLE_CONFIG_KEYS = Object.freeze([
   Object.freeze({
     key: "backgroundColor",
     storageKey: "STYLE_BACKGROUND_COLOR",
+    default: "",
+  }),
+  Object.freeze({
+    key: "backgroundType",
+    storageKey: "STYLE_BACKGROUND_TYPE",
+    default: "color",
+  }),
+  Object.freeze({
+    key: "backgroundImage",
+    storageKey: "STYLE_BACKGROUND_IMAGE",
     default: "",
   }),
 ]);

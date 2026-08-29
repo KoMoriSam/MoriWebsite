@@ -115,27 +115,6 @@
       </div>
     </Transition>
 
-    <Transition
-      enter-active-class="transition-opacity duration-150"
-      enter-from-class="opacity-0"
-      leave-active-class="transition-opacity duration-150"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="showChapterLoadingOverlay"
-        class="absolute inset-0 z-30 grid place-items-center bg-base-100/80 backdrop-blur-[1px]"
-        role="status"
-        aria-live="assertive"
-        aria-label="正在加载章节"
-        @pointerdown.stop
-        @click.stop
-      >
-        <div class="flex flex-col items-center gap-3 text-base-content/70">
-          <span class="loading loading-spinner loading-lg"></span>
-          <span class="text-sm font-medium">正在加载章节…</span>
-        </div>
-      </div>
-    </Transition>
   </section>
 </template>
 
@@ -194,6 +173,7 @@ const emit = defineEmits([
   "text-context",
   "chapter-start-restored",
   "open-comments",
+  "loading-overlay-change",
 ]);
 const route = useRoute();
 const { getState, setState } = useReadingStateStorage();
@@ -214,6 +194,11 @@ const showChapterLoadingOverlay = computed(
   () =>
     props.isLoading ||
     renderedChapterUuid.value !== String(props.chapter?.uuid || ""),
+);
+watch(
+  showChapterLoadingOverlay,
+  (visible) => emit("loading-overlay-change", visible),
+  { immediate: true },
 );
 
 let scrollFrame = 0;

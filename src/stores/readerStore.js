@@ -112,15 +112,42 @@ export const useReaderStore = defineStore("reader", () => {
     const hasPresetColors =
       hasOwnStyle("colorTheme") ||
       hasOwnStyle("textColor") ||
-      hasOwnStyle("backgroundColor");
+      hasOwnStyle("backgroundColor") ||
+      hasOwnStyle("backgroundType") ||
+      hasOwnStyle("backgroundImage");
     const inferredColorTheme = hasOwnStyle("colorTheme")
       ? preset.styles.colorTheme
-      : preset.styles.textColor || preset.styles.backgroundColor
+      : preset.styles.textColor ||
+          preset.styles.backgroundColor ||
+          preset.styles.backgroundImage
         ? "custom"
         : "site";
+    const inferredBackgroundType = hasOwnStyle("backgroundType")
+      ? preset.styles.backgroundType
+      : preset.styles.backgroundImage
+        ? "image"
+        : "color";
     STYLE_CONFIG_KEYS.forEach(({ key }) => {
       if (key === "colorTheme" && hasPresetColors) {
         setStyle(key, inferredColorTheme);
+      } else if (key === "textColor" && hasPresetColors) {
+        setStyle(key, preset.styles.textColor || "");
+      } else if (key === "backgroundColor" && hasPresetColors) {
+        setStyle(
+          key,
+          inferredBackgroundType === "color"
+            ? preset.styles.backgroundColor || ""
+            : "",
+        );
+      } else if (key === "backgroundType" && hasPresetColors) {
+        setStyle(key, inferredBackgroundType);
+      } else if (key === "backgroundImage" && hasPresetColors) {
+        setStyle(
+          key,
+          inferredBackgroundType === "image"
+            ? preset.styles.backgroundImage || ""
+            : "",
+        );
       } else if (preset.styles[key] !== undefined) {
         setStyle(key, preset.styles[key]);
       }

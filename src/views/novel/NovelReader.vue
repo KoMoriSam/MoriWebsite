@@ -51,6 +51,7 @@
         @text-context="openTextContextMenu"
         @controller-state="updateMobileControllerState"
         @open-comments="handleChapterComments"
+        @loading-overlay-change="mobileChapterLoading = $event"
       />
 
       <ScrollReader
@@ -70,6 +71,7 @@
         @text-context="openTextContextMenu"
         @chapter-start-restored="restoreMobileScrollToChapterStart = false"
         @open-comments="handleChapterComments"
+        @loading-overlay-change="mobileChapterLoading = $event"
       />
 
       <ReaderStatusBar
@@ -98,6 +100,42 @@
         @refresh-content="handleRefreshContent"
         @show-reader-hint="callMobileReaderAction('triggerReaderHint')"
       />
+
+      <Transition
+        enter-active-class="transition-opacity duration-150"
+        enter-from-class="opacity-0"
+        leave-active-class="transition-opacity duration-150"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="currentChapter && isMobileReader && mobileChapterLoading"
+          class="fixed inset-0 z-[70] grid place-items-center backdrop-blur-[1px]"
+          style="
+            color: var(
+              --reader-loading-overlay-content,
+              color-mix(
+                in oklab,
+                var(--color-base-content) 70%,
+                transparent
+              )
+            );
+            background-color: var(
+              --reader-loading-overlay-color,
+              color-mix(in oklab, var(--color-base-100) 80%, transparent)
+            );
+          "
+          role="status"
+          aria-live="assertive"
+          aria-label="正在加载章节"
+          @pointerdown.stop
+          @click.stop
+        >
+          <div class="flex flex-col items-center gap-3">
+            <span class="loading loading-spinner loading-lg"></span>
+            <span class="text-sm font-medium">正在加载章节…</span>
+          </div>
+        </div>
+      </Transition>
 
       <TextContextMenu
         v-model="textContextOpen"
@@ -259,6 +297,8 @@ import {
 import {
   MOBILE_READING_MODES,
   MOBILE_READER_VOLUME_KEY_EVENT,
+  getReaderBackgroundImage,
+  getReaderBackgroundImageUrl,
 } from "@/constants/reader";
 
 const novelStore = useNovelStore();
@@ -340,6 +380,7 @@ const stopNovelPosTracker = ref(null);
 const readerRef = ref(null);
 const trackedReaderContext = ref("");
 const mobileReaderControlsOpen = ref(false);
+const mobileChapterLoading = ref(false);
 const textContextOpen = ref(false);
 const textContext = ref({});
 const activeMobileReaderRef = ref(null);
@@ -512,6 +553,15 @@ watch(
   },
   { flush: "sync" },
 );
+const hasCustomReaderAppearance = computed(
+  () =>
+    Boolean(
+      styleConfigs.value.textColor ||
+        styleConfigs.value.backgroundColor ||
+        (styleConfigs.value.backgroundType === "image" &&
+          styleConfigs.value.backgroundImage),
+    ),
+);
 const readerPageTheme = computed(() => {
   if (!isMobileReader.value) return "";
   return ["lemonade", "forest", "corporate", "dim"].includes(
@@ -524,25 +574,41 @@ const usesCustomReaderColors = computed(
   () =>
     isMobileReader.value &&
     (styleConfigs.value.colorTheme === "custom" ||
-      (!readerPageTheme.value &&
-        Boolean(
-          styleConfigs.value.textColor || styleConfigs.value.backgroundColor,
-        ))),
+      hasCustomReaderAppearance.value),
 );
 const readerCustomTextColor = computed(() =>
   usesCustomReaderColors.value ? styleConfigs.value.textColor : "",
 );
 const readerCustomBackgroundColor = computed(() =>
-  usesCustomReaderColors.value ? styleConfigs.value.backgroundColor : "",
+  usesCustomReaderColors.value && styleConfigs.value.backgroundType !== "image"
+    ? styleConfigs.value.backgroundColor
+    : "",
+);
+const readerCustomBackgroundImage = computed(() =>
+  usesCustomReaderColors.value &&
+  styleConfigs.value.backgroundType === "image" &&
+  styleConfigs.value.backgroundImage
+    ? getReaderBackgroundImage(styleConfigs.value.backgroundImage)
+    : undefined,
 );
 const readerPageStyle = computed(() => {
   if (!isMobileReader.value) return undefined;
 
   const textColor = readerCustomTextColor.value;
   const backgroundColor = readerCustomBackgroundColor.value;
+  const backgroundImage = readerCustomBackgroundImage.value;
+  const backgroundImageUrl = getReaderBackgroundImageUrl(backgroundImage?.id);
+  const backgroundImageStyle = backgroundImageUrl
+    ? `url("${backgroundImageUrl.replaceAll('"', '\\"')}")`
+    : undefined;
+  const darkBackgroundImage = backgroundImage?.tone === "dark";
   return {
     color: textColor || undefined,
     backgroundColor: backgroundColor || undefined,
+    backgroundImage: backgroundImageStyle,
+    backgroundPosition: backgroundImage ? "center" : undefined,
+    backgroundRepeat: backgroundImage ? "no-repeat" : undefined,
+    backgroundSize: backgroundImage ? "cover" : undefined,
     "--reader-text-color": textColor || "var(--color-base-content)",
     "--color-base-content": textColor || undefined,
     "--color-base-100": backgroundColor || undefined,
@@ -551,6 +617,16 @@ const readerPageStyle = computed(() => {
       : undefined,
     "--color-base-300": backgroundColor
       ? `color-mix(in oklab, ${backgroundColor} 88%, ${textColor || "black"})`
+      : undefined,
+    "--reader-loading-overlay-color": backgroundImage
+      ? darkBackgroundImage
+        ? "rgb(0 0 0 / 0.8)"
+        : "rgb(255 255 255 / 0.8)"
+      : undefined,
+    "--reader-loading-overlay-content": backgroundImage
+      ? darkBackgroundImage
+        ? "rgb(255 255 255 / 0.75)"
+        : "rgb(0 0 0 / 0.7)"
       : undefined,
   };
 });

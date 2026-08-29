@@ -113,7 +113,7 @@
         <template v-if="mobile">
           <fieldset class="mt-4">
             <legend class="label text-xs">阅读配色</legend>
-            <div class="mt-2 grid grid-cols-4 gap-2">
+            <div class="mt-2 grid grid-cols-5 gap-2">
               <button
                 v-for="theme in MOBILE_READER_COLOR_THEMES"
                 :key="theme.value"
@@ -129,47 +129,94 @@
                 <i :class="theme.icon" aria-hidden="true"></i>
                 <span class="text-[0.625rem]">{{ theme.label }}</span>
               </button>
-              <button
-                type="button"
-                class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
-                :class="{
-                  'outline-2 outline-primary': selectedColorTheme === 'custom',
-                }"
-                @click="selectColorTheme('custom')"
-              >
-                <i class="ri-palette-line" aria-hidden="true"></i>
-                <span class="text-[0.625rem]">自定义</span>
-              </button>
             </div>
           </fieldset>
-
-          <div
-            v-if="selectedColorTheme === 'custom'"
-            class="mt-2 grid grid-cols-2 gap-2"
-          >
-            <label
-              class="input input-sm flex items-center justify-between gap-2"
+          <fieldset class="mt-4">
+            <legend
+              class="label text-xs w-full flex items-center justify-between"
             >
-              <span class="text-xs">文字颜色</span>
-              <input
-                type="color"
-                class="size-7 cursor-pointer border-0 bg-transparent p-0"
-                :value="styleConfigs.textColor || '#1f2937'"
-                @input="setCustomColor('textColor', $event.target.value)"
-              />
-            </label>
-            <label
-              class="input input-sm flex items-center justify-between gap-2"
-            >
-              <span class="text-xs">背景颜色</span>
-              <input
-                type="color"
-                class="size-7 cursor-pointer border-0 bg-transparent p-0"
-                :value="styleConfigs.backgroundColor || '#ffffff'"
-                @input="setCustomColor('backgroundColor', $event.target.value)"
-              />
-            </label>
-          </div>
+              <span>都不满意？试试自定义</span>
+              <div
+                role="tablist"
+                class="tabs tabs-box tabs-xs"
+                aria-label="阅读背景类型"
+              >
+                <button
+                  v-for="option in backgroundTypeOptions"
+                  :key="option.value"
+                  type="button"
+                  role="tab"
+                  class="tab gap-1"
+                  :class="{
+                    'tab-active': selectedBackgroundType === option.value,
+                  }"
+                  :aria-selected="selectedBackgroundType === option.value"
+                  @click="setBackgroundType(option.value)"
+                >
+                  <i :class="option.icon" aria-hidden="true"></i>
+                  {{ option.label }}
+                </button>
+              </div>
+            </legend>
+            <div class="mt-2 w-full space-y-2">
+              <div
+                v-if="selectedBackgroundType === 'color'"
+                class="mt-2 grid grid-cols-2 gap-2"
+              >
+                <label
+                  class="input input-sm flex w-full items-center justify-between gap-2"
+                >
+                  <span class="text-xs">文字颜色</span>
+                  <input
+                    type="color"
+                    class="size-7 cursor-pointer border-0 bg-transparent p-0"
+                    :value="styleConfigs.textColor || '#1f2937'"
+                    @input="setCustomColor('textColor', $event.target.value)"
+                  />
+                </label>
+                <label
+                  class="input input-sm flex w-full items-center justify-between gap-2"
+                >
+                  <span class="text-xs">背景颜色</span>
+                  <input
+                    type="color"
+                    class="size-7 cursor-pointer border-0 bg-transparent p-0"
+                    :value="styleConfigs.backgroundColor || '#ffffff'"
+                    @input="
+                      setCustomColor('backgroundColor', $event.target.value)
+                    "
+                  />
+                </label>
+              </div>
+              <div
+                v-if="selectedBackgroundType === 'image'"
+                class="grid grid-cols-4 gap-2"
+              >
+                <button
+                  v-for="image in READER_BACKGROUND_IMAGES"
+                  :key="image.id"
+                  type="button"
+                  class="btn btn-sm relative overflow-hidden border-base-300 bg-cover bg-center p-1"
+                  :class="{
+                    'outline-2 outline-primary outline-offset-2':
+                      styleConfigs.backgroundImage === image.id,
+                  }"
+                  :style="{
+                    backgroundImage: cssBackgroundImage(
+                      getReaderBackgroundImageUrl(image.id),
+                    ),
+                  }"
+                  :aria-label="`选择阅读背景图：${image.label}`"
+                  :aria-pressed="styleConfigs.backgroundImage === image.id"
+                  @click="selectBackgroundImage(image)"
+                >
+                  <span class="text-xs" :style="{ color: image.textColor }">
+                    {{ image.label }}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </fieldset>
         </template>
 
         <fieldset v-else class="mt-4">
@@ -183,7 +230,9 @@
               :class="{
                 'outline-2 outline-primary': selectedSiteTheme === theme.value,
               }"
-              :data-theme="theme.value === 'default' ? undefined : theme.value"
+              :data-theme="
+                theme.value === 'default' ? systemTheme : theme.value
+              "
               :title="theme.description"
               :aria-label="`切换站点主题：${theme.label}，${theme.description}`"
               :aria-pressed="selectedSiteTheme === theme.value"
@@ -215,13 +264,16 @@
             class="btn btn-circle shrink-0 flex-col gap-1 border-base-300 size-12 p-1 leading-tight shadow-sm"
             :class="[
               preset.styles.fontStyle,
-              mobile ? '' : 'bg-base-100',
+              mobile ? '' : presetSiteTheme(preset) ? 'bg-base-100' : '',
               {
                 'btn-active outline-2 outline-primary outline-offset-2':
                   isPresetActive(preset),
               },
             ]"
-            :data-theme="mobile ? presetTheme(preset) || undefined : undefined"
+            :data-theme="
+              (mobile ? presetTheme(preset) : presetDisplayTheme(preset)) ||
+              undefined
+            "
             :style="presetSampleStyle(preset)"
             :title="preset.description"
             :aria-label="`应用系统推荐预设 ${preset.name}：${preset.description}`"
@@ -244,14 +296,15 @@
               class="btn btn-circle size-12 border-base-300 p-1 text-[0.625rem] leading-tight shadow-sm"
               :class="[
                 preset.styles.fontStyle,
-                !mobile && 'bg-base-100',
+                mobile ? '' : presetSiteTheme(preset) ? 'bg-base-100' : '',
                 {
                   'btn-active outline-2 outline-primary outline-offset-2':
                     isPresetActive(preset),
                 },
               ]"
               :data-theme="
-                mobile ? presetTheme(preset) || undefined : undefined
+                (mobile ? presetTheme(preset) : presetDisplayTheme(preset)) ||
+                undefined
               "
               :style="presetSampleStyle(preset)"
               :title="preset.name"
@@ -292,6 +345,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
+import { usePreferredDark } from "@vueuse/core";
 
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -299,6 +353,9 @@ import {
   FONTS,
   MOBILE_READING_MODE_OPTIONS,
   MOBILE_READER_COLOR_THEMES,
+  getReaderBackgroundImage,
+  getReaderBackgroundImageUrl,
+  READER_BACKGROUND_IMAGES,
   READER_LAYOUT_STYLE_KEYS,
   READER_SYSTEM_PRESETS,
   READER_TYPOGRAPHY_CONTROLS,
@@ -327,7 +384,22 @@ const {
 } = storeToRefs(store);
 const { theme: selectedSiteTheme, themeList: siteThemeList } =
   storeToRefs(themeStore);
+const prefersDark = usePreferredDark();
 const presetName = ref("");
+const backgroundTypeOptions = Object.freeze([
+  {
+    value: "color",
+    label: "纯色背景",
+    icon: "ri-palette-line",
+  },
+  {
+    value: "image",
+    label: "图片背景",
+    icon: "ri-image-line",
+  },
+]);
+
+const systemTheme = computed(() => (prefersDark.value ? "forest" : "lemonade"));
 
 const siteThemeOptions = computed(() => [
   {
@@ -345,22 +417,12 @@ const siteThemeOptions = computed(() => [
 const isLayoutDefault = computed(() =>
   props.mobile ? isMobileLayoutDefault.value : isReaderLayoutDefault.value,
 );
-const systemPresets = computed(() => {
-  const presets = READER_SYSTEM_PRESETS.map((preset, index) => ({
+const systemPresets = computed(() =>
+  READER_SYSTEM_PRESETS.map((preset, index) => ({
     preset,
     label: `预设 ${index + 1}`,
-  }));
-  if (props.mobile) return presets;
-
-  return presets.filter(
-    ({ preset }, index, candidates) =>
-      candidates.findIndex(({ preset: candidate }) =>
-        READER_LAYOUT_STYLE_KEYS.every(
-          (key) => candidate.styles[key] === preset.styles[key],
-        ),
-      ) === index,
-  );
-});
+  })),
+);
 
 const formatNumericValue = (control) => {
   const value = Number(styleConfigs.value[control.key]);
@@ -376,10 +438,17 @@ const semanticReaderThemes = new Set(
 const selectedColorTheme = computed(() => {
   const theme = styleConfigs.value.colorTheme;
   if (theme === "custom" || semanticReaderThemes.has(theme)) return theme;
-  return styleConfigs.value.textColor || styleConfigs.value.backgroundColor
-    ? "custom"
-    : "site";
+  return "site";
 });
+const selectedBackgroundImage = computed(() =>
+  getReaderBackgroundImage(styleConfigs.value.backgroundImage),
+);
+const selectedBackgroundType = computed(() =>
+  styleConfigs.value.backgroundType === "image" &&
+  selectedBackgroundImage.value
+    ? "image"
+    : "color",
+);
 const previewTheme = computed(() =>
   semanticReaderThemes.has(selectedColorTheme.value)
     ? selectedColorTheme.value
@@ -390,13 +459,19 @@ const previewStyle = computed(() => ({
   ...(props.mobile
     ? {
         backgroundColor:
-          selectedColorTheme.value === "custom"
-            ? styleConfigs.value.backgroundColor || "var(--color-base-200)"
-            : "var(--color-base-200)",
-        color:
-          selectedColorTheme.value === "custom"
-            ? styleConfigs.value.textColor || "var(--color-base-content)"
-            : "var(--color-base-content)",
+          selectedBackgroundType.value === "color"
+            ? styleConfigs.value.backgroundColor || undefined
+            : undefined,
+        backgroundImage:
+          selectedBackgroundType.value === "image"
+            ? cssBackgroundImage(
+                getReaderBackgroundImageUrl(selectedBackgroundImage.value?.id),
+              )
+            : undefined,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        color: styleConfigs.value.textColor || "var(--color-base-content)",
       }
     : {}),
   fontSize: `${Math.max(1, Number(styleConfigs.value.fontSize) || 20)}px`,
@@ -414,6 +489,15 @@ const presetTheme = (preset) =>
   semanticReaderThemes.has(preset?.styles?.colorTheme)
     ? preset.styles.colorTheme
     : "";
+const presetSiteTheme = (preset) => {
+  const theme = preset?.styles?.colorTheme;
+  if (theme === "site") return "default";
+  return siteThemeList.value.some(({ value }) => value === theme) ? theme : "";
+};
+const presetDisplayTheme = (preset) => {
+  const theme = presetSiteTheme(preset);
+  return theme === "default" ? systemTheme.value : theme;
+};
 const presetSampleStyle = (preset) => {
   const sample = {
     letterSpacing: `${(Number(preset?.styles?.fontGap) || 0) * 0.125}rem`,
@@ -421,17 +505,21 @@ const presetSampleStyle = (preset) => {
   if (!props.mobile) return sample;
 
   const styles = preset?.styles || {};
-  const custom =
-    styles.colorTheme === "custom" ||
-    (!styles.colorTheme && (styles.textColor || styles.backgroundColor));
+  const backgroundImage =
+    styles.backgroundType === "image"
+      ? getReaderBackgroundImageUrl(styles.backgroundImage)
+      : "";
   return {
     ...sample,
-    backgroundColor: custom
-      ? styles.backgroundColor || "var(--color-base-100)"
-      : "var(--color-base-100)",
-    color: custom
-      ? styles.textColor || "var(--color-base-content)"
-      : "var(--color-base-content)",
+    backgroundColor:
+      styles.backgroundType !== "image"
+        ? styles.backgroundColor || undefined
+        : undefined,
+    color: styles.textColor || "var(--color-base-content)",
+    backgroundImage: cssBackgroundImage(backgroundImage),
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
   };
 };
 
@@ -440,9 +528,23 @@ const normalizePresetStyle = (preset, key) => {
   if (key === "colorTheme") {
     return (
       styles.colorTheme ||
-      (styles.textColor || styles.backgroundColor ? "custom" : "site")
+      (styles.textColor || styles.backgroundColor || styles.backgroundImage
+        ? "custom"
+        : "site")
     );
   }
+  if (key === "backgroundType") {
+    return (
+      styles.backgroundType ||
+      (styles.backgroundImage
+        ? "image"
+        : "color")
+    );
+  }
+  if (key === "textColor" || key === "backgroundColor") {
+    return styles[key] || "";
+  }
+  if (key === "backgroundImage") return styles.backgroundImage || "";
   return styles[key];
 };
 const isPresetActive = (preset) => {
@@ -450,6 +552,8 @@ const isPresetActive = (preset) => {
     "colorTheme",
     "textColor",
     "backgroundColor",
+    "backgroundType",
+    "backgroundImage",
   ].some((key) => preset?.styles?.[key] !== undefined);
   const comparedKeys =
     props.mobile && includesMobileAppearance
@@ -459,9 +563,13 @@ const isPresetActive = (preset) => {
     !props.mobile ||
     preset?.mode === undefined ||
     preset.mode === mobileReadingMode.value;
+  const siteTheme = presetSiteTheme(preset);
+  const siteThemeMatches =
+    props.mobile || !siteTheme || selectedSiteTheme.value === siteTheme;
 
   return (
     modeMatches &&
+    siteThemeMatches &&
     comparedKeys.every((key) => {
       const defaultValue = STYLE_CONFIG_KEYS.find(
         (item) => item.key === key,
@@ -476,8 +584,14 @@ const isPresetActive = (preset) => {
 };
 
 const applyPreset = (preset) => {
-  if (props.mobile) store.applyMobileLayoutPreset(preset);
-  else store.applyReaderLayoutPreset(preset);
+  if (props.mobile) {
+    store.applyMobileLayoutPreset(preset);
+    return;
+  }
+
+  store.applyReaderLayoutPreset(preset);
+  const siteTheme = presetSiteTheme(preset);
+  if (siteTheme) themeStore.setTheme(siteTheme);
 };
 const savePreset = () => {
   const saved = props.mobile
@@ -495,9 +609,39 @@ const selectColorTheme = (theme) => {
 
   store.resetStyle("textColor");
   store.resetStyle("backgroundColor");
+  store.resetStyle("backgroundType");
+  store.resetStyle("backgroundImage");
 };
 const setCustomColor = (key, value) => {
   store.setStyle("colorTheme", "custom");
+  if (key === "backgroundColor") {
+    store.setStyle("backgroundType", "color");
+    store.resetStyle("backgroundImage");
+  }
   store.setStyle(key, value);
+};
+const cssBackgroundImage = (value) =>
+  value ? `url("${String(value).replaceAll('"', '\\"')}")` : undefined;
+const selectBackgroundImage = (image) => {
+  store.setStyle("colorTheme", "custom");
+  store.setStyle("backgroundType", "image");
+  store.setStyle("backgroundImage", image.id);
+  store.resetStyle("backgroundColor");
+  if (image.textColor) {
+    store.setStyle("textColor", image.textColor);
+  }
+};
+const setBackgroundType = (type) => {
+  store.setStyle("colorTheme", "custom");
+  store.setStyle("backgroundType", type);
+  if (type === "color") {
+    store.resetStyle("backgroundImage");
+    return;
+  }
+
+  const selectedImage =
+    getReaderBackgroundImage(styleConfigs.value.backgroundImage) ||
+    READER_BACKGROUND_IMAGES[0];
+  if (selectedImage) selectBackgroundImage(selectedImage);
 };
 </script>

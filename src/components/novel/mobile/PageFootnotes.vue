@@ -2,7 +2,7 @@
   <aside
     v-if="notes.length"
     ref="rootRef"
-    class="page-footnotes markdown-content prose absolute inset-x-0 z-10 max-w-none overflow-y-auto bg-base-100/95"
+    class="page-footnotes markdown-content prose absolute inset-x-0 z-10 max-w-none overflow-y-auto"
     :class="{ 'page-footnotes-measure': measure }"
     aria-label="本页脚注"
     data-reader-interactive
@@ -127,16 +127,14 @@ const alignLastFootnoteBaseline = async () => {
         lineHeight;
     const availableShift = Math.max(
       0,
-      root.getBoundingClientRect().bottom - content.getBoundingClientRect().bottom,
+      root.getBoundingClientRect().bottom -
+        content.getBoundingClientRect().bottom,
     );
     const shift = Math.min(
       availableShift,
       Math.max(0, targetBaseline - baseline),
     );
-    content.style.setProperty(
-      "--reader-footnote-baseline-shift",
-      `${shift}px`,
-    );
+    content.style.setProperty("--reader-footnote-baseline-shift", `${shift}px`);
   });
 };
 
