@@ -6,102 +6,93 @@
     :class="isFullscreen ? 'h-full min-h-0' : ''"
     :aria-busy="renderStatus === 'loading'"
   >
-    <header
-      class="flex shrink-0 select-none items-center justify-between gap-2 border-b border-base-300 bg-base-100 py-0.5 ps-3 pe-2"
-    >
-      <hgroup
-        class="flex min-w-0 items-center text-sm font-medium text-base-content"
-      >
-        <i
-          class="ri-flow-chart me-2 text-lg font-normal"
-          aria-hidden="true"
-        ></i>
-        <h6 class="truncate">Mermaid</h6>
-      </hgroup>
+    <CodeHeader type="mermaid">
+      <template #actions>
 
-      <client-only>
-        <nav
-          class="flex shrink-0 items-center gap-1"
-          aria-label="Mermaid 图表工具"
-        >
-          <div
-            role="tablist"
-            aria-label="Mermaid 视图切换"
-            class="tabs tabs-box tabs-xs shrink-0"
+          <nav
+            class="flex shrink-0 items-center gap-1"
+            aria-label="Mermaid 图表工具"
           >
-            <button
-              role="tab"
-              class="tab"
-              :class="viewMode === 'code' ? 'tab-active' : ''"
-              aria-label="查看 Mermaid 代码"
-              :aria-pressed="viewMode === 'code'"
-              title="代码"
-              @click="viewMode = 'code'"
+            <div
+              role="tablist"
+              aria-label="Mermaid 视图切换"
+              class="tabs tabs-box tabs-xs shrink-0"
             >
-              <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-            </button>
-            <button
-              role="tab"
-              class="tab"
-              :class="viewMode === 'preview' ? 'tab-active' : ''"
-              aria-label="查看 Mermaid 预览"
-              :aria-pressed="viewMode === 'preview'"
-              title="预览"
-              @click="viewMode = 'preview'"
+              <button
+                role="tab"
+                class="tab"
+                :class="viewMode === 'code' ? 'tab-active' : ''"
+                aria-label="查看 Mermaid 代码"
+                :aria-pressed="viewMode === 'code'"
+                title="代码"
+                @click="viewMode = 'code'"
+              >
+                <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+              </button>
+              <button
+                role="tab"
+                class="tab"
+                :class="viewMode === 'preview' ? 'tab-active' : ''"
+                aria-label="查看 Mermaid 预览"
+                :aria-pressed="viewMode === 'preview'"
+                title="预览"
+                @click="viewMode = 'preview'"
+              >
+                <i class="ri-image-line" aria-hidden="true"></i>
+              </button>
+            </div>
+            <aside
+              class="tooltip tooltip-left mb-0.5 font-mono"
+              :class="copied ? 'tooltip-success' : ''"
+              :data-tip="
+                viewMode === 'preview'
+                  ? isFullscreen
+                    ? '退出全屏'
+                    : '全屏'
+                  : copied
+                    ? '复制成功'
+                    : '复制代码'
+              "
             >
-              <i class="ri-image-line" aria-hidden="true"></i>
-            </button>
-          </div>
-          <aside
-            class="tooltip tooltip-left font-mono"
-            :class="copied ? 'tooltip-success' : ''"
-            :data-tip="
-              viewMode === 'preview'
-                ? isFullscreen
-                  ? '退出全屏'
-                  : '全屏'
-                : copied
-                  ? '复制成功'
-                  : '复制代码'
-            "
-          >
-            <button
-              v-if="viewMode === 'preview'"
-              type="button"
-              class="btn btn-sm btn-circle btn-ghost shrink-0"
-              :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
-              :aria-pressed="isFullscreen"
-              :title="isFullscreen ? '退出全屏' : '全屏'"
-              :disabled="!canFullscreen"
-              @click="toggleFullscreen"
-            >
-              <i
-                :class="
-                  isFullscreen
-                    ? 'ri-fullscreen-exit-line'
-                    : 'ri-fullscreen-line'
+              <button
+                v-if="viewMode === 'preview'"
+                type="button"
+                class="btn btn-sm btn-square btn-ghost shrink-0"
+                :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
+                :aria-pressed="isFullscreen"
+                :title="isFullscreen ? '退出全屏' : '全屏'"
+                :disabled="!canFullscreen"
+                @click="toggleFullscreen"
+              >
+                <i
+                  :class="
+                    isFullscreen
+                      ? 'ri-fullscreen-exit-line'
+                      : 'ri-fullscreen-line'
+                  "
+                  aria-hidden="true"
+                ></i>
+              </button>
+              <button
+                v-else
+                type="button"
+                class="btn btn-sm btn-square shrink-0"
+                :class="copied ? 'btn-success' : 'btn-ghost'"
+                :aria-label="
+                  copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'
                 "
-                aria-hidden="true"
-              ></i>
-            </button>
-            <button
-              v-else
-              type="button"
-              class="btn btn-sm btn-circle shrink-0"
-              :class="copied ? 'btn-success' : 'btn-ghost'"
-              :aria-label="copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'"
-              :title="copied ? '复制成功' : '复制代码'"
-              @click="copy(source)"
-            >
-              <i
-                :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
-                aria-hidden="true"
-              ></i>
-            </button>
-          </aside>
-        </nav>
-      </client-only>
-    </header>
+                :title="copied ? '复制成功' : '复制代码'"
+                @click="copy(source)"
+              >
+                <i
+                  :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </aside>
+          </nav>
+      </template>
+    </CodeHeader>
 
     <figure
       data-mermaid-preview
@@ -109,9 +100,7 @@
       :class="[
         isFullscreen ? 'min-h-0 flex-1' : '',
         !isFullscreen && viewMode === 'preview' ? 'min-h-36 md:min-h-56' : '',
-        viewMode === 'code'
-          ? 'overflow-x-auto overflow-y-hidden scrollbar-thin'
-          : 'overflow-hidden',
+        'overflow-hidden',
       ]"
     >
       <div
@@ -170,11 +159,11 @@
         </div>
       </div>
 
-      <pre
+      <CodeView
         v-show="viewMode === 'code'"
-        class="m-0! w-max min-w-full max-w-none overflow-visible! rounded-none! border-0! bg-(--hljs-background) p-4! text-left! font-mono text-sm leading-6 tracking-normal"
-        :class="isFullscreen ? 'h-full' : ''"
-      ><code ref="sourceCode" class="hljs language-mermaid whitespace-pre p-0! font-mono text-sm leading-6">{{ source }}</code></pre>
+        :code="source"
+        language="mermaid"
+      />
 
       <div
         v-show="viewMode === 'preview' && renderStatus === 'ready'"
@@ -208,7 +197,6 @@
 
 <script setup>
 import { useClipboard } from "@vueuse/core";
-import hljs from "highlight.js/lib/core";
 import {
   computed,
   nextTick,
@@ -217,7 +205,8 @@ import {
   ref,
   watch,
 } from "vue";
-import { preloadHighlightLanguages } from "@/utils/markdown/load-markdown-features";
+import CodeHeader from "@/components/markdown/CodeHeader.vue";
+import CodeView from "@/components/markdown/CodeView.vue";
 import { renderMermaidSource } from "@/utils/markdown/markdown-it-mermaid";
 
 const props = defineProps({
@@ -247,7 +236,6 @@ const viewerRoot = ref(null);
 const previewCanvas = ref(null);
 const diagramHost = ref(null);
 const diagramElement = ref(null);
-const sourceCode = ref(null);
 const isFullscreen = ref(false);
 const canFullscreen = ref(false);
 const renderStatus = ref("loading");
@@ -393,17 +381,6 @@ const getDiagramEdgeInset = () =>
   desktopMediaQuery?.matches
     ? DESKTOP_DIAGRAM_EDGE_INSET
     : MOBILE_DIAGRAM_EDGE_INSET;
-
-const highlightSource = async () => {
-  const currentSource = props.source;
-
-  await preloadHighlightLanguages(["mermaid"]);
-  if (!sourceCode.value || currentSource !== props.source) return;
-
-  delete sourceCode.value.dataset.highlighted;
-  sourceCode.value.textContent = currentSource;
-  hljs.highlightElement(sourceCode.value);
-};
 
 const resetRenderedDiagram = () => {
   if (svgElement) resizeObserver?.unobserve(svgElement);
@@ -822,7 +799,6 @@ const toggleFullscreen = async () => {
 onMounted(() => {
   desktopMediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
   desktopMediaQuery.addEventListener("change", syncResponsiveLabelScale);
-  highlightSource();
 
   if (typeof ResizeObserver !== "undefined") {
     resizeObserver = new ResizeObserver(() => {
@@ -844,7 +820,6 @@ watch([zoom, panX, panY], syncSvgViewport, { flush: "post" });
 watch(
   () => props.source,
   () => {
-    highlightSource();
     renderDiagram();
   },
   { flush: "post" },
