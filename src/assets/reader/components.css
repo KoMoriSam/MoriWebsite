@@ -31,7 +31,7 @@
   @layer utilities {
     /* 段落评论按钮 */
     .markdown-content.prose :deep(button.comment-trigger) {
-      @apply whitespace-nowrap
+      @apply whitespace-nowrap select-none
     relative overflow-visible
     inline-flex items-center justify-center
     h-4 min-h-0 min-w-6 w-auto ps-1.25 pe-1 ml-1
@@ -67,9 +67,9 @@
   }
 
   .markdown-content.prose :deep(.heading-wrapper a.header-anchor) {
-    @apply badge badge-md hover:badge-accent hover:text-accent-content 
-    no-underline opacity-0 px-2 translate-y-0.75 group-hover:opacity-100 
-    group-focus-within:opacity-100 transition-opacity;
+    @apply badge badge-sm text-base-content hover:badge-primary hover:text-primary-content 
+    no-underline opacity-0 translate-y-0.5 group-hover:opacity-100 
+    group-focus-within:opacity-100 transition-opacity select-none;
   }
 
   /* Alert 警告框样式 */
