@@ -28,7 +28,7 @@
                   @click="openDialog('search')"
                 >
                   <i
-                    class="ri-search-line text-xl font-normal"
+                    class="ri-search-line text-xl"
                     aria-hidden="true"
                   ></i>
                   搜索
@@ -40,7 +40,7 @@
                   @click="showHelp"
                 >
                   <i
-                    class="ri-question-line text-xl font-normal"
+                    class="ri-question-line text-xl"
                     aria-hidden="true"
                   ></i>
                   帮助
@@ -53,7 +53,7 @@
                   @click="refreshContent"
                 >
                   <i
-                    class="ri-refresh-line text-xl font-normal"
+                    class="ri-refresh-line text-xl"
                     :class="{ 'animate-spin': isLoadingContent }"
                     aria-hidden="true"
                   ></i>

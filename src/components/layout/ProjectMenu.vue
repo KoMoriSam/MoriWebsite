@@ -6,7 +6,7 @@
       type="button"
     >
       <i
-        class="text-xl font-normal"
+        class="text-xl"
         :class="isKaimingActive ? 'ri-shapes-fill' : 'ri-shapes-line'"
       ></i>
       项目

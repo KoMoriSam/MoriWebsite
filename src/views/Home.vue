@@ -49,17 +49,15 @@
             class="flex flex-col lg:flex-row gap-4 justify-center items-center mt-6 md:mt-8 lg:mt-12"
           >
             <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
-              <i class="ri-article-fill font-normal"></i>阅读博客
+              <i class="ri-article-fill"></i>阅读博客
             </router-link>
             <router-link
               to="/novel"
               class="btn btn-primary btn-soft w-64 lg:w-fit group"
             >
+              <i class="ri-eye-line group-hover:hidden group-active:hidden"></i>
               <i
-                class="ri-eye-line group-hover:hidden group-active:hidden font-normal"
-              ></i>
-              <i
-                class="ri-eye-fill hidden group-hover:block group-active:block font-normal"
+                class="ri-eye-fill hidden group-hover:block group-active:block"
               ></i>
               视奸小说
             </router-link>
@@ -68,10 +66,10 @@
               class="btn btn-primary btn-soft w-64 lg:w-fit group"
             >
               <i
-                class="ri-gamepad-line group-hover:hidden group-active:hidden font-normal"
+                class="ri-gamepad-line group-hover:hidden group-active:hidden"
               ></i>
               <i
-                class="ri-gamepad-fill hidden group-hover:block group-active:block font-normal"
+                class="ri-gamepad-fill hidden group-hover:block group-active:block"
               ></i>
               服务器状态
             </router-link>
@@ -263,7 +261,7 @@
             rel="noopener noreferrer"
           >
             <button class="btn btn-neutral">
-              <i class="ri-github-fill font-normal"></i>
+              <i class="ri-github-fill"></i>
               GitHub
             </button>
           </a>
@@ -274,7 +272,7 @@
           >
             <div class="aura text-info">
               <button class="btn btn-info">
-                <i class="ri-bilibili-line font-normal"></i>Bilibili
+                <i class="ri-bilibili-line"></i>Bilibili
               </button>
             </div>
           </a>
@@ -285,10 +283,10 @@
           >
             <button class="btn btn-error btn-soft group">
               <i
-                class="ri-weibo-line group-hover:hidden group-active:hidden font-normal"
+                class="ri-weibo-line group-hover:hidden group-active:hidden"
               ></i>
               <i
-                class="ri-weibo-fill hidden group-hover:block group-active:block font-normal"
+                class="ri-weibo-fill hidden group-hover:block group-active:block"
               ></i>
               微博
             </button>
@@ -300,10 +298,10 @@
               class="btn btn-success btn-soft group"
             >
               <i
-                class="ri-wechat-line group-hover:hidden group-active:hidden font-normal"
+                class="ri-wechat-line group-hover:hidden group-active:hidden"
               ></i>
               <i
-                class="ri-wechat-fill hidden group-hover:block group-active:block font-normal"
+                class="ri-wechat-fill hidden group-hover:block group-active:block"
               ></i>
               微信
             </a>
@@ -326,11 +324,9 @@
             rel="noopener noreferrer"
           >
             <button class="btn btn-info btn-soft group">
+              <i class="ri-qq-line group-hover:hidden group-active:hidden"></i>
               <i
-                class="ri-qq-line group-hover:hidden group-active:hidden font-normal"
-              ></i>
-              <i
-                class="ri-qq-fill hidden group-hover:block group-active:block font-normal"
+                class="ri-qq-fill hidden group-hover:block group-active:block"
               ></i>
               QQ
             </button>

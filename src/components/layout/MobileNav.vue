@@ -36,7 +36,7 @@
               @click="closeMenu"
             >
               <i
-                class="text-lg font-normal"
+                class="text-lg"
                 :class="`${link.icon}-${
                   isNavigationLinkActive(route, link) ? 'fill' : 'line'
                 }`"

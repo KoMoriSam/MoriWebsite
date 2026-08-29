@@ -28,9 +28,9 @@
         target="_blank"
         rel="noopener noreferrer"
       >
-        <i class="ri-github-fill font-normal"></i>
+        <i class="ri-github-fill"></i>
         查看源码
-        <i class="ri-arrow-right-up-line font-normal"></i>
+        <i class="ri-arrow-right-up-line"></i>
       </a>
     </template>
 

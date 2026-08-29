@@ -10,7 +10,7 @@
       <button
         v-if="!style.isDefault(configKey)"
         type="button"
-        class="btn btn-ghost btn-info btn-xs h-auto min-h-0 font-normal"
+        class="btn btn-ghost btn-info btn-xs h-auto min-h-0"
         @click="style.resetStyle(configKey)"
       >
         <span>恢复默认值</span>

@@ -60,7 +60,7 @@ export async function checkUpdateNotice() {
     [
       "查看完整日志",
       h("i", {
-        class: "ri-arrow-right-up-line font-normal",
+        class: "ri-arrow-right-up-line",
         "aria-hidden": "true",
       }),
     ],

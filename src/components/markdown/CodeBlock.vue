@@ -19,10 +19,7 @@
             }"
             @click="copy(code)"
           >
-            <i
-              class="font-normal"
-              :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"
-            ></i>
+            <i :class="copied ? 'ri-check-line' : 'ri-file-copy-line'"></i>
           </button>
         </aside>
       </template>
