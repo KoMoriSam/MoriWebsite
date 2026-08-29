@@ -351,16 +351,95 @@ const getListDepth = (item) => {
   return depth;
 };
 
-const getOrderedMarker = (item, list) => {
-  const explicitValue = Number(item.getAttribute("value"));
-  if (Number.isFinite(explicitValue) && item.hasAttribute("value")) {
-    return `${explicitValue}.`;
+const formatAlphabeticMarker = (value, uppercase = false) => {
+  if (!Number.isInteger(value) || value < 1) return String(value);
+  let remaining = value;
+  let marker = "";
+  while (remaining > 0) {
+    remaining -= 1;
+    marker = String.fromCharCode(97 + (remaining % 26)) + marker;
+    remaining = Math.floor(remaining / 26);
   }
-  const start = Number(list.getAttribute("start")) || 1;
+  return uppercase ? marker.toUpperCase() : marker;
+};
+
+const formatRomanMarker = (value, uppercase = false) => {
+  if (!Number.isInteger(value) || value < 1 || value > 3999) {
+    return String(value);
+  }
+  const numerals = [
+    [1000, "m"],
+    [900, "cm"],
+    [500, "d"],
+    [400, "cd"],
+    [100, "c"],
+    [90, "xc"],
+    [50, "l"],
+    [40, "xl"],
+    [10, "x"],
+    [9, "ix"],
+    [5, "v"],
+    [4, "iv"],
+    [1, "i"],
+  ];
+  let remaining = value;
+  let marker = "";
+  numerals.forEach(([unit, numeral]) => {
+    while (remaining >= unit) {
+      marker += numeral;
+      remaining -= unit;
+    }
+  });
+  return uppercase ? marker.toUpperCase() : marker;
+};
+
+const formatOrderedMarker = (value, styleType) => {
+  if (styleType === "lower-alpha" || styleType === "lower-latin") {
+    return formatAlphabeticMarker(value);
+  }
+  if (styleType === "upper-alpha" || styleType === "upper-latin") {
+    return formatAlphabeticMarker(value, true);
+  }
+  if (styleType === "lower-roman") return formatRomanMarker(value);
+  if (styleType === "upper-roman") return formatRomanMarker(value, true);
+  if (styleType === "decimal-leading-zero") {
+    const sign = value < 0 ? "-" : "";
+    return `${sign}${String(Math.abs(value)).padStart(2, "0")}`;
+  }
+  return String(value);
+};
+
+const getOrderedMarker = (item, list) => {
   const siblings = Array.from(list.children).filter(
     ({ tagName }) => tagName === "LI",
   );
-  return `${start + Math.max(0, siblings.indexOf(item))}.`;
+  const reversed = list.hasAttribute("reversed");
+  const explicitStart = Number(list.getAttribute("start"));
+  let value =
+    list.hasAttribute("start") && Number.isFinite(explicitStart)
+      ? explicitStart
+      : reversed
+        ? siblings.length
+        : 1;
+
+  for (const sibling of siblings) {
+    const explicitValue = Number(sibling.getAttribute("value"));
+    if (sibling.hasAttribute("value") && Number.isFinite(explicitValue)) {
+      value = explicitValue;
+    }
+    if (sibling === item) break;
+    value += reversed ? -1 : 1;
+  }
+
+  const styleType = getComputedStyle(item).listStyleType;
+  return `${formatOrderedMarker(value, styleType)}.`;
+};
+
+const getUnorderedMarker = (item) => {
+  const styleType = getComputedStyle(item).listStyleType;
+  if (styleType === "circle") return "◦";
+  if (styleType === "square") return "▪";
+  return "•";
 };
 
 const getGeneratedIcon = (element) => {
@@ -370,7 +449,7 @@ const getGeneratedIcon = (element) => {
   if (!content || content === "none" || content === "normal") return null;
   const unquoted =
     content.length >= 2 &&
-    ["\"", "'"].includes(content[0]) &&
+    ['"', "'"].includes(content[0]) &&
     content[0] === content.at(-1)
       ? content.slice(1, -1)
       : content;
@@ -408,7 +487,9 @@ const getListMarker = (item) => {
   );
   if (checkbox) return checkbox.checked ? "☑" : "☐";
   const list = item.parentElement;
-  return list?.tagName === "OL" ? getOrderedMarker(item, list) : "•";
+  return list?.tagName === "OL"
+    ? getOrderedMarker(item, list)
+    : getUnorderedMarker(item);
 };
 
 const getAlertTone = (alert) => {
@@ -854,8 +935,7 @@ const collectRangeBlocks = (range, fallback) => {
         "[data-markdown-chat], [data-markdown-moment], blockquote",
       ) ||
         !blocks.some(
-          (nestedBlock) =>
-            nestedBlock !== block && block.contains(nestedBlock),
+          (nestedBlock) => nestedBlock !== block && block.contains(nestedBlock),
         )),
   );
 };
