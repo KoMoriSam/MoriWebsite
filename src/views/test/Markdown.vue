@@ -6,8 +6,7 @@
           v-for="sample in markdownSamples"
           :key="sample.name"
           :to="{
-            name: 'markdown-sample',
-            params: { sample: sample.slug },
+            name: sample.slug,
           }"
           role="tab"
           class="tab shrink-0 whitespace-nowrap"
@@ -177,6 +176,7 @@ const markdownSampleSlugs = {
   Mermaid: "mermaid",
   "原生 HTML": "native-html",
   社交媒体容器: "chat-moment",
+  "XSS 注入": "xss-inject",
   边界情况: "edge-cases",
 };
 
@@ -203,8 +203,10 @@ const markdownSamples = parseMarkdownSamples(markdownSampleSource);
 
 const currentSample = computed(
   () =>
-    markdownSamples.find((sample) => sample.slug === route.params.sample) ||
-    markdownSamples[0],
+    markdownSamples.find(
+      (sample) =>
+        sample.slug === route.name || sample.slug === route.params.sample,
+    ) || markdownSamples[0],
 );
 const markdownContent = computed(() => currentSample.value?.content || "");
 const markdownHeaderData = computed(() => ({

@@ -12,6 +12,7 @@ import {
 import {
   TEST_SECTIONS,
   TEST_SECTION_COMPONENTS,
+  MARKDOWN_SAMPLES,
 } from "@/constants/test-sections";
 
 if (
@@ -153,15 +154,15 @@ export const routes = [
             navName: "test",
           },
         })),
-        {
-          path: "/test/markdown/:sample",
-          name: "markdown-sample",
+        ...MARKDOWN_SAMPLES.map((slug) => ({
+          path: `/test/markdown/${slug}`,
+          name: slug,
           component: TEST_SECTION_COMPONENTS.markdown,
           meta: {
             title: "Markdown 渲染与样式测试 | 远方之森",
             navName: "test",
           },
-        },
+        })),
       ]
     : []),
   {

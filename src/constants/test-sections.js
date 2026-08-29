@@ -115,3 +115,20 @@ export const TEST_SECTION_COMPONENTS = {
   environment: () => import("@/views/test/Environment.vue"),
   api: () => import("@/views/test/Api.vue"),
 };
+
+export const MARKDOWN_SAMPLES = [
+  "headings-paragraphs",
+  "inline-extensions",
+  "lists-tasks",
+  "links-media",
+  "tables",
+  "code-blocks",
+  "alerts-details",
+  "footnotes-anchors",
+  "math",
+  "mermaid",
+  "native-html",
+  "chat-moment",
+  "xss-inject",
+  "edge-cases",
+];
