@@ -30,9 +30,15 @@
 
         <section class="min-w-0" aria-label="Markdown 示例预览">
           <Markdown
+            ref="markdownPreviewRef"
             :content="markdownContent"
             :header-data="markdownHeaderData"
             :style-configs="readerStore.styleConfigs"
+            @pointerdown.capture="handleMarkdownPointerDown"
+            @pointermove.capture="handleMarkdownPointerMove"
+            @pointerup.capture="handleMarkdownPointerUp"
+            @pointercancel.capture="handleMarkdownPointerCancel"
+            @contextmenu.capture="handleMarkdownContextMenu"
           />
         </section>
 
@@ -93,16 +99,25 @@
           </fieldset>
         </aside>
       </div>
+
+      <TextContextMenu
+        v-model="textContextOpen"
+        :context="textContext"
+        :share-meta="shareMeta"
+        @search="openContextSearch"
+      />
     </section>
   </TestPage>
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
+import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
+import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 import TestPage from "./_TestPage.vue";
@@ -110,7 +125,11 @@ import markdownSampleSource from "./MarkdownSample.md?raw";
 
 const readerStore = useReaderStore();
 const route = useRoute();
+const router = useRouter();
 const { setCount } = useParagraphCommentsStorage();
+const markdownPreviewRef = ref(null);
+const textContextOpen = ref(false);
+const textContext = ref({});
 const testCommentCounts = {
   "markdown-test-1": 3,
   "markdown-test-2": 12,
@@ -195,4 +214,42 @@ const markdownHeaderData = computed(() => ({
   meta: "",
   sourceType: "article",
 }));
+const shareMeta = computed(() => ({
+  sourceLabel: "远方之森 · Markdown 测试",
+  title: markdownHeaderData.value.title,
+  detail: "Markdown 组件上下文菜单测试",
+  path: route.path,
+}));
+
+function openTextContextMenu(context) {
+  if (!context) {
+    textContextOpen.value = false;
+    textContext.value = {};
+    return;
+  }
+
+  textContext.value = context;
+  textContextOpen.value = true;
+}
+
+const {
+  handleContextMenu: handleMarkdownContextMenu,
+  handlePointerCancel: handleMarkdownPointerCancel,
+  handlePointerDown: handleMarkdownPointerDown,
+  handlePointerMove: handleMarkdownPointerMove,
+  handlePointerUp: handleMarkdownPointerUp,
+} = useReaderTextContext({
+  getRoot: () => markdownPreviewRef.value,
+  emit: (_eventName, context) => openTextContextMenu(context),
+});
+
+function openContextSearch(keyword) {
+  void router.replace({
+    query: {
+      ...route.query,
+      search: "1",
+      q: String(keyword || "").trim() || undefined,
+    },
+  });
+}
 </script>
