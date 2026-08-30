@@ -30,6 +30,13 @@ export const TEST_SECTIONS = [
     description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
   },
   {
+    id: "mobile-reader",
+    label: "移动阅读",
+    title: "移动端阅读器",
+    description:
+      "在独立移动视口中检查分页、滚动、触控操作、阅读控制与排版设置。",
+  },
+  {
     id: "number-controller",
     label: "控制器",
     title: "NumberController 组件",
@@ -103,6 +110,7 @@ export const TEST_SECTION_COMPONENTS = {
   toast: () => import("@/views/test/Toast.vue"),
   modal: () => import("@/views/test/Modal.vue"),
   markdown: () => import("@/views/test/Markdown.vue"),
+  "mobile-reader": () => import("@/views/test/MobileReader.vue"),
   "number-controller": () => import("@/views/test/NumberController.vue"),
   loading: () => import("@/views/test/Loading.vue"),
   pagination: () => import("@/views/test/Pagination.vue"),
