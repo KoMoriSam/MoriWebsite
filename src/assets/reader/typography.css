@@ -225,7 +225,43 @@
         :where([class~="not-prose"], [class~="not-prose"] *)
       )
     ) {
-    @apply max-w-full h-auto;
+    @apply max-w-full h-auto my-0;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure) {
+    @apply clear-both w-fit max-w-full mx-auto my-2;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure > img) {
+    @apply mx-auto my-0;
+  }
+
+  .markdown-content.prose :deep(img.markdown-inline-image) {
+    @apply inline-block my-0 align-middle;
+  }
+
+  .markdown-content.prose :deep(img.markdown-svg-image) {
+    filter: var(--markdown-svg-filter, none);
+  }
+
+  .markdown-content.prose :deep(.markdown-figure-left) {
+    @apply clear-none float-left max-w-[50%] ms-0 me-4;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure-left > img) {
+    @apply ms-0 me-auto;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure-right) {
+    @apply clear-none float-right max-w-[50%] ms-4 me-0;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure-right > img) {
+    @apply ms-auto me-0;
+  }
+
+  .markdown-content.prose :deep(.markdown-figure > figcaption) {
+    @apply mt-1 text-center text-[calc(var(--para-font-size)*0.75)];
   }
 
   .markdown-content.prose

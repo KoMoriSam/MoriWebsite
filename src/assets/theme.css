@@ -72,11 +72,13 @@
     var(--color-base-100) 55%,
     var(--color-base-200)
   );
+  --markdown-svg-filter: none;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --hljs-background: var(--color-base-200);
+    --markdown-svg-filter: invert(1) hue-rotate(180deg);
   }
 }
 
@@ -89,6 +91,7 @@
     var(--color-base-100) 55%,
     var(--color-base-200)
   );
+  --markdown-svg-filter: none;
 }
 
 :root:has(input.theme-controller[value="forest"]:checked),
@@ -96,6 +99,7 @@
 :root:has(input.theme-controller[value="dim"]:checked),
 [data-theme="dim"] {
   --hljs-background: var(--color-base-200);
+  --markdown-svg-filter: invert(1) hue-rotate(180deg);
 }
 
 :root,

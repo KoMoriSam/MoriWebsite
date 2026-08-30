@@ -14,30 +14,7 @@ const {
   normalizeBanner,
 } = createArticleAssetResolver(BASE_URL);
 
-const escapeHtmlAttr = (value = "") => {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-};
-
 const extractImageTarget = extractArticleImageTarget;
-
-const formatImageWidth = (raw = "") => {
-  const value = String(raw || "").trim();
-  if (!value || value === "%") return "";
-
-  if (/^\d+(\.\d+)?$/.test(value)) {
-    return `${value}px`;
-  }
-
-  if (/^\d+(\.\d+)?%$/.test(value)) {
-    return value;
-  }
-
-  return "";
-};
 
 const normalizeObsidianImages = (markdown = "", { bannerName = "" } = {}) => {
   return String(markdown || "").replaceAll(OBSIDIAN_IMAGE_REGEX, (_, inner) => {
@@ -49,32 +26,8 @@ const normalizeObsidianImages = (markdown = "", { bannerName = "" } = {}) => {
     const src = normalizeImageSrc(rawTarget, { bannerName });
     if (!src) return "";
 
-    let align = "";
-    if (["left", "center", "right"].includes((parts[0] || "").toLowerCase())) {
-      align = (parts.shift() || "").toLowerCase();
-    }
-
-    const [rawAlt = "", rawWidth = ""] = parts;
-    const alt = rawAlt === "%" ? "" : rawAlt;
-    const width = formatImageWidth(
-      rawWidth || (parts.length === 1 ? rawAlt : ""),
-    );
-
-    const styleTokens = ["max-width:100%", "height:auto"];
-    if (width) {
-      styleTokens.push(`width:${width}`);
-    }
-
-    const alignClass =
-      align === "center"
-        ? "mx-auto block"
-        : align === "right"
-          ? "ml-auto block"
-          : align === "left"
-            ? "mr-auto block"
-            : "";
-
-    return `<img class="${alignClass}" src=\"${escapeHtmlAttr(src)}\" alt=\"${escapeHtmlAttr(alt)}\" loading=\"lazy\" style=\"${styleTokens.join(";")};\" />`;
+    const options = parts.length ? `|${parts.join("|")}` : "";
+    return `![[${src}${options}]]`;
   });
 };
 

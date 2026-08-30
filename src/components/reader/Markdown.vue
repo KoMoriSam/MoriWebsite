@@ -167,6 +167,7 @@ import { codePlugin } from "@/utils/markdown/markdown-it-code";
 import { linkIconPlugin } from "@/utils/markdown/markdown-it-link-icon";
 import { mermaidPlugin } from "@/utils/markdown/markdown-it-mermaid";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
+import { figurePlugin } from "@/utils/markdown/markdown-it-figure";
 import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
 import { taskStatusPlugin } from "@/utils/markdown/markdown-it-task-status";
 import {
@@ -490,6 +491,7 @@ const sharedPlugins = computed(() => [
   ...(mathJaxPlugin.value ? [mathJaxPlugin.value] : []),
   MarkdownItMark,
   mermaidPlugin,
+  figurePlugin,
   tableWrapperPlugin,
   linkIconPlugin,
 ]);
