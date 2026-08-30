@@ -401,8 +401,8 @@ section[data-markdown-moment] {
 }
 
 .moments-comments :deep(.user-name) {
-  @apply font-bold text-primary/80
-    hover:text-primary;
+  @apply font-bold text-base-content/80
+    hover:text-info;
 }
 
 .moments-comments :deep(.comment-time) {
@@ -411,5 +411,9 @@ section[data-markdown-moment] {
 
 .moments-comments :deep(.reply-label) {
   @apply mx-1 font-normal text-base-content/50;
+}
+
+.moments-comments :deep(a) {
+  @apply text-primary hover:font-bold;
 }
 </style>
