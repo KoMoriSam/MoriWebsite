@@ -91,7 +91,8 @@
   .markdown-content.prose :deep(details.alert p),
   .markdown-content.prose :deep(details.alert ul li),
   .markdown-content.prose :deep(details.alert ol li) {
-    @apply indent-0 text-base-content py-0 mt-2 mb-1
+    @apply indent-0 text-base-content py-0 
+    mt-[calc(var(--para-margin-inline)*0.5)] mb-0
     text-[calc(var(--para-font-size)*0.75)]
     leading-(--para-line-height)
     tracking-[calc(var(--para-letter-spacing)*0.75)];
