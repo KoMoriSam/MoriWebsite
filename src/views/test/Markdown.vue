@@ -4,7 +4,7 @@
       <div role="tablist" aria-label="Markdown 示例" class="tabs tabs-border">
         <router-link
           v-for="sample in markdownSamples"
-          :key="sample.name"
+          :key="sample.slug"
           :to="{
             name: sample.slug,
           }"
@@ -120,7 +120,7 @@ import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 import TestPage from "./_TestPage.vue";
-import markdownSampleSource from "./MarkdownSample.md?raw";
+import { MARKDOWN_SAMPLES as markdownSamples } from "./markdown-samples";
 
 const readerStore = useReaderStore();
 const route = useRoute();
@@ -163,50 +163,10 @@ function clearCommentCounts() {
   );
 }
 
-const markdownSampleSlugs = {
-  标题与段落: "headings-paragraphs",
-  行内与扩展: "inline-extensions",
-  列表与复选框: "lists-tasks",
-  链接与媒体: "links-media",
-  表格: "tables",
-  代码块: "code-blocks",
-  提示与折叠: "alerts-details",
-  脚注与锚点: "footnotes-anchors",
-  数学公式: "math",
-  Mermaid: "mermaid",
-  "原生 HTML": "native-html",
-  社交媒体容器: "chat-moment",
-  "XSS 注入": "xss-inject",
-  边界情况: "edge-cases",
-};
-
-function parseMarkdownSamples(source) {
-  const matches = [...source.matchAll(/^<!--\s*sample:(.+?)\s*-->\r?$/gm)];
-
-  return matches.map((match, index) => {
-    const name = match[1].trim();
-
-    return {
-      name,
-      slug: markdownSampleSlugs[name] || name,
-      content: source
-        .slice(
-          match.index + match[0].length,
-          matches[index + 1]?.index ?? source.length,
-        )
-        .trim(),
-    };
-  });
-}
-
-const markdownSamples = parseMarkdownSamples(markdownSampleSource);
-
 const currentSample = computed(
   () =>
-    markdownSamples.find(
-      (sample) =>
-        sample.slug === route.name || sample.slug === route.params.sample,
-    ) || markdownSamples[0],
+    markdownSamples.find((sample) => sample.slug === route.name) ||
+    markdownSamples[0],
 );
 const markdownContent = computed(() => currentSample.value?.content || "");
 const markdownHeaderData = computed(() => ({

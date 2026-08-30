@@ -12,8 +12,8 @@ import {
 import {
   TEST_SECTIONS,
   TEST_SECTION_COMPONENTS,
-  MARKDOWN_SAMPLES,
 } from "@/constants/test-sections";
+import { MARKDOWN_SAMPLES } from "@/views/test/markdown-samples";
 
 if (
   !import.meta.env.SSR &&
@@ -154,12 +154,12 @@ export const routes = [
             navName: "test",
           },
         })),
-        ...MARKDOWN_SAMPLES.map((slug) => ({
+        ...MARKDOWN_SAMPLES.map(({ slug, name }) => ({
           path: `/test/markdown/${slug}`,
           name: slug,
           component: TEST_SECTION_COMPONENTS.markdown,
           meta: {
-            title: "Markdown 渲染与样式测试 | 远方之森",
+            title: `${name} | Markdown 测试`,
             navName: "test",
           },
         })),

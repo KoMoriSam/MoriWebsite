@@ -1,4 +1,4 @@
-<!-- sample:标题与段落 -->
+<!-- sample:headings-paragraphs|标题与段落 -->
 
 # 一级标题
 
@@ -23,7 +23,7 @@
 >
 > > 嵌套引用第二层
 
-<!-- sample:行内与扩展 -->
+<!-- sample:inline-extensions|行内与扩展 -->
 
 普通文本、**粗体aBc123**、_斜体aBc123_、**_粗斜体aBc123_**、~~删除线~~、==高亮文本==。
 
@@ -44,7 +44,7 @@ _[CSS]: Cascading Style Sheets
 
 [跳转到自定义标题](#custom-heading)
 
-<!-- sample:列表与复选框 -->
+<!-- sample:lists-tasks|列表与复选框 -->
 
 ## 无序列表
 
@@ -83,7 +83,7 @@ _[CSS]: Cascading Style Sheets
 - [p] 奖励/成就
 - [c] 待选/备选
 
-<!-- sample:链接与媒体 -->
+<!-- sample:links-media|链接与媒体 -->
 
 ## 链接
 
@@ -179,7 +179,7 @@ _[CSS]: Cascading Style Sheets
 
 这是 **加粗文字** 加图片 ![心](https://picsum.photos/20/20?random=9) 再加 `代码片段`，图片依然保持行内。
 
-<!-- sample:表格 -->
+<!-- sample:tables|表格 -->
 
 ## 对齐与行内格式
 
@@ -191,7 +191,7 @@ _[CSS]: Cascading Style Sheets
 
 表格下方正文用于检查滚动容器与上下间距。
 
-<!-- sample:代码块 -->
+<!-- sample:code-blocks|代码块 -->
 
 行内代码：`npm run build`。
 
@@ -546,7 +546,7 @@ pub fn main() !void {
 用于检查无语言 fallback 与复制按钮。
 ```
 
-<!-- sample:提示与折叠 -->
+<!-- sample:alerts-details|提示块 -->
 
 > [!NOTE] 普通说明 `Markdown 格式支持` [^1]
 > 静态说明块，支持 **Markdown** 与 `行内代码`。
@@ -597,7 +597,7 @@ pub fn main() !void {
 
 [^1]: 用于区别普通 blockquote 与项目提示块。
 
-<!-- sample:脚注与锚点 -->
+<!-- sample:footnotes-anchors|脚注与锚点 -->
 
 # 可跳转的测试标题
 
@@ -615,7 +615,7 @@ pub fn main() !void {
 
     第二段脚注，用于检查缩进和返回链接。
 
-<!-- sample:数学公式 -->
+<!-- sample:LaTeX|LaTeX -->
 
 ## 行内公式
 
@@ -697,7 +697,7 @@ $$
 }
 $$
 
-<!-- sample:Mermaid -->
+<!-- sample:mermaid|Mermaid -->
 
 ## 流程与交互
 
@@ -973,7 +973,7 @@ block
 kanban
 ```
 
-<!-- sample:原生 HTML -->
+<!-- sample:native-html|原生 HTML -->
 
 ## HTML 混排
 
@@ -988,7 +988,7 @@ kanban
 
 HTML 后的 **Markdown 正文** 应继续正常解析。
 
-<!-- sample:社交媒体容器 -->
+<!-- sample:chat-moment|社交媒体块 -->
 
 ## 聊天框
 
@@ -1035,7 +1035,7 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 >   - **Mori** 回复 **李焰老师** 10:36：收到，谢谢！
 > - **小群主** 10:40：评论也支持 **行内格式**：_斜体_、**粗体**、`代码`、~~删除线~~和 [链接](https://example.com)。
 
-<!-- sample:XSS 注入 -->
+<!-- sample:xss-inject|XSS 注入 -->
 
 能被自动触发：
 
@@ -1182,7 +1182,7 @@ VM62243:1 XSS-12: form action executed
 ></textarea>
 ```
 
-<!-- sample:边界情况 -->
+<!-- sample:edge-cases|边界情况 -->
 
 ## 中英文与标点
 
