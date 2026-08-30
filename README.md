@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>1.24.1</strong>
+  当前版本：<strong>1.24.2</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -56,12 +56,12 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
 
-## 1.24.1 版本重点
+## 1.24.2 版本重点
 
-- 重构 Markdown 渲染链路，统一博客与小说阅读器结构并拆分阅读样式
-- 修复阅读计数更新失败后消失的问题与 Mermaid 非全屏预览拖动范围
-- 支持 Mermaid 滚轮缩放、Obsidian 风格替换复选与外部链接网站图标
-- 移除 legacy 插件依赖，放弃对 IE11 的支持
+- Markdown 图片新增 figure 图注渲染，支持 wikilink 图片引用
+- 扩展阅读背景预设，支持将预设图片设置为阅读背景
+- 加强 Markdown 渲染的 XSS 防护，修复 LaTeX 与 Mermaid SSR 渲染问题
+- 抽象 CodeHeader / CodeView 组件，统一代码块与 Mermaid 展示功能
 
 完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 
