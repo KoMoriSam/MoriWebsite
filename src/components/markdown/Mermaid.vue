@@ -223,7 +223,7 @@ const DESKTOP_MEDIA_QUERY = "(min-width: 48rem)";
 const PAN_BOUNDARY_SPACE = 48;
 const MOBILE_DIAGRAM_EDGE_INSET = 12;
 const DESKTOP_DIAGRAM_EDGE_INSET = 24;
-const viewMode = ref("preview");
+const viewMode = ref(import.meta.env.SSR ? "code" : "preview");
 const zoom = ref(MIN_ZOOM);
 const defaultZoom = ref(MIN_ZOOM);
 const panX = ref(0);
@@ -235,7 +235,7 @@ const diagramHost = ref(null);
 const diagramElement = ref(null);
 const isFullscreen = ref(false);
 const canFullscreen = ref(false);
-const renderStatus = ref("loading");
+const renderStatus = ref(import.meta.env.SSR ? "idle" : "loading");
 let panStart = null;
 let pinchStart = null;
 let resizeObserver = null;
@@ -815,9 +815,25 @@ onMounted(() => {
 
 watch([zoom, panX, panY], syncSvgViewport, { flush: "post" });
 watch(
+  viewMode,
+  (mode) => {
+    if (mode === "preview" && renderStatus.value === "idle") {
+      renderDiagram();
+    }
+  },
+  { flush: "post" },
+);
+watch(
   () => props.source,
   () => {
-    renderDiagram();
+    renderRequestId += 1;
+    renderStatus.value = "idle";
+    resetRenderedDiagram();
+    diagramElement.value?.replaceChildren();
+
+    if (viewMode.value === "preview") {
+      renderDiagram();
+    }
   },
   { flush: "post" },
 );
