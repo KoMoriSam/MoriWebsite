@@ -574,6 +574,10 @@ $$
 f(x) = x^3 + 2x^2 - x + 1
 $$
 
+$$
+x = 1 \quad \text{这是中文}
+$$
+
 公式后的正文用于检查异步加载 MathJax SVG 时是否闪烁或丢失内容。
 
 好的，我们来做一个“压力测试”级别的公式，它混合了大型矩阵、分段函数、上下标嵌套、积分、求和与极限，能有效检验渲染引擎的边界情况。
@@ -582,8 +586,7 @@ $$
 
 ### 行内公式压力测试
 
-这是一个同时包含多重上下标、分数和根号的复杂行内公式：  
-$\displaystyle \lim_{n \to \infty} \left( 1 + \frac{1}{n} \right)^{n} = e$，而微分形式则为 $\displaystyle \frac{\partial^2 u}{\partial t^2} = c^2 \nabla^2 u$，同时包含张量缩并：$R^{\mu}_{\ \nu \rho \sigma} = \partial_\rho \Gamma^{\mu}_{\nu\sigma} - \partial_\sigma \Gamma^{\mu}_{\nu\rho} + \Gamma^{\mu}_{\lambda\rho} \Gamma^{\lambda}_{\nu\sigma} - \Gamma^{\mu}_{\lambda\sigma} \Gamma^{\lambda}_{\nu\rho}$。
+这是一个同时包含多重上下标、分数和根号的复杂行内公式：$\displaystyle \lim_{n \to \infty} \left( 1 + \frac{1}{n} \right)^{n} = e$，而微分形式则为 $\displaystyle \frac{\partial^2 u}{\partial t^2} = c^2 \nabla^2 u$，同时包含张量缩并：$R^{\mu}_{\ \nu \rho \sigma} = \partial_\rho \Gamma^{\mu}_{\nu\sigma} - \partial_\sigma \Gamma^{\mu}_{\nu\rho} + \Gamma^{\mu}_{\lambda\rho} \Gamma^{\lambda}_{\nu\sigma} - \Gamma^{\mu}_{\lambda\sigma} \Gamma^{\lambda}_{\nu\rho}$。还有中文 LaTeX：$\text{这是中文}$。
 
 ---
 

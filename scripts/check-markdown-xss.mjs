@@ -135,6 +135,14 @@ assert.match(actualMathJaxHtml, /data-latex=/u);
 assert.match(actualMathJaxHtml, /<defs><path/u);
 assert.match(actualMathJaxHtml, /<use\b[^>]*xlink:href="#MJX-/u);
 
+const actualMathJaxTextHtml = sanitizeMarkdownHtml(
+  mathMarkdown.render("$\\text{这是中文}$"),
+);
+assert.match(
+  actualMathJaxTextHtml,
+  /<text\b[^>]*font-size="[\d.]+px"[^>]*font-family="serif"[^>]*>这是中文<\/text>/u,
+);
+
 const markerNames = ["alert", "chat", "moment", "code", "link-icon", "mermaid"];
 const markerHtml = sanitizeMarkdownHtml(
   markerNames

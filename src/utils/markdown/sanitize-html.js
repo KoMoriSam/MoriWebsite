@@ -89,6 +89,7 @@ const ALLOWED_TAGS = [
   "line",
   "polygon",
   "polyline",
+  "text",
   "title",
   "desc",
   ...MARKDOWN_COMPONENT_TAGS,
@@ -160,6 +161,10 @@ const ALLOWED_ATTRIBUTES = [
   "dy",
   "fill",
   "focusable",
+  "font-family",
+  "font-size",
+  "font-style",
+  "font-weight",
   "height",
   "href",
   "id",
@@ -372,6 +377,34 @@ const sanitizeAttributes = (node) => {
     if (name === "style") {
       value = sanitizeStyle(tagName, value);
       if (!value) continue;
+    }
+
+    if (
+      name === "font-family" &&
+      (tagName !== "text" || !/^(?:serif|sans-serif|monospace)$/u.test(value))
+    ) {
+      continue;
+    }
+
+    if (
+      name === "font-size" &&
+      (tagName !== "text" || !/^\d+(?:\.\d+)?(?:em|px)$/u.test(value))
+    ) {
+      continue;
+    }
+
+    if (
+      name === "font-style" &&
+      (tagName !== "text" || !/^(?:italic|normal)$/u.test(value))
+    ) {
+      continue;
+    }
+
+    if (
+      name === "font-weight" &&
+      (tagName !== "text" || !/^(?:bold|normal)$/u.test(value))
+    ) {
+      continue;
     }
 
     if (

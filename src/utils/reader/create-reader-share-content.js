@@ -233,6 +233,12 @@ const appendRun = (runs, text, style = {}) => {
     latex: style.latex || "",
     mathml: style.mathml || "",
     svg: style.svg || "",
+    svgSegments: Array.isArray(style.svgSegments)
+      ? style.svgSegments.map(({ svg, spaceBefore }) => ({
+          svg: String(svg || ""),
+          spaceBefore: Math.max(0, Number(spaceBefore) || 0),
+        }))
+      : [],
     mathDisplay: Boolean(style.mathDisplay),
     linkIconSrc: style.linkIconSrc || "",
   };
@@ -303,6 +309,7 @@ function serializeInlineNode(
       latex: formula.source,
       mathml: formula.mathml,
       svg: formula.svg,
+      svgSegments: formula.svgSegments,
       mathDisplay: formula.display,
     });
     return;

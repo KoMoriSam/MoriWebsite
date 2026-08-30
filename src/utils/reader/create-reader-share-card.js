@@ -7,6 +7,7 @@ const CARD_PADDING = 96;
 const TEXT_TOP = 208;
 const TEXT_BOTTOM = 928;
 const TEXT_WIDTH = READER_SHARE_CARD_WIDTH - CARD_PADDING * 2;
+const TEXT_HEIGHT = TEXT_BOTTOM - TEXT_TOP;
 const BODY_FONT_SIZES = [48, 46, 44, 42, 40, 38, 36];
 const DEFAULT_BACKGROUND = "#ffffff";
 const DEFAULT_FOREGROUND = "#1f2937";
@@ -334,8 +335,17 @@ const normalizeRuns = (runs = []) =>
       latex: String(run?.latex || ""),
       mathml: String(run?.mathml || ""),
       svg: String(run?.svg || ""),
+      svgSegments: Array.isArray(run?.svgSegments)
+        ? run.svgSegments
+            .map(({ svg, spaceBefore }) => ({
+              svg: String(svg || ""),
+              spaceBefore: Math.max(0, Number(spaceBefore) || 0),
+            }))
+            .filter(({ svg }) => svg)
+        : [],
       mathDisplay: Boolean(run?.mathDisplay),
       mathAsset: null,
+      mathAssets: [],
       linkIconSrc: String(run?.linkIconSrc || ""),
       linkIconAsset: null,
     }))
@@ -446,6 +456,26 @@ const prepareLatexRuns = async (blocks, appearance) => {
   await Promise.all(
     runs.map(async (run) => {
       if (!run.latex || !run.svg) return;
+      if (!run.mathDisplay && run.svgSegments.length > 1) {
+        try {
+          run.mathAssets = await Promise.all(
+            run.svgSegments.map(async ({ svg, spaceBefore }) => ({
+              ...(await loadLatexSvgImage(
+                createLatexSvg({
+                  svg,
+                  source: run.latex,
+                  display: false,
+                  color: appearance.foreground,
+                }),
+              )),
+              spaceBefore,
+            })),
+          );
+          return;
+        } catch {
+          run.mathAssets = [];
+        }
+      }
       try {
         const svg = createLatexSvg({
           svg: run.svg,
@@ -820,25 +850,31 @@ const getBlockConfig = (block, baseSize, appearance) => {
 const createToken = (context, grapheme, run, config, appearance) => {
   const style = { ...run };
   if (style.mathAsset) {
-    const targetHeight = Math.min(
-      config.fontSize * style.mathAsset.emHeight,
-      config.lineHeight * 0.92,
-    );
+    const bodyScale = config.fontSize / style.mathAsset.fontSize;
+    const naturalWidth = style.mathAsset.width * bodyScale;
+    const naturalHeight = style.mathAsset.height * bodyScale;
     const scale = Math.min(
-      targetHeight / style.mathAsset.height,
-      config.width / style.mathAsset.width,
+      1,
+      config.width / naturalWidth,
+      (TEXT_HEIGHT - config.paddingTop - config.paddingBottom) / naturalHeight,
     );
-    const width = style.mathAsset.width * scale;
-    const height = style.mathAsset.height * scale;
+    const mathWidth = naturalWidth * scale;
+    const height = naturalHeight * scale;
+    const mathLeadingWidth = style.mathDisplay
+      ? 0
+      : Math.max(0, Number(style.mathAsset.spaceBefore) || 0) *
+        config.fontSize;
     return {
       text: grapheme,
       style,
-      textWidth: width,
+      textWidth: mathWidth,
       rubyWidth: 0,
-      width,
+      width: mathLeadingWidth + mathWidth,
+      mathWidth,
+      mathLeadingWidth,
       mathHeight: height,
       mathBaselineShift:
-        style.mathAsset.baselineShiftEm * (height / style.mathAsset.emHeight),
+        style.mathAsset.baselineShiftEm * config.fontSize * scale,
     };
   }
   setFont(context, getRunFont(style, config, appearance));
@@ -883,11 +919,26 @@ const trimLineEnd = (tokens) => {
   return trimmed;
 };
 
-const createLine = (tokens, hardBreak = false) => {
+const createLine = (tokens, config, hardBreak = false) => {
   const trimmed = trimLineEnd(tokens);
+  const mathTokens = trimmed.filter(({ style }) => style.mathAsset);
+  const ascent = Math.max(
+    config.fontSize,
+    ...mathTokens.map(
+      ({ mathHeight, mathBaselineShift }) =>
+        mathHeight + mathBaselineShift,
+    ),
+  );
+  const descent = Math.max(
+    config.lineHeight - config.fontSize,
+    ...mathTokens.map(({ mathBaselineShift }) => -mathBaselineShift),
+  );
   return {
     tokens: trimmed,
     width: trimmed.reduce((total, token) => total + token.width, 0),
+    ascent,
+    descent,
+    height: ascent + descent,
     hardBreak,
     isLast: false,
   };
@@ -899,12 +950,22 @@ const wrapRuns = (context, runs, config, appearance) => {
   let width = 0;
 
   const commitLine = (hardBreak = false) => {
-    lines.push(createLine(tokens, hardBreak));
+    lines.push(createLine(tokens, config, hardBreak));
     tokens = [];
     width = 0;
   };
 
-  const pushToken = (token) => {
+  const withoutMathLeadingSpace = (token) =>
+    token.mathLeadingWidth
+      ? {
+          ...token,
+          width: token.width - token.mathLeadingWidth,
+          mathLeadingWidth: 0,
+        }
+      : token;
+
+  const pushToken = (nextToken) => {
+    let token = tokens.length ? nextToken : withoutMathLeadingSpace(nextToken);
     if (!tokens.length && /^\s+$/u.test(token.text) && !config.codeBlock) {
       return;
     }
@@ -924,6 +985,7 @@ const wrapRuns = (context, runs, config, appearance) => {
       }
       tokens = carry;
       width = carry.reduce((total, item) => total + item.width, 0);
+      if (!tokens.length) token = withoutMathLeadingSpace(token);
     }
     if (!tokens.length && /^\s+$/u.test(token.text) && !config.codeBlock) {
       return;
@@ -935,6 +997,20 @@ const wrapRuns = (context, runs, config, appearance) => {
   runs.forEach((run) => {
     if (run.linkIconAsset) {
       pushToken(createLinkIconToken(run, config));
+    }
+    if (run.mathAssets.length) {
+      run.mathAssets.forEach((mathAsset, index) => {
+        pushToken(
+          createToken(
+            context,
+            index ? "\ufffc" : run.text,
+            { ...run, mathAsset, mathAssets: [] },
+            config,
+            appearance,
+          ),
+        );
+      });
+      return;
     }
     if (run.mathAsset) {
       if (run.mathDisplay && tokens.length) commitLine(true);
@@ -973,7 +1049,16 @@ const isCjkDominant = (block) => {
 const appendEllipsis = (context, line, config, appearance) => {
   const tokens = trimLineEnd(line.tokens);
   const fallbackStyle = { ...config, text: "" };
-  const style = tokens.at(-1)?.style || fallbackStyle;
+  const previousStyle = tokens.at(-1)?.style || fallbackStyle;
+  const style = previousStyle.mathAsset
+    ? {
+        ...previousStyle,
+        latex: "",
+        svg: "",
+        mathAsset: null,
+        mathDisplay: false,
+      }
+    : previousStyle;
   const ellipsis = createToken(context, "…", style, config, appearance);
   let width = tokens.reduce((total, token) => total + token.width, 0);
   while (tokens.length && width + ellipsis.width > config.width) {
@@ -983,12 +1068,9 @@ const appendEllipsis = (context, line, config, appearance) => {
     width -= tokens.pop().width;
   }
   tokens.push(ellipsis);
-  return {
-    tokens,
-    width: width + ellipsis.width,
-    hardBreak: false,
-    isLast: true,
-  };
+  const truncated = createLine(tokens, config);
+  truncated.isLast = true;
+  return truncated;
 };
 
 const createBlockLayout = (context, block, baseSize, appearance) => {
@@ -1010,7 +1092,7 @@ const createBlockLayout = (context, block, baseSize, appearance) => {
     height:
       config.paddingTop +
       config.paddingBottom +
-      lines.length * config.lineHeight,
+      lines.reduce((height, line) => height + line.height, 0),
     cjkDominant: isCjkDominant(block),
   };
 };
@@ -1050,10 +1132,17 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
     }
 
     truncated = true;
-    const lineRoom = Math.floor(
-      (available - layout.config.paddingTop - layout.config.paddingBottom) /
-        layout.config.lineHeight,
-    );
+    const lineHeightRoom =
+      available - layout.config.paddingTop - layout.config.paddingBottom;
+    let lineRoom = 0;
+    let visibleLineHeight = 0;
+    while (
+      lineRoom < layout.lines.length &&
+      visibleLineHeight + layout.lines[lineRoom].height <= lineHeightRoom
+    ) {
+      visibleLineHeight += layout.lines[lineRoom].height;
+      lineRoom += 1;
+    }
     if (lineRoom > 0) {
       layout.lines = layout.lines.slice(0, lineRoom);
       layout.lines[layout.lines.length - 1] = appendEllipsis(
@@ -1065,7 +1154,7 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       layout.height =
         layout.config.paddingTop +
         layout.config.paddingBottom +
-        layout.lines.length * layout.config.lineHeight;
+        layout.lines.reduce((height, line) => height + line.height, 0);
       layouts.push(layout);
       usedHeight += gap + layout.height;
     } else if (layouts.length) {
@@ -1232,9 +1321,9 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
     if (token.style.mathAsset) {
       context.drawImage(
         token.style.mathAsset.image,
-        x,
+        x + token.mathLeadingWidth,
         baseline - token.mathHeight - token.mathBaselineShift,
-        token.width,
+        token.mathWidth,
         token.mathHeight,
       );
       return;
@@ -1422,9 +1511,9 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
       return;
     }
 
+    let lineY = y + config.paddingTop;
     lines.forEach((line, lineIndex) => {
-      const baseline =
-        y + config.paddingTop + config.fontSize + lineIndex * config.lineHeight;
+      const baseline = lineY + line.ascent;
       if (block.type === "list-item" && lineIndex === 0) {
         if (block.taskStatus !== null) {
           drawTaskMarker(context, block, config, baseline, appearance);
@@ -1444,6 +1533,7 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
       }
       drawRichLine(context, line, baseline, layout, appearance);
       context.restore();
+      lineY += line.height;
     });
 
     y += layout.height;

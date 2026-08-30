@@ -15,6 +15,142 @@ const parseSvgSignedLengthEm = (value = "") => {
 const parseSvgLengthEm = (value = "") =>
   Math.max(0, parseSvgSignedLengthEm(value));
 
+const MATHJAX_BREAK_SPACES = [0.001, 0.111, 0.167, 0.222, 0.278, 0.333];
+
+const parseSvgViewBox = (svg) => {
+  const values = String(svg.getAttribute("viewBox") || "")
+    .trim()
+    .split(/[\s,]+/u)
+    .map(Number);
+  if (
+    values.length !== 4 ||
+    !values.every(Number.isFinite) ||
+    values[2] <= 0 ||
+    values[3] <= 0
+  ) {
+    return null;
+  }
+  return { x: values[0], y: values[1], width: values[2], height: values[3] };
+};
+
+const getMathJaxBreakSpace = (element) => {
+  const size = Number(element.getAttribute("size"));
+  if (Number.isInteger(size) && MATHJAX_BREAK_SPACES[size] !== undefined) {
+    return MATHJAX_BREAK_SPACES[size];
+  }
+  const match = String(element.getAttribute("style") || "").match(
+    /letter-spacing:\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))em/iu,
+  );
+  return match ? Math.max(0, Number(match[1]) + 1) : 0;
+};
+
+const collectSharedSvgDefinitions = (svgs) => {
+  const definitions = [];
+  const seen = new Set();
+  svgs.forEach((svg) => {
+    Array.from(svg.children)
+      .filter(({ localName }) => localName === "defs")
+      .flatMap((defs) => Array.from(defs.children))
+      .forEach((definition) => {
+        const markup = new XMLSerializer().serializeToString(definition);
+        const id = definition.getAttribute("id");
+        const key = id ? `id:${id}` : `markup:${markup}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        definitions.push(definition);
+      });
+  });
+  return definitions;
+};
+
+const serializeStandaloneSvg = (svg, sharedDefinitions) => {
+  if (!sharedDefinitions.length) {
+    return new XMLSerializer().serializeToString(svg);
+  }
+
+  const clone = svg.cloneNode(true);
+  Array.from(clone.children)
+    .filter(({ localName }) => localName === "defs")
+    .forEach((defs) => defs.remove());
+  const defs = clone.ownerDocument.createElementNS(SVG_NAMESPACE, "defs");
+  sharedDefinitions.forEach((definition) => {
+    defs.append(definition.cloneNode(true));
+  });
+  clone.prepend(defs);
+  return new XMLSerializer().serializeToString(clone);
+};
+
+const getLatexSvgSegments = (formula, svgs) => {
+  const segments = [];
+  const sharedDefinitions = collectSharedSvgDefinitions(svgs);
+  let breakSpace = 0;
+  Array.from(formula.children).forEach((child) => {
+    if (child.localName === "mjx-break") {
+      breakSpace = getMathJaxBreakSpace(child);
+      return;
+    }
+    if (child.localName !== "svg") {
+      return;
+    }
+    const viewBox = parseSvgViewBox(child);
+    if (!viewBox) return;
+
+    segments.push({
+      element: child,
+      svg: serializeStandaloneSvg(child, sharedDefinitions),
+      viewBox,
+      spaceBefore: breakSpace,
+    });
+    breakSpace = 0;
+  });
+  return segments.length === svgs.length ? segments : [];
+};
+
+const serializeLatexSvg = (segments) => {
+  if (segments.length === 1) return segments[0].svg;
+
+  let offsetX = 0;
+  const positionedSegments = segments.map((segment) => {
+    offsetX += segment.spaceBefore * 1000;
+    const positioned = { ...segment, offsetX };
+    offsetX += segment.viewBox.width;
+    return positioned;
+  });
+
+  const top = Math.min(...positionedSegments.map(({ viewBox }) => viewBox.y));
+  const bottom = Math.max(
+    ...positionedSegments.map(({ viewBox }) => viewBox.y + viewBox.height),
+  );
+  const height = bottom - top;
+  const documentNode = positionedSegments[0].element.ownerDocument;
+  const root = documentNode.createElementNS(SVG_NAMESPACE, "svg");
+  root.setAttribute("xmlns", SVG_NAMESPACE);
+  root.setAttribute("viewBox", `0 ${top} ${offsetX} ${height}`);
+  root.setAttribute("width", `${offsetX / 1000}em`);
+  root.setAttribute("height", `${height / 1000}em`);
+  root.style.verticalAlign = `${-bottom / 1000}em`;
+
+  positionedSegments.forEach(({ element, viewBox, offsetX: x }) => {
+    const clone = element.cloneNode(true);
+    clone.setAttribute("x", String(x));
+    clone.setAttribute("y", String(viewBox.y));
+    clone.setAttribute("width", String(viewBox.width));
+    clone.setAttribute("height", String(viewBox.height));
+    clone.style.verticalAlign = "";
+    root.append(clone);
+  });
+  return new XMLSerializer().serializeToString(root);
+};
+
+const inlineSvgCurrentColor = (root, color) => {
+  [root, ...root.querySelectorAll("*")].forEach((element) => {
+    Array.from(element.attributes).forEach(({ name, value }) => {
+      if (!/currentcolor/iu.test(value)) return;
+      element.setAttribute(name, value.replace(/currentcolor/giu, color));
+    });
+  });
+};
+
 export const formatLatexSource = ({ source = "", display = false } = {}) => {
   const normalized = String(source).trim();
   if (!normalized) return "";
@@ -28,24 +164,29 @@ export const getLatexFormula = (element) => {
   if (!formula) return null;
 
   const source = formula.dataset.readerLatexSource || "";
-  const svg = formula.matches("mjx-container")
-    ? Array.from(formula.children).find(
+  const svgs = formula.matches("mjx-container")
+    ? Array.from(formula.children).filter(
         (child) =>
-          child.namespaceURI === SVG_NAMESPACE || child.tagName === "svg",
-      ) || formula.querySelector("svg")
-    : null;
-  if (!source || (!svg && !formula.matches(".reader-math-source"))) {
+          child.namespaceURI === SVG_NAMESPACE || child.localName === "svg",
+      )
+    : [];
+  if (!source || (!svgs.length && !formula.matches(".reader-math-source"))) {
     return null;
   }
 
   const display = formula.dataset.readerMathDisplay === "true";
+  const svgSegments = getLatexSvgSegments(formula, svgs);
   return {
     element: formula,
     source,
     display,
     text: formatLatexSource({ source, display }),
     mathml: "",
-    svg: svg ? new XMLSerializer().serializeToString(svg) : "",
+    svg: svgSegments.length ? serializeLatexSvg(svgSegments) : "",
+    svgSegments:
+      !display && svgSegments.length > 1
+        ? svgSegments.map(({ svg, spaceBefore }) => ({ svg, spaceBefore }))
+        : [],
   };
 };
 
@@ -140,6 +281,7 @@ export const createLatexSvg = ({
   root.style.color = color;
   root.style.verticalAlign = "";
   root.style.overflow = "visible";
+  inlineSvgCurrentColor(root, color);
 
   if (source) {
     const metadata = documentNode.createElementNS(SVG_NAMESPACE, "metadata");
@@ -152,6 +294,7 @@ export const createLatexSvg = ({
     svg: new XMLSerializer().serializeToString(root),
     width,
     height,
+    fontSize,
     emHeight,
     baselineShiftEm,
   };
@@ -161,6 +304,7 @@ export const loadLatexSvgImage = ({
   svg,
   width,
   height,
+  fontSize = 64,
   emHeight = 1,
   baselineShiftEm = 0,
 }) =>
@@ -175,7 +319,14 @@ export const loadLatexSvgImage = ({
         if (!context) throw new Error("当前浏览器无法验证 LaTeX 图片");
         context.drawImage(image, 0, 0, 1, 1);
         probe.toDataURL("image/png");
-        resolve({ image, width, height, emHeight, baselineShiftEm });
+        resolve({
+          image,
+          width,
+          height,
+          fontSize,
+          emHeight,
+          baselineShiftEm,
+        });
       } catch {
         reject(new Error("当前浏览器禁止导出 LaTeX 图片"));
       }
