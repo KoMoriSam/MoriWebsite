@@ -7,7 +7,7 @@
     <CodeHeader type="code" :language="language">
       <template #actions>
         <aside
-          class="tooltip tooltip-left mb-0.5 font-mono"
+          class="tooltip tooltip-left font-mono"
           :class="copied ? 'tooltip-success' : ''"
           :data-tip="copied ? '复制成功' : '复制到剪贴板'"
         >

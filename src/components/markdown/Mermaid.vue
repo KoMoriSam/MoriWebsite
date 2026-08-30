@@ -41,7 +41,7 @@
             </button>
           </div>
           <aside
-            class="tooltip tooltip-left mb-0.5 font-mono"
+            class="tooltip tooltip-left font-mono"
             :class="copied ? 'tooltip-success' : ''"
             :data-tip="
               viewMode === 'preview'

@@ -9,7 +9,7 @@
       },
       styleConfigs.fontStyle,
     ]"
-    class="markdown-content prose prose-2xl min-w-0 w-full max-w-full transition-opacity"
+    class="markdown-content prose min-w-0 w-full max-w-full transition-opacity"
     :style="{
       '--para-font-size': `${styleConfigs.fontSize}px`,
       '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,

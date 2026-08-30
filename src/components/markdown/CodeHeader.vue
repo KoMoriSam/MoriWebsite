@@ -1,6 +1,6 @@
 <template>
   <header
-    class="flex shrink-0 select-none items-center justify-between gap-2 border-b border-base-300 bg-base-100 ps-3 pe-1"
+    class="flex shrink-0 select-none items-center justify-between gap-2 border-b border-base-300 bg-base-100 py-1 ps-3 pe-1"
   >
     <hgroup
       class="flex min-w-0 items-center text-sm font-medium text-base-content"
