@@ -2,13 +2,12 @@
   <button
     v-if="count > 0"
     type="button"
-    class="comment-trigger reader-header-comment-trigger has-count group"
+    class="comment-trigger group"
     :data-paragraph-id="paragraphId"
     :data-source-type="sourceType"
     aria-label="打开段评"
     @click="requestOpen"
   >
-    <i class="ri-more-fill text-lg" aria-hidden="true"></i>
     <span
       class="paragraph-comment-count"
       :data-paragraph-id="paragraphId"
