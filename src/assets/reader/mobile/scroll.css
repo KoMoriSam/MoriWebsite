@@ -1,15 +1,15 @@
 /* 移动端滚动阅读模式 */
 
+.scroll-reader {
+  @apply scrollbar-thin;
+}
+
 .scroll-reader :deep(.scroll-reader-article) {
   padding-block-start: var(--mobile-reader-content-padding-block);
   padding-block-end: var(--mobile-reader-content-padding-block);
 }
 
 .scroll-reader :deep(.scroll-reader-article .comment-trigger) {
-  display: none;
-}
-
-.scroll-reader :deep(.scroll-reader-article .comment-trigger.has-count) {
   display: inline-flex;
 }
 

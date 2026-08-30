@@ -73,10 +73,6 @@
 }
 
 .mobile-page-viewport :deep(.mobile-page-article .comment-trigger) {
-  display: none;
-}
-
-.mobile-page-viewport :deep(.mobile-page-article .comment-trigger.has-count) {
   display: inline-flex;
 }
 

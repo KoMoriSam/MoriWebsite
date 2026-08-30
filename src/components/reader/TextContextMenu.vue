@@ -9,7 +9,7 @@
       <ul
         v-if="modelValue"
         ref="menuRef"
-        class="menu menu-horizontal fixed z-[100] max-w-[calc(100dvw-1rem)] flex-nowrap overflow-x-auto overscroll-x-contain rounded-box border border-base-300 bg-base-100 p-1 text-base-content shadow-xl"
+        class="menu menu-horizontal fixed z-[100] max-w-[calc(100dvw-1rem)] flex-nowrap overflow-x-auto overscroll-x-contain rounded-box border border-base-300 bg-base-100 p-1 text-base-content shadow-xl scrollbar-thin"
         :style="menuPosition"
         data-reader-interactive
         aria-label="正文操作"
