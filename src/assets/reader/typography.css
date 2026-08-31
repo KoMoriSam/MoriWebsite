@@ -221,6 +221,13 @@
 
   .markdown-content.prose
     :deep(
+      :where(kbd):not(:where([class~="not-prose"], [class~="not-prose"] *))
+    ) {
+    @apply kbd indent-0 font-mono;
+  }
+
+  .markdown-content.prose
+    :deep(
       :where(img, video, svg, canvas):not(
         :where([class~="not-prose"], [class~="not-prose"] *)
       )
@@ -234,6 +241,10 @@
 
   .markdown-content.prose :deep(.markdown-figure > img) {
     @apply mx-auto my-0;
+  }
+
+  .markdown-content.prose :deep(img.preview-image) {
+    @apply cursor-zoom-in rounded-box outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-base-content/35 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100;
   }
 
   .markdown-content.prose :deep(img.markdown-inline-image) {

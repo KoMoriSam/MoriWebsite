@@ -1,4 +1,4 @@
-<!-- sample:headings-paragraphs|标题与段落 -->
+<!-- sample:basic-format&extensions|基本格式与常用扩展 -->
 
 # 一级标题
 
@@ -22,8 +22,6 @@
 > 普通引用第一层
 >
 > > 嵌套引用第二层
-
-<!-- sample:inline-extensions|行内与扩展 -->
 
 普通文本、**粗体aBc123**、_斜体aBc123_、**_粗斜体aBc123_**、~~删除线~~、==高亮文本==。
 
@@ -83,7 +81,7 @@ _[CSS]: Cascading Style Sheets
 - [p] 奖励/成就
 - [c] 待选/备选
 
-<!-- sample:links-media|链接与媒体 -->
+<!-- sample:links|链接 -->
 
 ## 链接
 
@@ -116,21 +114,39 @@ _[CSS]: Cascading Style Sheets
 - [iana.org](https://iana.org)（有经典图标）
 - [example.com](https://example.com)（无图标，测试降级）
 
+<!-- sample:media|媒体 -->
+
 ## 图片
 
 ### Markdown 引用
 
-![图 1](https://picsum.photos/300/200?random=1 "本地图片与替代文本测试")
+![图 1](https://random.imagecdn.app/300/200?random=1 "本地图片与替代文本测试")
+
+### 图片预览状态
+
+下图进入视口后立即点击，可观察预览左上角的加载动画；图片加载成功后动画应消失。
+
+<figure class="markdown-figure">
+  <img class="preview-image" src="https://deelay.me/8000/https://placehold.co/1200x800/png?text=ImagePreview+Loading" alt="图片预览加载动画测试" title="图片预览加载动画测试" width="1200" height="800" loading="lazy" role="button" tabindex="0" aria-label="预览图片：图片预览加载动画测试">
+  <figcaption>图片预览加载动画测试（延迟 8 秒）</figcaption>
+</figure>
+
+点击下图，可观察预览中间的“图片加载失败”提示；提示应保持正常横向排版。
+
+<figure class="markdown-figure">
+  <img class="preview-image" src="/mock/article/images/image-preview-not-found.webp" alt="图片预览加载失败测试" title="图片预览加载失败测试" width="1200" height="800" role="button" tabindex="0" aria-label="预览图片：图片预览加载失败测试">
+  <figcaption>图片预览加载失败测试</figcaption>
+</figure>
 
 ### WikiLink 引用（Obsidian 风格）
 
-![[https://picsum.photos/200/300?random=1|图 1.1　旅行者|left]]
+![[https://random.imagecdn.app/200/300?random=1|图 1.1　旅行者|left]]
 
 清晨的林地还带着一层薄雾，光线从树冠之间斜斜落下，在地面留下不规则的亮斑。沿着小路向前走时，视线会自然绕过左侧的图片继续阅读。这一段主要用于测试图片左浮动时，正文是否能够贴着图片右侧正常排布，以及在图片高度范围内连续换行时，行宽是否会随着可用空间变化。
 
 如果图片本身比较高，下面的文字应该继续沿着图片右侧向下排列。这里可以适当增加一些文本，让环绕效果更加明显。比如描述远处的树林、潮湿的泥土、落叶之间细碎的声音，以及偶尔从树枝间穿过的风。直到正文累计高度超过图片之后，文字才应恢复占据完整行宽。
 
-![[https://picsum.photos/200/300?random=2|图 1.2　海岸|right]]
+![[https://random.imagecdn.app/200/300?random=2|图 1.2　海岸|right]]
 
 继续向前，林间的小路逐渐变得开阔。现在图片位于右侧，因此这一部分文字应该从左侧开始排列，并在接近图片边缘的位置自动折行。这个场景可以用来检查右浮动图片是否与左浮动图片具有一致的间距、最大宽度和响应式行为。
 
@@ -152,32 +168,32 @@ _[CSS]: Cascading Style Sheets
 
 #### 1. 基本行内混排
 
-这是最普通的行内图片，它跟在文字后面：![小图标](https://picsum.photos/20/20?random=1) 并且后面还有文字，图片和文字在同一行。
+这是最普通的行内图片，它跟在文字后面：![小图标](https://random.imagecdn.app/20/20?random=1) 并且后面还有文字，图片和文字在同一行。
 
-连续多个图片：![A](https://picsum.photos/20/20?random=2) 文字隔开 ![B](https://picsum.photos/20/20?random=3) 再隔开 ![C](https://picsum.photos/20/20?random=3)。
+连续多个图片：![A](https://random.imagecdn.app/20/20?random=2) 文字隔开 ![B](https://random.imagecdn.app/20/20?random=3) 再隔开 ![C](https://random.imagecdn.app/20/20?random=3)。
 
-图片还可以和链接混排：点击 [这个链接](https://example.com) 然后看图片 ![笑脸](https://picsum.photos/20/20?random=4) 在这。
+图片还可以和链接混排：点击 [这个链接](https://example.com) 然后看图片 ![笑脸](https://random.imagecdn.app/20/20?random=4) 在这。
 
 #### 2. 在列表中的行内图片
 
-- 列表项1，这里有一个行内图片 ![星](https://picsum.photos/20/20?random=5) 在中间。
-- 列表项2，多个图片：![左](https://picsum.photos/20/20?random=6) 文字 ![右](https://picsum.photos/20/20?random=7) 文字。
+- 列表项1，这里有一个行内图片 ![星](https://random.imagecdn.app/20/20?random=5) 在中间。
+- 列表项2，多个图片：![左](https://random.imagecdn.app/20/20?random=6) 文字 ![右](https://random.imagecdn.app/20/20?random=7) 文字。
 
 #### 3. 在引用块中的行内图片
 
-> 引用块内也可以有行内图片，例如 ![警告](https://picsum.photos/20/20?random=8) 注意此处图片和文字同行。
+> 引用块内也可以有行内图片，例如 ![警告](https://random.imagecdn.app/20/20?random=8) 注意此处图片和文字同行。
 
 #### 4. 行内图片与块级图片的对比
 
 下面这个图片单独成段（前后有空行），它会是块级：
 
-![大图](https://picsum.photos/100/100?random=1)
+![大图](https://random.imagecdn.app/1000/1000?random=1)
 
 这是段后文字。而刚才的例子中，图片都和文字在同一行，属于行内。
 
 #### 5. 复杂行内：代码、强调与图片
 
-这是 **加粗文字** 加图片 ![心](https://picsum.photos/20/20?random=9) 再加 `代码片段`，图片依然保持行内。
+这是 **加粗文字** 加图片 ![心](https://random.imagecdn.app/20/20?random=9) 再加 `代码片段`，图片依然保持行内。
 
 <!-- sample:tables|表格 -->
 
@@ -1017,15 +1033,15 @@ HTML 后的 **Markdown 正文** 应继续正常解析。
 >
 > 今天在测试自定义 **空间动态** 渲染，正文支持 _斜体_、**粗体**、`代码`、~~删除线~~、[链接](https://example.com) 和 :tada:。
 >
-> ![动态配图](https://picsum.photos/200/300?random=1)
-> ![动态配图](https://picsum.photos/200/300?random=2)
-> ![动态配图](https://picsum.photos/200/300?random=3)
-> ![动态配图](https://picsum.photos/200/300?random=4)
-> ![动态配图](https://picsum.photos/200/300?random=5)
-> ![动态配图](https://picsum.photos/200/300?random=6)
-> ![动态配图](https://picsum.photos/200/300?random=7)
-> ![动态配图](https://picsum.photos/200/300?random=8)
-> ![动态配图](https://picsum.photos/200/300?random=9)
+> ![动态配图](https://random.imagecdn.app/200/300?random=1)
+> ![动态配图](https://random.imagecdn.app/200/300?random=2)
+> ![动态配图](https://random.imagecdn.app/200/300?random=3)
+> ![动态配图](https://random.imagecdn.app/200/300?random=4)
+> ![动态配图](https://random.imagecdn.app/200/300?random=5)
+> ![动态配图](https://random.imagecdn.app/200/300?random=6)
+> ![动态配图](https://random.imagecdn.app/200/300?random=7)
+> ![动态配图](https://random.imagecdn.app/200/300?random=8)
+> ![动态配图](https://random.imagecdn.app/200/300?random=9)
 >
 > ❤️ 12 · 💬 2 · 🔁 3
 >
@@ -1199,3 +1215,434 @@ VM62243:1 XSS-12: form action executed
 ---
 
 空链接 [空目标]()、不存在的图片 ![替代文本](/assets/images/not-found.webp)。
+
+<!-- sample:markdown-cheatsheet|速查表 -->
+
+<a name="TOP"></a>
+![picture alt](https://placehold.co/1000x100/transparent/999?text=Markdown%20Cheatsheet&font=source-sans-pro "Markdown Cheatsheet")
+
+# 📝 Typography
+
+# Heading 1
+
+Markup :
+
+```markdown
+# Heading 1
+```
+
+Alternative markup :
+
+```markdown
+============= (below H1 text)
+```
+
+## Heading 2
+
+Markup :
+
+```markdown
+## Heading 2
+```
+
+Alternative markup :
+
+```markdown
+--------------- (below H2 text)
+```
+
+### Heading 3
+
+Markup :
+
+```markdown
+### Heading 3
+```
+
+#### Heading 4
+
+Markup :
+
+```markdown
+#### Heading 4
+```
+
+Common text
+
+Markup :
+
+```markdown
+Common text
+```
+
+_Emphasized text_
+
+Markup :
+
+```markdown
+_Emphasized text_ or _Emphasized text_
+```
+
+~~Strikethrough text~~
+
+Markup :
+
+```markdown
+~~Strikethrough text~~
+```
+
+**Strong text**
+
+Markup :
+
+```markdown
+**Strong text** or **Strong text**
+```
+
+**_Strong emphasized text_**
+
+Markup :
+
+```markdown
+**_Strong emphasized text_** or **_Strong emphasized text_**
+```
+
+[Named Link](http://www.google.fr/ "Named link title") and http://www.google.fr/ or <http://example.com/>
+
+Markup :
+
+```markdown
+[Named Link](http://www.google.fr/ "Named link title") and http://www.google.fr/ or <http://example.com/>
+```
+
+[Link to heading](#heading-1 "Goto heading-1") or [Link to section](#TOP)
+
+Markup:
+
+```markdown
+[Link to heading](#heading-1 "Goto heading-1") or [Link to section](#TOP)
+```
+
+# 🧮 Tables
+
+A standard table
+
+| First Header | Second Header |
+| ------------ | ------------- |
+| Content Cell | Content Cell  |
+| Content Cell | Content Cell  |
+
+Markup :
+
+```markdown
+| First Header | Second Header |
+| ------------ | ------------- |
+| Content Cell | Content Cell  |
+| Content Cell | Content Cell  |
+```
+
+Adding a pipe `|` in a cell :
+
+| First Header | Second Header |
+| ------------ | ------------- |
+| Content Cell | Content Cell  |
+| Content Cell | \|            |
+
+Markup :
+
+```markdown
+| First Header | Second Header |
+| ------------ | ------------- |
+| Content Cell | Content Cell  |
+| Content Cell | \|            |
+```
+
+Left, right and center aligned table
+
+| Left aligned Header | Right aligned Header | Center aligned Header |
+| :------------------ | -------------------: | :-------------------: |
+| Content Cell        |         Content Cell |     Content Cell      |
+| Content Cell        |         Content Cell |     Content Cell      |
+
+Markup :
+
+```markdown
+| Left aligned Header | Right aligned Header | Center aligned Header |
+| :------------------ | -------------------: | :-------------------: |
+| Content Cell        |         Content Cell |     Content Cell      |
+| Content Cell        |         Content Cell |     Content Cell      |
+```
+
+# 👩‍💻 Code
+
+Inline code
+
+`code()`
+
+Markup :
+
+```markdown
+`code()`
+```
+
+Code block
+
+```javascript
+var myGreatVariable = "test";
+```
+
+Markup :
+
+````markdown
+```javascript
+var myGreatVariable = "test";
+```
+````
+
+# 📜 Lists
+
+Unordered list
+
+- Bullet list
+  - Nested bullet
+    - Sub-nested bullet etc
+- Bullet list item 2
+
+Markup :
+
+```markdown
+- Bullet list
+  - Nested bullet
+    - Sub-nested bullet etc
+- Bullet list item 2
+```
+
+Alternative markup :
+
+```markdown
+- Bullet list
+  - Nested bullet
+    - Sub-nested bullet etc
+- Bullet list item 2
+```
+
+Numbered list
+
+1. A numbered list
+   1. A nested numbered list
+   1. Which is numbered
+1. Which is numbered
+
+Markup :
+
+```markdown
+1. A numbered list
+   1. A nested numbered list
+   2. Which is numbered
+2. Which is numbered
+```
+
+Alternative markup (_the numbering is automatic_):
+
+```markdown
+1. A numbered list
+   1. A nested numbered list
+   1. Which is numbered
+1. Which is numbered
+```
+
+Task list
+
+- [ ] An uncompleted task
+- [x] A completed task
+  - [ ] A subtask
+
+Markup :
+
+```markdown
+- [ ] An uncompleted task
+- [x] A completed task
+  - [ ] A subtask
+```
+
+# 🗣️ Quoting
+
+> Blockquote
+>
+> > Nested blockquote
+
+Markup :
+
+```markdown
+> Blockquote
+>
+> > Nested Blockquote
+```
+
+Footnotes (_see end of README_)
+
+Here is a simple footnote[^1].
+
+A footnote can also have multiple lines[^2].
+
+[^1]: A reference.
+
+[^2]:
+    To add line breaks within a footnote, Add a carriage return and prefix the new line with 4 spaces.  
+    This is a second line.
+
+Markup :
+
+```markdown
+Here is a simple footnote[^1].
+
+A footnote can also have multiple lines[^2].
+
+[^1]: My reference.
+
+[^2]:
+    To add line breaks within a footnote, Add a carriage return and prefix the new line with 4 spaces.  
+    This is a second line.
+```
+
+# 🖼️ Media / Emojis
+
+Image with alt :
+
+![picture alt](https://placehold.co/600x200?text=placeholder "Title is optional")
+
+Markup :
+
+```markdown
+![picture alt](https://placehold.co/600x200 "Title is optional")
+```
+
+Emoji
+
+:exclamation: Use emoji icons to enhance text. :+1: Look up emoji codes at [emoji-cheat-sheet.com](http://emoji-cheat-sheet.com/)
+
+Markup (_Emoji slug should appear between colons_):
+
+```markdown
+:+1: :exclamation:
+```
+
+# ⁉️ Alerts
+
+> [!NOTE]
+> Highlights information that users should take into account, even when skimming.
+
+Markup :
+
+```markdown
+> [!NOTE]
+> Highlights information that users should take into account, even when skimming.
+```
+
+> [!TIP]
+> Optional information to help a user be more successful.
+
+Markup :
+
+```markdown
+> [!TIP]
+> Optional information to help a user be more successful.
+```
+
+> [!IMPORTANT]
+> Crucial information necessary for users to succeed.
+
+Markup :
+
+```markdown
+> [!IMPORTANT]
+> Crucial information necessary for users to succeed.
+```
+
+> [!WARNING]
+> Critical content demanding immediate user attention due to potential risks.
+
+Markup :
+
+```markdown
+> [!WARNING]
+> Critical content demanding immediate user attention due to potential risks.
+```
+
+> [!CAUTION]
+> Negative potential consequences of an action.
+
+Markup :
+
+```markdown
+> [!CAUTION]
+> Negative potential consequences of an action.
+```
+
+# 💬 Misc
+
+<details>
+  <summary>Foldable text</summary>
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+</details>
+
+<br>
+
+Markup :
+
+```markdown
+<details>
+    <summary>Title 1</summary>
+    <p>Lorem ipsum dolor sit amet, ...</p>
+</details>
+```
+
+Hotkey
+
+<kbd>⌘F</kbd> <kbd>⌥C</kbd> <kbd>⌃⇧A</kbd>
+
+Markup :
+
+```markdown
+<kbd>⌘F</kbd>
+```
+
+_Hotkey symbols handy list below_
+
+| Key       | Symbol | Key    | Symbol |
+| --------- | ------ | ------ | ------ |
+| Option    | ⌥      | Power  | ⌽      |
+| Control   | ⌃      | Return | ↩      |
+| Command   | ⌘      | Delete | ⌫      |
+| Shift     | ⇧      | Up     | ↑      |
+| Caps Lock | ⇪      | Down   | ↓      |
+| Tab       | ⇥      | Left   | ←      |
+| Esc       | ⎋      | Right  | →      |
+
+Horizontal line
+
+---
+
+Markup :
+
+```markdown
+---
+```
+
+Inline mathematical equation $F(x) = \int^a_b \frac{1}{3}x^3$
+
+Markup :
+
+```markdown
+$F(x) = \int^a_b \frac{1}{3}x^3$
+```
+
+Block mathematical equation
+
+$$P \left( A=2 \, \middle| \, \dfrac{A^2}{B}>4 \right)$$
+
+Markup :
+
+```markdown
+$$P \left( A=2 \, \middle| \, \dfrac{A^2}{B}>4 \right)$$
+```

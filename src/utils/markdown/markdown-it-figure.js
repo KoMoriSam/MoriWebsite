@@ -123,19 +123,27 @@ export const figurePlugin = (md) => {
 
   md.renderer.rules.image = function (tokens, idx, options, env, self) {
     const token = tokens[idx];
+    const caption =
+      token.attrGet("title") ||
+      self.renderInlineAsText(token.children || [], options, env);
+
     if (isSvgImage(token.attrGet("src"))) {
       token.attrJoin("class", "markdown-svg-image");
     }
-    if (!token.meta?.markdownFigure) {
+    if (token.meta?.markdownFigure) {
+      token.attrJoin("class", "preview-image");
+      token.attrSet("role", "button");
+      token.attrSet("tabindex", "0");
+      token.attrSet(
+        "aria-label",
+        caption ? `预览图片：${caption}` : "预览图片",
+      );
+    } else {
       token.attrJoin("class", "markdown-inline-image");
     }
     const image = defaultImage(tokens, idx, options, env, self);
 
     if (!token.meta?.markdownFigure) return image;
-
-    const caption =
-      token.attrGet("title") ||
-      self.renderInlineAsText(token.children || [], options, env);
 
     return caption
       ? `${image}<figcaption>${md.utils.escapeHtml(caption)}</figcaption>`

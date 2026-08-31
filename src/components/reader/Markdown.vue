@@ -23,6 +23,8 @@
         + ${styleConfigs.fontGap * 0.7}rem)`,
       '--reader-text-color': resolvedTextColor || undefined,
     }"
+    @click="handleArticleClick"
+    @keydown="handleArticleKeydown"
   >
     <slot name="before" />
 
@@ -44,6 +46,8 @@
     </template>
 
     <slot name="after" />
+
+    <ImagePreview ref="imagePreviewRef" />
   </article>
 </template>
 
@@ -59,6 +63,7 @@ import CodeBlock from "@/components/markdown/CodeBlock.vue";
 import LinkIcon from "@/components/markdown/LinkIcon.vue";
 import Mermaid from "@/components/markdown/Mermaid.vue";
 import Moment from "@/components/markdown/Moment.vue";
+import ImagePreview from "@/components/markdown/ImagePreview.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
@@ -185,6 +190,7 @@ import {
 const paragraphPlugin = useParagraphComments();
 const route = useRoute();
 const articleRef = ref(null);
+const imagePreviewRef = ref(null);
 const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
@@ -199,6 +205,78 @@ const combinedContent = computed(() => {
 
   return props.pages.filter((page) => String(page || "").trim()).join("\n");
 });
+
+const isPreviewImage = (image) => {
+  if (!(image instanceof HTMLImageElement)) return false;
+  if (image.closest("[data-reader-link-icon]")) return false;
+
+  return Boolean(
+    image.matches("img.preview-image") ||
+    image.closest(".chat-bubble, .moments-images"),
+  );
+};
+
+const getPreviewImages = (root = articleRef.value) =>
+  root ? Array.from(root.querySelectorAll("img")).filter(isPreviewImage) : [];
+
+const syncPreviewImages = (root = articleRef.value) => {
+  getPreviewImages(root).forEach((image) => {
+    image.classList.add("preview-image");
+    image.setAttribute("role", "button");
+    image.setAttribute("tabindex", "0");
+
+    if (!image.hasAttribute("aria-label")) {
+      const alt = image.getAttribute("alt")?.trim();
+      image.setAttribute("aria-label", alt ? `预览图片：${alt}` : "预览图片");
+    }
+  });
+};
+
+const getPreviewImage = (target) => {
+  const image = target instanceof Element ? target.closest("img") : null;
+  return isPreviewImage(image) ? image : null;
+};
+
+const openImagePreview = (image, pointer = null) => {
+  const root = articleRef.value;
+  if (!image || !root?.contains(image)) return;
+
+  const images = getPreviewImages(root);
+  const index = images.indexOf(image);
+  if (index < 0) return;
+
+  void imagePreviewRef.value?.open({ images, index, pointer });
+};
+
+const handleArticleClick = (event) => {
+  if (
+    event.button !== 0 ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.shiftKey
+  ) {
+    return;
+  }
+
+  const image = getPreviewImage(event.target);
+  if (!image) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  openImagePreview(image, { x: event.clientX, y: event.clientY });
+};
+
+const handleArticleKeydown = (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+
+  const image = getPreviewImage(event.target);
+  if (!image || image !== event.target) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  openImagePreview(image);
+};
 const anchoredPages = computed(() =>
   combinedContent.value
     ? [
@@ -220,6 +298,7 @@ const syncRenderReady = async (cycle = renderReadyCycle) => {
 
   const root = articleRef.value;
   if (!root) return;
+  syncPreviewImages(root);
   if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
 
   emittedRenderReadyCycle = cycle;
