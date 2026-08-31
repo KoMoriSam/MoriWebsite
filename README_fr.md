@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.24.2</strong>
+  Version actuelle : <strong>1.24.3</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,12 +56,12 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.24.2
+## Points clés de la version 1.24.3
 
-- ajout de légendes de figure pour les images Markdown avec prise en charge des références d'images wikilink
-- extension des préréglages d'arrière-plan de lecture, permettant d'utiliser des images prédéfinies comme arrière-plan de lecture
-- renforcement de la protection XSS dans le rendu Markdown et correction des problèmes de rendu SSR LaTeX et Mermaid
-- abstraction des composants CodeHeader/CodeView pour unifier les fonctionnalités d'affichage des blocs de code et de Mermaid
+- ajout de l'aperçu des images avec états de chargement et contrôles de zoom, activé par clavier et clic
+- affinage de la capture des titres du sommaire (TOC), du défilement et des interactions
+- correction du déclencheur de commentaires du lecteur mobile toujours masqué et d'autres problèmes
+- mise à jour des composants de test Markdown et ajout de cas de test pour le lecteur mobile
 
 Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 

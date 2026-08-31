@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.24.2</strong>
+  Current version: <strong>1.24.3</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,12 +56,12 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.25.0 Highlights
+## Version 1.24.3 Highlights
 
-- added figure captions for Markdown images with wikilink image reference support
-- expanded reading-background presets, allowing preset images to be used as the reading background
-- strengthened XSS protection in Markdown rendering and fixed LaTeX and Mermaid SSR rendering issues
-- abstracted CodeHeader/CodeView components to unify code-block and Mermaid display features
+- added image preview with loading states and zoom controls, activated by keyboard and click
+- refined TOC heading capture, scrolling, and interactions
+- fixed the mobile reader comment trigger being always hidden and other issues
+- updated Markdown test components and added mobile-reader test cases
 
 See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
