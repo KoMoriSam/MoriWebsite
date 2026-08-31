@@ -212,7 +212,7 @@ const isPreviewImage = (image) => {
 
   return Boolean(
     image.matches("img.preview-image") ||
-    image.closest(".chat-bubble, .moments-images"),
+    image.closest("[data-markdown-chat], [data-markdown-moment]"),
   );
 };
 
