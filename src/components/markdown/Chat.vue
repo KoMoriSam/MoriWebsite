@@ -9,11 +9,11 @@
         <button class="btn btn-ghost btn-square btn-sm">
           <i class="ri-arrow-left-wide-line" aria-hidden="true"></i>
         </button>
-        <img
+        <!-- <img
           class="w-8 sm:w-10 rounded-full"
           :alt="ui.title"
           :src="avatarFor(ui.title)"
-        />
+        /> -->
         <figcaption class="flex gap-2 items-center">
           <span class="font-bold">{{ ui.title }}</span>
           <span
