@@ -182,6 +182,8 @@ const readingProgressValue = ref(0);
 let mutationObserver;
 let intersectionObserver;
 let updateTimer;
+let pendingHeadingId = "";
+let pendingHeadingTimer;
 let progressFrame = 0;
 
 const closeFormatSettingImmediately = () => {
@@ -193,15 +195,7 @@ const formatSettingModal = useModalClose({
   onClose: closeFormatSettingImmediately,
 });
 
-const showToc = computed(
-  () =>
-    // SSR 预渲染阶段保留左栏空位作为宽屏下的左边距
-    (typeof window === "undefined" && props.toc) ||
-    (props.toc &&
-      (headings.value.length > 0 ||
-        Boolean(slots.toc) ||
-        Boolean(slots["mobile-toc"]))),
-);
+const showToc = computed(() => props.toc);
 
 const showAside = computed(
   () =>
@@ -230,12 +224,20 @@ const resolvedGridClass = computed(() => {
   return "";
 });
 
-const createHeadingId = (element, index) => {
+const getHeadingText = (element, index) => {
+  const heading = element.cloneNode(true);
+  heading
+    .querySelectorAll(".comment-trigger")
+    .forEach((trigger) => trigger.remove());
+
+  return heading.textContent?.trim() || `标题 ${index + 1}`;
+};
+
+const createHeadingId = (element, index, text) => {
   if (element.id) return element.id;
 
   const base =
-    element.textContent
-      ?.trim()
+    text
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^\p{L}\p{N}\-_]/gu, "") || `heading-${index + 1}`;
@@ -265,6 +267,11 @@ const observeHeadings = (elements) => {
         .filter((entry) => entry.isIntersecting)
         .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
+      if (pendingHeadingId) {
+        activeHeadingId.value = pendingHeadingId;
+        return;
+      }
+
       if (visible.length) {
         activeHeadingId.value = visible[0].target.id;
         return;
@@ -282,7 +289,7 @@ const observeHeadings = (elements) => {
   );
 
   elements.forEach((element) => intersectionObserver.observe(element));
-  activeHeadingId.value = elements[0].id;
+  activeHeadingId.value = pendingHeadingId || elements[0].id;
 };
 
 const updateReadingProgress = () => {
@@ -332,11 +339,15 @@ const collectHeadings = () => {
     return level >= props.tocMinLevel && level <= props.tocMaxLevel;
   });
 
-  headings.value = elements.map((element, index) => ({
-    id: createHeadingId(element, index),
-    text: element.textContent?.trim() || `标题 ${index + 1}`,
-    level: Number(element.tagName.slice(1)),
-  }));
+  headings.value = elements.map((element, index) => {
+    const text = getHeadingText(element, index);
+
+    return {
+      id: createHeadingId(element, index, text),
+      text,
+      level: Number(element.tagName.slice(1)),
+    };
+  });
 
   observeHeadings(elements);
   scheduleProgressUpdate();
@@ -351,9 +362,24 @@ const scrollToHeading = (id) => {
   const element = contentElement.value?.querySelector(`#${CSS.escape(id)}`);
   if (!element) return;
 
-  element.scrollIntoView({ behavior: "smooth", block: "start" });
+  pendingHeadingId = id;
   activeHeadingId.value = id;
+  window.clearTimeout(pendingHeadingTimer);
+  if (!("onscrollend" in window)) {
+    pendingHeadingTimer = window.setTimeout(() => {
+      pendingHeadingId = "";
+    }, 2000);
+  }
+
+  element.scrollIntoView({ behavior: "smooth", block: "start" });
   window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+};
+
+const handleScrollEnd = () => {
+  if (!pendingHeadingId) return;
+
+  pendingHeadingId = "";
+  window.clearTimeout(pendingHeadingTimer);
 };
 
 const handleContentReady = async (element) => {
@@ -389,6 +415,7 @@ const requestPlatformCloseFormatSetting = () =>
 onMounted(() => {
   scheduleProgressUpdate();
   window.addEventListener("scroll", scheduleProgressUpdate, { passive: true });
+  window.addEventListener("scrollend", handleScrollEnd);
   window.addEventListener("resize", scheduleProgressUpdate);
 });
 
@@ -401,7 +428,9 @@ onBeforeUnmount(() => {
   mutationObserver?.disconnect();
   intersectionObserver?.disconnect();
   window.clearTimeout(updateTimer);
+  window.clearTimeout(pendingHeadingTimer);
   window.removeEventListener("scroll", scheduleProgressUpdate);
+  window.removeEventListener("scrollend", handleScrollEnd);
   window.removeEventListener("resize", scheduleProgressUpdate);
   if (progressFrame) {
     window.cancelAnimationFrame(progressFrame);
