@@ -17,87 +17,58 @@
         </router-link>
       </div>
 
-      <div
-        class="grid grid-cols-1 gap-4 xl:grid-cols-[24rem_minmax(0,1fr)_12rem] xl:items-start my-4"
+      <Reader
+        toc
+        aside
+        root-tag="div"
+        :show-footer="false"
+        page-class=""
+        container-class="my-4"
+        sticky-top="1rem"
       >
-        <aside
-          class="min-w-0 xl:sticky xl:top-4 xl:h-[100dvh-5rem] rounded-box border border-base-300 bg-base-100"
-          aria-label="阅读排版设置"
-        >
-          <FormatSetting />
-        </aside>
+        <Markdown
+          ref="markdownPreviewRef"
+          :content="markdownContent"
+          :header-data="markdownHeaderData"
+          :style-configs="readerStore.styleConfigs"
+          @pointerdown.capture="handleMarkdownPointerDown"
+          @pointermove.capture="handleMarkdownPointerMove"
+          @pointerup.capture="handleMarkdownPointerUp"
+          @pointercancel.capture="handleMarkdownPointerCancel"
+          @contextmenu.capture="handleMarkdownContextMenu"
+        />
 
-        <section class="min-w-0" aria-label="Markdown 示例预览">
-          <Markdown
-            ref="markdownPreviewRef"
-            :content="markdownContent"
-            :header-data="markdownHeaderData"
-            :style-configs="readerStore.styleConfigs"
-            @pointerdown.capture="handleMarkdownPointerDown"
-            @pointermove.capture="handleMarkdownPointerMove"
-            @pointerup.capture="handleMarkdownPointerUp"
-            @pointercancel.capture="handleMarkdownPointerCancel"
-            @contextmenu.capture="handleMarkdownContextMenu"
-          />
-        </section>
-
-        <aside class="min-w-0 xl:sticky xl:top-4">
-          <section class="card card-sm card-border bg-base-100">
-            <div class="card-body gap-4">
-              <h3 class="card-title text-base">实时联动检查</h3>
-
-              <dl class="grid grid-cols-2 gap-2 text-sm" aria-live="polite">
-                <div class="col-span-2 rounded-box border border-base-300 p-2">
-                  <dt class="text-xs text-base-content/55">字体类名</dt>
-                  <dd class="mt-1 break-all font-mono font-semibold">
-                    {{ readerStore.styleConfigs.fontStyle }}
-                  </dd>
-                </div>
-                <div class="rounded-box border border-base-300 p-2">
-                  <dt class="text-xs text-base-content/55">字体大小</dt>
-                  <dd class="mt-1 font-mono font-semibold">
-                    {{ readerStore.styleConfigs.fontSize }}px
-                  </dd>
-                </div>
-                <div class="rounded-box border border-base-300 p-2">
-                  <dt class="text-xs text-base-content/55">字间距</dt>
-                  <dd class="mt-1 font-mono font-semibold">
-                    {{ readerStore.styleConfigs.fontGap }}
-                  </dd>
-                </div>
-                <div class="rounded-box border border-base-300 p-2">
-                  <dt class="text-xs text-base-content/55">行间距</dt>
-                  <dd class="mt-1 font-mono font-semibold">
-                    {{ readerStore.styleConfigs.lineHeight }}
-                  </dd>
-                </div>
-                <div class="rounded-box border border-base-300 p-2">
-                  <dt class="text-xs text-base-content/55">段间距</dt>
-                  <dd class="mt-1 font-mono font-semibold">
-                    {{ readerStore.styleConfigs.paraHeight }}
-                  </dd>
-                </div>
-              </dl>
+        <template #aside>
+          <fieldset
+            class="fieldset mb-4 rounded-box border border-base-300 bg-base-100 p-3 pb-4"
+          >
+            <legend class="fieldset-legend p-0">段评测试</legend>
+            <div class="flex justify-between gap-2">
+              <button
+                class="btn btn-sm flex-1"
+                type="button"
+                @click="seedCommentCounts"
+              >
+                模拟计数
+              </button>
+              <button
+                class="btn btn-sm btn-ghost flex-1"
+                type="button"
+                @click="clearCommentCounts"
+              >
+                清除计数
+              </button>
             </div>
-          </section>
+          </fieldset>
 
           <fieldset
-            class="fieldset mt-4 rounded-box border border-base-300 bg-base-100 p-3"
+            class="fieldset mb-4 rounded-box border border-base-300 bg-base-100"
           >
-            <legend class="fieldset-legend">段评测试</legend>
-            <button class="btn btn-sm" type="button" @click="seedCommentCounts">
-              模拟段评计数
-            </button>
-            <button
-              class="btn btn-sm btn-ghost"
-              type="button"
-              @click="clearCommentCounts"
-            >
-              清除模拟计数
-            </button>
+            <legend class="fieldset-legend mx-3 p-0">排版设置</legend>
+            <FormatSetting controls-only />
           </fieldset>
-        </aside>
-      </div>
+        </template>
+      </Reader>
 
       <TextContextMenu
         v-model="textContextOpen"
@@ -116,6 +87,7 @@ import { useReaderStore } from "@/stores/readerStore";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
+import Reader from "@/components/reader/Reader.vue";
 import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 

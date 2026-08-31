@@ -1,8 +1,8 @@
 <template>
   <client-only>
-    <section class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <section class="flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100">
       <header
-        v-if="showHeader"
+        v-if="showHeader && !controlsOnly"
         class="flex shrink-0 items-start gap-3 border-b border-base-300 px-3 py-3"
       >
         <div class="min-w-0 flex-1">
@@ -22,7 +22,10 @@
         </button>
       </header>
 
-      <div class="shrink-0 border-b border-base-300 px-3 py-2.5">
+      <div
+        v-if="!controlsOnly"
+        class="shrink-0 border-b border-base-300 px-3 py-2.5"
+      >
         <div
           class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
           :class="styleConfigs.fontStyle"
@@ -70,7 +73,10 @@
         </div>
 
         <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-          <label class="col-span-2 min-w-0">
+          <label
+            class="min-w-0"
+            :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
+          >
             <span class="label block text-xs md:text-sm">正文字体</span>
             <select
               class="select select-sm xl:select-md w-full"
@@ -89,6 +95,17 @@
               </option>
             </select>
           </label>
+
+          <button
+            v-if="controlsOnly"
+            type="button"
+            class="btn btn-ghost btn-sm xl:btn-md shrink-0 col-span-1 mb-0 mt-auto"
+            :disabled="isLayoutDefault"
+            @click="resetLayout"
+          >
+            <i class="ri-reset-left-line" aria-hidden="true"></i>
+            恢复默认
+          </button>
 
           <label
             v-for="control in READER_TYPOGRAPHY_CONTROLS"
@@ -135,7 +152,7 @@
             <legend
               class="label text-xs w-full flex items-center justify-between"
             >
-              <span>都不满意？试试自定义</span>
+              <span>不满意？试试自定义</span>
               <div
                 role="tablist"
                 class="tabs tabs-box tabs-xs"
@@ -371,6 +388,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  controlsOnly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const store = useReaderStore();
@@ -444,8 +465,7 @@ const selectedBackgroundImage = computed(() =>
   getReaderBackgroundImage(styleConfigs.value.backgroundImage),
 );
 const selectedBackgroundType = computed(() =>
-  styleConfigs.value.backgroundType === "image" &&
-  selectedBackgroundImage.value
+  styleConfigs.value.backgroundType === "image" && selectedBackgroundImage.value
     ? "image"
     : "color",
 );
@@ -535,10 +555,7 @@ const normalizePresetStyle = (preset, key) => {
   }
   if (key === "backgroundType") {
     return (
-      styles.backgroundType ||
-      (styles.backgroundImage
-        ? "image"
-        : "color")
+      styles.backgroundType || (styles.backgroundImage ? "image" : "color")
     );
   }
   if (key === "textColor" || key === "backgroundColor") {

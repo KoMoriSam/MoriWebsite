@@ -1,5 +1,6 @@
 <template>
-  <main
+  <component
+    :is="rootTag"
     :class="['w-full min-w-0 max-w-full flex-1', pageClass]"
     :style="pageStyle"
     :data-theme="pageTheme || undefined"
@@ -58,7 +59,7 @@
 
     <slot name="after" />
     <slot name="floating" />
-  </main>
+  </component>
 
   <dialog
     v-if="$slots['format-setting']"
@@ -81,7 +82,7 @@
     </form>
   </dialog>
 
-  <FootBar class="max-lg:hidden" />
+  <FootBar v-if="showFooter" class="max-lg:hidden" />
 </template>
 
 <script setup>
@@ -100,6 +101,14 @@ import FootBar from "@/components/layout/FootBar.vue";
 import { useModalClose } from "@/composables/useModal";
 
 const props = defineProps({
+  rootTag: {
+    type: String,
+    default: "main",
+  },
+  showFooter: {
+    type: Boolean,
+    default: true,
+  },
   toc: {
     type: Boolean,
     default: false,
