@@ -60,7 +60,10 @@
     </article>
 
     <!-- 点赞 / 评论 / 分享 -->
-    <footer class="moments-actions">
+    <footer
+      class="moments-actions"
+      :class="comments.length ? 'border-y' : 'border-t'"
+    >
       <template v-for="action in actions" :key="action.label">
         <div class="moments-action">
           <button type="button" class="btn btn-ghost btn-square btn-sm">
@@ -74,9 +77,9 @@
     </footer>
 
     <!-- 评论区 -->
-    <aside class="moments-comments" aria-label="评论">
+    <aside v-if="comments.length" class="moments-comments" aria-label="评论">
       <!-- 评论列表 -->
-      <div v-if="comments.length" class="comments-list">
+      <div class="comments-list">
         <article
           v-for="(comment, commentIndex) in comments"
           :key="`${comment.username}-${commentIndex}`"
@@ -335,7 +338,7 @@ section[data-markdown-moment] {
 /* 操作栏 */
 
 .moments-actions {
-  @apply flex justify-between items-center border-y border-base-300
+  @apply flex justify-between items-center border-base-300
     bg-base-200/50 px-3 py-1;
 }
 
