@@ -10,7 +10,7 @@
     @pointercancel.capture="handleTextPointerCancel"
     @scroll.passive="handleScroll"
     @click="handleTapClick"
-    @contextmenu.capture.prevent="handleTextContextMenu"
+    @contextmenu.capture.prevent="handleContextMenu"
     @wheel.passive="markReadingInteraction"
   >
     <Markdown
@@ -114,7 +114,6 @@
         </button>
       </div>
     </Transition>
-
   </section>
 </template>
 
@@ -402,7 +401,7 @@ const getArticleElement = () =>
   scrollContainerRef.value?.querySelector(":scope > .markdown-content");
 const {
   getSelectionContext,
-  handleContextMenu: handleTextContextMenu,
+  handleContextMenu: handleContextMenu,
   handlePointerCancel: handleTextPointerCancel,
   handlePointerDown: handleTextPointerDown,
   handlePointerMove: handleTextPointerMove,

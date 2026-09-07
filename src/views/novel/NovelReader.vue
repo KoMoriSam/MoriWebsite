@@ -48,7 +48,7 @@
         :wheel-pagination="mobileWheelPagination"
         @controls-open-change="mobileReaderControlsOpen = $event"
         @reader-action="handleMobileReaderAction"
-        @text-context="openTextContextMenu"
+        @text-context="openContextMenu"
         @controller-state="updateMobileControllerState"
         @open-comments="handleChapterComments"
         @loading-overlay-change="mobileChapterLoading = $event"
@@ -68,7 +68,7 @@
         :restore-chapter-start="restoreMobileScrollToChapterStart"
         @controller-state="updateMobileControllerState"
         @reader-action="handleMobileReaderAction"
-        @text-context="openTextContextMenu"
+        @text-context="openContextMenu"
         @chapter-start-restored="restoreMobileScrollToChapterStart = false"
         @open-comments="handleChapterComments"
         @loading-overlay-change="mobileChapterLoading = $event"
@@ -113,11 +113,7 @@
           style="
             color: var(
               --reader-loading-overlay-content,
-              color-mix(
-                in oklab,
-                var(--color-base-content) 70%,
-                transparent
-              )
+              color-mix(in oklab, var(--color-base-content) 70%, transparent)
             );
             background-color: var(
               --reader-loading-overlay-color,
@@ -137,7 +133,8 @@
         </div>
       </Transition>
 
-      <TextContextMenu
+      <ContextMenu
+        v-if="ContextMenuMounted"
         v-model="textContextOpen"
         :context="textContext"
         :share-meta="textShareMeta"
@@ -273,7 +270,6 @@ import ChapterHeader from "@/components/novel/ChapterHeader.vue";
 import PagedReader from "@/components/novel/mobile/PagedReader.vue";
 import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
 import ReaderControls from "@/components/novel/mobile/ReaderControls.vue";
-import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import ReaderStatusBar from "@/components/novel/mobile/ReaderStatusBar.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
@@ -367,6 +363,7 @@ const { giscusTheme } = storeToRefs(themeStore);
 
 import {
   computed,
+  defineAsyncComponent,
   onActivated,
   onBeforeUnmount,
   onDeactivated,
@@ -376,11 +373,16 @@ import {
   watch,
 } from "vue";
 
+const ContextMenu = defineAsyncComponent(
+  () => import("@/components/reader/ContextMenu.vue"),
+);
+
 const stopNovelPosTracker = ref(null);
 const readerRef = ref(null);
 const trackedReaderContext = ref("");
 const mobileReaderControlsOpen = ref(false);
 const mobileChapterLoading = ref(false);
+const ContextMenuMounted = ref(false);
 const textContextOpen = ref(false);
 const textContext = ref({});
 const activeMobileReaderRef = ref(null);
@@ -469,12 +471,13 @@ const handleMobileReaderAction = (action) => {
     void openMobileControl(action);
   } else if (action === "help") callMobileReaderAction("triggerReaderHint");
 };
-const openTextContextMenu = (context) => {
+const openContextMenu = (context) => {
   if (!context) {
     textContextOpen.value = false;
     textContext.value = {};
     return;
   }
+  ContextMenuMounted.value = true;
   textContext.value = context || {};
   textContextOpen.value = true;
 };
@@ -513,17 +516,17 @@ const handleVolumeKeydown = (event) => {
 };
 const isMobileReader = useMediaQuery("(max-width: 1023px)");
 const {
-  handleContextMenu: handleDesktopTextContextMenu,
+  handleContextMenu: handleDesktopContextMenu,
   handlePointerCancel: handleDesktopPointerCancel,
   handlePointerDown: handleDesktopPointerDown,
   handlePointerMove: handleDesktopPointerMove,
   handlePointerUp: handleDesktopPointerUp,
 } = useReaderTextContext({
   getRoot: () => (isMobileReader.value ? null : scrollRef.value),
-  emit: (_eventName, context) => openTextContextMenu(context),
+  emit: (_eventName, context) => openContextMenu(context),
 });
 const handleReaderContextMenu = (event) => {
-  if (!isMobileReader.value) handleDesktopTextContextMenu(event);
+  if (!isMobileReader.value) handleDesktopContextMenu(event);
 };
 const handleReaderPointerDown = (event) => {
   if (!isMobileReader.value) handleDesktopPointerDown(event);
@@ -553,14 +556,13 @@ watch(
   },
   { flush: "sync" },
 );
-const hasCustomReaderAppearance = computed(
-  () =>
-    Boolean(
-      styleConfigs.value.textColor ||
-        styleConfigs.value.backgroundColor ||
-        (styleConfigs.value.backgroundType === "image" &&
-          styleConfigs.value.backgroundImage),
-    ),
+const hasCustomReaderAppearance = computed(() =>
+  Boolean(
+    styleConfigs.value.textColor ||
+    styleConfigs.value.backgroundColor ||
+    (styleConfigs.value.backgroundType === "image" &&
+      styleConfigs.value.backgroundImage),
+  ),
 );
 const readerPageTheme = computed(() => {
   if (!isMobileReader.value) return "";

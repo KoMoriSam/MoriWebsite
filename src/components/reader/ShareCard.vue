@@ -7,10 +7,11 @@
       aria-labelledby="reader-share-card-title"
       @cancel.prevent="close"
       @close="handleClosed"
+      @transitionend.self="handleCloseTransitionEnd"
       @contextmenu.prevent
     >
       <section
-        class="modal-box flex flex-col overflow-hidden rounded-t-box p-0 sm:rounded-box"
+        class="modal-box flex flex-col overflow-hidden rounded-t-box p-0 sm:rounded-box sm:w-fit"
       >
         <header
           class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4 py-3 sm:px-5"
@@ -22,7 +23,16 @@
             >
               分享图片
             </h2>
-            <p class="mt-0.5 text-xs text-base-content/55">1080 × 1350 PNG</p>
+            <p
+              v-if="truncated"
+              class="mt-0.5 flex items-start justify-center gap-1.5 text-center text-xs text-warning"
+            >
+              <i
+                class="ri-information-line mt-px shrink-0"
+                aria-hidden="true"
+              ></i>
+              <span>选文较长，图片已省略未能完整收录的内容。</span>
+            </p>
           </div>
           <button
             type="button"
@@ -35,7 +45,7 @@
         </header>
 
         <div
-          class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 scrollbar-thin"
+          class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 scrollbar-thin p-4"
         >
           <div
             v-if="loading"
@@ -66,23 +76,12 @@
             </button>
           </div>
 
-          <figure v-else-if="previewUrl" class="mx-auto w-full max-w-md">
-            <img
-              :src="previewUrl"
-              :alt="previewAlt"
-              class="aspect-4/5 w-full rounded-box bg-base-100 object-contain shadow-xl"
-            />
-            <figcaption
-              v-if="truncated"
-              class="mt-3 flex items-start justify-center gap-1.5 text-center text-xs text-warning"
-            >
-              <i
-                class="ri-information-line mt-px shrink-0"
-                aria-hidden="true"
-              ></i>
-              <span>选文较长，图片已省略未能完整收录的内容。</span>
-            </figcaption>
-          </figure>
+          <img
+            v-else-if="previewUrl"
+            :src="previewUrl"
+            :alt="previewAlt"
+            class="aspect-4/5 w-full rounded-box bg-base-100 object-contain shadow-md mx-auto max-w-md"
+          />
         </div>
 
         <footer
@@ -130,6 +129,10 @@ const fileName = ref("远方之森-分享卡片.png");
 const truncated = ref(false);
 const payload = ref(null);
 let generationToken = 0;
+let hasRenderedClosedState = false;
+let closeCleanupTimer = 0;
+
+const CLOSE_ANIMATION_MS = 320;
 
 const toast = useToast({ position: "center", closable: false });
 
@@ -185,20 +188,43 @@ const generate = async () => {
 };
 
 const open = async (nextPayload) => {
+  window.clearTimeout(closeCleanupTimer);
+  closeCleanupTimer = 0;
   payload.value = nextPayload;
   await nextTick();
+
+  if (!hasRenderedClosedState) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    hasRenderedClosedState = true;
+  }
+
   if (!dialogRef.value?.open) dialogRef.value?.showModal();
   void generate();
 };
 
 const close = () => dialogRef.value?.close();
 
-const handleClosed = () => {
-  generationToken += 1;
+const clearClosedState = () => {
+  if (dialogRef.value?.open) return;
+
+  window.clearTimeout(closeCleanupTimer);
+  closeCleanupTimer = 0;
   loading.value = false;
   errorMessage.value = "";
   payload.value = null;
   clearOutput();
+};
+
+const handleClosed = () => {
+  generationToken += 1;
+  window.clearTimeout(closeCleanupTimer);
+  closeCleanupTimer = window.setTimeout(clearClosedState, CLOSE_ANIMATION_MS);
+};
+
+const handleCloseTransitionEnd = (event) => {
+  if (event.propertyName !== "background-color") return;
+  clearClosedState();
 };
 
 const triggerDownload = () => {
@@ -236,6 +262,7 @@ const shareImage = async () => {
 
 onBeforeUnmount(() => {
   generationToken += 1;
+  window.clearTimeout(closeCleanupTimer);
   revokePreviewUrl();
 });
 

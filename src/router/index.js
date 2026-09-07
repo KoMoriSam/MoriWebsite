@@ -9,11 +9,10 @@ import {
   createWebHistory,
   createMemoryHistory,
 } from "vue-router";
-import {
-  TEST_SECTIONS,
-  TEST_SECTION_COMPONENTS,
-} from "@/constants/test-sections";
-import { MARKDOWN_SAMPLES } from "@/views/test/markdown-samples";
+
+const testRoutes = import.meta.env.DEV
+  ? (await import("./test-routes")).testRoutes
+  : [];
 
 if (
   !import.meta.env.SSR &&
@@ -136,35 +135,8 @@ export const routes = [
     component: () => import("@/views/projects/Kaiming.vue"),
     meta: { title: "开明标点 | 远方之森" },
   },
-  // 仅开发环境可见，生产构建自动移除
-  ...(import.meta.env.DEV
-    ? [
-        {
-          path: "/test",
-          name: "test",
-          component: () => import("@/views/Test.vue"),
-          meta: { title: "测试 | 远方之森" },
-        },
-        ...TEST_SECTIONS.map((section) => ({
-          path: `/test/${section.id}`,
-          name: section.id,
-          component: TEST_SECTION_COMPONENTS[section.id],
-          meta: {
-            title: `${section.title}测试 | 远方之森`,
-            navName: "test",
-          },
-        })),
-        ...MARKDOWN_SAMPLES.map(({ slug, name }) => ({
-          path: `/test/markdown/${slug}`,
-          name: slug,
-          component: TEST_SECTION_COMPONENTS.markdown,
-          meta: {
-            title: `${name} | Markdown 测试`,
-            navName: "test",
-          },
-        })),
-      ]
-    : []),
+  // 仅开发环境动态载入，生产入口不包含测试组件与 Markdown 示例正文。
+  ...testRoutes,
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",

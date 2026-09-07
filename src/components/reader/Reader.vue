@@ -86,6 +86,8 @@
 </template>
 
 <script setup>
+import "@/assets/font/reader-fonts.css";
+
 import {
   computed,
   nextTick,

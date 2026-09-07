@@ -13,7 +13,7 @@
       @pointermove.capture="handleArticlePointerMove"
       @pointerup.capture="handleArticlePointerUp"
       @pointercancel.capture="handleArticlePointerCancel"
-      @contextmenu.capture="handleArticleTextContextMenu"
+      @contextmenu.capture="handleArticleContextMenu"
     >
       <template #before>
         <header
@@ -359,7 +359,8 @@
       <p>文章不存在或加载失败</p>
     </div>
 
-    <TextContextMenu
+    <ContextMenu
+      v-if="articleTextContextMounted"
       v-model="articleTextContextOpen"
       :context="articleTextContext"
       :share-meta="articleShareMeta"
@@ -398,7 +399,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import Giscus from "@giscus/vue";
 import { useRoute, useRouter } from "vue-router";
@@ -418,7 +419,10 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Markdown from "@/components/reader/Markdown.vue";
-import TextContextMenu from "@/components/reader/TextContextMenu.vue";
+
+const ContextMenu = defineAsyncComponent(
+  () => import("@/components/reader/ContextMenu.vue"),
+);
 
 const readerRef = ref(null);
 
@@ -501,27 +505,29 @@ const themeStore = useThemeStore();
 const { giscusTheme } = storeToRefs(themeStore);
 
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
+const articleTextContextMounted = ref(false);
 const articleTextContextOpen = ref(false);
 const articleTextContext = ref({});
-const openArticleTextContextMenu = (context) => {
+const openArticleContextMenu = (context) => {
   if (!context) {
     articleTextContextOpen.value = false;
     articleTextContext.value = {};
     return;
   }
 
+  articleTextContextMounted.value = true;
   articleTextContext.value = context;
   articleTextContextOpen.value = true;
 };
 const {
-  handleContextMenu: handleArticleTextContextMenu,
+  handleContextMenu: handleArticleContextMenu,
   handlePointerCancel: handleArticlePointerCancel,
   handlePointerDown: handleArticlePointerDown,
   handlePointerMove: handleArticlePointerMove,
   handlePointerUp: handleArticlePointerUp,
 } = useReaderTextContext({
   getRoot: () => scrollRef.value,
-  emit: (_eventName, context) => openArticleTextContextMenu(context),
+  emit: (_eventName, context) => openArticleContextMenu(context),
 });
 const openArticleContextSearch = (keyword) => {
   void router.replace({

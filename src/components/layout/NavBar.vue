@@ -33,14 +33,41 @@
       </div>
     </nav>
     <nav class="navbar-end">
-      <GlobalSearch />
+      <button
+        ref="searchTriggerButton"
+        type="button"
+        class="btn btn-ghost max-md:btn-square"
+        aria-label="打开全局内容搜索"
+        aria-keyshortcuts="Control+K Meta+K"
+        @click="activateSearch"
+      >
+        <i class="ri-search-line text-lg" aria-hidden="true"></i>
+        <span class="hidden xl:inline">搜索</span>
+        <kbd class="kbd kbd-sm hidden xl:inline-flex">
+          {{ searchShortcutLabel }} K
+        </kbd>
+      </button>
+      <component
+        :is="searchComponent"
+        v-if="searchComponent"
+        ref="searchRef"
+        @restore-focus="restoreSearchTriggerFocus"
+      />
       <ThemeController />
     </nav>
   </header>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  watch,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   MOBILE_READER_NAVBAR_HIDE_EVENT,
@@ -53,10 +80,14 @@ const route = useRoute();
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
-import GlobalSearch from "@/components/layout/GlobalSearch.vue";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
 
 const readerNavbarVisible = ref(false);
+const searchTriggerButton = ref(null);
+const searchRef = ref(null);
+const searchComponent = shallowRef(null);
+const searchShortcutLabel = ref("Ctrl");
+let searchPromise;
 
 const isNovelReaderRoute = computed(() => route.name === "novel-reader");
 
@@ -69,6 +100,40 @@ const showReaderNavbar = () => {
   readerNavbarVisible.value = true;
 };
 
+const ensureSearch = async () => {
+  if (!searchPromise) {
+    searchPromise = import("@/components/layout/Search.vue")
+      .then(({ default: component }) => {
+        searchComponent.value = component;
+      })
+      .catch((error) => {
+        searchPromise = null;
+        throw error;
+      });
+  }
+
+  await searchPromise;
+  await nextTick();
+};
+
+const activateSearch = async () => {
+  await ensureSearch();
+  await searchRef.value?.activate();
+};
+
+const restoreSearchTriggerFocus = () => {
+  nextTick(() => searchTriggerButton.value?.focus());
+};
+
+const handleSearchShortcut = (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "k") {
+    return;
+  }
+
+  event.preventDefault();
+  void activateSearch();
+};
+
 watch(
   () => route.name,
   () => {
@@ -76,12 +141,25 @@ watch(
   },
 );
 
+watch(
+  () => route.query.search,
+  (search) => {
+    if (!import.meta.env.SSR && search === "1") void activateSearch();
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
+  searchShortcutLabel.value = /Mac|iPhone|iPad/i.test(navigator.platform)
+    ? "⌘"
+    : "Ctrl";
+  window.addEventListener("keydown", handleSearchShortcut);
   window.addEventListener(MOBILE_READER_NAVBAR_SHOW_EVENT, showReaderNavbar);
   window.addEventListener(MOBILE_READER_NAVBAR_HIDE_EVENT, hideReaderNavbar);
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleSearchShortcut);
   window.removeEventListener(MOBILE_READER_NAVBAR_SHOW_EVENT, showReaderNavbar);
   window.removeEventListener(MOBILE_READER_NAVBAR_HIDE_EVENT, hideReaderNavbar);
 });

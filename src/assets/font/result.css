@@ -1,29 +1,3 @@
-@import url("https://raw.komori.cc/kaiming/index.css");
-/* @import url("https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-neo-zhi-song-chs-regular-lxgw-neo-zhi-song@latest/font.min.css"); */
-/* LXGW Neo Zhisong */
-@import url("https://fontsapi.zeoseven.com/22/plus/result.css");
-/* LXGW Neo Xihei */
-/* @import url("https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-neo-xi-hei-regular@latest/font.min.css"); */
-@import url("https://fontsapi.zeoseven.com/19/plus/result.css");
-/* LXGW Wenkai GB */
-/* @import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-gb-web@latest/style.css"); */
-@import url("https://fontsapi.zeoseven.com/292/gb-light/result.css");
-@import url("https://fontsapi.zeoseven.com/292/gb-medium/result.css");
-@import url("https://fontsapi.zeoseven.com/292/gb-regular/result.css");
-/* Zhuque Fangsong */
-@import url("https://fontsapi.zeoseven.com/7/main/result.css");
-
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/inter/wght-italic.css";
-
-@import "@fontsource-variable/noto-sans-sc";
-@import "@fontsource-variable/noto-serif-sc";
-@import "@fontsource/zhi-mang-xing";
-
-@import "./cjk.css";
-@import "./latin.css";
-@import "./sinhala.css";
-
 @theme {
   --font-sans:
     "Kaiming Punctuation Sans", "Inter Variable", "Inter",

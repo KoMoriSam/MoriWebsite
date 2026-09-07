@@ -70,7 +70,8 @@
         </template>
       </Reader>
 
-      <TextContextMenu
+      <ContextMenu
+        v-if="ContextMenuMounted"
         v-model="textContextOpen"
         :context="textContext"
         :share-meta="shareMeta"
@@ -81,24 +82,28 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
 import Markdown from "@/components/reader/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Reader from "@/components/reader/Reader.vue";
-import TextContextMenu from "@/components/reader/TextContextMenu.vue";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 import TestPage from "./_TestPage.vue";
 import { MARKDOWN_SAMPLES as markdownSamples } from "./markdown-samples";
+
+const ContextMenu = defineAsyncComponent(
+  () => import("@/components/reader/ContextMenu.vue"),
+);
 
 const readerStore = useReaderStore();
 const route = useRoute();
 const router = useRouter();
 const { setCount } = useParagraphCommentsStorage();
 const markdownPreviewRef = ref(null);
+const ContextMenuMounted = ref(false);
 const textContextOpen = ref(false);
 const textContext = ref({});
 const testCommentCounts = {
@@ -155,13 +160,14 @@ const shareMeta = computed(() => ({
   path: route.path,
 }));
 
-function openTextContextMenu(context) {
+function openContextMenu(context) {
   if (!context) {
     textContextOpen.value = false;
     textContext.value = {};
     return;
   }
 
+  ContextMenuMounted.value = true;
   textContext.value = context;
   textContextOpen.value = true;
 }
@@ -174,7 +180,7 @@ const {
   handlePointerUp: handleMarkdownPointerUp,
 } = useReaderTextContext({
   getRoot: () => markdownPreviewRef.value,
-  emit: (_eventName, context) => openTextContextMenu(context),
+  emit: (_eventName, context) => openContextMenu(context),
 });
 
 function openContextSearch(keyword) {

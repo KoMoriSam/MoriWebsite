@@ -21,7 +21,14 @@
 </template>
 
 <script setup>
-import { nextTick, ref, onBeforeUnmount, onMounted, watch } from "vue";
+import {
+  defineAsyncComponent,
+  nextTick,
+  ref,
+  onBeforeUnmount,
+  onMounted,
+  watch,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
 import { fetchBlogSearchArticles } from "@/services/search-content";
@@ -30,7 +37,10 @@ import { useScrollTo } from "@/composables/useScrollTo";
 import { usePosTracker } from "@/composables/usePosTracker";
 
 import ArticleList from "@/views/blog/ArticleList.vue";
-import ArticleDetail from "@/views/blog/ArticleReader.vue";
+
+const ArticleDetail = defineAsyncComponent(
+  () => import("@/views/blog/ArticleReader.vue"),
+);
 
 const route = useRoute();
 const router = useRouter();

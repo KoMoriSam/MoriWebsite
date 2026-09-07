@@ -1,5 +1,9 @@
 import "@/assets/main.css";
 
+if (!import.meta.env.SSR) {
+  void import("@/assets/font/core-fonts.css");
+}
+
 import { ViteSSG } from "vite-ssg";
 import { createPinia } from "pinia";
 import App from "./App.vue";

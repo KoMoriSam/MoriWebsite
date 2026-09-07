@@ -2,7 +2,8 @@
   <TestPage section-id="reader-share">
     <section class="min-w-0">
       <p class="max-w-3xl text-sm leading-relaxed text-base-content/65">
-        生成结果应为 1080 × 1350 PNG；短内容完整显示，长内容显示截断提示。关闭预览后再次打开应重新生成并释放旧预览。
+        生成结果应为 1080 × 1350
+        PNG；短内容完整显示，长内容显示截断提示。关闭预览后再次打开应重新生成并释放旧预览。
       </p>
       <div class="mt-4 flex flex-wrap gap-2">
         <button class="btn btn-sm btn-primary" @click="openShortSample">
@@ -12,14 +13,14 @@
           生成长文截断示例
         </button>
       </div>
-      <ReaderShareCardDialog ref="shareDialogRef" />
+      <ShareCard ref="shareDialogRef" />
     </section>
   </TestPage>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import ReaderShareCardDialog from "@/components/reader/ReaderShareCardDialog.vue";
+import ShareCard from "@/components/reader/ShareCard.vue";
 import TestPage from "./_TestPage.vue";
 
 const shareDialogRef = ref(null);

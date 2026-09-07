@@ -37,7 +37,7 @@
       @pointerup.capture="handlePointerUp"
       @pointercancel.capture="resetPointer"
       @click="handleViewportClick"
-      @contextmenu.capture.prevent="handleTextContextMenu"
+      @contextmenu.capture.prevent="handleContextMenu"
     >
       <Markdown
         :content="content"
@@ -1586,7 +1586,7 @@ const turnPage = (direction) => {
 
 const {
   getSelectionContext,
-  handleContextMenu: handleTextContextMenu,
+  handleContextMenu: handleContextMenu,
   handlePointerCancel: handleTextPointerCancel,
   handlePointerDown: handleTextPointerDown,
   handlePointerMove: handleTextPointerMove,

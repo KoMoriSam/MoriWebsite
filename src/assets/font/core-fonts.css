@@ -1,0 +1,10 @@
+@import url("https://raw.komori.cc/kaiming/index.css");
+
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/inter/wght-italic.css";
+@import "@fontsource-variable/noto-sans-sc";
+@import "./cjk.css";
+@import "@fontsource-variable/noto-serif-sc";
+
+@import "./latin.css";
+@import "./sinhala.css";

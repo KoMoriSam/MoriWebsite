@@ -6,11 +6,14 @@
 
 <script setup>
 import { useChapterSetup } from "@/composables/useChapterSetup";
-import { computed } from "vue";
+import { computed, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 
 import NovelDetail from "@/views/novel/NovelDetail.vue";
-import Reader from "@/views/novel/NovelReader.vue";
+
+const Reader = defineAsyncComponent(
+  () => import("@/views/novel/NovelReader.vue"),
+);
 
 const { setupWatchers } = useChapterSetup();
 setupWatchers();

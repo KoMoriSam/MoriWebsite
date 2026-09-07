@@ -1,6 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition
+      appear
       enter-active-class="transition duration-150 ease-out"
       enter-from-class="scale-95 opacity-0"
       leave-active-class="transition duration-100 ease-in"
@@ -63,7 +64,11 @@
       </ul>
     </Transition>
   </Teleport>
-  <ReaderShareCardDialog ref="shareDialogRef" />
+  <component
+    :is="shareDialogComponent"
+    v-if="shareDialogComponent"
+    ref="shareDialogRef"
+  />
 </template>
 
 <script setup>
@@ -73,10 +78,10 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  shallowRef,
   watch,
 } from "vue";
 import { useToast } from "@/composables/useToast";
-import ReaderShareCardDialog from "@/components/reader/ReaderShareCardDialog.vue";
 import { copyLatexSvg } from "@/utils/reader/reader-latex";
 
 const props = defineProps({
@@ -88,7 +93,9 @@ const emit = defineEmits(["update:modelValue", "search", "comment"]);
 const toast = useToast({ position: "center", closable: false });
 const menuRef = ref(null);
 const shareDialogRef = ref(null);
+const shareDialogComponent = shallowRef(null);
 const position = ref({ left: 8, top: 8 });
+let shareDialogPromise;
 const menuPosition = computed(() => ({
   left: `${position.value.left}px`,
   top: `${position.value.top}px`,
@@ -196,14 +203,36 @@ const searchText = () => {
   emit("search", props.context.text);
   close();
 };
-const shareText = () => {
-  void shareDialogRef.value?.open({
+const ensureShareDialog = async () => {
+  if (!shareDialogPromise) {
+    shareDialogPromise = import("@/components/reader/ShareCard.vue")
+      .then(({ default: component }) => {
+        shareDialogComponent.value = component;
+      })
+      .catch((error) => {
+        shareDialogPromise = null;
+        throw error;
+      });
+  }
+
+  await shareDialogPromise;
+  await nextTick();
+};
+const shareText = async () => {
+  const payload = {
     text: props.context.text,
     paragraphId: props.context.paragraphId,
     shareContent: props.context.shareContent,
     meta: { ...props.shareMeta },
-  });
+  };
   close();
+
+  try {
+    await ensureShareDialog();
+    await shareDialogRef.value?.open(payload);
+  } catch {
+    toast.error("暂时无法打开分享卡片");
+  }
 };
 const openComment = () => {
   if (props.context.commentScope === "chapter") {

@@ -1,17 +1,4 @@
 <template>
-  <button
-    ref="triggerButton"
-    type="button"
-    class="btn btn-ghost max-md:btn-square"
-    aria-label="打开全局内容搜索"
-    aria-keyshortcuts="Control+K Meta+K"
-    @click="openSearch"
-  >
-    <i class="ri-search-line text-lg" aria-hidden="true"></i>
-    <span class="hidden xl:inline">搜索</span>
-    <kbd class="kbd kbd-sm hidden xl:inline-flex"> {{ shortcutLabel }} K </kbd>
-  </button>
-
   <Teleport to="body">
     <Transition name="global-search">
       <div
@@ -509,8 +496,8 @@ import {
 
 const route = useRoute();
 const router = useRouter();
+const emit = defineEmits(["restore-focus"]);
 
-const triggerButton = ref(null);
 const dialogPanel = ref(null);
 const searchBox = ref(null);
 const searchInput = ref(null);
@@ -542,8 +529,6 @@ let urlSyncTimer;
 let searchRequestId = 0;
 let syncingFromRoute = false;
 let previousBodyOverflow = "";
-
-const shortcutLabel = ref("Ctrl");
 
 const hasFilters = computed(() => {
   return (
@@ -1438,6 +1423,16 @@ const openSearch = async () => {
   await initializeSearch();
 };
 
+const activate = async () => {
+  if (isOpen.value) {
+    searchInput.value?.focus();
+    searchInput.value?.select();
+    return;
+  }
+
+  await openSearch();
+};
+
 const closeSearch = ({ restoreFocus = true } = {}) => {
   if (!isOpen.value) return;
 
@@ -1450,7 +1445,7 @@ const closeSearch = ({ restoreFocus = true } = {}) => {
   router.replace({ query });
 
   if (restoreFocus) {
-    nextTick(() => triggerButton.value?.focus());
+    emit("restore-focus");
   }
 };
 
@@ -1519,13 +1514,6 @@ const openResult = (result) => {
     .then(() => {
       document.dispatchEvent(new CustomEvent("global-search-result-opened"));
     });
-};
-
-const handleGlobalKeydown = (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-    event.preventDefault();
-    isOpen.value ? searchInput.value?.focus() : openSearch();
-  }
 };
 
 const handleDialogKeydown = (event) => {
@@ -1611,11 +1599,7 @@ watch(
 );
 
 onMounted(async () => {
-  shortcutLabel.value = /Mac|iPhone|iPad/i.test(navigator.platform)
-    ? "⌘"
-    : "Ctrl";
   applyRouteState();
-  window.addEventListener("keydown", handleGlobalKeydown);
   document.addEventListener("pointerdown", handleOutsidePointerDown);
 
   if (route.query.search === "1") {
@@ -1628,12 +1612,13 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("keydown", handleGlobalKeydown);
   document.removeEventListener("pointerdown", handleOutsidePointerDown);
   window.clearTimeout(searchTimer);
   window.clearTimeout(urlSyncTimer);
   setBodyScrollLocked(false);
 });
+
+defineExpose({ activate });
 </script>
 
 <style scoped>
