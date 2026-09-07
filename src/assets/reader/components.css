@@ -215,7 +215,7 @@
 
   .markdown-content.prose :deep(.footnote-ref a) {
     @apply badge badge-xs hover:badge-info hover:text-info-content
-    indent-0 font-serif text-base-content no-underline
+    indent-0 font-serif text-base-content no-underline tabular-nums
     text-[calc(var(--para-font-size)*0.5)] px-1;
   }
 
