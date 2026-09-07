@@ -305,6 +305,13 @@ const createGalleryItem = (image) => {
   };
 };
 
+const preventContextMenu = (event) => event.preventDefault();
+
+const disableImageContextMenu = (element) => {
+  if (!(element instanceof HTMLImageElement)) return;
+  element.addEventListener("contextmenu", preventContextMenu);
+};
+
 const prepareSourceFilter = (element, content) => {
   const { sourceFilter, sourceFilterFrom } = content?.data || {};
   if (!element || !sourceFilter) return;
@@ -434,6 +441,7 @@ const open = async ({ images, index = 0, pointer = null } = {}) => {
     }
   });
   instance.on("contentLoadImage", ({ content }) => {
+    disableImageContextMenu(content.element);
     if (openingFilterTransitionStarted || instance.opener.isOpen) {
       animateSourceFilter(content.element, content);
     } else {
