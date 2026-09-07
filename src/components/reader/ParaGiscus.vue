@@ -57,8 +57,12 @@ const handleGiscusMetadata = (event) => {
   const payload = event?.data?.giscus;
   if (!payload?.discussion) return;
 
-  const totalCommentCount = Number(payload.discussion.totalCommentCount ?? 0);
-  if (!Number.isFinite(totalCommentCount)) return;
+  const commentCount = Number(payload.discussion.totalCommentCount ?? 0);
+  const replyCount = Number(payload.discussion.totalReplyCount ?? 0);
+  if (!Number.isFinite(commentCount) || !Number.isFinite(replyCount)) return;
+
+  const totalCommentCount =
+    Math.max(0, commentCount) + Math.max(0, replyCount);
 
   document.dispatchEvent(
     new CustomEvent("paragraph-comment-metadata", {
