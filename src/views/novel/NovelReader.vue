@@ -564,12 +564,21 @@ const hasCustomReaderAppearance = computed(() =>
       styleConfigs.value.backgroundImage),
   ),
 );
+const readerBackgroundImageConfig = computed(() =>
+  styleConfigs.value.backgroundType === "image" &&
+  styleConfigs.value.backgroundImage
+    ? getReaderBackgroundImage(styleConfigs.value.backgroundImage)
+    : undefined,
+);
 const readerPageTheme = computed(() => {
   if (!isMobileReader.value) return "";
+  const colorTheme =
+    readerBackgroundImageConfig.value?.colorTheme ||
+    styleConfigs.value.colorTheme;
   return ["lemonade", "forest", "corporate", "dim"].includes(
-    styleConfigs.value.colorTheme,
+    colorTheme,
   )
-    ? styleConfigs.value.colorTheme
+    ? colorTheme
     : "";
 });
 const usesCustomReaderColors = computed(
@@ -579,7 +588,11 @@ const usesCustomReaderColors = computed(
       hasCustomReaderAppearance.value),
 );
 const readerCustomTextColor = computed(() =>
-  usesCustomReaderColors.value ? styleConfigs.value.textColor : "",
+  usesCustomReaderColors.value
+    ? styleConfigs.value.textColor ||
+      readerBackgroundImageConfig.value?.textColor ||
+      ""
+    : "",
 );
 const readerCustomBackgroundColor = computed(() =>
   usesCustomReaderColors.value && styleConfigs.value.backgroundType !== "image"
@@ -603,7 +616,9 @@ const readerPageStyle = computed(() => {
   const backgroundImageStyle = backgroundImageUrl
     ? `url("${backgroundImageUrl.replaceAll('"', '\\"')}")`
     : undefined;
-  const darkBackgroundImage = backgroundImage?.tone === "dark";
+  const darkBackgroundImage = ["forest", "dim"].includes(
+    backgroundImage?.colorTheme,
+  );
   return {
     color: textColor || undefined,
     backgroundColor: backgroundColor || undefined,

@@ -227,7 +227,11 @@
                   :aria-pressed="styleConfigs.backgroundImage === image.id"
                   @click="selectBackgroundImage(image)"
                 >
-                  <span class="text-xs" :style="{ color: image.textColor }">
+                  <span
+                    class="bg-transparent"
+                    :data-theme="image?.colorTheme"
+                    :style="image.textColor ? { color: image.textColor } : {}"
+                  >
                     {{ image.label }}
                   </span>
                 </button>
@@ -469,11 +473,13 @@ const selectedBackgroundType = computed(() =>
     ? "image"
     : "color",
 );
-const previewTheme = computed(() =>
-  semanticReaderThemes.has(selectedColorTheme.value)
-    ? selectedColorTheme.value
-    : "",
-);
+const previewTheme = computed(() => {
+  const theme =
+    selectedBackgroundType.value === "image"
+      ? selectedBackgroundImage.value?.colorTheme
+      : selectedColorTheme.value;
+  return semanticReaderThemes.has(theme) ? theme : "";
+});
 
 const previewStyle = computed(() => ({
   ...(props.mobile
@@ -491,7 +497,10 @@ const previewStyle = computed(() => ({
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
-        color: styleConfigs.value.textColor || "var(--color-base-content)",
+        color:
+          styleConfigs.value.textColor ||
+          selectedBackgroundImage.value?.textColor ||
+          "var(--color-base-content)",
       }
     : {}),
   fontSize: `${Math.max(1, Number(styleConfigs.value.fontSize) || 20)}px`,
@@ -505,12 +514,19 @@ const previewParagraphGap = computed(() => {
   return `${paragraphGap * fontSize * lineHeight}px`;
 });
 
-const presetTheme = (preset) =>
-  semanticReaderThemes.has(preset?.styles?.colorTheme)
-    ? preset.styles.colorTheme
-    : "";
+const presetBackgroundImageTheme = (preset) => {
+  const styles = preset?.styles || {};
+  if (styles.backgroundType !== "image") return "";
+  return getReaderBackgroundImage(styles.backgroundImage)?.colorTheme || "";
+};
+const presetTheme = (preset) => {
+  const theme =
+    presetBackgroundImageTheme(preset) || preset?.styles?.colorTheme;
+  return semanticReaderThemes.has(theme) ? theme : "";
+};
 const presetSiteTheme = (preset) => {
-  const theme = preset?.styles?.colorTheme;
+  const theme =
+    presetBackgroundImageTheme(preset) || preset?.styles?.colorTheme;
   if (theme === "site") return "default";
   return siteThemeList.value.some(({ value }) => value === theme) ? theme : "";
 };
@@ -525,17 +541,23 @@ const presetSampleStyle = (preset) => {
   if (!props.mobile) return sample;
 
   const styles = preset?.styles || {};
-  const backgroundImage =
+  const backgroundImageConfig =
     styles.backgroundType === "image"
-      ? getReaderBackgroundImageUrl(styles.backgroundImage)
-      : "";
+      ? getReaderBackgroundImage(styles.backgroundImage)
+      : undefined;
+  const backgroundImage = backgroundImageConfig?.id
+    ? getReaderBackgroundImageUrl(backgroundImageConfig.id)
+    : "";
   return {
     ...sample,
     backgroundColor:
       styles.backgroundType !== "image"
         ? styles.backgroundColor || undefined
         : undefined,
-    color: styles.textColor || "var(--color-base-content)",
+    color:
+      styles.textColor ||
+      backgroundImageConfig?.textColor ||
+      "var(--color-base-content)",
     backgroundImage: cssBackgroundImage(backgroundImage),
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
@@ -646,6 +668,8 @@ const selectBackgroundImage = (image) => {
   store.resetStyle("backgroundColor");
   if (image.textColor) {
     store.setStyle("textColor", image.textColor);
+  } else {
+    store.resetStyle("textColor");
   }
 };
 const setBackgroundType = (type) => {
