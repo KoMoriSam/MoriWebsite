@@ -18,7 +18,17 @@ export const isReaderInteractiveEvent = (event) =>
     (node) => node instanceof Element && node.matches(INTERACTIVE_SELECTOR),
   );
 
+const isReaderImageEvent = (event) =>
+  (event.composedPath?.() || [event.target]).some(
+    (node) =>
+      node instanceof Element &&
+      node.matches(
+        "figure.markdown-figure > img[src], img.markdown-inline-image[src]",
+      ),
+  );
+
 const isLongPressBlockedEvent = (event) =>
+  !isReaderImageEvent(event) &&
   (event.composedPath?.() || [event.target]).some(
     (node) =>
       node instanceof Element && node.matches(LONG_PRESS_BLOCKED_SELECTOR),
@@ -101,6 +111,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
       performance.now() - lastTouchAt < TOUCH_CONTEXT_WINDOW;
     if (
       isReaderInteractiveEvent(event) &&
+      !isReaderImageEvent(event) &&
       (!isTouchContext || isLongPressBlockedEvent(event))
     ) {
       return;
@@ -179,6 +190,19 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     touchPointer.target = event.target;
     longPressTimer = window.setTimeout(() => {
       longPressTimer = 0;
+      if (
+        isReaderImageEvent({ target: touchPointer.target }) &&
+        emitPointContext(
+          {
+            target: touchPointer.target,
+            clientX: touchPointer.x,
+            clientY: touchPointer.y,
+          },
+          root,
+        )
+      ) {
+        return;
+      }
       selectTextAndOpen({
         root,
         target: touchPointer.target,

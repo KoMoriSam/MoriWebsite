@@ -25,6 +25,7 @@ const BLOCK_TYPES = new Set([
   "moment",
   "table",
   "mermaid",
+  "image",
 ]);
 const SYNTAX_COLOR_KEYS = [
   "keyword",
@@ -63,6 +64,7 @@ const WORD_CONNECTOR = /^[\u0026'\u002b,\-./:=?@_\u2019%#]$/u;
 let faviconPromise;
 const fontDataUrlPromises = new Map();
 const linkIconPromises = new Map();
+const contentImagePromises = new Map();
 
 const normalizeText = (value = "") =>
   String(value).replace(/\s+/gu, " ").trim();
@@ -313,6 +315,33 @@ const loadLinkIcon = (src) => {
   return promise;
 };
 
+const loadContentImage = (src) => {
+  if (!src) return Promise.resolve(null);
+  if (contentImagePromises.has(src)) return contentImagePromises.get(src);
+  const promise = new Promise((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      try {
+        const probe = document.createElement("canvas");
+        probe.width = 1;
+        probe.height = 1;
+        const context = probe.getContext("2d");
+        if (!context) throw new Error("当前浏览器无法验证正文图片");
+        context.drawImage(image, 0, 0, 1, 1);
+        probe.toDataURL("image/png");
+        resolve(image);
+      } catch {
+        resolve(null);
+      }
+    };
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+  contentImagePromises.set(src, promise);
+  return promise;
+};
+
 const normalizeRuns = (runs = []) =>
   runs
     .map((run) => ({
@@ -348,6 +377,17 @@ const normalizeRuns = (runs = []) =>
       mathAssets: [],
       linkIconSrc: String(run?.linkIconSrc || ""),
       linkIconAsset: null,
+      inlineImageSrc: String(run?.inlineImageSrc || ""),
+      inlineImageAlt: normalizeText(run?.inlineImageAlt),
+      inlineImageWidthEm: Math.max(
+        0,
+        Number(run?.inlineImageWidthEm) || 0,
+      ),
+      inlineImageHeightEm: Math.max(
+        0,
+        Number(run?.inlineImageHeightEm) || 0,
+      ),
+      inlineImageAsset: null,
     }))
     .filter(({ text }) => text);
 
@@ -396,6 +436,8 @@ const normalizeShareContent = (
             ? block.tone
             : "accent",
           svg: String(block?.svg || ""),
+          src: String(block?.src || ""),
+          alt: normalizeText(block?.alt),
           width: Math.max(1, Number(block?.width) || 1),
           height: Math.max(1, Number(block?.height) || 1),
           imageAsset: null,
@@ -408,11 +450,14 @@ const normalizeShareContent = (
           runs: normalizeRuns(block?.runs),
         }))
         .filter(
-          ({ type, svg, runs }) =>
-            (type === "mermaid" && svg) || runs.some(({ text }) => text.trim()),
+          ({ type, svg, src, runs }) =>
+            (type === "mermaid" && svg) ||
+            (type === "image" && src) ||
+            runs.some(({ text }) => text.trim()),
         )
         .filter(
-          ({ runs }) =>
+          ({ type, runs }) =>
+            type === "image" ||
             !excludedContent.has(
               normalizeContentKey(runs.map(({ text }) => text).join("")),
             ),
@@ -497,6 +542,22 @@ const prepareLinkIconRuns = async (blocks) => {
     runs.map(async (run) => {
       if (!run.linkIconSrc) return;
       run.linkIconAsset = await loadLinkIcon(run.linkIconSrc);
+    }),
+  );
+};
+
+const prepareInlineImageRuns = async (blocks) => {
+  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  await Promise.all(
+    runs.map(async (run) => {
+      if (!run.inlineImageSrc) return;
+      const image = await loadContentImage(run.inlineImageSrc);
+      if (image) {
+        run.inlineImageAsset = image;
+        return;
+      }
+      run.text = run.inlineImageAlt || "图片";
+      run.inlineImageSrc = "";
     }),
   );
 };
@@ -728,6 +789,26 @@ const prepareMermaidBlocks = async (blocks) => {
   );
 };
 
+const prepareImageBlocks = async (blocks) => {
+  await Promise.all(
+    blocks.map(async (block) => {
+      if (block.type !== "image" || !block.src) return;
+      const image = await loadContentImage(block.src);
+      if (image) {
+        block.imageAsset = {
+          image,
+          width: image.naturalWidth || block.width,
+          height: image.naturalHeight || block.height,
+        };
+        return;
+      }
+      if (!block.runs.length) {
+        block.runs = normalizeRuns([{ text: block.alt || "图片" }]);
+      }
+    }),
+  );
+};
+
 const getBlockConfig = (block, baseSize, appearance) => {
   const common = {
     x: CARD_PADDING,
@@ -844,11 +925,74 @@ const getBlockConfig = (block, baseSize, appearance) => {
       imageHeight,
     };
   }
+  if (block.type === "image") {
+    const fontSize = Math.round(baseSize * 0.68);
+    const imageGap = block.imageAsset && block.runs.length ? 18 : 0;
+    if (!block.imageAsset) {
+      return {
+        ...common,
+        fontSize,
+        lineHeight: Math.round(fontSize * 1.42),
+        justify: false,
+      };
+    }
+    const maxWidth = TEXT_WIDTH;
+    const maxHeight = 640;
+    const scale = Math.min(
+      maxWidth / block.imageAsset.width,
+      maxHeight / block.imageAsset.height,
+    );
+    const imageWidth = block.imageAsset.width * scale;
+    const imageHeight = block.imageAsset.height * scale;
+    return {
+      ...common,
+      fontSize,
+      lineHeight: Math.round(fontSize * 1.42),
+      paddingTop: 12,
+      paddingBottom: 8,
+      justify: false,
+      imageX: CARD_PADDING + (TEXT_WIDTH - imageWidth) / 2,
+      imageWidth,
+      imageHeight,
+      imageGap,
+    };
+  }
   return common;
 };
 
 const createToken = (context, grapheme, run, config, appearance) => {
   const style = { ...run };
+  if (style.inlineImageAsset) {
+    const naturalWidth =
+      style.inlineImageAsset.naturalWidth || style.inlineImageAsset.width || 1;
+    const naturalHeight =
+      style.inlineImageAsset.naturalHeight || style.inlineImageAsset.height || 1;
+    const height =
+      (style.inlineImageHeightEm || 1) * config.fontSize;
+    const width =
+      (style.inlineImageWidthEm ||
+        (height / config.fontSize) * (naturalWidth / naturalHeight)) *
+      config.fontSize;
+    const scale = Math.min(1, config.width / width, TEXT_HEIGHT / height);
+    const inlineImageWidth = width * scale;
+    const inlineImageHeight = height * scale;
+    const inlineImageAscent =
+      inlineImageHeight / 2 + config.fontSize * 0.25;
+    return {
+      text: grapheme,
+      style,
+      textWidth: inlineImageWidth,
+      rubyWidth: 0,
+      width: inlineImageWidth,
+      inlineImageWidth,
+      inlineImageHeight,
+      inlineImageAscent,
+      inlineImageDescent: Math.max(
+        0,
+        inlineImageHeight - inlineImageAscent,
+      ),
+    };
+  }
   if (style.mathAsset) {
     const bodyScale = config.fontSize / style.mathAsset.fontSize;
     const naturalWidth = style.mathAsset.width * bodyScale;
@@ -922,16 +1066,21 @@ const trimLineEnd = (tokens) => {
 const createLine = (tokens, config, hardBreak = false) => {
   const trimmed = trimLineEnd(tokens);
   const mathTokens = trimmed.filter(({ style }) => style.mathAsset);
+  const inlineImageTokens = trimmed.filter(
+    ({ style }) => style.inlineImageAsset,
+  );
   const ascent = Math.max(
     config.fontSize,
     ...mathTokens.map(
       ({ mathHeight, mathBaselineShift }) =>
         mathHeight + mathBaselineShift,
     ),
+    ...inlineImageTokens.map(({ inlineImageAscent }) => inlineImageAscent),
   );
   const descent = Math.max(
     config.lineHeight - config.fontSize,
     ...mathTokens.map(({ mathBaselineShift }) => -mathBaselineShift),
+    ...inlineImageTokens.map(({ inlineImageDescent }) => inlineImageDescent),
   );
   return {
     tokens: trimmed,
@@ -1084,7 +1233,12 @@ const createBlockLayout = (context, block, baseSize, appearance) => {
       cjkDominant: false,
     };
   }
-  const lines = wrapRuns(context, block.runs, config, appearance);
+  const lines =
+    block.type === "image" && !block.runs.length
+      ? []
+      : wrapRuns(context, block.runs, config, appearance);
+  const imageHeight = block.type === "image" ? config.imageHeight || 0 : 0;
+  const imageGap = imageHeight && lines.length ? config.imageGap || 0 : 0;
   return {
     block,
     config,
@@ -1092,6 +1246,8 @@ const createBlockLayout = (context, block, baseSize, appearance) => {
     height:
       config.paddingTop +
       config.paddingBottom +
+      imageHeight +
+      imageGap +
       lines.reduce((height, line) => height + line.height, 0),
     cjkDominant: isCjkDominant(block),
   };
@@ -1131,9 +1287,49 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       break;
     }
 
+    if (
+      block.type === "image" &&
+      block.imageAsset &&
+      available > layout.config.paddingTop + layout.config.paddingBottom + 80
+    ) {
+      const captionHeight = layout.lines.reduce(
+        (height, line) => height + line.height,
+        0,
+      );
+      const imageGap = layout.lines.length ? layout.config.imageGap : 0;
+      const imageRoom = Math.max(
+        80,
+        available -
+          layout.config.paddingTop -
+          layout.config.paddingBottom -
+          imageGap -
+          captionHeight,
+      );
+      const scale = Math.min(1, imageRoom / layout.config.imageHeight);
+      layout.config.imageWidth *= scale;
+      layout.config.imageHeight *= scale;
+      layout.config.imageX =
+        CARD_PADDING + (TEXT_WIDTH - layout.config.imageWidth) / 2;
+      layout.height =
+        layout.config.paddingTop +
+        layout.config.paddingBottom +
+        layout.config.imageHeight +
+        imageGap +
+        captionHeight;
+      if (layout.height <= available) {
+        layouts.push(layout);
+        usedHeight += gap + layout.height;
+        break;
+      }
+    }
+
     truncated = true;
     const lineHeightRoom =
-      available - layout.config.paddingTop - layout.config.paddingBottom;
+      available -
+      layout.config.paddingTop -
+      layout.config.paddingBottom -
+      (layout.config.imageHeight || 0) -
+      (layout.lines.length ? layout.config.imageGap || 0 : 0);
     let lineRoom = 0;
     let visibleLineHeight = 0;
     while (
@@ -1154,6 +1350,8 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       layout.height =
         layout.config.paddingTop +
         layout.config.paddingBottom +
+        (layout.config.imageHeight || 0) +
+        (layout.lines.length ? layout.config.imageGap || 0 : 0) +
         layout.lines.reduce((height, line) => height + line.height, 0);
       layouts.push(layout);
       usedHeight += gap + layout.height;
@@ -1191,6 +1389,7 @@ const resolveBodyLayout = (context, blocks, appearance) => {
 
 const isJustifyGap = (left, right) => {
   if (!left || !right) return false;
+  if (left.style.inlineImageAsset || right.style.inlineImageAsset) return false;
   if (/^\s+$/u.test(left.text) || /^\s+$/u.test(right.text)) return false;
   return /[\p{Script=Han}\u3000-\u303f\uff01-\uff60]/u.test(
     `${left.text}${right.text}`,
@@ -1282,6 +1481,16 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
   drawTokenBackgrounds(context, positions, baseline, config, appearance);
 
   positions.forEach(({ token, x }) => {
+    if (token.style.inlineImageAsset) {
+      context.drawImage(
+        token.style.inlineImageAsset,
+        x,
+        baseline - token.inlineImageAscent,
+        token.inlineImageWidth,
+        token.inlineImageHeight,
+      );
+      return;
+    }
     if (token.style.linkIcon && token.style.linkIconAsset) {
       const iconSize = token.iconSize;
       const imageSize = config.fontSize * 0.5;
@@ -1512,6 +1721,27 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
     }
 
     let lineY = y + config.paddingTop;
+    if (block.type === "image" && block.imageAsset) {
+      context.save();
+      drawRoundedRect(
+        context,
+        config.imageX,
+        lineY,
+        config.imageWidth,
+        config.imageHeight,
+        14,
+      );
+      context.clip();
+      context.drawImage(
+        block.imageAsset.image,
+        config.imageX,
+        lineY,
+        config.imageWidth,
+        config.imageHeight,
+      );
+      context.restore();
+      lineY += config.imageHeight + (lines.length ? config.imageGap : 0);
+    }
     lines.forEach((line, lineIndex) => {
       const baseline = lineY + line.ascent;
       if (block.type === "list-item" && lineIndex === 0) {
@@ -1531,7 +1761,19 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
       if (["x", "X", "-"].includes(block.taskStatus)) {
         context.globalAlpha *= 0.5;
       }
-      drawRichLine(context, line, baseline, layout, appearance);
+      const lineLayout =
+        block.type === "image"
+          ? {
+              ...layout,
+              config: {
+                ...config,
+                x: config.x + Math.max(0, config.width - line.width) / 2,
+                justify: false,
+              },
+            }
+          : layout;
+      if (block.type === "image") context.globalAlpha *= 0.72;
+      drawRichLine(context, line, baseline, lineLayout, appearance);
       context.restore();
       lineY += line.height;
     });
@@ -1743,7 +1985,9 @@ export const createReaderShareCard = async ({
   await Promise.all([
     prepareLatexRuns(blocks, appearance),
     prepareLinkIconRuns(blocks),
+    prepareInlineImageRuns(blocks),
     prepareMermaidBlocks(blocks),
+    prepareImageBlocks(blocks),
   ]);
 
   context.textBaseline = "alphabetic";

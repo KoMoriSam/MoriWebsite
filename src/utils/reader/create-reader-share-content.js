@@ -39,6 +39,7 @@ const BLOCK_SELECTOR = [
   "p",
   "pre",
   "table",
+  "figure.markdown-figure",
   "blockquote",
   "[data-markdown-alert]",
   "[data-markdown-chat]",
@@ -206,6 +207,10 @@ const RUN_STYLE_KEYS = [
   "svg",
   "mathDisplay",
   "linkIconSrc",
+  "inlineImageSrc",
+  "inlineImageAlt",
+  "inlineImageWidthEm",
+  "inlineImageHeightEm",
 ];
 
 const sameRunStyle = (left, right) =>
@@ -241,10 +246,21 @@ const appendRun = (runs, text, style = {}) => {
       : [],
     mathDisplay: Boolean(style.mathDisplay),
     linkIconSrc: style.linkIconSrc || "",
+    inlineImageSrc: style.inlineImageSrc || "",
+    inlineImageAlt: style.inlineImageAlt || "",
+    inlineImageWidthEm: Math.max(
+      0,
+      Number(style.inlineImageWidthEm) || 0,
+    ),
+    inlineImageHeightEm: Math.max(
+      0,
+      Number(style.inlineImageHeightEm) || 0,
+    ),
   };
   const previous = runs.at(-1);
-  if (previous && sameRunStyle(previous, next)) previous.text += next.text;
-  else runs.push(next);
+  if (previous && !next.inlineImageSrc && sameRunStyle(previous, next)) {
+    previous.text += next.text;
+  } else runs.push(next);
 };
 
 const trimRuns = (runs) => {
@@ -322,6 +338,35 @@ function serializeInlineNode(
     return;
   }
   if (tag === "IMG") {
+    if (node.matches("img.markdown-inline-image[src]")) {
+      const bounds = node.getBoundingClientRect();
+      const computed = getComputedStyle(node);
+      const parentFontSize = node.parentElement
+        ? Number.parseFloat(getComputedStyle(node.parentElement).fontSize)
+        : 0;
+      const fontSize =
+        Number.parseFloat(computed.fontSize) ||
+        parentFontSize ||
+        16;
+      const width =
+        bounds.width ||
+        Number(node.getAttribute("width")) ||
+        node.naturalWidth ||
+        fontSize;
+      const height =
+        bounds.height ||
+        Number(node.getAttribute("height")) ||
+        node.naturalHeight ||
+        fontSize;
+      appendRun(runs, "\ufffc", {
+        ...inherited,
+        inlineImageSrc: node.currentSrc || node.getAttribute("src") || "",
+        inlineImageAlt: normalizeLabel(node.getAttribute("alt")),
+        inlineImageWidthEm: width / fontSize,
+        inlineImageHeightEm: height / fontSize,
+      });
+      return;
+    }
     appendRun(runs, normalizeLabel(node.getAttribute("alt")), inherited);
     return;
   }
@@ -807,9 +852,51 @@ const serializeMermaidBlock = (viewer) => {
   };
 };
 
+const getImageDimensions = (image) => {
+  const bounds = image.getBoundingClientRect();
+  return {
+    width:
+      image.naturalWidth ||
+      Number(image.getAttribute("width")) ||
+      bounds.width ||
+      1,
+    height:
+      image.naturalHeight ||
+      Number(image.getAttribute("height")) ||
+      bounds.height ||
+      1,
+  };
+};
+
+const serializeImageBlock = (figure, range) => {
+  const image = figure.querySelector(":scope > img[src]");
+  if (!image) return null;
+
+  const caption = figure.querySelector(":scope > figcaption");
+  const imageSelected = rangeIntersectsNode(range, image);
+  const dimensions = getImageDimensions(image);
+  return {
+    type: "image",
+    src: image.currentSrc || image.getAttribute("src") || "",
+    alt: normalizeLabel(image.getAttribute("alt")),
+    width: dimensions.width,
+    height: dimensions.height,
+    style: getComputedTextStyle(caption || figure),
+    runs: caption
+      ? serializeNodes(Array.from(caption.childNodes), {
+          inherited: getComputedTextStyle(caption),
+          range: imageSelected ? null : range,
+        })
+      : [],
+  };
+};
+
 const serializeBlock = (block, range) => {
   if (block.matches("[data-mermaid-viewer]")) {
     return serializeMermaidBlock(block);
+  }
+  if (block.matches("figure.markdown-figure")) {
+    return serializeImageBlock(block, range);
   }
   const blockFormula = getLatexFormula(block);
   if (blockFormula?.element === block && blockFormula.display) {
@@ -887,6 +974,7 @@ const getSemanticBlock = (node, fallback) => {
     : null;
   return (
     element.closest("[data-mermaid-viewer]") ||
+    element.closest("figure.markdown-figure") ||
     element.closest("[data-markdown-code-block]") ||
     element.closest("[data-markdown-alert]") ||
     priorityListItem ||
@@ -925,6 +1013,14 @@ const collectRangeBlocks = (range, fallback) => {
     seen.add(viewer);
     blocks.push(viewer);
   };
+  const addImage = (element) => {
+    const figure = element.closest?.("figure.markdown-figure");
+    if (!figure || !rangeIntersectsNode(range, figure) || seen.has(figure)) {
+      return;
+    }
+    seen.add(figure);
+    blocks.push(figure);
+  };
 
   if (common.nodeType === Node.TEXT_NODE) addTextNode(common);
   const walker = document.createTreeWalker(common, NodeFilter.SHOW_TEXT);
@@ -940,6 +1036,8 @@ const collectRangeBlocks = (range, fallback) => {
   const containingMermaid = common.closest?.("[data-mermaid-viewer]");
   if (containingMermaid) addMermaid(containingMermaid);
   common.querySelectorAll?.("[data-mermaid-viewer]").forEach(addMermaid);
+  addImage(common);
+  common.querySelectorAll?.("figure.markdown-figure").forEach(addImage);
   if (!blocks.length) return fallback ? [fallback] : [];
 
   blocks.sort((left, right) => {
@@ -981,6 +1079,7 @@ export const createReaderShareContent = ({ range, element } = {}) => {
     .filter(
       (block) =>
         (block.type === "mermaid" && block.svg) ||
+        (block.type === "image" && block.src) ||
         block.runs?.some(({ text }) => text.trim()),
     );
   return { blocks: serialized };

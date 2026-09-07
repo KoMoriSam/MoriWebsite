@@ -30,9 +30,18 @@
           </button>
         </li>
         <li v-else>
-          <button type="button" :disabled="!context.text" @click="copyText">
-            <i class="ri-file-copy-line" aria-hidden="true"></i>
-            <span>复制</span>
+          <button
+            type="button"
+            :disabled="context.image ? !context.image.src : !context.text"
+            @click="handlePrimaryAction"
+          >
+            <i
+              :class="
+                context.image ? 'ri-download-2-line' : 'ri-file-copy-line'
+              "
+              aria-hidden="true"
+            ></i>
+            <span>{{ context.image ? "保存" : "复制" }}</span>
           </button>
         </li>
         <li>
@@ -95,17 +104,21 @@ const menuRef = ref(null);
 const shareDialogRef = ref(null);
 const shareDialogComponent = shallowRef(null);
 const position = ref({ left: 8, top: 8 });
+const positioned = ref(false);
 let shareDialogPromise;
 const menuPosition = computed(() => ({
   left: `${position.value.left}px`,
   top: `${position.value.top}px`,
+  visibility: positioned.value ? "visible" : "hidden",
 }));
 
 const close = () => emit("update:modelValue", false);
 const positionMenu = async () => {
   await nextTick();
-  const rect = menuRef.value?.getBoundingClientRect();
-  if (!rect) return;
+  const menu = menuRef.value;
+  if (!menu) return;
+  const menuWidth = menu.offsetWidth;
+  const menuHeight = menu.offsetHeight;
 
   const margin = 8;
   const visualViewport = window.visualViewport;
@@ -122,25 +135,26 @@ const positionMenu = async () => {
   const anchorTop =
     anchor?.top ?? Number(props.context.clientY || viewportTop + margin);
   const anchorBottom = anchor?.bottom ?? anchorTop;
-  const desiredLeft = anchorLeft - rect.width / 2;
+  const desiredLeft = anchorLeft - menuWidth / 2;
   const spaceAbove = anchorTop - viewportTop - margin - 10;
   const spaceBelow = viewportBottom - anchorBottom - margin - 10;
   const placeAbove =
-    spaceAbove >= rect.height ||
-    (spaceBelow < rect.height && spaceAbove >= spaceBelow);
+    spaceAbove >= menuHeight ||
+    (spaceBelow < menuHeight && spaceAbove >= spaceBelow);
   const desiredTop = placeAbove
-    ? anchorTop - rect.height - 10
+    ? anchorTop - menuHeight - 10
     : anchorBottom + 10;
   position.value = {
     left: Math.min(
-      viewportRight - rect.width - margin,
+      viewportRight - menuWidth - margin,
       Math.max(viewportLeft + margin, desiredLeft),
     ),
     top: Math.min(
-      viewportBottom - rect.height - margin,
+      viewportBottom - menuHeight - margin,
       Math.max(viewportTop + margin, desiredTop),
     ),
   };
+  positioned.value = true;
 };
 
 const handleOutsidePointerDown = (event) => {
@@ -176,6 +190,68 @@ const copyText = async () => {
   }
   close();
 };
+const getImageFileName = ({ src = "", alt = "" } = {}, mimeType = "") => {
+  const extensions = {
+    "image/avif": "avif",
+    "image/gif": "gif",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/svg+xml": "svg",
+    "image/webp": "webp",
+  };
+  let sourceName = "";
+  if (!/^(?:blob|data):/iu.test(src)) {
+    try {
+      sourceName = decodeURIComponent(
+        new URL(src, window.location.href).pathname.split("/").pop() || "",
+      );
+    } catch {
+      sourceName = "";
+    }
+  }
+  const sourceExtension = sourceName.match(
+    /\.(avif|gif|jpe?g|png|svg|webp)$/iu,
+  )?.[1];
+  const extension = extensions[mimeType] || sourceExtension || "png";
+  const baseName = (alt || sourceName.replace(/\.[^.]+$/u, "") || "图片")
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/gu, "-")
+    .trim();
+  return `${baseName || "图片"}.${extension === "jpeg" ? "jpg" : extension}`;
+};
+const triggerImageDownload = (href, fileName) => {
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+};
+const saveImage = async () => {
+  const image = props.context.image;
+  if (!image?.src) return;
+  close();
+
+  try {
+    const response = await fetch(image.src);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    triggerImageDownload(objectUrl, getImageFileName(image, blob.type));
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+    toast.success("图片已保存");
+  } catch {
+    const anchor = document.createElement("a");
+    anchor.href = image.src;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    toast.info("已打开原图，请使用浏览器另存为");
+  }
+};
+const handlePrimaryAction = () =>
+  props.context.image ? void saveImage() : void copyText();
 const copyLatexSource = async () => {
   try {
     await copyToClipboard(props.context.latex?.text || "");
@@ -262,7 +338,10 @@ watch(
     props.context.anchorRect?.top,
     props.context.anchorRect?.bottom,
   ],
-  ([open]) => open && void positionMenu(),
+  ([open]) => {
+    positioned.value = false;
+    if (open) void positionMenu();
+  },
   { flush: "post" },
 );
 
@@ -271,6 +350,7 @@ onMounted(() => {
   window.addEventListener("resize", handleViewportChange);
   window.visualViewport?.addEventListener("resize", handleViewportChange);
   window.visualViewport?.addEventListener("scroll", handleViewportChange);
+  if (props.modelValue) void positionMenu();
 });
 onBeforeUnmount(() => {
   document.removeEventListener("pointerdown", handleOutsidePointerDown, true);

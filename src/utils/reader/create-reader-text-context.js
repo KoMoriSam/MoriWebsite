@@ -65,10 +65,31 @@ const getMermaidViewerAtPoint = ({ root, target, clientX, clientY }) => {
   return null;
 };
 
-const createFormulaRange = (formula) => {
-  if (!formula?.element) return null;
+const getImageAtPoint = ({ root, target, clientX, clientY }) => {
+  const candidates = [
+    target,
+    ...(document.elementsFromPoint?.(clientX, clientY) || []),
+  ];
+  for (const candidate of candidates) {
+    const image = candidate?.matches?.(
+      "figure.markdown-figure > img[src], img.markdown-inline-image[src]",
+    )
+      ? candidate
+      : null;
+    const figure = image?.closest("figure.markdown-figure");
+    const element =
+      figure || image?.closest("[data-reader-paragraph-id], p, li, blockquote");
+    if (image && element && root?.contains(element)) {
+      return { image, element, rangeElement: figure || image };
+    }
+  }
+  return null;
+};
+
+const createNodeRange = (element) => {
+  if (!element) return null;
   const range = document.createRange();
-  range.selectNode(formula.element);
+  range.selectNode(element);
   return range;
 };
 
@@ -278,11 +299,18 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
   const pointedFormula = selectionDetails
     ? null
     : getLatexFormulaAtPoint({ root, target, clientX, clientY });
+  const pointedImage = selectionDetails
+    ? null
+    : getImageAtPoint({ root, target, clientX, clientY });
   const activeRange =
-    selectionDetails?.range || createFormulaRange(pointedFormula);
-  const paragraph = (selectionElement || pointedFormula?.element || target).closest(
-    "[data-reader-paragraph-id]",
-  );
+    selectionDetails?.range ||
+    createNodeRange(pointedFormula?.element || pointedImage?.rangeElement);
+  const paragraph = (
+    selectionElement ||
+    pointedFormula?.element ||
+    pointedImage?.element ||
+    target
+  ).closest("[data-reader-paragraph-id]");
   const paragraphId =
     paragraph?.dataset.readerParagraphId || paragraph?.id || "";
   const selectedText = selectionDetails?.text || pointedFormula?.text || "";
@@ -291,10 +319,20 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
       (pointedFormula ? { ...pointedFormula, pure: true } : null)
     : null;
   const paragraphText = extractParagraphText(paragraph);
-  const text = selectedText || paragraphText;
+  const imageText = pointedImage
+    ? normalizeReaderText(
+        pointedImage.element.querySelector(":scope > figcaption")?.textContent ||
+          pointedImage.image.getAttribute("alt"),
+      )
+    : "";
+  const text = selectedText || pointedFormula?.text || imageText || paragraphText;
   const shareContent = createReaderShareContent({
     range: activeRange,
-    element: selectedMermaid || pointedMermaid || paragraph,
+    element:
+      selectedMermaid ||
+      pointedMermaid ||
+      pointedImage?.element ||
+      paragraph,
   });
   const hasShareContent = Boolean(shareContent.blocks.length);
 
@@ -306,6 +344,7 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     anchorRect:
       selectionDetails?.anchorRect ||
       pointedFormula?.element.getBoundingClientRect() ||
+      pointedImage?.image.getBoundingClientRect() ||
       pointedMermaid?.getBoundingClientRect() ||
       null,
     text,
@@ -316,6 +355,15 @@ export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
     commentScope: paragraph?.dataset.readerCommentScope || "paragraph",
     latex,
     mermaid: Boolean(selectedMermaid || pointedMermaid),
+    image: pointedImage
+      ? {
+          src:
+            pointedImage.image.currentSrc ||
+            pointedImage.image.getAttribute("src") ||
+            "",
+          alt: normalizeReaderText(pointedImage.image.getAttribute("alt")),
+        }
+      : null,
     shareContent,
   };
 };
