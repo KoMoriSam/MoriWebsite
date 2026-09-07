@@ -1,5 +1,6 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import {
+  createReaderPointTargetContext,
   createReaderSelectionContext,
   createReaderTextContext,
   selectReaderTextAtPoint,
@@ -40,12 +41,15 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
   let activeRoot = null;
   let selectionMenuActive = false;
   let longPressTimer = 0;
+  let pointTargetReleaseTimer = 0;
+  let pointTargetContextActive = false;
   let lastTouchAt = Number.NEGATIVE_INFINITY;
   const touchPointer = {
     id: null,
     x: 0,
     y: 0,
     target: null,
+    pointTargetContext: null,
   };
 
   const resolveRoot = (fallback = null) => {
@@ -90,7 +94,53 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     return true;
   };
 
+  const clearPointTargetContext = () => {
+    window.clearTimeout(pointTargetReleaseTimer);
+    pointTargetReleaseTimer = 0;
+    pointTargetContextActive = false;
+  };
+
+  const releasePointTargetContext = () => {
+    window.clearTimeout(pointTargetReleaseTimer);
+    pointTargetReleaseTimer = window.setTimeout(() => {
+      pointTargetReleaseTimer = 0;
+      pointTargetContextActive = false;
+    }, TOUCH_CONTEXT_WINDOW);
+  };
+
+  const emitPointTargetContext = (
+    { target, clientX, clientY },
+    root = resolveRoot(),
+    cachedContext = null,
+  ) => {
+    const context =
+      cachedContext ||
+      createReaderPointTargetContext({
+        root,
+        target,
+        clientX,
+        clientY,
+      });
+    if (!context) return false;
+
+    if (selectionFrame) {
+      window.cancelAnimationFrame(selectionFrame);
+      selectionFrame = 0;
+    }
+    if (positionFrame) {
+      window.cancelAnimationFrame(positionFrame);
+      positionFrame = 0;
+    }
+    clearPointTargetContext();
+    pointTargetContextActive = true;
+    selectionMenuActive = true;
+    window.getSelection?.()?.removeAllRanges();
+    emit("text-context", context);
+    return true;
+  };
+
   const selectTextAndOpen = ({ root, target, clientX, clientY }) => {
+    clearPointTargetContext();
     const context = selectReaderTextAtPoint({
       root,
       target,
@@ -122,6 +172,10 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     activeRoot = root;
     event.preventDefault();
     window.requestAnimationFrame(() => {
+      if (isTouchContext && emitPointTargetContext(event, root)) {
+        releasePointTargetContext();
+        return;
+      }
       if (emitSelectionContext(root)) return;
       if (
         isTouchContext &&
@@ -139,6 +193,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
   };
 
   const syncSelectionContext = () => {
+    if (pointTargetContextActive || touchPointer.pointTargetContext) return;
     if (selectionFrame) window.cancelAnimationFrame(selectionFrame);
     selectionFrame = window.requestAnimationFrame(() => {
       selectionFrame = 0;
@@ -148,6 +203,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
 
   const handleSelectionEnd = (event) => {
     if (event.button !== 0) return;
+    if (pointTargetContextActive) return;
     const root = resolveRoot(event.currentTarget);
     if (!root || !root.contains(event.target)) return;
 
@@ -167,9 +223,11 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     longPressTimer = 0;
     touchPointer.id = null;
     touchPointer.target = null;
+    touchPointer.pointTargetContext = null;
   };
 
   const handlePointerDown = (event) => {
+    clearPointTargetContext();
     const root = resolveRoot(event.currentTarget);
     if (!root || !root.contains(event.target)) return;
     activeRoot = root;
@@ -188,17 +246,23 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     touchPointer.x = event.clientX;
     touchPointer.y = event.clientY;
     touchPointer.target = event.target;
+    touchPointer.pointTargetContext = createReaderPointTargetContext({
+      root,
+      target: event.target,
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
     longPressTimer = window.setTimeout(() => {
       longPressTimer = 0;
       if (
-        isReaderImageEvent({ target: touchPointer.target }) &&
-        emitPointContext(
+        emitPointTargetContext(
           {
             target: touchPointer.target,
             clientX: touchPointer.x,
             clientY: touchPointer.y,
           },
           root,
+          touchPointer.pointTargetContext,
         )
       ) {
         return;
@@ -218,17 +282,38 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
       Math.abs(event.clientX - touchPointer.x) > LONG_PRESS_MOVE_TOLERANCE ||
       Math.abs(event.clientY - touchPointer.y) > LONG_PRESS_MOVE_TOLERANCE
     ) {
+      const hadPointTarget = Boolean(touchPointer.pointTargetContext);
       resetTouchPointer();
+      if (hadPointTarget) window.getSelection?.()?.removeAllRanges();
     }
   };
 
   const handlePointerUp = (event) => {
     const wasTrackedTouch = touchPointer.id === event.pointerId;
+    const hadPointTarget =
+      wasTrackedTouch && Boolean(touchPointer.pointTargetContext);
+    const usedPointTarget = wasTrackedTouch && pointTargetContextActive;
     if (wasTrackedTouch) resetTouchPointer();
+    if (usedPointTarget) {
+      window.requestAnimationFrame(() =>
+        window.getSelection?.()?.removeAllRanges(),
+      );
+      releasePointTargetContext();
+      return;
+    }
+    if (hadPointTarget) {
+      window.getSelection?.()?.removeAllRanges();
+      return;
+    }
     handleSelectionEnd(event);
   };
 
-  const handlePointerCancel = () => resetTouchPointer();
+  const handlePointerCancel = () => {
+    const hadPointTarget = Boolean(touchPointer.pointTargetContext);
+    resetTouchPointer();
+    if (hadPointTarget) window.getSelection?.()?.removeAllRanges();
+    if (pointTargetContextActive) releasePointTargetContext();
+  };
 
   onMounted(() =>
     document.addEventListener("selectionchange", syncSelectionContext),
@@ -238,6 +323,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     if (selectionFrame) window.cancelAnimationFrame(selectionFrame);
     if (positionFrame) window.cancelAnimationFrame(positionFrame);
     resetTouchPointer();
+    clearPointTargetContext();
   });
 
   return {

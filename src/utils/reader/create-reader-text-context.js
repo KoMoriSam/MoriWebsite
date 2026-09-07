@@ -285,23 +285,35 @@ const extractParagraphText = (commentable) => {
   return normalizeReaderText(clone.textContent);
 };
 
-export const createReaderTextContext = ({ root, target, clientX, clientY }) => {
+export const createReaderTextContext = ({
+  root,
+  target,
+  clientX,
+  clientY,
+  preferPointTarget = false,
+  requirePointTarget = false,
+}) => {
   if (!root || !(target instanceof Element)) return null;
 
-  const selectionDetails = extractSelectionDetails(root);
+  const pointTarget = {
+    formula: getLatexFormulaAtPoint({ root, target, clientX, clientY }),
+    image: getImageAtPoint({ root, target, clientX, clientY }),
+    mermaid: getMermaidViewerAtPoint({ root, target, clientX, clientY }),
+  };
+  const hasPointTarget = Boolean(
+    pointTarget.formula || pointTarget.image || pointTarget.mermaid,
+  );
+  if (requirePointTarget && !hasPointTarget) return null;
+
+  const selectionDetails =
+    preferPointTarget && hasPointTarget ? null : extractSelectionDetails(root);
   const selectionNode = selectionDetails?.range.startContainer;
   const selectionElement =
     selectionNode instanceof Element ? selectionNode : selectionNode?.parentElement;
   const selectedMermaid = selectionElement?.closest("[data-mermaid-viewer]");
-  const pointedMermaid = selectionDetails
-    ? selectedMermaid
-    : getMermaidViewerAtPoint({ root, target, clientX, clientY });
-  const pointedFormula = selectionDetails
-    ? null
-    : getLatexFormulaAtPoint({ root, target, clientX, clientY });
-  const pointedImage = selectionDetails
-    ? null
-    : getImageAtPoint({ root, target, clientX, clientY });
+  const pointedMermaid = selectionDetails ? selectedMermaid : pointTarget.mermaid;
+  const pointedFormula = selectionDetails ? null : pointTarget.formula;
+  const pointedImage = selectionDetails ? null : pointTarget.image;
   const activeRange =
     selectionDetails?.range ||
     createNodeRange(pointedFormula?.element || pointedImage?.rangeElement);
@@ -384,6 +396,13 @@ export const createReaderSelectionContext = (root) => {
   return context?.selectedText ? context : null;
 };
 
+export const createReaderPointTargetContext = (options) =>
+  createReaderTextContext({
+    ...options,
+    preferPointTarget: true,
+    requirePointTarget: true,
+  });
+
 export const selectReaderTextAtPoint = ({
   root,
   target,
@@ -399,7 +418,12 @@ export const selectReaderTextAtPoint = ({
     clientY,
   });
   if (pointedMermaid) {
-    return createReaderTextContext({ root, target, clientX, clientY });
+    return createReaderPointTargetContext({
+      root,
+      target,
+      clientX,
+      clientY,
+    });
   }
 
   const commentable = target.closest("[data-reader-paragraph-id]");
@@ -412,7 +436,7 @@ export const selectReaderTextAtPoint = ({
     clientY,
   });
   if (pointedFormula && commentable.contains(pointedFormula.element)) {
-    const range = createFormulaRange(pointedFormula);
+    const range = createNodeRange(pointedFormula.element);
     const selection = window.getSelection?.();
     if (!range || !selection) return null;
     selection.removeAllRanges();
