@@ -1,7 +1,7 @@
 <template>
   <Teleport v-if="toolbarTarget" :to="toolbarTarget">
     <div
-      class="preview-layout"
+      class="preview-layout text-shadow-sm/60"
       data-reader-interactive
       @pointerdown.stop
       @click.stop
@@ -22,7 +22,7 @@
 
       <header class="preview-header">
         <p
-          class="preview-info ps-2.5 pt-2.5 text-center text-xs tabular-nums leading-relaxed text-white"
+          class="preview-info ps-2.5 pt-2.5 text-center text-xs tabular-nums leading-relaxed text-white text-shadow-sm/60"
           :aria-label="`第 ${currentIndex + 1} 张，共 ${totalImages} 张`"
         >
           <span class="font-bold">{{ currentIndex + 1 }}</span>
@@ -38,7 +38,7 @@
 
         <button
           type="button"
-          class="btn btn-circle btn-ghost btn-neutral disabled:text-white/25 text-white preview-close"
+          class="btn btn-circle btn-ghost btn-neutral disabled:text-white/25 text-white preview-close text-shadow-sm/60"
           data-preview-control
           aria-label="关闭图片预览"
           title="关闭"
@@ -50,7 +50,7 @@
 
       <button
         type="button"
-        class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-white/25 text-white preview-prev"
+        class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-white/25 text-white preview-prev text-shadow-sm/60"
         data-preview-control
         :disabled="cannotGoPrevious"
         aria-label="上一张图片"
@@ -62,7 +62,7 @@
 
       <button
         type="button"
-        class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-white/25 text-white preview-next"
+        class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-white/25 text-white preview-next text-shadow-sm/60"
         data-preview-control
         :disabled="cannotGoNext"
         aria-label="下一张图片"
@@ -79,7 +79,7 @@
       >
         <button
           type="button"
-          class="btn btn-square btn-ghost btn-neutral disabled:text-white/25 text-white"
+          class="btn btn-square btn-ghost btn-neutral disabled:text-white/25 text-white text-shadow-sm/60"
           :disabled="cannotZoomOut"
           aria-label="缩小图片"
           title="缩小"
@@ -89,7 +89,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-ghost font-mono tabular-nums btn-neutral disabled:text-white/25 text-white"
+          class="btn btn-ghost font-mono tabular-nums btn-neutral disabled:text-white/25 text-white text-shadow-sm/60"
           :disabled="cannotResetZoom"
           :aria-label="`缩放 ${zoomPercent}%，点击恢复适应屏幕`"
           title="适应屏幕"
@@ -104,7 +104,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-square btn-ghost btn-neutral disabled:text-white/25 text-white"
+          class="btn btn-square btn-ghost btn-neutral disabled:text-white/25 text-white text-shadow-sm/60"
           :disabled="cannotZoomIn"
           aria-label="放大图片"
           title="放大"
