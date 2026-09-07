@@ -122,11 +122,20 @@ export const useParagraphComments = () => {
     removeIgnoredTitleNodes(clonedElement);
     removeLiteralFootnoteMarkers(clonedElement);
 
+    const isFigure = clonedElement.matches("figure.markdown-figure");
+    if (isFigure) {
+      clonedElement.removeAttribute("id");
+      clonedElement.removeAttribute("data-reader-paragraph-id");
+      clonedElement.removeAttribute("data-source-type");
+    }
+
     const contentNode = clonedElement.querySelector(
       "[data-paragraph-comment-content]",
     );
     const titleContent = contentNode || clonedElement;
     truncateTitleContent(titleContent);
+
+    if (isFigure) return clonedElement.outerHTML;
 
     return normalizeParagraphText(titleContent.textContent || "")
       ? titleContent.innerHTML
@@ -237,7 +246,7 @@ export const useParagraphComments = () => {
         "blockquote",
         {
           class:
-            "prose prose-sm max-w-none text-base-content text-sm font-sans font-normal leading-snug text-justify text-pretty border-s-3 border-s-base-content/25 ps-1.5",
+            "paragraph-comment-title prose prose-sm max-w-none text-base-content text-sm font-sans font-normal leading-snug text-justify text-pretty border-s-3 border-s-base-content/25 ps-1.5 [&_figure]:m-0 [&_figure]:max-w-full [&_img]:m-0 [&_img]:block [&_img]:h-auto [&_img]:max-h-40 [&_img]:w-full [&_img]:object-contain [&_img]:object-left [&_figcaption]:mt-1 [&_figcaption]:mb-0 [&_figcaption]:text-start",
         },
         [h(RenderedContent, { html: titleHtml })],
       ),

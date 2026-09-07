@@ -120,6 +120,12 @@ _[CSS]: Cascading Style Sheets
 
 ### Markdown 引用
 
+#### 无标题与替代文本
+
+![随机图片](https://random.imagecdn.app/300/200?random=1)
+
+#### 有标题与替代文本
+
 ![图 1](https://random.imagecdn.app/300/200?random=1 "本地图片与替代文本测试")
 
 ### 图片预览状态

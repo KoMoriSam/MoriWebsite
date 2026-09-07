@@ -102,6 +102,10 @@
   --markdown-svg-filter: invert(1) hue-rotate(180deg);
 }
 
+.paragraph-comment-title img.markdown-svg-image {
+  filter: var(--markdown-svg-filter, none);
+}
+
 :root,
 :root:has(input.theme-controller[value="lemonade"]:checked),
 [data-theme="lemonade"],

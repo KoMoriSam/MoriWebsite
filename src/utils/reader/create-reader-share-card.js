@@ -263,6 +263,8 @@ const resolveAppearance = () => {
     error: themeColor("--color-error", accent),
     errorContent: themeColor("--color-error-content", foreground),
     syntax,
+    markdownSvgFilter:
+      rootComputed.getPropertyValue("--markdown-svg-filter").trim() || "none",
     ...resolveQrColors({ base, baseContent, foreground, background }),
     contentFontFamily:
       rootComputed.getPropertyValue("--font-serif").trim() ||
@@ -378,6 +380,7 @@ const normalizeRuns = (runs = []) =>
       linkIconSrc: String(run?.linkIconSrc || ""),
       linkIconAsset: null,
       inlineImageSrc: String(run?.inlineImageSrc || ""),
+      inlineImageSvg: Boolean(run?.inlineImageSvg),
       inlineImageAlt: normalizeText(run?.inlineImageAlt),
       inlineImageWidthEm: Math.max(
         0,
@@ -437,6 +440,7 @@ const normalizeShareContent = (
             : "accent",
           svg: String(block?.svg || ""),
           src: String(block?.src || ""),
+          svgImage: Boolean(block?.svgImage),
           alt: normalizeText(block?.alt),
           width: Math.max(1, Number(block?.width) || 1),
           height: Math.max(1, Number(block?.height) || 1),
@@ -1482,6 +1486,10 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
 
   positions.forEach(({ token, x }) => {
     if (token.style.inlineImageAsset) {
+      context.save();
+      if (token.style.inlineImageSvg) {
+        context.filter = appearance.markdownSvgFilter;
+      }
       context.drawImage(
         token.style.inlineImageAsset,
         x,
@@ -1489,6 +1497,7 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
         token.inlineImageWidth,
         token.inlineImageHeight,
       );
+      context.restore();
       return;
     }
     if (token.style.linkIcon && token.style.linkIconAsset) {
@@ -1723,6 +1732,7 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
     let lineY = y + config.paddingTop;
     if (block.type === "image" && block.imageAsset) {
       context.save();
+      if (block.svgImage) context.filter = appearance.markdownSvgFilter;
       drawRoundedRect(
         context,
         config.imageX,

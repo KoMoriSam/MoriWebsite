@@ -236,11 +236,11 @@
   }
 
   .markdown-content.prose :deep(.markdown-figure) {
-    @apply clear-both w-fit max-w-full mx-auto my-2;
+    @apply clear-both w-fit max-w-full mx-auto my-2 text-center;
   }
 
   .markdown-content.prose :deep(.markdown-figure > img) {
-    @apply mx-auto my-0;
+    @apply block mx-auto my-0;
   }
 
   .markdown-content.prose :deep(img.preview-image) {
@@ -272,7 +272,7 @@
   }
 
   .markdown-content.prose :deep(.markdown-figure > figcaption) {
-    @apply mt-1 text-center text-[calc(var(--para-font-size)*0.75)];
+    @apply inline-block mt-1 text-center text-[calc(var(--para-font-size)*0.75)];
   }
 
   .markdown-content.prose

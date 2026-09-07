@@ -208,6 +208,7 @@ const RUN_STYLE_KEYS = [
   "mathDisplay",
   "linkIconSrc",
   "inlineImageSrc",
+  "inlineImageSvg",
   "inlineImageAlt",
   "inlineImageWidthEm",
   "inlineImageHeightEm",
@@ -247,6 +248,7 @@ const appendRun = (runs, text, style = {}) => {
     mathDisplay: Boolean(style.mathDisplay),
     linkIconSrc: style.linkIconSrc || "",
     inlineImageSrc: style.inlineImageSrc || "",
+    inlineImageSvg: Boolean(style.inlineImageSvg),
     inlineImageAlt: style.inlineImageAlt || "",
     inlineImageWidthEm: Math.max(
       0,
@@ -361,6 +363,7 @@ function serializeInlineNode(
       appendRun(runs, "\ufffc", {
         ...inherited,
         inlineImageSrc: node.currentSrc || node.getAttribute("src") || "",
+        inlineImageSvg: node.classList.contains("markdown-svg-image"),
         inlineImageAlt: normalizeLabel(node.getAttribute("alt")),
         inlineImageWidthEm: width / fontSize,
         inlineImageHeightEm: height / fontSize,
@@ -878,6 +881,7 @@ const serializeImageBlock = (figure, range) => {
   return {
     type: "image",
     src: image.currentSrc || image.getAttribute("src") || "",
+    svgImage: image.classList.contains("markdown-svg-image"),
     alt: normalizeLabel(image.getAttribute("alt")),
     width: dimensions.width,
     height: dimensions.height,
