@@ -287,9 +287,10 @@
   }
 
   .markdown-content.prose :deep(.markdown-table-wrapper table) {
-    width: max-content;
-    min-width: 100%;
-    max-width: none;
+    @apply text-[calc(var(--para-font-size)*0.875)]
+    tracking-[calc(var(--para-letter-spacing)*0.875)]
+    leading-[calc(var(--para-line-height)*0.875)]
+    w-max min-w-full max-w-none;
   }
 
   .markdown-content.prose
