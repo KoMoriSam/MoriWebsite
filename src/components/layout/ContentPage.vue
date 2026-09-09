@@ -1,6 +1,6 @@
 <template>
   <main
-    class="mx-auto w-full max-w-7xl px-6 py-3 md:px-8 md:py-4"
+    class="mx-auto w-full max-w-7xl px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
     <nav
@@ -65,11 +65,14 @@
 
     <slot></slot>
   </main>
+  <FootBar v-if="showFooter" />
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import FootBar from "@/components/layout/FootBar.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -92,6 +95,10 @@ defineProps({
     default: "page-title",
   },
   showHeader: {
+    type: Boolean,
+    default: true,
+  },
+  showFooter: {
     type: Boolean,
     default: true,
   },
