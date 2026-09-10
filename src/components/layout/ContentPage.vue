@@ -1,6 +1,6 @@
 <template>
   <main
-    class="mx-auto w-full max-w-7xl px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
+    class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
     <nav
