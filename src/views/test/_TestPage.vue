@@ -13,14 +13,12 @@
 
     <slot></slot>
   </ContentPage>
-  <FootBar />
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { TEST_SECTIONS } from "@/constants/test-sections";
 import ContentPage from "@/components/layout/ContentPage.vue";
-import FootBar from "@/components/layout/FootBar.vue";
 
 const props = defineProps({
   sectionId: {

@@ -50,11 +50,9 @@
       </router-link>
     </section>
   </ContentPage>
-  <FootBar />
 </template>
 
 <script setup>
 import { TEST_SECTIONS } from "@/constants/test-sections";
 import ContentPage from "@/components/layout/ContentPage.vue";
-import FootBar from "@/components/layout/FootBar.vue";
 </script>

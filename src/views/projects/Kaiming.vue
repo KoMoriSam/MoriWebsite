@@ -201,15 +201,12 @@
       </div>
     </section>
   </ContentPage>
-
-  <FootBar />
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import FootBar from "@/components/layout/FootBar.vue";
 import CodeBlock from "@/components/markdown/CodeBlock.vue";
 
 const weight = ref(400);

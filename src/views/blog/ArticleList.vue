@@ -632,8 +632,6 @@
       <p class="mt-2 text-sm text-base-content/50">文章发布后会显示在这里</p>
     </div>
   </ContentPage>
-
-  <FootBar />
 </template>
 
 <script setup>
@@ -650,7 +648,6 @@ import {
 import { useDateFormat } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import Pagination from "@/components/base/Pagination.vue";
 import { BLOG_PAGE_SIZE } from "@/constants/blog-pagination";

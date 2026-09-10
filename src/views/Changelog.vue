@@ -226,14 +226,11 @@
       </div>
     </template>
   </ContentPage>
-
-  <FootBar />
 </template>
 
 <script setup>
 import { computed, onMounted } from "vue";
 
-import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import Loading from "@/components/base/Loading.vue";
 import ssgData from "@/router/ssg-data";

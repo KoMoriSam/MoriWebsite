@@ -225,8 +225,6 @@
       </div>
     </section>
   </ContentPage>
-
-  <FootBar />
 </template>
 
 <script setup>
@@ -234,7 +232,6 @@ import { computed, nextTick, ref, watch } from "vue";
 import MarkdownIt from "markdown-it";
 import { useRoute } from "vue-router";
 
-import FootBar from "@/components/layout/FootBar.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import licenseData from "@/router/license-data";
