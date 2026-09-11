@@ -7,7 +7,7 @@
         'opacity-50': markdownPreparing,
         'reader-colors': useReaderColors,
       },
-      styleConfigs.fontStyle,
+      styleConfigs.fontClass || styleConfigs.fontStyle,
     ]"
     class="markdown-content prose min-w-0 w-full max-w-full transition-opacity"
     :style="{
@@ -22,6 +22,7 @@
       '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
         + ${styleConfigs.fontGap * 0.7}rem)`,
       '--reader-text-color': resolvedTextColor || undefined,
+      fontFamily: styleConfigs.fontFamily || undefined,
     }"
     @click="handleArticleClick"
     @keydown="handleArticleKeydown"
@@ -63,7 +64,7 @@ import CodeBlock from "@/components/markdown/CodeBlock.vue";
 import LinkIcon from "@/components/markdown/LinkIcon.vue";
 import Mermaid from "@/components/markdown/Mermaid.vue";
 import Moment from "@/components/markdown/Moment.vue";
-import ImagePreview from "@/components/markdown/ImagePreview.vue";
+import ImagePreview from "@/components/ui/ImagePreview.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
@@ -127,6 +128,8 @@ const props = defineProps({
     type: Object,
     default: () => ({
       fontStyle: "font-kai", // 字体样式类名
+      fontClass: "font-kai",
+      fontFamily: "",
       fontSize: 22, // 字体大小(px)
       fontGap: 0, // 字间距
       lineHeight: 1.6, // 行间距
@@ -150,6 +153,9 @@ const options = {
   html: true,
   typographer: true,
 };
+const PREVIEW_SVG_FILTER = "invert(1) hue-rotate(180deg)";
+const FALLBACK_IMAGE_WIDTH = 1200;
+const FALLBACK_IMAGE_HEIGHT = 800;
 
 // 引入常用插件
 import MarkdownItAbbr from "markdown-it-abbr";
@@ -237,6 +243,68 @@ const getPreviewImage = (target) => {
   return isPreviewImage(image) ? image : null;
 };
 
+const getPreviewCaption = (image) => {
+  const figure = image.closest("figure.markdown-figure");
+  return (
+    figure?.querySelector(":scope > figcaption")?.textContent?.trim() ||
+    image.getAttribute("alt")?.trim() ||
+    ""
+  );
+};
+
+const getPreviewDimensions = (image) => {
+  if (image.naturalWidth && image.naturalHeight) {
+    return { width: image.naturalWidth, height: image.naturalHeight };
+  }
+
+  const width = Number(image.getAttribute("width"));
+  const height = Number(image.getAttribute("height"));
+  if (width > 0 && height > 0) return { width, height };
+
+  const bounds = image.getBoundingClientRect();
+  if (bounds.width >= 160 && bounds.height >= 120) {
+    return {
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+    };
+  }
+
+  return {
+    width: FALLBACK_IMAGE_WIDTH,
+    height: FALLBACK_IMAGE_HEIGHT,
+  };
+};
+
+const createPreviewSlide = (image, index) => {
+  const src = image.currentSrc || image.src;
+  const imageStyle = window.getComputedStyle(image);
+  const inheritedFilter = imageStyle.filter;
+  const isSvg =
+    image.classList.contains("markdown-svg-image") ||
+    /\.svg(?:[?#]|$)/iu.test(src);
+  const sourceFilterFrom =
+    inheritedFilter && inheritedFilter !== "none" ? inheritedFilter : "none";
+  const sourceFilter = isSvg
+    ? PREVIEW_SVG_FILTER
+    : inheritedFilter && inheritedFilter !== "none"
+      ? inheritedFilter
+      : "";
+
+  return {
+    id: image.id || `${src}-${index}`,
+    src,
+    msrc: src,
+    ...getPreviewDimensions(image),
+    alt: image.getAttribute("alt") || "",
+    caption: getPreviewCaption(image),
+    thumbCropped: imageStyle.objectFit === "cover",
+    sourceFilter,
+    sourceFilterFrom:
+      isSvg && sourceFilterFrom !== sourceFilter ? sourceFilterFrom : "",
+    element: image,
+  };
+};
+
 const openImagePreview = (image, pointer = null) => {
   const root = articleRef.value;
   if (!image || !root?.contains(image)) return;
@@ -245,7 +313,8 @@ const openImagePreview = (image, pointer = null) => {
   const index = images.indexOf(image);
   if (index < 0) return;
 
-  void imagePreviewRef.value?.open({ images, index, pointer });
+  const slides = images.map(createPreviewSlide);
+  imagePreviewRef.value?.open({ slides, index, pointer });
 };
 
 const handleArticleClick = (event) => {
@@ -511,13 +580,13 @@ const tableWrapperPlugin = (md) => {
 
   md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
     return (
-      '<div class="markdown-table-wrapper">' +
+      '<section class="markdown-table-wrapper">' +
       defaultTableOpen(tokens, idx, options, env, self)
     );
   };
 
   md.renderer.rules.table_close = function (tokens, idx, options, env, self) {
-    return defaultTableClose(tokens, idx, options, env, self) + "</div>";
+    return defaultTableClose(tokens, idx, options, env, self) + "</section>";
   };
 };
 

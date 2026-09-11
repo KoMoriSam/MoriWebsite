@@ -11,6 +11,17 @@ import { resolve } from "node:path";
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
+  optimizeDeps: {
+    exclude: [
+      "@jsquash/avif",
+      "@jsquash/jpeg",
+      "@jsquash/oxipng",
+      "photoswipe",
+    ],
+  },
+  worker: {
+    format: "es",
+  },
   plugins: [
     vue(),
     vueDevTools(),

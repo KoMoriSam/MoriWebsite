@@ -130,6 +130,12 @@ export const routes = [
     meta: { title: "僧伽罗字体编码转换器 | 远方之森", navName: "tools" },
   },
   {
+    path: "/tools/image-converter",
+    name: "image-converter",
+    component: () => import("@/views/tools/ImageConverter.vue"),
+    meta: { title: "图片格式转换 | 远方之森", navName: "tools" },
+  },
+  {
     path: "/kaiming",
     name: "kaiming",
     component: () => import("@/views/projects/Kaiming.vue"),

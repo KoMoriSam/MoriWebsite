@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
+  FONTS,
   MOBILE_READING_MODES,
   MOBILE_READING_MODE_SETTING,
   MOBILE_READER_WHEEL_SETTING,
@@ -15,12 +16,24 @@ import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-st
 
 export const useReaderStore = defineStore("reader", () => {
   const { getSetting, setSetting } = useReaderSettingsStorage();
+  const readerFontOverride = ref(null);
 
   const styleConfigs = computed(() => {
     const configs = {};
     STYLE_CONFIG_KEYS.forEach((config) => {
       configs[config.key] = getSetting(config.storageKey, config.default);
     });
+    if (readerFontOverride.value) {
+      configs.fontStyle = readerFontOverride.value.id;
+      configs.fontFamily = readerFontOverride.value.family;
+    } else {
+      configs.fontFamily = "";
+    }
+    configs.fontClass = FONTS.some(
+      ({ style }) => style === configs.fontStyle,
+    )
+      ? configs.fontStyle
+      : "";
     return configs;
   });
 
@@ -169,6 +182,7 @@ export const useReaderStore = defineStore("reader", () => {
 
   const isMobileLayoutDefault = computed(
     () =>
+      !readerFontOverride.value &&
       mobileReadingMode.value === MOBILE_READING_MODES.PAGED &&
       STYLE_CONFIG_KEYS.every(
         ({ storageKey, default: defaultValue }) =>
@@ -181,14 +195,16 @@ export const useReaderStore = defineStore("reader", () => {
     setMobileReadingMode(MOBILE_READING_MODES.PAGED);
   };
 
-  const isReaderLayoutDefault = computed(() =>
-    READER_LAYOUT_STYLE_KEYS.every((key) => {
-      const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
-      return (
-        config &&
-        getSetting(config.storageKey, config.default) === config.default
-      );
-    }),
+  const isReaderLayoutDefault = computed(
+    () =>
+      !readerFontOverride.value &&
+      READER_LAYOUT_STYLE_KEYS.every((key) => {
+        const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
+        return (
+          config &&
+          getSetting(config.storageKey, config.default) === config.default
+        );
+      }),
   );
 
   const resetReaderLayout = () => {
@@ -196,6 +212,7 @@ export const useReaderStore = defineStore("reader", () => {
   };
 
   const isDefault = (key) => {
+    if (key === "fontStyle" && readerFontOverride.value) return false;
     const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
     if (!config) return false;
     const currentValue = getSetting(config.storageKey, config.default);
@@ -203,6 +220,7 @@ export const useReaderStore = defineStore("reader", () => {
   };
 
   const resetStyle = (key) => {
+    if (key === "fontStyle") readerFontOverride.value = null;
     const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
     if (config) {
       setSetting(config.storageKey, config.default);
@@ -210,14 +228,22 @@ export const useReaderStore = defineStore("reader", () => {
   };
 
   const setStyle = (key, value) => {
+    if (key === "fontStyle") readerFontOverride.value = null;
     const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
     if (config) {
       setSetting(config.storageKey, value);
     }
   };
 
+  const setReaderFont = (id, family = "") => {
+    const isWebsiteFont = FONTS.some(({ style }) => style === id);
+    if (isWebsiteFont) setStyle("fontStyle", id);
+    readerFontOverride.value = family ? { id, family } : null;
+  };
+
   return {
     styleConfigs,
+    readerFontOverride,
     mobileReadingMode,
     mobileWheelPagination,
     mobileVolumePagination,
@@ -239,6 +265,7 @@ export const useReaderStore = defineStore("reader", () => {
     removeReaderLayoutPreset,
     resetMobileLayout,
     resetReaderLayout,
+    setReaderFont,
     setStyle,
     isDefault,
     resetStyle,

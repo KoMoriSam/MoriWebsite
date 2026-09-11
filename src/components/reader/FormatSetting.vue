@@ -28,11 +28,12 @@
       >
         <div
           class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
-          :class="styleConfigs.fontStyle"
+          :class="styleConfigs.fontClass"
           :data-theme="mobile ? previewTheme || undefined : undefined"
           :style="[
             previewStyle,
             {
+              fontFamily: styleConfigs.fontFamily || undefined,
               '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
             },
           ]"
@@ -73,28 +74,26 @@
         </div>
 
         <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-          <label
+          <div
             class="min-w-0"
             :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
           >
-            <span class="label block text-xs md:text-sm">正文字体</span>
-            <select
-              class="select select-sm xl:select-md w-full"
-              :class="styleConfigs.fontStyle"
-              :value="styleConfigs.fontStyle"
-              @change="store.setStyle('fontStyle', $event.target.value)"
-            >
-              <option disabled selected class="font-sans">请选择字体</option>
-              <option
-                v-for="font in FONTS"
-                :key="font.style"
-                :value="font.style"
-                :class="font.style"
-              >
-                {{ font.name }}
-              </option>
-            </select>
-          </label>
+            <span class="label block text-xs md:text-sm">
+              正文字体
+              <small title="自定义字体和设备字体仅在本次生效，不会保存到设置中">
+                （仅网站预设字体可保存设定）
+              </small>
+            </span>
+            <FontSelect
+              ref="readerFontSelect"
+              :model-value="styleConfigs.fontStyle"
+              :fallback-font-id="readerFallbackFontId"
+              :website-fonts="readerWebsiteFonts"
+              aria-label="正文字体"
+              @update:model-value="selectReaderFont"
+              @update:fallback-font-id="selectReaderFallbackFont"
+            />
+          </div>
 
           <button
             v-if="controlsOnly"
@@ -368,6 +367,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { usePreferredDark } from "@vueuse/core";
 
+import FontSelect from "@/components/ui/FontSelect.vue";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 import {
@@ -411,6 +411,16 @@ const { theme: selectedSiteTheme, themeList: siteThemeList } =
   storeToRefs(themeStore);
 const prefersDark = usePreferredDark();
 const presetName = ref("");
+const readerFontSelect = ref(null);
+const readerFallbackFontId = ref("font-sans");
+let readerFontRequestId = 0;
+const readerWebsiteFonts = FONTS.map(({ name, style }) => ({
+  id: style,
+  label: name,
+  style,
+  cssVariable: `--${style}`,
+  supportsFontWeight: ["font-sans", "font-serif", "font-kai"].includes(style),
+}));
 const backgroundTypeOptions = Object.freeze([
   {
     value: "color",
@@ -639,8 +649,35 @@ const savePreset = () => {
   if (saved) presetName.value = "";
 };
 const resetLayout = () => {
+  readerFallbackFontId.value = "font-sans";
+  readerFontRequestId += 1;
   if (props.mobile) store.resetMobileLayout();
   else store.resetReaderLayout();
+};
+const selectReaderFont = async (fontId) => {
+  const requestId = ++readerFontRequestId;
+  const websiteFont = readerWebsiteFonts.some(({ id }) => id === fontId);
+  if (websiteFont) {
+    store.setReaderFont(fontId);
+    if (readerFallbackFontId.value === "font-sans") return;
+  }
+
+  try {
+    const resolved = await readerFontSelect.value?.resolveFont(
+      fontId,
+      "暮色沿着书页缓缓落下",
+      "normal",
+      readerFallbackFontId.value,
+    );
+    if (requestId !== readerFontRequestId || !resolved?.family) return;
+    store.setReaderFont(fontId, resolved.family);
+  } catch {
+    // 网站字体仍可通过原有 class 生效；自定义字体由选择器反馈加载错误。
+  }
+};
+const selectReaderFallbackFont = (fontId) => {
+  readerFallbackFontId.value = fontId;
+  void selectReaderFont(styleConfigs.value.fontStyle);
 };
 const selectColorTheme = (theme) => {
   store.setStyle("colorTheme", theme);

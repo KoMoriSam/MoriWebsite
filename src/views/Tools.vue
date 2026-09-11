@@ -49,6 +49,14 @@ import ContentPage from "@/components/layout/ContentPage.vue";
 
 const tools = [
   {
+    name: "image-converter",
+    title: "图片格式转换",
+    description: "在浏览器内批量转换图片，并支持压缩、尺寸调整、动画与水印。",
+    category: "图片处理",
+    icon: "ri-image-edit-line",
+    to: { name: "image-converter" },
+  },
+  {
     name: "server-status",
     title: "Minecraft 服务器状态",
     description: "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
