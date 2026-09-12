@@ -4,130 +4,206 @@
     title="僧伽罗字体编码转换器"
     description="在标准 Unicode 与 ASCII 传统字体编码之间双向转换，所有处理均在浏览器本地完成。"
   >
-    <section class="card card-border overflow-hidden bg-base-100">
+    <section>
       <div
-        class="flex gap-3 border-b border-base-300 bg-base-200/40 px-4 sm:py-2 flex-row items-center justify-between"
+        class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-2"
       >
-        <p
-          id="sinhala-converter-hint"
-          class="flex items-center gap-2 text-sm text-base-content/65 truncate"
-        >
-          <i
-            class="ri-arrow-up-down-line text-lg lg:-rotate-90"
-            aria-hidden="true"
-          ></i>
-          任意一侧输入，另一侧实时输出
-        </p>
-
-        <button
-          type="button"
-          class="btn btn-ghost sm:btn-sm"
-          :disabled="!hasText"
-          @click="clearText"
-        >
-          <i class="ri-delete-bin-line" aria-hidden="true"></i>
-          <span class="hidden sm:inline">清空全部</span>
-        </button>
-      </div>
-
-      <div class="grid lg:grid-cols-2">
         <section
-          class="flex min-w-0 flex-col p-4 lg:border-r lg:border-base-300"
+          class="min-w-0 space-y-2"
+          :class="isDirectionReversed ? 'order-3' : 'order-1'"
         >
-          <label
-            for="sinhala-unicode-text"
-            class="mb-2 flex items-end justify-between gap-4"
-          >
-            <span>
-              <span class="block font-serif text-lg font-bold"
-                >Unicode Text</span
-              >
-              <span class="text-xs text-base-content/55"
-                >标准 Unicode 僧伽罗语文本</span
-              >
-            </span>
-            <button
-              type="button"
-              class="btn sm:btn-sm max-sm:btn-square"
-              :disabled="!unicodeText"
-              @click="copyText('unicode')"
+          <label for="sinhala-unicode-text">
+            <span class="block font-serif text-lg font-bold">Unicode Text</span>
+            <span class="text-xs text-base-content/55"
+              >标准 Unicode 僧伽罗语文本</span
             >
-              <i :class="copyIcon('unicode')" aria-hidden="true"></i>
-              <span class="hidden sm:inline">{{ copyLabel("unicode") }}</span>
-            </button>
           </label>
 
-          <textarea
-            id="sinhala-unicode-text"
-            ref="unicodeInput"
-            v-model="unicodeText"
-            class="textarea min-h-32 w-full resize-y bg-base-200/35 font-[Kaiming_Punctuation_Serif,Abhaya_Libre,serif] placeholder:font-serif text-lg leading-7 focus:outline-primary lg:min-h-48"
-            placeholder="在此输入或粘贴 Unicode 僧伽罗语文本……"
-            aria-describedby="sinhala-converter-hint"
-            lang="si"
-            spellcheck="false"
-            autofocus
-            @input="handleUnicodeInput"
-          ></textarea>
+          <div
+            ref="unicodeFieldEl"
+            class="textarea relative flex w-full flex-col p-0 lg:w-[calc(100%+1.5rem)]"
+            :class="{
+              'border-primary/25 bg-primary/5 lg:-ml-6 focus-within:outline-0 focus-within:outline-offset-0':
+                isDirectionReversed,
+            }"
+          >
+            <textarea
+              id="sinhala-unicode-text"
+              ref="unicodeInput"
+              v-model="unicodeText"
+              class="min-h-32 w-full resize-none overflow-hidden bg-transparent px-3 py-2 font-[Abhaya_Libre,serif] placeholder:font-serif text-lg leading-7 lg:min-h-48"
+              :class="{ 'pr-10': hasText && !isDirectionReversed }"
+              :readonly="isDirectionReversed"
+              :placeholder="
+                !isDirectionReversed
+                  ? '在此输入或粘贴 Unicode 僧伽罗语文本……'
+                  : 'Unicode 文本预览'
+              "
+              lang="si"
+              spellcheck="false"
+              autofocus
+              @input="handleUnicodeInput"
+            ></textarea>
 
-          <div class="mt-2 flex justify-end">
-            <span class="text-xs tabular-nums text-base-content/75">
-              {{ unicodeText.length }} 字符
-            </span>
+            <label
+              for="clear-text-1"
+              class="tooltip absolute right-2 top-2"
+              data-tip="清空全部"
+            >
+              <button
+                v-if="hasText && !isDirectionReversed"
+                type="button"
+                id="clear-text-1"
+                class="btn btn-ghost btn-circle btn-sm"
+                aria-label="清空全部"
+                title="清空全部"
+                @click="clearText"
+              >
+                <i class="ri-close-line" aria-hidden="true"></i>
+              </button>
+            </label>
+
+            <div class="flex min-h-10 items-end justify-between pt-0 p-2">
+              <label
+                for="copy-unicode"
+                class="tooltip tooltip-right"
+                :data-tip="copyLabel('unicode')"
+              >
+                <button
+                  v-if="isDirectionReversed"
+                  type="button"
+                  class="btn btn-ghost btn-circle btn-sm"
+                  :disabled="!unicodeText"
+                  :aria-label="copyLabel('unicode')"
+                  :title="copyLabel('unicode')"
+                  @click="copyText('unicode')"
+                >
+                  <i :class="copyIcon('unicode')" aria-hidden="true"></i>
+                </button>
+              </label>
+
+              <span class="text-xs tabular-nums text-base-content/75">
+                {{ unicodeText.length }} 字符
+              </span>
+            </div>
           </div>
         </section>
 
-        <section
-          class="flex min-w-0 flex-col border-t border-base-300 p-4 lg:border-t-0"
+        <label
+          for="swap-direction"
+          class="tooltip order-2 justify-self-center self-start"
+          data-tip="交换源编码与目标编码位置"
         >
-          <label
-            for="sinhala-fm-text"
-            class="mb-2 flex items-end justify-between gap-4"
+          <button
+            type="button"
+            id="swap-direction"
+            class="btn btn-ghost btn-circle"
+            aria-label="交换源编码与目标编码位置"
+            title="交换源编码与目标编码位置"
+            @click="swapPanels"
           >
-            <span>
-              <span class="block font-serif text-lg font-bold">ASCII Text</span>
-              <span class="text-xs text-base-content/55">
-                ASCII 传统字体编码与字形预览
-              </span>
+            <i
+              class="ri-arrow-left-right-line block rotate-90 text-lg lg:rotate-0"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </label>
+
+        <section
+          class="min-w-0 space-y-2"
+          :class="isDirectionReversed ? 'order-1' : 'order-3'"
+        >
+          <label for="sinhala-fm-text-preview">
+            <span class="block font-serif text-lg font-bold">ASCII Text</span>
+            <span class="text-xs text-base-content/55">
+              ASCII 传统字体编码与字形预览
             </span>
-            <button
-              type="button"
-              class="btn sm:btn-sm max-sm:btn-square"
-              :disabled="!fmText"
-              @click="copyText('fm')"
-            >
-              <i :class="copyIcon('fm')" aria-hidden="true"></i>
-              <span class="hidden sm:inline">{{ copyLabel("fm") }}</span>
-            </button>
           </label>
 
-          <div class="join join-vertical min-h-30 lg:min-h-46">
+          <div
+            ref="fmFieldEl"
+            class="textarea relative flex w-full flex-col p-0 lg:w-[calc(100%+1.5rem)]"
+            :class="{
+              'border-primary/25 bg-primary/5 lg:-ml-6 focus-within:outline-0 focus-within:outline-offset-0':
+                !isDirectionReversed,
+            }"
+          >
             <textarea
               id="sinhala-fm-text-preview"
+              ref="fmPreviewInput"
               v-model="fmText"
-              class="join-item min-h-23 lg:min-h-31 textarea w-full resize-y bg-base-200/35 font-[FM_Abhaya_Libre_Legacy,Abhaya_Libre,serif] placeholder:font-serif text-lg leading-7 focus:outline-primary"
-              placeholder="在此输入或粘贴 ASCII 传统字体编码……"
-              aria-describedby="sinhala-converter-hint"
+              class="min-h-24 w-full resize-none overflow-hidden bg-transparent px-3 py-2 font-[FM_Abhaya_Libre_Legacy,Abhaya_Libre,serif] placeholder:font-serif text-lg leading-7 lg:min-h-32"
+              :class="{ 'pr-10': hasText && isDirectionReversed }"
+              :readonly="!isDirectionReversed"
+              :placeholder="
+                isDirectionReversed
+                  ? '在此输入或粘贴 ASCII 传统字体编码……'
+                  : '传统字体字形预览'
+              "
               lang="si"
               spellcheck="false"
               @input="handleFmInput"
             ></textarea>
+
+            <label
+              for="clear-text-2"
+              class="tooltip absolute right-2 top-2"
+              data-tip="清空全部"
+            >
+              <button
+                v-if="hasText && isDirectionReversed"
+                type="button"
+                id="clear-text-2"
+                class="btn btn-ghost btn-circle btn-sm"
+                aria-label="清空全部"
+                title="清空全部"
+                @click="clearText"
+              >
+                <i class="ri-close-line" aria-hidden="true"></i>
+              </button>
+            </label>
+
             <textarea
               id="sinhala-fm-text-output"
+              ref="fmRawInput"
               v-model="fmText"
-              class="join-item min-h-7 lg:min-h-16 textarea w-full resize-y bg-base-200/35 font-mono text-sm leading-[1.8] focus:outline-primary"
-              placeholder="上方为传统字体字形预览，此处显示实际 ASCII 字符"
-              aria-describedby="sinhala-converter-hint"
+              class="block h-12 lg:h-24 w-full resize-none overflow-y-auto border-t bg-transparent px-3 py-2 font-mono text-sm leading-[1.8] scrollbar-thin"
+              :class="
+                isDirectionReversed
+                  ? 'border-base-content/20'
+                  : 'border-primary/25'
+              "
+              :readonly="!isDirectionReversed"
+              placeholder="实际 ASCII 字符预览"
               lang="si"
               spellcheck="false"
               @input="handleFmInput"
             ></textarea>
-          </div>
 
-          <div class="mt-2 flex justify-end">
-            <p class="text-xs tabular-nums text-base-content/75">
-              {{ fmText.length }} 字符
-            </p>
+            <div class="flex min-h-10 items-end justify-between pt-0 p-2">
+              <label
+                for="copy-fm"
+                class="tooltip tooltip-right"
+                :data-tip="copyLabel('fm')"
+              >
+                <button
+                  v-if="!isDirectionReversed"
+                  type="button"
+                  id="copy-fm"
+                  class="btn btn-ghost btn-circle btn-sm"
+                  :disabled="!fmText"
+                  :aria-label="copyLabel('fm')"
+                  :title="copyLabel('fm')"
+                  @click="copyText('fm')"
+                >
+                  <i :class="copyIcon('fm')" aria-hidden="true"></i>
+                </button>
+              </label>
+
+              <span class="text-xs tabular-nums text-base-content/75">
+                {{ fmText.length }} 字符
+              </span>
+            </div>
           </div>
         </section>
       </div>
@@ -170,7 +246,7 @@
 
           <!-- 编码转换 -->
           <div
-            class="not-prose my-5 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center"
+            class="not-prose my-5 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center"
           >
             <!-- FM / DL -->
             <div
@@ -184,45 +260,50 @@
               </div>
 
               <div class="mt-2 w-full text-xl">
-                <div
+                <ul
                   class="grid min-w-0 grid-cols-1 gap-y-2 sm:grid-cols-[max-content_minmax(0,1fr)] sm:items-stretch sm:gap-y-0"
                 >
-                  <span
-                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
-                  >
-                    Default
-                  </span>
+                  <li class="contents">
+                    <span
+                      class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    >
+                      Default
+                    </span>
+                    <p
+                      class="min-w-0 text-left text-base text-base-content font-mono sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
+                    >
+                      › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
+                    </p>
+                  </li>
 
-                  <span
-                    class="min-w-0 break-words text-left font-mono text-base sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
-                  >
-                    › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
-                  </span>
+                  <li class="contents">
+                    <span
+                      class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    >
+                      FM Abhaya
+                    </span>
+                    <p
+                      class="min-w-0 text-left text-base text-base-content font-[FM_Abhaya_Libre_Legacy] sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
+                      lang="si"
+                    >
+                      › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
+                    </p>
+                  </li>
 
-                  <span
-                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
-                  >
-                    FM Abhaya
-                  </span>
-
-                  <span
-                    class="min-w-0 break-words text-left font-[FM_Abhaya_Libre_Legacy] text-base sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
-                  >
-                    › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
-                  </span>
-
-                  <span
-                    class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
-                  >
-                    FM Gemunu
-                  </span>
-
-                  <span
-                    class="min-w-0 break-words text-left font-[FM_Gemunu_Libre_Legacy] font-bold text-base sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
-                  >
-                    › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
-                  </span>
-                </div>
+                  <li class="contents">
+                    <span
+                      class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
+                    >
+                      FM Gemunu
+                    </span>
+                    <p
+                      class="min-w-0 text-left text-base text-base-content font-[FM_Gemunu_Libre_Legacy] sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
+                      lang="si"
+                    >
+                      › ,xldj bkaÈhka id.rfha msysá ¥m;ls'
+                    </p>
+                  </li>
+                </ul>
               </div>
 
               <p
@@ -259,7 +340,7 @@
                       文本，可参考 Pitaka.lk 提供的 Unicode
                       字体版本。该项目在保留相关传统字体设计的基础上制作了可用于
                       Unicode
-                      僧伽罗语文本的字体，并提供下载安装。当然，若将这些字体用于商业用途，仍需获取相应的授权许可。
+                      僧伽罗语文本的字体，并提供下载安装。当然，将这些字体用于商业用途仍需获取相应的授权许可。
                       <a
                         href="https://pitaka.lk/tools/unicode/download_unicode.htm#id-un-abhaya"
                         target="_blank"
@@ -278,7 +359,7 @@
 
             <!-- 箭头 -->
             <i
-              class="ri-arrow-up-down-line justify-self-center text-xl sm:-rotate-90"
+              class="ri-arrow-up-down-line justify-self-center text-xl lg:-rotate-90"
               aria-hidden="true"
             ></i>
 
@@ -463,7 +544,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
 import { fmToUnicode, unicodeToFm } from "@/utils/sinhala-font-converter";
@@ -471,12 +552,73 @@ import { fmToUnicode, unicodeToFm } from "@/utils/sinhala-font-converter";
 const unicodeText = ref("");
 const fmText = ref("");
 const unicodeInput = ref(null);
+const fmPreviewInput = ref(null);
+const fmRawInput = ref(null);
+const unicodeFieldEl = ref(null);
+const fmFieldEl = ref(null);
 const copiedField = ref("");
 const copyFailedField = ref("");
 const liveMessage = ref("");
+const isDirectionReversed = ref(false);
 const hasText = computed(() => Boolean(unicodeText.value || fmText.value));
 
 let resetCopyTimer = null;
+
+function resizeTextarea(textarea) {
+  textarea.style.height = "auto";
+  const borderHeight = textarea.offsetHeight - textarea.clientHeight;
+  textarea.style.height = `${textarea.scrollHeight + borderHeight}px`;
+  return textarea.offsetHeight;
+}
+
+function resizeAllTextareas() {
+  const unicodeTextarea = unicodeInput.value;
+  const fmPreviewTextarea = fmPreviewInput.value;
+  const fmRawTextarea = fmRawInput.value;
+  const unicodeField = unicodeFieldEl.value;
+  const fmField = fmFieldEl.value;
+  if (
+    !unicodeTextarea ||
+    !fmPreviewTextarea ||
+    !fmRawTextarea ||
+    !unicodeField ||
+    !fmField
+  ) {
+    return;
+  }
+
+  unicodeField.style.height = "";
+  fmField.style.height = "";
+  unicodeTextarea.style.height = "";
+  fmPreviewTextarea.style.height = "";
+  fmRawTextarea.style.height = "";
+
+  const unicodeHeight = resizeTextarea(unicodeTextarea);
+  const fmPreviewHeight = resizeTextarea(fmPreviewTextarea);
+  const unicodeFieldHeight = unicodeField.getBoundingClientRect().height;
+  const fmFieldHeight = fmField.getBoundingClientRect().height;
+  const sharedFieldHeight = Math.ceil(
+    Math.max(unicodeFieldHeight, fmFieldHeight),
+  );
+
+  if (unicodeFieldHeight < sharedFieldHeight) {
+    unicodeTextarea.style.height = `${
+      unicodeHeight + sharedFieldHeight - unicodeFieldHeight
+    }px`;
+  }
+  if (fmFieldHeight < sharedFieldHeight) {
+    fmPreviewTextarea.style.height = `${
+      fmPreviewHeight + sharedFieldHeight - fmFieldHeight
+    }px`;
+  }
+
+  unicodeField.style.height = `${sharedFieldHeight}px`;
+  fmField.style.height = `${sharedFieldHeight}px`;
+}
+
+function scheduleTextareaResize() {
+  nextTick(resizeAllTextareas);
+}
 
 function resetCopyStatus() {
   copiedField.value = "";
@@ -487,11 +629,19 @@ function resetCopyStatus() {
 function handleUnicodeInput() {
   resetCopyStatus();
   fmText.value = unicodeToFm(unicodeText.value);
+  scheduleTextareaResize();
 }
 
 function handleFmInput() {
   resetCopyStatus();
   unicodeText.value = fmToUnicode(fmText.value);
+  scheduleTextareaResize();
+}
+
+function swapPanels() {
+  isDirectionReversed.value = !isDirectionReversed.value;
+  liveMessage.value = "已交换源编码与目标编码位置";
+  scheduleTextareaResize();
 }
 
 async function clearText() {
@@ -500,8 +650,20 @@ async function clearText() {
   resetCopyStatus();
   liveMessage.value = "内容已清空";
   await nextTick();
+  resizeAllTextareas();
   unicodeInput.value?.focus();
 }
+
+onMounted(() => {
+  resizeAllTextareas();
+  document.fonts?.ready.then(scheduleTextareaResize);
+  window.addEventListener("resize", resizeAllTextareas);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", resizeAllTextareas);
+  window.clearTimeout(resetCopyTimer);
+});
 
 async function writeClipboard(text) {
   if (navigator.clipboard?.writeText) {
@@ -541,7 +703,7 @@ async function copyText(field) {
 function copyLabel(field) {
   if (copiedField.value === field) return "已复制";
   if (copyFailedField.value === field) return "复制失败";
-  return field === "unicode" ? "复制 Unicode 文本" : "复制 编码文本";
+  return field === "unicode" ? "复制 Unicode 文本" : "复制 ASCII 编码文本";
 }
 
 function copyIcon(field) {
