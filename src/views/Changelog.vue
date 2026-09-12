@@ -169,8 +169,11 @@
                     >
                       <div>
                         <span
-                          class="badge badge-sm badge-soft font-semibold"
-                          :class="typeBadgeClass(changeGroup.type)"
+                          class="badge badge-sm font-semibold"
+                          :class="[
+                            { 'badge-soft': release.version !== latestVersion },
+                            typeBadgeClass(changeGroup.type),
+                          ]"
                         >
                           {{ typeText(changeGroup.type) }}
                         </span>
@@ -293,12 +296,12 @@ const latestVersion = computed(
 const totalVersions = computed(() => Object.keys(log.value).length);
 
 const typeBadgeClasses = {
-  feature: "badge-primary text-primary",
-  fix: "badge-error text-error",
-  improve: "badge-secondary text-secondary",
-  performance: "badge-success text-success",
-  refactor: "badge-warning text-warning",
-  default: "badge-info text-info",
+  feature: "badge-primary",
+  fix: "badge-error",
+  improve: "badge-secondary",
+  performance: "badge-success",
+  refactor: "badge-warning",
+  default: "badge-info",
 };
 
 const typeBadgeClass = (type) =>
