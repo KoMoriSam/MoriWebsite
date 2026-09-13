@@ -4,7 +4,7 @@
     :class="
       isNovelReaderRoute
         ? [
-            'max-lg:fixed max-lg:inset-x-0 max-lg:top-0 max-lg:z-[70] max-lg:bg-base-100/95 max-lg:backdrop-blur-md max-lg:transition-transform max-lg:duration-200 motion-reduce:transition-none',
+            'max-lg:fixed max-lg:inset-x-0 max-lg:top-0 max-lg:z-70 max-lg:bg-base-100/95 max-lg:backdrop-blur-md max-lg:transition-transform max-lg:duration-200 motion-reduce:transition-none',
             readerNavbarVisible
               ? 'max-lg:translate-y-0'
               : 'max-lg:pointer-events-none max-lg:-translate-y-full',
@@ -20,19 +20,6 @@
         <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
       </a>
       <MobileNav />
-    </nav>
-    <nav class="navbar-center">
-      <a @click="router.push('/')" class="lg:hidden btn btn-ghost text-xl">
-        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
-      </a>
-      <div class="hidden items-center lg:flex">
-        <ul class="menu menu-horizontal px-1">
-          <NavLinks />
-        </ul>
-        <ProjectMenu />
-      </div>
-    </nav>
-    <nav class="navbar-end">
       <button
         ref="searchTriggerButton"
         type="button"
@@ -53,6 +40,20 @@
         ref="searchRef"
         @restore-focus="restoreSearchTriggerFocus"
       />
+    </nav>
+    <nav class="navbar-center">
+      <a @click="router.push('/')" class="lg:hidden btn btn-ghost text-xl">
+        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
+      </a>
+      <div class="hidden items-center lg:flex">
+        <ul class="menu menu-horizontal px-1">
+          <NavLinks />
+        </ul>
+        <ProjectMenu />
+      </div>
+    </nav>
+    <nav class="navbar-end">
+      <AnnouncementCenter />
       <ThemeController />
     </nav>
   </header>
@@ -80,6 +81,7 @@ const route = useRoute();
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
+import AnnouncementCenter from "@/components/announcement/NoticeCenter.vue";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
 
 const readerNavbarVisible = ref(false);

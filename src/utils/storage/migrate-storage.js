@@ -33,7 +33,7 @@ export function useStorageMigration() {
 
   const migrateGlobalSettings = () => {
     const { GLOBAL_INFO } = useGlobalStorage();
-    const keys = ["APP_VERSION", "SET_THEME"];
+    const keys = ["SET_THEME"];
 
     keys.forEach((oldKey) => {
       const raw = localStorage.getItem(oldKey);

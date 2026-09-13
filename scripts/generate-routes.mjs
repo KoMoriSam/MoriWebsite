@@ -97,7 +97,7 @@ if (!novelIndexRes.ok) {
 
 const novelChapters = await novelIndexRes.json();
 const changelog = JSON.parse(
-  fs.readFileSync(path.resolve("public/changelog.json"), "utf-8"),
+  fs.readFileSync(path.resolve("public/changelog.v1.json"), "utf-8"),
 );
 
 const ssgDataFile = `
@@ -125,7 +125,7 @@ console.log(
   "Generated SSG data:",
   generatedArticles.length,
   "articles,",
-  Object.keys(changelog).length,
+  changelog.items.length,
   "changelog versions, and",
   Object.keys(novelChapters || {}).length,
   "novel volumes",

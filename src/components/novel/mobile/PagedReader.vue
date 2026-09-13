@@ -205,7 +205,7 @@ import { useRoute } from "vue-router";
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
 import PageFootnotes from "./PageFootnotes.vue";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
-import Markdown from "@/components/reader/Markdown.vue";
+import Markdown from "@/components/markdown/Markdown.vue";
 import { useChapters } from "@/composables/useChapters";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 import { alignMobileChapterHeaderBlock } from "@/utils/reader/align-header.js";

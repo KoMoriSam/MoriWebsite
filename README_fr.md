@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>1.24.3</strong>
+  Version actuelle : <strong>2.13.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -56,7 +56,7 @@ Routes de production :
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
 
-## Points clés de la version 1.24.3
+## Points clés de la version 2.13.0
 
 - ajout de l'aperçu des images avec états de chargement et contrôles de zoom, activé par clavier et clic
 - affinage de la capture des titres du sommaire (TOC), du défilement et des interactions
@@ -188,10 +188,10 @@ Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code cli
 | `pnpm dev`     | Générer les données de licence et lancer le serveur de développement           |
 | `pnpm build`   | Générer le site SSG, l'index de recherche et les licences distribuées          |
 | `pnpm preview` | Prévisualiser localement `dist/`                                               |
-| `pnpm deploy`  | Publier `dist/` sur la branche `gh-pages` du dépôt                             |
-| `pnpm push`    | Forcer l'envoi de la branche locale `main` vers la branche distante `cl-pages` |
+| `pnpm deploy`  | Construire et déployer le site avec Wrangler                                   |
+| `pnpm release prepare <version>` | Préparer le journal, les instantanés et l'annonce          |
 
-`pnpm push` contient `--force` ; vérifiez l'usage de la branche distante et le commit courant avant de l'exécuter.
+Après validation des changements de version, l'envoi d'une balise `v<version>` permet à GitHub Actions de déployer le site et de synchroniser le journal et les annonces.
 
 ## Structure du projet
 

@@ -80,6 +80,12 @@ export const routes = [
     meta: { title: "更新日志 | 远方之森" },
   },
   {
+    path: "/announcements",
+    name: "announcements",
+    component: () => import("@/views/Announcements.vue"),
+    meta: { title: "站点公告 | 远方之森" },
+  },
+  {
     path: "/licenses",
     name: "licenses",
     component: () => import("@/views/Licenses.vue"),

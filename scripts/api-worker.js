@@ -1,5 +1,39 @@
 const HERO_CACHE_TTL_SECONDS = 60 * 60;
 
+const ANNOUNCEMENTS_KV_KEY = "announcements:v1";
+const ANNOUNCEMENTS_SCHEMA_VERSION = 1;
+const ANNOUNCEMENTS_CACHE_CONTROL =
+  "public, max-age=60, s-maxage=300, stale-while-revalidate=300";
+const ANNOUNCEMENT_TONES = new Set(["info", "warning", "error"]);
+const ANNOUNCEMENT_PRIORITIES = new Set(["normal", "important"]);
+const ANNOUNCEMENT_TEXT_LIMITS = {
+  id: 128,
+  title: 160,
+  summary: 320,
+  body: 20000,
+};
+
+const CHANGELOG_KV_KEY = "changelog:v1";
+const CHANGELOG_SCHEMA_VERSION = 1;
+const CHANGELOG_CACHE_CONTROL =
+  "public, max-age=300, s-maxage=300, stale-while-revalidate=3600";
+const CHANGELOG_TYPES = new Set([
+  "feature",
+  "fix",
+  "improve",
+  "performance",
+  "refactor",
+  "chore",
+]);
+const CHANGELOG_VERSION_PATTERN =
+  /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+const CHANGELOG_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const CHANGELOG_TEXT_LIMITS = {
+  version: 80,
+  summary: 320,
+  markdown: 30000,
+};
+
 const PIXABAY_RATE_LIMIT = 20;
 const PIXABAY_RATE_WINDOW = 60;
 
@@ -115,6 +149,416 @@ function jsonResponse(
       ...additionalHeaders,
     },
   });
+}
+
+function normalizeAnnouncementText(value, maxLength) {
+  if (typeof value !== "string") return "";
+  const text = value.trim();
+  if (!text || text.length > maxLength) return "";
+  return text;
+}
+
+function normalizeAnnouncement(item, now) {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+
+  const id = normalizeAnnouncementText(
+    item.id,
+    ANNOUNCEMENT_TEXT_LIMITS.id,
+  );
+  const title = normalizeAnnouncementText(
+    item.title,
+    ANNOUNCEMENT_TEXT_LIMITS.title,
+  );
+  const summary = normalizeAnnouncementText(
+    item.summary,
+    ANNOUNCEMENT_TEXT_LIMITS.summary,
+  );
+  const body = normalizeAnnouncementText(
+    item.body,
+    ANNOUNCEMENT_TEXT_LIMITS.body,
+  );
+  const revision = item.revision;
+  const tone = typeof item.tone === "string" ? item.tone.trim() : "";
+  const priority =
+    typeof item.priority === "string" ? item.priority.trim() : "";
+  const pinned = item.pinned ?? false;
+  const startsAt =
+    typeof item.startsAt === "string" ? item.startsAt.trim() : "";
+  const startsAtTimestamp = Date.parse(startsAt);
+  const endsAt =
+    item.endsAt == null
+      ? null
+      : typeof item.endsAt === "string"
+        ? item.endsAt.trim()
+        : "";
+  const endsAtTimestamp = endsAt === null ? null : Date.parse(endsAt);
+
+  if (
+    !id ||
+    !title ||
+    !summary ||
+    !body ||
+    !Number.isSafeInteger(revision) ||
+    revision < 1 ||
+    !ANNOUNCEMENT_TONES.has(tone) ||
+    !ANNOUNCEMENT_PRIORITIES.has(priority) ||
+    typeof pinned !== "boolean" ||
+    !Number.isFinite(startsAtTimestamp) ||
+    (endsAtTimestamp !== null &&
+      (!Number.isFinite(endsAtTimestamp) || endsAtTimestamp <= startsAtTimestamp))
+  ) {
+    return null;
+  }
+
+  // 定时公告在生效前不通过公开接口泄露。
+  if (startsAtTimestamp > now) return null;
+
+  return {
+    id,
+    revision,
+    title,
+    summary,
+    body,
+    tone,
+    priority,
+    pinned,
+    startsAt: new Date(startsAtTimestamp).toISOString(),
+    endsAt: endsAtTimestamp === null ? null : new Date(endsAtTimestamp).toISOString(),
+    active: endsAtTimestamp === null || endsAtTimestamp > now,
+  };
+}
+
+async function handleAnnouncements(request, env, corsOrigin) {
+  if (request.method !== "GET") {
+    return jsonResponse(
+      { error: "METHOD_NOT_ALLOWED", message: "公告接口仅支持 GET。" },
+      405,
+      corsOrigin,
+      { Allow: "GET" },
+    );
+  }
+
+  if (!env.ANNOUNCEMENTS_KV) {
+    return jsonResponse(
+      {
+        error: "ANNOUNCEMENTS_UNAVAILABLE",
+        message: "缺少 ANNOUNCEMENTS_KV 绑定。",
+      },
+      503,
+      corsOrigin,
+      { "Cache-Control": "no-store" },
+    );
+  }
+
+  try {
+    const rawPayload = await env.ANNOUNCEMENTS_KV.get(ANNOUNCEMENTS_KV_KEY);
+    if (rawPayload === null) {
+      return jsonResponse(
+        {
+          error: "ANNOUNCEMENTS_UNAVAILABLE",
+          message: "公告数据尚未初始化。",
+        },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(rawPayload.replace(/^\uFEFF/, ""));
+    } catch {
+      return jsonResponse(
+        {
+          error: "INVALID_ANNOUNCEMENTS",
+          message: "公告数据不是有效的 JSON。",
+        },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    const updatedAt =
+      typeof payload?.updatedAt === "string" ? payload.updatedAt.trim() : "";
+    if (
+      payload?.schemaVersion !== ANNOUNCEMENTS_SCHEMA_VERSION ||
+      !Array.isArray(payload?.items) ||
+      !Number.isFinite(Date.parse(updatedAt))
+    ) {
+      return jsonResponse(
+        {
+          error: "INVALID_ANNOUNCEMENTS",
+          message: "公告数据结构无效。",
+        },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    const now = Date.now();
+    const seenIds = new Set();
+    const items = [];
+
+    for (const item of payload.items) {
+      const startsAtTimestamp = Date.parse(item?.startsAt);
+      if (Number.isFinite(startsAtTimestamp) && startsAtTimestamp > now) {
+        continue;
+      }
+
+      const announcement = normalizeAnnouncement(item, now);
+      if (!announcement || seenIds.has(announcement.id)) {
+        console.warn(
+          JSON.stringify({
+            message: "invalid or duplicate announcement ignored",
+            id: String(item?.id || ""),
+          }),
+        );
+        continue;
+      }
+
+      seenIds.add(announcement.id);
+      items.push(announcement);
+    }
+
+    items.sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
+
+    return jsonResponse(
+      {
+        schemaVersion: ANNOUNCEMENTS_SCHEMA_VERSION,
+        updatedAt: new Date(Date.parse(updatedAt)).toISOString(),
+        serverTime: new Date(now).toISOString(),
+        items,
+      },
+      200,
+      corsOrigin,
+      { "Cache-Control": ANNOUNCEMENTS_CACHE_CONTROL },
+    );
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "announcement lookup failed",
+        error: String(error?.message || error),
+      }),
+    );
+    return jsonResponse(
+      {
+        error: "ANNOUNCEMENTS_UNAVAILABLE",
+        message: "公告服务暂不可用。",
+      },
+      503,
+      corsOrigin,
+      { "Cache-Control": "no-store" },
+    );
+  }
+}
+
+function isValidChangelogDate(value) {
+  if (!CHANGELOG_DATE_PATTERN.test(value)) return false;
+  const timestamp = Date.parse(`${value}T00:00:00.000Z`);
+  return (
+    Number.isFinite(timestamp) &&
+    new Date(timestamp).toISOString().slice(0, 10) === value
+  );
+}
+
+function compareChangelogVersions(left, right) {
+  const parse = (value) => {
+    const [core, prerelease = ""] = String(value).split("-", 2);
+    return { core: core.split(".").map(Number), prerelease };
+  };
+  const a = parse(left);
+  const b = parse(right);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = (a.core[index] || 0) - (b.core[index] || 0);
+    if (difference !== 0) return difference;
+  }
+  if (!a.prerelease && b.prerelease) return 1;
+  if (a.prerelease && !b.prerelease) return -1;
+  return a.prerelease.localeCompare(b.prerelease, "en", { numeric: true });
+}
+
+function normalizeChangelogItem(item) {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+
+  const version = normalizeAnnouncementText(
+    item.version,
+    CHANGELOG_TEXT_LIMITS.version,
+  );
+  const date = typeof item.date === "string" ? item.date.trim() : "";
+  const summary = normalizeAnnouncementText(
+    item.summary,
+    CHANGELOG_TEXT_LIMITS.summary,
+  );
+  const intro =
+    typeof item.intro === "string" &&
+    item.intro.length <= CHANGELOG_TEXT_LIMITS.markdown
+      ? item.intro.trim()
+      : null;
+  const note =
+    item.note == null
+      ? ""
+      : typeof item.note === "string" &&
+          item.note.length <= CHANGELOG_TEXT_LIMITS.markdown
+        ? item.note.trim()
+        : null;
+  const warning =
+    item.warning == null
+      ? ""
+      : typeof item.warning === "string" &&
+          item.warning.length <= CHANGELOG_TEXT_LIMITS.markdown
+        ? item.warning.trim()
+        : null;
+
+  if (
+    !CHANGELOG_VERSION_PATTERN.test(version) ||
+    !isValidChangelogDate(date) ||
+    !summary ||
+    intro === null ||
+    note === null ||
+    warning === null ||
+    !Array.isArray(item.groups) ||
+    !item.groups.length
+  ) {
+    return null;
+  }
+
+  const seenTypes = new Set();
+  const groups = [];
+  for (const group of item.groups) {
+    const type = typeof group?.type === "string" ? group.type.trim() : "";
+    const markdown = normalizeAnnouncementText(
+      group?.markdown,
+      CHANGELOG_TEXT_LIMITS.markdown,
+    );
+    const count = group?.count;
+    if (
+      !CHANGELOG_TYPES.has(type) ||
+      seenTypes.has(type) ||
+      !markdown ||
+      !Number.isSafeInteger(count) ||
+      count < 1
+    ) {
+      return null;
+    }
+    seenTypes.add(type);
+    groups.push({ type, markdown, count });
+  }
+
+  return {
+    version,
+    date,
+    summary,
+    intro,
+    groups,
+    ...(note ? { note } : {}),
+    ...(warning ? { warning } : {}),
+  };
+}
+
+async function handleChangelog(request, env, corsOrigin) {
+  if (request.method !== "GET") {
+    return jsonResponse(
+      { error: "METHOD_NOT_ALLOWED", message: "更新日志接口仅支持 GET。" },
+      405,
+      corsOrigin,
+      { Allow: "GET" },
+    );
+  }
+
+  if (!env.CHANGELOG_KV) {
+    return jsonResponse(
+      { error: "CHANGELOG_UNAVAILABLE", message: "缺少 CHANGELOG_KV 绑定。" },
+      503,
+      corsOrigin,
+      { "Cache-Control": "no-store" },
+    );
+  }
+
+  try {
+    const rawPayload = await env.CHANGELOG_KV.get(CHANGELOG_KV_KEY);
+    if (rawPayload === null) {
+      return jsonResponse(
+        { error: "CHANGELOG_UNAVAILABLE", message: "更新日志数据尚未初始化。" },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(rawPayload.replace(/^\uFEFF/, ""));
+    } catch {
+      return jsonResponse(
+        { error: "INVALID_CHANGELOG", message: "更新日志数据不是有效的 JSON。" },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    const updatedAt =
+      typeof payload?.updatedAt === "string" ? payload.updatedAt.trim() : "";
+    if (
+      payload?.schemaVersion !== CHANGELOG_SCHEMA_VERSION ||
+      !Array.isArray(payload?.items) ||
+      !Number.isFinite(Date.parse(updatedAt))
+    ) {
+      return jsonResponse(
+        { error: "INVALID_CHANGELOG", message: "更新日志数据结构无效。" },
+        503,
+        corsOrigin,
+        { "Cache-Control": "no-store" },
+      );
+    }
+
+    const seenVersions = new Set();
+    const items = [];
+    for (const item of payload.items) {
+      const release = normalizeChangelogItem(item);
+      if (!release || seenVersions.has(release.version)) {
+        console.warn(
+          JSON.stringify({
+            message: "invalid or duplicate changelog release ignored",
+            version: String(item?.version || ""),
+          }),
+        );
+        continue;
+      }
+      seenVersions.add(release.version);
+      items.push(release);
+    }
+    items.sort((left, right) =>
+      compareChangelogVersions(right.version, left.version),
+    );
+
+    return jsonResponse(
+      {
+        schemaVersion: CHANGELOG_SCHEMA_VERSION,
+        updatedAt: new Date(Date.parse(updatedAt)).toISOString(),
+        serverTime: new Date().toISOString(),
+        items,
+      },
+      200,
+      corsOrigin,
+      { "Cache-Control": CHANGELOG_CACHE_CONTROL },
+    );
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        message: "changelog lookup failed",
+        error: String(error?.message || error),
+      }),
+    );
+    return jsonResponse(
+      { error: "CHANGELOG_UNAVAILABLE", message: "更新日志服务暂不可用。" },
+      503,
+      corsOrigin,
+      { "Cache-Control": "no-store" },
+    );
+  }
 }
 
 function createAnalyticsError(code, message, status = 400) {
@@ -1298,6 +1742,14 @@ function handleServiceInfo(corsOrigin) {
           method: "POST",
           path: "/analytics/events",
         },
+        announcements: {
+          method: "GET",
+          path: "/announcements",
+        },
+        changelog: {
+          method: "GET",
+          path: "/changelog",
+        },
       },
     },
     200,
@@ -1340,6 +1792,14 @@ export default {
 
     if (pathname === "/analytics/events") {
       return handleAnalyticsEvents(request, env, corsOrigin);
+    }
+
+    if (pathname === "/announcements") {
+      return handleAnnouncements(request, env, corsOrigin);
+    }
+
+    if (pathname === "/changelog") {
+      return handleChangelog(request, env, corsOrigin);
     }
 
     return jsonResponse(

@@ -1,0 +1,1025 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-31T00:00:00.000Z",
+  "items": [
+    {
+      "version": "2.13.0",
+      "date": "2026-08-31",
+      "summary": "新增 Markdown 图片预览，并改进目录、评论和阅读器交互。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增图片预览功能，支持键盘与点击激活，包含加载状态与缩放控件",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化 TOC 目录的标题捕获、滚动处理与交互\n- 优化 Moment 容器的相关样式\n- 为长内容容器统一使用细滚动条\n- 统一提示块内的段落间距\n- 简化聊天容器顶栏信息",
+          "count": 5
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复小说阅读器评论触发器始终隐藏的问题，移除触发器多余的样式和图标\n- 修复代码块和 Mermaid 顶栏继承正文行高后尺寸异常的问题",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "2.12.0",
+      "date": "2026-08-30",
+      "summary": "扩展阅读器背景预设和 Markdown 图注，并完善公式与图表渲染。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 扩展阅读器背景预设，支持将预设图片（非自定义）设置为阅读背景",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 统一脚注、提示块、预览背景和图标过渡样式\n- Markdown 支持 figure 图注渲染，支持 wikilink 图片引用并适配 SVG 明暗主题\n- 优化章节标题与统计信息布局\n- 支持按评论数动态挂载段评入口\n- 统一 Markdown 链接样式",
+          "count": 5
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 SSR 环境下 Mermaid 视图模式与渲染状态逻辑\n- 修复 LaTeX SVG 渲染问题，稳定正文与分享卡片的 LaTeX 字号\n- 加强 Markdown 渲染的 XSS 防护\n- 修复 Mermaid 图表分享捕获与代码块 data-language 属性绑定\n- 更换外链图标源，支持分享卡片显示外链图标",
+          "count": 5
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 统一代码块与 Mermaid 的顶栏和代码展示功能\n- 重构自定义容器组件与移动分页适配",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "2.11.0",
+      "date": "2026-08-28",
+      "summary": "新增 Mermaid 图表，并重构 Markdown 渲染链路与扩展组件。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- Markdown 组件新增 Mermaid 图表支持，涵盖流程图、时序图、类图等示例\n- 新增 Mermaid 语法高亮支持与图表挂载/卸载工具函数",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 调整字体回退顺序，改善文本显示\n- 统一统计文案和内容页徽标排版\n- 支持使用鼠标滚轮缩放 Mermaid 预览图\n- 支持 Obsidian 风格替换复选框的渲染，为外部链接显示网站图标\n- 完善分享卡片对任务列表与嵌套列表的渲染",
+          "count": 5
+        },
+        {
+          "type": "fix",
+          "markdown": "- 将代码块复制按钮设定为仅客户端渲染\n- 修复阅读计数更新失败后消失的问题\n- 修复 Mermaid 非全屏预览拖动动画范围问题",
+          "count": 3
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 Markdown 渲染链路并组件化扩展内容\n- 统一博客与小说阅读器结构，拆分阅读样式\n- 统一代码块与 Mermaid 容器样式",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- 更新聊天头像资源与映射\n- 移除 legacy 插件并停止兼容 IE11",
+          "count": 2
+        }
+      ],
+      "note": "本版本停止兼容 IE11；该浏览器不属于本站正式支持范围。"
+    },
+    {
+      "version": "2.10.0",
+      "date": "2026-08-24",
+      "summary": "新增访问与阅读统计，并以 MathJax SVG 完善公式和分享卡片渲染。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增基于 Cloudflare D1 的访问与阅读统计，支持批量查询内容阅读统计\n- Markdown 公式改用 MathJax SVG 渲染，支持 LaTeX 复制与分享卡片渲染\n- 展示文章与章节的阅读评论统计，汇总内容主评论、段评与回复\n- 分享卡片新增阅读评论统计展示\n- 新增独立的 API Worker 部署配置",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 增强二维码可见性并优化分享链接生成\n- 优化分享卡片对话框和跨书写系统文本换行\n- 统一系统主题名称和僧伽罗语编码术语\n- 优化分页组件与文章列表的结构和样式\n- 调整站点统计与社交链接顺序、博客文章列表页面包屑导航信息",
+          "count": 5
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复桌面端小说阅读位置恢复失效的问题\n- 修复分享卡片中聊天容器、引用块、动态容器、脚注正文与列表重复渲染的问题\n- 修复 LaTeX 首次加载不渲染的问题",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- 拆分并更新开发测试页面",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "2.9.0",
+      "date": "2026-08-21",
+      "summary": "新增阅读内容分享卡片、博客分页和章节评论入口。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 阅读器正文新增图片分享卡片，支持将选中文本与其上下文序列化为分享内容\n- 博客列表新增分页功能，支持动态路由与页面导航\n- 弹窗长内容区域支持独立滚动，优化长内容查看体验\n- 小说章节标题新增「本章说」评论入口，去除博客推文标题的评论功能\n- 将讨论回复计入段评评论数量，优化计数展示",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化阅读器文本上下文与分享数据生成逻辑，增强分享功能\n- 调整相关组件与引用路径，统一模板插槽命名",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "2.8.0",
+      "date": "2026-08-18",
+      "summary": "新增僧伽罗语字体转换器和兼容字体，并完善响应式与 SSG 表现。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增僧伽罗语字体转换器，支持 Unicode 与 ASCII 传统编码互转及实时输入输出，并附有 Unicode 与 ASCII 编码差异的说明信息\n- 新增 Abhaya Libre 字体显示，并生成模拟 FM Abhaya 显示的兼容字体\n- 内容页新增面包屑导航，优化标题样式\n- 工具页增强为展示可用工具列表，附带描述与图标\n- 新增 Gemunu Libre 兼容字体，用于模拟 FM Gemunu 显示",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化首页视图，新增指向新工具的入口链接\n- 调整 ContentPage 与文章阅读器组件样式以改善布局\n- 统一僧伽罗语转换器的 ASCII 编码术语并优化布局\n- 调整 Sinhala Sangam MN 字体比例，改善僧伽罗语显示\n- 优化小说详情页图像加载占位符的首屏表现",
+          "count": 5
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复阅读页上下篇按钮 SSR 阶段不渲染的问题，文章路由元信息补充文章列表\n- 修复一些 Markdown 组件 SSR 与客户端渲染不一致的问题\n- 修复 SSG 预渲染页面推文封面图不显示遮罩的问题，保留左右栏空位作为边距",
+          "count": 3
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 精简不必要的客户端渲染边界",
+          "count": 1
+        },
+        {
+          "type": "chore",
+          "markdown": "- 扩展兼容字体生成脚本，支持 Abhaya Libre 与 Gemunu Libre\n- 新增字体源文件与生成产物，更新相关说明文档\n- 更新第三方声明，新增 @fontsource/gemunu-libre 依赖",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "2.7.0",
+      "date": "2026-08-15",
+      "summary": "扩展站点主题、阅读交互和字体方案，统一跨端阅读体验。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 扩展站点主题选择，并可在阅读设置中切换站点主题\n- 重构代码块并适配主题高亮，支持多套主题配色\n- 统一跨端文本选择与长按操作菜单，优化选中文本交互\n- 扩展标题、列表与章节头的段落评论支持，抽象出评论触发器组件\n- 新增志莽行书和更纱黑体斜体选项",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 将朱雀仿宋迁移至 CDN，改善字体加载\n- 调整段落签名的内边距与外边距样式\n- 使用 Inter 与 Petrona 替换原有西文字体，优化西文排版\n- 更新阅读器字体选项、签名排版与测试示例",
+          "count": 4
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复移动端目录无法随滚动方向正确切换状态的问题\n- 修复文章翻页导航的布局问题",
+          "count": 2
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 集中管理中文、拉丁文与僧伽罗文字体加载",
+          "count": 1
+        },
+        {
+          "type": "chore",
+          "markdown": "- 移除旧字体入口与重复的远程样式引入\n- 完善字体来源与许可证说明，区分 OFL、IPA Font License 与 Apache 许可",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "2.6.0",
+      "date": "2026-08-14",
+      "summary": "重构移动端阅读控制，并统一跨端排版与阅读器组件。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 重构移动端阅读控制，新增更多操作与排版自定义功能\n- 抽出独立阅读控制栏、状态栏与弹窗组件，简化交互逻辑\n- 新增音量键翻页（不完全支持）、滚轮翻页与九宫格点击区域自定义\n- 新增阅读布局预设（保存 / 应用 / 删除 / 重置）与多套颜色主题\n- 新增长按文本上下文菜单，支持复制、全文搜索与段落评论\n- 书内搜索支持初始关键词与历史记录替换导航",
+          "count": 6
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化移动端阅读排版与颜色主题，提升阅读体验\n- 优化阅读器相关样式与组件结构\n- 优化阅读位置追踪，支持按视口保存与精确恢复，模式切换时保持阅读位置\n- 改进移动端目录手势、阅读进度条、章节控制和文章翻页交互\n- 调整阅读器样式、导航入口及测试展示页面\n- 优化阅读器相关组件与样式结构",
+          "count": 6
+        },
+        {
+          "type": "fix",
+          "markdown": "- 统一模态框关闭与浏览器返回历史处理，避免关闭弹窗时发生路由和滚动跳转\n- 修复阅读模式切换时的位置错乱问题",
+          "count": 2
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构移动端分页 / 滚动阅读器，抽出分页测量、脚注布局、章节过渡与阅读位置等模块\n- 导航栏改为事件驱动显隐，简化交互逻辑\n- 段落评论支持事件驱动打开，聊天栏气泡拆分为独立分页块\n- 继续解耦阅读器组件，移除旧 ReaderShell、抽屉及重复的移动端排版组件\n- 将提示块、聊天、朋友圈和代码块迁移为可挂载的 Vue Markdown 组件，统一跨端渲染\n- 统一跨端排版与 Markdown 渲染逻辑",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "version": "2.5.0",
+      "date": "2026-08-11",
+      "summary": "抽象跨端阅读器和目录组件，并新增阅读定位与章节导航能力。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 抽象阅读器组件与相关功能，目录（TOC）支持自动跟随当前标题，提升定位体验\n- 重构移动端分页阅读与阅读控制，优化触屏阅读操作\n- 分页器支持上一章与下一章的边界导航\n- 博客文章支持上一篇与下一篇文章跳转，方便连续阅读\n- 抽象章节目录标签与章节显示标题工具函数",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 增强章节阅读器的定位跟踪功能\n- 统一阅读器组件的底部导航栏（FootBar）\n- 优化文章列表与阅读器组件的加载状态显示\n- 调整阅读器 TOC 文本透明度，提升可读性",
+          "count": 4
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复段落高度设置导致的排版异常\n- 修复博客阅读位置被默认页码干扰的问题\n- 修复移动端目录布局异常\n- 修正内容时间标签，将“上传时间”统一为“发布时间”",
+          "count": 4
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构阅读器章节目录组件，优化章节导航与阅读进度显示\n- 增强阅读器与目录（TOC）组件，提升可维护性\n- 优化分页组件滚动逻辑，确保当前页按钮正确滚动到视图中\n- 重命名多个存储与工具函数，提升代码可读性与一致性",
+          "count": 4
+        },
+        {
+          "type": "chore",
+          "markdown": "- 调整文章资产解析器的导入路径，规范模块引用",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "2.4.0",
+      "date": "2026-08-10",
+      "summary": "将站点更新为“远方之森”，并统一标题、SEO 与视觉资源。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 更新网站名称为「远方之森」，统一页面标题与 SEO 描述\n- 新增 JetBrains Mono 字体支持，优化代码与等宽场景显示\n- 新增动画效果样式与动图素材，增强页面交互体验",
+          "count": 3
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化首页文字节奏与按钮布局\n- 优化侧边栏与章节列表组件的布局和样式\n- 更新小说相关标题格式，统一页面标题规范",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- Kaiming 字体改用在线 CSS 引用，删除本地字体文件\n- 移除早已不可用的 NProgress 依赖及相关引用\n- 清理不必要的标题 id，整理相关资源文件",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "2.3.0",
+      "date": "2026-08-07",
+      "summary": "新增开明标点字体页面，并完善字体、代码块和模态框体验。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增开明标点字体页面，展示字体规格、特性与下载链接\n- 抽象代码块组件，支持动态挂载与卸载，优化代码高亮加载\n- 增强聊天消息渲染，支持仅渲染消息模式，优化插件调用逻辑",
+          "count": 3
+        },
+        {
+          "type": "improve",
+          "markdown": "- 重构字体选择器，调整段落高度与行间距默认值，优化阅读排版\n- 优化更新详情组件的布局和样式，调整变更项展示方式\n- 优化代码块组件样式，调整语言标签与复制按钮\n- 优化模态框组件，新增取消按钮与确认模式，滚动条更改为细滚动条，优化标题和描述的渲染方式，支持前置操作插槽\n- 优化 Toast 组件样式与层级关系\n- 更新段落评论标题样式，调整标题和内容的类名以提升可读性\n- 统一页面内边距，优化搜索框与分页菜单的视觉效果\n- 改用语义化标签组织内容页结构\n- 移除不必要的 KeepAlive 与 client-only 标签，简化模板结构",
+          "count": 9
+        },
+        {
+          "type": "fix",
+          "markdown": "- 在剪贴板 API 不可用时回退到兼容的代码复制方式\n- 修复代码块 hljs 代码高亮无效的问题\n- 修复代码块 props.code 丢失响应性的问题",
+          "count": 3
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构导航组件，提升页面导航的可维护性\n- 解耦分页组件与章节控制器，简化组件依赖关系",
+          "count": 2
+        },
+        {
+          "type": "chore",
+          "markdown": "- 扩充开发环境测试入口和组件测试场景\n- 将 Kaiming 字体迁移至在线资源\n- 合并并清理代码块冗余样式，规范样式结构\n- 整理测试用例并优化相关组件交互",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-08-01",
+      "summary": "新增许可证展示和第三方声明生成，并完善全文搜索与页面导航。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增许可证展示组件与第三方声明生成脚本，完善页脚说明\n- 新增开明式标点字体族与排版样式，优化中文排版显示\n- 为小说阅读页新增总字数统计能力，便于阅读信息展示\n- 适配新的 Markdown attrs / ruby 插件，扩展内容展示能力",
+          "count": 4
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化首页问候语、描述与按钮样式，提升视觉层次\n- 移除各页面内重复的回顶逻辑，将回到顶部按钮统一从 App.vue 引用\n- 优化 Markdown 列表与嵌套显示，增强正文阅读体验\n- 增强全文搜索与结果展示，提升站内内容发现体验\n- 优化 SEO 与页面渲染信息，提升搜索引擎与分享表现\n- 整理样式结构，拆分主题样式与阅读样式，提升可维护性",
+          "count": 6
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复回到顶部按钮淡入淡出动画失效的问题",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构页面布局与导航结构，统一站内页面骨架\n- 重构滚动与锚点定位逻辑，优化章节与文章跳转体验\n- 抽象并完善文章资源解析器，优化图片与横幅处理流程",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- 更新 daisyui 依赖并补充相关样式与构建配置\n- 统一动画指令与排版样式，提升项目整体一致性",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-07-26",
+      "summary": "新增全站搜索和文章筛选，并升级静态预渲染与索引流程。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增全站搜索与文章筛选，支持检索站内内容\n- 优化 404 页面处理，提升异常访问体验",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 补充页面 SEO 元信息\n- 优化阅读器侧栏样式与排版，提升阅读体验\n- 优化图片加载与主页按钮尺寸，适配移动端展示\n- 统一 Markdown 警告框样式，提升视觉一致性",
+          "count": 4
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 SSG 数据生成流程，合并文章与小说数据来源，优化路由配置\n- 调整路由顺序，提升页面导航与内容跳转稳定性",
+          "count": 2
+        },
+        {
+          "type": "chore",
+          "markdown": "- 更新站点地址与相关构建配置",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2026-07-20",
+      "summary": "重构首页与公开路由，并新增工具入口和随机背景能力。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 更新首页布局与内容展示\n- 新增 Pixabay API 接口，支持随机背景图功能\n- 新增工具页\n- 为博客文章补充阅读位置跟踪功能\n- 小说详情页新增「最新章节」快捷跳转按钮",
+          "count": 5
+        },
+        {
+          "type": "improve",
+          "markdown": "- 新增 Fraunces 斜体字形，完善西文排版\n- 增强段落 ID 处理，优化滚动和哈希同步逻辑\n- 优化章节和博客文章的路由与永久链接结构，提升 URL 可读性\n- 优化标题和段落排版效果",
+          "count": 4
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 API 基础地址的域名错误\n- 修复 ChapterInfo 组件中 badge 和 content 属性非必需时的类型警告\n- 修复 ArticleReader 仅在文章未加载时显示底部导航栏的问题\n- 修复不同页面间阅读进度共享导致位置错乱的问题",
+          "count": 4
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构路由，合并关于和联系页面至主页，删除独立页面（About / Contact）",
+          "count": 1
+        },
+        {
+          "type": "chore",
+          "markdown": "- 移除 package.json 中不必要的脚本命令\n- 更新 tailwindcss，daisyui 及 remixicon 版本",
+          "count": 2
+        }
+      ],
+      "warning": "本版本移除独立的 `/about` 与 `/contact` 页面，旧地址不再兼容。调整博客和小说的永久链接结构，兼容旧的查询格式。"
+    },
+    {
+      "version": "1.15.0",
+      "date": "2026-06-29",
+      "summary": "新增段评计数和 Markdown 高亮语法，并提升 Giscus 加载稳定性。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增段评数量接口，支持从 GitHub Discussions 获取段落评论计数\n- 新增 markdown-it-mark 插件，支持 <mark> / == 高亮标记语法",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 统一 Giscus 评论区与主站字体\n- 调整代码块样式并添加段落评论计数样式\n- 调整段落评论的按钮图标与交互样式\n- 调整并优化 Markdown 相关样式",
+          "count": 4
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 Giscus 在博客页面创建新评论失效的问题\n- 修复 Giscus 在网络不佳时加载失败的问题，并支持动态重载\n- 修复渲染插件 markdown-it-alert 对子元素进行两次解析的问题\n- 修复脚注等样式在 Callout 及聊天容器内渲染失效的问题\n- 修复段评标题过滤与内容识别异常",
+          "count": 5
+        },
+        {
+          "type": "performance",
+          "markdown": "- 支持按需加载代码高亮语言，减少初始资源体积",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 Giscus 配置结构，新增主题映射、mappings 和 configs 分组，提升可维护性\n- 优化章节和位置跟踪逻辑，更新路由配置\n- 重构聊天和动态内容渲染插件（markdown-it-chat），优化代码结构与可读性\n- 优化段落评论的 ID 生成与状态管理",
+          "count": 4
+        },
+        {
+          "type": "chore",
+          "markdown": "- 整理组件目录结构（articles → blog/reader），提高可维护性\n- 更新网站图标\n- 清理废弃的 SVG 文件",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "1.14.1",
+      "date": "2026-06-25",
+      "summary": "修复文章数据获取与图片处理异常。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "fix",
+          "markdown": "- 修复文章数据获取与图片处理流程异常",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.14.0",
+      "date": "2026-06-24",
+      "summary": "新增博客文章页及文章列表，并统一博客与小说阅读结构。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增博客推文页面与文章列表/阅读组件，支持独立查看推文内容\n- 支持在段落评论中读取当前段落文本，提升评论定位体验\n- 支持解析并渲染 GitHub Callout 提示块",
+          "count": 3
+        },
+        {
+          "type": "improve",
+          "markdown": "- 统一字体设置与整体排版样式，提升可读性和一致性\n- 调整组件样式以提升视觉层次和一致性\n- 优化侧边栏和子菜单组件的样式以提升布局一致性",
+          "count": 3
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修正阅读器默认字体大小与行高，提升阅读体验\n- 修复触屏端代码块复制按钮和标题锚点无法触发的问题\n- 修复回到顶部按钮隐藏时仍可点击的问题",
+          "count": 3
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 优化滚动容器获取和滚动逻辑以提升性能和可读性\n- 重组小说组件结构并更新相关引用\n- 重构浮动操作按钮组件以适配更多场景",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "1.13.0",
+      "date": "2026-06-21",
+      "summary": "新增 Markdown 动态内容与评论能力，并完成 Giscus 主题适配。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 Markdown 动态内容与评论渲染能力\n- 新增 Giscus 自定义主题，四套配色分别适配 daisyUI 的 lemonade（默认日间）、forest（默认夜间）、corporate（日间模式）、dim（夜间模式）",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 更新字体引入方式，优化加载性能\n- 优化服务器信息组件排版及样式（新增城市图标、调整版本号位置）\n- 朱雀仿宋字体优先回落至霞鹜新晰宋，提升字体渲染兼容性\n- 优化 Markdown 内容样式及排版（标题、段落、Alert 警告框、列表项）\n- 优化服务器地址提示信息及样式\n- 调整代码块排版及样式",
+          "count": 6
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复错误的全局 CSS 样式\n- 恢复迁移中遗漏的环境配置、素材和存档页\n- 恢复旧版网页链接新标签页打开行为\n- 修复段落关闭时隐藏的按钮渲染问题",
+          "count": 4
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 整理 Markdown 渲染结构并统一正文样式\n- 集中管理 Giscus 仓库与评论分类配置\n- 归纳图标样式至 main.css 统一管理",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- 新增仅开发环境可用的组件测试视图\n- 改用 Vite 环境变量管理 API 密钥和地址，增强安全性",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "1.12.0",
+      "date": "2026-06-18",
+      "summary": "新增服务器地址粘贴能力，并完成本地存储架构迁移。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- ServerInfo 组件新增剪贴板粘贴功能，便于输入服务器地址",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 增强章节内容缓存管理，提升离线阅读体验\n- 更新滚动到上次阅读位置的实现，增强稳定性\n- 统一字体、提示块和代码块排版\n- 调整导航栏（NavBar）响应式显示\n- 优化服务器信息组件（ServerInfo）样式和功能\n- 完善版本更新通知行为",
+          "count": 6
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复主题存储逻辑，确保主题值正确访问\n- 修复迁移逻辑，启用旧键名清理功能以确保数据整洁",
+          "count": 2
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 localStorage 存储架构，采用三级分组存储（GLOBAL_INFO / READER_SETTINGS / READING_STATE）\n- 统一读取和设置函数，优化键名映射与兼容性获取\n- 新增存储迁移逻辑，支持全局信息、阅读器设置和阅读状态的旧数据自动迁移\n- 简化数据迁移过程，移除冗余的旧键名处理逻辑",
+          "count": 4
+        },
+        {
+          "type": "chore",
+          "markdown": "- 升级 daisyUI 至 5.5.23",
+          "count": 1
+        }
+      ],
+      "note": "旧版 localStorage 数据会自动迁移至新结构，无需手动处理。"
+    },
+    {
+      "version": "1.11.3",
+      "date": "2026-02-16",
+      "summary": "修复服务器状态接口失效问题。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "fix",
+          "markdown": "- 修复服务器状态信息接口地址失效的问题",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.11.2",
+      "date": "2025-11-04",
+      "summary": "完善章节信息格式，并增加修改日期展示。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 调整章节信息格式，新增修改日期显示",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.11.1",
+      "date": "2025-10-28",
+      "summary": "调整章节目录数据来源，提升章节加载稳定性。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 更改获取章节目录的位置",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.11.0",
+      "date": "2025-08-17",
+      "summary": "新增段落评论和段落级阅读进度，并改进跨端阅读体验。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 阅读器新增段落评论功能，优化内容展示与交互体验",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 更新阅读进度判断逻辑，精确至段落级别\n- 统一更新日志变量命名，优化样式展示\n- 优化点击限制逻辑，提升交互体验",
+          "count": 3
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 Modal 打开和关闭时缺少动画的问题",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构更新日志数据结构\n- 使用通用全局事件监听器替代段落评论中原有事件处理逻辑\n- 抽取更新详情组件，简化更新提醒代码",
+          "count": 3
+        },
+        {
+          "type": "chore",
+          "markdown": "- 扩充废弃 Storage 键的清理范围",
+          "count": 1
+        }
+      ],
+      "note": "本版本包含存储清理优化，不影响既有阅读记录。"
+    },
+    {
+      "version": "1.10.0",
+      "date": "2025-07-05",
+      "summary": "新增每日一句接口，并完善首页信息与旧数据清理。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增每日一句 API 接口\n- 实现彩蛋功能，支持动态问候语更新",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化 Markdown 组件细节样式\n- 改进 UpdateDetail 组件版本信息展示\n- 优化 Changelog 组件间距和排版",
+          "count": 3
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 Modal 的 description 属性类型警告",
+          "count": 1
+        }
+      ],
+      "note": "本版本会清理废弃的本地数据，不影响现有功能。"
+    },
+    {
+      "version": "1.9.0",
+      "date": "2025-07-03",
+      "summary": "新增代码块复制能力，并重构更新日志时间线和 Markdown 插件结构。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增代码块复制功能",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化 Markdown 锚点交互设计",
+          "count": 1
+        },
+        {
+          "type": "performance",
+          "markdown": "- 优化脚注渲染逻辑与链接样式",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 Changelog 组件采用时间线布局\n- 拆分 Markdown 自定义插件系统\n- 统一标题跟踪器更新路由的方式",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "1.8.1",
+      "date": "2025-07-02",
+      "summary": "完善聊天容器、阅读标题跟踪和 Markdown 分页表现。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 调整底部导航栏样式，优化更新日志链接位置\n- 调整标题更新时机，仅在首个标题可见后记录阅读进度\n- 改进 Markdown 渲染后的聊天界面视觉表现，优化响应式设计（图标/文字/头像）",
+          "count": 3
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 ServerInfo 在亮色主题下的配色错误\n- 修复标题跟随偶发失效问题\n- 修复代码块和自定义容器被意外分页的问题",
+          "count": 3
+        },
+        {
+          "type": "performance",
+          "markdown": "- 全面采用 WEBP 图片格式，提升加载性能\n- 调整标题检测偏移量，提升定位准确性\n- 优化『已继续上次阅读』提示的触发逻辑\n- 优化 splitMarkdown 分页逻辑，增加标题悬挂检测，防止标题单独出现在页尾\n- 引入视觉长度计算算法，优化分页准确性",
+          "count": 5
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构标题跟踪和哈希变化识别逻辑",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.8.0",
+      "date": "2025-07-02",
+      "summary": "新增聊天气泡 Markdown 容器及头像映射。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 Markdown 自定义容器：聊天气泡样式支持",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 拆分 Markdown 提示块插件，降低渲染器耦合",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "date": "2025-07-01",
+      "summary": "新增服务器信息查询，并完善阅读位置跟踪和存储清理。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增服务器信息查询与状态展示\n- 新增标题跟踪能力，用于记录阅读位置\n- 支持通过页面锚点精确跳转到阅读位置\n- Markdown 渲染新增 markdown-it-abbr/emoji/sub/sup 扩展支持",
+          "count": 4
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化 Loading 组件支持动态尺寸调整",
+          "count": 1
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复更新日志与阅读器样式冲突问题\n- 加强 Modal 插槽内容的 XSS 防护",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 分离 splitMarkdown 函数，优化章节内容加载逻辑\n- 优化存储清理逻辑和预渲染",
+          "count": 2
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 统一废弃存储清理工具的命名",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.6.0",
+      "date": "2025-05-20",
+      "summary": "扩展 Markdown 插件体系，完善代码高亮、公式、自定义容器和分页渲染。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 Markdown 渲染插件支持，优化 vue-markdown 组件配置",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化 Reader 组件样式，增强文本排版和脚注显示效果\n- 优化 Toast 组件样式",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 优化 Markdown 渲染和分页逻辑，调整段落高度配置",
+          "count": 1
+        },
+        {
+          "type": "chore",
+          "markdown": "- 更新公式与自定义容器相关依赖\n- 升级 KaTeX 并移除旧版渲染插件",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "1.5.1",
+      "date": "2025-04-29",
+      "summary": "优化已读章节判定、路由监听和 Markdown 组件复用能力。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 优化设置已读章节的逻辑\n- 解耦数据依赖，使 Markdown 组件更加通用\n- 规范组件存放位置",
+          "count": 3
+        },
+        {
+          "type": "performance",
+          "markdown": "- 优化小说阅读器检查监听路由参数逻辑",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.5.0",
+      "date": "2025-04-25",
+      "summary": "新增按钮重复点击限制，并改进阅读器状态与导航逻辑。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增按钮防重复点击功能\n- 增强阅读器状态管理能力",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 优化页码显示样式",
+          "count": 1
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复章节切换首章失效问题\n- 修复 Toast 样式失效问题",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 改进网页标题更新逻辑",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 统一日期与时间格式化逻辑\n- 精简组件属性并移除冗余参数\n- 抽象更新类型工具函数，统一日志分类显示",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "version": "1.4.1",
+      "date": "2025-04-24",
+      "summary": "统一 Modal 与 Toast 调用方式，并整理相关页面样式。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 优化 Toast 组件的样式配置\n- 统一更新日志页面样式",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 优化阅读器样式控制器实现",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 重构 Toast 方法，简化调用方式，降低使用成本\n- 重构 Modal 方法，简化调用方式，降低使用成本\n- 统一组件命名和路径引用\n- 规范组件目录和引用路径",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "version": "1.4.0",
+      "date": "2025-04-23",
+      "summary": "新增 Toast 轻量通知，并模块化小说状态管理。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 Toast 功能，实现次要通知",
+          "count": 1
+        },
+        {
+          "type": "improve",
+          "markdown": "- 更新日志页增加回到顶部按钮",
+          "count": 1
+        },
+        {
+          "type": "performance",
+          "markdown": "- 简化代码，去除多余引用",
+          "count": 1
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 模块化 novelStore，降低小说状态管理的耦合\n- 整合 showMsg 逻辑并移除分散的提示组件",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "version": "1.3.0",
+      "date": "2025-04-20",
+      "summary": "上线更新日志，并完善路由与废弃数据清理机制。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增版本更新日志\n- 新增强制清理废弃数据功能",
+          "count": 2
+        },
+        {
+          "type": "improve",
+          "markdown": "- 修改 ChapterInfo 组件样式，规范化 HTML 语法结构\n- 分离阅读器样式与小说状态管理逻辑\n- 精简 Modal 对话框组件的调用方式\n- 新增更新日志入口",
+          "count": 4
+        },
+        {
+          "type": "fix",
+          "markdown": "- 补充缺失的路由配置\n- 修复阅读器样式菜单函数传入错误的问题",
+          "count": 2
+        },
+        {
+          "type": "chore",
+          "markdown": "- 更新废弃数据清理范围",
+          "count": 1
+        }
+      ],
+      "note": "本版本会清理废弃的本地数据，不影响现有功能。"
+    },
+    {
+      "version": "1.2.1",
+      "date": "2025-04-16",
+      "summary": "完善阅读器、二维码和对话框显示，修复章节目录缓存问题。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 优化页面显示效果与阅读排版\n- 优化二维码在暗色主题下的显示，并统一对话框排版",
+          "count": 2
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复章节目录缓存读取问题\n- 修复最近更新章节判断错误",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 精简章节内容缓存机制，去除多余模块和注释",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "2025-04-14",
+      "summary": "引入 Front Matter 内容解析，并完善版本升级时的缓存清理。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 front-matter 模块支持\n- 新增大版本更新清除遗弃缓存功能",
+          "count": 2
+        },
+        {
+          "type": "performance",
+          "markdown": "- 优化章节逻辑以适应新版目录结构，提升 Modal 组件性能",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.1.1",
+      "date": "2025-04-14",
+      "summary": "重构章节监听、页面布局与滚动逻辑，提升阅读器稳定性。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "improve",
+          "markdown": "- 抽象滚动逻辑，分离页面布局与逻辑",
+          "count": 1
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复刷新当前章节内容失效的问题\n- 修复页面切换逻辑异常",
+          "count": 2
+        },
+        {
+          "type": "refactor",
+          "markdown": "- 抽象章节监听、标题更新和图片加载状态管理逻辑",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "2025-04-13",
+      "summary": "新增统一模态框及章节状态提示能力。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "feature",
+          "markdown": "- 新增 Modal 组件，实现模态对话框提示\n- 新增清除阅读记录功能\n- 支持在阅读到最新章节时显示提示",
+          "count": 3
+        },
+        {
+          "type": "improve",
+          "markdown": "- 新增图片加载骨架屏，改善等待状态反馈",
+          "count": 1
+        },
+        {
+          "type": "fix",
+          "markdown": "- 修复 NumberController 的值范围判断错误",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2025-03-06",
+      "summary": "完成基于 Vue 3 与 Vite 的新版站点重建。",
+      "intro": "",
+      "groups": [
+        {
+          "type": "refactor",
+          "markdown": "- 使用 Vue3 + Vite 构建的全新网页",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "serverTime": "2026-08-31T00:00:00.000Z"
+}

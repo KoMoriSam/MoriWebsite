@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>1.24.3</strong>
+  Current version: <strong>2.13.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -56,7 +56,7 @@ Production routes:
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
 
-## Version 1.24.3 Highlights
+## Version 2.13.0 Highlights
 
 - added image preview with loading states and zoom controls, activated by keyboard and click
 - refined TOC heading capture, scrolling, and interactions
@@ -188,10 +188,10 @@ All of these variables use the `VITE_` prefix and are exposed to client code. Do
 | `pnpm dev`     | Generate license data and start the development server             |
 | `pnpm build`   | Generate the SSG site, search index, and distributed license files |
 | `pnpm preview` | Preview `dist/` locally                                            |
-| `pnpm deploy`  | Publish `dist/` to the repository's `gh-pages` branch              |
-| `pnpm push`    | Force-push local `main` to the remote `cl-pages` branch            |
+| `pnpm deploy`  | Build and deploy the website with Wrangler                         |
+| `pnpm release prepare <version>` | Prepare the changelog, snapshots, and announcement |
 
-`pnpm push` includes `--force`; confirm the remote branch's purpose and your current commit before using it.
+After committing the release changes, pushing a `v<version>` tag lets GitHub Actions deploy the website and synchronize the changelog and announcements.
 
 ## Project Structure
 

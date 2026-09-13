@@ -13,19 +13,73 @@
       </template>
     </template>
 
-    <Loading v-if="isLoading" size="my-32" />
+    <section
+      v-if="error && totalVersions"
+      class="alert alert-warning alert-soft my-6 sm:alert-horizontal"
+      role="status"
+    >
+      <i class="ri-cloud-off-line text-xl" aria-hidden="true"></i>
+      <div class="min-w-0 flex-1">
+        <h2 class="font-semibold">暂时没有获取到远端最新记录</h2>
+        <p class="text-sm opacity-80">
+          当前正在显示随站点发布的静态版本。{{ errorMessage }}
+        </p>
+      </div>
+      <button type="button" class="btn btn-sm" @click="refreshChangelog">
+        <span
+          v-if="refreshing"
+          class="loading loading-spinner loading-xs"
+          aria-hidden="true"
+        ></span>
+        <i v-else class="ri-refresh-line" aria-hidden="true"></i>
+        重新加载
+      </button>
+    </section>
+
+    <div
+      v-if="loading && !totalVersions"
+      class="space-y-8 py-8"
+      aria-hidden="true"
+    >
+      <div
+        class="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[10rem_2rem_minmax(0,1fr)] md:gap-4"
+      >
+        <div class="hidden md:block"></div>
+        <div class="skeleton size-8 rounded-full"></div>
+        <div class="skeleton h-9 w-32"></div>
+      </div>
+      <div
+        v-for="index in 2"
+        :key="index"
+        class="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-3 md:grid-cols-[10rem_2rem_minmax(0,1fr)] md:gap-4"
+      >
+        <div class="hidden space-y-2 pt-4 md:block">
+          <div class="skeleton ms-auto h-7 w-20"></div>
+          <div class="skeleton ms-auto h-4 w-28"></div>
+        </div>
+        <div class="skeleton mt-5 size-8 rounded-full"></div>
+        <div class="card card-border bg-base-100">
+          <div class="card-body gap-4 p-5 sm:p-7">
+            <div class="skeleton h-5 w-4/5"></div>
+            <div class="skeleton h-4 w-full"></div>
+            <div class="skeleton h-4 w-2/3"></div>
+            <div class="skeleton h-20 w-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <section
-      v-else-if="error"
+      v-else-if="error && !totalVersions"
       class="alert alert-error alert-soft my-8 sm:alert-horizontal"
       role="alert"
     >
       <i class="ri-error-warning-line text-xl" aria-hidden="true"></i>
-      <div>
+      <div class="min-w-0 flex-1">
         <h2 class="font-semibold">更新日志暂时没有加载成功</h2>
-        <p class="text-sm opacity-80">{{ error }}</p>
+        <p class="text-sm opacity-80">{{ errorMessage }}</p>
       </div>
-      <button type="button" class="btn btn-sm" @click="store.fetchChangelog">
+      <button type="button" class="btn btn-sm" @click="refreshChangelog">
         <i class="ri-refresh-line" aria-hidden="true"></i>
         重新加载
       </button>
@@ -45,43 +99,53 @@
       </p>
     </section>
 
-    <template v-else>
-      <div class="min-w-0 space-y-16 py-8">
-        <section
-          v-for="group in groupedLogs"
-          :id="`year-${group.year}`"
-          :key="group.year"
-          class="scroll-mt-24"
-          :aria-labelledby="`year-title-${group.year}`"
+    <div v-else class="min-w-0 space-y-10 py-8">
+      <details
+        v-for="group in groupedLogs"
+        :id="`year-${group.year}`"
+        :key="group.year"
+        class="collapse group scroll-mt-24 overflow-visible bg-transparent"
+        :open="isYearOpen(group.year)"
+        @toggle="setYearOpen(group.year, $event.target.open)"
+      >
+        <summary
+          class="collapse-title min-h-0 list-none p-0 [&::-webkit-details-marker]:hidden"
+          :aria-controls="`year-releases-${group.year}`"
         >
-          <header
-            class="mb-8 grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[10rem_2rem_minmax(0,1fr)] md:gap-4"
+          <span
+            class="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[10rem_2rem_minmax(0,1fr)] md:gap-4"
           >
-            <div class="hidden text-right md:block">
-              <p class="text-xs text-base-content/45">
+            <span class="hidden text-right md:block">
+              <span class="text-xs text-base-content/45">
                 {{ group.releases.length }} 个版本
-              </p>
-            </div>
-            <div
+              </span>
+            </span>
+            <span
               class="flex size-6 items-center justify-center rounded-full border border-base-300 bg-base-200 md:size-8"
               aria-hidden="true"
             >
               <i class="ri-history-line text-sm text-base-content/55"></i>
-            </div>
-            <div class="flex min-w-0 items-center gap-4">
-              <h2
-                :id="`year-title-${group.year}`"
-                class="font-serif text-3xl font-semibold"
-              >
+            </span>
+            <span class="flex min-w-0 items-center gap-4">
+              <span class="font-serif text-3xl font-semibold">
                 {{ group.year }}
-              </h2>
-              <p class="text-sm text-base-content/45 md:hidden">
+              </span>
+              <span class="text-sm text-base-content/45 md:hidden">
                 {{ group.releases.length }} 个版本
-              </p>
-              <div class="h-px flex-1 bg-base-300"></div>
-            </div>
-          </header>
+              </span>
+              <span class="h-px flex-1 bg-base-300"></span>
+              <i
+                class="ri-arrow-down-s-line text-xl text-base-content/50 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+                aria-hidden="true"
+              ></i>
+            </span>
+          </span>
+        </summary>
 
+        <div
+          :id="`year-releases-${group.year}`"
+          class="collapse-content px-0! pb-0! pt-8!"
+        >
           <ol
             class="relative grid gap-6 before:absolute before:inset-y-0 before:left-3 before:w-px before:bg-base-300 md:before:left-48"
           >
@@ -161,47 +225,54 @@
                     </div>
                   </header>
 
-                  <div class="divide-y divide-base-300">
+                  <p
+                    class="pt-4 md:pt-0 pb-4 text-sm leading-relaxed text-base-content/65 sm:text-base"
+                  >
+                    {{ release.summary }}
+                  </p>
+
+                  <Markdown
+                    v-if="release.intro"
+                    mode="standard"
+                    prose-size="sm"
+                    :content="release.intro"
+                    :content-id="`changelog-${release.version}-intro`"
+                    :manage-route-anchor="false"
+                    class="mb-4 max-w-none"
+                  />
+
+                  <div
+                    class="divide-y divide-base-300 border-t border-base-300"
+                  >
                     <section
-                      v-for="changeGroup in release.changeGroups"
+                      v-for="changeGroup in release.groups"
                       :key="changeGroup.type"
-                      class="grid gap-3 py-5 first:pt-5 last:pb-0 md:grid-cols-[3rem_minmax(0,1fr)] md:gap-5 md:first:pt-0"
+                      class="grid gap-3 py-5 last:pb-0 md:grid-cols-[3rem_minmax(0,1fr)] md:gap-5"
                     >
-                      <div>
-                        <span
-                          class="badge badge-sm font-semibold"
-                          :class="[
-                            { 'badge-soft': release.version !== latestVersion },
-                            typeBadgeClass(changeGroup.type),
-                          ]"
-                        >
-                          {{ typeText(changeGroup.type) }}
-                        </span>
-                      </div>
-                      <ul class="grid min-w-0 gap-2.5">
-                        <li
-                          v-for="change in changeGroup.changes"
-                          :key="change"
-                          class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 text-sm leading-relaxed text-pretty sm:text-base"
-                        >
-                          <span
-                            class="mt-[0.65em] size-1 rounded-full bg-base-content/30"
-                            aria-hidden="true"
-                          ></span>
-                          <span class="min-w-0 break-words">{{ change }}</span>
-                        </li>
-                      </ul>
+                      <span
+                        class="badge badge-sm font-semibold md:my-2"
+                        :class="[
+                          { 'badge-soft': release.version !== latestVersion },
+                          typeBadgeClass(changeGroup.type),
+                        ]"
+                      >
+                        {{ typeText(changeGroup.type) }}
+                      </span>
+                      <Markdown
+                        mode="standard"
+                        prose-size="sm"
+                        :content="changeGroup.markdown"
+                        :content-id="`changelog-${release.version}-${changeGroup.type}`"
+                        :manage-route-anchor="false"
+                        class="max-w-none min-w-0"
+                      />
                     </section>
                   </div>
 
                   <div
                     v-if="release.note || release.warning"
-                    class="alert mt-6 items-start"
-                    :class="
-                      release.warning
-                        ? 'alert-warning alert-soft'
-                        : 'border border-base-300 bg-base-200/60'
-                    "
+                    class="alert alert-soft mt-6 items-start"
+                    :class="release.warning ? 'alert-warning' : ''"
                     role="note"
                   >
                     <i
@@ -212,88 +283,77 @@
                       "
                       aria-hidden="true"
                     ></i>
-                    <div>
+                    <div class="min-w-0 flex-1">
                       <p class="text-sm font-semibold">
                         {{ release.warning ? "升级前请注意" : "版本说明" }}
                       </p>
-                      <p class="mt-0.5 text-sm opacity-80">
-                        {{ release.warning || release.note }}
-                      </p>
+                      <Markdown
+                        mode="standard"
+                        prose-size="sm"
+                        :content="release.warning || release.note"
+                        :content-id="`changelog-${release.version}-notice`"
+                        :manage-route-anchor="false"
+                        class="mt-1 max-w-none"
+                      />
                     </div>
                   </div>
                 </div>
               </article>
             </li>
           </ol>
-        </section>
-      </div>
-    </template>
+        </div>
+      </details>
+    </div>
   </ContentPage>
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import Loading from "@/components/base/Loading.vue";
+import Markdown from "@/components/markdown/Markdown.vue";
 import ssgData from "@/router/ssg-data";
 import { useChangelogStore } from "@/stores/changelogStore";
 import { typeText } from "@/utils/type-changelog";
 
+const route = useRoute();
 const store = useChangelogStore();
+const openYears = ref(new Set());
+const latestOpenedYear = ref("");
 
-if (
-  Object.keys(store.data).length === 0 &&
-  ssgData.changelog &&
-  typeof ssgData.changelog === "object"
-) {
+if (!store.items.length && ssgData.changelog) {
   store.hydrateChangelog(ssgData.changelog);
 }
 
-const log = computed(() => store.data);
-const isLoading = computed(() => store.loading);
+const releases = computed(() => store.items);
+const loading = computed(() => store.loading);
+const refreshing = computed(() => store.refreshing);
 const error = computed(() => store.error);
-
-const compareVersions = (a, b) => {
-  const aParts = a.split(".").map(Number);
-  const bParts = b.split(".").map(Number);
-  const length = Math.max(aParts.length, bParts.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const difference = (bParts[index] || 0) - (aParts[index] || 0);
-    if (difference !== 0) return difference;
-  }
-
-  return 0;
-};
+const latestVersion = computed(() => store.latestVersion);
+const totalVersions = computed(() => store.totalVersions);
+const errorMessage = computed(() =>
+  String(error.value?.message || error.value || "请稍后重试。"),
+);
 
 const groupedLogs = computed(() => {
   const groups = new Map();
-
-  Object.entries(log.value)
-    .sort(([a], [b]) => compareVersions(a, b))
-    .forEach(([version, item]) => {
-      const year = /^\d{4}/.test(item.date) ? item.date.slice(0, 4) : "其他";
-      const changeGroups = Object.entries(item.changes || {}).map(
-        ([type, changes]) => ({ type, changes }),
-      );
-      const changeCount = changeGroups.reduce(
-        (total, group) => total + group.changes.length,
-        0,
-      );
-      const release = { ...item, version, changeGroups, changeCount };
-
-      if (!groups.has(year)) groups.set(year, []);
-      groups.get(year).push(release);
-    });
-
-  return Array.from(groups, ([year, releases]) => ({ year, releases }));
+  releases.value.forEach((release) => {
+    const year = /^\d{4}/.test(release.date)
+      ? release.date.slice(0, 4)
+      : "其他";
+    const changeCount = release.groups.reduce(
+      (total, group) => total + group.count,
+      0,
+    );
+    if (!groups.has(year)) groups.set(year, []);
+    groups.get(year).push({ ...release, changeCount });
+  });
+  return Array.from(groups, ([year, yearReleases]) => ({
+    year,
+    releases: yearReleases,
+  }));
 });
-
-const latestVersion = computed(
-  () => groupedLogs.value[0]?.releases[0]?.version || "",
-);
-const totalVersions = computed(() => Object.keys(log.value).length);
 
 const typeBadgeClasses = {
   feature: "badge-primary",
@@ -301,6 +361,7 @@ const typeBadgeClasses = {
   improve: "badge-secondary",
   performance: "badge-success",
   refactor: "badge-warning",
+  chore: "badge-neutral",
   default: "badge-info",
 };
 
@@ -313,9 +374,44 @@ const formatDate = (date) => {
   return `${match[1]} 年 ${Number(match[2])} 月 ${Number(match[3])} 日`;
 };
 
-onMounted(async () => {
-  if (Object.keys(store.data).length === 0) {
-    await store.fetchChangelog();
+const isYearOpen = (year) => openYears.value.has(year);
+
+const setYearOpen = (year, open) => {
+  const next = new Set(openYears.value);
+  if (open) next.add(year);
+  else next.delete(year);
+  openYears.value = next;
+};
+
+const openHashTarget = async () => {
+  if (typeof document === "undefined" || !route.hash.startsWith("#version-")) {
+    return;
   }
+  const id = decodeURIComponent(route.hash.slice(1));
+  const version = id.replace(/^version-/, "");
+  const release = releases.value.find((item) => item.version === version);
+  if (!release) return;
+  setYearOpen(release.date.slice(0, 4), true);
+  await nextTick();
+  document.getElementById(id)?.scrollIntoView({ block: "start" });
+};
+
+const refreshChangelog = () => store.fetchChangelog({ force: true });
+
+watch(
+  () => groupedLogs.value[0]?.year || "",
+  (year) => {
+    if (!year || year === latestOpenedYear.value) return;
+    latestOpenedYear.value = year;
+    setYearOpen(year, true);
+  },
+  { immediate: true },
+);
+
+watch(() => [route.hash, releases.value], openHashTarget, { flush: "post" });
+
+onMounted(async () => {
+  await store.fetchChangelog();
+  await openHashTarget();
 });
 </script>

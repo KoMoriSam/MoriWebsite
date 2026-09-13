@@ -4,28 +4,19 @@
     :id="contentId"
     :class="[
       {
-        'opacity-50': markdownPreparing,
-        'reader-colors': useReaderColors,
+        'markdown-content': isReaderMode,
+        'markdown-standard': isStandardMode,
+        'max-w-full': isReaderMode,
+        'opacity-50': isReaderMode && markdownPreparing,
+        'reader-colors': isReaderMode && useReaderColors,
       },
-      styleConfigs.fontClass || styleConfigs.fontStyle,
+      isReaderMode ? styleConfigs.fontClass || styleConfigs.fontStyle : '',
+      proseSizeClass,
     ]"
-    class="markdown-content prose min-w-0 w-full max-w-full transition-opacity"
-    :style="{
-      '--para-font-size': `${styleConfigs.fontSize}px`,
-      '--para-letter-spacing': `${styleConfigs.fontGap * 0.25}rem`,
-      '--para-line-height': styleConfigs.lineHeight,
-      '--para-margin-inline': `${
-        Math.max(0, Number(styleConfigs.paraHeight) || 0) *
-        Math.max(1, Number(styleConfigs.fontSize) || 22) *
-        Math.max(1, Number(styleConfigs.lineHeight) || 1.6)
-      }px`,
-      '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px 
-        + ${styleConfigs.fontGap * 0.7}rem)`,
-      '--reader-text-color': resolvedTextColor || undefined,
-      fontFamily: styleConfigs.fontFamily || undefined,
-    }"
-    @click="handleArticleClick"
-    @keydown="handleArticleKeydown"
+    class="prose min-w-0 w-full transition-opacity prose-blockquote:[quotes:none] prose-blockquote:font-serif prose-blockquote:font-light prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline prose-a:hover:underline"
+    :style="articleStyle"
+    @click="isReaderMode && handleArticleClick($event)"
+    @keydown="isReaderMode && handleArticleKeydown($event)"
   >
     <slot name="before" />
 
@@ -40,22 +31,23 @@
         v-for="page in renderedPages"
         :key="`${headerData.uuid}-v${markdownRenderVersion}`"
         :html="page.html"
-        :resolver="resolveMarkdownComponent"
+        :resolver="markdownComponentResolver"
       />
 
-      <h1 v-if="!renderedPages.length">加载失败，请稍后重试。</h1>
+      <h1 v-if="isReaderMode && !renderedPages.length">
+        加载失败，请稍后重试。
+      </h1>
     </template>
 
     <slot name="after" />
 
-    <ImagePreview ref="imagePreviewRef" />
+    <ImagePreview v-if="isReaderMode" ref="imagePreviewRef" />
   </article>
 </template>
 
 <script setup>
 import { computed, h, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import MarkdownIt from "markdown-it";
 
 import Loading from "@/components/base/Loading.vue";
 import Alert from "@/components/markdown/Alert.vue";
@@ -66,11 +58,27 @@ import Mermaid from "@/components/markdown/Mermaid.vue";
 import Moment from "@/components/markdown/Moment.vue";
 import ImagePreview from "@/components/ui/ImagePreview.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
+import {
+  MARKDOWN_MODES,
+  MARKDOWN_MODE_READER,
+  MARKDOWN_MODE_STANDARD,
+  renderMarkdown,
+} from "@/utils/markdown/render-markdown";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
 
 const props = defineProps({
+  mode: {
+    type: String,
+    default: MARKDOWN_MODE_READER,
+    validator: (value) => MARKDOWN_MODES.includes(value),
+  },
+  proseSize: {
+    type: String,
+    default: "",
+  },
+
   // 内容数据
   content: {
     type: String,
@@ -143,16 +151,47 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["refresh", "render-ready"]);
+const isReaderMode = computed(() => props.mode === MARKDOWN_MODE_READER);
+const isStandardMode = computed(() => props.mode === MARKDOWN_MODE_STANDARD);
+const PROSE_SIZE_CLASSES = {
+  sm: "prose-sm",
+  base: "prose-base",
+  lg: "prose-lg",
+  xl: "prose-xl",
+  "2xl": "prose-2xl",
+};
+const proseSizeClass = computed(() => {
+  if (!isStandardMode.value) return "";
+
+  const size = String(props.proseSize || "")
+    .trim()
+    .replace(/^prose-/, "");
+  if (!size || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(size)) return "";
+
+  return PROSE_SIZE_CLASSES[size] || `prose-${size}`;
+});
 const resolvedTextColor = computed(() => {
-  if (!props.useReaderColors) return "";
+  if (!isReaderMode.value || !props.useReaderColors) return "";
   return props.styleConfigs.textColor || "";
 });
+const articleStyle = computed(() => {
+  if (!isReaderMode.value) return undefined;
 
-// Markdown 渲染选项
-const options = {
-  html: true,
-  typographer: true,
-};
+  return {
+    "--para-font-size": `${props.styleConfigs.fontSize}px`,
+    "--para-letter-spacing": `${props.styleConfigs.fontGap * 0.25}rem`,
+    "--para-line-height": props.styleConfigs.lineHeight,
+    "--para-margin-inline": `${
+      Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
+      Math.max(1, Number(props.styleConfigs.fontSize) || 22) *
+      Math.max(1, Number(props.styleConfigs.lineHeight) || 1.6)
+    }px`,
+    "--para-text-indent": `calc(${props.styleConfigs.fontSize * 2}px
+      + ${props.styleConfigs.fontGap * 0.7}rem)`,
+    "--reader-text-color": resolvedTextColor.value || undefined,
+    fontFamily: props.styleConfigs.fontFamily || undefined,
+  };
+});
 const PREVIEW_SVG_FILTER = "invert(1) hue-rotate(180deg)";
 const FALLBACK_IMAGE_WIDTH = 1200;
 const FALLBACK_IMAGE_HEIGHT = 800;
@@ -350,7 +389,9 @@ const anchoredPages = computed(() =>
   combinedContent.value
     ? [
         {
-          source: injectMarkdownSearchAnchors(combinedContent.value),
+          source: isReaderMode.value
+            ? injectMarkdownSearchAnchors(combinedContent.value)
+            : combinedContent.value,
         },
       ]
     : [],
@@ -367,8 +408,10 @@ const syncRenderReady = async (cycle = renderReadyCycle) => {
 
   const root = articleRef.value;
   if (!root) return;
-  syncPreviewImages(root);
-  if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
+  if (isReaderMode.value) {
+    syncPreviewImages(root);
+    if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
+  }
 
   emittedRenderReadyCycle = cycle;
   emit("render-ready");
@@ -416,6 +459,19 @@ const resolveMarkdownComponent = ({
   return undefined;
 };
 
+const resolveStandardMarkdownComponent = (context) => {
+  const { tagName } = context;
+  if (!tagName.startsWith("markdown-")) return undefined;
+  if (!["markdown-alert", "markdown-code"].includes(tagName)) return false;
+  return resolveMarkdownComponent(context);
+};
+
+const markdownComponentResolver = computed(() =>
+  isReaderMode.value
+    ? resolveMarkdownComponent
+    : resolveStandardMarkdownComponent,
+);
+
 const beginRenderReadyCycle = () => {
   renderReadyCycle += 1;
   emittedRenderReadyCycle = -1;
@@ -430,6 +486,7 @@ watch(
     props.isLoading,
     props.headerData.uuid,
     markdownRenderVersion.value,
+    props.mode,
   ],
   beginRenderReadyCycle,
   { flush: "post", immediate: true },
@@ -451,6 +508,7 @@ const scrollToRouteAnchor = async () => {
     import.meta.env.SSR ||
     typeof window === "undefined" ||
     typeof document === "undefined" ||
+    !isReaderMode.value ||
     !props.manageRouteAnchor ||
     props.isLoading ||
     markdownPreparing.value
@@ -591,6 +649,8 @@ const tableWrapperPlugin = (md) => {
 };
 
 const loadMarkdownFeaturePlugins = async (content = "") => {
+  if (!isReaderMode.value) return;
+
   const markdownText = String(content || "");
   const languages = collectFenceLanguages(markdownText);
   const featureTasks = [];
@@ -644,39 +704,37 @@ const sharedPlugins = computed(() => [
   linkIconPlugin,
 ]);
 
-const renderMarkdown = (source, plugins) => {
-  const md = new MarkdownIt(options);
-  plugins.forEach((plugin) => {
-    if (Array.isArray(plugin)) md.use(plugin[0], plugin[1]);
-    else md.use(plugin);
-  });
-  return md.render(source);
-};
-
 // 正文只创建一个 Markdown 渲染实例，段落序号在整篇内容内连续递增。
 const renderedPages = computed(() => {
   markdownRenderVersion.value;
 
   return anchoredPages.value.map((page) => {
-    const plugins = [
-      paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
-      ...sharedPlugins.value,
-    ];
+    const plugins = isReaderMode.value
+      ? [
+          paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
+          ...sharedPlugins.value,
+        ]
+      : [alertPlugin, codePlugin];
 
     return {
       ...page,
-      html: renderMarkdown(page.source, plugins),
+      html: renderMarkdown(page.source, { mode: props.mode, plugins }),
     };
   });
 });
 
 // 运行时 content 变化：异步加载特性插件后渲染
 watch(
-  combinedContent,
-  async (content) => {
+  () => [combinedContent.value, props.mode],
+  async ([content]) => {
     const requestId = ++markdownFeatureRequestId;
 
     if (!content) {
+      markdownPreparing.value = false;
+      return;
+    }
+
+    if (!isReaderMode.value) {
       markdownPreparing.value = false;
       return;
     }
@@ -721,6 +779,7 @@ watch(
     props.headerData.sourceType,
     props.headerData.commentScope,
     props.headerData.commentTerm,
+    props.mode,
   ],
   async ([isLoading, isPreparing]) => {
     // immediate watch 在 SSG 阶段也会执行；段评统计依赖浏览器 DOM 和 RAF。
@@ -730,6 +789,10 @@ watch(
       typeof document === "undefined" ||
       typeof window.requestAnimationFrame !== "function"
     ) {
+      return;
+    }
+
+    if (!isReaderMode.value) {
       return;
     }
 
@@ -772,6 +835,7 @@ watch(
     markdownPreparing.value,
     combinedContent.value,
     markdownRenderVersion.value,
+    props.mode,
   ],
   scrollToRouteAnchor,
   { immediate: true, flush: "post" },
@@ -779,3 +843,54 @@ watch(
 </script>
 
 <style scoped src="@/assets/reader.css"></style>
+
+<style scoped>
+.markdown-standard :deep(details.alert),
+.markdown-standard :deep([data-markdown-code-block]) {
+  font-size: 1em;
+  line-height: inherit;
+  margin-block: 1em;
+}
+
+.markdown-standard :deep(details.alert) {
+  gap: 1em;
+  padding-block: 0.75em;
+  padding-inline: 1em;
+}
+
+.markdown-standard :deep(details.alert > summary.alert-title) {
+  gap: 0.5em;
+}
+
+.markdown-standard :deep(details.alert p),
+.markdown-standard :deep(details.alert ul li),
+.markdown-standard :deep(details.alert ol li) {
+  margin-block-start: 0.5em;
+  margin-block-end: 0.25em;
+}
+
+.markdown-standard :deep([data-markdown-code-block] header hgroup),
+.markdown-standard :deep([data-markdown-code-block] .mockup-code) {
+  font-size: 0.875em;
+}
+
+.markdown-standard :deep([data-markdown-code-block] header hgroup) {
+  line-height: 1.25;
+}
+
+.markdown-standard :deep([data-markdown-code-block] > header) {
+  gap: 0.5em;
+  padding-block: 0.25em;
+  padding-inline-start: 0.75em;
+  padding-inline-end: 0.25em;
+}
+
+.markdown-standard :deep([data-markdown-code-block] .mockup-code) {
+  padding-block: 0.5em;
+}
+
+.markdown-standard :deep([data-markdown-code-block] .mockup-code code) {
+  font-size: 1em;
+  line-height: 1.5;
+}
+</style>

@@ -37,6 +37,15 @@
           ></span>
         </span>
       </client-only>
+      <a
+        id="rss-feed"
+        class="btn btn-primary btn-soft btn-sm"
+        href="/rss.xml"
+        type="application/rss+xml"
+      >
+        <i class="ri-rss-fill" aria-hidden="true"></i>
+        RSS 订阅
+      </a>
     </template>
 
     <template v-if="loading || articles.length">

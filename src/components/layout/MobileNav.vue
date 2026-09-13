@@ -17,13 +17,13 @@
       id="mobile-navigation"
       ref="mobilePopover"
       popover="auto"
-      class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-box border p-3 shadow-xl"
+      class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-box border p-3 shadow-xl sm:w-96"
       style="position-anchor: --mobile-navigation-anchor"
       aria-label="移动端导航"
       @toggle="handleToggle"
     >
       <section aria-labelledby="mobile-primary-navigation">
-        <ul class="grid grid-cols-4 gap-2">
+        <ul class="grid grid-cols-4 gap-2 sm:grid-cols-2">
           <li v-for="link in NAV_LINKS" :key="link.to.name">
             <RouterLink
               :to="link.to"
@@ -68,7 +68,7 @@
           </a>
         </div>
 
-        <div class="grid gap-2 sm:grid-cols-2">
+        <div class="grid gap-2">
           <component
             :is="project.to ? RouterLink : 'a'"
             v-for="project in PROJECTS"
@@ -105,8 +105,6 @@
           </component>
         </div>
       </section>
-
-      <ThemeController embedded />
     </div>
   </div>
 </template>
@@ -117,7 +115,6 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { NAV_LINKS, isNavigationLinkActive } from "@/constants/navigation.js";
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
-import ThemeController from "@/components/ui/theme/ThemeController.vue";
 
 const route = useRoute();
 const emit = defineEmits(["open-change"]);

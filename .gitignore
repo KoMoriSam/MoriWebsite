@@ -5,13 +5,14 @@ node_modules
 .venv
 .cache
 .tmp
-.env.production
-.env.development
+.dev.vars*
+.env*
+!.env.example
 dist
 mock
 .output
 *.old*
-.github
+/public/rss.xml
 
 # ViteSSG build output
 src/router/ssg-data.generated.js
@@ -20,3 +21,5 @@ src/router/license-data.generated.js
 .agents
 AGENTS.MD
 skills-lock.json
+
+announcements

@@ -11,6 +11,20 @@ import { resolve } from "node:path";
 // https://vite.dev/config/
 export default defineConfig({
   base: "/",
+  server: {
+    proxy: {
+      "/api/announcements": {
+        target: "https://api.komori.cc",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+      "/api/changelog": {
+        target: "https://api.komori.cc",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
   optimizeDeps: {
     exclude: [
       "@jsquash/avif",

@@ -1,5 +1,16 @@
 <template>
   <NavBar />
+  <AnnouncementModal
+    :mode="overlayMode"
+    :selected-announcement="selectedAnnouncement"
+    :summary-announcements="summaryAnnouncements"
+    :can-go-back="canReturnToSummary"
+    @acknowledge="announcementStore.acknowledgeSummary"
+    @acknowledge-detail="announcementStore.acknowledgeAnnouncement"
+    @back="announcementStore.returnToSummary"
+    @close="announcementStore.closeOverlay"
+    @open="announcementStore.openAnnouncement"
+  />
   <router-view />
   <ToTop v-if="!route.meta.hideToTop" />
 </template>
@@ -11,21 +22,29 @@ import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import NavBar from "@/components/layout/NavBar.vue";
+import AnnouncementModal from "@/components/announcement/Modal.vue";
 import ToTop from "./components/base/ToTop.vue";
 import { useNovelStore } from "@/stores/novelStore";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
+import { useAnnouncementStore } from "@/stores/announcementStore";
 import { getBlogPagePath } from "@/constants/blog-pagination";
 
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
-import { checkUpdateNotice } from "@/utils/update-notice";
 import { useStorageMigration } from "@/utils/storage/migrate-storage";
 import { useDiscardStorage } from "@/utils/storage/discard-storage";
 
 const route = useRoute();
 const novelStore = useNovelStore();
 const analyticsStore = useAnalyticsStore();
+const announcementStore = useAnnouncementStore();
 const { title: novelTitle } = storeToRefs(novelStore);
+const {
+  canReturnToSummary,
+  overlayMode,
+  selectedAnnouncement,
+  summaryAnnouncements,
+} = storeToRefs(announcementStore);
 let stopAnalyticsRouteWatch = null;
 useSearchResultHighlight();
 
@@ -43,6 +62,7 @@ const PAGE_DESCRIPTIONS = {
   blog: "阅读远方之森的技术探索、生活随笔与读书笔记。",
   "blog-article": "阅读远方之森的博客文章。",
   changelog: "查看远方之森个人网站的功能更新、修复与版本记录。",
+  announcements: "查看远方之森当前有效的站点公告与历史通知。",
   novel: "在线阅读远方之森创作的原创小说《向远方》。",
   "novel-reader": "在线阅读远方之森 创作的原创小说《向远方》。",
   tools: "使用远方之森制作的在线小工具与服务查询功能。",
@@ -268,13 +288,16 @@ onMounted(() => {
     return;
   }
 
-  checkUpdateNotice();
-
   const { migrateStorage } = useStorageMigration();
 
   migrateStorage();
 
   useDiscardStorage();
+
+  announcementStore.migrateLegacyUpdateState();
+  void announcementStore.fetchAnnouncements().then((announcements) => {
+    if (announcements) announcementStore.showImportantSummary();
+  });
 
   analyticsStore.startTracking();
   stopAnalyticsRouteWatch = watch(

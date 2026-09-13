@@ -28,6 +28,7 @@ const CHANGE_TYPE_LABELS = {
   improve: "改进",
   performance: "优化",
   refactor: "重构",
+  chore: "维护",
 };
 
 const uniqueStrings = (values) => [
@@ -325,22 +326,19 @@ const loadNovelRecords = async () => {
   return chapterRecordGroups.flat();
 };
 
-const changelogRecords = Object.entries(ssgData.changelog || {}).map(
-  ([version, item], catalogOrder) => {
-    const changeEntries = Object.entries(item?.changes || {});
-    const changes = changeEntries.flatMap(([, values]) =>
-      Array.isArray(values) ? values : [],
-    );
-    const tags = changeEntries
-      .filter(([, values]) => Array.isArray(values) && values.length)
-      .map(([type]) => type);
+const changelogRecords = (ssgData.changelog?.items || []).map(
+  (item, catalogOrder) => {
+    const version = item.version;
+    const tags = (item.groups || []).map((group) => group.type);
+    const changes = (item.groups || []).map((group) => group.markdown);
 
     return createRecord({
       url: `/changelog#version-${encodeURIComponent(version)}`,
       title: version,
-      summary: changes[0] || item?.note || item?.warning || "",
+      summary: item.summary,
       content: [
         ...tags.map((type) => CHANGE_TYPE_LABELS[type] || "其他"),
+        item.intro,
         ...changes,
         item?.note,
         item?.warning,

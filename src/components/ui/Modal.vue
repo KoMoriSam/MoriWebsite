@@ -4,6 +4,7 @@
     ref="dialogRef"
     class="modal modal-bottom sm:modal-middle"
     @cancel="handleNativeCancel"
+    @keydown.esc.capture="handleEscapeKeydown"
   >
     <section
       ref="modalRef"
@@ -12,28 +13,41 @@
         'flex max-h-[82dvh] flex-col overflow-hidden p-0': scrollContent,
       }"
     >
-      <form v-if="!isConfirm && buttonMode === 'close'" method="dialog">
-        <button
-          class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
-          type="button"
-          aria-label="关闭"
-          @click="handleDismiss"
-        >
-          <i class="ri-close-line text-lg" aria-hidden="true"></i>
-        </button>
-      </form>
       <header
         :class="{
           'mb-4': !scrollContent,
           'shrink-0 border-b border-base-300 px-5 py-4': scrollContent,
-          'pr-10':
-            !scrollContent && !isConfirm && buttonMode === 'close',
-          'pe-14': scrollContent && !isConfirm && buttonMode === 'close',
         }"
       >
-        <slot name="title">
-          <h3 class="text-lg font-bold">{{ title }}</h3>
-        </slot>
+        <div class="flex min-w-0 items-center gap-2">
+          <button
+            v-if="showBack"
+            type="button"
+            class="btn btn-ghost btn-circle btn-sm shrink-0"
+            :aria-label="backLabel"
+            @click="emit('back')"
+          >
+            <i class="ri-arrow-left-line text-lg" aria-hidden="true"></i>
+          </button>
+
+          <div class="min-w-0 flex-1">
+            <slot name="title">
+              <h3 class="font-serif text-lg font-bold">{{ title }}</h3>
+            </slot>
+          </div>
+
+          <button
+            v-if="!isConfirm && buttonMode === 'close'"
+            class="btn btn-sm btn-circle btn-ghost shrink-0"
+            type="button"
+            aria-label="关闭"
+            @click="close"
+          >
+            <i class="ri-close-line text-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <slot name="header-details"></slot>
       </header>
       <section
         :class="{
@@ -45,12 +59,24 @@
           <!-- fallback -->
         </slot>
       </section>
-      <form v-if="isConfirm" method="dialog" class="modal-action">
+      <form
+        v-if="isConfirm"
+        method="dialog"
+        class="modal-action"
+        :class="{
+          'm-0 shrink-0 border-t border-base-300 px-5 py-4': scrollContent,
+        }"
+      >
         <slot name="leading-action"></slot>
         <button class="btn btn-primary" type="button" @click="handleSubmit">
           {{ buttonText }}
         </button>
-        <button class="btn" type="button" @click="handleCancel">
+        <button
+          v-if="showCancel"
+          class="btn"
+          type="button"
+          @click="handleCancel"
+        >
           {{ cancelText }}
         </button>
       </form>
@@ -58,6 +84,9 @@
         v-else-if="buttonMode === 'footer'"
         method="dialog"
         class="modal-action"
+        :class="{
+          'm-0 shrink-0 border-t border-base-300 px-5 py-4': scrollContent,
+        }"
       >
         <slot name="leading-action"></slot>
         <button class="btn" type="button" @click="handleSubmit">
@@ -90,6 +119,10 @@ const props = defineProps({
     type: String,
     default: "取消",
   },
+  showCancel: {
+    type: Boolean,
+    default: true,
+  },
   buttonMode: {
     type: String,
     default: "footer",
@@ -108,6 +141,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showBack: {
+    type: Boolean,
+    default: false,
+  },
+  backLabel: {
+    type: String,
+    default: "返回",
+  },
   onSubmit: {
     type: Function,
     default: () => {},
@@ -118,11 +159,35 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["back", "close"]);
 
 const modalRef = ref(null);
 const dialogRef = ref(null);
 const isConfirm = computed(() => props.variant === "confirm");
+let blockedDismissAnimation = null;
+
+const indicateBlockedDismiss = () => {
+  const modal = modalRef.value;
+  if (
+    !modal?.animate ||
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
+
+  blockedDismissAnimation?.cancel();
+  blockedDismissAnimation = modal.animate(
+    [
+      { transform: "translateX(0)" },
+      { transform: "translateX(-0.5rem)" },
+      { transform: "translateX(0.4rem)" },
+      { transform: "translateX(-0.25rem)" },
+      { transform: "translateX(0.15rem)" },
+      { transform: "translateX(0)" },
+    ],
+    { duration: 280, easing: "ease-out" },
+  );
+};
 
 const closeImmediately = () => {
   if (dialogRef.value?.close) {
@@ -132,6 +197,11 @@ const closeImmediately = () => {
 };
 const modalClose = useModalClose({
   onClose: closeImmediately,
+  shouldCloseFromFallback: () => !isConfirm.value && !props.showBack,
+  onBlockedFallback: () => {
+    if (isConfirm.value) indicateBlockedDismiss();
+    else if (props.showBack) emit("back");
+  },
 });
 
 const open = async () => {
@@ -146,14 +216,13 @@ const open = async () => {
 const close = () => modalClose.requestClose();
 
 const handleSubmit = () => {
-  props.onSubmit();
-  close();
+  if (props.onSubmit() !== false) close();
 };
 
 const handleDismiss = () => {
-  if (!isConfirm.value) {
-    close();
-  }
+  if (isConfirm.value) return indicateBlockedDismiss();
+  if (props.showBack) return emit("back");
+  close();
 };
 
 const handleCancel = () => {
@@ -161,9 +230,20 @@ const handleCancel = () => {
   close();
 };
 
+const handleEscapeKeydown = (event) => {
+  if (!isConfirm.value && !props.showBack) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (isConfirm.value) indicateBlockedDismiss();
+  else emit("back");
+};
+
 const handleNativeCancel = (event) => {
   event.preventDefault();
-  if (!isConfirm.value) modalClose.requestPlatformClose();
+  if (isConfirm.value) return indicateBlockedDismiss();
+  if (props.showBack) return emit("back");
+  modalClose.requestPlatformClose();
 };
 
 onClickOutside(modalRef, handleDismiss);

@@ -5,44 +5,12 @@ import {
 } from "@/utils/resolve-article-assets";
 
 const BASE_URL = import.meta.env.VITE_BLOG_RAW;
-const OBSIDIAN_IMAGE_REGEX = /!\[\[([^\]]+)\]\]/g;
-const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
 
 const {
   contentBaseUrl: CONTENT_BASE_URL,
-  normalizeImageSrc,
   normalizeBanner,
+  normalizeMarkdown,
 } = createArticleAssetResolver(BASE_URL);
-
-const extractImageTarget = extractArticleImageTarget;
-
-const normalizeObsidianImages = (markdown = "", { bannerName = "" } = {}) => {
-  return String(markdown || "").replaceAll(OBSIDIAN_IMAGE_REGEX, (_, inner) => {
-    const parts = String(inner)
-      .split("|")
-      .map((item) => item.trim());
-
-    const rawTarget = parts.shift() || "";
-    const src = normalizeImageSrc(rawTarget, { bannerName });
-    if (!src) return "";
-
-    const options = parts.length ? `|${parts.join("|")}` : "";
-    return `![[${src}${options}]]`;
-  });
-};
-
-const normalizeMarkdownImages = (markdown = "", { bannerName = "" } = {}) => {
-  return String(markdown || "").replaceAll(
-    MARKDOWN_IMAGE_REGEX,
-    (_, altText, target) => {
-      const src = normalizeImageSrc(target, { bannerName });
-      if (!src) return _;
-
-      const alt = String(altText || "").trim();
-      return `![${alt}](${src})`;
-    },
-  );
-};
 
 const normalizeArticleMeta = (article = {}) => {
   if (!article || typeof article !== "object") return article;
@@ -106,19 +74,15 @@ export function useArticleApi() {
 
     const parsed = fm(raw);
 
-    const bannerName = extractImageTarget(parsed?.attributes?.banner || "")
+    const bannerName = extractArticleImageTarget(
+      parsed?.attributes?.banner || "",
+    )
       .split("|")[0]
       .trim();
 
-    const normalizedObsidian = normalizeObsidianImages(parsed.body, {
-      bannerName,
-    });
-
     return {
       attributes: parsed?.attributes || {},
-      content: normalizeMarkdownImages(normalizedObsidian, {
-        bannerName,
-      }),
+      content: normalizeMarkdown(parsed.body, { bannerName }),
     };
   };
 

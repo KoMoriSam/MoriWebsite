@@ -24,10 +24,22 @@ export const TEST_SECTIONS = [
     description: "检查弹窗按钮模式、关闭行为、回调与长内容独立滚动。",
   },
   {
+    id: "announcement-modal",
+    label: "公告",
+    title: "公告弹窗",
+    description: "检查重要公告摘要、三种语气详情与长正文滚动排版。",
+  },
+  {
     id: "markdown",
     label: "Markdown",
     title: "Markdown 渲染与样式测试",
     description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
+  },
+  {
+    id: "rss",
+    label: "RSS",
+    title: "博客 RSS 预览",
+    description: "读取并预览当前生成的 rss.xml 频道信息、文章条目与完整正文。",
   },
   {
     id: "mobile-reader",
@@ -109,7 +121,9 @@ export const TEST_SECTION_COMPONENTS = {
   routing: () => import("@/views/test/Routing.vue"),
   toast: () => import("@/views/test/Toast.vue"),
   modal: () => import("@/views/test/Modal.vue"),
+  "announcement-modal": () => import("@/views/test/Announcements.vue"),
   markdown: () => import("@/views/test/Markdown.vue"),
+  rss: () => import("@/views/test/Rss.vue"),
   "mobile-reader": () => import("@/views/test/MobileReader.vue"),
   "number-controller": () => import("@/views/test/NumberController.vue"),
   loading: () => import("@/views/test/Loading.vue"),

@@ -187,14 +187,13 @@
 
   /* 引用与强调文本 */
   .markdown-content.prose :deep(blockquote) {
-    @apply [quotes:none] font-serif font-extralight
-    ps-[calc(var(--para-text-indent)*0.25)]
+    @apply ps-[calc(var(--para-text-indent)*0.25)]
     md:ps-[calc(var(--para-text-indent)*0.5)];
   }
 
   .markdown-content.prose :deep(blockquote p),
   .markdown-content.prose :deep(.footnotes p) {
-    @apply indent-0 text-justify text-pretty not-italic
+    @apply indent-0 text-justify text-pretty
     text-[calc(var(--para-font-size)*0.875)];
   }
 

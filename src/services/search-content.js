@@ -7,6 +7,7 @@ import {
 } from "@/composables/useArticleFilter";
 import { useArticleApi } from "@/services/api-articles";
 import { useChapterApi } from "@/services/api-chapters";
+import { fetchChangelogWithFallback } from "@/services/api-changelog";
 import { typeText } from "@/utils/type-changelog";
 import { createLicenseAnchor } from "@/utils/create-license-anchor";
 import { createMarkdownSearchBlocks } from "@/utils/markdown/search-anchors";
@@ -507,61 +508,49 @@ export const fetchNovelSearchIndex = async () => {
 };
 
 const fetchChangelogEntries = async () => {
-  const response = await fetch("/changelog.json");
+  const { payload } = await fetchChangelogWithFallback();
 
-  if (!response.ok) {
-    throw new Error(`获取更新日志失败: ${response.status}`);
-  }
+  return payload.items.map((item, catalogOrder) => {
+    const version = item.version;
+    const changeTypes = item.groups.map((group) => group.type);
+    const typeLabels = changeTypes.map(typeText);
+    const filterTags = changeTypes
+      .map((type, index) =>
+        createFilterTag("changelog", type, {
+          label: typeLabels[index],
+        }),
+      )
+      .filter(Boolean);
+    const date = normalizeArticleDate(item?.date);
+    const content = [
+      version,
+      item?.date,
+      ...typeLabels,
+      item.intro,
+      ...item.groups.map((group) => group.markdown),
+      item?.note,
+      item?.warning,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-  const changelog = await response.json();
-
-  return Object.entries(changelog || {}).map(
-    ([version, item], catalogOrder) => {
-      const changeEntries = Object.entries(item?.changes || {});
-      const changes = changeEntries.flatMap(([, values]) =>
-        Array.isArray(values) ? values : [],
-      );
-      const changeTypes = changeEntries
-        .filter(([, values]) => Array.isArray(values) && values.length)
-        .map(([type]) => type);
-      const typeLabels = changeTypes.map(typeText);
-      const filterTags = changeTypes
-        .map((type, index) =>
-          createFilterTag("changelog", type, {
-            label: typeLabels[index],
-          }),
-        )
-        .filter(Boolean);
-      const date = normalizeArticleDate(item?.date);
-      const content = [
-        version,
-        item?.date,
-        ...typeLabels,
-        ...changes,
-        item?.note,
-        item?.warning,
-      ]
-        .filter(Boolean)
-        .join(" ");
-
-      return withType(
-        {
-          url: `/changelog#version-${encodeURIComponent(version)}`,
-          title: `${version}`,
-          summary: String(changes[0] || item?.note || item?.warning || ""),
-          content,
-          tags: typeLabels,
-          filterTags,
-          metadata: [],
-          metadataText: "",
-          date,
-          year: date.slice(0, 4),
-          catalogOrder,
-        },
-        "changelog",
-      );
-    },
-  );
+    return withType(
+      {
+        url: `/changelog#version-${encodeURIComponent(version)}`,
+        title: `${version}`,
+        summary: item.summary,
+        content,
+        tags: typeLabels,
+        filterTags,
+        metadata: [],
+        metadataText: "",
+        date,
+        year: date.slice(0, 4),
+        catalogOrder,
+      },
+      "changelog",
+    );
+  });
 };
 
 const createLicenseSearchEntry = ({

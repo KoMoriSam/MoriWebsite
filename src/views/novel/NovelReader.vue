@@ -272,7 +272,7 @@ import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
 import ReaderControls from "@/components/novel/mobile/ReaderControls.vue";
 import ReaderStatusBar from "@/components/novel/mobile/ReaderStatusBar.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Markdown from "@/components/reader/Markdown.vue";
+import Markdown from "@/components/markdown/Markdown.vue";
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
 
 import CONFIG from "@/constants/config";
@@ -575,9 +575,7 @@ const readerPageTheme = computed(() => {
   const colorTheme =
     readerBackgroundImageConfig.value?.colorTheme ||
     styleConfigs.value.colorTheme;
-  return ["lemonade", "forest", "corporate", "dim"].includes(
-    colorTheme,
-  )
+  return ["lemonade", "forest", "corporate", "dim"].includes(colorTheme)
     ? colorTheme
     : "";
 });

@@ -418,7 +418,7 @@ import CONFIG from "@/constants/config";
 import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
 import Reader from "@/components/reader/Reader.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Markdown from "@/components/reader/Markdown.vue";
+import Markdown from "@/components/markdown/Markdown.vue";
 
 const ContextMenu = defineAsyncComponent(
   () => import("@/components/reader/ContextMenu.vue"),

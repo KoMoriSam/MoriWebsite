@@ -35,7 +35,7 @@
         <article class="rounded-box border border-base-300 p-4">
           <h3 class="font-semibold">4. 确认 Modal</h3>
           <p class="mt-1 text-sm opacity-70">
-            确认按钮应为主色，取消按钮在右侧；Esc 与点击外部均不能关闭。
+            确认按钮应为主色，取消按钮在右侧；Esc 与点击外部均不能关闭，并会触发抖动提示。
           </p>
           <button class="btn btn-sm mt-3" @click="openConfirmModal">
             测试确认 Modal
@@ -59,6 +59,16 @@
           </p>
           <button class="btn btn-sm mt-3" @click="openScrollableModal">
             测试长内容 Modal
+          </button>
+        </article>
+
+        <article class="rounded-box border border-base-300 p-4 sm:col-span-2">
+          <h3 class="font-semibold">7. 返回、标题与关闭按钮</h3>
+          <p class="mt-1 text-sm opacity-70">
+            三者应在同一标题行，点击返回按钮只触发回调，不关闭弹窗。
+          </p>
+          <button class="btn btn-sm mt-3" @click="openBackModal">
+            测试返回按钮 Modal
           </button>
         </article>
       </div>
@@ -119,7 +129,7 @@ function openFooterModal() {
 function openConfirmModal() {
   modal.confirm(
     "确认操作",
-    "Esc 和点击弹窗外部不应关闭此弹窗，请测试确认和取消按钮。",
+    "Esc 和点击弹窗外部不会关闭此弹窗，并会触发抖动提示。",
     {
       buttonText: "确认",
       cancelText: "取消",
@@ -141,6 +151,14 @@ function openScrollableModal() {
   modal.info("长内容独立滚动", h("div", paragraphs), {
     buttonMode: "close",
     scrollContent: true,
+  });
+}
+
+function openBackModal() {
+  modal.info("带返回按钮的 Modal", "返回、标题和关闭按钮应保持同行。", {
+    buttonMode: "close",
+    showBack: true,
+    onBack: () => toast.info("返回按钮已触发"),
   });
 }
 </script>

@@ -6,7 +6,6 @@ export function useGlobalStorage() {
   // 旧键名到新键名的映射（包含重命名）
   const keyMapping = {
     // 直接映射的键
-    APP_VERSION: "APP_VERSION",
     SET_THEME: "SET_THEME",
   };
 

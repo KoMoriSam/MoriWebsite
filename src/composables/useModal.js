@@ -104,22 +104,28 @@ const retireHistoryFallback = (token, scrollRestoration) => {
   setModalPopstateHandler(skipRetiredEntry);
 };
 
-const createHistoryFallback = (onBack) => {
+const createHistoryFallback = (
+  onBack,
+  { snapshot: preservedSnapshot, scrollRestoration: preservedRestoration } = {},
+) => {
   const currentFallback = getFallbackState();
   if (currentFallback?.status === "retired") {
     removeRetiredFallbackListener(currentFallback.token, { restore: true });
   }
 
-  const scrollRestoration = window.history.scrollRestoration;
+  const scrollRestoration =
+    preservedRestoration ?? window.history.scrollRestoration;
   window.history.scrollRestoration = "manual";
 
   const token = `modal-${Date.now()}-${modalFallbackSequence++}`;
   const fallbackUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
   const fallbackAnchorToken = window.location.hash;
-  const fallbackPosition = captureTrackedPosition() || {
-    scrollX: window.scrollX,
-    scrollY: window.scrollY,
-  };
+  const fallbackPosition =
+    preservedSnapshot ||
+    captureTrackedPosition() || {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    };
   const nextState = {
     ...withoutFallbackState(),
     [MODAL_FALLBACK_STATE_KEY]: { token, status: "active" },
@@ -184,7 +190,11 @@ const createHistoryFallback = (onBack) => {
   };
 };
 
-export function useModalClose({ onClose = () => {} } = {}) {
+export function useModalClose({
+  onClose = () => {},
+  shouldCloseFromFallback = () => true,
+  onBlockedFallback = () => {},
+} = {}) {
   let active = false;
   let historyFallback = null;
   let platformCloseTimer = 0;
@@ -208,6 +218,16 @@ export function useModalClose({ onClose = () => {} } = {}) {
   };
 
   const closeFromFallback = () => {
+    if (!shouldCloseFromFallback()) {
+      const fallback = historyFallback;
+      historyFallback = createHistoryFallback(closeFromFallback, {
+        snapshot: fallback?.snapshot,
+        scrollRestoration: fallback?.scrollRestoration,
+      });
+      onBlockedFallback();
+      return;
+    }
+
     const wasActive = active;
     active = false;
     window.clearTimeout(platformCloseTimer);
@@ -282,9 +302,12 @@ const modal = {
       buttonMode = "footer",
       variant = "default",
       scrollContent = false,
+      showBack = false,
+      backLabel = "返回",
       leadingAction = null,
       onSubmit = () => {},
       onCancel = () => {},
+      onBack = () => {},
     } = options;
 
     const container = document.createElement("div");
@@ -320,8 +343,11 @@ const modal = {
               buttonMode,
               variant,
               scrollContent,
+              showBack,
+              backLabel,
               onSubmit,
               onCancel,
+              onBack,
               onClose: cleanup,
               visible: visible.value,
             },

@@ -86,7 +86,7 @@ import { computed, defineAsyncComponent, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
 import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
-import Markdown from "@/components/reader/Markdown.vue";
+import Markdown from "@/components/markdown/Markdown.vue";
 import FormatSetting from "@/components/reader/FormatSetting.vue";
 import Reader from "@/components/reader/Reader.vue";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";

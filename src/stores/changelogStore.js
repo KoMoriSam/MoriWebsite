@@ -1,66 +1,86 @@
-// stores/changelog.js
+import { computed, ref } from "vue";
 import { defineStore } from "pinia";
-import { ref } from "vue";
+
+import {
+  fetchChangelogWithFallback,
+  normalizeChangelogPayload,
+} from "@/services/api-changelog";
 
 export const useChangelogStore = defineStore("changelog", () => {
-  // 状态
-  const data = ref({});
+  const items = ref([]);
   const loading = ref(false);
+  const refreshing = ref(false);
   const error = ref(null);
+  const loaded = ref(false);
+  const updatedAt = ref("");
+  const source = ref("");
+  let requestPromise = null;
 
-  // 动作
-  const fetchChangelog = async () => {
-    loading.value = true;
-    error.value = null;
+  const latestVersion = computed(() => items.value[0]?.version || "");
+  const totalVersions = computed(() => items.value.length);
 
+  const applyPayload = (payload, payloadSource) => {
+    const normalized = normalizeChangelogPayload(payload);
+    items.value = normalized.items;
+    updatedAt.value = normalized.updatedAt;
+    source.value = payloadSource;
+    loaded.value = true;
+  };
+
+  const hydrateChangelog = (payload) => {
     try {
-      const response = await fetch("/changelog.json");
-      if (!response.ok) throw new Error("Network response was not ok");
-      data.value = await response.json();
-    } catch (err) {
-      error.value = err.message || "Failed to fetch changelog";
-      console.error("Error fetching changelog:", err);
-    } finally {
-      loading.value = false;
+      applyPayload(payload, "static");
+      error.value = null;
+    } catch (hydrateError) {
+      console.error("Error hydrating changelog:", hydrateError);
     }
   };
 
-  const hydrateChangelog = (value) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return;
-
-    data.value = value;
+  const fetchChangelog = ({ force = false } = {}) => {
+    if (requestPromise) return requestPromise;
+    const hasSnapshot = items.value.length > 0;
+    loading.value = !hasSnapshot;
+    refreshing.value = hasSnapshot;
     error.value = null;
-    loading.value = false;
+
+    requestPromise = fetchChangelogWithFallback({ force })
+      .then(({ payload, source: payloadSource, remoteError }) => {
+        if (payloadSource !== "static" || !hasSnapshot) {
+          applyPayload(payload, payloadSource);
+        }
+        error.value = remoteError || null;
+        return payload;
+      })
+      .catch((fetchError) => {
+        error.value = fetchError;
+        loaded.value = true;
+        return null;
+      })
+      .finally(() => {
+        loading.value = false;
+        refreshing.value = false;
+        requestPromise = null;
+      });
+    return requestPromise;
   };
 
-  // 获取特定版本的信息
-  const getVersionInfo = (version) => {
-    return data.value[version];
-  };
+  const getVersionInfo = (version) =>
+    items.value.find((item) => item.version === version);
 
-  // 获取最新版本
-  const getLatestVersion = () => {
-    const versions = Object.keys(data.value);
-    if (versions.length === 0) return null;
-    return versions.sort(compareVersions).pop();
-  };
-
-  // 版本比较函数
-  const compareVersions = (a, b) => {
-    const [aMajor, aMinor, aPatch] = a.split(".").map(Number);
-    const [bMajor, bMinor, bPatch] = b.split(".").map(Number);
-
-    if (aMajor !== bMajor) return aMajor - bMajor;
-    if (aMinor !== bMinor) return aMinor - bMinor;
-    return aPatch - bPatch;
-  };
+  const getLatestVersion = () => latestVersion.value || null;
 
   return {
-    data,
+    items,
     loading,
+    refreshing,
     error,
-    fetchChangelog,
+    loaded,
+    updatedAt,
+    source,
+    latestVersion,
+    totalVersions,
     hydrateChangelog,
+    fetchChangelog,
     getVersionInfo,
     getLatestVersion,
   };

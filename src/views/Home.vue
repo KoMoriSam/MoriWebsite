@@ -136,7 +136,17 @@
             <p>
               记录技术探索 <small>AI 探索也是探索</small>
               <br />以及随笔、读书笔记等内容<br />
-              <small>不定期更新，不支持 RSS 订阅</small>
+              <small
+                >不定期更新，支持
+                <a
+                  class="link link-primary link-hover"
+                  href="/rss.xml"
+                  type="application/rss+xml"
+                >
+                  <i class="ri-rss-fill" aria-hidden="true"></i>
+                  RSS 订阅
+                </a>
+              </small>
             </p>
             <router-link to="/blog" class="btn btn-primary btn-soft btn-sm">
               阅读文章<i class="ri-arrow-right-line"></i>
@@ -165,14 +175,9 @@
               <i class="ri-pencil-ruler-2-line"></i>
             </aside>
             <h2 class="card-title font-serif font-bold">工具集</h2>
-            <p>
-              一些有用没用的小工具捏
-              <br />
-              <small
-                >持续更新中……<br />现已支持<i class="ri-arrow-down-line"></i
-              ></small>
-            </p>
+            <p>一些有用没用的小工具捏</p>
             <div class="flex flex-wrap gap-1.5">
+              <span class="badge badge-outline badge-sm">图片格式转换</span>
               <span class="badge badge-outline badge-sm">
                 Minecraft 服务器查询
               </span>
