@@ -111,8 +111,9 @@ export const useAnnouncementStore = defineStore("announcements", () => {
     getUnreadAnnouncements(items.value, readRevisions.value),
   );
   const unreadImportantAnnouncements = computed(() =>
-    unreadAnnouncements.value.filter(
-      (announcement) => announcement.priority === "important",
+    activeAnnouncements.value.filter(
+      (announcement) =>
+        announcement.priority === "important" && !isRead(announcement),
     ),
   );
   const selectedAnnouncement = computed(() =>
@@ -121,10 +122,12 @@ export const useAnnouncementStore = defineStore("announcements", () => {
     ),
   );
   const summaryAnnouncements = computed(() => {
-    const keys = new Set(summaryAnnouncementKeys.value);
-    return items.value.filter((announcement) =>
-      keys.has(announcementKey(announcement)),
+    const announcementsByKey = new Map(
+      items.value.map((announcement) => [announcementKey(announcement), announcement]),
     );
+    return summaryAnnouncementKeys.value
+      .map((key) => announcementsByKey.get(key))
+      .filter(Boolean);
   });
   const canReturnToSummary = computed(
     () =>
