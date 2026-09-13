@@ -504,7 +504,7 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
       "utf8",
     );
     await writeStaticChangelog(candidateEntries);
-    await createAnnouncementDraft(release, { update: true });
+    await createAnnouncementDraft(release, { skipExisting: true });
   } catch (error) {
     await Promise.all(
       Array.from(snapshots, ([path, content]) => restoreFile(path, content)),
