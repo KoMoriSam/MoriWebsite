@@ -63,6 +63,5 @@ jobs:
       - name: Deploy website
         run: pnpm exec wrangler deploy --config wrangler.jsonc
 
-      - name: Publish changelog and announcements
-        shell: bash
-        run: pnpm release publish "${GITHUB_REF_NAME#v}" --yes
+      - name: Publish changelog
+        run: pnpm changelog publish --yes

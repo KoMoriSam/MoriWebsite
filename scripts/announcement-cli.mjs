@@ -365,6 +365,7 @@ const listAnnouncements = async () => {
     return;
   }
 
+  console.log(`本地公告：${entries.length} 条。远端数据请使用 pnpm announcement pull 查看。`);
   console.table(
     entries.map(({ announcement }) => ({
       id: announcement.id,
@@ -600,6 +601,11 @@ export const publishAnnouncements = async ({ dryRun = false, yes = false } = {})
   const localItems = entries
     .map((entry) => entry.announcement)
     .sort((left, right) => Date.parse(right.startsAt) - Date.parse(left.startsAt));
+  if (!localItems.length) {
+    throw new Error(
+      "本地 announcements 目录没有公告，已拒绝用空数据覆盖远端 KV。",
+    );
+  }
   const remote = await getRemotePayload();
   const remoteItems = validatePayload(remote.payload, "远端 KV");
   const diff = diffAnnouncements(localItems, remoteItems);
