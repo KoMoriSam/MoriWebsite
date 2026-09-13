@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>2.14.0</strong>
+  Current version: <strong>2.14.1</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>2.14.0</strong>
+  当前版本：<strong>2.14.1</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
