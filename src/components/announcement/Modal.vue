@@ -3,7 +3,7 @@
     :visible="Boolean(mode)"
     :button-mode="buttonMode"
     :button-text="buttonText"
-    :variant="mode === 'summary' ? 'confirm' : 'default'"
+    :variant="summaryRequiresConfirmation ? 'confirm' : 'default'"
     :show-cancel="mode !== 'summary'"
     scroll-content
     :show-back="canGoBack"
@@ -172,13 +172,20 @@ const buttonMode = computed(() =>
   props.mode === "summary" || showsAnnouncementDetail.value ? "footer" : "none",
 );
 const buttonText = computed(() =>
-  props.mode === "summary" ? "全部已读" : "我知道了",
+  props.mode === "summary"
+    ? unreadSummaryCount.value
+      ? "全部已读"
+      : "关闭"
+    : "我知道了",
 );
 const unreadSummaryCount = computed(
   () =>
     props.summaryAnnouncements.filter(
       (announcement) => !announcementStore.isRead(announcement),
     ).length,
+);
+const summaryRequiresConfirmation = computed(
+  () => props.mode === "summary" && unreadSummaryCount.value > 0,
 );
 const submit = () => {
   if (props.mode === "summary") {
