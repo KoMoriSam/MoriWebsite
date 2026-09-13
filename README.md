@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>2.13.0</strong>
+  当前版本：<strong>2.14.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -55,15 +55,6 @@ MoriWebsite 是 KoMoriSam 个人网站的前端，围绕内容发布、长文本
 ```
 
 开发环境额外提供 `/test` 组件测试页。未知地址由站内 404 视图处理，生产构建还会生成适合静态托管的 `404.html`。
-
-## 2.13.0 版本重点
-
-- 新增图片预览功能，包含加载状态与缩放控件，支持键盘与点击激活
-- 优化 TOC 目录的标题捕获、滚动处理与交互
-- 修复移动阅读器评论触发器始终隐藏等问题
-- 更新 Markdown 测试组件并添加移动阅读器相关测试项
-
-完整记录见 [`public/changelog.json`](./public/changelog.json) 或[在线更新日志](https://komori.cc/changelog)。
 
 ## 技术栈
 
@@ -183,13 +174,13 @@ VITE_GISCUS_CSS_RAW=
 
 ## 常用脚本
 
-| 命令           | 作用                                         |
-| -------------- | -------------------------------------------- |
-| `pnpm dev`     | 生成许可数据并启动开发服务器                 |
-| `pnpm build`   | 生成 SSG 站点、搜索索引与许可分发文件        |
-| `pnpm preview` | 本地预览 `dist/`                             |
-| `pnpm deploy`  | 构建并通过 Wrangler 发布网站                 |
-| `pnpm release prepare <版本>` | 准备版本日志、静态快照与公告       |
+| 命令                          | 作用                                  |
+| ----------------------------- | ------------------------------------- |
+| `pnpm dev`                    | 生成许可数据并启动开发服务器          |
+| `pnpm build`                  | 生成 SSG 站点、搜索索引与许可分发文件 |
+| `pnpm preview`                | 本地预览 `dist/`                      |
+| `pnpm deploy`                 | 构建并通过 Wrangler 发布网站          |
+| `pnpm release prepare <版本>` | 准备版本日志、静态快照与公告          |
 
 提交发布变更并推送 `v<版本>` 标签后，GitHub Actions 会自动部署网站并同步更新日志与公告。
 

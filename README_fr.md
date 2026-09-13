@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>2.13.0</strong>
+  Version actuelle : <strong>2.14.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -55,15 +55,6 @@ Routes de production :
 ```
 
 En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
-
-## Points clés de la version 2.13.0
-
-- ajout de l'aperçu des images avec états de chargement et contrôles de zoom, activé par clavier et clic
-- affinage de la capture des titres du sommaire (TOC), du défilement et des interactions
-- correction du déclencheur de commentaires du lecteur mobile toujours masqué et d'autres problèmes
-- mise à jour des composants de test Markdown et ajout de cas de test pour le lecteur mobile
-
-Consultez [`public/changelog.json`](./public/changelog.json) ou le [journal en ligne](https://komori.cc/changelog) pour l'historique complet.
 
 ## Stack technique
 
@@ -183,13 +174,13 @@ Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code cli
 
 ## Scripts disponibles
 
-| Commande       | Utilisation                                                                    |
-| -------------- | ------------------------------------------------------------------------------ |
-| `pnpm dev`     | Générer les données de licence et lancer le serveur de développement           |
-| `pnpm build`   | Générer le site SSG, l'index de recherche et les licences distribuées          |
-| `pnpm preview` | Prévisualiser localement `dist/`                                               |
-| `pnpm deploy`  | Construire et déployer le site avec Wrangler                                   |
-| `pnpm release prepare <version>` | Préparer le journal, les instantanés et l'annonce          |
+| Commande                         | Utilisation                                                           |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `pnpm dev`                       | Générer les données de licence et lancer le serveur de développement  |
+| `pnpm build`                     | Générer le site SSG, l'index de recherche et les licences distribuées |
+| `pnpm preview`                   | Prévisualiser localement `dist/`                                      |
+| `pnpm deploy`                    | Construire et déployer le site avec Wrangler                          |
+| `pnpm release prepare <version>` | Préparer le journal, les instantanés et l'annonce                     |
 
 Après validation des changements de version, l'envoi d'une balise `v<version>` permet à GitHub Actions de déployer le site et de synchroniser le journal et les annonces.
 

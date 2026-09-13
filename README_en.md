@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>2.13.0</strong>
+  Current version: <strong>2.14.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -55,15 +55,6 @@ Production routes:
 ```
 
 Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
-
-## Version 2.13.0 Highlights
-
-- added image preview with loading states and zoom controls, activated by keyboard and click
-- refined TOC heading capture, scrolling, and interactions
-- fixed the mobile reader comment trigger being always hidden and other issues
-- updated Markdown test components and added mobile-reader test cases
-
-See [`public/changelog.json`](./public/changelog.json) or the [online changelog](https://komori.cc/changelog) for the complete release history.
 
 ## Tech Stack
 
@@ -183,13 +174,13 @@ All of these variables use the `VITE_` prefix and are exposed to client code. Do
 
 ## Available Scripts
 
-| Command        | Purpose                                                            |
-| -------------- | ------------------------------------------------------------------ |
-| `pnpm dev`     | Generate license data and start the development server             |
-| `pnpm build`   | Generate the SSG site, search index, and distributed license files |
-| `pnpm preview` | Preview `dist/` locally                                            |
-| `pnpm deploy`  | Build and deploy the website with Wrangler                         |
-| `pnpm release prepare <version>` | Prepare the changelog, snapshots, and announcement |
+| Command                          | Purpose                                                            |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `pnpm dev`                       | Generate license data and start the development server             |
+| `pnpm build`                     | Generate the SSG site, search index, and distributed license files |
+| `pnpm preview`                   | Preview `dist/` locally                                            |
+| `pnpm deploy`                    | Build and deploy the website with Wrangler                         |
+| `pnpm release prepare <version>` | Prepare the changelog, snapshots, and announcement                 |
 
 After committing the release changes, pushing a `v<version>` tag lets GitHub Actions deploy the website and synchronize the changelog and announcements.
 
