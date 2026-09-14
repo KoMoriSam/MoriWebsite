@@ -121,7 +121,6 @@
               <AnnouncementTitle
                 :announcement="announcement"
                 :read="store.isRead(announcement)"
-                heading-tag="h4"
                 class="card-title"
               />
               <p>

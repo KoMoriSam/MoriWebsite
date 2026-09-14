@@ -1,14 +1,13 @@
 <template>
-  <hgroup class="min-w-0 flex-1">
-    <span class="flex flex-wrap items-center gap-2">
-      <AnnouncementBadges :announcement="announcement" :read="read" />
-      <component
-        :is="headingTag"
-        class="text-balance"
+  <hgroup class="flex flex-col items-start gap-2">
+    <AnnouncementBadges :announcement="announcement" :read="read" />
+    <span class="flex items-center gap-2">
+      <h3
+        class="text-balance text-base"
         :class="read ? 'font-normal text-base-content/50' : 'font-bold'"
       >
         {{ announcement.title }}
-      </component>
+      </h3>
       <time
         v-if="showTime"
         :datetime="announcement.startsAt"
@@ -17,8 +16,8 @@
         {{ formatAnnouncementDate(announcement.startsAt, true) }}
       </time>
     </span>
-    <slot></slot>
   </hgroup>
+  <slot></slot>
 </template>
 
 <script setup>
@@ -33,11 +32,6 @@ defineProps({
   read: {
     type: Boolean,
     default: false,
-  },
-  headingTag: {
-    type: String,
-    default: "h3",
-    validator: (value) => ["h2", "h3", "h4", "h5", "h6"].includes(value),
   },
   showTime: {
     type: Boolean,
