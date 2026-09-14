@@ -5,16 +5,13 @@
     :class="statusClass"
     aria-hidden="true"
   ></span>
-  <span
-    v-if="announcement.pinned"
-    class="badge badge-primary badge-outline badge-xs"
-  >
+  <span v-if="announcement.pinned" class="badge badge-primary badge-xs">
     <i class="ri-pushpin-line" aria-hidden="true"></i>
     置顶
   </span>
   <span
     v-if="announcement.priority === 'important'"
-    class="badge badge-error badge-xs"
+    class="badge badge-error badge-xs font-bold"
     :class="read ? 'badge-soft' : ''"
   >
     重要
@@ -22,7 +19,7 @@
   <span
     v-if="announcement.revision > 1"
     class="badge badge-xs"
-    :class="read ? 'badge-ghost' : 'badge-outline'"
+    :class="read ? 'badge-soft' : 'badge-outline'"
   >
     有修订
   </span>
@@ -32,10 +29,16 @@
   <span
     class="badge badge-xs"
     :class="{
-      'badge-soft': announcement.pinned && read,
+      'badge-soft':
+        ((announcement.pinned && read) ||
+          announcement.priority === 'important') &&
+        read,
       'badge-ghost': !announcement.pinned && read,
       'badge-outline': !read,
-      [`badge-${announcement.tone}`]: announcement.pinned || !read,
+      [`badge-${announcement.tone}`]:
+        (announcement.pinned && read) ||
+        announcement.priority === 'important' ||
+        !read,
     }"
   >
     {{ announcementToneLabel[announcement.tone] }}
