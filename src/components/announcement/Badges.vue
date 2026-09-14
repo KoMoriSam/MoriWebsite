@@ -16,13 +16,6 @@
   >
     重要
   </span>
-  <span
-    v-if="announcement.revision > 1"
-    class="badge badge-xs"
-    :class="read ? 'badge-soft' : 'badge-outline'"
-  >
-    有修订
-  </span>
   <span v-if="!announcement.active" class="badge badge-ghost badge-xs">
     已结束
   </span>
@@ -42,6 +35,13 @@
     }"
   >
     {{ announcementToneLabel[announcement.tone] }}
+  </span>
+  <span
+    v-if="announcement.revision > 1"
+    class="badge badge-xs"
+    :class="read ? 'badge-soft' : 'badge-outline'"
+  >
+    有修订
   </span>
 </template>
 
