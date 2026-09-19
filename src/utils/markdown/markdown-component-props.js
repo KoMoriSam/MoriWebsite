@@ -100,6 +100,7 @@ const PROJECTORS = {
   "markdown-code": (value) => ({
     code: stringValue(value.code),
     language: stringValue(value.language, "plaintext"),
+    title: stringValue(value.title),
   }),
   "markdown-link-icon": (value) => {
     const src = sanitizeMarkdownResourceUrl(value.src);
@@ -124,4 +125,3 @@ export const projectMarkdownComponentProps = (tagName, encodedValue) => {
     return null;
   }
 };
-

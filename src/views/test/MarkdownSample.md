@@ -217,7 +217,7 @@ _[CSS]: Cascading Style Sheets
 
 行内代码：`npm run build`。
 
-```javascript
+```javascript title="hello.js"
 const add = (a, b) => a + b;
 console.log(add(2, 3));
 ```

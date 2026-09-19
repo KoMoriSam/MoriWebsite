@@ -10,7 +10,14 @@
         class="me-2 text-lg font-normal"
         aria-hidden="true"
       ></i>
-      <h6 v-if="header.label" class="truncate">{{ header.label }}</h6>
+      <h6 v-if="title" class="truncate">{{ title }}</h6>
+      <!-- <span
+        v-if="title && header.label"
+        class="badge badge-sm ms-2 shrink-0"
+      >
+        {{ header.label }}
+      </span> -->
+      <h6 v-else-if="header.label" class="truncate">{{ header.label }}</h6>
     </hgroup>
 
     <client-only>
@@ -32,6 +39,10 @@ const props = defineProps({
   language: {
     type: String,
     default: "plaintext",
+  },
+  title: {
+    type: String,
+    default: "",
   },
 });
 

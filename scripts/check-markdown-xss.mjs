@@ -12,11 +12,15 @@ import {
   chatHeaderPlugin,
   momentsPlugin,
 } from "../src/utils/markdown/markdown-it-chat.js";
-import { codePlugin } from "../src/utils/markdown/markdown-it-code.js";
+import {
+  codePlugin,
+  parseCodeFenceInfo,
+} from "../src/utils/markdown/markdown-it-code.js";
 import { footnotePlugin } from "../src/utils/markdown/markdown-it-footnote.js";
 import { linkIconPlugin } from "../src/utils/markdown/markdown-it-link-icon.js";
 import { mermaidPlugin } from "../src/utils/markdown/markdown-it-mermaid.js";
 import { taskStatusPlugin } from "../src/utils/markdown/markdown-it-task-status.js";
+import { collectFenceLanguages } from "../src/utils/markdown/load-markdown-features.js";
 import { loadMathJaxPlugin } from "../src/utils/markdown/mathjax-svg.js";
 import {
   parseHtmlFragment,
@@ -144,6 +148,28 @@ assert.match(
 );
 
 const markerNames = ["alert", "chat", "moment", "code", "link-icon", "mermaid"];
+assert.deepEqual(parseCodeFenceInfo('javascript title="hello.js"'), {
+  language: "javascript",
+  title: "hello.js",
+});
+assert.deepEqual(parseCodeFenceInfo("css title='theme file.css'"), {
+  language: "css",
+  title: "theme file.css",
+});
+assert.deepEqual(parseCodeFenceInfo('title="untagged.txt"'), {
+  language: "",
+  title: "untagged.txt",
+});
+assert.deepEqual(parseCodeFenceInfo("typescript"), {
+  language: "typescript",
+  title: "",
+});
+assert.deepEqual(
+  collectFenceLanguages(
+    '```js title="safe.js"\ncode\n```\n\n```title="plain.txt"\ntext\n```',
+  ),
+  ["javascript"],
+);
 const markerHtml = sanitizeMarkdownHtml(
   markerNames
     .map(
@@ -193,7 +219,7 @@ footnote[^1]
 
 [^1]: safe footnote
 
-\`\`\`js
+\`\`\`js title="safe.js"
 const safe = true;
 \`\`\`
 
@@ -205,18 +231,26 @@ flowchart TD
 );
 const componentFragment = parseHtmlFragment(componentHtml);
 const projectedMarkerNames = new Set();
+let projectedCodeProps;
 const visitMarker = (node) => {
   if (node.tagName?.startsWith("markdown-")) {
     const encoded = node.attrs?.find(
       (attribute) => attribute.name === "data-markdown-props",
     )?.value;
-    assert.ok(projectMarkdownComponentProps(node.tagName, encoded), node.tagName);
+    const projectedProps = projectMarkdownComponentProps(node.tagName, encoded);
+    assert.ok(projectedProps, node.tagName);
+    if (node.tagName === "markdown-code") projectedCodeProps = projectedProps;
     projectedMarkerNames.add(node.tagName.replace(/^markdown-/u, ""));
   }
   for (const child of node.childNodes || []) visitMarker(child);
 };
 visitMarker(componentFragment);
 assert.deepEqual([...projectedMarkerNames].sort(), [...markerNames].sort());
+assert.deepEqual(projectedCodeProps, {
+  code: "const safe = true;\n",
+  language: "js",
+  title: "safe.js",
+});
 assert.match(componentHtml, /data-task-status="x"/u);
 assert.match(componentHtml, /data-task-tone="success"/u);
 assert.match(componentHtml, /class="footnote-ref"/u);

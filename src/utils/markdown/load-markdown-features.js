@@ -282,17 +282,19 @@ const languageDisplayNames = {
   zsh: "Zsh",
 };
 
-const FENCE_INFO_REGEX = /^(```|~~~)\s*([^\n]*)/gm;
+const FENCE_INFO_REGEX = /^(```|~~~)[ \t]*([^\n]*)/gm;
 const MATH_BLOCK_REGEX =
   /\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\]|\\begin\{(?:align|equation|gather|cd|alignat)\}/;
 const MATH_INLINE_REGEX =
   /(^|[^\\])\$(?:[^$\n]|\\\$)+\$|\\\((?:[^\n]|\\\))+\\\)/;
 
 const getLanguageToken = (rawLanguage = "") => {
-  const firstToken = String(rawLanguage || "")
-    .trim()
-    .split(/\s+/)[0]
-    ?.toLowerCase();
+  const normalizedInput = String(rawLanguage || "").trim();
+  if (/^(?:\{\s*)?title\s*=/u.test(normalizedInput)) {
+    return "";
+  }
+
+  const firstToken = normalizedInput.split(/\s+/)[0]?.toLowerCase();
 
   if (!firstToken) {
     return "";

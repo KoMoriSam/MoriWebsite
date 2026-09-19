@@ -3,8 +3,9 @@
     class="not-prose flex w-full flex-col relative mx-auto my-4 max-w-full overflow-hidden rounded-box border border-base-300 bg-base-100 font-sans"
     data-markdown-code-block
     :data-language="language"
+    :data-title="title || undefined"
   >
-    <CodeHeader type="code" :language="language">
+    <CodeHeader type="code" :language="language" :title="title">
       <template #actions>
         <aside
           class="tooltip tooltip-left font-mono"
@@ -37,7 +38,8 @@ import CodeView from "@/components/markdown/CodeView.vue";
 
 const props = defineProps({
   code: { type: String, required: true },
-  language: { type: String, default: "plaintext" },
+  language: { type: String, default: "" },
+  title: { type: String, default: "" },
 });
 
 const code = toRef(props, "code");
