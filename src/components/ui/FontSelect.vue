@@ -2,7 +2,8 @@
   <div class="min-w-0 w-full">
     <button
       ref="trigger"
-      class="select max-sm:select-sm flex min-w-0 w-full items-center justify-between gap-2 text-left"
+      class="select flex min-w-0 w-full items-center justify-between gap-2 text-left"
+      :class="size ? selectSizeClasses[size] : 'max-sm:select-sm'"
       type="button"
       role="combobox"
       aria-haspopup="listbox"
@@ -287,12 +288,24 @@ const LOADING_INDICATOR_MIN_DURATION = 240;
 const DEFAULT_FONT_ACCEPT =
   ".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2";
 const HAN_TEXT_PATTERN = /[\u3400-\u9fff\uf900-\ufaff]/u;
+const selectSizeClasses = {
+  xs: "select-xs",
+  sm: "select-sm",
+  md: "select-md",
+  lg: "select-lg",
+  xl: "select-xl",
+};
 
 const props = defineProps({
   modelValue: { type: String, required: true },
   fallbackFontId: { type: String, default: "" },
   websiteFonts: { type: Array, default: () => [] },
   disabled: { type: Boolean, default: false },
+  size: {
+    type: String,
+    default: "",
+    validator: (value) => ["", "xs", "sm", "md", "lg", "xl"].includes(value),
+  },
   ariaLabel: { type: String, default: "字体" },
   fontAccept: { type: String, default: DEFAULT_FONT_ACCEPT },
   uploadHint: {
