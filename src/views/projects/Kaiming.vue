@@ -3,9 +3,9 @@
     eyebrow="Kaiming Punctuation"
     title="开明标点"
     description="一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。"
-    badgesLabel="字体规格"
+    metasLabel="字体规格"
   >
-    <template #badges>
+    <template #meta>
       <li class="inline-flex items-center gap-1">
         <i class="ri-font-sans-serif"></i>
         wght 100–900

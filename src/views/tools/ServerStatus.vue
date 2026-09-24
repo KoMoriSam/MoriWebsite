@@ -1,9 +1,20 @@
 <template>
-  <ContentPage
-    eyebrow="Minecraft Server Status Checker"
-    title="Minecraft 服务器状态"
-    description="查询 Java 版或基岩版服务器的在线状态与基础信息。"
-  >
+  <ContentPage title="Minecraft 服务器状态" metas-label="工具信息">
+    <template #meta>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-gamepad-line" aria-hidden="true"></i>
+        Java / Bedrock
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-pulse-line" aria-hidden="true"></i>
+        实时查询
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-dashboard-3-line" aria-hidden="true"></i>
+        状态 · 人数 · 延迟
+      </span>
+    </template>
+
     <ServerInfo />
   </ContentPage>
 </template>

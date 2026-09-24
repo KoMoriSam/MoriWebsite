@@ -4,7 +4,7 @@
     title="开发测试面板"
     description="选择测试项进入独立页面，验证基础组件、组合式函数与数据服务在当前设计系统中的行为。"
   >
-    <template #badges>
+    <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-test-tube-line"></i>
         仅开发环境

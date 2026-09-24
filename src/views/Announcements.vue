@@ -1,6 +1,6 @@
 <template>
   <ContentPage eyebrow="Site Announcements" title="站点公告">
-    <template #badges>
+    <template #meta>
       <span v-if="updatedAt" class="inline-flex items-center gap-1">
         <i class="ri-refresh-line" aria-hidden="true"></i>
         更新于 {{ formatAnnouncementDate(updatedAt, true) }}

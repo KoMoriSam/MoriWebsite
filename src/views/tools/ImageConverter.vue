@@ -1,9 +1,19 @@
 <template>
-  <ContentPage
-    eyebrow="Image Converter"
-    title="图片格式转换"
-    description="批量转换、压缩、调整尺寸和添加水印。文件仅在当前浏览器中处理，不会上传。"
-  >
+  <ContentPage title="图片格式转换" metas-label="工具信息">
+    <template #meta>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-device-line" aria-hidden="true"></i>
+        浏览器本地处理
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-stack-line" aria-hidden="true"></i>
+        最多 100 个文件
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-image-line" aria-hidden="true"></i>
+        PNG · JPEG · WebP · AVIF · BMP · GIF
+      </span>
+    </template>
     <div class="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_22rem]">
       <div class="contents">
         <section
@@ -113,12 +123,8 @@
           <header class="flex flex-wrap items-center justify-between gap-3">
             <hgroup>
               <h2 class="card-title font-serif">文件队列</h2>
-              <p class="text-sm text-base-content/55">
-                {{
-                  queue.length
-                    ? queueSummary
-                    : "支持 PNG、JPEG、WebP、AVIF、BMP 和 GIF，最多 100 个文件"
-                }}
+              <p v-if="queue.length" class="text-sm text-base-content/55">
+                {{ queueSummary }}
               </p>
             </hgroup>
             <div v-if="queue.length">

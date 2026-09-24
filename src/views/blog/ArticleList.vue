@@ -1,6 +1,6 @@
 <template>
   <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
-    <template #badges>
+    <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
         {{ articles.length }} 文章

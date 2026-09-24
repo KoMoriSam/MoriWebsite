@@ -1,6 +1,6 @@
 <template>
   <ContentPage eyebrow="Release Notes &amp; Maintenance" title="更新日志">
-    <template #badges>
+    <template #meta>
       <template v-if="totalVersions">
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-commit-line"></i>

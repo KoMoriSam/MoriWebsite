@@ -4,7 +4,7 @@
     title="开源许可与第三方声明"
     description="项目的 MIT 许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。"
   >
-    <template #badges>
+    <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-puzzle-line"></i>
         {{ licenseData.dependencyCount }} 个依赖版本

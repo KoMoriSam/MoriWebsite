@@ -3,15 +3,8 @@
     class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
-    <nav
-      v-if="$slots.actions || crumbs.length"
-      class="breadcrumbs text-sm"
-      aria-label="面包屑导航"
-    >
-      <template v-if="$slots.actions">
-        <slot name="actions"></slot>
-      </template>
-      <ul v-else>
+    <nav v-if="crumbs.length" class="breadcrumbs text-sm" aria-label="面包屑导航">
+      <ul>
         <li v-for="(crumb, index) in crumbs" :key="crumb.name ?? crumb.path">
           <router-link v-if="crumb.to" :to="crumb.to">
             {{ crumb.label }}
@@ -31,22 +24,32 @@
         class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
       >
         <hgroup class="max-w-3xl min-w-0">
-          <h1
-            :id="titleId"
-            class="font-serif text-3xl font-bold md:text-4xl text-balance"
-          >
-            <slot name="title">{{ title }}</slot>
-          </h1>
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1
+              :id="titleId"
+              class="font-serif text-3xl font-bold md:text-4xl text-balance"
+            >
+              <slot name="title">{{ title }}</slot>
+            </h1>
 
-          <span
-            v-if="eyebrow || $slots.eyebrow"
-            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
+            <span
+              v-if="$slots.eyebrow || (showMeta && eyebrow)"
+              class="text-[0.675rem] font-medium tracking-wide text-base-content/40 md:text-xs"
+            >
+              <slot name="eyebrow">{{ eyebrow }}</slot>
+            </span>
+          </div>
+
+          <div
+            v-if="$slots.meta"
+            class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
+            :aria-label="metasLabel || undefined"
           >
-            <slot name="eyebrow">{{ eyebrow }}</slot>
-          </span>
+            <slot name="meta"></slot>
+          </div>
 
           <p
-            v-if="description || $slots.description"
+            v-if="$slots.description || (showMeta && description)"
             class="mt-3 text-pretty text-base-content/70"
           >
             <slot name="description">{{ description }}</slot>
@@ -54,11 +57,11 @@
         </hgroup>
 
         <aside
-          v-if="$slots.badges"
-          class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60 md:justify-end"
-          :aria-label="badgesLabel"
+          v-if="$slots.actions"
+          class="flex flex-wrap items-center gap-x-5 gap-y-2 md:justify-end"
+          aria-label="页面操作"
         >
-          <slot name="badges"></slot>
+          <slot name="actions"></slot>
         </aside>
       </section>
     </header>
@@ -90,6 +93,10 @@ defineProps({
     type: String,
     default: "",
   },
+  showMeta: {
+    type: Boolean,
+    default: false,
+  },
   titleId: {
     type: String,
     default: "page-title",
@@ -102,7 +109,7 @@ defineProps({
     type: Boolean,
     default: true,
   },
-  badgesLabel: {
+  metasLabel: {
     type: String,
     required: false,
     default: "",

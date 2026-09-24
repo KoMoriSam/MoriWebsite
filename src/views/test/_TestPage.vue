@@ -4,7 +4,7 @@
     :title="section?.title || '测试项'"
     :description="section?.description"
   >
-    <template #badges>
+    <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-test-tube-line"></i>
         仅开发环境
