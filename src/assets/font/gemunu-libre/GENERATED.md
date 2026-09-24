@@ -1,22 +1,17 @@
-# FM Gemunu Libre Legacy
+# Gemunu Legacy
 
-`fm-gemunu-libre-legacy.woff2` (Regular) and
-`fm-gemunu-libre-bold-legacy.woff2` (Bold) are modified display fonts
-generated from the Gemunu Libre 1.100 **static** fonts. Their character maps
-follow the legacy FM encoding used by the Sinhala converter, while the
-outlines come from Gemunu Libre.
+`gemunu-legacy.woff2` and `gemunu-legacy-bold.woff2` are FM-encoded webfonts
+generated from a hash-pinned Gemunu Libre variable font instantiated at weights
+400 and 700. All imported character outlines from Gemunu Libre. Forms unavailable
+as reusable source glyphs are reconstructed as static compatibility paths. No
+installed or original FM font file is read or bundled.
 
-The fonts are licensed under the SIL Open Font License 1.1. See `OFL.txt`.
-
-Regenerate them from the repository root with:
+Licensing and source notices are recorded in `OFL.txt`. Regenerate both faces
+from the repository root:
 
 ```powershell
 python -m pip install fonttools brotli uharfbuzz
 python scripts/generate-fm-fonts-compatible.py
 ```
 
-The static Gemunu Libre 1.100 source fonts (`GemunuLibre-Regular.ttf` and
-`GemunuLibre-Bold.ttf`) are committed under `scripts/font-sources/gemunu-libre`
-and hash-pinned in the generator. Google Fonts only publishes the variable
-build, so the static sources are kept locally. The generated WOFF2 assets are
-committed and intentionally not part of the regular site build.
+The generated WOFF2 files are committed assets, not build-time outputs.

@@ -1,12 +1,22 @@
 import {
   FM_ABHAYA_LEGACY_MAPPINGS,
   fmToUnicode,
-} from "../src/utils/sinhala-font-converter.js";
+} from "../src/utils/sinhala/converter.js";
 
 // Complete semantic sequences are produced by the same converter module used
 // by the application, so text conversion and font GSUB generation cannot drift.
 const byLegacy = new Map(
-  FM_ABHAYA_LEGACY_MAPPINGS.map(({ legacy, unicode }) => [legacy, unicode]),
+  FM_ABHAYA_LEGACY_MAPPINGS.filter(
+    // Backtick is a universal independently positioned braid in the display
+    // fonts. Its semantic combinations belong to text conversion only and
+    // must not become font ligatures.
+    ({ legacy }) => !legacy.includes("`") || legacy.length === 1,
+  ).map(({ legacy, unicode }) => [legacy, unicode]),
+);
+const shapeTargetsByLegacy = new Map(
+  FM_ABHAYA_LEGACY_MAPPINGS.filter(({ shapeTargets }) => shapeTargets).map(
+    ({ legacy, shapeTargets }) => [legacy, shapeTargets],
+  ),
 );
 
 function add(legacy, unicode) {
@@ -28,7 +38,13 @@ for (const sequence of [...byLegacy.keys()]) {
 }
 
 const mapping = [...byLegacy]
-  .map(([legacy, unicode]) => ({ legacy, unicode }))
+  .map(([legacy, unicode]) => ({
+    legacy,
+    unicode,
+    ...(shapeTargetsByLegacy.has(legacy)
+      ? { shapeTargets: shapeTargetsByLegacy.get(legacy) }
+      : {}),
+  }))
   .sort((left, right) => {
     if (left.legacy.length !== right.legacy.length) {
       return right.legacy.length - left.legacy.length;

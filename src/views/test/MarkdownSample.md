@@ -38,6 +38,12 @@ _[CSS]: Cascading Style Sheets
 
 这是一段签名样式测试。{.signature}
 
+ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි. {.font-abhaya}
+
+ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි. {.font-serif}
+
+ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි. {.font-sinhala-serif}
+
 ## 带自定义 ID 的标题 {#custom-heading}
 
 [跳转到自定义标题](#custom-heading)

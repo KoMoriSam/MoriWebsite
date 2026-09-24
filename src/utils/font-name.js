@@ -319,12 +319,13 @@ function getFontMetadataText(fontData) {
     .join(" ");
 }
 
-function readLocalFontFaceWeight(style) {
+export function readLocalFontFaceWeight(style) {
   const value = String(style || "").trim();
   if (!value) return 400;
   for (const [pattern, weight] of [
     [/(?:extra|ultra)[\s_-]*(?:black|bold)|特粗/iu, 800],
     [/(?:semi|demi)[\s_-]*bold|半粗/iu, 600],
+    [/semi[\s_-]*light/iu, 300],
     [/(?:extra|ultra)[\s_-]*light|超细/iu, 200],
     [/\b(?:black|heavy)\b|极粗/iu, 900],
     [/\bbold\b|粗体/iu, 700],

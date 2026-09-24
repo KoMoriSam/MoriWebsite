@@ -1,7 +1,9 @@
-Generated-font provenance notice:
-Imported outlines come from Gemunu Libre. Selected legacy-only glyphs either reuse contours from Libre alternates or use hand-authored visual reconstructions modeled on FM Abhaya/FM Gemunu forms; no original FM font file is loaded or bundled by the generator.
-
-Copyright 2021 The Gemunu Libre Project Authors (https://github.com/mooniak/gemunu-libre-font/)
+Copyright (c) 2001-2010, STI Pub Companies, consisting of the American Institute of Physics, the American Chemical Society, the American Mathematical Society, the American Physical Society, Elsevier, Inc., and The Institute of Electrical and Electronic Engineers, Inc. (www.stixfonts.org), with Reserved Font Name STIX Fonts, STIX Fonts (TM) is a trademark of The Institute of Electrical and Electronics Engineers, Inc.
+Copyright (c) 1998-2003, MicroPress, Inc. (www.micropress-inc.com), with Reserved Font Name TM Math.
+Copyright (c) 1990, Elsevier, Inc.
+Copyright (c) 2014, 2015, (URW)++ Design & Development.
+Copyright (c) 2009-2019, Khaled Hosny.
+Copyright (c) 2019, Daniel Benjamin Miller.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
@@ -21,7 +23,7 @@ with others.
 
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
-fonts, including any derivative works, can be bundled, embedded,
+fonts, including any derivative works, can be bundled, embedded, 
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The

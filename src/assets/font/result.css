@@ -38,6 +38,13 @@
 
   --font-script: "Zhi Mang Xing";
 
+  --font-xits: "XITS", var(--font-song);
+
+  --font-abhaya: "XITS for Abhaya", "Abhaya Libre", var(--font-song);
+
+  --font-abhaya-legacy:
+    "Abhaya Legacy", "Abhaya Libre", "XITS for Abhaya", var(--font-song);
+
   --font-sinhala-sans:
     "Nirmala UI", "Sinhala Sangam MN", "Noto Sans Sinhala Variable",
     "Noto Sans Sinhala", sans-serif;
@@ -49,6 +56,11 @@
 
 @layer base {
   :root {
+    --font-gemunu: "Gemunu Libre", "Noto Sans Sinhala Variable", sans-serif;
+    --font-noto-sans-sinhala: "Noto Sans Sinhala Variable", sans-serif;
+    --font-noto-serif-sinhala: "Noto Serif Sinhala Variable", serif;
+    --font-maname: "Maname", "Noto Serif Sinhala Variable", serif;
+    --font-gemunu-legacy: "Gemunu Legacy", var(--font-abhaya-legacy);
     /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
     line-break: strict;
     text-spacing-trim: trim-both;

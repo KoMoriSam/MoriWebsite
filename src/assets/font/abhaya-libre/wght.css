@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Abhaya Libre";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 800;
+  src: url("./AbhayaLibre[wght].woff2") format("woff2");
+  size-adjust: 130%;
+}

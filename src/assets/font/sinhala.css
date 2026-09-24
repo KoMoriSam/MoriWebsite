@@ -1,42 +1,131 @@
-@import "./abhaya-libre/400.css";
-@import "./abhaya-libre/500.css";
-@import "./abhaya-libre/600.css";
-@import "./abhaya-libre/700.css";
-@import "./abhaya-libre/800.css";
+@import "./abhaya-libre/wght.css";
 
 @font-face {
-  font-family: "FM Abhaya Libre Legacy";
+  font-family: "Noto Sans Sinhala Preview";
   font-style: normal;
   font-display: swap;
-  font-weight: 400;
-  src: url("./abhaya-libre/fm-abhaya-libre-legacy.woff2") format("woff2");
-  size-adjust: 130%;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-sans-sinhala/files/noto-sans-sinhala-latin-wght-normal.woff2")
+    format("woff2");
 }
 
 @font-face {
-  font-family: "FM Abhaya Libre Legacy";
+  font-family: "Noto Sans Sinhala Input Latin";
   font-style: normal;
   font-display: swap;
-  font-weight: 700;
-  src: url("./abhaya-libre/fm-abhaya-libre-bold-legacy.woff2") format("woff2");
-  size-adjust: 130%;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-sans-sinhala/files/noto-sans-sinhala-latin-wght-normal.woff2")
+    format("woff2");
+  size-adjust: 95%;
 }
 
 @font-face {
-  font-family: "FM Gemunu Libre Legacy";
+  font-family: "Noto Serif Sinhala Preview";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-serif-sinhala/files/noto-serif-sinhala-latin-wght-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Serif Sinhala Input Latin";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-serif-sinhala/files/noto-serif-sinhala-latin-wght-normal.woff2")
+    format("woff2");
+  size-adjust: 95%;
+}
+
+@font-face {
+  font-family: "Maname Preview";
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url("./gemunu-libre/fm-gemunu-libre-legacy.woff2") format("woff2");
+  src: url("@fontsource/maname/files/maname-latin-400-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Maname Input Latin";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/maname/files/maname-latin-400-normal.woff2")
+    format("woff2");
+  size-adjust: 110%;
+}
+
+@font-face {
+  font-family: "Gemunu Libre";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("./gemunu-libre/GemunuLibre[wght].woff2") format("woff2");
   size-adjust: 145%;
 }
 
 @font-face {
-  font-family: "FM Gemunu Libre Legacy";
+  font-family: "CJK for Abhaya";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./xits/XITS-Regular.woff2") format("woff2");
+  size-adjust: 115.18%;
+}
+
+@font-face {
+  font-family: "XITS for Abhaya";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./xits/XITS-Regular.woff2") format("woff2");
+  size-adjust: 115.18%;
+}
+
+@font-face {
+  font-family: "XITS for Abhaya";
   font-style: normal;
   font-display: swap;
   font-weight: 700;
-  src: url("./gemunu-libre/fm-gemunu-libre-bold-legacy.woff2") format("woff2");
+  src: url("./xits/XITS-Bold.woff2") format("woff2");
+  size-adjust: 115.18%;
+}
+
+@font-face {
+  font-family: "Abhaya Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./abhaya-libre/abhaya-legacy.woff2") format("woff2");
+  size-adjust: 130%;
+}
+
+@font-face {
+  font-family: "Abhaya Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("./abhaya-libre/abhaya-legacy-bold.woff2") format("woff2");
+  size-adjust: 130%;
+}
+
+@font-face {
+  font-family: "Gemunu Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("./gemunu-libre/gemunu-legacy.woff2") format("woff2");
+  size-adjust: 145%;
+}
+
+@font-face {
+  font-family: "Gemunu Legacy";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("./gemunu-libre/gemunu-legacy-bold.woff2") format("woff2");
   size-adjust: 145%;
 }
 

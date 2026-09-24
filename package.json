@@ -75,6 +75,7 @@
     "markdown-it-task-lists": "^2.1.1",
     "mermaid": "^11.17.1",
     "parse5": "^8.0.1",
+    "pdfjs-dist": "^6.3.289",
     "photoswipe": "5.4.4",
     "pinia": "^3.0.1",
     "postcss": "^8.5.3",
