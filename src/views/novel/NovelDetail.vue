@@ -43,11 +43,11 @@
 
         <section>
           <section
-            class="mt-8 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-stretch"
+            class="mt-8 grid gap-3 sm:grid-cols-[minmax(max-content,1fr)_minmax(0,16rem)] sm:items-stretch"
           >
             <button
               type="button"
-              class="btn btn-primary min-h-14 min-w-0 justify-between gap-4 text-left shadow-sm"
+              class="btn btn-primary min-h-14 min-w-0 justify-between gap-4 text-left"
               :disabled="primaryChapterDisabled"
               @click="handlePrimaryChapter"
             >
@@ -67,7 +67,7 @@
 
             <button
               type="button"
-              class="btn btn-outline btn-primary min-h-14 justify-start gap-3 sm:max-w-64"
+              class="btn btn-outline btn-primary min-h-14 min-w-0 w-full justify-start gap-3"
               :disabled="!latestChapter?.uuid"
               @click="
                 latestChapter?.uuid && handleAnyChapter(latestChapter.uuid)
@@ -133,36 +133,42 @@
       </section>
     </section>
 
-    <section class="py-10 lg:py-14" aria-label="小说章节目录">
-      <Chapters />
-    </section>
+    <div
+      class="grid gap-12 py-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-0 lg:py-16"
+    >
+      <section class="min-w-0 lg:pr-10 xl:pr-12" aria-label="小说章节目录">
+        <Chapters />
+      </section>
 
-    <section class="border-t border-base-300 pt-10 lg:pt-14">
-      <div class="mb-6">
-        <p
-          class="mb-2 text-xs font-bold tracking-[0.2em] text-base-content/45 uppercase"
-        >
-          Discussion
-        </p>
-        <h2 class="font-serif text-3xl font-bold text-balance">本书评论</h2>
-      </div>
+      <section
+        class="min-w-0 border-t border-base-300 pt-12 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10 xl:pl-12"
+      >
+        <header class="mb-6">
+          <hgroup>
+            <p class="text-sm text-base-content/55">Discussion</p>
+            <h2 class="font-serif text-2xl font-semibold text-balance">
+              本书评论
+            </h2>
+          </hgroup>
+        </header>
 
-      <Giscus
-        :repo="GISCUS.novelRepo.name"
-        :repo-id="GISCUS.novelRepo.id"
-        :category="GISCUS.categories.general.name"
-        :category-id="GISCUS.categories.general.id"
-        mapping="specific"
-        :term="GISCUS.defaultTerm"
-        strict="0"
-        reactions-enabled="1"
-        emit-metadata="0"
-        input-position="top"
-        :theme="themeStore.giscusTheme"
-        lang="zh-CN"
-        loading="lazy"
-      />
-    </section>
+        <Giscus
+          :repo="GISCUS.novelRepo.name"
+          :repo-id="GISCUS.novelRepo.id"
+          :category="GISCUS.categories.general.name"
+          :category-id="GISCUS.categories.general.id"
+          mapping="specific"
+          :term="GISCUS.defaultTerm"
+          strict="0"
+          reactions-enabled="1"
+          emit-metadata="0"
+          input-position="top"
+          :theme="themeStore.giscusTheme"
+          lang="zh-CN"
+          loading="lazy"
+        />
+      </section>
+    </div>
   </main>
   <FootBar />
 </template>
