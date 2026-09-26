@@ -100,8 +100,11 @@
             >
           </button>
           <label
-            class="tooltip tooltip-left border-base-200 flex h-8 w-10 cursor-pointer items-center justify-center border-l"
-            :data-tip="translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label })"
+            class="border-base-200 flex h-8 w-10 cursor-pointer items-center justify-center border-l"
+            @pointerenter="showFallbackTooltip(font, $event)"
+            @pointerleave="hideFallbackTooltip()"
+            @focusin="showFallbackTooltip(font, $event)"
+            @focusout="hideFallbackTooltip()"
           >
             <input
               class="radio radio-xs"
@@ -285,6 +288,17 @@
       >
         {{ translate('common.fontSelect.noMatchingFonts') }}
       </p>
+      <div
+        ref="fallbackTooltip"
+        popover="manual"
+        class="tooltip tooltip-left pointer-events-none m-0 size-0 overflow-visible border-0 p-0 text-sm leading-normal [&:not(:popover-open)]:hidden"
+        style="position: fixed; inset: auto"
+        aria-hidden="true"
+      >
+        <div class="tooltip-content max-w-[min(20rem,calc(100vw-1rem))]! wrap-anywhere">
+          {{ fallbackTooltipText }}
+        </div>
+      </div>
     </div>
 
     <input
@@ -526,6 +540,11 @@ const emit = defineEmits([
 const toast = useToast();
 const trigger = ref(null);
 const popover = ref(null);
+const fallbackTooltip = ref(null);
+const fallbackTooltipText = ref("");
+let fallbackTooltipFrame = 0;
+let fallbackTooltipCloseTimer = 0;
+let fallbackTooltipRequest = 0;
 const fontSearchQuery = ref("");
 const fontInput = ref(null);
 const virtualContainer = ref(null);
@@ -695,6 +714,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  hideFallbackTooltip(true);
   cancelPendingWork();
   clearTimeout(localFontLoadingDelayTimer);
   clearTimeout(localFontLoadingHideTimer);
@@ -703,6 +723,7 @@ onBeforeUnmount(() => {
 });
 
 function onPopoverToggle(event) {
+  hideFallbackTooltip(true);
   isOpen.value = event.newState === "open";
   if (isOpen.value) {
     const list = event.currentTarget;
@@ -715,7 +736,50 @@ function onPopoverToggle(event) {
 }
 
 function onScroll(event) {
+  hideFallbackTooltip(true);
   syncVirtualWindow(event.currentTarget);
+}
+
+async function showFallbackTooltip(font, event) {
+  const tooltip = fallbackTooltip.value;
+  if (!tooltip || !popover.value?.matches(":popover-open")) return;
+  cancelAnimationFrame(fallbackTooltipFrame);
+  clearTimeout(fallbackTooltipCloseTimer);
+  const rect = event.currentTarget.getBoundingClientRect();
+  const request = ++fallbackTooltipRequest;
+  fallbackTooltipText.value = translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label });
+  await nextTick();
+  if (request !== fallbackTooltipRequest || !popover.value?.matches(":popover-open")) return;
+  if (!tooltip.matches(":popover-open")) tooltip.showPopover();
+  const content = tooltip.firstElementChild;
+  const width = content.offsetWidth;
+  const height = content.offsetHeight;
+  const left = Math.max(8, rect.left - width - 8);
+  const top = Math.max(height / 2 + 8, Math.min(window.innerHeight - height / 2 - 8, rect.top + rect.height / 2));
+  tooltip.style.left = `${left + width + 8}px`;
+  tooltip.style.top = `${top}px`;
+  fallbackTooltipFrame = requestAnimationFrame(() => {
+    fallbackTooltipFrame = requestAnimationFrame(() => {
+      fallbackTooltipFrame = 0;
+      if (tooltip.matches(":popover-open")) tooltip.classList.add("tooltip-open");
+    });
+  });
+}
+
+function hideFallbackTooltip(immediate = false) {
+  fallbackTooltipRequest++;
+  cancelAnimationFrame(fallbackTooltipFrame);
+  fallbackTooltipFrame = 0;
+  clearTimeout(fallbackTooltipCloseTimer);
+  const tooltip = fallbackTooltip.value;
+  if (!tooltip?.matches(":popover-open")) return;
+  tooltip.classList.remove("tooltip-open");
+  const close = () => {
+    fallbackTooltipCloseTimer = 0;
+    if (tooltip.matches(":popover-open")) tooltip.hidePopover();
+  };
+  if (immediate) close();
+  else fallbackTooltipCloseTimer = window.setTimeout(close, 300);
 }
 
 function onWheel(event) {
