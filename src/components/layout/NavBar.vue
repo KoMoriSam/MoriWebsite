@@ -41,9 +41,9 @@
         @restore-focus="restoreSearchTriggerFocus"
       />
     </nav>
-    <nav class="navbar-center">
-      <a @click="router.push('/')" class="lg:hidden btn btn-ghost text-xl">
-        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
+    <nav class="navbar-center max-lg:min-w-0 max-lg:shrink">
+      <a @click="router.push('/')" class="lg:hidden btn btn-ghost min-w-0 max-w-full text-xl">
+        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8 min-w-0 object-contain" />
       </a>
       <div class="hidden items-center lg:flex">
         <ul class="menu menu-horizontal px-1">

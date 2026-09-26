@@ -28,7 +28,7 @@
       <div
         aria-hidden="true"
         :class="[
-          'pointer-events-none absolute -top-2 -bottom-4 left-1/2 z-0 w-screen -translate-x-1/2 bg-gradient-to-b from-base-100/90 via-base-100/45 to-transparent transition-[opacity,backdrop-filter] duration-300 ease-out motion-reduce:transition-none',
+          'pointer-events-none absolute -top-2 -bottom-4 -inset-x-(--reader-page-gutter,0px) z-0 bg-gradient-to-b from-base-100/90 via-base-100/45 to-transparent transition-[opacity,backdrop-filter] duration-300 ease-out motion-reduce:transition-none',
           mobileTocCompact
             ? 'opacity-0 backdrop-blur-none'
             : 'opacity-100 backdrop-blur-lg',
@@ -109,7 +109,7 @@
         v-if="showAside"
         ref="asideElement"
         :class="[
-          'lg:sticky lg:self-start',
+          'min-w-0 w-full max-w-full lg:sticky lg:self-start',
           'max-lg:mb-12',
           'max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto',
           'scrollbar-none',

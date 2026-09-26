@@ -142,7 +142,7 @@ const props = defineProps({
   },
   pageClass: {
     type: [String, Array, Object],
-    default: "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+    default: "mx-auto max-w-7xl px-6 [--reader-page-gutter:1.5rem] sm:px-8 sm:[--reader-page-gutter:2rem] lg:px-10 lg:[--reader-page-gutter:2.5rem]",
   },
   pageStyle: {
     type: [String, Array, Object],

@@ -1,6 +1,6 @@
 <template>
     <article class="flex flex-col sm:flex-row gap-2 mt-6">
-      <section aria-labelledby="sinhala-converter-note">
+      <section class="min-w-0" aria-labelledby="sinhala-converter-note">
         <h2 id="sinhala-converter-note" class="font-serif text-lg font-bold">
           {{ translate('tools.notes.notes') }}
         </h2>
@@ -33,7 +33,7 @@
 
       <div class="divider sm:divider-horizontal"></div>
 
-      <section aria-labelledby="sinhala-converter-feedback">
+      <section class="min-w-0" aria-labelledby="sinhala-converter-feedback">
         <h2
           id="sinhala-converter-feedback"
           class="font-serif text-lg font-bold"
@@ -45,7 +45,7 @@
         >
           {{ translate('tools.notes.chooseAFeedbackMethod') }}
         </p>
-        <div class="flex sm:flex-col lg:flex-row gap-2 mt-1 mb-2">
+        <div class="flex flex-wrap sm:flex-col lg:flex-row gap-2 mt-1 mb-2">
           <a
             :href="githubIssueUrl"
             target="_blank"

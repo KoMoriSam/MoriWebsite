@@ -192,14 +192,14 @@
       </div>
       <div
         v-show="inputMode === 'text'"
-        class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-2"
+        class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-2"
       >
         <section
           class="min-w-0 space-y-2"
           :class="isDirectionReversed ? 'order-3' : 'order-1'"
         >
-          <div class="min-w-0 flex items-center justify-between gap-2">
-            <hgroup>
+          <div class="min-w-0 flex flex-wrap items-center justify-between gap-2">
+            <hgroup class="min-w-0">
               <h2 class="block font-serif text-lg font-bold">{{ translate('common.sections.unicodeText') }}</h2>
               <p class="text-xs text-base-content/55">
                 {{ translate('tools.sinhalaFontConverter.standardUnicodeSinhalaText') }}
@@ -276,12 +276,12 @@
             ></textarea>
 
             <label
+              v-if="hasText && !isDirectionReversed"
               for="clear-text-1"
-              class="tooltip absolute right-2 top-2"
+              class="tooltip tooltip-end absolute right-2 top-2"
               :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
               <button
-                v-if="hasText && !isDirectionReversed"
                 type="button"
                 id="clear-text-1"
                 class="btn btn-ghost btn-circle btn-sm"
@@ -293,8 +293,8 @@
               </button>
             </label>
 
-            <div class="flex min-h-10 items-end justify-between pt-0 p-2">
-              <section class="flex gap-2 items-center">
+            <div class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2">
+              <section class="flex min-w-0 flex-wrap gap-2 items-center">
                 <label
                   for="unicode-field-action"
                   class="tooltip tooltip-right"
@@ -384,7 +384,7 @@
 
         <label
           for="swap-direction"
-          class="tooltip order-2 justify-self-center self-start md:mt-1.5"
+          class="tooltip before:max-w-[calc(100vw-3rem)] order-2 justify-self-center self-start md:mt-1.5"
           :data-tip="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
         >
           <button
@@ -408,8 +408,8 @@
           class="min-w-0 space-y-2"
           :class="isDirectionReversed ? 'order-1' : 'order-3'"
         >
-          <div class="min-w-0 flex items-center justify-between gap-2">
-            <hgroup>
+          <div class="min-w-0 flex flex-wrap items-center justify-between gap-2">
+            <hgroup class="min-w-0">
               <h2
                 id="sinhala-legacy-label"
                 class="font-serif text-lg font-bold"
@@ -515,12 +515,12 @@
             ></div>
 
             <label
+              v-if="hasText && isDirectionReversed"
               for="clear-text-2"
-              class="tooltip absolute right-2 top-2"
+              class="tooltip tooltip-end absolute right-2 top-2"
               :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
               <button
-                v-if="hasText && isDirectionReversed"
                 type="button"
                 id="clear-text-2"
                 class="btn btn-ghost btn-circle btn-sm"
@@ -532,7 +532,7 @@
               </button>
             </label>
 
-            <div class="flex min-h-10 items-end justify-between pt-0 p-2">
+            <div class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2">
               <section class="flex min-w-0 flex-wrap gap-2 items-center">
                 <label
                   for="fm-field-action"
@@ -582,7 +582,7 @@
                   </button>
                 </div>
 
-                <label class="label cursor-pointer gap-2 p-0">
+                <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer gap-2 p-0">
                   <input
                     v-model="showLegacySource"
                     type="checkbox"
@@ -643,8 +643,8 @@
         @pointerdown.capture="captureControlViewport"
         @keydown.capture="captureControlViewport"
       >
-        <div class="flex min-w-0 flex-col gap-3">
-          <label class="label cursor-pointer justify-start gap-3 p-0">
+        <div class="flex min-w-0 max-w-full flex-col gap-3">
+          <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
             <input
               v-model="preserveCurrentReducedForms"
               type="checkbox"
@@ -659,9 +659,9 @@
 
           <div
             v-if="!preserveCurrentReducedForms"
-            class="ms-4 flex min-w-0 flex-col gap-3 border-s border-base-300 ps-6"
+            class="ms-4 flex min-w-0 max-w-full flex-col gap-3 border-s border-base-300 ps-6"
           >
-            <label class="label cursor-pointer justify-start gap-3 p-0">
+            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
               <input
                 v-model="preserveYansaya"
                 type="checkbox"
@@ -682,7 +682,7 @@
               </span>
             </label>
 
-            <label class="label cursor-pointer justify-start gap-3 p-0">
+            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
               <input
                 v-model="preserveRakaransaya"
                 type="checkbox"
@@ -703,7 +703,7 @@
               </span>
             </label>
 
-            <label class="label cursor-pointer justify-start gap-3 p-0">
+            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
               <input
                 v-model="preserveRepaya"
                 type="checkbox"
@@ -727,8 +727,8 @@
           </div>
         </div>
 
-        <div class="flex min-w-0 flex-col gap-3">
-          <label class="label cursor-pointer justify-start gap-3 p-0">
+        <div class="flex min-w-0 max-w-full flex-col gap-3">
+          <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
             <input
               v-model="preserveCurrentConjuncts"
               type="checkbox"
@@ -747,7 +747,7 @@
           >
             <fieldset class="flex min-w-0 flex-col gap-x-6 gap-y-3">
               <legend class="sr-only">{{ translate('tools.sinhalaFontConverter.unifiedForm') }}</legend>
-              <label class="label cursor-pointer justify-start gap-3 p-0">
+              <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
                 <input
                   v-model="unifiedConjunctForm"
                   type="radio"
@@ -762,7 +762,7 @@
                 </span>
               </label>
 
-              <label class="label cursor-pointer justify-start gap-3 p-0">
+              <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
                 <input
                   v-model="unifiedConjunctForm"
                   type="radio"
@@ -782,7 +782,7 @@
 
         <label
           v-if="!isDirectionReversed"
-          class="label cursor-pointer justify-start gap-3 p-0 md:col-span-2"
+          class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0 md:col-span-2"
         >
           <input
             v-model="compactDaForms"

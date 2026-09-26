@@ -106,7 +106,7 @@
           'relative left-1/2 h-1.5 -translate-x-1/2 rounded-full transition-[margin,width,border-radius,background-color,box-shadow] duration-300 ease-out before:absolute before:inset-x-0 before:top-0 before:h-6 before:content-[\'\'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none',
           mobile
             ? compact
-              ? 'w-dvw cursor-pointer rounded-none bg-base-300'
+              ? 'w-[calc(100%+var(--reader-page-gutter,0px)*2)] cursor-pointer rounded-none bg-base-300'
               : 'mt-2 mb-1 w-full cursor-pointer bg-base-300/85 ring-1 ring-base-300/70'
             : 'mt-2 w-full bg-base-300/70',
         ]"
