@@ -2,14 +2,23 @@ const avatar = (name) => `/assets/images/avatar/${name}.webp`;
 
 export const DEFAULT_AVATAR = avatar("default");
 
-export const SELF_NAMES = new Set(["我", "小群主", "Mori", "KoMoriSam"]);
+export const SELF_NAMES = new Set([
+  "我",
+  "小群主",
+  "Mori",
+  "KoMoriSam",
+  "Smile Again",
+  "LBT",
+]);
 
 export const AVATAR_MAP = {
   "🈚️内👻，LG": avatar("lg"),
 
-  小群主: avatar("komorisam"),
-  Mori: avatar("komorisam"),
-  KoMoriSam: avatar("komorisam"),
+  小群主: avatar("ayanami"),
+  Mori: avatar("ayanami"),
+  KoMoriSam: avatar("ayanami"),
+  "Smile Again": avatar("kagami-ren"),
+  LBT: avatar("kagami-ren"),
 
   真正群主: avatar("talloran"),
   牛子: avatar("niuzi"),
