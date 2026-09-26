@@ -147,6 +147,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { onClickOutside } from "@vueuse/core";
 import { computed, onBeforeUnmount, ref, useId, watch } from "vue";
 
@@ -186,7 +189,7 @@ const contentVisible = computed(
     (expanded.value && (props.popupOnly || !props.compact)),
 );
 const compactToggleLabel = computed(
-  () => `${props.compact ? "展开" : "收起"}${props.ariaLabel}`,
+  () => `${props.compact ? translate('reader.tocFrame.expand') : translate('reader.tocFrame.collapse')}${props.ariaLabel}`,
 );
 
 watch(

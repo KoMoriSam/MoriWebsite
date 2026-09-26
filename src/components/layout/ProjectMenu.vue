@@ -9,24 +9,22 @@
         class="text-xl"
         :class="isKaimingActive ? 'ri-shapes-fill' : 'ri-shapes-line'"
       ></i>
-      项目
+      {{ translate('common.mobileNav.projects') }}
     </button>
 
     <div
       id="projects-megamenu"
       popover="auto"
       class="shadow-xl"
-      aria-label="项目导航"
+      :aria-label="translate('common.projectMenu.projectNavigation')"
     >
       <div class="mx-auto w-full max-w-5xl px-6 py-7">
         <div class="mb-5 flex items-end justify-between gap-6">
           <div>
             <p
               class="text-primary mb-1 text-xs font-bold tracking-[0.16em] uppercase"
-            >
-              Projects
-            </p>
-            <h2 class="font-serif text-2xl font-semibold">我的项目</h2>
+            >{{ translate('common.sections.projects') }}</p>
+            <h2 class="font-serif text-2xl font-semibold">{{ translate('common.projectMenu.myProjects') }}</h2>
           </div>
           <a
             :href="PROJECTS_GITHUB_URL"
@@ -36,7 +34,7 @@
             @click="closeMenus"
           >
             <i class="ri-github-fill text-lg"></i>
-            全部仓库
+            {{ translate('common.projectMenu.allRepositories') }}
             <i class="ri-arrow-right-up-line"></i>
           </a>
         </div>
@@ -57,9 +55,9 @@
             </span>
             <span class="min-w-0 flex-1">
               <span class="mb-1 flex items-center gap-2">
-                <strong class="font-serif text-lg">{{ project.name }}</strong>
+                <strong class="font-serif text-lg">{{ localizeText(project.name) }}</strong>
                 <span class="badge badge-ghost badge-sm">{{
-                  project.category
+                  localizeText(project.category)
                 }}</span>
                 <i
                   v-if="project.href"
@@ -67,7 +65,7 @@
                 ></i>
               </span>
               <span class="text-base-content/65 block text-sm leading-relaxed">
-                {{ project.description }}
+                {{ localizeText(project.description) }}
               </span>
               <span class="text-primary mt-2 block text-xs font-semibold">
                 {{ project.meta }}
@@ -83,6 +81,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 

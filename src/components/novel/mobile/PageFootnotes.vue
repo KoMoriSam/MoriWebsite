@@ -4,7 +4,7 @@
     ref="rootRef"
     class="page-footnotes markdown-content prose absolute inset-x-0 z-10 max-w-none overflow-y-auto"
     :class="{ 'page-footnotes-measure': measure }"
-    aria-label="本页脚注"
+    :aria-label="translate('reader.pageFootnotes.footnotesOnThisPage')"
     data-reader-interactive
   >
     <div ref="contentRef" class="page-footnotes-content">
@@ -26,6 +26,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import {

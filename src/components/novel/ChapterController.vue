@@ -1,7 +1,7 @@
 <template>
   <nav
     class="mt-12 flex border-t border-base-300 pt-6 justify-between font-sans"
-    aria-label="章节导航"
+    :aria-label="translate('reader.chapterController.chapterNavigation')"
   >
     <button
       v-if="hasPrevious"
@@ -15,7 +15,7 @@
         <span
           class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
         >
-          上一章
+          {{ translate('reader.chapterController.previousChapter') }}
         </span>
         <span>{{ previousChapter?.title }}</span>
       </div>
@@ -32,7 +32,7 @@
         <span
           class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
         >
-          下一章
+          {{ translate('reader.chapterController.nextChapter') }}
         </span>
         <span>{{ nextChapter?.title }}</span>
       </div>
@@ -42,6 +42,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
@@ -126,8 +129,8 @@ const isPagedMode = computed(
 );
 const controlButtonAriaLabel = computed(() =>
   isPagedMode.value
-    ? `总阅读进度 ${readingProgressLabel.value}，本章第 ${safeCurrentPage.value} 页，共 ${safeTotalPages.value} 页，点击打开阅读控制`
-    : `总阅读进度 ${readingProgressLabel.value}，当前为上下滚动阅读，点击打开阅读控制`,
+    ? translate('reader.chapterController.bookProgressChapterPageOfTapForReadingControls', { p0: readingProgressLabel.value, p1: safeCurrentPage.value, p2: safeTotalPages.value })
+    : translate('reader.chapterController.bookProgressScrollingModeTapForReadingControls', { p0: readingProgressLabel.value }),
 );
 const pageJumpValue = ref(1);
 const controlsDialogRef = ref(null);

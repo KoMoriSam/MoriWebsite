@@ -1,5 +1,5 @@
 <template>
-  <ContentPage title="Minecraft 服务器状态" metas-label="工具信息">
+  <ContentPage :title="translate('pages.tools.minecraftServerStatus')" :metas-label="translate('tools.imageConverter.toolInformation')">
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-gamepad-line" aria-hidden="true"></i>
@@ -7,11 +7,11 @@
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-pulse-line" aria-hidden="true"></i>
-        实时查询
+        {{ translate('tools.serverStatus.liveLookup') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-dashboard-3-line" aria-hidden="true"></i>
-        状态 · 人数 · 延迟
+        {{ translate('tools.serverStatus.statusPlayersLatency') }}
       </span>
     </template>
 
@@ -20,6 +20,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import ContentPage from "@/components/layout/ContentPage.vue";
 import ServerInfo from "@/components/ServerInfo.vue";
 </script>

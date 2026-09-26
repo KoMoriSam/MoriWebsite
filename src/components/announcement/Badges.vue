@@ -8,17 +8,17 @@
     ></span>
     <span v-if="announcement.pinned" class="badge badge-primary badge-xs">
       <i class="ri-pushpin-line" aria-hidden="true"></i>
-      置顶
+      {{ translate('common.badges.pinned') }}
     </span>
     <span
       v-if="announcement.priority === 'important'"
       class="badge badge-error badge-xs font-bold"
       :class="read ? 'badge-soft' : ''"
     >
-      重要
+      {{ translate('common.badges.important') }}
     </span>
     <span v-if="!announcement.active" class="badge badge-ghost badge-xs">
-      已结束
+      {{ translate('common.badges.ended') }}
     </span>
     <span
       class="badge badge-xs"
@@ -35,19 +35,22 @@
           !read,
       }"
     >
-      {{ announcementToneLabel[announcement.tone] }}
+      {{ localizeText(announcementToneLabel[announcement.tone]) }}
     </span>
     <span
       v-if="announcement.revision > 1"
       class="badge badge-xs"
       :class="read ? 'badge-soft' : 'badge-outline'"
     >
-      有修订
+      {{ translate('common.badges.revised') }}
     </span>
   </aside>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed } from "vue";
 
 import { announcementToneLabel } from "@/utils/announcements";

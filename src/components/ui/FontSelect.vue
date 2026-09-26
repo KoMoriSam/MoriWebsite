@@ -32,7 +32,7 @@
         width: 'anchor-size(width)',
       }"
       role="listbox"
-      :aria-label="ariaLabel"
+      :aria-label="localizeText(ariaLabel)"
       @scroll.passive="onScroll"
       @wheel="onWheel"
       @touchstart.passive="onTouchStart"
@@ -47,8 +47,8 @@
           v-model="fontSearchQuery"
           type="search"
           class="input input-sm w-full"
-          aria-label="搜索字体"
-          placeholder="搜索字体"
+          :aria-label="translate('common.fontSelect.searchFonts')"
+          :placeholder="translate('common.fontSelect.searchFonts')"
           @keydown.stop
         />
       </div>
@@ -65,9 +65,9 @@
           <span class="px-3">{{ group.label }}</span>
           <span
             class="border-base-200 flex self-stretch items-center justify-center border-l text-[0.625rem]"
-            title="默认回退字体"
+            :title="translate('common.fontSelect.defaultFallbackFont')"
           >
-            回退
+            {{ translate('common.fontSelect.fallback') }}
           </span>
         </div>
         <div
@@ -101,7 +101,7 @@
           </button>
           <label
             class="tooltip tooltip-left border-base-200 flex h-8 w-10 cursor-pointer items-center justify-center border-l"
-            :data-tip="`设为默认回退字体：${font.label}`"
+            :data-tip="translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label })"
           >
             <input
               class="radio radio-xs"
@@ -109,7 +109,7 @@
               :name="fallbackRadioName"
               :value="font.id"
               :checked="effectiveFallbackFontId === font.id"
-              :aria-label="`设为默认回退字体：${font.label}`"
+              :aria-label="translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label })"
               :disabled="disabled"
               @change="selectFallbackFont(font.id)"
             />
@@ -117,11 +117,11 @@
         </div>
       </div>
 
-      <div role="group" aria-label="自定义字体">
+      <div role="group" :aria-label="translate('common.fontSelect.customFonts')">
         <div
           class="bg-base-100 border-b border-base-200 sticky -top-1 z-10 px-3 py-1.5 text-xs leading-4 font-medium text-base-content/55"
         >
-          自定义字体
+          {{ translate('common.fontSelect.customFonts') }}
         </div>
         <button
           v-for="font in filteredUploadedFonts"
@@ -162,13 +162,13 @@
           ></span>
           <i v-else class="ri-upload-2-line" aria-hidden="true"></i>
           <span class="ml-0.5">{{
-            isUploadingFont ? "正在加载字体" : "上传字体"
+            isUploadingFont ? translate('common.fontSelect.loadingFont') : translate('common.fontSelect.uploadFont')
           }}</span>
           <span
             v-if="uploadHint"
             class="ml-1 font-normal text-xs text-base-content/55"
           >
-            {{ uploadHint }}
+          {{ localizeText(uploadHint) }}
           </span>
         </button>
       </div>
@@ -271,8 +271,8 @@
           <span class="ml-0.5">
             {{
               showLocalFontLoading && localFontLoadingPhase === "more"
-                ? `正在加载${virtualGroup.label}`
-                : "继续下拉加载更多"
+                ? translate('common.fontSelect.loading', { p0: virtualGroup.label })
+                : translate('common.fontSelect.scrollDownToLoadMore')
             }}
           </span>
         </button>
@@ -283,7 +283,7 @@
         class="px-3 py-2 text-sm text-base-content/55"
         role="status"
       >
-        未找到匹配字体
+        {{ translate('common.fontSelect.noMatchingFonts') }}
       </p>
     </div>
 
@@ -299,6 +299,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -563,11 +566,11 @@ const loadedFontFaces = new Map();
 const pendingFontLoads = new Map();
 
 const fontGroups = computed(() => [
-  { id: "uploaded", label: "上传字体", fonts: uploadedFonts.value },
-  { id: "website", label: "网站字体", fonts: props.websiteFonts },
+  { id: "uploaded", get label() { return translate('common.fontSelect.uploadFont'); }, fonts: uploadedFonts.value },
+  { id: "website", get label() { return translate('common.fontSelect.siteFonts'); }, fonts: props.websiteFonts },
   {
     id: "device",
-    label: "设备字体",
+    get label() { return translate('common.fontSelect.deviceFonts'); },
     fonts: localFonts.value,
     virtual: true,
     hasMore: pendingLocalFontCount.value > 0,
@@ -648,7 +651,7 @@ const selectedFont = computed(() =>
 );
 const selectedFontStyle = computed(() => fontPreviewStyle(selectedFont.value));
 const selectedFontLabel = computed(() =>
-  selectedFont.value ? selectedFont.value.label : "选择字体",
+  selectedFont.value ? selectedFont.value.label : translate('common.fontSelect.chooseFont'),
 );
 const effectiveFallbackFontId = computed(
   () =>
@@ -658,16 +661,16 @@ const effectiveFallbackFontId = computed(
     "",
 );
 const localFontActionLabel = computed(() => {
-  if (!supportsLocalFontAccess.value) return "当前浏览器不支持读取设备字体";
+  if (!supportsLocalFontAccess.value) return translate('common.fontSelect.yourBrowserCannotReadDeviceFonts');
   if (showLocalFontLoading.value && localFontLoadingPhase.value === "initial")
-    return "正在读取设备字体";
-  if (isReadingLocalFonts.value) return "读取设备字体";
+    return translate('common.fontSelect.readingDeviceFonts');
+  if (isReadingLocalFonts.value) return translate('common.fontSelect.readDeviceFonts');
   if (pendingLocalFontCount.value)
-    return `已加载 ${localFonts.value.length}/${totalLocalFontCount.value} 款设备字体`;
+    return translate('common.fontSelect.loadedDeviceFonts', { p0: localFonts.value.length, p1: totalLocalFontCount.value });
   if (localFonts.value.length)
-    return `已读取 ${localFonts.value.length} 款设备字体`;
-  if (hasReadLocalFonts.value) return "没有可用的设备字体";
-  return "读取设备字体";
+    return translate('common.fontSelect.readDeviceFonts2', { p0: localFonts.value.length });
+  if (hasReadLocalFonts.value) return translate('common.fontSelect.noDeviceFontsAvailable');
+  return translate('common.fontSelect.readDeviceFonts');
 });
 const isLocalFontLoading = computed(
   () => isReadingLocalFonts.value || isLoadingMoreLocalFonts.value,
@@ -926,7 +929,7 @@ async function onFontFile(event) {
   } catch (error) {
     customFontSources.delete(id);
     toast.error(
-      `${file.name}：${error instanceof Error ? error.message : "无法加载字体"}`,
+      `${file.name}：${error instanceof Error ? error.message : translate('common.fontSelect.cannotLoadFont')}`,
     );
   } finally {
     isUploadingFont.value = false;
@@ -972,7 +975,7 @@ async function readLocalFonts() {
       : readableFonts;
     for (const font of availableFonts) {
       const family =
-        font.family || font.fullName || font.postscriptName || "未命名字体";
+        font.family || font.fullName || font.postscriptName || translate('common.fontSelect.unnamedFont');
       const sourceKey = family.toLocaleLowerCase();
       const existing = uniqueFonts.get(sourceKey);
       if (existing) {
@@ -1040,13 +1043,13 @@ async function readLocalFonts() {
     totalLocalFontCount.value = nextLocalFonts.length;
     await loadMoreLocalFonts();
     if (totalLocalFontCount.value)
-      toast.success(`已读取 ${totalLocalFontCount.value} 款设备字体`);
-    else toast.info("没有读取到可用的设备字体");
+      toast.success(translate('common.fontSelect.readDeviceFonts2', { p0: totalLocalFontCount.value }));
+    else toast.info(translate('common.fontSelect.noUsableDeviceFontsFound'));
   } catch (error) {
     if (error?.name === "NotAllowedError")
-      toast.warning("未获得设备字体访问权限");
+      toast.warning(translate('common.fontSelect.deviceFontAccessWasNotGranted'));
     else
-      toast.error(error instanceof Error ? error.message : "无法读取设备字体");
+      toast.error(error instanceof Error ? error.message : translate('common.fontSelect.cannotReadDeviceFonts'));
   } finally {
     isReadingLocalFonts.value = false;
   }
@@ -1309,7 +1312,7 @@ async function resolveFont(
     .find(Boolean);
   const weight = font?.supportsFontWeight ? requestedWeight : "normal";
   try {
-    await document.fonts?.load(`${weight} 200px ${family}`, text || "字体");
+    await document.fonts?.load(`${weight} 200px ${family}`, text || translate('common.fontSelect.font'));
   } catch {
     // Consumers can continue through the font stack's fallbacks.
   }
@@ -1329,7 +1332,7 @@ async function loadCustomFont(id) {
   const promise = (async () => {
     const source = customFontSources.get(id);
     if (!(source instanceof Blob))
-      throw new Error("所选自定义字体已不可用，请重新选择");
+      throw new Error(translate('common.fontSelect.theCustomFontIsNoLongerAvailablePleaseSelectIt'));
     const family = `Mori Custom Font ${++loadedFontFamilyId}`;
     const face = new FontFace(family, await source.arrayBuffer());
     await face.load();

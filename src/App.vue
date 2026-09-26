@@ -33,6 +33,13 @@ import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight
 
 import { useStorageMigration } from "@/utils/storage/migrate-storage";
 import { useDiscardStorage } from "@/utils/storage/discard-storage";
+import { useLocale } from "@/i18n";
+import { useGlobalStorage } from "@/utils/storage/use-global-storage";
+import { useToast } from "@/composables/useToast";
+
+const { t: translate, locale, text: localizeText, restoreLocale } = useLocale();
+const { GLOBAL_INFO } = useGlobalStorage();
+const localeToast = useToast();
 
 const route = useRoute();
 const novelStore = useNovelStore();
@@ -57,22 +64,18 @@ const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
 const KEYWORDS = "远方之森,个人博客,技术博客,独立开发,原创小说,向远方";
 
 const PAGE_DESCRIPTIONS = {
-  licenses:
-    "查看远方之森网站原创软件、生产依赖、字体、图标及其他第三方内容的许可证与权利声明。",
-  blog: "阅读远方之森的技术探索、生活随笔与读书笔记。",
-  "blog-article": "阅读远方之森的博客文章。",
-  changelog: "查看远方之森个人网站的功能更新、修复与版本记录。",
-  announcements: "查看远方之森当前有效的站点公告与历史通知。",
-  novel: "在线阅读远方之森创作的原创小说《向远方》。",
-  "novel-reader": "在线阅读远方之森 创作的原创小说《向远方》。",
-  tools: "使用远方之森制作的在线小工具与服务查询功能。",
-  "server-status":
-    "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
-  "sinhala-font-converter":
-    "在标准 Unicode 与 ASCII 传统字体编码之间双向转换。",
-  kaiming:
-    "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
-  NotFound: "未找到请求的页面。",
+  get licenses() { return translate('pages.app.licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons'); },
+  get blog() { return translate('pages.app.readKomoriSTechnologyExplorationsEssaysAndReadingNotes'); },
+  get "blog-article"() { return translate('pages.app.readKomoriSBlogArticles'); },
+  get changelog() { return translate('pages.app.featureUpdatesFixesAndReleasesForKomoriSWebsite'); },
+  get announcements() { return translate('pages.app.currentAndPastWebsiteAnnouncements'); },
+  get novel() { return translate('pages.app.readKomoriSOriginalNovelOnline'); },
+  get "novel-reader"() { return translate('pages.app.readKomoriSOriginalNovelOnline2'); },
+  get tools() { return translate('pages.app.onlineToolsAndServiceLookupsByKomori'); },
+  get "server-status"() { return translate('pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft'); },
+  get "sinhala-font-converter"() { return translate('pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings'); },
+  get kaiming() { return translate('pages.app.tryKaimingChinesePunctuationWithSansSerifSerifAndVariable'); },
+  get NotFound() { return translate('pages.app.theRequestedPageWasNotFound'); },
   test: "远方之森网站的组件测试页面。",
 };
 
@@ -101,23 +104,25 @@ const isIndexable = computed(
 );
 
 const pageTitle = computed(() => {
-  if (routeName.value === "home") return DEFAULT_TITLE;
+  if (routeName.value === "home") return localizeText(DEFAULT_TITLE);
   if (routeName.value === "novel-reader") return novelTitle.value;
   if (route.meta.blogList) {
-    return `博客 | 远方之森 | p.${blogPageNumber.value} `;
+    return translate('pages.app.blogP', { p0: blogPageNumber.value });
   }
-  return String(route.meta.title || DEFAULT_TITLE);
+  return article.value?.title
+    ? `${article.value.title} | ${SITE_NAME}`
+    : `${localizeText(String(route.meta.title || DEFAULT_TITLE).replace(/ \| 远方之森$/, ""))} | ${SITE_NAME}`;
 });
 
 const pageDescription = computed(() => {
   if (route.meta.blogList && blogPageNumber.value > 1) {
-    return `阅读远方之森的技术探索、生活随笔与读书笔记。当前为第 ${blogPageNumber.value} 页。`;
+    return translate('pages.app.readKomoriSTechnologyExplorationsEssaysAndReadingNotesPage', { p0: blogPageNumber.value });
   }
 
   const description =
     article.value?.summary ||
     PAGE_DESCRIPTIONS[routeName.value] ||
-    DEFAULT_DESCRIPTION;
+    localizeText(DEFAULT_DESCRIPTION);
 
   return String(description).replace(/\s+/g, " ").trim().slice(0, 160);
 });
@@ -191,7 +196,7 @@ const structuredData = computed(() => {
       name: pageTitle.value,
       description: pageDescription.value,
       url: canonicalUrl.value,
-      inLanguage: "zh-CN",
+      inLanguage: locale.value,
       mainEntity: person,
     };
   }
@@ -202,7 +207,7 @@ const structuredData = computed(() => {
     name: pageTitle.value,
     description: pageDescription.value,
     url: canonicalUrl.value,
-    inLanguage: "zh-CN",
+    inLanguage: routeName.value.startsWith("novel") ? "zh-CN" : locale.value,
     isPartOf: {
       "@type": "WebSite",
       name: SITE_NAME,
@@ -232,12 +237,12 @@ useHead(() => {
   return {
     title: pageTitle.value,
     htmlAttrs: {
-      lang: "zh-CN",
+      lang: locale.value,
     },
     link: headLinks.value,
     meta: [
       { name: "description", content: pageDescription.value },
-      { name: "keywords", content: KEYWORDS },
+      { name: "keywords", content: localizeText(KEYWORDS) },
       { name: "author", content: SITE_NAME },
       {
         name: "robots",
@@ -245,7 +250,7 @@ useHead(() => {
           ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
           : "noindex, nofollow",
       },
-      { property: "og:locale", content: "zh_CN" },
+      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', si: 'si_LK' }[locale.value] },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: pageTitle.value },
       { property: "og:description", content: pageDescription.value },
@@ -257,7 +262,7 @@ useHead(() => {
       { property: "og:image", content: SOCIAL_IMAGE },
       {
         property: "og:image:alt",
-        content: "KoMoriSam 的个人头像",
+        get content() { return translate('pages.app.komorisamSAvatar'); },
       },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: pageTitle.value },
@@ -288,11 +293,16 @@ onMounted(() => {
     return;
   }
 
+  void restoreLocale(GLOBAL_INFO).catch(() => localeToast.error(translate('common.languageLoadFailed')));
+
   const { migrateStorage } = useStorageMigration();
 
-  migrateStorage();
-
-  useDiscardStorage();
+  try {
+    migrateStorage();
+    useDiscardStorage();
+  } catch {
+    // Storage restrictions must not prevent session language selection.
+  }
 
   announcementStore.migrateLegacyUpdateState();
   void announcementStore.fetchAnnouncements().then((announcements) => {

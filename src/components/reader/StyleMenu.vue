@@ -13,11 +13,11 @@
         class="btn btn-ghost btn-info btn-xs h-auto min-h-0"
         @click="style.resetStyle(configKey)"
       >
-        <span>恢复默认值</span>
+        <span>{{ translate('reader.styleMenu.resetValue') }}</span>
         <i class="ri-arrow-go-back-line"></i>
       </button>
 
-      <span v-else class="text-xs text-base-content/45">默认值</span>
+      <span v-else class="text-xs text-base-content/45">{{ translate('reader.styleMenu.defaultValue') }}</span>
     </header>
 
     <div class="py-2">
@@ -27,6 +27,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { useReaderStore } from "@/stores/readerStore";
 
 defineProps({

@@ -5,7 +5,7 @@
     v-bind="$attrs"
     class="image-preview-host relative overflow-hidden"
     role="group"
-    :aria-label="ariaLabel"
+    :aria-label="localizeText(ariaLabel)"
   ></div>
 
   <Teleport v-if="toolbarTarget" :to="toolbarTarget">
@@ -21,7 +21,7 @@
         class="preview-loading"
         role="status"
         aria-live="polite"
-        aria-label="图片加载中"
+        :aria-label="translate('common.imagePreview.loadingImage')"
       >
         <span
           class="loading loading-spinner loading-xl text-primary"
@@ -32,7 +32,7 @@
       <header v-if="mode === 'fullscreen'" class="preview-header">
         <p
           class="preview-info ps-2.5 pt-2.5 text-center text-xs tabular-nums leading-relaxed text-gray-300 text-shadow-xs/90"
-          :aria-label="`第 ${currentIndex + 1} 张，共 ${totalImages} 张`"
+          :aria-label="translate('common.imagePreview.imageOf', { p0: currentIndex + 1, p1: totalImages })"
         >
           <span class="font-bold">{{ currentIndex + 1 }}</span>
           <span class="text-gray-300/50"> / {{ totalImages }}</span>
@@ -49,8 +49,8 @@
           type="button"
           class="btn btn-circle btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-close text-shadow-xs/90"
           data-preview-control
-          aria-label="关闭图片预览"
-          title="关闭"
+          :aria-label="translate('common.imagePreview.closeImagePreview')"
+          :title="translate('common.modal.close')"
           @click="close"
         >
           <i class="ri-close-line text-xl" aria-hidden="true"></i>
@@ -62,8 +62,8 @@
         class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-prev text-shadow-xs/90"
         data-preview-control
         :disabled="cannotGoPrevious"
-        aria-label="上一张图片"
-        title="上一张"
+        :aria-label="translate('common.imagePreview.previousImage')"
+        :title="translate('common.imagePreview.previous')"
         @click="previous"
       >
         <i class="ri-arrow-left-wide-line text-3xl" aria-hidden="true"></i>
@@ -74,8 +74,8 @@
         class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-next text-shadow-xs/90"
         data-preview-control
         :disabled="cannotGoNext"
-        aria-label="下一张图片"
-        title="下一张"
+        :aria-label="translate('common.imagePreview.nextImage')"
+        :title="translate('common.imagePreview.next')"
         @click="next"
       >
         <i class="ri-arrow-right-wide-line text-3xl" aria-hidden="true"></i>
@@ -84,14 +84,14 @@
       <div
         class="preview-footer"
         data-preview-control
-        aria-label="图片预览控制"
+        :aria-label="translate('common.imagePreview.imagePreviewControls')"
       >
         <button
           type="button"
           class="btn btn-square btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotZoomOut"
-          aria-label="缩小图片"
-          title="缩小"
+          :aria-label="translate('common.imagePreview.zoomOutOfImage')"
+          :title="translate('markdown.mermaid.zoomOut')"
           @click="changeZoom(1 / ZOOM_FACTOR)"
         >
           <i class="ri-zoom-out-line text-lg" aria-hidden="true"></i>
@@ -100,8 +100,8 @@
           type="button"
           class="btn btn-ghost font-mono tabular-nums btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotResetZoom"
-          :aria-label="`缩放 ${zoomPercent}%，点击恢复适应屏幕`"
-          title="适应屏幕"
+          :aria-label="translate('common.imagePreview.zoomClickToFitToScreen', { p0: zoomPercent })"
+          :title="translate('common.imagePreview.fitToScreen')"
           @click="resetZoom"
         >
           {{ zoomPercent }}%
@@ -115,8 +115,8 @@
           type="button"
           class="btn btn-square btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotZoomIn"
-          aria-label="放大图片"
-          title="放大"
+          :aria-label="translate('common.imagePreview.zoomInOnImage')"
+          :title="translate('markdown.mermaid.zoomIn')"
           @click="changeZoom(ZOOM_FACTOR)"
         >
           <i class="ri-zoom-in-line text-lg" aria-hidden="true"></i>
@@ -137,6 +137,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -435,7 +438,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     PhotoSwipe = await loadPhotoSwipe();
   } catch (error) {
     console.error("图片预览模块加载失败", error);
-    if (requestId === openRequestId) toast.error("图片预览加载失败");
+    if (requestId === openRequestId) toast.error(translate('common.imagePreview.imagePreviewFailedToLoad'));
     return;
   }
   if (requestId !== openRequestId) return;
@@ -490,7 +493,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     close: false,
     zoom: false,
     preloader: false,
-    errorMsg: "图片加载失败",
+    get errorMsg() { return translate('common.imagePreview.imageFailedToLoad'); },
     paddingFn: (_viewportSize, itemData) => ({
       top: 16,
       right: 16,
@@ -513,7 +516,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
   instance.on("firstUpdate", () => {
     if (!inline) return;
     instance.element?.setAttribute("role", "group");
-    instance.element?.setAttribute("aria-label", props.ariaLabel);
+    instance.element?.setAttribute("aria-label", localizeText(props.ariaLabel));
   });
   instance.on("change", () => {
     syncGalleryState(instance);
@@ -614,7 +617,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     photoSwipe = null;
     resetPreviewState();
     if (!inline) modalClose.discard({ close: false });
-    toast.error("图片预览打开失败");
+    toast.error(translate('common.imagePreview.imagePreviewFailedToOpen'));
   }
 };
 
@@ -734,7 +737,7 @@ watch(
 );
 
 watch(
-  () => props.ariaLabel,
+  () => localizeText(props.ariaLabel),
   (label) => {
     if (props.mode === "inline") {
       photoSwipe?.element?.setAttribute("aria-label", label);

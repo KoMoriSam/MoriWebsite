@@ -62,6 +62,10 @@
 }
 
 @layer base {
+  :where(html[lang="en"], html[lang="si"]) .btn {
+    white-space: normal;
+  }
+
   img {
     @apply drag-none select-none;
   }

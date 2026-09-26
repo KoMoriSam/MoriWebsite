@@ -1,24 +1,24 @@
 <template>
   <ContentPage
-    eyebrow="Open Source &amp; Attributions"
-    title="开源许可与第三方声明"
-    description="项目的 MIT 许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。"
+    :eyebrow="translate('common.sections.openSource')"
+    :title="translate('pages.licenses.licensesThirdPartyNotices')"
+    :description="translate('pages.licenses.theProjectSMitLicenseAppliesOnlyToOriginalSoftware')"
   >
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-puzzle-line"></i>
-        {{ licenseData.dependencyCount }} 个依赖版本
+        {{ licenseData.dependencyCount }} {{ translate('pages.licenses.dependencyVersions') }}
       </span>
       <span class="inline-flex items-center gap-1">
         <i class="ri-certificate-line"></i>
-        {{ licenseData.supplementalLicenses.length }} 份补充许可
+        {{ licenseData.supplementalLicenses.length }} {{ translate('pages.licenses.additionalLicenses') }}
       </span>
       <span
         v-if="licenseData.missingLicenseFileCount"
         class="inline-flex items-center gap-1"
       >
         <i class="ri-certificate-2-line"></i>
-        {{ licenseData.missingLicenseFileCount }} 个包未附顶层许可文件
+        {{ licenseData.missingLicenseFileCount }} {{ translate('pages.licenses.packagesWithoutATopLevelLicenseFile') }}
       </span>
     </template>
 
@@ -27,8 +27,8 @@
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">Original software source</p>
-          <h2 class="font-serif text-2xl font-semibold">项目 MIT 许可</h2>
+          <p class="text-sm text-base-content/60">{{ translate('common.sections.originalSource') }}</p>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.projectMitLicense') }}</h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -36,7 +36,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          下载 LICENSE
+          {{ translate('pages.licenses.downloadLicense') }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
@@ -47,7 +47,7 @@
       >
         <summary class="collapse-title font-semibold">MIT License</summary>
         <div class="collapse-content">
-          <pre
+          <pre lang="en"
             class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
           ><code>{{ licenseData.projectLicense }}</code></pre>
         </div>
@@ -59,11 +59,11 @@
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">Scope and attribution</p>
-          <h2 class="font-serif text-2xl font-semibold">第三方声明</h2>
+          <p class="text-sm text-base-content/60">{{ translate('common.sections.attribution') }}</p>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.thirdPartyNotices') }}</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="join" role="group" aria-label="第三方声明语言">
+          <div class="join" role="group" :aria-label="translate('pages.licenses.noticeLanguage')">
             <button
               type="button"
               class="btn btn-sm join-item"
@@ -71,7 +71,7 @@
               :aria-pressed="noticeLanguage === 'zh-CN'"
               @click="noticeLanguage = 'zh-CN'"
             >
-              中文
+              {{ translate('pages.licenses.chinese') }}
             </button>
             <button
               type="button"
@@ -114,10 +114,8 @@
         class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">
-            Installed production dependency graph
-          </p>
-          <h2 class="font-serif text-2xl font-semibold">生产依赖许可</h2>
+          <p class="text-sm text-base-content/60">{{ translate('common.sections.installedDependencies') }}</p>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.productionDependencyLicenses') }}</h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -125,13 +123,13 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          下载完整汇总
+          {{ translate('pages.licenses.downloadAllNotices') }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
 
       <p class="mb-5 text-sm text-base-content/70">
-        以下内容来自构建时实际安装的软件包。若软件包未携带顶层许可文件，条目仍会保留其声明的许可证和上游地址，并明确标记缺失情况。
+        {{ translate('pages.licenses.theseNoticesComeFromThePackagesInstalledAtBuildTime') }}
       </p>
 
       <div class="grid gap-3">
@@ -156,7 +154,7 @@
 
           <div class="collapse-content">
             <p class="mb-4 text-sm text-base-content/70">
-              上游：
+              {{ translate('pages.licenses.upstream') }}
               <a
                 v-if="sourceUrl(dependency.source)"
                 class="link link-hover break-all"
@@ -173,7 +171,7 @@
               v-if="!dependency.licenseFiles.length"
               class="rounded-box bg-base-200 p-4 text-sm text-base-content/70"
             >
-              此软件包未随已安装版本提供顶层许可证文件。
+              {{ translate('pages.licenses.theInstalledVersionOfThisPackageDoesNotIncludeA') }}
             </p>
 
             <div v-else class="grid gap-4">
@@ -200,10 +198,8 @@
       data-pagefind-ignore="all"
     >
       <div class="mb-4">
-        <p class="text-sm text-base-content/60">
-          Fonts, icons, and manual attributions
-        </p>
-        <h2 class="font-serif text-2xl font-semibold">补充许可文件</h2>
+        <p class="text-sm text-base-content/60">{{ translate('common.sections.fontNotices') }}</p>
+        <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.additionalLicenseFiles') }}</h2>
       </div>
 
       <div class="grid gap-3">
@@ -228,6 +224,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, nextTick, ref, watch } from "vue";
 import MarkdownIt from "markdown-it";
 import { useRoute } from "vue-router";
@@ -276,7 +275,7 @@ const rawNoticeUrl = computed(() =>
 );
 
 const rawNoticeLabel = computed(() =>
-  noticeLanguage.value === "zh-CN" ? "查看中文原始文本" : "View English source",
+  noticeLanguage.value === "zh-CN" ? translate('pages.licenses.viewChineseSource') : translate('common.sections.viewEnglishSource'),
 );
 
 const dependencyAnchor = (dependency) =>

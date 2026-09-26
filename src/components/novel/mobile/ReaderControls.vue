@@ -10,7 +10,7 @@
         v-if="controlsOpen"
         class="fixed inset-0 z-[60] bg-neutral/35"
         data-mobile-reader-controls
-        aria-label="阅读控制已打开，点击控制区域以外收起"
+        :aria-label="translate('reader.readerControls.readingControlsAreOpenTapOutsideToClose')"
         @pointerdown.self="closeAll"
       >
         <div class="pointer-events-none absolute inset-x-0 bottom-0">
@@ -24,32 +24,32 @@
                 <button
                   type="button"
                   class="btn shadow-sm"
-                  aria-label="书内搜索"
+                  :aria-label="translate('reader.readerControls.searchInBook')"
                   @click="openDialog('search')"
                 >
                   <i
                     class="ri-search-line text-xl"
                     aria-hidden="true"
                   ></i>
-                  搜索
+                  {{ translate('common.navBar.search') }}
                 </button>
                 <button
                   type="button"
                   class="btn shadow-sm"
-                  aria-label="使用帮助"
+                  :aria-label="translate('reader.readerControls.help')"
                   @click="showHelp"
                 >
                   <i
                     class="ri-question-line text-xl"
                     aria-hidden="true"
                   ></i>
-                  帮助
+                  {{ translate('reader.readerControls.help2') }}
                 </button>
                 <button
                   type="button"
                   class="btn shadow-sm"
                   :disabled="isLoadingContent"
-                  aria-label="刷新内容"
+                  :aria-label="translate('reader.novelReader.refreshContent')"
                   @click="refreshContent"
                 >
                   <i
@@ -57,13 +57,13 @@
                     :class="{ 'animate-spin': isLoadingContent }"
                     aria-hidden="true"
                   ></i>
-                  刷新
+                  {{ translate('reader.readerControls.refresh') }}
                 </button>
               </div>
 
               <nav
                 class="w-full border-t border-base-300 bg-base-100/95 pb-[env(safe-area-inset-bottom)] shadow-2xl backdrop-blur-md"
-                aria-label="移动阅读控制"
+                :aria-label="translate('reader.readerControls.mobileReadingControls')"
               >
                 <div
                   class="grid min-h-14 w-full grid-cols-[3rem_minmax(0,1fr)_3rem] items-center gap-1 border-b border-base-300/70 px-1 sm:grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] sm:gap-2 sm:px-2"
@@ -72,7 +72,7 @@
                     type="button"
                     class="btn btn-ghost btn-sm btn-square mx-auto"
                     :disabled="!hasPrevious || isLoadingContent"
-                    aria-label="上一章"
+                    :aria-label="translate('reader.chapterController.previousChapter')"
                     @click="emit('change-chapter', -1)"
                   >
                     <i class="ri-skip-left-line text-xl" aria-hidden="true"></i>
@@ -83,10 +83,10 @@
                     <span
                       >{{
                         isPagedMode
-                          ? `本章已读 ${safeCurrentPage} 页 / 共 ${safeTotalPages} 页`
-                          : `本章已读 ${pageProgressLabel}`
+                          ? translate('reader.readerControls.chapterPage', { p0: safeCurrentPage, p1: safeTotalPages })
+                          : translate('reader.readerControls.chapterProgress', { p0: pageProgressLabel })
                       }}
-                      · 全书进度 {{ readingProgressLabel }}</span
+                      {{ translate('reader.readerControls.bookProgress') }} {{ readingProgressLabel }}</span
                     >
                     <input
                       type="range"
@@ -95,7 +95,7 @@
                       :max="progressMax"
                       :value="progressValue"
                       :disabled="!paginationReady"
-                      aria-label="调整本章阅读位置"
+                      :aria-label="translate('reader.readerControls.adjustChapterReadingPosition')"
                       @input="handleProgressInput"
                     />
                   </label>
@@ -103,7 +103,7 @@
                     type="button"
                     class="btn btn-ghost btn-sm btn-square mx-auto"
                     :disabled="!hasNext || isLoadingContent"
-                    aria-label="下一章"
+                    :aria-label="translate('reader.chapterController.nextChapter')"
                     @click="emit('change-chapter', 1)"
                   >
                     <i
@@ -118,23 +118,23 @@
                 >
                   <button type="button" @click="goToCover">
                     <i class="ri-book-open-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">返回封面</span>
+                    ><span class="dock-label">{{ translate('reader.readerControls.backToCover') }}</span>
                   </button>
                   <button type="button" @click="openDialog('toc')">
                     <i class="ri-list-unordered text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">章节目录</span>
+                    ><span class="dock-label">{{ translate('reader.chapterList.chapters') }}</span>
                   </button>
                   <button type="button" @click="openDialog('comments')">
                     <i class="ri-chat-3-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">评论区</span>
+                    ><span class="dock-label">{{ translate('reader.readerControls.comments') }}</span>
                   </button>
                   <button type="button" @click="openDialog('format')">
                     <i class="ri-font-size-2 text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">界面排版</span>
+                    ><span class="dock-label">{{ translate('reader.readerControls.layout') }}</span>
                   </button>
                   <button type="button" @click="openDialog('more')">
                     <i class="ri-settings-3-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">更多设置</span>
+                    ><span class="dock-label">{{ translate('tools.imageConverter.moreSettings') }}</span>
                   </button>
                 </div>
               </nav>
@@ -150,7 +150,7 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[72dvh] flex-col rounded-t-box p-0">
-        <DialogHeader title="书内搜索" @back="requestCloseDialog" />
+        <DialogHeader :title="translate('reader.readerControls.searchInBook')" @back="requestCloseDialog" />
         <section class="min-h-0 overflow-hidden p-4">
           <NovelContentSearch
             :active="activeDialog === 'search'"
@@ -161,7 +161,7 @@
         </section>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">返回阅读控制</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
       </form>
     </dialog>
 
@@ -171,7 +171,7 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[76dvh] flex-col rounded-t-box p-0">
-        <DialogHeader title="章节目录" @back="requestCloseDialog" />
+        <DialogHeader :title="translate('reader.chapterList.chapters')" @back="requestCloseDialog" />
         <section class="min-h-0 p-4">
           <ChapterToc
             mobile
@@ -184,7 +184,7 @@
         </section>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">返回阅读控制</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
       </form>
     </dialog>
 
@@ -197,8 +197,8 @@
         class="modal-box flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none p-0 sm:h-[min(90dvh,52rem)] sm:max-h-[min(90dvh,52rem)] sm:rounded-box"
       >
         <DialogHeader
-          title="界面排版"
-          subtitle="调整后可在下方即时预览"
+          :title="translate('reader.readerControls.layout')"
+          :subtitle="translate('reader.formatSetting.previewChangesBelowAsYouAdjust')"
           @back="requestCloseDialog"
         >
           <template #action>
@@ -209,14 +209,14 @@
               @click="readerStore.resetMobileLayout"
             >
               <i class="ri-reset-left-line" aria-hidden="true"></i>
-              恢复默认
+              {{ translate('reader.formatSetting.resetToDefaults') }}
             </button>
           </template>
         </DialogHeader>
         <FormatSetting mobile :show-header="false" />
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">返回阅读控制</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
       </form>
     </dialog>
 
@@ -226,11 +226,11 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box max-h-[78dvh] overflow-y-auto rounded-t-box p-0">
-        <DialogHeader title="更多设置" @back="requestCloseDialog" />
+        <DialogHeader :title="translate('tools.imageConverter.moreSettings')" @back="requestCloseDialog" />
         <ReaderMoreSettings @edit-tap-zones="openTapZoneEditor" />
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">返回阅读控制</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
       </form>
     </dialog>
 
@@ -241,7 +241,7 @@
     >
       <div class="modal-box flex max-h-[78dvh] flex-col rounded-t-box p-0">
         <DialogHeader
-          :title="currentMapping === 'title' ? '本章说' : '本书说'"
+          :title="currentMapping === 'title' ? translate('reader.novelReader.chapterComments') : translate('reader.novelReader.bookComments')"
           @back="requestCloseDialog"
         >
           <template #action>
@@ -250,7 +250,7 @@
               class="btn btn-info btn-soft btn-xs shrink-0"
               @click="commentToggle"
             >
-              {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
+              {{ currentMapping === "title" ? translate('reader.novelReader.switchToBookComments') : translate('reader.novelReader.switchToChapterComments') }}
             </button>
           </template>
         </DialogHeader>
@@ -268,13 +268,13 @@
             emit-metadata="0"
             input-position="bottom"
             :theme="giscusTheme"
-            lang="zh-CN"
+            :lang="commentLocale"
             loading="lazy"
           />
         </section>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">返回阅读控制</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
       </form>
     </dialog>
 
@@ -286,6 +286,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, commentLocale } = useLocale();
+
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";

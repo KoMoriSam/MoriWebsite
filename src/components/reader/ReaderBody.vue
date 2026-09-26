@@ -14,7 +14,7 @@
 
     <aside
       v-if="showToc"
-      aria-label="阅读目录"
+      :aria-label="translate('reader.readerBody.readingContents')"
       :class="[
         'sticky z-10 xl:hidden transition-[top] duration-300 ease-out motion-reduce:transition-none',
         mobileTocCompact ? 'top-0' : 'top-2',
@@ -86,7 +86,7 @@
           top: stickyTop,
           height: `calc(90dvh - ${stickyTop})`,
         }"
-        aria-label="阅读目录"
+        :aria-label="translate('reader.readerBody.readingContents')"
       >
         <slot name="toc" />
       </aside>
@@ -120,7 +120,7 @@
           maskImage: asideMaskImage,
           WebkitMaskImage: asideMaskImage,
         }"
-        aria-label="阅读辅助内容"
+        :aria-label="translate('reader.readerBody.readingAids')"
       >
         <slot name="aside" />
       </aside>
@@ -129,6 +129,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useScrollMask } from "@/composables/useScrollMask";
 

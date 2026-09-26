@@ -1,5 +1,6 @@
 import { createApp, ref, h, onBeforeUnmount } from "vue";
 import Modal from "@/components/ui/Modal.vue";
+import { useLocale } from "@/i18n";
 import {
   captureTrackedPosition,
   restoreTrackedPosition,
@@ -299,6 +300,7 @@ const modal = {
       description = "这是一个提示弹窗。",
       buttonText = "关闭",
       cancelText = "取消",
+      localeService,
       buttonMode = "footer",
       variant = "default",
       scrollContent = false,
@@ -338,13 +340,13 @@ const modal = {
               ref: modalRef,
               title,
               description,
-              buttonText,
-              cancelText,
+              buttonText: localeService.text(buttonText),
+              cancelText: localeService.text(cancelText),
               buttonMode,
               variant,
               scrollContent,
               showBack,
-              backLabel,
+              backLabel: localeService.text(backLabel),
               onSubmit,
               onCancel,
               onBack,
@@ -354,7 +356,7 @@ const modal = {
             {
               title: () =>
                 typeof title === "string"
-                  ? h("h3", { class: "text-lg font-serif font-bold" }, title)
+                  ? h("h3", { class: "text-lg font-serif font-bold" }, localeService.text(title))
                   : h(
                       "hgroup",
                       { class: "text-lg font-serif font-bold" },
@@ -362,7 +364,7 @@ const modal = {
                     ),
               description: () =>
                 typeof description === "string"
-                  ? h("p", description)
+                  ? h("p", localeService.text(description))
                   : h("article", description),
               "leading-action": () => leadingAction,
             },
@@ -370,6 +372,7 @@ const modal = {
       },
     });
 
+    localeService.provide(modalApp);
     modalApp.mount(container);
 
     return {
@@ -394,5 +397,14 @@ const modal = {
 };
 
 export function useModal() {
-  return modal;
+  const localeService = useLocale();
+  return {
+    show: (options) => modal.show({ ...options, localeService }),
+    info: (title, description, options = {}) => modal.show({ title, description, ...options, localeService }),
+    confirm: (title, description, options = {}) => modal.show({
+      title, description, ...options, localeService, variant: "confirm",
+      buttonText: options.buttonText || "确认",
+      cancelText: options.cancelText || "取消",
+    }),
+  };
 }

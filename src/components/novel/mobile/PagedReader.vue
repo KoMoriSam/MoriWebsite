@@ -2,7 +2,7 @@
   <section
     ref="sectionRef"
     class="relative flex min-h-0 flex-1 flex-col overflow-hidden"
-    aria-label="分页阅读器"
+    :aria-label="translate('reader.pagedReader.pagedReader')"
     :aria-busy="showChapterLoadingOverlay"
     :style="readerTypographyStyle"
   >
@@ -113,16 +113,16 @@
           <button
             type="button"
             data-reader-interactive
-            aria-label="阅读操作提示：轻触九宫格区域执行对应操作，左右滑动翻页，点击提示关闭"
+            :aria-label="translate('reader.pagedReader.readerHelpTapAGridZoneForItsActionSwipe')"
             class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
             @pointerdown.stop
             @click.stop="dismissReaderHint"
           >
             <span class="block w-full">
               <span class="flex items-baseline justify-between gap-3">
-                <span class="text-sm font-semibold">阅读操作</span>
+                <span class="text-sm font-semibold">{{ translate('reader.pagedReader.readingControls') }}</span>
                 <span class="text-[0.6875rem] text-base-content/45">
-                  轻触提示可关闭
+                  {{ translate('reader.pagedReader.tapThisHintToDismiss') }}
                 </span>
               </span>
 
@@ -135,13 +135,13 @@
                     aria-hidden="true"
                   ></i>
                   <span class="mt-1.5 block text-xs font-semibold">
-                    轻触操作（可自定义）
+                    {{ translate('reader.pagedReader.tapActionsCustomizable') }}
                   </span>
                   <span
                     class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                   >
-                    中央展开菜单<br />
-                    四周翻页
+                    {{ translate('reader.pagedReader.tapTheCenterForTheMenu') }}<br />
+                    {{ translate('reader.pagedReader.tapTheEdgesToTurnPages') }}
                   </span>
                 </span>
 
@@ -153,12 +153,12 @@
                     aria-hidden="true"
                   ></i>
                   <span class="mt-1.5 block text-xs font-semibold">
-                    滑动翻页
+                    {{ translate('reader.pagedReader.swipeToTurnPages') }}
                   </span>
                   <span
                     class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                   >
-                    正文区域<br />可左右滑动
+                    {{ translate('reader.pagedReader.textArea') }}<br />{{ translate('reader.pagedReader.swipeLeftOrRight') }}
                   </span>
                 </span>
               </span>
@@ -166,9 +166,9 @@
               <span
                 class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
               >
-                <span class="shrink-0 font-semibold">更多控制</span>
+                <span class="shrink-0 font-semibold">{{ translate('reader.pagedReader.moreControls') }}</span>
                 <span class="text-base-content/60">
-                  九宫格区域可设为菜单、上一章、下一章、目录、搜索、帮助等操作
+                  {{ translate('reader.pagedReader.assignGridZonesToTheMenuPreviousOrNextChapter') }}
                 </span>
               </span>
             </span>
@@ -199,6 +199,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, nextTick, ref, toRef, watch } from "vue";
 import { useRoute } from "vue-router";
 

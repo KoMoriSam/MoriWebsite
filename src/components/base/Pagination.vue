@@ -15,7 +15,7 @@
         <a
           :href="href"
           class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-          aria-label="上一页"
+          :aria-label="translate('common.pagination.previousPage')"
           @click="requestLinkedPage(currentPage - 1, $event)"
         >
           <i class="ri-arrow-left-s-line text-lg"></i>
@@ -28,7 +28,7 @@
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
         :disabled="currentPage <= 1 && !canNavigateBefore"
         :aria-label="
-          currentPage <= 1 && canNavigateBefore ? beforeBoundaryLabel : '上一页'
+          currentPage <= 1 && canNavigateBefore ? localizeText(beforeBoundaryLabel) : translate('common.pagination.previousPage')
         "
         @click="requestPrevious"
       >
@@ -42,22 +42,11 @@
         class="btn join-item h-10 min-h-10 min-w-0 max-w-[calc(100vw-7rem)] gap-1 overflow-hidden px-2 text-xs sm:max-w-48 sm:px-3 sm:text-sm"
         :class="{ 'btn-active': isPageMenuOpen }"
         :aria-expanded="isPageMenuOpen"
+        :aria-label="translate('common.pagination.position', { p0: formatNumber(currentPage), p1: formatNumber(totalPages) })"
         aria-haspopup="dialog"
         @click="togglePageMenu"
       >
-        <span class="truncate">
-          <span class="hidden xs:inline">第 </span>
-          <span class="font-semibold">{{ currentPage }}</span>
-          <span class="hidden xs:inline"> 页</span>
-
-          <span class="mx-1 opacity-40">/</span>
-
-          <span class="opacity-70">
-            <span class="hidden xs:inline">共 </span>
-            {{ totalPages }}
-            <span class="hidden xs:inline"> 页</span>
-          </span>
-        </span>
+        <span class="truncate"><span class="font-semibold">{{ formatNumber(currentPage) }}</span><span class="mx-1 opacity-40">/</span><span class="opacity-70">{{ formatNumber(totalPages) }}</span></span>
 
         <i
           class="ri-arrow-up-s-line shrink-0 text-base transition-transform duration-200"
@@ -117,7 +106,7 @@
         <a
           :href="href"
           class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-          aria-label="下一页"
+          :aria-label="translate('common.pagination.nextPage')"
           @click="requestLinkedPage(currentPage + 1, $event)"
         >
           <i class="ri-arrow-right-s-line text-lg"></i>
@@ -131,8 +120,8 @@
         :disabled="currentPage >= totalPages && !canNavigateAfter"
         :aria-label="
           currentPage >= totalPages && canNavigateAfter
-            ? afterBoundaryLabel
-            : '下一页'
+            ? localizeText(afterBoundaryLabel)
+            : translate('common.pagination.nextPage')
         "
         @click="requestNext"
       >
@@ -145,17 +134,13 @@
       v-if="isCompactLayout && isPageMenuOpen"
       :visible="true"
       button-mode="close"
-      title="选择页码"
+      :title="translate('common.pagination.choosePage')"
       @close="closePageMenu"
     >
       <template #title>
-        <h3 class="text-lg font-bold">选择页码</h3>
+        <h3 class="text-lg font-bold">{{ translate('common.pagination.choosePage') }}</h3>
         <p class="mt-1 text-sm font-normal text-base-content/60">
-          当前第
-          <span class="font-medium text-base-content">{{ currentPage }}</span>
-          页，共
-          <span class="font-medium text-base-content">{{ totalPages }}</span>
-          页
+          {{ translate('common.pagination.position', { p0: formatNumber(currentPage), p1: formatNumber(totalPages) }) }}
         </p>
       </template>
 
@@ -220,7 +205,7 @@
               @click="selectLinkedPage(1, $event)"
             >
               <i class="ri-skip-left-line shrink-0"></i>
-              <span>第一页</span>
+              <span>{{ translate('common.pagination.firstPage') }}</span>
             </a>
           </RouterLink>
 
@@ -232,7 +217,7 @@
             @click="selectPage(1)"
           >
             <i class="ri-skip-left-line shrink-0"></i>
-            <span>第一页</span>
+            <span>{{ translate('common.pagination.firstPage') }}</span>
           </button>
 
           <RouterLink
@@ -246,7 +231,7 @@
               class="btn min-w-0 gap-2"
               @click="selectLinkedPage(totalPages, $event)"
             >
-              <span>最后一页</span>
+              <span>{{ translate('common.pagination.lastPage') }}</span>
               <i class="ri-skip-right-line shrink-0"></i>
             </a>
           </RouterLink>
@@ -258,7 +243,7 @@
             :disabled="currentPage >= totalPages"
             @click="selectPage(totalPages)"
           >
-            <span>最后一页</span>
+            <span>{{ translate('common.pagination.lastPage') }}</span>
             <i class="ri-skip-right-line shrink-0"></i>
           </button>
         </footer>
@@ -268,6 +253,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, number: formatNumber } = useLocale();
+
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import Modal from "@/components/ui/Modal.vue";
 

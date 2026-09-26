@@ -432,6 +432,7 @@ const normalizeShareContent = (
             ? block.taskTone
             : "muted",
           label: normalizeText(block?.label),
+          systemLabel: block?.systemLabel === true,
           language: normalizeText(block?.language),
           tone: ["info", "success", "warning", "error", "accent"].includes(
             block?.tone,
@@ -550,7 +551,7 @@ const prepareLinkIconRuns = async (blocks) => {
   );
 };
 
-const prepareInlineImageRuns = async (blocks) => {
+const prepareInlineImageRuns = async (blocks, localize) => {
   const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
   await Promise.all(
     runs.map(async (run) => {
@@ -560,7 +561,7 @@ const prepareInlineImageRuns = async (blocks) => {
         run.inlineImageAsset = image;
         return;
       }
-      run.text = run.inlineImageAlt || "图片";
+      run.text = run.inlineImageAlt || localize("图片");
       run.inlineImageSrc = "";
     }),
   );
@@ -793,7 +794,7 @@ const prepareMermaidBlocks = async (blocks) => {
   );
 };
 
-const prepareImageBlocks = async (blocks) => {
+const prepareImageBlocks = async (blocks, localize) => {
   await Promise.all(
     blocks.map(async (block) => {
       if (block.type !== "image" || !block.src) return;
@@ -807,7 +808,7 @@ const prepareImageBlocks = async (blocks) => {
         return;
       }
       if (!block.runs.length) {
-        block.runs = normalizeRuns([{ text: block.alt || "图片" }]);
+        block.runs = normalizeRuns([{ text: block.alt || localize("图片") }]);
       }
     }),
   );
@@ -1973,13 +1974,17 @@ export const createReaderShareCard = async ({
   shareContent,
   paragraphId,
   meta = {},
-}) => {
+}, { localize = (value) => value } = {}) => {
   const blocks = normalizeShareContent(
     shareContent,
     text,
     meta.excludeFromContent,
   );
   if (!blocks.length) throw new Error("没有可分享的正文");
+  for (const block of blocks) {
+    if (block.systemLabel) block.label = localize(block.label);
+    if (block.type === "mermaid") block.runs = [{ text: localize("Mermaid 图表") }];
+  }
 
   await document.fonts?.ready;
   const [appearance, favicon] = await Promise.all([
@@ -1995,9 +2000,9 @@ export const createReaderShareCard = async ({
   await Promise.all([
     prepareLatexRuns(blocks, appearance),
     prepareLinkIconRuns(blocks),
-    prepareInlineImageRuns(blocks),
+    prepareInlineImageRuns(blocks, localize),
     prepareMermaidBlocks(blocks),
-    prepareImageBlocks(blocks),
+    prepareImageBlocks(blocks, localize),
   ]);
 
   context.textBaseline = "alphabetic";
@@ -2022,7 +2027,7 @@ export const createReaderShareCard = async ({
     weight: "600",
   });
   context.fillStyle = appearance.foreground;
-  const sourceLabel = normalizeText(meta.sourceLabel) || "远方之森";
+  const sourceLabel = normalizeText(localize(meta.sourceLabel)) || "远方之森";
   context.fillText(
     context.measureText(sourceLabel).width > TEXT_WIDTH
       ? fitEllipsis(context, sourceLabel, TEXT_WIDTH)
@@ -2091,7 +2096,7 @@ export const createReaderShareCard = async ({
   return {
     blob,
     canvas,
-    fileName: `${fileBase}-分享卡片.png`,
+    fileName: `${fileBase}-${localize("分享卡片")}.png`,
     shareUrl,
     truncated: bodyLayout.truncated,
   };

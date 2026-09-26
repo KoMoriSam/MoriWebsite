@@ -580,9 +580,10 @@ const getContextMeta = (block) => {
   if (alert) {
     return {
       type: "callout",
+      systemLabel: Boolean(alert.dataset.systemLabel) || !alert.querySelector(":scope > summary.alert-title h6")?.textContent,
       tone: getAlertTone(alert),
       label: normalizeLabel(
-        alert.querySelector(":scope > summary.alert-title h6")?.textContent ||
+        alert.dataset.systemLabel || alert.querySelector(":scope > summary.alert-title h6")?.textContent ||
           "提示",
       ),
     };
@@ -592,6 +593,7 @@ const getContextMeta = (block) => {
   if (chat) {
     return {
       type: "chat",
+      systemLabel: !(block.querySelector(".chat-header")?.textContent || block.closest(".chat")?.querySelector(".chat-header")?.textContent),
       label:
         normalizeLabel(
           block.querySelector(".chat-header")?.textContent ||
@@ -604,6 +606,7 @@ const getContextMeta = (block) => {
   if (moment) {
     return {
       type: "moment",
+      systemLabel: !moment.querySelector(".header-title")?.textContent,
       label:
         normalizeLabel(moment.querySelector(".header-title")?.textContent) ||
         "动态",

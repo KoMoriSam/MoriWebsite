@@ -15,7 +15,7 @@
           class="flex max-h-[82vh] w-full max-w-3xl flex-col rounded-box border border-base-300 bg-base-100 shadow-2xl"
           @keydown="handleDialogKeydown"
         >
-          <h2 id="global-search-title" class="sr-only">全局内容搜索</h2>
+          <h2 id="global-search-title" class="sr-only">{{ translate('common.search.siteSearch') }}</h2>
 
           <div class="border-base-300 pt-1 p-2 sm:pt-2 sm:p-4">
             <div ref="searchBox" class="relative">
@@ -36,7 +36,7 @@
                     :key="`type-${type}`"
                     type="button"
                     class="badge badge-info pl-2.5 pr-1.5"
-                    :aria-label="`移除类型 ${getTypeLabel(type)}`"
+                    :aria-label="translate('common.search.removeType', { p0: getTypeLabel(type) })"
                     @click="removeSelectedType(type)"
                   >
                     <span class="truncate">{{ getTypeLabel(type) }}</span>
@@ -48,7 +48,7 @@
                     :key="`tag-${tag}`"
                     type="button"
                     class="badge badge-primary badge-soft pl-2.5 pr-1.5"
-                    :aria-label="`移除筛选 ${getSelectedTagLabel(tag)}`"
+                    :aria-label="translate('common.search.removeFilter', { p0: getSelectedTagLabel(tag) })"
                     @click="removeSelectedTag(tag)"
                   >
                     <span class="truncate">{{ getSelectedTagLabel(tag) }}</span>
@@ -60,7 +60,7 @@
                     :key="`year-${year}`"
                     type="button"
                     class="badge badge-secondary badge-soft pl-2.5 pr-1.5"
-                    :aria-label="`移除年份 ${year}`"
+                    :aria-label="translate('common.search.removeYear', { p0: year })"
                     @click="removeSelectedYear(year)"
                   >
                     {{ year }}
@@ -69,8 +69,7 @@
                 </div>
 
                 <label for="global-article-search" class="sr-only">
-                  搜索正文，输入 @ 符号筛选内容类型，输入 # 号筛选内容分类，输入
-                  / 符号筛选年份
+                  {{ translate('common.search.searchContentUseForContentTypesForCategoriesAndFor') }}
                 </label>
                 <input
                   id="global-article-search"
@@ -79,7 +78,7 @@
                   type="search"
                   role="combobox"
                   class="min-w-32 flex-1 text-base sm:text-lg"
-                  placeholder="全站内容搜索"
+                  :placeholder="translate('common.search.searchThisSite')"
                   autocomplete="off"
                   spellcheck="false"
                   aria-autocomplete="list"
@@ -115,7 +114,7 @@
                   v-if="searchText || hasFilters"
                   type="button"
                   class="btn btn-circle btn-ghost btn-sm shrink-0"
-                  aria-label="清除全部搜索条件"
+                  :aria-label="translate('common.search.clearAllSearchFilters')"
                   @click="resetSearch"
                 >
                   <i class="ri-delete-bin-line" aria-hidden="true"></i>
@@ -131,10 +130,10 @@
                 role="listbox"
                 :aria-label="
                   activeFilterQuery.type === 'tag'
-                    ? '标签筛选建议'
+                    ? translate('common.search.tagFilterSuggestions')
                     : activeFilterQuery.type === 'year'
-                      ? '年份筛选建议'
-                      : '内容类型筛选建议'
+                      ? translate('common.search.yearFilterSuggestions')
+                      : translate('common.search.contentTypeFilterSuggestions')
                 "
               >
                 <div
@@ -153,17 +152,17 @@
                     ></i>
                     {{
                       activeFilterQuery.type === "tag"
-                        ? "选择内容分类"
+                        ? translate('common.search.chooseContentCategory')
                         : activeFilterQuery.type === "year"
-                          ? "选择发布年份"
-                          : "选择内容类型"
+                          ? translate('common.search.choosePublicationYear')
+                          : translate('common.search.chooseContentType')
                     }}
                   </span>
                   <span class="hidden sm:inline">
                     <kbd class="kbd kbd-xs">↑</kbd
-                    ><kbd class="kbd kbd-xs">↓</kbd> 选择 ·
-                    <kbd class="kbd kbd-xs">Enter</kbd> 确认 ·
-                    <kbd class="kbd kbd-xs">Esc</kbd> 关闭
+                    ><kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select') }}
+                    <kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.confirm') }}
+                    <kbd class="kbd kbd-xs">Esc</kbd> {{ translate('common.modal.close') }}
                   </span>
                 </div>
 
@@ -185,7 +184,7 @@
                         {{ group.label }}
                       </span>
                       <span class="shrink-0 font-normal text-base-content/40">
-                        {{ group.count }} 项
+                        {{ group.count }} {{ translate('common.search.items') }}
                       </span>
                     </div>
 
@@ -207,8 +206,8 @@
                             option.type === 'tag'
                               ? `${option.typeLabel} ${option.fullLabel}`
                               : option.type === 'year'
-                                ? `年份 ${option.label}`
-                                : `内容类型 ${option.label}`
+                                ? translate('common.search.year', { p0: option.label })
+                                : translate('common.search.contentType', { p0: option.label })
                           "
                           :aria-selected="activeFilterIndex === option.index"
                           class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
@@ -237,11 +236,11 @@
                             <template v-else>{{ option.prefix }}</template>
                           </span>
                           <span class="min-w-0 flex-1 truncate font-medium">
-                            {{ option.label }}
+                            {{ localizeText(option.label) }}
                           </span>
                           <span class="text-xs text-base-content/40">
                             {{ option.count }}
-                            {{ option.type === "type" ? "项" : "篇" }}
+                            {{ option.type === "type" ? translate('common.search.items') : translate('pages.articleList.articles3') }}
                           </span>
                         </button>
                       </li>
@@ -255,17 +254,17 @@
                 >
                   {{
                     activeFilterQuery.query
-                      ? `没有匹配“${activeFilterQuery.query}”的选项`
-                      : "没有更多可选条件"
+                      ? translate('common.search.noOptionsMatch', { p0: activeFilterQuery.query })
+                      : translate('common.search.noMoreFiltersAvailable')
                   }}
                 </p>
               </div>
             </div>
 
             <p class="my-1 px-1 text-xs text-base-content/40">
-              输入 <kbd class="kbd kbd-xs">@</kbd> 筛选类型，
-              <kbd class="kbd kbd-xs">#</kbd> 筛选标签、小说卷或更新类型，
-              <kbd class="kbd kbd-xs">/</kbd> 筛选年份，可组合多个条件。
+              {{ translate('common.search.enter') }} <kbd class="kbd kbd-xs">@</kbd> {{ translate('common.search.toFilterTypes') }}
+              <kbd class="kbd kbd-xs">#</kbd> {{ translate('common.search.toFilterTagsNovelVolumesOrChangeTypes') }}
+              <kbd class="kbd kbd-xs">/</kbd> {{ translate('common.search.toFilterYearsYouCanCombineFilters') }}
             </p>
           </div>
 
@@ -277,7 +276,7 @@
               <div
                 v-if="isLoading"
                 class="space-y-3 p-4 sm:p-5"
-                aria-label="正在搜索"
+                :aria-label="translate('common.search.searching')"
               >
                 <div
                   v-for="index in 4"
@@ -301,16 +300,16 @@
                   class="ri-error-warning-line mb-3 block text-4xl text-error/65"
                   aria-hidden="true"
                 ></i>
-                <p class="font-medium">搜索索引暂时不可用</p>
+                <p class="font-medium">{{ translate('common.search.theSearchIndexIsTemporarilyUnavailable') }}</p>
                 <p class="mt-1 text-sm text-base-content/50">
-                  {{ errorMessage }}
+                  {{ localizeText(errorMessage) }}
                 </p>
                 <button
                   type="button"
                   class="btn btn-outline btn-sm mt-5"
                   @click="initializeSearch(true)"
                 >
-                  重试
+                  {{ translate('pages.announcements.retry') }}
                 </button>
               </div>
 
@@ -318,7 +317,7 @@
                 v-else-if="results.length"
                 class="menu w-full gap-1 p-2 sm:p-3"
                 role="listbox"
-                aria-label="全局搜索结果"
+                :aria-label="translate('common.search.siteSearchResults')"
               >
                 <li v-for="(result, index) in results" :key="result.url">
                   <button
@@ -345,7 +344,7 @@
                         >
                           <template
                             v-for="(part, partIndex) in highlightParts(
-                              result.title,
+                              result.type === 'licenses' ? localizeText(result.title) : result.title,
                             )"
                             :key="`${part.text}-${partIndex}`"
                           >
@@ -389,7 +388,7 @@
                               !shouldMoveChangelogDateToSummary(result)
                             "
                           >
-                            {{ result.date }}
+                            {{ formatLocalizedDate(result.date) }}
                           </time>
                           <span
                             v-for="tag in result.tags"
@@ -415,16 +414,16 @@
                             v-for="meta in result.metadata"
                             :key="`${result.url}-${meta.key}`"
                             class="inline-flex min-w-0 max-w-full items-center gap-1"
-                            :title="`${meta.label}：${meta.value}`"
+                            :title="`${localizeText(meta.label)}: ${metadataValue(meta)}`"
                           >
                             <i
                               class="shrink-0"
                               :class="meta.icon"
                               aria-hidden="true"
                             ></i>
-                            <span class="shrink-0">{{ meta.label }}</span>
+                            <span class="shrink-0">{{ localizeText(meta.label) }}</span>
                             <span class="max-w-48 truncate">
-                              {{ meta.value }}
+                              {{ metadataValue(meta) }}
                             </span>
                           </span>
                         </span>
@@ -444,9 +443,9 @@
                   class="ri-search-eye-line mb-3 block text-4xl text-base-content/20"
                   aria-hidden="true"
                 ></i>
-                <p class="font-medium">没有找到匹配的内容</p>
+                <p class="font-medium">{{ translate('common.search.noMatchingContentFound') }}</p>
                 <p class="mt-1 text-sm text-base-content/45">
-                  试试更短的关键词，或清除部分筛选条件
+                  {{ translate('common.search.tryShorterKeywordsOrRemoveSomeFilters') }}
                 </p>
               </div>
             </template>
@@ -456,13 +455,13 @@
             v-if="hasSearchCriteria"
             class="flex items-center justify-between gap-3 border-t border-base-300 bg-base-200/45 px-4 py-2 text-xs text-base-content/45"
           >
-            <span>{{ results.length }} 项结果</span>
+            <span>{{ results.length }} {{ translate('common.search.results') }}</span>
             <span class="hidden items-center gap-3 sm:flex">
               <span
                 ><kbd class="kbd kbd-xs">↑</kbd>
-                <kbd class="kbd kbd-xs">↓</kbd> 选择</span
+                <kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select2') }}</span
               >
-              <span><kbd class="kbd kbd-xs">Enter</kbd> 打开</span>
+              <span><kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.open') }}</span>
             </span>
           </footer>
         </section>
@@ -472,6 +471,19 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, message: localeMessage, date: formatLocalizedDate, number: formatNumber } = useLocale();
+
+const metadataValue = (meta) => {
+  if (meta.rawValue != null && /^(date|created|updated|modified|modifiedDate|uploadDate)$/.test(meta.key)) {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    if (/[T\s]\d{1,2}:\d{2}/.test(String(meta.rawValue))) Object.assign(options, { hour: '2-digit', minute: '2-digit' });
+    return formatLocalizedDate(meta.rawValue, options);
+  }
+  if (meta.key === 'length' && Number.isFinite(Number(meta.rawValue))) return translate('pages.articleReader.characters', { p0: formatNumber(Number(meta.rawValue)) });
+  return localizeText(meta.value);
+};
+
 import {
   computed,
   nextTick,
@@ -545,7 +557,7 @@ const hasSearchCriteria = computed(() => {
 const formatTag = formatArticleTag;
 const getTypeLabel = (type) => {
   return (
-    CONTENT_TYPES.find((option) => option.value === type)?.label ||
+    localizeText(CONTENT_TYPES.find((option) => option.value === type)?.label) ||
     String(type || "")
   );
 };
@@ -596,8 +608,8 @@ const shouldMoveChangelogDateToSummary = (result) => {
 };
 const getResultSummary = (result) => {
   return shouldMoveChangelogDateToSummary(result)
-    ? result.date
-    : result?.summary || "";
+    ? formatLocalizedDate(result.date)
+    : result.type === 'licenses' ? localizeText(result.summary || '') : result?.summary || "";
 };
 const shouldShowResultSummary = (result) => {
   if (shouldMoveChangelogDateToSummary(result)) return true;
@@ -626,7 +638,7 @@ const filteredFilterOptions = computed(() => {
       .filter(
         (type) =>
           !normalizedQuery ||
-          type.label
+          localizeText(type.label)
             .normalize("NFKC")
             .toLocaleLowerCase()
             .includes(normalizedQuery) ||
@@ -635,8 +647,8 @@ const filteredFilterOptions = computed(() => {
       .map((type, index) => ({
         type: "type",
         value: type.value,
-        label: type.label,
-        fullLabel: type.label,
+        label: localizeText(type.label),
+        fullLabel: localizeText(type.label),
         groupKey: "",
         groupLabel: "",
         prefix: "@",
@@ -672,10 +684,10 @@ const filteredFilterOptions = computed(() => {
             ? tagSegments.at(-1) || tag.label
             : tag.label;
         const groupLabelByType = {
-          blog: "博客标签",
-          novel: "小说卷",
-          changelog: "更新类型",
-          licenses: "许可证类型",
+          get blog() { return translate('common.search.blogTags'); },
+          get novel() { return translate('common.search.novelVolumes'); },
+          get changelog() { return translate('common.search.changeTypes'); },
+          get licenses() { return translate('common.search.licenseTypes'); },
         };
         const nestedGroupLabel =
           tag.contentType === "blog" && tag.groupPath
@@ -903,7 +915,7 @@ const mapPagefindResult = async (result) => {
 
   return {
     url: String(data?.url || result.url || "/"),
-    title: String(meta.title || "未命名内容"),
+    title: String(meta.title || translate('common.search.untitledContent')),
     summary,
     content: excerpt,
     tags: parsePagefindMetadata(meta.tags),
@@ -981,7 +993,7 @@ const loadSearchEngine = async () => {
     throw (
       entriesResult.reason ||
       pagefindResult.reason ||
-      new Error("没有可用的搜索索引")
+      new Error(translate('common.search.noSearchIndexIsAvailable'))
     );
   }
 
@@ -1046,7 +1058,7 @@ const initializeSearch = async (force = false) => {
     await loadSearchEngine();
   } catch (error) {
     console.error("初始化全局搜索失败:", error);
-    errorMessage.value = "请刷新页面后再试。";
+    errorMessage.value = localeMessage('common.search.refreshThePageAndTryAgain');
     return;
   }
 
@@ -1127,7 +1139,7 @@ async function runSearch() {
     if (requestId !== searchRequestId) return;
 
     console.error("全局搜索失败:", error);
-    errorMessage.value = "无法读取搜索结果，请稍后重试。";
+    errorMessage.value = localeMessage('common.search.cannotReadSearchResultsPleaseTryAgainLater');
     results.value = [];
     activeIndex.value = -1;
   } finally {

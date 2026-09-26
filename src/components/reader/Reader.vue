@@ -74,10 +74,10 @@
     </div>
     <form method="dialog" class="modal-backdrop">
       <button
-        aria-label="关闭阅读排版设置"
+        :aria-label="translate('reader.reader.closeReadingLayoutSettings')"
         @click.prevent="requestCloseFormatSetting"
       >
-        关闭阅读排版设置
+        {{ translate('reader.reader.closeReadingLayoutSettings') }}
       </button>
     </form>
   </dialog>
@@ -86,6 +86,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import "@/assets/font/reader-fonts.css";
 
 import {
@@ -232,7 +235,7 @@ const getHeadingText = (element, index) => {
     .querySelectorAll(".comment-trigger")
     .forEach((trigger) => trigger.remove());
 
-  return heading.textContent?.trim() || `标题 ${index + 1}`;
+  return heading.textContent?.trim() || translate('reader.reader.heading', { p0: index + 1 });
 };
 
 const createHeadingId = (element, index, text) => {

@@ -1,7 +1,7 @@
 <template>
   <ul class="menu">
     <li class="menu-title flex flex-row justify-between">
-      {{ title }}
+      {{ localizeText(title) }}
       <slot name="description"></slot>
     </li>
     <slot></slot>
@@ -9,5 +9,7 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { text: localizeText } = useLocale();
 const props = defineProps({ title: String });
 </script>

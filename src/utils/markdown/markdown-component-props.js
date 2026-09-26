@@ -58,6 +58,7 @@ const PROJECTORS = {
     type: stringValue(value.type, "info"),
     icon: stringValue(value.icon, "ri-information-line"),
     titleHtml: stringValue(value.titleHtml),
+    ...(typeof value.defaultTitle === "string" && value.defaultTitle ? { defaultTitle: value.defaultTitle } : {}),
     foldable: booleanValue(value.foldable),
     collapsed: booleanValue(value.collapsed),
   }),

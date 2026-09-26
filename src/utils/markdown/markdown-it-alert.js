@@ -185,7 +185,7 @@ function renderPreparedInlineToken(token, options, env, self) {
   return self.renderInline(token.children, options, env);
 }
 
-function prepareAlertTokens(md, tokens, env) {
+function prepareAlertTokens(md, tokens, env, translateTitle = (title) => title) {
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
     if (token.type !== "blockquote_open" || token.meta?.alert) continue;
@@ -217,7 +217,7 @@ function prepareAlertTokens(md, tokens, env) {
       }
     }
 
-    const title = parsed.customTitle || parsed.meta.title;
+    const title = parsed.customTitle || translateTitle(parsed.meta.title);
     const hasTitle = !!title;
     const titleToken = createPreparedInlineToken(token.constructor, title);
     const titleCollectorToken = createInlineCollectorToken(
@@ -230,6 +230,7 @@ function prepareAlertTokens(md, tokens, env) {
         type: parsed.meta.type,
         icon: parsed.meta.icon,
         title,
+        defaultTitle: parsed.customTitle ? "" : parsed.meta.title,
         titleToken,
         hasTitle,
         foldable: parsed.foldable,
@@ -245,13 +246,13 @@ function prepareAlertTokens(md, tokens, env) {
   }
 }
 
-export function alertPlugin(md) {
+export function alertPlugin(md, { translateTitle } = {}) {
   installInlineCollector(md);
   md.__komorisamPrepareAlertTokens = (tokens, env) =>
-    prepareAlertTokens(md, tokens, env);
+    prepareAlertTokens(md, tokens, env, translateTitle);
 
   md.core.ruler.after("block", "github_callout_to_alert", (state) =>
-    prepareAlertTokens(md, state.tokens, state.env),
+    prepareAlertTokens(md, state.tokens, state.env, translateTitle),
   );
 
   const defaultBlockquoteOpen =
@@ -288,6 +289,7 @@ export function alertPlugin(md) {
       type: alert.type,
       icon: alert.icon,
       titleHtml: summaryTitle,
+      defaultTitle: alert.defaultTitle,
       foldable: alert.foldable,
       collapsed: alert.collapsed,
     });

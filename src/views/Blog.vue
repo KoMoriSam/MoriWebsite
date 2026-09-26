@@ -12,7 +12,7 @@
       :content="articleContent"
       :list-route="lastListRoute"
       :loading="loadingContent"
-      :error="errorContent"
+      :error="localizeText(errorContent)"
       @navigate="prepareArticleNavigation"
       @refresh="refreshCurrentArticle"
       @back="goToList"
@@ -21,6 +21,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, message: localeMessage } = useLocale();
+
 import {
   defineAsyncComponent,
   nextTick,
@@ -172,7 +175,7 @@ const loadArticleContent = async (id, { keepCurrentContent = false } = {}) => {
   const article = articles.value.find((item) => String(item.id) === String(id));
 
   if (!article) {
-    errorContent.value = "文章不存在";
+    errorContent.value = localeMessage('pages.blog.articleNotFound');
     return;
   }
 
@@ -187,7 +190,7 @@ const loadArticleContent = async (id, { keepCurrentContent = false } = {}) => {
     articleContent.value = await fetchArticleContent(article.path);
   } catch (err) {
     console.error("加载文章内容失败:", err);
-    errorContent.value = "加载文章内容失败";
+    errorContent.value = localeMessage('pages.blog.failedToLoadArticleContent');
   } finally {
     loadingContent.value = false;
   }

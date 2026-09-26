@@ -35,8 +35,10 @@ export function useReaderSettingsStorage() {
     }
 
     // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
-    const oldValue =
-      typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    let oldValue = null;
+    try {
+      if (typeof window !== "undefined") oldValue = window.localStorage.getItem(key);
+    } catch { /* Continue with in-memory preferences. */ }
     if (oldValue !== null) {
       // 根据类型转换
       let value = oldValue;

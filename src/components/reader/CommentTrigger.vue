@@ -5,14 +5,14 @@
     class="comment-trigger group"
     :data-paragraph-id="paragraphId"
     :data-source-type="sourceType"
-    aria-label="打开段评"
+    :aria-label="translate('reader.commentTrigger.openParagraphComments')"
     @click="requestOpen"
   >
     <span
       class="paragraph-comment-count"
       :data-paragraph-id="paragraphId"
       :data-source-type="sourceType"
-      aria-label="当前段评评论数"
+      :aria-label="translate('reader.commentTrigger.paragraphCommentCount')"
     >
       {{ countLabel }}
     </span>
@@ -20,6 +20,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, ref, watch } from "vue";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";

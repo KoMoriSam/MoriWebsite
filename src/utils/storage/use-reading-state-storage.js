@@ -22,8 +22,10 @@ export function useReadingStateStorage() {
     }
 
     // 尝试从旧键名获取（带类型转换，与 migrateReadingState 保持一致；SSG 构建时跳过 localStorage）
-    const oldValue =
-      typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    let oldValue = null;
+    try {
+      if (typeof window !== "undefined") oldValue = window.localStorage.getItem(key);
+    } catch { /* Continue with in-memory reading state. */ }
     if (oldValue !== null) {
       let value = oldValue;
       try {

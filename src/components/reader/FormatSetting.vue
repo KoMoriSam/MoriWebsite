@@ -6,9 +6,9 @@
         class="flex shrink-0 items-start gap-3 border-b border-base-300 px-3 py-3"
       >
         <div class="min-w-0 flex-1">
-          <h3 class="m-0 text-base font-semibold tracking-wide">阅读排版</h3>
+          <h3 class="m-0 text-base font-semibold tracking-wide">{{ translate('reader.formatSetting.readingLayout') }}</h3>
           <p class="mt-0.5 text-xs text-base-content/55">
-            调整后可在下方即时预览
+            {{ translate('reader.formatSetting.previewChangesBelowAsYouAdjust') }}
           </p>
         </div>
         <button
@@ -18,7 +18,7 @@
           @click="resetLayout"
         >
           <i class="ri-reset-left-line" aria-hidden="true"></i>
-          恢复默认
+          {{ translate('reader.formatSetting.resetToDefaults') }}
         </button>
       </header>
 
@@ -37,16 +37,16 @@
               '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
             },
           ]"
-          :aria-label="mobile ? '当前移动端排版预览' : '当前桌面排版预览'"
+          :aria-label="mobile ? translate('reader.formatSetting.currentMobileLayoutPreview') : translate('reader.formatSetting.currentDesktopLayoutPreview')"
         >
           <p class="m-0 indent-(--para-text-indent) text-justify text-pretty">
-            暮色沿着书页缓缓落下，字句之间留着呼吸。
+            {{ translate('reader.formatSetting.duskSettlesOverThePagesLeavingRoomToBreatheBetween') }}
           </p>
           <p
             class="mb-0 indent-(--para-text-indent) text-justify text-pretty"
             :style="{ marginBlockStart: previewParagraphGap }"
           >
-            翻过书页，故事仍在前方延伸。
+            {{ translate('reader.formatSetting.turnThePageTheStoryContinuesAhead') }}
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@
             :aria-selected="mobileReadingMode === mode.value"
             @click="store.setMobileReadingMode(mode.value)"
           >
-            <i :class="mode.icon" aria-hidden="true"></i>{{ mode.label }}
+            <i :class="mode.icon" aria-hidden="true"></i>{{ localizeText(mode.label) }}
           </button>
         </div>
 
@@ -79,9 +79,9 @@
             :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
           >
             <span class="label block text-xs md:text-sm">
-              正文字体
-              <small title="自定义字体和设备字体仅在本次生效，不会保存到设置中">
-                （仅网站预设字体可保存设定）
+              {{ translate('reader.formatSetting.textFont') }}
+              <small :title="translate('reader.formatSetting.customAndDeviceFontsApplyOnlyToThisSessionAnd')">
+                {{ translate('reader.formatSetting.onlySiteFontsCanBeSavedInSettings') }}
               </small>
             </span>
             <FontSelect
@@ -89,7 +89,7 @@
               :model-value="styleConfigs.fontStyle"
               :fallback-font-id="readerFallbackFontId"
               :website-fonts="readerWebsiteFonts"
-              aria-label="正文字体"
+              :aria-label="translate('reader.formatSetting.textFont')"
               @update:model-value="selectReaderFont"
               @update:fallback-font-id="selectReaderFallbackFont"
             />
@@ -103,7 +103,7 @@
             @click="resetLayout"
           >
             <i class="ri-reset-left-line" aria-hidden="true"></i>
-            恢复默认
+            {{ translate('reader.formatSetting.resetToDefaults') }}
           </button>
 
           <label
@@ -112,7 +112,7 @@
             class="col-span-1 xl:col-span-2 md:my-1 min-w-0"
           >
             <span class="label block text-xs md:text-sm">
-              {{ control.shortLabel }} {{ formatNumericValue(control) }}
+              {{ localizeText(control.shortLabel) }} {{ formatNumericValue(control) }}
             </span>
             <input
               type="range"
@@ -128,7 +128,7 @@
 
         <template v-if="mobile">
           <fieldset class="mt-4">
-            <legend class="label text-xs">阅读配色</legend>
+            <legend class="label text-xs">{{ translate('reader.formatSetting.readingColors') }}</legend>
             <div class="mt-2 grid grid-cols-5 gap-2">
               <button
                 v-for="theme in MOBILE_READER_COLOR_THEMES"
@@ -143,7 +143,7 @@
                 @click="selectColorTheme(theme.value)"
               >
                 <i :class="theme.icon" aria-hidden="true"></i>
-                <span class="text-[0.625rem]">{{ theme.label }}</span>
+                <span class="text-[0.625rem]">{{ localizeText(theme.label) }}</span>
               </button>
             </div>
           </fieldset>
@@ -151,11 +151,11 @@
             <legend
               class="label text-xs w-full flex items-center justify-between"
             >
-              <span>不满意？试试自定义</span>
+              <span>{{ translate('reader.formatSetting.wantSomethingElseCustomizeIt') }}</span>
               <div
                 role="tablist"
                 class="tabs tabs-box tabs-xs"
-                aria-label="阅读背景类型"
+                :aria-label="translate('reader.formatSetting.readingBackgroundType')"
               >
                 <button
                   v-for="option in backgroundTypeOptions"
@@ -170,7 +170,7 @@
                   @click="setBackgroundType(option.value)"
                 >
                   <i :class="option.icon" aria-hidden="true"></i>
-                  {{ option.label }}
+                  {{ localizeText(option.label) }}
                 </button>
               </div>
             </legend>
@@ -182,7 +182,7 @@
                 <label
                   class="input input-sm flex w-full items-center justify-between gap-2"
                 >
-                  <span class="text-xs">文字颜色</span>
+                  <span class="text-xs">{{ translate('reader.formatSetting.textColor') }}</span>
                   <input
                     type="color"
                     class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -193,7 +193,7 @@
                 <label
                   class="input input-sm flex w-full items-center justify-between gap-2"
                 >
-                  <span class="text-xs">背景颜色</span>
+                  <span class="text-xs">{{ translate('reader.formatSetting.backgroundColor') }}</span>
                   <input
                     type="color"
                     class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -222,7 +222,7 @@
                       getReaderBackgroundImageUrl(image.id),
                     ),
                   }"
-                  :aria-label="`选择阅读背景图：${image.label}`"
+                  :aria-label="translate('reader.formatSetting.chooseReadingBackground', { p0: localizeText(image.label) })"
                   :aria-pressed="styleConfigs.backgroundImage === image.id"
                   @click="selectBackgroundImage(image)"
                 >
@@ -231,7 +231,7 @@
                     :data-theme="image?.colorTheme"
                     :style="image.textColor ? { color: image.textColor } : {}"
                   >
-                    {{ image.label }}
+                    {{ localizeText(image.label) }}
                   </span>
                 </button>
               </div>
@@ -240,7 +240,7 @@
         </template>
 
         <fieldset v-else class="mt-4">
-          <legend class="label block text-xs md:text-sm">站点主题</legend>
+          <legend class="label block text-xs md:text-sm">{{ translate('reader.formatSetting.siteTheme') }}</legend>
           <div class="mt-2 grid grid-cols-5 gap-2">
             <button
               v-for="theme in siteThemeOptions"
@@ -253,14 +253,14 @@
               :data-theme="
                 theme.value === 'default' ? systemTheme : theme.value
               "
-              :title="theme.description"
-              :aria-label="`切换站点主题：${theme.label}，${theme.description}`"
+              :title="localizeText(theme.description)"
+              :aria-label="translate('reader.formatSetting.switchSiteTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
               :aria-pressed="selectedSiteTheme === theme.value"
               @click="themeStore.setTheme(theme.value)"
             >
               <i :class="theme.icon" aria-hidden="true"></i>
               <span class="max-w-full truncate text-[0.625rem]">
-                {{ theme.label }}
+                {{ localizeText(theme.label) }}
               </span>
             </button>
           </div>
@@ -275,7 +275,7 @@
       >
         <div
           class="flex gap-3 overflow-x-auto px-1 py-1.5 scrollbar-thin"
-          aria-label="系统推荐与用户保存的排版预设"
+          :aria-label="translate('reader.formatSetting.builtInAndSavedLayoutPresets')"
         >
           <button
             v-for="{ preset, label } in systemPresets"
@@ -295,14 +295,14 @@
               undefined
             "
             :style="presetSampleStyle(preset)"
-            :title="preset.description"
-            :aria-label="`应用系统推荐预设 ${preset.name}：${preset.description}`"
+            :title="localizeText(preset.description)"
+            :aria-label="translate('reader.formatSetting.applyBuiltInPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
             :aria-pressed="isPresetActive(preset)"
             @click="applyPreset(preset)"
           >
             <span class="font-sans text-[0.5rem]">{{ label }}</span>
             <span class="max-w-11 truncate text-[0.75rem]">
-              {{ preset.name }}
+              {{ localizeText(preset.name) }}
             </span>
           </button>
 
@@ -327,19 +327,19 @@
                 undefined
               "
               :style="presetSampleStyle(preset)"
-              :title="preset.name"
-              :aria-label="`应用用户预设 ${preset.name}`"
+              :title="localizeText(preset.name)"
+              :aria-label="translate('reader.formatSetting.applySavedPreset', { p0: localizeText(preset.name) })"
               :aria-pressed="isPresetActive(preset)"
               @click="applyPreset(preset)"
             >
               <span class="line-clamp-2 max-w-11 whitespace-normal break-all">
-                {{ preset.name }}
+                {{ localizeText(preset.name) }}
               </span>
             </button>
             <button
               type="button"
               class="btn btn-circle btn-xs absolute -right-1 -top-1 size-5 min-h-0 border-base-300 bg-base-100 p-0 shadow-sm"
-              :aria-label="`删除预设 ${preset.name}`"
+              :aria-label="translate('reader.formatSetting.deletePreset', { p0: localizeText(preset.name) })"
               @click="store.removeReaderLayoutPreset(preset.id)"
             >
               <i class="ri-close-line" aria-hidden="true"></i>
@@ -352,10 +352,10 @@
             v-model="presetName"
             class="input input-sm join-item min-w-0 flex-1"
             maxlength="24"
-            placeholder="保存当前排版为预设"
-            aria-label="排版预设名称"
+            :placeholder="translate('reader.formatSetting.saveCurrentLayoutAsAPreset')"
+            :aria-label="translate('reader.formatSetting.layoutPresetName')"
           />
-          <button class="btn btn-sm join-item" type="submit">保存</button>
+          <button class="btn btn-sm join-item" type="submit">{{ translate('reader.formatSetting.save') }}</button>
         </form>
       </footer>
     </section>
@@ -363,6 +363,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { usePreferredDark } from "@vueuse/core";
@@ -424,12 +427,12 @@ const readerWebsiteFonts = FONTS.map(({ name, style }) => ({
 const backgroundTypeOptions = Object.freeze([
   {
     value: "color",
-    label: "纯色背景",
+    get label() { return translate('reader.formatSetting.solidColor'); },
     icon: "ri-palette-line",
   },
   {
     value: "image",
-    label: "图片背景",
+    get label() { return translate('reader.formatSetting.backgroundImage'); },
     icon: "ri-image-line",
   },
 ]);
@@ -439,8 +442,8 @@ const systemTheme = computed(() => (prefersDark.value ? "forest" : "lemonade"));
 const siteThemeOptions = computed(() => [
   {
     value: "default",
-    label: "跟随系统",
-    description: "自动匹配系统的浅色或深色外观",
+    get label() { return translate('reader.formatSetting.systemDefault'); },
+    get description() { return translate('reader.formatSetting.matchYourSystemSLightOrDarkAppearance'); },
     icon: "ri-contrast-line",
   },
   ...siteThemeList.value.map((theme) => ({
@@ -455,14 +458,14 @@ const isLayoutDefault = computed(() =>
 const systemPresets = computed(() =>
   READER_SYSTEM_PRESETS.map((preset, index) => ({
     preset,
-    label: `预设 ${index + 1}`,
+    get label() { return translate('reader.formatSetting.preset', { p0: index + 1 }); },
   })),
 );
 
 const formatNumericValue = (control) => {
   const value = Number(styleConfigs.value[control.key]);
   const normalizedValue = Number.isFinite(value) ? value : control.default;
-  return `${Number(normalizedValue.toFixed(control.places))} ${control.unit}`;
+  return `${Number(normalizedValue.toFixed(control.places))} ${localizeText(control.unit)}`;
 };
 
 const semanticReaderThemes = new Set(
@@ -665,7 +668,7 @@ const selectReaderFont = async (fontId) => {
   try {
     const resolved = await readerFontSelect.value?.resolveFont(
       fontId,
-      "暮色沿着书页缓缓落下",
+      translate('reader.formatSetting.duskSettlesOverThePages'),
       "normal",
       readerFallbackFontId.value,
     );

@@ -3,11 +3,11 @@
     ref="tocFrame"
     :mobile="mobile"
     :compact="compact"
-    :title="title"
+    :title="localizeText(title)"
     :progress="progressValue"
     :progress-label="`${progressValue}%`"
     :current-label="activeText"
-    aria-label="阅读目录"
+    :aria-label="translate('reader.readerBody.readingContents')"
     icon-class="ri-list-unordered"
     @toggle-compact="emit('toggle-compact')"
     @menu-open-change="emit('menu-open-change', $event)"
@@ -57,6 +57,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed, ref } from "vue";
 
 import TocFrame from "@/components/reader/TocFrame.vue";

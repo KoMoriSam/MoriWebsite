@@ -59,7 +59,7 @@
         <aside
           v-if="$slots.actions"
           class="flex flex-wrap items-center gap-x-5 gap-y-2 md:justify-end"
-          aria-label="页面操作"
+          :aria-label="translate('common.contentPage.pageActions')"
         >
           <slot name="actions"></slot>
         </aside>
@@ -72,6 +72,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 

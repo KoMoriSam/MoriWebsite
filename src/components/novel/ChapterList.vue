@@ -4,27 +4,27 @@
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
     >
       <hgroup class="min-w-0">
-        <p class="text-sm text-base-content/55">Contents</p>
+        <p class="text-sm text-base-content/55">{{ translate('common.sections.contents') }}</p>
         <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <h2
             id="chapter-directory-title"
             class="font-serif text-2xl font-semibold text-balance"
           >
-            章节目录
+            {{ translate('reader.chapterList.chapters') }}
           </h2>
           <span class="text-sm text-base-content/55">
-            {{ chapterVolumes.length }} 卷 · {{ chapterCount }} 章
+            {{ chapterVolumes.length }} {{ translate('reader.chapterList.volumes') }} {{ chapterCount }} {{ translate('reader.chapterList.chapters2') }}
           </span>
         </div>
       </hgroup>
 
       <div class="flex shrink-0 items-center gap-1">
-        <div class="tooltip tooltip-left" data-tip="刷新章节目录">
+        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapterList.refreshChapters')">
           <button
             type="button"
             class="btn btn-ghost btn-sm btn-square"
-            aria-label="刷新章节目录"
-            title="刷新章节目录"
+            :aria-label="translate('reader.chapterList.refreshChapters')"
+            :title="translate('reader.chapterList.refreshChapters')"
             :disabled="isLoadingList"
             @click="novelStore.refreshChapters()"
           >
@@ -35,12 +35,12 @@
             ></i>
           </button>
         </div>
-        <div class="tooltip tooltip-left" data-tip="清除阅读记录">
+        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapterList.clearReadingHistory')">
           <button
             type="button"
             class="btn btn-ghost btn-sm btn-square"
-            aria-label="清除阅读记录"
-            title="清除阅读记录"
+            :aria-label="translate('reader.chapterList.clearReadingHistory')"
+            :title="translate('reader.chapterList.clearReadingHistory')"
             :disabled="isLoadingList"
             @click="novelStore.refreshReadChapters()"
           >
@@ -54,9 +54,9 @@
       v-if="isLoadingList"
       role="status"
       aria-busy="true"
-      aria-label="章节目录加载中"
+      :aria-label="translate('reader.chapterList.loadingChapters')"
     >
-      <span class="sr-only">章节目录加载中</span>
+      <span class="sr-only">{{ translate('reader.chapterList.loadingChapters') }}</span>
 
       <div class="join join-vertical w-full" aria-hidden="true">
         <div
@@ -137,7 +137,7 @@
               {{ volume.volumeInfo.title }}
             </h3>
             <p class="mt-0.5 block text-xs text-base-content/50">
-              {{ volume.chapters?.length || 0 }} 章
+              {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterList.chapters2') }}
             </p>
           </hgroup>
         </summary>
@@ -193,7 +193,7 @@
                       :latest-chapter-uuid="latestChapter?.uuid"
                       :read="isRead(chapter.uuid)"
                       :recent="isRecent(chapter.uuid, chapter.uploadDate)"
-                      revision-label="有修订"
+                      :revision-label="translate('common.badges.revised')"
                     />
                   </span>
                 </span>
@@ -211,18 +211,18 @@
                   >
                     <span v-if="isRead(chapter.uuid)" class="status"></span>
                     <span v-else class="status status-primary"></span>
-                    {{ isRead(chapter.uuid) ? "已读" : "未读" }}
+                    {{ isRead(chapter.uuid) ? translate('reader.chapterList.read') : translate('reader.chapterList.unread') }}
                   </span>
                   <span class="inline-flex items-center gap-1">
                     <i class="ri-time-line font-normal" aria-hidden="true"></i>
-                    {{ useDateFormat(chapter.uploadDate, "YYYY/M/D") }}
+                    {{ formatLocalizedDate(chapter.uploadDate) }}
                   </span>
                   <span class="inline-flex items-center gap-1">
                     <i
                       class="ri-file-text-line font-normal"
                       aria-hidden="true"
                     ></i>
-                    {{ chapter.length }} 字
+                    {{ chapter.length }} {{ translate('reader.chapterList.characters') }}
                   </span>
                   <client-only>
                     <span
@@ -237,12 +237,12 @@
                         v-if="Number.isFinite(getChapterReads(chapter.uuid))"
                       >
                         {{ formatReadCount(getChapterReads(chapter.uuid)) }}
-                        阅读
+                        {{ translate('reader.chapterList.reads') }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="`正在读取《${chapter.title}》的阅读量`"
+                        :aria-label="translate('reader.chapterList.loadingReadsFor', { p0: chapter.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -262,12 +262,12 @@
                         v-if="Number.isFinite(getChapterComments(chapter))"
                       >
                         {{ formatReadCount(getChapterComments(chapter)) }}
-                        评论
+                        {{ translate('markdown.moment.comments') }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="`正在读取《${chapter.title}》的评论量`"
+                        :aria-label="translate('reader.chapterList.loadingCommentsFor', { p0: chapter.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -289,15 +289,17 @@
       class="flex min-h-64 flex-col items-center justify-center gap-2 border-y border-dashed border-base-300 px-6 py-12 text-center text-base-content/50"
     >
       <i class="ri-book-open-line text-3xl" aria-hidden="true"></i>
-      <p class="font-semibold text-base-content/70">暂时没有可阅读的章节</p>
-      <p class="text-sm">刷新目录后再试一次</p>
+      <p class="font-semibold text-base-content/70">{{ translate('reader.chapterList.noChaptersAreAvailableYet') }}</p>
+      <p class="text-sm">{{ translate('reader.chapterList.refreshTheChapterListAndTryAgain') }}</p>
     </div>
   </section>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, number: formatNumber, date: formatLocalizedDate } = useLocale();
+
 import { storeToRefs } from "pinia";
-import { useDateFormat } from "@vueuse/core";
 
 import { useNovelStore } from "@/stores/novelStore";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
@@ -313,7 +315,7 @@ const analyticsStore = useAnalyticsStore();
 const commentCountsStore = useCommentCountsStore();
 const { analyticsAvailable } = storeToRefs(analyticsStore);
 const { commentCountsAvailable } = storeToRefs(commentCountsStore);
-const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const readCountFormatter = { format: (value) => formatNumber(value) };
 const formatReadCount = (value) => readCountFormatter.format(Number(value));
 const getChapterReads = (chapterId) =>
   analyticsStore.getContentReads("novel", chapterId);

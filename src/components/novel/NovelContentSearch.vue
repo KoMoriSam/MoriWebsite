@@ -1,5 +1,5 @@
 <template>
-  <section class="flex min-h-0 flex-col" aria-label="搜索小说内容">
+  <section class="flex min-h-0 flex-col" :aria-label="translate('reader.novelContentSearch.searchTheNovel')">
     <label class="input flex w-full shrink-0 items-center gap-2">
       <i class="ri-search-line text-base-content/55" aria-hidden="true"></i>
       <input
@@ -7,7 +7,7 @@
         v-model="keyword"
         type="search"
         class="grow"
-        placeholder="搜索章节标题或正文"
+        :placeholder="translate('reader.novelContentSearch.searchChapterTitlesOrText')"
         autocomplete="off"
         enterkeyhint="search"
       />
@@ -15,7 +15,7 @@
         v-if="keyword"
         type="button"
         class="btn btn-circle btn-ghost btn-xs"
-        aria-label="清空搜索"
+        :aria-label="translate('reader.novelContentSearch.clearSearch')"
         @click="keyword = ''"
       >
         <i class="ri-close-line" aria-hidden="true"></i>
@@ -32,7 +32,7 @@
         role="status"
       >
         <span class="loading loading-spinner loading-sm"></span>
-        <span>正在读取小说索引…</span>
+        <span>{{ translate('reader.novelContentSearch.loadingTheNovelIndex') }}</span>
       </div>
 
       <div
@@ -41,24 +41,24 @@
         role="alert"
       >
         <i class="ri-error-warning-line" aria-hidden="true"></i>
-        <span>{{ errorMessage }}</span>
+        <span>{{ localizeText(errorMessage) }}</span>
       </div>
 
       <p
         v-else-if="!normalizedKeyword"
         class="py-8 text-center text-sm text-base-content/55"
       >
-        输入关键词，搜索小说章节标题与正文内容
+        {{ translate('reader.novelContentSearch.enterKeywordsToSearchChapterTitlesAndText') }}
       </p>
 
       <p
         v-else-if="!results.length"
         class="py-8 text-center text-sm text-base-content/55"
       >
-        没有找到相关小说内容
+        {{ translate('reader.novelContentSearch.noMatchingNovelContentFound') }}
       </p>
 
-      <ul v-else class="menu w-full gap-1 p-0" aria-label="小说搜索结果">
+      <ul v-else class="menu w-full gap-1 p-0" :aria-label="translate('reader.novelContentSearch.novelSearchResults')">
         <li v-for="result in results" :key="result.url">
           <button
             type="button"
@@ -88,6 +88,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, message: localeMessage } = useLocale();
+
 import { computed, nextTick, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
@@ -180,7 +183,7 @@ const initialize = async () => {
     initialized = true;
   } catch (error) {
     console.error("初始化小说搜索失败:", error);
-    errorMessage.value = "暂时无法读取小说内容，请稍后再试。";
+    errorMessage.value = localeMessage('reader.novelContentSearch.novelContentIsUnavailablePleaseTryAgainLater');
   } finally {
     isLoading.value = false;
   }

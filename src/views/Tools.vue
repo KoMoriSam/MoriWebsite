@@ -1,10 +1,10 @@
 <template>
   <ContentPage
-    eyebrow=" Tool List"
-    title="工具集"
-    description="选择一个工具进入独立页面，地址可以直接收藏或分享。"
+    :eyebrow="translate('common.sections.toolList')"
+    :title="translate('pages.home.tools')"
+    :description="translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')"
   >
-    <section class="grid gap-4 md:grid-cols-2" aria-label="可用工具">
+    <section class="grid gap-4 md:grid-cols-2" :aria-label="translate('pages.tools.availableTools')">
       <router-link
         v-for="tool in tools"
         :key="tool.name"
@@ -36,7 +36,7 @@
             <span class="badge badge-outline badge-sm">{{
               tool.category
             }}</span>
-            <span class="text-sm font-medium">打开工具</span>
+            <span class="text-sm font-medium">{{ translate('pages.tools.openTool') }}</span>
           </div>
         </section>
       </router-link>
@@ -45,30 +45,33 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import ContentPage from "@/components/layout/ContentPage.vue";
 
 const tools = [
   {
     name: "image-converter",
-    title: "图片格式转换",
-    description: "在浏览器内批量转换图片，并支持压缩、尺寸调整、动画与水印。",
-    category: "图片处理",
+    get title() { return translate('pages.home.imageConverter'); },
+    get description() { return translate('pages.tools.batchConvertImagesInYourBrowserWithCompressionResizingAnimation'); },
+    get category() { return translate('pages.tools.imageProcessing'); },
     icon: "ri-image-edit-line",
     to: { name: "image-converter" },
   },
   {
     name: "server-status",
-    title: "Minecraft 服务器状态",
-    description: "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
-    category: "服务器查询",
+    get title() { return translate('pages.tools.minecraftServerStatus'); },
+    get description() { return translate('pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft'); },
+    get category() { return translate('pages.tools.serverLookup'); },
     icon: "ri-server-line",
     to: { name: "server-status" },
   },
   {
     name: "sinhala-font-converter",
-    title: "僧伽罗字体编码转换器",
-    description: "在标准 Unicode 与 ASCII 传统字体编码之间双向转换。",
-    category: "文本编码转换",
+    get title() { return translate('pages.home.sinhalaFontEncodingConverter'); },
+    get description() { return translate('pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings'); },
+    get category() { return translate('pages.tools.textEncodingConversion'); },
     icon: "ri-code-s-slash-line",
     to: { name: "sinhala-font-converter" },
   },

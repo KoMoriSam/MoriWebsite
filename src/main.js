@@ -10,6 +10,7 @@ import App from "./App.vue";
 import { routes } from "./router";
 import { generatedBlogPagePaths } from "./router/ssg-data";
 import { lazyPlugin, fadeIn } from "./directive";
+import { createLocaleService } from "./i18n";
 
 export const includedRoutes = (paths) => [
   ...new Set([
@@ -28,6 +29,7 @@ export const createApp = ViteSSG(
     const pinia = createPinia();
 
     app.use(pinia);
+    createLocaleService().install(app);
 
     app.use(lazyPlugin);
 

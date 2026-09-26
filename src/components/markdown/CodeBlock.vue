@@ -10,7 +10,7 @@
         <aside
           class="tooltip tooltip-left font-mono"
           :class="copied ? 'tooltip-success' : ''"
-          :data-tip="copied ? '复制成功' : '复制到剪贴板'"
+          :data-tip="copied ? translate('markdown.codeBlock.copiedSuccessfully') : translate('markdown.codeBlock.copyToClipboard')"
         >
           <button
             class="btn btn-sm btn-square"
@@ -31,6 +31,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { useClipboard } from "@vueuse/core";
 import { toRef } from "vue";
 import CodeHeader from "@/components/markdown/CodeHeader.vue";

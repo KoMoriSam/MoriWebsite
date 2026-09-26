@@ -45,13 +45,13 @@
         <aside class="chat-image avatar">
           <div class="w-8 sm:w-10 rounded-full">
             <img
-              :alt="message.username || '用户'"
+              :alt="message.username || translate('markdown.chat.user')"
               :src="avatarFor(message.username || '用户')"
             />
           </div>
         </aside>
         <header class="chat-header">
-          {{ message.username || "用户" }}
+          {{ message.username || translate('markdown.chat.user') }}
           <time class="opacity-50">{{ message.time || "" }}</time>
         </header>
         <div
@@ -81,7 +81,7 @@
       <!-- 麦克风 / 键盘 -->
       <button
         class="btn btn-ghost btn-square btn-sm"
-        :aria-label="voiceMode ? '切换到键盘输入' : '切换到语音输入'"
+        :aria-label="voiceMode ? translate('markdown.chat.switchToKeyboardInput') : translate('markdown.chat.switchToVoiceInput')"
         @click="voiceMode = !voiceMode"
       >
         <i :class="voiceMode ? 'ri-keyboard-line' : 'ri-mic-line'"></i>
@@ -93,12 +93,12 @@
         v-model="inputText"
         class="input input-sm min-w-0 w-full"
         type="text"
-        placeholder="输入消息..."
+        :placeholder="translate('markdown.chat.typeAMessage')"
       />
 
       <!-- 语音输入模式 -->
       <button v-else class="btn btn-sm min-w-0 flex-1 select-none">
-        按住 说话
+        {{ translate('markdown.chat.holdToSpeak') }}
       </button>
 
       <!-- 表情 -->
@@ -133,7 +133,7 @@
               : 'opacity-0 scale-75'
           "
         >
-          发送
+          {{ translate('markdown.chat.send') }}
         </span>
       </button>
     </footer>
@@ -141,6 +141,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, ref } from "vue";
 
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
@@ -172,7 +175,7 @@ const avatarFor = (username = "") =>
 const footerClass = (footer = "") =>
   FOOTER_MAP.find(([keyword]) => footer.includes(keyword))?.[1] || "";
 
-const isSelf = (username = "") => SELF_NAMES.has(username || "用户");
+const isSelf = (username = "") => SELF_NAMES.has(username || translate('markdown.chat.user'));
 
 const headerBadgeClass = computed(() => {
   if (!props.ui?.extra || /^\d+$/.test(props.ui.extra)) return "";

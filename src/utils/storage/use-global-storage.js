@@ -3,6 +3,14 @@ import { useStorage } from "@vueuse/core";
 export function useGlobalStorage() {
   const GLOBAL_INFO = useStorage("GLOBAL_INFO", {});
 
+  const ensureInfo = () => {
+    if (!GLOBAL_INFO.value || typeof GLOBAL_INFO.value !== "object" || Array.isArray(GLOBAL_INFO.value)) {
+      GLOBAL_INFO.value = {};
+    }
+    return GLOBAL_INFO.value;
+  };
+  ensureInfo();
+
   // 旧键名到新键名的映射（包含重命名）
   const keyMapping = {
     // 直接映射的键
@@ -14,13 +22,18 @@ export function useGlobalStorage() {
     const newKey = keyMapping[key] || key;
 
     // 优先从新结构获取
-    if (GLOBAL_INFO.value[newKey] !== undefined) {
-      return GLOBAL_INFO.value[newKey];
+    const info = ensureInfo();
+    if (info[newKey] !== undefined) {
+      return info[newKey];
     }
 
     // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
-    const oldValue =
-      typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    let oldValue = null;
+    try {
+      if (typeof window !== "undefined") oldValue = window.localStorage.getItem(key);
+    } catch {
+      // Keep preferences usable in memory when browser storage is unavailable.
+    }
     if (oldValue !== null) {
       // 根据类型转换
       let value = oldValue;
@@ -49,7 +62,7 @@ export function useGlobalStorage() {
   // 通用设置函数
   const setInfo = (key, value) => {
     const newKey = keyMapping[key] || key;
-    GLOBAL_INFO.value[newKey] = value;
+    ensureInfo()[newKey] = value;
   };
 
   return {

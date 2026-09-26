@@ -1,13 +1,13 @@
 <template>
-  <ContentPage title="图片格式转换" metas-label="工具信息">
+  <ContentPage :title="translate('pages.home.imageConverter')" :metas-label="translate('tools.imageConverter.toolInformation')">
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        浏览器本地处理
+        {{ translate('tools.imageConverter.processedInYourBrowser') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-stack-line" aria-hidden="true"></i>
-        最多 100 个文件
+        {{ translate('tools.imageConverter.upTo100Files') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-image-line" aria-hidden="true"></i>
@@ -21,7 +21,7 @@
           class="min-w-0 space-y-2 overflow-hidden max-sm:sticky max-sm:top-2 max-sm:z-20 max-sm:rounded-box max-sm:border max-sm:border-base-300 max-sm:bg-base-100/95 max-sm:p-2 max-sm:shadow-sm max-sm:backdrop-blur"
         >
           <header class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="card-title font-serif">预览</h2>
+            <h2 class="card-title font-serif">{{ translate('markdown.mermaid.preview') }}</h2>
             <span class="text-xs text-base-content/55">
               {{ selectedItem.width || "—" }} ×
               {{ selectedItem.height || "—" }}
@@ -45,7 +45,7 @@
               mode="inline"
               class="size-full"
               :slides="previewSlides"
-              :aria-label="`${selectedItem.file.name}预览`"
+              :aria-label="translate('tools.imageConverter.preview', { p0: selectedItem.file.name })"
             >
               <template #overlay>
                 <canvas
@@ -70,7 +70,7 @@
                 min="0"
                 :max="Math.max(0, selectedPreviewFrames.length - 1)"
                 :disabled="!selectedPreviewFrames.length"
-                aria-label="动画帧进度"
+                :aria-label="translate('tools.imageConverter.animationFrameProgress')"
               />
               <span class="tabular-nums"
                 >{{ previewFramePosition + 1 }}/{{
@@ -82,7 +82,7 @@
               <button
                 class="btn btn-ghost btn-sm btn-circle"
                 type="button"
-                aria-label="上一帧"
+                :aria-label="translate('tools.imageConverter.previousFrame')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="stepFrame(-1)"
               >
@@ -91,7 +91,7 @@
               <button
                 class="btn btn-ghost btn-circle"
                 type="button"
-                :aria-label="isAnimationPlaying ? '暂停' : '播放'"
+                :aria-label="isAnimationPlaying ? translate('tools.imageConverter.pause') : translate('tools.imageConverter.play')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="toggleAnimation"
               >
@@ -103,7 +103,7 @@
               <button
                 class="btn btn-ghost btn-sm btn-circle"
                 type="button"
-                aria-label="下一帧"
+                :aria-label="translate('tools.imageConverter.nextFrame')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="stepFrame(1)"
               >
@@ -122,7 +122,7 @@
         >
           <header class="flex flex-wrap items-center justify-between gap-3">
             <hgroup>
-              <h2 class="card-title font-serif">文件队列</h2>
+              <h2 class="card-title font-serif">{{ translate('tools.imageConverter.fileQueue') }}</h2>
               <p v-if="queue.length" class="text-sm text-base-content/55">
                 {{ queueSummary }}
               </p>
@@ -131,7 +131,7 @@
               <div
                 class="tabs tabs-box tabs-sm"
                 role="tablist"
-                aria-label="文件队列显示模式"
+                :aria-label="translate('tools.imageConverter.queueDisplayMode')"
               >
                 <button
                   class="tab"
@@ -139,8 +139,8 @@
                   type="button"
                   role="tab"
                   :aria-selected="queueViewMode === 'detailed'"
-                  aria-label="详细模式"
-                  title="详细模式"
+                  :aria-label="translate('tools.imageConverter.detailedView')"
+                  :title="translate('tools.imageConverter.detailedView')"
                   @click="queueViewMode = 'detailed'"
                 >
                   <i class="ri-list-check-3" aria-hidden="true"></i>
@@ -151,8 +151,8 @@
                   type="button"
                   role="tab"
                   :aria-selected="queueViewMode === 'compact'"
-                  aria-label="紧凑模式"
-                  title="紧凑模式"
+                  :aria-label="translate('tools.imageConverter.compactView')"
+                  :title="translate('tools.imageConverter.compactView')"
                   @click="queueViewMode = 'compact'"
                 >
                   <i class="ri-list-unordered" aria-hidden="true"></i>
@@ -174,7 +174,7 @@
                     : ''
                 "
                 :aria-busy="isLoadingFiles"
-                aria-label="待转换图片"
+                :aria-label="translate('tools.imageConverter.imagesToConvert')"
               >
                 <li
                   v-for="item in queue"
@@ -197,7 +197,7 @@
                   <button
                     class="min-w-0 text-left focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
                     type="button"
-                    :aria-label="`预览 ${item.file.name}`"
+                    :aria-label="translate('tools.imageConverter.preview2', { p0: item.file.name })"
                     :aria-current="selectedId === item.id ? 'true' : undefined"
                     @click="selectedId = item.id"
                   >
@@ -217,10 +217,10 @@
                       {{
                         item.width
                           ? `${item.width} × ${item.height}`
-                          : "读取尺寸中"
+                          : translate('tools.imageConverter.readingDimensions')
                       }}
                       <template v-if="item.frameCount > 1">
-                        · {{ item.frameCount }} 帧</template
+                        · {{ item.frameCount }} {{ translate('tools.imageConverter.frames') }}</template
                       >
                       · {{ formatBytes(item.file.size) }}
                       <template v-if="item.resultSize">
@@ -253,13 +253,13 @@
                           : 'text-base-content/55'
                       "
                     >
-                      {{ item.message }}
+                      {{ queueMessage(item) }}
                     </p>
                   </button>
                   <span
                     class="flex shrink-0 items-center self-center"
                     :class="queueViewMode === 'compact' ? 'gap-0.5' : 'gap-1'"
-                    :aria-label="`${formatLabel(item.format)} 转换为 ${formatLabel(queueTargetFormat(item))}`"
+                    :aria-label="translate('tools.imageConverter.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
                   >
                     <span class="badge badge-outline badge-xs">{{
                       formatLabel(item.format)
@@ -300,7 +300,7 @@
                       class="btn btn-square btn-ghost"
                       :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                       type="button"
-                      aria-label="下载转换结果"
+                      :aria-label="translate('tools.imageConverter.downloadResult')"
                       @click.stop="downloadItem(item)"
                     >
                       <i class="ri-download-2-line" aria-hidden="true"></i>
@@ -312,7 +312,7 @@
                       class="btn btn-square btn-ghost"
                       :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                       type="button"
-                      aria-label="重新转换"
+                      :aria-label="translate('tools.imageConverter.convertAgain')"
                       @click.stop="retryItem(item)"
                     >
                       <i class="ri-restart-line" aria-hidden="true"></i>
@@ -322,7 +322,7 @@
                       :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                       type="button"
                       :disabled="item.status === 'processing'"
-                      aria-label="移除文件"
+                      :aria-label="translate('tools.imageConverter.removeFile')"
                       @click.stop="removeItem(item.id)"
                     >
                       <i class="ri-close-line" aria-hidden="true"></i>
@@ -350,7 +350,7 @@
                   aria-hidden="true"
                 ></span>
                 <span>
-                  已加载
+                  {{ translate('tools.imageConverter.loaded') }}
                   <span class="tabular-nums"
                     >{{ loadedFileCount }}/{{ loadingFileTotal }}</span
                   >
@@ -381,10 +381,10 @@
                 ></i>
                 {{
                   isQueueFull
-                    ? "队列已满，无法继续添加"
+                    ? translate('tools.imageConverter.theQueueIsFull')
                     : dragging
-                      ? "松开完成拖放"
-                      : "拖放或继续选择图片"
+                      ? translate('tools.imageConverter.dropFilesHere')
+                      : translate('tools.imageConverter.dropOrAddMoreImages')
                 }}
                 <input
                   class="sr-only"
@@ -408,13 +408,13 @@
                       class="loading loading-spinner loading-xs"
                       aria-hidden="true"
                     ></span>
-                    转换中
+                    {{ translate('tools.imageConverter.converting') }}
                     <span class="inline-block w-[4ch] text-right tabular-nums">
                       {{ conversionProgress }}%
                     </span>
                   </template>
                   <template v-else>
-                    <i class="ri-file-zip-line" aria-hidden="true"></i>下载全部
+                    <i class="ri-file-zip-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.downloadAll') }}
                   </template>
                 </button>
                 <button
@@ -425,7 +425,7 @@
                   "
                   @click="resetQueue"
                 >
-                  <i class="ri-refresh-line" aria-hidden="true"></i>重置状态
+                  <i class="ri-refresh-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.resetStatus') }}
                 </button>
                 <button
                   class="btn btn-sm"
@@ -433,7 +433,7 @@
                   :disabled="isRunning || isLoadingFiles"
                   @click="clearQueue"
                 >
-                  <i class="ri-delete-bin-line" aria-hidden="true"></i>清空
+                  <i class="ri-delete-bin-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.clear') }}
                 </button>
               </div>
             </div>
@@ -457,10 +457,10 @@
               </span>
               <div>
                 <h3 class="font-serif text-lg font-bold">
-                  {{ dragging ? `松开完成拖放` : `拖放图片到这里` }}
+                  {{ dragging ? translate('tools.imageConverter.dropFilesHere') : translate('tools.imageConverter.dropImagesHere') }}
                 </h3>
                 <p class="mt-1 text-sm text-base-content/60">
-                  添加后可在上方查看预览，在这里管理转换队列
+                  {{ translate('tools.imageConverter.previewAddedFilesAboveAndManageTheConversionQueueHere') }}
                 </p>
               </div>
               <label
@@ -479,7 +479,7 @@
                   "
                   aria-hidden="true"
                 ></i>
-                {{ dragging ? `添加图片` : `选择图片` }}
+                {{ dragging ? translate('tools.imageConverter.addImages') : translate('tools.imageConverter.chooseImages') }}
                 <input
                   class="sr-only"
                   type="file"
@@ -497,7 +497,7 @@
       <fieldset
         class="fieldset rounded-box border border-base-300 bg-base-100 p-4 md:sticky md:top-4 md:col-start-2 md:row-span-2 md:row-start-1"
       >
-        <legend class="fieldset-legend p-0">转换设置</legend>
+        <legend class="fieldset-legend p-0">{{ translate('tools.imageConverter.conversionSettings') }}</legend>
 
         <div class="flex min-h-0 flex-col gap-1.5 md:max-h-[calc(100dvh-5rem)]">
           <div class="grid shrink-0 grid-cols-4 gap-x-4 gap-y-3">
@@ -514,7 +514,7 @@
                     : 'col-span-4'
               "
             >
-              <label class="label" for="format">输出格式</label>
+              <label class="label" for="format">{{ translate('tools.imageConverter.outputFormat') }}</label>
               <select
                 id="format"
                 v-model="settings.format"
@@ -536,11 +536,11 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="quality">
-                <span>质量</span>
+                <span>{{ translate('tools.imageConverter.quality') }}</span>
                 <span class="tabular-nums">
                   {{
                     settings.format !== "jpeg" && settings.lossless
-                      ? "无损"
+                      ? translate('tools.imageConverter.lossless')
                       : settings.quality
                   }}
                 </span>
@@ -562,9 +562,9 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="png-level">
-                <span v-if="!settings.pngOptimize">优化被禁用</span>
+                <span v-if="!settings.pngOptimize">{{ translate('tools.imageConverter.optimizationDisabled') }}</span>
                 <span v-else>
-                  优化等级
+                  {{ translate('tools.imageConverter.optimizationLevel') }}
                   <span class="tabular-nums">{{ settings.pngLevel }}</span>
                 </span>
               </label>
@@ -583,7 +583,7 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="gif-colors">
-                <span>调色板颜色</span>
+                <span>{{ translate('tools.imageConverter.paletteColors') }}</span>
                 <span class="tabular-nums">{{ settings.gifColors }}</span>
               </label>
               <input
@@ -608,15 +608,15 @@
                   : 'col-span-2'
               "
             >
-              <label class="label" for="animation-mode">动画来源</label>
+              <label class="label" for="animation-mode">{{ translate('tools.imageConverter.animationSource') }}</label>
               <select
                 id="animation-mode"
                 v-model="settings.animationMode"
                 class="select max-sm:select-sm w-full"
                 :disabled="isRunning"
               >
-                <option value="frames">逐帧输出 ZIP</option>
-                <option value="first">仅输出第一帧</option>
+                <option value="frames">{{ translate('tools.imageConverter.exportFramesAsZip') }}</option>
+                <option value="first">{{ translate('tools.imageConverter.firstFrameOnly') }}</option>
               </select>
             </div>
             <div
@@ -631,7 +631,7 @@
               "
             >
               <label class="label" for="background-color">
-                透明区域填充
+                {{ translate('tools.imageConverter.transparencyFill') }}
                 <span class="font-mono text-xs">
                   {{ settings.backgroundColor }}
                 </span>
@@ -646,7 +646,7 @@
           </div>
 
           <div class="grid shrink-0 gap-2 [&>*+.label]:mt-2">
-            <div class="divider mt-2 mb-0">更多设置</div>
+            <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.moreSettings') }}</div>
 
             <div class="grid gap-3 sm:gap-6 grid-flow-col auto-cols-fr">
               <label
@@ -661,7 +661,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                无损压缩
+                {{ translate('tools.imageConverter.losslessCompression') }}
               </label>
 
               <label
@@ -676,7 +676,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                无损优化
+                {{ translate('tools.imageConverter.losslessOptimization') }}
               </label>
 
               <label class="label" for="resize">
@@ -687,7 +687,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                调整尺寸
+                {{ translate('tools.imageConverter.resize') }}
               </label>
 
               <label class="label" for="watermark">
@@ -698,7 +698,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                添加水印
+                {{ translate('tools.imageConverter.addWatermark') }}
               </label>
             </div>
           </div>
@@ -711,12 +711,12 @@
               class="grid gap-1"
               aria-labelledby="resize-settings"
             >
-              <div class="divider mt-2 mb-0">尺寸设置</div>
+              <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.sizeSettings') }}</div>
               <div
                 class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2"
               >
                 <div class="min-w-0">
-                  <label class="label" for="resize-width">宽度</label>
+                  <label class="label" for="resize-width">{{ translate('tools.imageConverter.width') }}</label>
                   <label class="input max-sm:input-sm w-full">
                     <input
                       id="resize-width"
@@ -738,8 +738,8 @@
                   for="resize-lock-aspect-ratio"
                   :data-tip="
                     settings.resize.lockAspectRatio
-                      ? '宽高比已锁定'
-                      : '宽高比未锁定'
+                      ? translate('tools.imageConverter.aspectRatioLocked')
+                      : translate('tools.imageConverter.aspectRatioUnlocked')
                   "
                 >
                   <button
@@ -752,14 +752,14 @@
                     type="button"
                     :aria-label="
                       settings.resize.lockAspectRatio
-                        ? '解除宽高比锁定'
-                        : '锁定原图宽高比'
+                        ? translate('tools.imageConverter.unlockAspectRatio')
+                        : translate('tools.imageConverter.lockOriginalAspectRatio')
                     "
                     :aria-pressed="settings.resize.lockAspectRatio"
                     :title="
                       settings.resize.lockAspectRatio
-                        ? '宽高比已锁定'
-                        : '宽高比未锁定'
+                        ? translate('tools.imageConverter.aspectRatioLocked')
+                        : translate('tools.imageConverter.aspectRatioUnlocked')
                     "
                     :disabled="isRunning"
                     @click="toggleResizeAspectRatio"
@@ -775,7 +775,7 @@
                   </button>
                 </label>
                 <div class="min-w-0">
-                  <label class="label" for="resize-height">高度</label>
+                  <label class="label" for="resize-height">{{ translate('tools.imageConverter.height') }}</label>
                   <label class="input max-sm:input-sm w-full">
                     <input
                       id="resize-height"
@@ -800,12 +800,12 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                输出尺寸不超过原图
+                {{ translate('tools.imageConverter.doNotEnlargeBeyondTheOriginalSize') }}
               </label>
             </section>
 
             <div v-show="watermark.enabled" class="grid gap-1">
-              <div class="divider mt-2 mb-0">水印设置</div>
+              <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.watermarkSettings') }}</div>
               <section class="grid gap-y-2">
                 <div
                   class="grid grid-cols-[minmax(0,1fr)_auto] justify-between gap-x-3 gap-y-2"
@@ -815,7 +815,7 @@
                     :class="watermark.mode === 'single' ? '' : 'col-span-2'"
                   >
                     <label for="watermark-content" class="label"
-                      >水印内容</label
+                      >{{ translate('tools.imageConverter.watermarkContent') }}</label
                     >
                     <div
                       id="watermark-content"
@@ -836,7 +836,7 @@
                           :disabled="isRunning"
                           @change="setWatermarkTextEnabled($event)"
                         />
-                        文字
+                        {{ translate('tools.imageConverter.text') }}
                       </label>
                       <label class="label" for="watermark-image-toggle">
                         <input
@@ -847,7 +847,7 @@
                           :disabled="isRunning"
                           @change="setWatermarkGraphicEnabled('image', $event)"
                         />
-                        图片
+                        {{ translate('reader.contextMenu.image') }}
                       </label>
                       <label class="label" for="watermark-icon-toggle">
                         <input
@@ -858,7 +858,7 @@
                           :disabled="isRunning"
                           @change="setWatermarkGraphicEnabled('icon', $event)"
                         />
-                        图标
+                        {{ translate('tools.imageConverter.icon') }}
                       </label>
                     </div>
                   </div>
@@ -867,11 +867,11 @@
                     v-if="watermark.mode === 'single'"
                     class="row-span-2 min-w-0 border-l border-base-300 pl-3"
                   >
-                    <span class="label">位置</span>
+                    <span class="label">{{ translate('tools.imageConverter.position') }}</span>
                     <div
                       class="grid w-fit grid-cols-3 gap-1"
                       role="radiogroup"
-                      aria-label="水印位置"
+                      :aria-label="translate('tools.imageConverter.watermarkPosition')"
                     >
                       <input
                         v-for="position in watermarkPositions"
@@ -898,15 +898,15 @@
                       watermark.mode === 'single' ? 'col-start-1' : 'col-span-2'
                     "
                   >
-                    <label class="label" for="watermark-mode">排列方式</label>
+                    <label class="label" for="watermark-mode">{{ translate('tools.imageConverter.arrangement') }}</label>
                     <select
                       id="watermark-mode"
                       v-model="watermark.mode"
                       class="select max-sm:select-sm w-full"
                       :disabled="isRunning"
                     >
-                      <option value="single">单点</option>
-                      <option value="tile">平铺</option>
+                      <option value="single">{{ translate('tools.imageConverter.single') }}</option>
+                      <option value="tile">{{ translate('tools.imageConverter.tile') }}</option>
                     </select>
                   </div>
                 </div>
@@ -916,19 +916,19 @@
                   class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                 >
                   <div class="min-w-0">
-                    <label class="label" for="watermark-text">文本</label>
+                    <label class="label" for="watermark-text">{{ translate('tools.imageConverter.text2') }}</label>
                     <input
                       id="watermark-text"
                       v-model="watermark.text"
                       class="input max-sm:input-sm w-full"
                       type="text"
                       maxlength="80"
-                      placeholder="输入水印文本"
+                      :placeholder="translate('tools.imageConverter.enterWatermarkText')"
                       :disabled="isRunning"
                     />
                   </div>
                   <div>
-                    <label class="label" for="watermark-text-color">颜色</label>
+                    <label class="label" for="watermark-text-color">{{ translate('tools.imageConverter.color') }}</label>
                     <input
                       id="watermark-text-color"
                       v-model="watermark.color"
@@ -940,21 +940,21 @@
                 </div>
 
                 <div v-if="watermarkContainsText()" class="min-w-0">
-                  <span class="label">字体</span>
+                  <span class="label">{{ translate('common.fontSelect.font') }}</span>
                   <FontSelect
                     ref="watermarkFontSelect"
                     v-model="watermark.fontId"
                     v-model:fallback-font-id="watermark.fallbackFontId"
                     :website-fonts="websiteWatermarkFonts"
                     :disabled="isRunning"
-                    aria-label="水印字体"
+                    :aria-label="translate('tools.imageConverter.watermarkFont')"
                   />
                 </div>
 
                 <div v-if="watermarkNeedsGraphic()" class="min-w-0">
                   <div v-if="usesWatermarkImageFile()">
                     <label class="label" for="watermark-graphic-image">
-                      图片（默认为本站 Icon）
+                      {{ translate('tools.imageConverter.imageSiteIconByDefault') }}
                     </label>
                     <input
                       id="watermark-graphic-image"
@@ -976,7 +976,7 @@
                       class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                     >
                       <div class="min-w-0">
-                        <span class="label">图标选择器</span>
+                        <span class="label">{{ translate('tools.imageConverter.iconPicker') }}</span>
                         <button
                           class="select max-sm:select-sm w-full justify-start font-normal"
                           popovertarget="watermark-icon-picker"
@@ -994,7 +994,7 @@
                       </div>
                       <div v-if="!watermarkContainsText()">
                         <label class="label" for="watermark-graphic-color">
-                          颜色
+                          {{ translate('tools.imageConverter.color') }}
                         </label>
                         <input
                           id="watermark-graphic-color"
@@ -1026,15 +1026,15 @@
                           v-model.trim="iconSearch"
                           class="input input-sm w-full"
                           type="search"
-                          placeholder="搜索名称或关键词"
-                          aria-label="搜索 Remix Icon 名称或关键词"
+                          :placeholder="translate('tools.imageConverter.searchNamesOrKeywords')"
+                          :aria-label="translate('tools.imageConverter.searchRemixIconNamesOrKeywords')"
                         />
                         <select
                           v-model="remixIconCategory"
                           class="select select-sm w-full"
-                          aria-label="Remix Icon 分类"
+                          :aria-label="translate('tools.imageConverter.remixIconCategories')"
                         >
-                          <option value="all">全部分类</option>
+                          <option value="all">{{ translate('tools.imageConverter.allCategories') }}</option>
                           <option
                             v-for="category in remixIconCategories"
                             :key="category.value"
@@ -1048,7 +1048,7 @@
                         v-if="filteredRemixIcons.length"
                         class="grid max-h-52 grid-cols-6 gap-1 overflow-x-hidden overflow-y-auto overscroll-contain"
                         role="listbox"
-                        aria-label="Remix Icon 图标"
+                        :aria-label="translate('tools.imageConverter.remixIconIcons')"
                         @scroll.passive="hideIconTooltip(true)"
                       >
                         <button
@@ -1076,7 +1076,7 @@
                         v-else
                         class="py-4 text-center text-sm text-base-content/55"
                       >
-                        没有匹配的图标
+                        {{ translate('tools.imageConverter.noMatchingIcons') }}
                       </p>
                     </div>
                     <div
@@ -1103,7 +1103,7 @@
                 <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1">
                   <div class="min-w-0">
                     <label class="label" for="watermark-opacity">
-                      <span>透明度</span>
+                      <span>{{ translate('tools.imageConverter.opacity') }}</span>
                       <span class="tabular-nums">
                         {{ Math.round(watermark.opacity * 100) }}%
                       </span>
@@ -1121,7 +1121,7 @@
                   </div>
                   <div class="min-w-0">
                     <label class="label" for="watermark-scale">
-                      <span>缩放</span>
+                      <span>{{ translate('tools.imageConverter.scale') }}</span>
                       <span class="tabular-nums">
                         {{ Math.round(watermark.scale * 100) }}%
                       </span>
@@ -1139,7 +1139,7 @@
                   </div>
                   <div v-if="watermark.mode === 'single'" class="min-w-0">
                     <label class="label" for="watermark-margin">
-                      <span>边距</span>
+                      <span>{{ translate('tools.imageConverter.margin') }}</span>
                       <span class="tabular-nums"
                         >{{ watermark.margin }} px</span
                       >
@@ -1156,7 +1156,7 @@
                   </div>
                   <div class="min-w-0">
                     <label class="label" for="watermark-offset-x">
-                      <span>X 偏移</span>
+                      <span>{{ translate('tools.imageConverter.xOffset') }}</span>
                       <span class="tabular-nums"
                         >{{ watermark.offsetX }} px</span
                       >
@@ -1173,7 +1173,7 @@
                   </div>
                   <div class="min-w-0">
                     <label class="label" for="watermark-offset-y">
-                      <span>Y 偏移</span>
+                      <span>{{ translate('tools.imageConverter.yOffset') }}</span>
                       <span class="tabular-nums"
                         >{{ watermark.offsetY }} px</span
                       >
@@ -1190,7 +1190,7 @@
                   </div>
                   <div v-if="watermark.mode === 'tile'" class="min-w-0">
                     <label class="label" for="watermark-gap">
-                      <span>间距</span>
+                      <span>{{ translate('tools.imageConverter.spacing') }}</span>
                       <span class="tabular-nums">{{ watermark.gap }} px</span>
                     </label>
                     <input
@@ -1205,7 +1205,7 @@
                   </div>
                   <div class="min-w-0">
                     <label class="label" for="watermark-rotation">
-                      <span>旋转</span>
+                      <span>{{ translate('tools.imageConverter.rotation') }}</span>
                       <span class="tabular-nums"
                         >{{ watermark.rotation }}°</span
                       >
@@ -1221,7 +1221,7 @@
                       :disabled="isRunning"
                     />
                   </div>
-                  <label class="label" for="watermark-other">其他设置</label>
+                  <label class="label" for="watermark-other">{{ translate('tools.imageConverter.otherSettings') }}</label>
                   <div class="min-w-0" id="watermark-other">
                     <label class="label" for="watermark-shadow">
                       <input
@@ -1231,7 +1231,7 @@
                         type="checkbox"
                         :disabled="isRunning"
                       />
-                      水印阴影
+                      {{ translate('tools.imageConverter.watermarkShadow') }}
                     </label>
                   </div>
                 </div>
@@ -1246,7 +1246,7 @@
               type="button"
               @click="cancelConversion"
             >
-              <i class="ri-stop-circle-line" aria-hidden="true"></i>取消转换
+              <i class="ri-stop-circle-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.cancelConversion') }}
             </button>
             <button
               v-else
@@ -1255,7 +1255,7 @@
               :disabled="!queue.length || !readyItems.length || isLoadingFiles"
               @click="startConversion"
             >
-              <i class="ri-magic-line" aria-hidden="true"></i>开始转换
+              <i class="ri-magic-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.startConversion') }}
             </button>
           </div>
         </div>
@@ -1265,6 +1265,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import {
   computed,
   onBeforeUnmount,
@@ -1324,26 +1327,26 @@ const FEATURED_REMIX_ICONS = [
   "ri-shield-check-line",
 ];
 const REMIX_ICON_CATEGORY_LABELS = {
-  Arrows: "箭头",
-  Buildings: "建筑",
-  Business: "商务",
-  Communication: "沟通",
-  Design: "设计",
-  Development: "开发",
-  Device: "设备",
-  Document: "文档",
-  Editor: "编辑",
-  Finance: "金融",
-  Food: "餐饮",
-  "Game & Sports": "游戏与运动",
-  "Health & Medical": "健康与医疗",
-  Logos: "品牌标志",
-  Map: "地图",
-  Media: "媒体",
-  System: "系统",
-  "User & Faces": "用户与表情",
-  Weather: "天气",
-  Others: "其他",
+  get Arrows() { return translate('tools.imageConverter.arrows'); },
+  get Buildings() { return translate('tools.imageConverter.buildings'); },
+  get Business() { return translate('tools.imageConverter.business'); },
+  get Communication() { return translate('tools.imageConverter.communication'); },
+  get Design() { return translate('tools.imageConverter.design'); },
+  get Development() { return translate('tools.imageConverter.development'); },
+  get Device() { return translate('tools.imageConverter.devices'); },
+  get Document() { return translate('tools.imageConverter.documents'); },
+  get Editor() { return translate('tools.imageConverter.editing'); },
+  get Finance() { return translate('tools.imageConverter.finance'); },
+  get Food() { return translate('tools.imageConverter.foodDrink'); },
+  get "Game & Sports"() { return translate('tools.imageConverter.gamesSports'); },
+  get "Health & Medical"() { return translate('tools.imageConverter.healthMedical'); },
+  get Logos() { return translate('tools.imageConverter.brandLogos'); },
+  get Map() { return translate('tools.imageConverter.maps'); },
+  get Media() { return translate('tools.imageConverter.media'); },
+  get System() { return translate('tools.imageConverter.system'); },
+  get "User & Faces"() { return translate('tools.imageConverter.usersEmoji'); },
+  get Weather() { return translate('tools.imageConverter.weather'); },
+  get Others() { return translate('pages.changelog.other'); },
 };
 const REMIX_ICON_TAG_INDEX = new Map();
 for (const [category, icons] of Object.entries(remixIconTags)) {
@@ -1615,7 +1618,7 @@ const hasQualityControl = computed(() =>
 const staticOutput = computed(() => !["gif", "webp"].includes(settings.format));
 const queueSummary = computed(
   () =>
-    `${queue.value.length} 个文件 · ${successfulItems.value.length} 个已完成${queue.value.some((item) => item.status === "error") ? " · 含失败项目" : ""}`,
+    translate('tools.imageConverter.filesCompleted', { p0: queue.value.length, p1: successfulItems.value.length, p2: queue.value.some((item) => item.status === "error") ? translate('tools.imageConverter.includesFailedItems') : "" }),
 );
 
 watch(
@@ -1778,7 +1781,7 @@ async function resolveWatermarkFont(
   fallbackFontId = watermark.fallbackFontId,
 ) {
   const selector = watermarkFontSelect.value;
-  if (!selector) throw new Error("字体选择器尚未就绪");
+  if (!selector) throw new Error(translate('tools.imageConverter.theFontPickerIsNotReady'));
   return selector.resolveFont(fontId, text, 600, fallbackFontId);
 }
 
@@ -1880,7 +1883,7 @@ function loadSvgWatermarkImage(blob) {
       image.decoding = "async";
       await new Promise((resolve, reject) => {
         image.onload = resolve;
-        image.onerror = () => reject(new Error("无法读取 SVG 水印"));
+        image.onerror = () => reject(new Error(translate('tools.imageConverter.cannotReadTheSvgWatermark')));
         image.src = url;
       });
       if (aspectRatio) {
@@ -1926,9 +1929,9 @@ function rasterizeSvgWatermark(blob, size, scale) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * density));
     canvas.height = Math.max(1, Math.ceil(stampHeight * density));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法创建 SVG 水印");
+    if (!context) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateAnSvgWatermark'));
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvasToBlob(canvas, "无法生成 SVG 水印");
+    return canvasToBlob(canvas, translate('tools.imageConverter.cannotGenerateTheSvgWatermark'));
   })();
   cache.set(key, promise);
   while (cache.size > 3) cache.delete(cache.keys().next().value);
@@ -1953,7 +1956,7 @@ async function renderRemixIconBlob(icon, color) {
     element.remove();
   }
   if (!content || ["none", "normal"].includes(content))
-    throw new Error("无法读取 Remix Icon");
+    throw new Error(translate('tools.imageConverter.cannotReadRemixIcon'));
   const glyph = content
     .replace(/^['"]|['"]$/g, "")
     .replace(/\\([0-9a-f]{1,6})\s?/gi, (_, code) =>
@@ -1978,7 +1981,7 @@ async function renderRemixIconBlob(icon, color) {
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
-        blob ? resolve(blob) : reject(new Error("无法生成 Remix Icon")),
+        blob ? resolve(blob) : reject(new Error(translate('tools.imageConverter.cannotGenerateRemixIcon'))),
       "image/png",
     ),
   );
@@ -2118,7 +2121,7 @@ async function createTextWatermarkStamp(size, config) {
     const fontSize = Math.round(calculateWatermarkBaseSize(size, config.scale));
     const measureCanvas = document.createElement("canvas");
     const measureContext = measureCanvas.getContext("2d");
-    if (!measureContext) throw new Error("浏览器无法创建文字水印");
+    if (!measureContext) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateATextWatermark'));
     measureContext.font = `${weight} ${fontSize}px ${family}`;
     const metrics = measureContext.measureText(text);
     const textLeft = Math.max(0, metrics.actualBoundingBoxLeft || 0);
@@ -2165,7 +2168,7 @@ async function createTextWatermarkStamp(size, config) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * renderScale));
     canvas.height = Math.max(1, Math.ceil(stampHeight * renderScale));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法创建文字水印");
+    if (!context) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateATextWatermark'));
     context.font = `${weight} ${fontSize * renderScale}px ${family}`;
     context.textBaseline = "alphabetic";
     context.fillStyle = config.color || "#ffffff";
@@ -2183,7 +2186,7 @@ async function createTextWatermarkStamp(size, config) {
       (padding + graphicWidth + contentGap + textLeft) * renderScale,
       (padding + (contentHeight - textHeight) / 2 + textAscent) * renderScale,
     );
-    const blob = await canvasToBlob(canvas, "无法生成文字水印");
+    const blob = await canvasToBlob(canvas, translate('tools.imageConverter.cannotGenerateTheTextWatermark'));
     return { blob, width: stampWidth, height: stampHeight };
   } finally {
     graphic?.close?.();
@@ -2219,7 +2222,7 @@ async function addFiles(fileList) {
   const available = MAX_FILES - queue.value.length;
   const files = [...fileList].slice(0, Math.max(0, available));
   if (fileList.length > available)
-    toast.warning(`单批最多 ${MAX_FILES} 个文件，超出的文件未添加`);
+    toast.warning(translate('tools.imageConverter.upToFilesPerBatchExtraFilesWereNotAdded', { p0: MAX_FILES }));
   if (!files.length) return;
   isLoadingFiles.value = true;
   loadedFileCount.value = 0;
@@ -2230,7 +2233,7 @@ async function addFiles(fileList) {
         await addFile(file);
       } catch (error) {
         toast.error(
-          `${file.name}：${error instanceof Error ? error.message : "无法读取文件"}`,
+          `${file.name}：${error instanceof Error ? error.message : translate('tools.imageConverter.cannotReadTheFile')}`,
         );
       } finally {
         loadedFileCount.value += 1;
@@ -2245,7 +2248,7 @@ async function addFile(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const format = detectImageFormat(bytes);
   if (!format) {
-    toast.error(`${file.name} 不是受支持的图片格式`);
+    toast.error(translate('tools.imageConverter.isNotASupportedImageFormat', { p0: file.name }));
     return;
   }
   const item = {
@@ -2260,6 +2263,8 @@ async function addFile(file) {
     animated: false,
     status: "reading",
     progress: 0,
+    messageDescriptor: null,
+    warnings: [],
     message: "正在读取图片信息",
     outputs: [],
     previewFrames: [],
@@ -2287,7 +2292,8 @@ async function addFile(file) {
     if (estimated > limit)
       Object.assign(queueItem, {
         status: "error",
-        message: `预计解码占用 ${formatBytes(estimated)}，超过设备安全上限 ${formatBytes(limit)}`,
+        message: "",
+        messageDescriptor: { key: 'tools.imageConverter.estimatedDecodingMemoryExceedsTheDeviceLimit', params: { p0: formatBytes(estimated), p1: formatBytes(limit) } },
       });
     else {
       if (queueItem.frameCount > 1) {
@@ -2300,7 +2306,7 @@ async function addFile(file) {
   } catch (error) {
     Object.assign(queueItem, {
       status: "error",
-      message: error instanceof Error ? error.message : "无法读取图片",
+      message: error instanceof Error ? error.message : translate('tools.imageConverter.cannotReadTheImage'),
     });
   }
 }
@@ -2340,7 +2346,7 @@ async function readMetadata(file, format, bytes) {
     if (image) dimensions = { width: image.width, height: image.height };
   }
   if (!dimensions?.width || !dimensions?.height)
-    throw new Error("无法读取图片尺寸");
+    throw new Error(translate('tools.imageConverter.cannotReadImageDimensions'));
   const { width, height } = dimensions;
   let frameCount = 1;
   let animated = false;
@@ -2361,7 +2367,7 @@ async function readMetadata(file, format, bytes) {
 async function startConversion() {
   if (!worker.value || isRunning.value) return;
   if (watermark.enabled && usesWatermarkImageFile() && !watermark.file) {
-    toast.warning("请先选择水印图片");
+    toast.warning(translate('tools.imageConverter.chooseAWatermarkImageFirst'));
     return;
   }
   isRunning.value = true;
@@ -2374,10 +2380,10 @@ async function startConversion() {
   const cancelled = batch.filter((item) => item.status === "cancelled").length;
   isRunning.value = false;
   currentJobId.value = null;
-  if (cancelled) toast.info("转换已取消");
-  else if (failed === batch.length) toast.error("本批次转换全部失败");
-  else if (failed) toast.warning(`转换完成，${failed} 个文件失败`);
-  else if (batch.length) toast.success("图片转换完成");
+  if (cancelled) toast.info(translate('tools.imageConverter.conversionCanceled'));
+  else if (failed === batch.length) toast.error(translate('tools.imageConverter.allConversionsInThisBatchFailed'));
+  else if (failed) toast.warning(translate('tools.imageConverter.conversionFinishedFilesFailed', { p0: failed }));
+  else if (batch.length) toast.success(translate('tools.imageConverter.imageConversionFinished'));
 }
 
 async function convertItem(item) {
@@ -2390,6 +2396,8 @@ async function convertItem(item) {
   });
   Object.assign(item, {
     status: "processing",
+    warnings: [],
+    messageDescriptor: null,
     progress: 1,
     message: "准备处理",
     outputs: [],
@@ -2439,16 +2447,24 @@ async function convertItem(item) {
       : null;
     item.status = "done";
     item.progress = 100;
-    item.message = result.warnings?.join("；") || "转换完成";
+    item.warnings = (result.warnings || []).map((warning, index) => result.warningMessages?.[index] || warning);
+    item.messageDescriptor = null;
+    item.message = "转换完成";
   } catch (error) {
     if (error?.name === "AbortError")
-      Object.assign(item, { status: "cancelled", message: "已取消" });
+      Object.assign(item, { status: "cancelled", message: "已取消", messageDescriptor: null });
     else
       Object.assign(item, {
         status: "error",
         message: error instanceof Error ? error.message : "转换失败",
+        messageDescriptor: error?.uiMessage || null,
       });
   }
+}
+
+function queueMessage(item) {
+  if (item.warnings?.length) return item.warnings.map(localizeText).join("; ");
+  return localizeText(item.messageDescriptor || item.message);
 }
 
 function requestWorker(message, transfer) {
@@ -2470,6 +2486,7 @@ function onWorkerMessage({ data }) {
     if (item) {
       item.progress = data.value;
       item.message = data.stage;
+      item.messageDescriptor = data.stageMessage;
     }
     return;
   }
@@ -2485,8 +2502,8 @@ function onWorkerMessage({ data }) {
   pendingJobs.delete(data.jobId);
   if (["result", "previewResult"].includes(data.type)) pending.resolve(data);
   else if (data.type === "cancelled")
-    pending.reject(new DOMException("已取消", "AbortError"));
-  else pending.reject(new Error(data.message || "转换失败"));
+    pending.reject(new DOMException(translate('tools.imageConverter.canceled'), "AbortError"));
+  else pending.reject(Object.assign(new Error(data.message || "转换失败"), { uiMessage: data.errorMessage }));
 }
 
 function onWorkerError(event) {
@@ -2495,7 +2512,7 @@ function onWorkerError(event) {
     : null;
   if (pending) {
     pendingJobs.delete(currentJobId.value);
-    pending.reject(new Error(event.message || "图片处理线程异常"));
+    pending.reject(new Error(event.message || translate('tools.imageConverter.imageProcessingWorkerFailed')));
   }
 }
 
@@ -2604,6 +2621,8 @@ function resetQueue() {
       status: "ready",
       progress: 0,
       message: "",
+      messageDescriptor: null,
+      warnings: [],
       resultSize: 0,
       outputWidth: 0,
       outputHeight: 0,
@@ -2615,6 +2634,8 @@ function resetQueue() {
 function retryItem(item) {
   item.status = "ready";
   item.message = "";
+  item.messageDescriptor = null;
+  item.warnings = [];
   startConversion();
 }
 function releaseItemUrls(item) {
@@ -2794,18 +2815,18 @@ function targetFormatBadgeClass(item) {
 function savingsLabel(item) {
   const rate = (1 - item.resultSize / item.file.size) * 100;
   return rate >= 0
-    ? `节省 ${rate.toFixed(1)}%`
-    : `增加 ${Math.abs(rate).toFixed(1)}%`;
+    ? translate('tools.imageConverter.saved', { p0: rate.toFixed(1) })
+    : translate('tools.imageConverter.increased', { p0: Math.abs(rate).toFixed(1) });
 }
 function statusLabel(status) {
   return (
     {
-      reading: "读取中",
-      ready: "等待转换",
-      processing: "处理中",
-      done: "已完成",
-      error: "失败",
-      cancelled: "已取消",
+      get reading() { return translate('tools.imageConverter.reading'); },
+      get ready() { return translate('tools.imageConverter.waitingToConvert'); },
+      get processing() { return translate('tools.imageConverter.processing'); },
+      get done() { return translate('tools.imageConverter.completed'); },
+      get error() { return translate('tools.imageConverter.failed'); },
+      get cancelled() { return translate('tools.imageConverter.canceled'); },
     }[status] || status
   );
 }
@@ -2821,15 +2842,15 @@ function statusIcon(status) {
 }
 function positionLabel(position) {
   return {
-    "top-left": "左上",
-    "top-center": "中上",
-    "top-right": "右上",
-    "center-left": "左中",
-    "center-center": "居中",
-    "center-right": "右中",
-    "bottom-left": "左下",
-    "bottom-center": "中下",
-    "bottom-right": "右下",
+    get "top-left"() { return translate('tools.imageConverter.topLeft'); },
+    get "top-center"() { return translate('tools.imageConverter.topCenter'); },
+    get "top-right"() { return translate('tools.imageConverter.topRight'); },
+    get "center-left"() { return translate('tools.imageConverter.centerLeft'); },
+    get "center-center"() { return translate('tools.imageConverter.center'); },
+    get "center-right"() { return translate('tools.imageConverter.centerRight'); },
+    get "bottom-left"() { return translate('tools.imageConverter.bottomLeft'); },
+    get "bottom-center"() { return translate('tools.imageConverter.bottomCenter'); },
+    get "bottom-right"() { return translate('tools.imageConverter.bottomRight'); },
   }[position];
 }
 function baseName(name) {

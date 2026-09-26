@@ -13,20 +13,20 @@
         class="menu menu-horizontal fixed z-[100] max-w-[calc(100dvw-1rem)] flex-nowrap overflow-x-auto overscroll-x-contain rounded-box border border-base-300 bg-base-100 p-1 text-base-content shadow-xl scrollbar-thin"
         :style="menuPosition"
         data-reader-interactive
-        aria-label="正文操作"
+        :aria-label="translate('reader.contextMenu.textActions')"
         @pointerdown.stop
         @contextmenu.prevent
       >
         <li v-if="context.latex?.pure">
           <button type="button" @click="copyLatexSource">
             <i class="ri-braces-line" aria-hidden="true"></i>
-            <span>复制 LaTeX</span>
+            <span>{{ translate('reader.contextMenu.copyLatex') }}</span>
           </button>
         </li>
         <li v-if="context.latex?.pure">
           <button type="button" @click="copyLatexAsSvg">
             <i class="ri-shapes-line" aria-hidden="true"></i>
-            <span>复制 SVG</span>
+            <span>{{ translate('reader.contextMenu.copySvg') }}</span>
           </button>
         </li>
         <li v-else>
@@ -41,13 +41,13 @@
               "
               aria-hidden="true"
             ></i>
-            <span>{{ context.image ? "保存" : "复制" }}</span>
+            <span>{{ context.image ? translate('reader.formatSetting.save') : translate('reader.contextMenu.copy') }}</span>
           </button>
         </li>
         <li>
           <button type="button" :disabled="!context.text" @click="searchText">
             <i class="ri-search-line" aria-hidden="true"></i>
-            <span>搜索</span>
+            <span>{{ translate('common.navBar.search') }}</span>
           </button>
         </li>
         <li>
@@ -57,7 +57,7 @@
             @click="shareText"
           >
             <i class="ri-share-forward-line" aria-hidden="true"></i>
-            <span>分享</span>
+            <span>{{ translate('markdown.moment.share') }}</span>
           </button>
         </li>
         <li>
@@ -67,7 +67,7 @@
             @click="openComment"
           >
             <i class="ri-chat-quote-line" aria-hidden="true"></i>
-            <span>评论</span>
+            <span>{{ translate('markdown.moment.comments') }}</span>
           </button>
         </li>
       </ul>
@@ -81,6 +81,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -184,9 +187,9 @@ const copyToClipboard = async (text) => {
 const copyText = async () => {
   try {
     await copyToClipboard(props.context.text);
-    toast.success("已复制正文");
+    toast.success(translate('reader.contextMenu.textCopied'));
   } catch {
-    toast.error("复制失败，请手动选择文字");
+    toast.error(translate('reader.contextMenu.copyFailedPleaseSelectTheTextManually'));
   }
   close();
 };
@@ -213,10 +216,10 @@ const getImageFileName = ({ src = "", alt = "" } = {}, mimeType = "") => {
     /\.(avif|gif|jpe?g|png|svg|webp)$/iu,
   )?.[1];
   const extension = extensions[mimeType] || sourceExtension || "png";
-  const baseName = (alt || sourceName.replace(/\.[^.]+$/u, "") || "图片")
+  const baseName = (alt || sourceName.replace(/\.[^.]+$/u, "") || translate('reader.contextMenu.image'))
     .replace(/[<>:"/\\|?*\u0000-\u001f]/gu, "-")
     .trim();
-  return `${baseName || "图片"}.${extension === "jpeg" ? "jpg" : extension}`;
+  return `${baseName || translate('reader.contextMenu.image')}.${extension === "jpeg" ? "jpg" : extension}`;
 };
 const triggerImageDownload = (href, fileName) => {
   const anchor = document.createElement("a");
@@ -238,7 +241,7 @@ const saveImage = async () => {
     const objectUrl = URL.createObjectURL(blob);
     triggerImageDownload(objectUrl, getImageFileName(image, blob.type));
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
-    toast.success("图片已保存");
+    toast.success(translate('reader.contextMenu.imageSaved'));
   } catch {
     const anchor = document.createElement("a");
     anchor.href = image.src;
@@ -247,7 +250,7 @@ const saveImage = async () => {
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    toast.info("已打开原图，请使用浏览器另存为");
+    toast.info(translate('reader.contextMenu.originalImageOpenedUseYourBrowserToSaveIt'));
   }
 };
 const handlePrimaryAction = () =>
@@ -255,9 +258,9 @@ const handlePrimaryAction = () =>
 const copyLatexSource = async () => {
   try {
     await copyToClipboard(props.context.latex?.text || "");
-    toast.success("已复制 LaTeX 源码");
+    toast.success(translate('reader.contextMenu.latexSourceCopied'));
   } catch {
-    toast.error("复制失败，请手动选择公式");
+    toast.error(translate('reader.contextMenu.copyFailedPleaseSelectTheFormulaManually'));
   }
   close();
 };
@@ -269,9 +272,9 @@ const copyLatexAsSvg = async () => {
       display: props.context.latex?.display,
       color: getComputedStyle(document.documentElement).color,
     });
-    toast.success("已复制 SVG");
+    toast.success(translate('reader.contextMenu.svgCopied'));
   } catch {
-    toast.error("当前浏览器无法复制 SVG");
+    toast.error(translate('reader.contextMenu.yourBrowserCannotCopySvg'));
   }
   close();
 };
@@ -307,7 +310,7 @@ const shareText = async () => {
     await ensureShareDialog();
     await shareDialogRef.value?.open(payload);
   } catch {
-    toast.error("暂时无法打开分享卡片");
+    toast.error(translate('reader.contextMenu.cannotOpenTheShareCardRightNow'));
   }
 };
 const openComment = () => {

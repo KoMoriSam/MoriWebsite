@@ -5,7 +5,7 @@
       type="button"
       popovertarget="mobile-navigation"
       style="anchor-name: --mobile-navigation-anchor"
-      :aria-label="isOpen ? '关闭导航菜单' : '打开导航菜单'"
+      :aria-label="isOpen ? translate('common.mobileNav.closeNavigationMenu') : translate('common.mobileNav.openNavigationMenu')"
     >
       <i
         class="text-xl transition-transform duration-200"
@@ -19,7 +19,7 @@
       popover="auto"
       class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-box border p-3 shadow-xl sm:w-96"
       style="position-anchor: --mobile-navigation-anchor"
-      aria-label="移动端导航"
+      :aria-label="translate('common.mobileNav.mobileNavigation')"
       @toggle="handleToggle"
     >
       <section aria-labelledby="mobile-primary-navigation">
@@ -41,7 +41,7 @@
                   isNavigationLinkActive(route, link) ? 'fill' : 'line'
                 }`"
               ></i>
-              {{ link.name }}
+              {{ localizeText(link.name) }}
             </RouterLink>
           </li>
         </ul>
@@ -50,7 +50,7 @@
       <section aria-labelledby="mobile-project-navigation">
         <div class="divider my-3 justify-between">
           <h2 class="text-base-content/55 text-xs font-bold">
-            项目
+            {{ translate('common.mobileNav.projects') }}
             <span class="badge badge-ghost badge-xs mb-0.75">
               {{ PROJECTS.length }}
             </span>
@@ -63,7 +63,7 @@
             @click="closeMenu"
           >
             <i class="ri-github-fill text-base"></i>
-            <span>查看全部仓库</span>
+            <span>{{ translate('common.mobileNav.viewAllRepositories') }}</span>
             <i class="ri-arrow-right-up-line"></i>
           </a>
         </div>
@@ -92,14 +92,14 @@
             </span>
             <span class="min-w-0 flex-1">
               <span class="flex items-center gap-2 font-semibold">
-                <span class="truncate">{{ project.name }}</span>
+                <span class="truncate">{{ localizeText(project.name) }}</span>
                 <i
                   v-if="project.href"
                   class="ri-arrow-right-up-line text-base-content/45 ml-auto shrink-0"
                 ></i>
               </span>
               <span class="text-base-content/60 mt-0.5 block text-xs">
-                {{ project.category }} · {{ project.meta }}
+                {{ localizeText(project.category) }} · {{ project.meta }}
               </span>
             </span>
           </component>
@@ -110,6 +110,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 

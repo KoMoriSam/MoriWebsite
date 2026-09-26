@@ -29,7 +29,7 @@
             class="min-w-0 font-serif font-bold text-balance break-words"
             :class="isCompact ? 'text-2xl' : 'text-3xl'"
           >
-            {{ title }}
+            {{ localizeText(title) }}
           </h2>
           <span
             v-if="meta"
@@ -57,6 +57,8 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { text: localizeText } = useLocale();
 import { computed, useId } from "vue";
 
 const props = defineProps({

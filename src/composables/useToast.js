@@ -1,6 +1,7 @@
 // src/composables/useToast.js
 import { createApp, ref, h } from "vue";
 import Toast from "@/components/ui/Toast.vue";
+import { useLocale } from "@/i18n";
 import {
   TOAST_POSITIONS,
   DEFAULT_POSITION,
@@ -23,6 +24,7 @@ const initToastGroups = () => {
 initToastGroups(); // 立即初始化
 
 export function useToast(defaultOptions = {}) {
+  const localeService = useLocale();
   // 初始化指定位置的容器
   const initContainer = (position) => {
     if (!containerMap.has(position)) {
@@ -48,6 +50,7 @@ export function useToast(defaultOptions = {}) {
         },
       });
 
+      localeService.provide(app);
       app.mount(container);
       containerMap.set(position, { app, container });
     }
@@ -84,7 +87,7 @@ export function useToast(defaultOptions = {}) {
 
     toastList.value.push({
       id,
-      message,
+      message: localeService.text(message),
       type,
       icon: icon || TOAST_ICONS[type],
       closable,

@@ -2,15 +2,15 @@
   <section
     class="fixed inset-0 z-[95] bg-neutral/30 text-base-content"
     data-reader-interactive
-    aria-label="九宫格点击区域设置"
+    :aria-label="translate('reader.tapZoneEditor.nineZoneTapSettings')"
   >
     <header
       class="absolute inset-x-2 top-2 z-10 flex items-center gap-2 rounded-box border border-base-300 bg-base-100/95 p-2 shadow-lg backdrop-blur"
     >
       <div class="min-w-0 flex-1 px-1">
-        <h2 class="text-sm font-bold">点击区域设置</h2>
+        <h2 class="text-sm font-bold">{{ translate('reader.readerMoreSettings.tapZoneSettings') }}</h2>
         <p class="truncate text-[0.6875rem] text-base-content/55">
-          点击区域选择对应操作
+          {{ translate('reader.tapZoneEditor.tapAZoneToChooseItsAction') }}
         </p>
       </div>
       <button
@@ -19,16 +19,16 @@
         @click="store.resetMobileTapZones"
       >
         <i class="ri-reset-left-line" aria-hidden="true"></i>
-        恢复默认
+        {{ translate('reader.formatSetting.resetToDefaults') }}
       </button>
       <button type="button" class="btn btn-sm shrink-0" @click="emit('close')">
-        完成
+        {{ translate('reader.tapZoneEditor.done') }}
       </button>
     </header>
 
     <div
       class="absolute inset-x-0 top-18 bottom-6 grid grid-cols-3 grid-rows-3 p-1"
-      aria-label="正文九宫格区域"
+      :aria-label="translate('reader.tapZoneEditor.textTapZones')"
     >
       <button
         v-for="(action, index) in mobileTapZones"
@@ -36,7 +36,7 @@
         type="button"
         class="group flex min-h-0 min-w-0 items-center justify-center border border-base-content/25 bg-base-100/25 px-1 text-center transition-colors active:bg-primary/25"
         :class="{ 'border-primary bg-primary/20': selectedZoneIndex === index }"
-        :aria-label="`当前操作为 ${actionLabel(action)}，点击打开操作菜单`"
+        :aria-label="translate('reader.tapZoneEditor.currentActionTapToOpenTheActionMenu', { p0: actionLabel(action) })"
         :aria-expanded="selectedZoneIndex === index"
         @click="openActionMenu(index)"
       >
@@ -58,7 +58,7 @@
         class="w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-xl"
         role="dialog"
         aria-modal="true"
-        aria-label="选择点击区域操作"
+        :aria-label="translate('reader.tapZoneEditor.chooseTapZoneAction')"
       >
         <ul class="menu grid w-full grid-cols-2 gap-1 p-0">
           <li v-for="action in MOBILE_READER_ZONE_ACTIONS" :key="action.value">
@@ -72,7 +72,7 @@
               :aria-pressed="mobileTapZones[selectedZoneIndex] === action.value"
               @click="selectZoneAction(action.value)"
             >
-              {{ action.label }}
+              {{ localizeText(action.label) }}
             </button>
           </li>
         </ul>
@@ -82,6 +82,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 import { MOBILE_READER_ZONE_ACTIONS } from "@/constants/reader";
@@ -93,8 +96,8 @@ const { mobileTapZones } = storeToRefs(store);
 const selectedZoneIndex = ref(null);
 
 const actionLabel = (value) =>
-  MOBILE_READER_ZONE_ACTIONS.find((item) => item.value === value)?.label ||
-  "无操作";
+  localizeText(MOBILE_READER_ZONE_ACTIONS.find((item) => item.value === value)?.label) ||
+  translate('reader.tapZoneEditor.noAction');
 const openActionMenu = (index) => {
   selectedZoneIndex.value = index;
 };

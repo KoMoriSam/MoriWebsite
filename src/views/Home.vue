@@ -43,13 +43,13 @@
             Explore Beyond.
           </h2>
           <p class="text-base md:text-lg lg:text-xl">
-            {{ greeting }}{{ description }}
+            {{ translate(greeting) }}{{ translate(description) }}
           </p>
           <section
             class="flex flex-col lg:flex-row gap-4 justify-center items-center mt-6 md:mt-8 lg:mt-12"
           >
             <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
-              <i class="ri-article-fill"></i>阅读博客
+              <i class="ri-article-fill"></i>{{ translate('pages.home.readTheBlog') }}
             </router-link>
             <router-link
               to="/novel"
@@ -59,7 +59,7 @@
               <i
                 class="ri-eye-fill hidden group-hover:block group-active:block"
               ></i>
-              视奸小说
+              {{ translate('pages.home.exploreTheNovel') }}
             </router-link>
             <router-link
               to="/tools/server-status"
@@ -71,7 +71,7 @@
               <i
                 class="ri-gamepad-fill hidden group-hover:block group-active:block"
               ></i>
-              服务器状态
+              {{ translate('pages.home.serverStatus') }}
             </router-link>
           </section>
           <client-only v-if="hero.pageUrl">
@@ -81,9 +81,9 @@
               rel="noopener noreferrer"
               class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
             >
-              摄影&#8197;·&#8197;{{ hero.author?.name || "Pixabay 用户" }}
+              {{ translate('pages.home.photo') }}{{ hero.author?.name || translate('pages.home.pixabayUser') }}
               <br />
-              来源&#8197;·&#8197;Pixabay
+              {{ translate('pages.home.sourcePixabay') }}
             </a>
           </client-only>
           <a
@@ -93,9 +93,9 @@
             rel="noopener noreferrer"
             class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
           >
-            摄影&#8197;·&#8197;florianhoellmueller
+            {{ translate('pages.home.photoFlorianhoellmueller') }}
             <br />
-            来源&#8197;·&#8197;Pixabay
+            {{ translate('pages.home.sourcePixabay') }}
           </a>
           <i
             class="ri-arrow-down-s-line absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
@@ -112,9 +112,9 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >What am I doing?</span
+            >{{ translate('common.sections.workingOn') }}</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">我在做什么</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.whatIMWorkingOn') }}</h2>
         </hgroup>
         <figure class="p-0 mx-auto w-42 lg:w-56">
           <img
@@ -124,7 +124,7 @@
             @load="handleImageLoad"
           />
         </figure>
-        <p class="max-w-lg mx-auto">典中典之「这里是我的『数字花园』」</p>
+        <p class="max-w-lg mx-auto">{{ translate('pages.home.theClassicLineWelcomeToMyDigitalGarden') }}</p>
       </section>
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <section class="card card-dash bg-base-200/10 border border-base-200">
@@ -132,24 +132,24 @@
             <aside class="card-icon">
               <i class="ri-article-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">个人博客</h2>
+            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.personalBlog') }}</h2>
             <p>
-              记录技术探索 <small>AI 探索也是探索</small>
-              <br />以及随笔、读书笔记等内容<br />
+              {{ translate('pages.home.notesOnExploringTechnology') }} <small>{{ translate('pages.home.aiExperimentsCountToo') }}</small>
+              <br />{{ translate('pages.home.alongWithEssaysReadingNotesAndMore') }}<br />
               <small
-                >不定期更新，支持
+                >{{ translate('pages.home.updatedOccasionallyWith') }}
                 <a
                   class="link link-primary link-hover"
                   href="/rss.xml"
                   type="application/rss+xml"
                 >
                   <i class="ri-rss-fill" aria-hidden="true"></i>
-                  RSS 订阅
+                  {{ translate('pages.home.rssSubscription') }}
                 </a>
               </small>
             </p>
             <router-link to="/blog" class="btn btn-primary btn-soft btn-sm">
-              阅读文章<i class="ri-arrow-right-line"></i>
+              {{ translate('pages.home.readArticles') }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -158,14 +158,14 @@
             <aside class="card-icon">
               <i class="ri-article-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">瞎写小说</h2>
+            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.writingFictionForFun') }}</h2>
             <p>
-              经典写小说
-              <br />孩子写着玩的<br />
-              <small>不保证更新，不保证完结</small>
+              {{ translate('pages.home.theUsualAttemptAtWritingANovel') }}
+              <br />{{ translate('pages.home.justWritingForFun') }}<br />
+              <small>{{ translate('pages.home.updatesAndAnEndingAreNotGuaranteed') }}</small>
             </p>
             <router-link to="/novel" class="btn btn-primary btn-soft btn-sm">
-              看看小说<i class="ri-arrow-right-line"></i>
+              {{ translate('pages.home.readTheNovel') }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -174,19 +174,19 @@
             <aside class="card-icon">
               <i class="ri-pencil-ruler-2-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">工具集</h2>
-            <p>一些有用没用的小工具捏</p>
+            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.tools') }}</h2>
+            <p>{{ translate('pages.home.aFewLittleToolsUsefulOrOtherwise') }}</p>
             <div class="flex flex-wrap gap-1.5">
-              <span class="badge badge-outline badge-sm">图片格式转换</span>
+              <span class="badge badge-outline badge-sm">{{ translate('pages.home.imageConverter') }}</span>
               <span class="badge badge-outline badge-sm">
-                Minecraft 服务器查询
+                {{ translate('pages.home.minecraftServerLookup') }}
               </span>
               <span class="badge badge-outline badge-sm">
-                僧伽罗字体编码转换器
+                {{ translate('pages.home.sinhalaFontEncodingConverter') }}
               </span>
             </div>
             <router-link to="/tools" class="btn btn-primary btn-soft btn-sm">
-              使用工具<i class="ri-arrow-right-line"></i>
+              {{ translate('pages.home.useTheTools') }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -202,9 +202,9 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >About me</span
+            >{{ translate('common.sections.aboutMe') }}</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">关于我</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.aboutMe') }}</h2>
         </hgroup>
         <figure class="p-0 mx-auto w-32 lg:w-46">
           <img
@@ -215,7 +215,7 @@
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          你好，我是 KoMori
+          {{ translate('pages.home.hiIMKomori') }}
           <br />
           <span lang="ja"
             >22 <ruby>歳<rp>（</rp><rt>さい</rt><rp>）</rp></ruby>で、<ruby
@@ -224,11 +224,11 @@
           >
           <br />
           <small
-            >你还可以叫我的僧伽罗名字
+            >{{ translate('pages.home.youCanAlsoCallMeByMySinhalaName') }}
             <ruby>විශ්ව<rp>（</rp><rt>Wishwa</rt><rp>）</rp></ruby></small
           >
           <br />
-          一个热衷于折腾各种东西的独立开发者 <small>（存疑）</small>
+          {{ translate('pages.home.anIndependentDeveloperWhoEnjoysTinkering') }} <small>{{ translate('pages.home.probably') }}</small>
         </p>
       </section>
     </section>
@@ -242,9 +242,9 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >Follow & Contact Me</span
+            >{{ translate('common.sections.follow') }}</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">关注 & 联系我</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.followContactMe') }}</h2>
         </hgroup>
         <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
           <img
@@ -255,9 +255,9 @@
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          在这些平台上可以找到我
+          {{ translate('pages.home.findMeOnThesePlatforms') }}
           <br />
-          <small> 微信和 QQ 常年不在线喵，不保证可以加上</small>
+          <small> {{ translate('pages.home.iMRarelyOnlineOnWechatOrQqSoAdding') }}</small>
         </p>
         <div class="flex flex-wrap gap-3 justify-center mt-4 lg:mt-8">
           <a
@@ -293,7 +293,7 @@
               <i
                 class="ri-weibo-fill hidden group-hover:block group-active:block"
               ></i>
-              微博
+              {{ translate('pages.home.weibo') }}
             </button>
           </a>
           <div class="dropdown dropdown-bottom dropdown-center">
@@ -308,7 +308,7 @@
               <i
                 class="ri-wechat-fill hidden group-hover:block group-active:block"
               ></i>
-              微信
+              {{ translate('pages.home.wechat') }}
             </a>
             <div
               tabindex="0"
@@ -344,6 +344,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import FootBar from "@/components/layout/FootBar.vue";
 
 import { useImageLoad } from "@/composables/useImageLoad";
@@ -352,31 +355,31 @@ const { imageLoaded, handleImageLoad } = useImageLoad();
 
 import { ref, onMounted, reactive } from "vue";
 
-const greeting = ref("你好！");
-const description = ref("欢迎来到我的个人网站！");
+const greeting = ref('pages.home.hello');
+const description = ref('pages.home.welcomeToMyPersonalWebsite');
 
 onMounted(() => {
   const isPrerenderBot = /HeadlessChrome|Prerender/i.test(navigator.userAgent);
   if (isPrerenderBot) return;
   const hour = new Date().getHours();
   if (hour < 6) {
-    greeting.value = "凌晨好！";
-    description.value = "夜深了，早点休息～";
+    greeting.value = 'pages.home.helloEarlyBird';
+    description.value = 'pages.home.itSLateGetSomeRest';
   } else if (hour < 12) {
-    greeting.value = "早上好！";
-    description.value = "记得吃早餐～";
+    greeting.value = 'pages.home.goodMorning';
+    description.value = 'pages.home.rememberToHaveBreakfast';
   } else if (hour < 14) {
-    greeting.value = "中午好！";
-    description.value = "午餐时间到了，休息一下～";
+    greeting.value = 'pages.home.goodAfternoon';
+    description.value = 'pages.home.timeForLunchTakeABreak';
   } else if (hour < 18) {
-    greeting.value = "下午好！";
-    description.value = "工作辛苦了，喝杯茶放松一下～";
+    greeting.value = 'pages.home.goodAfternoon2';
+    description.value = 'pages.home.takeABreatherAndEnjoyACupOfTea';
   } else if (hour < 21) {
-    greeting.value = "晚上好！";
-    description.value = "今天过得怎么样?";
+    greeting.value = 'pages.home.goodEvening';
+    description.value = 'pages.home.howWasYourDay';
   } else {
-    greeting.value = "深夜好！";
-    description.value = "记得照顾好自己～";
+    greeting.value = 'pages.home.helloNightOwl';
+    description.value = 'pages.home.rememberToTakeCareOfYourself';
   }
 });
 

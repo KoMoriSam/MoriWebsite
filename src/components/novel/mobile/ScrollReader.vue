@@ -2,7 +2,7 @@
   <section
     ref="scrollContainerRef"
     class="scroll-reader absolute inset-x-0 top-0 bottom-6 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
-    aria-label="上下滚动阅读器"
+    :aria-label="translate('reader.scrollReader.scrollingReader')"
     :aria-busy="showChapterLoadingOverlay"
     @pointerdown.capture="handleTextPointerDown"
     @pointermove.capture="handleTextPointerMove"
@@ -58,14 +58,14 @@
         <button
           type="button"
           class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
-          aria-label="上下滚动阅读提示：轻触九宫格区域执行对应操作，上下滑动滚动，点击关闭"
+          :aria-label="translate('reader.scrollReader.scrollingHelpTapAGridZoneForItsActionSwipe')"
           @click="dismissReaderHint"
         >
           <span class="block w-full">
             <span class="flex items-baseline justify-between gap-3">
-              <span class="text-sm font-semibold">阅读操作</span>
+              <span class="text-sm font-semibold">{{ translate('reader.pagedReader.readingControls') }}</span>
               <span class="text-[0.6875rem] text-base-content/45">
-                轻触提示可关闭
+                {{ translate('reader.pagedReader.tapThisHintToDismiss') }}
               </span>
             </span>
 
@@ -76,12 +76,12 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  上下滚动
+                  {{ translate('reader.scrollReader.verticalScrolling') }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  正文区域<br />上下滑动阅读
+                  {{ translate('reader.pagedReader.textArea') }}<br />{{ translate('reader.scrollReader.swipeVerticallyToRead') }}
                 </span>
               </span>
 
@@ -91,13 +91,13 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  轻触操作（可自定义）
+                  {{ translate('reader.pagedReader.tapActionsCustomizable') }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  中央展开菜单<br />
-                  四周翻页
+                  {{ translate('reader.pagedReader.tapTheCenterForTheMenu') }}<br />
+                  {{ translate('reader.pagedReader.tapTheEdgesToTurnPages') }}
                 </span>
               </span>
             </span>
@@ -105,9 +105,9 @@
             <span
               class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
             >
-              <span class="shrink-0 font-semibold">更多控制</span>
+              <span class="shrink-0 font-semibold">{{ translate('reader.pagedReader.moreControls') }}</span>
               <span class="text-base-content/60">
-                九宫格区域可设为菜单、上一章、下一章、目录、搜索、帮助等操作
+                {{ translate('reader.pagedReader.assignGridZonesToTheMenuPreviousOrNextChapter') }}
               </span>
             </span>
           </span>
@@ -118,6 +118,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 

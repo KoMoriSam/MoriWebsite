@@ -35,7 +35,7 @@
           id="notification-center-title"
           class="font-serif text-lg font-semibold"
         >
-          通知中心
+          {{ translate('common.noticeCenter.notifications') }}
         </h2>
 
         <button
@@ -44,7 +44,7 @@
           class="btn btn-ghost btn-xs"
           @click="store.markAllRead()"
         >
-          全部已读
+          {{ translate('common.modal.markAllAsRead') }}
         </button>
       </header>
 
@@ -52,7 +52,7 @@
         class="scrollbar-thin max-h-[min(58dvh,29rem)] overflow-y-auto overscroll-contain p-3"
       >
         <div v-if="loading && !loaded" role="status" aria-busy="true">
-          <span class="sr-only">正在加载公告</span>
+          <span class="sr-only">{{ translate('common.noticeCenter.loadingAnnouncements') }}</span>
           <ul class="grid gap-2" aria-hidden="true">
             <li
               v-for="index in 3"
@@ -85,7 +85,7 @@
         >
           <i class="ri-error-warning-line" aria-hidden="true"></i>
           <div class="min-w-0">
-            <p class="font-semibold">公告暂时无法加载</p>
+            <p class="font-semibold">{{ translate('common.noticeCenter.announcementsAreTemporarilyUnavailable') }}</p>
             <p class="mt-0.5 text-xs opacity-80">{{ error }}</p>
             <button
               type="button"
@@ -94,7 +94,7 @@
               @click="store.fetchAnnouncements({ force: true })"
             >
               <i class="ri-refresh-line" aria-hidden="true"></i>
-              重试
+              {{ translate('pages.announcements.retry') }}
             </button>
           </div>
         </div>
@@ -105,7 +105,7 @@
         >
           <div>
             <i class="ri-notification-off-line text-2xl" aria-hidden="true"></i>
-            <p class="mt-2 text-sm">当前没有有效公告</p>
+            <p class="mt-2 text-sm">{{ translate('common.noticeCenter.noActiveAnnouncements') }}</p>
           </div>
         </div>
 
@@ -131,12 +131,12 @@
                   :datetime="announcement.startsAt"
                   class="flex-1 text-[0.6875rem] text-base-content/45"
                 >
-                  {{ formatAnnouncementDate(announcement.startsAt, true) }}
+                  {{ formatAnnouncementDate(announcement.startsAt, true, uiLocale) }}
                 </time>
                 <span
                   class="text-primary group-hover:translate-x-0.25 transition-[translate]"
                 >
-                  查看
+                  {{ translate('common.modal.view') }}
                   <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
                 </span>
               </div>
@@ -150,7 +150,7 @@
           role="status"
         >
           <i class="ri-error-warning-line" aria-hidden="true"></i>
-          刷新失败，当前显示上次加载的公告。
+          {{ translate('pages.announcements.refreshFailedShowingPreviouslyLoadedAnnouncements') }}
         </p>
       </div>
 
@@ -160,7 +160,7 @@
           class="btn btn-ghost btn-sm w-full justify-between"
           @click="closePanel"
         >
-          查看全部与历史公告
+          {{ translate('common.noticeCenter.viewAllAndPastAnnouncements') }}
           <i class="ri-arrow-right-line" aria-hidden="true"></i>
         </RouterLink>
       </footer>
@@ -169,6 +169,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, locale: uiLocale } = useLocale();
+
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -184,8 +187,8 @@ const panelRef = ref(null);
 const unreadCount = computed(() => unreadAnnouncements.value.length);
 const triggerLabel = computed(() =>
   unreadCount.value
-    ? `打开站点公告，有 ${unreadCount.value} 条未读`
-    : "打开站点公告",
+    ? translate('common.noticeCenter.openAnnouncementsUnread', { p0: unreadCount.value })
+    : translate('common.noticeCenter.openAnnouncements'),
 );
 
 const closePanel = () => panelRef.value?.hidePopover?.();

@@ -2,7 +2,7 @@
   <section
     class="not-prose font-sans"
     data-markdown-moment
-    :aria-label="`${username} 的动态`"
+    :aria-label="translate('markdown.moment.sPost', { p0: username })"
   >
     <!-- 动态作者 -->
     <header class="moments-author">
@@ -11,7 +11,7 @@
           <img
             class="m-0!"
             :src="avatarFor(username)"
-            :alt="`${username} 的头像`"
+            :alt="translate('markdown.moment.sAvatar', { p0: username })"
           />
         </div>
       </div>
@@ -38,7 +38,7 @@
         v-if="isSelf(username)"
         type="button"
         class="btn btn-ghost btn-circle btn-sm shrink-0"
-        aria-label="更多操作"
+        :aria-label="translate('markdown.moment.moreActions')"
       >
         <i class="ri-more-2-line text-lg" aria-hidden="true"></i>
       </button>
@@ -77,7 +77,7 @@
     </footer>
 
     <!-- 评论区 -->
-    <aside v-if="comments.length" class="moments-comments" aria-label="评论">
+    <aside v-if="comments.length" class="moments-comments" :aria-label="translate('markdown.moment.comments')">
       <!-- 评论列表 -->
       <div class="comments-list">
         <article
@@ -92,7 +92,7 @@
                 <img
                   class="m-0!"
                   :src="avatarFor(comment.username)"
-                  :alt="`${comment.username} 的头像`"
+                  :alt="translate('markdown.moment.sAvatar', { p0: comment.username })"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@
                   <img
                     class="m-0!"
                     :src="avatarFor(reply.replier)"
-                    :alt="`${reply.replier} 的头像`"
+                    :alt="translate('markdown.moment.sAvatar', { p0: reply.replier })"
                   />
                 </div>
               </div>
@@ -154,6 +154,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed } from "vue";
 
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
@@ -203,7 +206,7 @@ const injectInfo = (contentHtml, infoHtml) => {
 };
 
 const commentHtml = (comment) => {
-  const username = comment.username || "用户";
+  const username = comment.username || translate('markdown.chat.user');
 
   const infoHtml = `
     <span
@@ -211,7 +214,7 @@ const commentHtml = (comment) => {
       data-paragraph-comment-meta="true"
     >
       <span class="user-name">
-        ${isSelf(username) ? "我" : escapeHtml(username)}
+        ${isSelf(username) ? translate('markdown.moment.me') : escapeHtml(username)}
       </span>
       ${
         comment.time
@@ -225,8 +228,8 @@ const commentHtml = (comment) => {
 };
 
 const replyHtml = (reply) => {
-  const replier = reply.replier || "用户";
-  const target = reply.target || "用户";
+  const replier = reply.replier || translate('markdown.chat.user');
+  const target = reply.target || translate('markdown.chat.user');
 
   const infoHtml = `
     <span
@@ -234,8 +237,8 @@ const replyHtml = (reply) => {
       data-paragraph-comment-meta="true"
     >
       <span class="user-name">
-        ${isSelf(replier) ? "我" : escapeHtml(replier)}
-        <span class="reply-label">回复</span>
+        ${isSelf(replier) ? translate('markdown.moment.me') : escapeHtml(replier)}
+        <span class="reply-label">${localizeText("回复")}</span>
         ${escapeHtml(target)}
       </span>
       ${
@@ -251,17 +254,17 @@ const replyHtml = (reply) => {
 
 const actions = computed(() => [
   {
-    label: "点赞",
+    get label() { return translate('markdown.moment.like'); },
     icon: "ri-thumb-up-line",
     value: props.stats.like || "",
   },
   {
-    label: "评论",
+    get label() { return translate('markdown.moment.comments'); },
     icon: "ri-chat-3-line",
     value: props.stats.comment || "",
   },
   {
-    label: "分享",
+    get label() { return translate('markdown.moment.share'); },
     icon: "ri-share-forward-line",
     value: props.stats.share || "",
   },

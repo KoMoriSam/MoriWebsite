@@ -5,27 +5,27 @@
     <aside>
       <img
         src="/assets/images/titles/welcome.webp"
-        alt="welcome!"
+        :alt="translate('common.sections.welcome')"
         class="h-6"
       />
       <p class="leading-relaxed">
-        远方之森&#8197;|&#8197;个人博客与独立开发
+        {{ translate('pages.app.personalBlogIndependentDevelopment') }}
         <br />
         © 2025–2026 KoMoriSam
       </p>
       <small class="text-xs text-base-content/50">
         <router-link class="link link-hover block my-2" to="/changelog">
-          更新日志
+          {{ translate('pages.changelog.changelog') }}
           <i class="ri-arrow-right-line"></i>
         </router-link>
         <router-link class="link link-hover block my-2" to="/licenses">
-          开源许可与第三方声明
+          {{ translate('pages.licenses.licensesThirdPartyNotices') }}
           <i class="ri-arrow-right-line"></i>
         </router-link>
       </small>
     </aside>
     <nav v-if="analyticsAvailable" aria-labelledby="site-statistics-title">
-      <h6 id="site-statistics-title" class="footer-title">站点统计</h6>
+      <h6 id="site-statistics-title" class="footer-title">{{ translate('common.footBar.siteStatistics') }}</h6>
       <dl
         class="grid min-w-44 gap-2 text-sm text-base-content/70"
         aria-live="polite"
@@ -33,7 +33,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-calendar-check-line" aria-hidden="true"></i>
-            今日访问
+            {{ translate('common.footBar.visitsToday') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(todayVisits) }}
@@ -42,7 +42,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-global-line" aria-hidden="true"></i>
-            总访问
+            {{ translate('common.footBar.totalVisits') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(totalVisits) }}
@@ -51,7 +51,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-book-open-line" aria-hidden="true"></i>
-            总阅读
+            {{ translate('common.footBar.totalReads') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(totalReads) }}
@@ -59,17 +59,17 @@
         </div>
       </dl>
       <small v-if="startedAtLabel" class="mt-1 text-xs text-base-content/50">
-        统计自 {{ startedAtLabel }}
+        {{ translate('common.footBar.trackedSince') }} {{ startedAtLabel }}
       </small>
       <small
         v-else-if="globalStatus === 'error'"
         class="mt-1 text-xs text-base-content/50"
       >
-        统计暂不可用
+        {{ translate('common.footBar.statisticsUnavailable') }}
       </small>
     </nav>
     <nav>
-      <h6 class="footer-title">社交帐号</h6>
+      <h6 class="footer-title">{{ translate('common.footBar.socialAccounts') }}</h6>
       <address class="grid grid-flow-col gap-4">
         <a href="https://github.com/KoMoriSam">
           <i class="ri-github-fill text-2xl"></i>
@@ -83,13 +83,13 @@
       </address>
       <br />
       <small class="text-xs text-base-content/50">
-        在找旧版网页？
+        {{ translate('common.footBar.lookingForTheOldWebsite') }}
         <a
           class="link link-primary no-underline hover:underline"
           href="/archive/home/index.html"
           target="_blank"
         >
-          这里跳转
+          {{ translate('common.footBar.visitItHere') }}
           <i class="ri-arrow-right-up-line"></i>
         </a>
       </small>
@@ -98,6 +98,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, locale: uiLocale, number: formatNumber } = useLocale();
+
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -113,7 +116,7 @@ const {
   totalVisits,
 } = storeToRefs(analyticsStore);
 
-const numberFormatter = new Intl.NumberFormat("zh-CN");
+const numberFormatter = { format: (value) => formatNumber(value) };
 
 const formatCount = (value) => {
   return Number.isFinite(value) ? numberFormatter.format(value) : "—";
@@ -125,7 +128,7 @@ const startedAtLabel = computed(() => {
   const date = new Date(startedAt.value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(uiLocale.value, {
     timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "numeric",

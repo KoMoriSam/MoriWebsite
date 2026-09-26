@@ -122,13 +122,13 @@
           "
           role="status"
           aria-live="assertive"
-          aria-label="正在加载章节"
+          :aria-label="translate('reader.novelReader.loadingChapter')"
           @pointerdown.stop
           @click.stop
         >
           <div class="flex flex-col items-center gap-3">
             <span class="loading loading-spinner loading-lg"></span>
-            <span class="text-sm font-medium">正在加载章节…</span>
+            <span class="text-sm font-medium">{{ translate('reader.novelReader.loadingChapter2') }}</span>
           </div>
         </div>
       </Transition>
@@ -169,7 +169,7 @@
         class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
       >
         <h2 class="min-w-0 text-2xl font-serif font-bold break-words">
-          {{ currentMapping === "title" ? "本章说" : "本书说" }}
+          {{ currentMapping === "title" ? translate('reader.novelReader.chapterComments') : translate('reader.novelReader.bookComments') }}
         </h2>
 
         <button
@@ -177,7 +177,7 @@
           class="btn btn-info btn-soft btn-xs shrink-0"
           @click="commentToggle"
         >
-          {{ currentMapping === "title" ? "切换本书说" : "切换本章说" }}
+          {{ currentMapping === "title" ? translate('reader.novelReader.switchToBookComments') : translate('reader.novelReader.switchToChapterComments') }}
         </button>
       </section>
 
@@ -194,7 +194,7 @@
         emit-metadata="0"
         input-position="bottom"
         :theme="giscusTheme"
-        lang="zh-CN"
+        :lang="commentLocale"
         loading="lazy"
       />
     </template>
@@ -220,11 +220,11 @@
       <header
         class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
       >
-        <h2 class="text-xl font-serif font-bold">本章说</h2>
+        <h2 class="text-xl font-serif font-bold">{{ translate('reader.novelReader.chapterComments') }}</h2>
         <button
           type="button"
           class="btn btn-ghost btn-sm btn-circle"
-          aria-label="关闭本章说"
+          :aria-label="translate('reader.novelReader.closeChapterComments')"
           @click="requestCloseChapterComments"
         >
           <i class="ri-close-line text-xl" aria-hidden="true"></i>
@@ -244,18 +244,21 @@
           emit-metadata="0"
           input-position="bottom"
           :theme="giscusTheme"
-          lang="zh-CN"
+          :lang="commentLocale"
           loading="lazy"
         />
       </section>
     </section>
     <form method="dialog" class="modal-backdrop">
-      <button @click.prevent="requestCloseChapterComments">关闭本章说</button>
+      <button @click.prevent="requestCloseChapterComments">{{ translate('reader.novelReader.closeChapterComments') }}</button>
     </form>
   </dialog>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, commentLocale, number: formatNumber, date: formatLocalizedDate } = useLocale();
+
 import { storeToRefs } from "pinia";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useNovelStore } from "@/stores/novelStore";
@@ -278,7 +281,7 @@ import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vu
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
-import { useDateFormat, useMediaQuery } from "@vueuse/core";
+import { useMediaQuery } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
 import { useGiscus } from "@/composables/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
@@ -336,7 +339,7 @@ const { analyticsAvailable, contentReads: chapterReads } =
     contentId: trackedChapterId,
     ready: trackedChapterReady,
   });
-const chapterReadCountFormatter = new Intl.NumberFormat("zh-CN");
+const chapterReadCountFormatter = { format: (value) => formatNumber(value) };
 
 watch(
   () => [trackedChapterId.value, getChapterContextTitle(currentChapter.value)],
@@ -789,29 +792,30 @@ const chapterStats = computed(() => {
   const stats = [
     {
       icon: "ri-time-line",
-      text: useDateFormat(
-        currentChapter.value?.uploadDate,
-        "YYYY/M/D H:mm 发布",
-      ).value,
+      text: currentChapter.value?.uploadDate
+        ? translate('pages.articleReader.published2', { p0: formatLocalizedDate(currentChapter.value.uploadDate, {
+            year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit',
+          }) })
+        : '',
     },
   ];
 
   if (currentChapter.value?.modifiedDate) {
     stats.push({
       icon: "ri-file-edit-line",
-      text: "有修订",
+      get text() { return translate('common.badges.revised'); },
     });
   }
 
   stats.push({
     icon: "ri-file-text-line",
-    text: `约 ${currentChapter.value?.length || 0} 字`,
+    get text() { return translate('pages.articleReader.aboutCharacters', { p0: currentChapter.value?.length || 0 }); },
   });
 
   if (analyticsAvailable.value && Number.isFinite(chapterReads.value)) {
     stats.push({
       icon: "ri-eye-line",
-      text: `${chapterReadCountFormatter.format(chapterReads.value)} 阅读`,
+      get text() { return translate('pages.articleReader.reads', { p0: chapterReadCountFormatter.format(chapterReads.value) }); },
     });
   }
 
@@ -830,10 +834,10 @@ const textShareMeta = computed(() => {
   const contentInfo = contentItems.join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(chapterReads.value)
-      ? `${chapterReadCountFormatter.format(chapterReads.value)} 阅读`
+      ? translate('pages.articleReader.reads', { p0: chapterReadCountFormatter.format(chapterReads.value) })
       : "",
     commentCountsAvailable.value && Number.isFinite(chapterComments.value)
-      ? `${chapterReadCountFormatter.format(chapterComments.value)} 评论`
+      ? translate('pages.articleReader.comments', { p0: chapterReadCountFormatter.format(chapterComments.value) })
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");
@@ -872,28 +876,28 @@ const handleRefreshContent = async () => {
 const fabActions = computed(() => [
   {
     key: "bottom",
-    label: "至底部",
+    get label() { return translate('pages.articleReader.toBottom'); },
     icon: "ri-skip-down-line",
     buttonClass: "btn-info btn-soft",
     onClick: () => scrollToBottom(),
   },
   {
     key: "top",
-    label: "至顶部",
+    get label() { return translate('pages.articleReader.toTop'); },
     icon: "ri-skip-up-line",
     buttonClass: "btn-info btn-soft",
     onClick: () => scrollToTop(),
   },
   {
     key: "settings",
-    label: "阅读排版",
+    get label() { return translate('reader.formatSetting.readingLayout'); },
     icon: "ri-settings-3-line",
     buttonClass: "btn-primary btn-soft",
     onClick: () => readerRef.value?.openFormatSetting(),
   },
   {
     key: "refresh",
-    label: "刷新内容",
+    get label() { return translate('reader.novelReader.refreshContent'); },
     icon: isLoadingContent.value
       ? "ri-loader-4-line animate-spin"
       : "ri-refresh-line",
@@ -902,7 +906,7 @@ const fabActions = computed(() => [
   },
   {
     key: "cover",
-    label: "封面页",
+    get label() { return translate('reader.novelReader.cover'); },
     icon: "ri-arrow-go-back-line",
     buttonClass: "btn-secondary btn-soft",
     onClick: () => {

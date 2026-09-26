@@ -20,6 +20,8 @@
       <span class="flex-1">{{ toast.message }}</span>
       <button
         v-if="toast.closable"
+        type="button"
+        :aria-label="localizeText('关闭')"
         :class="[`btn btn-circle btn-ghost btn-xs`, `btn-${toast.type}`]"
         @click="handleClose(toast)"
       >
@@ -30,6 +32,8 @@
 </template>
 
 <script setup>
+import { useLocale } from "@/i18n";
+const { text: localizeText } = useLocale();
 import { DEFAULT_POSITION } from "@/constants/toast";
 
 const props = defineProps({

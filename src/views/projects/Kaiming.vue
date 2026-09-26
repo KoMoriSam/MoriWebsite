@@ -1,9 +1,9 @@
 <template>
   <ContentPage
     eyebrow="Kaiming Punctuation"
-    title="开明标点"
-    description="一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。"
-    metasLabel="字体规格"
+    :title="translate('pages.kaiming.kaimingPunctuation')"
+    :description="translate('pages.kaiming.punctuationFontsForChineseWebTypographyWithSansSerifAnd')"
+    :metasLabel="translate('pages.kaiming.fontSpecifications')"
   >
     <template #meta>
       <li class="inline-flex items-center gap-1">
@@ -29,7 +29,7 @@
         rel="noopener noreferrer"
       >
         <i class="ri-github-fill"></i>
-        查看源码
+        {{ translate('pages.kaiming.viewSource') }}
         <i class="ri-arrow-right-up-line"></i>
       </a>
     </template>
@@ -42,15 +42,15 @@
         class="flex flex-col gap-4 border-b border-base-200 bg-base-200/60 p-4 md:flex-row md:items-start md:justify-between"
       >
         <fieldset class="fieldset">
-          <legend class="fieldset-legend">标点字体族</legend>
+          <legend class="fieldset-legend">{{ translate('pages.kaiming.punctuationFontFamily') }}</legend>
           <select
             class="select w-full max-w-xs md:w-48"
             :style="demoStyle"
             v-model="family"
-            aria-label="标点字体族"
+            :aria-label="translate('pages.kaiming.punctuationFontFamily')"
             @change="family = $event.target.value"
           >
-            <option disabled selected>选择字体族</option>
+            <option disabled selected>{{ translate('pages.kaiming.chooseFontFamily') }}</option>
             <option
               v-for="option in familyOptions"
               :key="option.value"
@@ -67,7 +67,7 @@
         </fieldset>
         <fieldset class="fieldset flex-1">
           <legend class="fieldset-legend">
-            可变字重
+            {{ translate('pages.kaiming.variableWeight') }}
             <output
               class="badge badge-primary badge-sm font-mono"
               for="kaiming-weight"
@@ -83,18 +83,18 @@
             min="100"
             max="900"
             step="1"
-            :aria-valuetext="`字重 ${weight}`"
+            :aria-valuetext="translate('pages.kaiming.weight', { p0: weight })"
           />
         </fieldset>
       </div>
 
       <div class="p-6">
-        <h2 id="specimen-title" class="sr-only">在线字体样张</h2>
+        <h2 id="specimen-title" class="sr-only">{{ translate('pages.kaiming.liveFontSpecimen') }}</h2>
         <div
           class="text-justify mx-auto min-h-64 w-[11em] md:w-[17em] lg:w-[18em] xl:w-[19em] rounded-box p-3 leading-snug outline-none transition-colors hover:bg-base-200/40 focus:bg-base-200/60 md:min-h-80 md:p-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
           contenteditable="true"
           role="textbox"
-          aria-label="可编辑字体样张"
+          :aria-label="translate('pages.kaiming.editableFontSpecimen')"
           aria-multiline="true"
           spellcheck="false"
           :style="demoStyle"
@@ -107,8 +107,8 @@
       <div
         class="flex flex-wrap justify-between gap-2 border-t border-base-200 bg-base-200/60 px-4 py-2 text-xs text-base-content/60"
       >
-        <span>点击样张即可编辑</span>
-        <span>当前字体：{{ activeFamilyLabel }}</span>
+        <span>{{ translate('pages.kaiming.clickTheSpecimenToEdit') }}</span>
+        <span>{{ translate('pages.kaiming.currentFont') }}{{ activeFamilyLabel }}</span>
       </div>
     </section>
 
@@ -116,14 +116,12 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >
-          Typography Features
-        </p>
+        >{{ translate('common.sections.typographyFeatures') }}</p>
         <h2
           id="features-title"
           class="font-serif text-2xl font-bold md:text-3xl"
         >
-          为中文正文重新整理标点节奏
+          {{ translate('pages.kaiming.refiningPunctuationRhythmInChineseText') }}
         </h2>
       </header>
 
@@ -157,14 +155,12 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >
-          Use on the Web
-        </p>
+        >{{ translate('common.sections.useOnWeb') }}</p>
         <h2 id="usage-title" class="font-serif text-2xl font-bold md:text-3xl">
-          一行引入，按需回退
+          {{ translate('pages.kaiming.oneLineImportWithFontFallback') }}
         </h2>
         <p class="mx-auto mt-3 max-w-xl text-base-content/70">
-          CSS 内置精确的 unicode-range，只下载并替换所包含的中文标点。
+          {{ translate('pages.kaiming.preciseCssUnicodeRangeLoadsAndReplacesOnlyTheIncluded') }}
         </p>
       </header>
 
@@ -177,9 +173,9 @@
 
         <article class="card border border-base-200 bg-base-200/10">
           <div class="card-body">
-            <h3 class="card-title font-serif font-bold">下载与源码</h3>
+            <h3 class="card-title font-serif font-bold">{{ translate('pages.kaiming.downloadsSource') }}</h3>
             <p class="text-sm text-base-content/70">
-              直接使用网页字体，或前往 GitHub 获取其他格式与构建源码。
+              {{ translate('pages.kaiming.useTheWebFontsDirectlyOrGetOtherFormatsAnd') }}
             </p>
             <div class="mt-2 grid gap-2">
               <a
@@ -204,6 +200,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed, ref } from "vue";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
@@ -213,8 +212,8 @@ const weight = ref(400);
 const family = ref("serif");
 
 const familyOptions = [
-  { label: "无衬线", value: "sans" },
-  { label: "衬线体", value: "serif" },
+  { get label() { return translate('pages.kaiming.sansSerif'); }, value: "sans" },
+  { get label() { return translate('pages.kaiming.serif'); }, value: "serif" },
 ];
 
 const activeFamilyLabel = computed(
@@ -233,21 +232,21 @@ const demoStyle = computed(() => ({
 const features = [
   {
     index: "01",
-    title: "半宽标点",
+    get title() { return translate('pages.kaiming.halfWidthPunctuation'); },
     sample: "「开」「明」",
-    description: "括号、引号和顿逗类标点采用半字宽，让正文节奏更紧凑。",
+    get description() { return translate('pages.kaiming.bracketsQuotesAndCommasUseHalfWidthSpacingForA'); },
   },
   {
     index: "02",
-    title: "句末压缩",
+    get title() { return translate('pages.kaiming.compactSentenceEndings'); },
     sample: "真的？！",
-    description: "连续句末标点压缩排列，保留强调，也避免空白松散。",
+    get description() { return translate('pages.kaiming.consecutiveEndingMarksAreCompactedPreservingEmphasisWithoutExcessSpacing'); },
   },
   {
     index: "03",
-    title: "破折号连字",
+    get title() { return translate('pages.kaiming.dashLigature'); },
     sample: "上篇——下篇",
-    description: "双破折号形成连续的二字宽连字，与正文版心自然衔接。",
+    get description() { return translate('pages.kaiming.doubleDashesFormAContinuousTwoCharacterWideLigatureThat'); },
   },
 ];
 
@@ -263,25 +262,25 @@ article {
 
 const downloads = [
   {
-    label: "网页引用",
+    get label() { return translate('pages.kaiming.webImport'); },
     meta: "CSS",
     href: "https://raw.komori.cc/kaiming/index.css",
     external: true,
   },
   {
-    label: "发布版本",
+    get label() { return translate('pages.kaiming.releases'); },
     meta: "Releases",
     href: "https://github.com/KoMoriSam/Kaiming/releases",
     external: true,
   },
   {
-    label: "源码仓库",
+    get label() { return translate('pages.kaiming.sourceRepository'); },
     meta: "GitHub",
     href: "https://github.com/KoMoriSam/Kaiming",
     external: true,
   },
   {
-    label: "开源许可证",
+    get label() { return translate('pages.kaiming.openSourceLicense'); },
     meta: "OFL 1.1",
     href: "https://raw.komori.cc/kaiming/LICENSE",
     external: true,

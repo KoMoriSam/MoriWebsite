@@ -9,7 +9,7 @@
     <aside class="drawer-side">
       <label
         :for="drawerId"
-        aria-label="关闭侧边栏"
+        :aria-label="translate('common.sideBar.closeSidebar')"
         class="drawer-overlay"
       ></label>
       <section
@@ -26,6 +26,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 defineProps({
   drawerId: {
     type: String,

@@ -8,12 +8,12 @@
         mainVisible ? 'opacity-100' : 'opacity-0 pointer-events-none',
       ]"
     >
-      <div class="tooltip tooltip-left" :data-tip="mainLabel">
+      <div class="tooltip tooltip-left" :data-tip="localizeText(mainLabel)">
         <button
           type="button"
           :class="['btn btn-lg', mainShapeClass, mainButtonClass]"
           :disabled="!mainVisible"
-          :aria-label="mainLabel"
+          :aria-label="localizeText(mainLabel)"
           @click="mainVisible && mainOnClick()"
         >
           <i :class="[mainIcon, 'text-xl']"></i>
@@ -26,7 +26,7 @@
         tabindex="0"
         role="button"
         :class="['btn btn-lg', mainShapeClass, mainButtonClass]"
-        :aria-label="mainLabel"
+        :aria-label="localizeText(mainLabel)"
       >
         <i :class="[mainIcon, 'text-xl']"></i>
       </div>
@@ -72,9 +72,9 @@
       v-if="!actions.length && mainOnClick"
       class="lg:hidden tooltip tooltip-left fixed right-6 bottom-18 z-1 transition-opacity duration-500"
       :class="mainVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-      :aria-label="mainLabel"
+      :aria-label="localizeText(mainLabel)"
       :aria-hidden="!mainVisible"
-      :data-tip="mainLabel"
+      :data-tip="localizeText(mainLabel)"
       @click="mainVisible && mainOnClick?.()"
     >
       <div
@@ -117,6 +117,8 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { text: localizeText } = useLocale();
 defineProps({
   actions: {
     type: Array,

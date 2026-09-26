@@ -1,20 +1,20 @@
 <template>
   <span v-if="showLatest" class="badge badge-warning badge-xs shrink-0">
-    {{ latestLabel }}
+    {{ localizeText(latestLabel) }}
   </span>
   <span
     v-if="chapter.modifiedDate"
     class="badge badge-info badge-xs shrink-0"
-    title="该章节有过修订"
+    :title="translate('reader.chapterStatusBadges.thisChapterHasBeenRevised')"
   >
-    {{ revisionLabel }}
+    {{ localizeText(revisionLabel) }}
   </span>
   <span
     v-else
     class="badge badge-ghost badge-xs shrink-0"
-    title="该章节为首发版本"
+    :title="translate('reader.chapterStatusBadges.thisIsTheOriginalChapterVersion')"
   >
-    首发
+    {{ translate('reader.chapterStatusBadges.original') }}
   </span>
   <span v-if="showRecent" class="badge badge-warning badge-xs shrink-0">
     {{ recentLabel }}
@@ -22,6 +22,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed } from "vue";
 
 const props = defineProps({

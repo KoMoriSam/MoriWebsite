@@ -25,6 +25,7 @@
     "check:announcements": "node scripts/check-announcements.mjs",
     "check:changelog": "node scripts/changelog-cli.mjs check",
     "check:image-converter": "node scripts/check-image-converter.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
     "check:markdown-xss": "node scripts/check-markdown-xss.mjs",
     "check:rss": "node scripts/check-rss.mjs"
   },
@@ -85,6 +86,7 @@
     "tailwindcss": "^4.3.3",
     "vite-ssg": "^28.3.0",
     "vue": "^3.5.40",
+    "vue-i18n": "^11.4.12",
     "vue-router": "^4.5.0",
     "wasm-webp": "^0.1.0"
   },

@@ -1,3 +1,4 @@
+import { describeImageMessage } from "../utils/image-converter-messages.js";
 import {
   IMAGE_FORMATS,
   calculateOutputDimensions,
@@ -380,7 +381,11 @@ function assertNotCancelled(jobId) {
 }
 
 function emit(jobId, type, payload = {}, transfer = []) {
-  self.postMessage({ jobId, type, ...payload }, transfer);
+  const localized = {};
+  if (payload.stage) localized.stageMessage = describeImageMessage(payload.stage);
+  if (payload.message) localized.errorMessage = describeImageMessage(payload.message);
+  if (payload.warnings) localized.warningMessages = payload.warnings.map(describeImageMessage);
+  self.postMessage({ jobId, type, ...payload, ...localized }, transfer);
 }
 
 function yieldToEventLoop() {

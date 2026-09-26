@@ -4,7 +4,7 @@
     class="flex w-full min-w-0 max-w-full flex-col gap-3 font-sans lg:flex-row lg:items-end"
   >
     <!-- 标题区域 -->
-    <section class="group min-w-0 max-w-full lg:flex-1" aria-label="章节信息">
+    <section class="group min-w-0 max-w-full lg:flex-1" :aria-label="translate('reader.chapterHeader.chapterInformation')">
       <hgroup class="min-w-0">
         <!-- 卷标（桌面端显示） -->
         <section
@@ -13,14 +13,14 @@
         >
           <!-- 返回封面 -->
           <nav
-            aria-label="导航"
+            :aria-label="translate('reader.chapterHeader.navigation')"
             class="tooltip tooltip-right shrink-0"
-            data-tip="返回封面页"
+            :data-tip="translate('reader.chapterHeader.backToCover')"
           >
             <RouterLink
               to="/novel"
               class="btn btn-outline btn-primary btn-xs btn-circle"
-              aria-label="返回小说封面"
+              :aria-label="translate('reader.chapterHeader.backToNovelCover')"
             >
               <i class="ri-arrow-left-line" aria-hidden="true"></i>
             </RouterLink>
@@ -62,7 +62,7 @@
     <!-- 统计信息 -->
     <section
       v-if="stats.length"
-      aria-label="章节统计"
+      :aria-label="translate('reader.chapterHeader.chapterStatistics')"
       class="min-w-0 lg:max-w-[40%] lg:shrink"
     >
       <ul
@@ -88,6 +88,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { computed } from "vue";
 import CommentTrigger from "@/components/reader/CommentTrigger.vue";
 

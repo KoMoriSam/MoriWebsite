@@ -10,12 +10,14 @@
         :class="`${link.icon}-${isLinkActive(link) ? 'fill' : 'line'}`"
       >
       </i>
-      {{ link.name }}
+      {{ localizeText(link.name) }}
     </router-link>
   </li>
 </template>
 
 <script setup>
+import { useLocale } from "@/i18n";
+const { text: localizeText } = useLocale();
 import { useRoute } from "vue-router";
 import { NAV_LINKS, isNavigationLinkActive } from "@/constants/navigation.js";
 

@@ -10,20 +10,20 @@
       <template #actions>
         <nav
           class="flex shrink-0 items-center gap-1"
-          aria-label="Mermaid 图表工具"
+          :aria-label="translate('markdown.mermaid.mermaidDiagramTools')"
         >
           <div
             role="tablist"
-            aria-label="Mermaid 视图切换"
+            :aria-label="translate('markdown.mermaid.switchMermaidView')"
             class="tabs tabs-box tabs-xs shrink-0"
           >
             <button
               role="tab"
               class="tab"
               :class="viewMode === 'code' ? 'tab-active' : ''"
-              aria-label="查看 Mermaid 代码"
+              :aria-label="translate('markdown.mermaid.viewMermaidSource')"
               :aria-pressed="viewMode === 'code'"
-              title="代码"
+              :title="translate('markdown.mermaid.code')"
               @click="viewMode = 'code'"
             >
               <i class="ri-code-s-slash-line" aria-hidden="true"></i>
@@ -32,9 +32,9 @@
               role="tab"
               class="tab"
               :class="viewMode === 'preview' ? 'tab-active' : ''"
-              aria-label="查看 Mermaid 预览"
+              :aria-label="translate('markdown.mermaid.viewMermaidPreview')"
               :aria-pressed="viewMode === 'preview'"
-              title="预览"
+              :title="translate('markdown.mermaid.preview')"
               @click="viewMode = 'preview'"
             >
               <i class="ri-image-line" aria-hidden="true"></i>
@@ -46,20 +46,20 @@
             :data-tip="
               viewMode === 'preview'
                 ? isFullscreen
-                  ? '退出全屏'
-                  : '全屏'
+                  ? translate('markdown.mermaid.exitFullscreen')
+                  : translate('markdown.mermaid.fullscreen')
                 : copied
-                  ? '复制成功'
-                  : '复制代码'
+                  ? translate('markdown.codeBlock.copiedSuccessfully')
+                  : translate('markdown.mermaid.copyCode')
             "
           >
             <button
               v-if="viewMode === 'preview'"
               type="button"
               class="btn btn-sm btn-square btn-ghost shrink-0"
-              :aria-label="isFullscreen ? '退出全屏' : '全屏查看图表'"
+              :aria-label="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.viewDiagramFullscreen')"
               :aria-pressed="isFullscreen"
-              :title="isFullscreen ? '退出全屏' : '全屏'"
+              :title="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.fullscreen')"
               :disabled="!canFullscreen"
               @click="toggleFullscreen"
             >
@@ -77,8 +77,8 @@
               type="button"
               class="btn btn-sm btn-square shrink-0"
               :class="copied ? 'btn-success' : 'btn-ghost'"
-              :aria-label="copied ? 'Mermaid 代码已复制' : '复制 Mermaid 代码'"
-              :title="copied ? '复制成功' : '复制代码'"
+              :aria-label="copied ? translate('markdown.mermaid.mermaidSourceCopied') : translate('markdown.mermaid.copyMermaidSource')"
+              :title="copied ? translate('markdown.codeBlock.copiedSuccessfully') : translate('markdown.mermaid.copyCode')"
               @click="copy(source)"
             >
               <i
@@ -110,7 +110,7 @@
           class="loading loading-spinner loading-sm"
           aria-hidden="true"
         ></span>
-        <span>正在加载 Mermaid 图表……</span>
+        <span>{{ translate('markdown.mermaid.loadingMermaidDiagram') }}</span>
       </div>
 
       <div
@@ -122,7 +122,7 @@
           class="ri-error-warning-line text-2xl text-warning"
           aria-hidden="true"
         ></i>
-        <span>图表无效或不受支持</span>
+        <span>{{ translate('markdown.mermaid.invalidOrUnsupportedDiagram') }}</span>
       </div>
 
       <div
@@ -130,7 +130,7 @@
         v-show="viewMode === 'preview' && renderStatus === 'ready'"
         tabindex="0"
         role="img"
-        aria-label="Mermaid 图表预览"
+        :aria-label="translate('markdown.mermaid.mermaidDiagramPreview')"
         class="min-h-[inherit] touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-base-content/30"
         :class="[
           isFullscreen ? 'absolute inset-0' : 'relative',
@@ -165,13 +165,13 @@
       <div
         v-show="viewMode === 'preview' && renderStatus === 'ready'"
         class="join join-vertical pointer-events-none absolute end-2 bottom-2 z-10 overflow-hidden rounded-full border border-base-300 bg-base-100 opacity-0 shadow-sm transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-        aria-label="图表缩放"
+        :aria-label="translate('markdown.mermaid.diagramZoom')"
       >
         <button
           type="button"
           class="btn btn-sm btn-square btn-ghost join-item"
-          aria-label="放大图表"
-          title="放大"
+          :aria-label="translate('markdown.mermaid.zoomInOnDiagram')"
+          :title="translate('markdown.mermaid.zoomIn')"
           :disabled="zoom >= MAX_ZOOM"
           @click="changeZoom(ZOOM_STEP)"
         >
@@ -180,8 +180,8 @@
         <button
           type="button"
           class="btn btn-sm btn-square btn-ghost join-item"
-          aria-label="缩小图表"
-          title="缩小"
+          :aria-label="translate('markdown.mermaid.zoomOutOfDiagram')"
+          :title="translate('markdown.mermaid.zoomOut')"
           :disabled="zoom <= MIN_ZOOM"
           @click="changeZoom(-ZOOM_STEP)"
         >
@@ -193,6 +193,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { useClipboard } from "@vueuse/core";
 import {
   computed,
@@ -425,7 +428,7 @@ const renderDiagram = async () => {
       .slice(2)}`;
     const { svg, bindFunctions } = await renderMermaidSource(renderId, source);
     if (requestId !== renderRequestId || source !== props.source.trim()) return;
-    if (!insertRenderedSvg(svg)) throw new Error("Mermaid 未返回有效 SVG");
+    if (!insertRenderedSvg(svg)) throw new Error(translate('markdown.mermaid.mermaidDidNotReturnAValidSvg'));
 
     bindFunctions?.(diagramElement.value);
     renderStatus.value = "ready";

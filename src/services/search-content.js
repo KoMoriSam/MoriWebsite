@@ -211,6 +211,7 @@ export const createMarkdownMetadata = (
 
       return {
         key,
+        rawValue: frontmatter[key],
         label: FRONTMATTER_LABELS[key] || key,
         value,
         icon: FRONTMATTER_ICONS[key] || "ri-information-line",

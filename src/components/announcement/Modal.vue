@@ -7,7 +7,7 @@
     :show-cancel="mode !== 'summary'"
     scroll-content
     :show-back="canGoBack"
-    back-label="返回重要公告列表"
+    :back-label="translate('common.modal.backToImportantAnnouncements')"
     :on-submit="submit"
     @back="emit('back')"
     @close="emit('close')"
@@ -15,7 +15,7 @@
     <template #title>
       <hgroup v-if="mode === 'summary'">
         <h3 class="font-serif text-lg font-bold flex items-center gap-2">
-          重要公告
+          {{ translate('common.modal.importantAnnouncements') }}
           <span
             v-if="unreadSummaryCount"
             class="badge badge-error badge-sm tabular-nums px-1.25"
@@ -23,7 +23,7 @@
             {{ unreadSummaryCount }}
           </span>
         </h3>
-        <p class="text-base-content/55 text-xs">以下内容需要你的留意</p>
+        <p class="text-base-content/55 text-xs">{{ translate('common.modal.pleaseTakeNoteOfTheFollowing') }}</p>
       </hgroup>
 
       <div
@@ -48,22 +48,22 @@
             class="shrink-0 text-right text-xs font-normal text-base-content/50 flex items-center gap-1"
           >
             <div>
-              <dt class="sr-only">发布时间</dt>
+              <dt class="sr-only">{{ translate('common.modal.published') }}</dt>
               <dd>
                 <time :datetime="selectedAnnouncement.startsAt">
                   {{
-                    formatAnnouncementDate(selectedAnnouncement.startsAt, true)
+                    formatAnnouncementDate(selectedAnnouncement.startsAt, true, uiLocale)
                   }}
                 </time>
               </dd>
             </div>
             <div v-if="selectedAnnouncement.endsAt">
-              <dt class="sr-only">结束时间</dt>
+              <dt class="sr-only">{{ translate('common.modal.ends') }}</dt>
               <dd>
-                至
+                {{ translate('common.modal.to') }}
                 <time :datetime="selectedAnnouncement.endsAt">
                   {{
-                    formatAnnouncementDate(selectedAnnouncement.endsAt, true)
+                    formatAnnouncementDate(selectedAnnouncement.endsAt, true, uiLocale)
                   }}
                 </time>
               </dd>
@@ -74,13 +74,13 @@
         <p
           class="w-full text-sm leading-relaxed font-normal text-base-content/65 text-pretty"
         >
-          {{ selectedAnnouncement.summary }}
+          <span lang="zh-CN">{{ selectedAnnouncement.summary }}</span>
         </p>
       </div>
     </template>
 
     <template #description>
-      <section v-if="mode === 'summary'" aria-label="重要公告列表">
+      <section v-if="mode === 'summary'" :aria-label="translate('common.modal.importantAnnouncementList')">
         <ul class="grid gap-3">
           <li
             v-for="announcement in summaryAnnouncements"
@@ -103,7 +103,7 @@
                 <span
                   class="text-primary group-hover:translate-x-0.25 transition-[translate]"
                 >
-                  查看
+                  {{ translate('common.modal.view') }}
                   <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
                 </span>
               </div>
@@ -114,6 +114,7 @@
 
       <Markdown
         v-else-if="mode === 'detail' && selectedAnnouncement"
+        lang="zh-CN"
         :content="selectedAnnouncement.body"
         :content-id="`announcement-${selectedAnnouncement.id}-${selectedAnnouncement.revision}`"
         mode="standard"
@@ -126,6 +127,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, locale: uiLocale } = useLocale();
+
 import { computed } from "vue";
 
 import AnnouncementBadges from "@/components/announcement/Badges.vue";
@@ -174,9 +178,9 @@ const buttonMode = computed(() =>
 const buttonText = computed(() =>
   props.mode === "summary"
     ? unreadSummaryCount.value
-      ? "全部已读"
-      : "关闭"
-    : "我知道了",
+      ? translate('common.modal.markAllAsRead')
+      : translate('common.modal.close')
+    : translate('common.modal.gotIt'),
 );
 const unreadSummaryCount = computed(
   () =>

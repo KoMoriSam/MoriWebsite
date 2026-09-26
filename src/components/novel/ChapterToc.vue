@@ -9,8 +9,8 @@
     :progress="chapterProgress"
     :progress-label="chapterProgressLabel"
     :current-label="currentChapterTitle"
-    title="阅读进度"
-    aria-label="章节目录"
+    :title="translate('reader.chapterToc.readingProgress')"
+    :aria-label="translate('reader.chapterList.chapters')"
     icon-class="ri-book-2-line"
     desktop-content-class="flex min-h-0 flex-1 flex-col"
     @toggle-compact="emit('toggle-compact')"
@@ -30,7 +30,7 @@
       ></i>
       <span class="min-w-0 flex-1">
         <span class="block text-xs font-semibold text-base-content/45">
-          最新章节
+          {{ translate('reader.chapterToc.latestChapter') }}
         </span>
         <span class="block truncate text-sm" :title="latestChapterTitle">
           {{ latestChapterTitle }}
@@ -49,7 +49,7 @@
         mobile ? 'min-h-32' : 'min-h-0 flex-1',
       ]"
       role="status"
-      aria-label="章节目录加载中"
+      :aria-label="translate('reader.chapterList.loadingChapters')"
     >
       <span class="loading loading-spinner loading-sm text-primary"></span>
     </div>
@@ -96,10 +96,10 @@
           </span>
           <small
             class="ml-auto shrink-0 whitespace-nowrap tabular-nums text-base-content/35"
-            :title="`共 ${volume.chapters?.length || 0} 章，已读 ${getVolumeReadCount(volume)} 章`"
+            :title="translate('reader.chapterToc.chaptersRead2', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
           >
-            共 {{ volume.chapters?.length || 0 }} 章 · 已读
-            {{ getVolumeReadCount(volume) }} 章
+            {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterToc.chaptersRead') }}
+            {{ getVolumeReadCount(volume) }} {{ translate('reader.chapterList.chapters2') }}
           </small>
         </button>
 
@@ -157,12 +157,15 @@
         mobile ? 'min-h-32' : 'min-h-0 flex-1',
       ]"
     >
-      暂时没有可阅读的章节
+      {{ translate('reader.chapterList.noChaptersAreAvailableYet') }}
     </p>
   </TocFrame>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import { storeToRefs } from "pinia";
 import { computed, ref, useId, watch } from "vue";
 

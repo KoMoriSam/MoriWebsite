@@ -4,11 +4,11 @@ export const announcementToneLabel = {
   error: "故障",
 };
 
-export const formatAnnouncementDate = (value, includeTime = false) => {
+export const formatAnnouncementDate = (value, includeTime = false, locale = "zh-CN") => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value || "");
 
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "numeric",

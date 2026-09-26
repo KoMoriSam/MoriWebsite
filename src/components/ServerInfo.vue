@@ -4,7 +4,7 @@
     <fieldset
       class="fieldset bg-base-200/60 border-base-300 rounded-box border w-full p-4 sm:p-5 mb-6"
     >
-      <legend class="fieldset-legend">查询服务器状态</legend>
+      <legend class="fieldset-legend">{{ translate('tools.serverInfo.checkServerStatus') }}</legend>
       <div class="join">
         <div class="flex-1 grid w-full">
           <label class="input validator w-full join-item [grid-row:1]">
@@ -14,12 +14,12 @@
               type="text"
               :placeholder="`${defaultServer}`"
               pattern="^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d{1,5})?$|^(?:localhost|\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?$"
-              title="请输入有效的服务器地址，如：mc.example.com:25565"
+              :title="translate('tools.serverInfo.enterAValidServerAddressEGMcExampleCom')"
               @keydown.enter="fetchInfo"
             />
             <button
               class="btn btn-ghost btn-xs btn-square -mr-1"
-              title="从剪贴板粘贴"
+              :title="translate('tools.serverInfo.pasteFromClipboard')"
               @click.prevent="pasteAndFetch"
             >
               <i class="ri-clipboard-line"></i>
@@ -29,8 +29,8 @@
             <i class="ri-information-line"></i>
             <span class="text-rotate">
               <span>
-                <span>请输入服务器地址</span>
-                <span>默认端口为 25565</span>
+                <span>{{ translate('tools.serverInfo.enterAServerAddress') }}</span>
+                <span>{{ translate('tools.serverInfo.defaultPort25565') }}</span>
               </span>
             </span>
           </p>
@@ -40,8 +40,8 @@
             <i class="ri-error-warning-line"></i>
             <span class="text-rotate">
               <span>
-                <span>请输入有效的服务器地址！</span>
-                <span>如：mc.example.com:25565</span>
+                <span>{{ translate('tools.serverInfo.pleaseEnterAValidServerAddress') }}</span>
+                <span>{{ translate('tools.serverInfo.exampleMcExampleCom25565') }}</span>
               </span>
             </span>
           </p>
@@ -56,7 +56,7 @@
               v-if="loading"
               class="loading loading-spinner loading-xs"
             ></span>
-            <i v-else class="ri-search-line w-4"></i>查询
+            <i v-else class="ri-search-line w-4"></i>{{ translate('tools.serverInfo.check') }}
           </span>
         </button>
       </div>
@@ -66,7 +66,7 @@
     <section
       v-if="serverInfo"
       class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-      aria-label="服务器信息卡片"
+      :aria-label="translate('tools.serverInfo.serverInformationCard')"
     >
       <!-- 卡片：服务器 -->
       <article
@@ -76,20 +76,20 @@
           class="text-sm text-base-content/75 flex items-center gap-2 self-start"
         >
           <i class="ri-hard-drive-3-line"></i>
-          服务器
+          {{ translate('tools.serverInfo.server') }}
         </h3>
         <img
           v-if="serverInfo.logo"
           :src="serverInfo.logo"
-          alt="Logo of Server"
+          :alt="translate('common.sections.serverLogo')"
           class="mask mask-squircle w-16 h-16"
-          title="服务器 Logo"
+          :title="translate('tools.serverInfo.serverLogo')"
           v-fade-in
         />
         <div
           v-else
           class="mask mask-squircle w-16 h-16 bg-base-300 flex items-center justify-center"
-          title="服务器离线"
+          :title="translate('tools.serverInfo.serverOffline')"
         >
           <i class="ri-server-fill text-3xl text-base-content/40"></i>
         </div>
@@ -115,10 +115,10 @@
             <div class="status status-success animate-ping"></div>
             <div class="status status-success"></div>
           </div>
-          当前状态
+          {{ translate('tools.serverInfo.status') }}
         </h3>
         <p class="text-2xl font-bold my-3">
-          {{ serverInfo.ping === null ? "离线或不存在" : "在线" }}
+          {{ serverInfo.ping === null ? translate('tools.serverInfo.offlineOrNotFound') : translate('tools.serverInfo.online') }}
         </p>
         <p class="text-rotate text-sm text-base-content/75">
           <span>
@@ -128,7 +128,7 @@
             </span>
             <span v-if="serverInfo.ping === null">
               <i class="ri-information-line"></i>
-              请联系管理员或检查地址是否正确
+              {{ translate('tools.serverInfo.contactTheAdministratorOrCheckTheAddress') }}
             </span>
             <span v-else>
               <i class="ri-information-line"></i>
@@ -145,7 +145,7 @@
       >
         <h3 class="text-sm text-base-content/75 flex items-center gap-2">
           <i class="ri-user-3-line"></i>
-          在线人数
+          {{ translate('tools.serverInfo.playersOnline') }}
         </h3>
         <p class="text-2xl font-bold my-3">
           {{ serverInfo.p }} / {{ serverInfo.mp }}
@@ -155,15 +155,15 @@
             class="badge badge-sm badge-error"
             v-if="serverInfo.p / serverInfo.mp >= 0.75"
           >
-            忙碌
+            {{ translate('tools.serverInfo.busy') }}
           </span>
           <span
             class="badge badge-sm badge-warning"
             v-else-if="serverInfo.p / serverInfo.mp >= 0.4"
           >
-            活跃
+            {{ translate('tools.serverInfo.active') }}
           </span>
-          <span class="badge badge-sm badge-success" v-else>空闲</span>
+          <span class="badge badge-sm badge-success" v-else>{{ translate('tools.serverInfo.quiet') }}</span>
         </p>
       </article>
 
@@ -174,7 +174,7 @@
       >
         <h3 class="text-sm text-base-content/75 flex items-center gap-2">
           <i class="ri-timer-line"></i>
-          网络延迟
+          {{ translate('tools.serverInfo.latency') }}
         </h3>
         <p class="text-2xl font-bold my-3">{{ serverInfo.ping }} ms</p>
         <p class="text-sm text-base-content/75">
@@ -182,15 +182,15 @@
             class="badge badge-sm badge-error"
             v-if="serverInfo.ping > 200 || serverInfo.ping === null"
           >
-            高
+            {{ translate('tools.serverInfo.high') }}
           </span>
           <span
             class="badge badge-sm badge-warning"
             v-else-if="serverInfo.ping > 100"
           >
-            中
+            {{ translate('tools.serverInfo.medium') }}
           </span>
-          <span class="badge badge-sm badge-success" v-else>低</span>
+          <span class="badge badge-sm badge-success" v-else>{{ translate('tools.serverInfo.low') }}</span>
         </p>
       </article>
     </section>
@@ -200,6 +200,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import Loading from "@/components/base/Loading.vue";
 
 import { ref, onMounted } from "vue";
@@ -220,11 +223,11 @@ const pasteFromClipboard = async () => {
     if (text) {
       serverAddress.value = text.trim();
     } else {
-      toast.info("剪贴板为空");
+      toast.info(translate('tools.serverInfo.theClipboardIsEmpty'));
     }
   } catch (e) {
     console.error("无法读取剪贴板:", e);
-    toast.error("无法读取剪贴板，请手动输入");
+    toast.error(translate('tools.serverInfo.cannotReadTheClipboardPleaseEnterTextManually'));
   }
 };
 
@@ -240,7 +243,7 @@ const fetchInfo = async () => {
   try {
     const data = await getServerInfo(address);
     if (!data || Array.isArray(data) || !("ping" in data)) {
-      toast.error("查询失败：未获取到服务器数据");
+      toast.error(translate('tools.serverInfo.noServerDataWasReturned'));
       return;
     }
     if (data.error) {
@@ -251,7 +254,7 @@ const fetchInfo = async () => {
     serverInfo.value = data;
   } catch (e) {
     console.error(e);
-    toast.error("查询失败，请检查地址是否正确");
+    toast.error(translate('tools.serverInfo.lookupFailedPleaseCheckTheAddress'));
   } finally {
     loading.value = false;
   }

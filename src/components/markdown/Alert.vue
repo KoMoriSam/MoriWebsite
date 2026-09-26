@@ -8,6 +8,7 @@
     ]"
     :open="!foldable || !collapsed"
     data-markdown-alert
+    :data-system-label="defaultTitle || undefined"
   >
     <summary
       class="alert-title"
@@ -27,6 +28,7 @@ defineProps({
   type: { type: String, default: "info" },
   icon: { type: String, default: "ri-information-line" },
   titleHtml: { type: String, default: "" },
+  defaultTitle: { type: String, default: "" },
   foldable: { type: Boolean, default: false },
   collapsed: { type: Boolean, default: false },
 });

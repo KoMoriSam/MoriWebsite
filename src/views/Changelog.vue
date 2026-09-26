@@ -1,14 +1,14 @@
 <template>
-  <ContentPage eyebrow="Release Notes &amp; Maintenance" title="更新日志">
+  <ContentPage :eyebrow="translate('common.sections.releaseNotes')" :title="translate('pages.changelog.changelog')">
     <template #meta>
       <template v-if="totalVersions">
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-commit-line"></i>
-          当前版本 {{ latestVersion }}
+          {{ translate('pages.changelog.currentVersion') }} {{ latestVersion }}
         </span>
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-branch-line"></i>
-          {{ totalVersions }} 次版本记录
+          {{ totalVersions }} {{ translate('pages.changelog.releaseRecords') }}
         </span>
       </template>
     </template>
@@ -20,9 +20,9 @@
     >
       <i class="ri-cloud-off-line text-xl" aria-hidden="true"></i>
       <div class="min-w-0 flex-1">
-        <h2 class="font-semibold">暂时没有获取到远端最新记录</h2>
+        <h2 class="font-semibold">{{ translate('pages.changelog.theLatestRemoteRecordsAreUnavailable') }}</h2>
         <p class="text-sm opacity-80">
-          当前正在显示随站点发布的静态版本。{{ errorMessage }}
+          {{ translate('pages.changelog.showingTheStaticVersionIncludedWithTheWebsite') }}{{ errorMessage }}
         </p>
       </div>
       <button type="button" class="btn btn-sm" @click="refreshChangelog">
@@ -32,7 +32,7 @@
           aria-hidden="true"
         ></span>
         <i v-else class="ri-refresh-line" aria-hidden="true"></i>
-        重新加载
+        {{ translate('pages.announcements.reload') }}
       </button>
     </section>
 
@@ -76,12 +76,12 @@
     >
       <i class="ri-error-warning-line text-xl" aria-hidden="true"></i>
       <div class="min-w-0 flex-1">
-        <h2 class="font-semibold">更新日志暂时没有加载成功</h2>
+        <h2 class="font-semibold">{{ translate('pages.changelog.theChangelogCouldNotBeLoaded') }}</h2>
         <p class="text-sm opacity-80">{{ errorMessage }}</p>
       </div>
       <button type="button" class="btn btn-sm" @click="refreshChangelog">
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        重新加载
+        {{ translate('pages.announcements.reload') }}
       </button>
     </section>
 
@@ -93,9 +93,9 @@
         class="ri-file-history-line text-3xl text-base-content/40"
         aria-hidden="true"
       ></i>
-      <h2 class="mt-3 font-serif text-xl font-semibold">暂时没有版本记录</h2>
+      <h2 class="mt-3 font-serif text-xl font-semibold">{{ translate('pages.changelog.noReleasesYet') }}</h2>
       <p class="mt-1 text-sm text-base-content/60">
-        新的变化会在这里留下痕迹。
+        {{ translate('pages.changelog.futureChangesWillAppearHere') }}
       </p>
     </section>
 
@@ -117,7 +117,7 @@
           >
             <span class="hidden text-right md:block">
               <span class="text-xs text-base-content/45">
-                {{ group.releases.length }} 个版本
+                {{ group.releases.length }} {{ translate('pages.changelog.versions') }}
               </span>
             </span>
             <span
@@ -131,7 +131,7 @@
                 {{ group.year }}
               </span>
               <span class="text-sm text-base-content/45 md:hidden">
-                {{ group.releases.length }} 个版本
+                {{ group.releases.length }} {{ translate('pages.changelog.versions') }}
               </span>
               <span class="h-px flex-1 bg-base-300"></span>
               <i
@@ -161,7 +161,7 @@
                     v-if="release.version === latestVersion"
                     class="badge badge-primary badge-sm"
                   >
-                    最新
+                    {{ translate('pages.changelog.latest') }}
                   </span>
                   <h3 class="font-serif text-2xl font-bold">
                     {{ release.version }}
@@ -174,7 +174,7 @@
                   {{ formatDate(release.date) }}
                 </time>
                 <p class="mt-1 text-xs text-base-content/40">
-                  {{ release.changeCount }} 项变更
+                  {{ release.changeCount }} {{ translate('pages.changelog.changes') }}
                 </p>
               </header>
 
@@ -214,24 +214,25 @@
                         v-if="release.version === latestVersion"
                         class="badge badge-primary badge-sm"
                       >
-                        最新
+                        {{ translate('pages.changelog.latest') }}
                       </span>
                     </div>
                     <div class="text-right text-xs text-base-content/50">
                       <time :datetime="release.date" class="block">
                         {{ formatDate(release.date) }}
                       </time>
-                      <span>{{ release.changeCount }} 项变更</span>
+                      <span>{{ release.changeCount }} {{ translate('pages.changelog.changes') }}</span>
                     </div>
                   </header>
 
                   <p
                     class="pt-4 md:pt-0 pb-4 text-sm leading-relaxed text-base-content/65 sm:text-base"
                   >
-                    {{ release.summary }}
+                    <span lang="zh-CN">{{ release.summary }}</span>
                   </p>
 
                   <Markdown
+                    lang="zh-CN"
                     v-if="release.intro"
                     mode="standard"
                     prose-size="sm"
@@ -256,10 +257,11 @@
                           typeBadgeClass(changeGroup.type),
                         ]"
                       >
-                        {{ typeText(changeGroup.type) }}
+                        {{ localizeText(typeText(changeGroup.type)) }}
                       </span>
                       <Markdown
-                        mode="standard"
+                        lang="zh-CN"
+                    mode="standard"
                         prose-size="sm"
                         :content="changeGroup.markdown"
                         :content-id="`changelog-${release.version}-${changeGroup.type}`"
@@ -285,10 +287,11 @@
                     ></i>
                     <div class="min-w-0 flex-1">
                       <p class="text-sm font-semibold">
-                        {{ release.warning ? "升级前请注意" : "版本说明" }}
+                        {{ release.warning ? translate('pages.changelog.beforeUpgrading') : translate('pages.changelog.releaseNotes') }}
                       </p>
                       <Markdown
-                        mode="standard"
+                        lang="zh-CN"
+                    mode="standard"
                         prose-size="sm"
                         :content="release.warning || release.note"
                         :content-id="`changelog-${release.version}-notice`"
@@ -308,6 +311,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, date: formatLocalizedDate } = useLocale();
+
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
@@ -333,7 +339,7 @@ const error = computed(() => store.error);
 const latestVersion = computed(() => store.latestVersion);
 const totalVersions = computed(() => store.totalVersions);
 const errorMessage = computed(() =>
-  String(error.value?.message || error.value || "请稍后重试。"),
+  localizeText(String(error.value?.message || error.value || translate('pages.changelog.pleaseTryAgainLater'))),
 );
 
 const groupedLogs = computed(() => {
@@ -341,7 +347,7 @@ const groupedLogs = computed(() => {
   releases.value.forEach((release) => {
     const year = /^\d{4}/.test(release.date)
       ? release.date.slice(0, 4)
-      : "其他";
+      : translate('pages.changelog.other');
     const changeCount = release.groups.reduce(
       (total, group) => total + group.count,
       0,
@@ -371,7 +377,7 @@ const typeBadgeClass = (type) =>
 const formatDate = (date) => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date || "");
   if (!match) return date;
-  return `${match[1]} 年 ${Number(match[2])} 月 ${Number(match[3])} 日`;
+  return formatLocalizedDate(`${date}T00:00:00`);
 };
 
 const isYearOpen = (year) => openYears.value.has(year);

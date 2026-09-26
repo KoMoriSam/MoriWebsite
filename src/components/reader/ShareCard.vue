@@ -21,7 +21,7 @@
               id="reader-share-card-title"
               class="font-serif text-lg font-bold text-pretty"
             >
-              分享图片
+              {{ translate('reader.shareCard.shareImage') }}
             </h2>
             <p
               v-if="truncated"
@@ -31,13 +31,13 @@
                 class="ri-information-line mt-px shrink-0"
                 aria-hidden="true"
               ></i>
-              <span>选文较长，图片已省略未能完整收录的内容。</span>
+              <span>{{ translate('reader.shareCard.theSelectionIsLongSomeContentWasOmittedFromThe') }}</span>
             </p>
           </div>
           <button
             type="button"
             class="btn btn-ghost btn-circle btn-sm shrink-0"
-            aria-label="关闭分享卡片预览"
+            :aria-label="translate('reader.shareCard.closeShareCardPreview')"
             @click="close"
           >
             <i class="ri-close-line text-lg" aria-hidden="true"></i>
@@ -53,7 +53,7 @@
             role="status"
           >
             <span class="loading loading-spinner loading-lg"></span>
-            <p>正在排版分享卡片…</p>
+            <p>{{ translate('reader.shareCard.layingOutTheShareCard') }}</p>
           </div>
 
           <div
@@ -66,13 +66,13 @@
               aria-hidden="true"
             ></i>
             <div>
-              <p class="font-semibold">卡片生成失败</p>
+              <p class="font-semibold">{{ translate('reader.shareCard.cardGenerationFailed') }}</p>
               <p class="mt-1 max-w-md text-sm text-base-content/60">
-                {{ errorMessage }}
+                {{ localizeText(errorMessage) }}
               </p>
             </div>
             <button type="button" class="btn btn-sm" @click="generate">
-              重新生成
+              {{ translate('reader.shareCard.generateAgain') }}
             </button>
           </div>
 
@@ -94,7 +94,7 @@
             @click="downloadImage"
           >
             <i class="ri-download-2-line" aria-hidden="true"></i>
-            下载图片
+            {{ translate('reader.shareCard.downloadImage') }}
           </button>
           <button
             type="button"
@@ -103,20 +103,23 @@
             @click="shareImage"
           >
             <i class="ri-share-forward-line" aria-hidden="true"></i>
-            {{ canShareFile ? "分享图片" : "保存图片" }}
+            {{ canShareFile ? translate('reader.shareCard.shareImage') : translate('reader.shareCard.saveImage') }}
           </button>
         </footer>
       </section>
 
       <form method="dialog" class="modal-backdrop">
-        <button aria-label="关闭分享卡片预览">关闭</button>
+        <button :aria-label="translate('reader.shareCard.closeShareCardPreview')">{{ translate('common.modal.close') }}</button>
       </form>
     </dialog>
   </Teleport>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref } from "vue";
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, locale: uiLocale, message: localeMessage } = useLocale();
+
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useToast } from "@/composables/useToast";
 import { createReaderShareCard } from "@/utils/reader/create-reader-share-card";
 
@@ -150,7 +153,7 @@ const canShareFile = computed(() => {
 });
 const previewAlt = computed(() => {
   const meta = payload.value?.meta || {};
-  return `${meta.title || meta.sourceLabel || "远方之森"}的正文分享卡片`;
+  return translate('reader.shareCard.textShareCardFor', { p0: meta.title || meta.sourceLabel || "远方之森" });
 });
 
 const revokePreviewUrl = () => {
@@ -173,7 +176,7 @@ const generate = async () => {
   errorMessage.value = "";
 
   try {
-    const result = await createReaderShareCard(payload.value);
+    const result = await createReaderShareCard(payload.value, { localize: localizeText });
     if (token !== generationToken) return;
     imageBlob.value = result.blob;
     fileName.value = result.fileName;
@@ -181,7 +184,7 @@ const generate = async () => {
     previewUrl.value = URL.createObjectURL(result.blob);
   } catch (error) {
     if (token !== generationToken) return;
-    errorMessage.value = error?.message || "暂时无法生成分享卡片";
+    errorMessage.value = error?.message || localeMessage('reader.shareCard.cannotGenerateTheShareCardRightNow');
   } finally {
     if (token === generationToken) loading.value = false;
   }
@@ -202,6 +205,10 @@ const open = async (nextPayload) => {
   if (!dialogRef.value?.open) dialogRef.value?.showModal();
   void generate();
 };
+
+watch(uiLocale, () => {
+  if (payload.value && dialogRef.value?.open) void generate();
+});
 
 const close = () => dialogRef.value?.close();
 
@@ -239,13 +246,13 @@ const triggerDownload = () => {
 
 const downloadImage = () => {
   triggerDownload();
-  toast.success("分享卡片已下载");
+  toast.success(translate('reader.shareCard.shareCardDownloaded'));
 };
 
 const shareImage = async () => {
   if (!canShareFile.value) {
     triggerDownload();
-    toast.success("浏览器不支持图片分享，已下载卡片");
+    toast.success(translate('reader.shareCard.yourBrowserDoesNotSupportImageSharingTheCardWas'));
     return;
   }
 
@@ -256,7 +263,7 @@ const shareImage = async () => {
       files: [imageFile.value],
     });
   } catch (error) {
-    if (error?.name !== "AbortError") toast.error("暂时无法分享图片");
+    if (error?.name !== "AbortError") toast.error(translate('reader.shareCard.cannotShareTheImageRightNow'));
   }
 };
 

@@ -24,7 +24,7 @@
             v-if="showBack"
             type="button"
             class="btn btn-ghost btn-circle btn-sm shrink-0"
-            :aria-label="backLabel"
+            :aria-label="localizeText(backLabel)"
             @click="emit('back')"
           >
             <i class="ri-arrow-left-line text-lg" aria-hidden="true"></i>
@@ -32,7 +32,7 @@
 
           <div class="min-w-0 flex-1">
             <slot name="title">
-              <h3 class="font-serif text-lg font-bold">{{ title }}</h3>
+              <h3 class="font-serif text-lg font-bold">{{ localizeText(title) }}</h3>
             </slot>
           </div>
 
@@ -40,7 +40,7 @@
             v-if="!isConfirm && buttonMode === 'close'"
             class="btn btn-sm btn-circle btn-ghost shrink-0"
             type="button"
-            aria-label="关闭"
+            :aria-label="translate('common.modal.close')"
             @click="close"
           >
             <i class="ri-close-line text-lg" aria-hidden="true"></i>
@@ -55,7 +55,7 @@
         }"
       >
         <slot name="description">
-          {{ description }}
+          {{ localizeText(description) || translate('common.modal.thisIsTheDefaultDescription') }}
           <!-- fallback -->
         </slot>
       </section>
@@ -69,7 +69,7 @@
       >
         <slot name="leading-action"></slot>
         <button class="btn btn-primary" type="button" @click="handleSubmit">
-          {{ buttonText }}
+          {{ localizeText(buttonText) }}
         </button>
         <button
           v-if="showCancel"
@@ -77,7 +77,7 @@
           type="button"
           @click="handleCancel"
         >
-          {{ cancelText }}
+          {{ localizeText(cancelText) }}
         </button>
       </form>
       <form
@@ -90,7 +90,7 @@
       >
         <slot name="leading-action"></slot>
         <button class="btn" type="button" @click="handleSubmit">
-          {{ buttonText }}
+          {{ localizeText(buttonText) }}
         </button>
       </form>
     </section>
@@ -98,6 +98,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed, ref, h, nextTick, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { useModalClose } from "@/composables/useModal";
@@ -109,7 +112,7 @@ const props = defineProps({
   },
   description: {
     type: [String, Object],
-    default: h("p", "这是一个默认的描述文本。"),
+    default: "",
   },
   buttonText: {
     type: String,

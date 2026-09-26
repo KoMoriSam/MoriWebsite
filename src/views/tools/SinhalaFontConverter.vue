@@ -1,13 +1,13 @@
 <template>
-  <ContentPage title="僧伽罗字体编码转换器" metas-label="工具信息">
+  <ContentPage :title="translate('pages.home.sinhalaFontEncodingConverter')" :metas-label="translate('tools.imageConverter.toolInformation')">
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-repeat-2-line" aria-hidden="true"></i>
-        双向转换
+        {{ translate('tools.sinhalaFontConverter.bidirectionalConversion') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        浏览器本地处理
+        {{ translate('tools.imageConverter.processedInYourBrowser') }}
       </span>
     </template>
     <template #actions>
@@ -21,7 +21,7 @@
           @click="inputMode = 'text'"
         >
           <i class="ri-t-box-line" aria-hidden="true"></i>
-          文本
+          {{ translate('tools.imageConverter.text2') }}
         </button>
         <button
           type="button"
@@ -32,7 +32,7 @@
           @click="inputMode = 'document'"
         >
           <i class="ri-file-text-line" aria-hidden="true"></i>
-          文档
+          {{ translate('tools.imageConverter.documents') }}
         </button>
       </div>
     </template>
@@ -43,17 +43,17 @@
             <h2 class="block font-serif text-lg font-bold">
               {{ isDirectionReversed ? "Legacy" : "Unicode" }}
             </h2>
-            <p class="text-xs text-base-content/55">源编码</p>
+            <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.sourceEncoding') }}</p>
           </hgroup>
           <div
             class="tooltip"
-            data-tip="交换源编码与目标编码位置（Ctrl+Shift+S）"
+            :data-tip="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
           >
             <button
               type="button"
               class="btn btn-ghost btn-circle"
-              aria-label="交换源编码与目标编码位置"
-              title="交换源编码与目标编码位置（Ctrl+Shift+S）"
+              :aria-label="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodings')"
+              :title="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
               @click="swapPanels"
             >
               <i
@@ -66,7 +66,7 @@
             <h2 class="block font-serif text-lg font-bold">
               {{ isDirectionReversed ? "Unicode" : "Legacy" }}
             </h2>
-            <p class="text-xs text-base-content/55">目标编码</p>
+            <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.targetEncoding') }}</p>
           </hgroup>
         </div>
         <div
@@ -103,8 +103,8 @@
               >
                 {{
                   documentDetectedEncoding
-                    ? `检测到上传文件为 ${documentDetectedEncoding === "legacy" ? "Legacy" : "Unicode"} 编码的文档，如有误可手动交换`
-                    : "未能识别源编码，请手动确认转换方向"
+                    ? translate('tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect', { p0: documentDetectedEncoding === "legacy" ? "Legacy" : "Unicode" })
+                    : translate('tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection')
                 }}
               </p>
               <p class="max-w-full break-all font-medium">
@@ -116,16 +116,16 @@
                 <span v-else>
                   <i class="ri-checkbox-circle-fill text-success"></i>
                   <span class="badge badge-success badge-soft badge-xs"
-                    >转换成功</span
+                    >{{ translate('tools.sinhalaFontConverter.conversionSuccessful') }}</span
                   >
                 </span>
                 {{ documentFile.name }}
               </p>
               <p class="text-xs text-base-content/60">
-                {{ documentText.length }} 字符
+                {{ documentText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
               </p>
               <p v-if="documentError" role="alert" class="text-sm text-error">
-                {{ documentError }}
+                {{ localizeText(documentError) }}
               </p>
               <div class="card-actions justify-center gap-2">
                 <label
@@ -134,7 +134,7 @@
                   for="sinhala-document-upload"
                 >
                   <i class="ri-upload-line"></i>
-                  更换文件
+                  {{ translate('tools.sinhalaFontConverter.changeFile') }}
                 </label>
                 <button
                   type="button"
@@ -151,9 +151,9 @@
                   {{
                     documentBusy
                       ? documentText
-                        ? "转换中…"
-                        : "读取中…"
-                      : "下载 DOCX"
+                        ? translate('tools.sinhalaFontConverter.converting')
+                        : translate('tools.sinhalaFontConverter.reading')
+                      : translate('tools.sinhalaFontConverter.downloadDocx')
                   }}
                 </button>
               </div>
@@ -163,12 +163,12 @@
                 <h3 class="font-serif text-base font-bold lg:text-lg">
                   {{
                     isDocumentDragging
-                      ? "松开完成拖放"
-                      : "拖放 DOCX 或 PDF 文件到这里"
+                      ? translate('tools.imageConverter.dropFilesHere')
+                      : translate('tools.sinhalaFontConverter.dropDocxOrPdfFilesHere')
                   }}
                 </h3>
                 <p class="mt-1 text-xs text-base-content/60 lg:text-sm">
-                  选择文档后可检测编码并转换为 DOCX
+                  {{ translate('tools.sinhalaFontConverter.selectADocumentToDetectItsEncodingAndConvertIt') }}
                 </p>
               </div>
               <label
@@ -177,7 +177,7 @@
                 for="sinhala-document-upload"
               >
                 <i class="ri-folder-open-line" aria-hidden="true"></i>
-                选择文档
+                {{ translate('tools.sinhalaFontConverter.chooseDocument') }}
               </label>
             </template>
             <input
@@ -200,14 +200,14 @@
         >
           <div class="min-w-0 flex items-center justify-between gap-2">
             <hgroup>
-              <h2 class="block font-serif text-lg font-bold">Unicode Text</h2>
+              <h2 class="block font-serif text-lg font-bold">{{ translate('common.sections.unicodeText') }}</h2>
               <p class="text-xs text-base-content/55">
-                标准 Unicode 僧伽罗语文本
+                {{ translate('tools.sinhalaFontConverter.standardUnicodeSinhalaText') }}
               </p>
             </hgroup>
             <div class="flex min-w-0 shrink-0 items-end gap-2">
               <label class="label block text-xs w-24 sm:w-42">
-                字体
+                {{ translate('common.fontSelect.font') }}
                 <FontSelect
                   ref="unicodeFontSelect"
                   v-model="unicodeFontId"
@@ -219,18 +219,18 @@
                   local-preview-language="si"
                   local-font-coverage="sinhala-unicode"
                   size="xs"
-                  aria-label="Unicode 字体"
+                  :aria-label="translate('tools.sinhalaFontConverter.unicodeFont')"
                   @select="onUnicodeFontSelected"
                 />
               </label>
-              <div class="tooltip" data-tip="加粗">
+              <div class="tooltip" :data-tip="translate('tools.sinhalaFontConverter.bold')">
                 <button
                   type="button"
                   class="btn btn-ghost btn-square btn-sm"
                   :class="{ 'btn-active': unicodeBold }"
                   :aria-pressed="unicodeBold"
-                  aria-label="加粗 Unicode 字形"
-                  title="加粗 Unicode 字形"
+                  :aria-label="translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')"
+                  :title="translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')"
                   @click="toggleUnicodeBold"
                 >
                   <i
@@ -265,8 +265,8 @@
               :readonly="isDirectionReversed"
               :placeholder="
                 !isDirectionReversed
-                  ? '在此输入 Unicode 僧伽罗语文本……'
-                  : 'Unicode 文本预览'
+                  ? translate('tools.sinhalaFontConverter.enterUnicodeSinhalaTextHere')
+                  : translate('tools.sinhalaFontConverter.unicodeTextPreview')
               "
               lang="si"
               spellcheck="false"
@@ -278,15 +278,15 @@
             <label
               for="clear-text-1"
               class="tooltip absolute right-2 top-2"
-              data-tip="清空全部"
+              :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
               <button
                 v-if="hasText && !isDirectionReversed"
                 type="button"
                 id="clear-text-1"
                 class="btn btn-ghost btn-circle btn-sm"
-                aria-label="清空全部"
-                title="清空全部"
+                :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
+                :title="translate('tools.sinhalaFontConverter.clearAll')"
                 @click="clearText"
               >
                 <i class="ri-close-line" aria-hidden="true"></i>
@@ -339,14 +339,14 @@
                 <div
                   v-if="isDirectionReversed"
                   class="tooltip tooltip-right"
-                  data-tip="下载 Unicode DOCX 文档"
+                  :data-tip="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
                 >
                   <button
                     type="button"
                     class="btn btn-ghost btn-circle btn-sm"
                     :disabled="!unicodeText || downloadingField === 'unicode'"
-                    aria-label="下载 Unicode DOCX 文档"
-                    title="下载 Unicode DOCX 文档"
+                    :aria-label="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
+                    :title="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
                     @click="downloadDocument('unicode')"
                   >
                     <i class="ri-download-line" aria-hidden="true"></i>
@@ -376,7 +376,7 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ unicodeText.length }} 字符
+                {{ unicodeText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
               </span>
             </div>
           </div>
@@ -385,14 +385,14 @@
         <label
           for="swap-direction"
           class="tooltip order-2 justify-self-center self-start md:mt-1.5"
-          data-tip="交换源编码与目标编码位置（Ctrl+Shift+S）"
+          :data-tip="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
         >
           <button
             type="button"
             id="swap-direction"
             class="btn btn-ghost btn-circle"
-            aria-label="交换源编码与目标编码位置"
-            title="交换源编码与目标编码位置（Ctrl+Shift+S）"
+            :aria-label="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodings')"
+            :title="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
             @pointerdown.capture="captureControlViewport"
             @keydown.capture="captureControlViewport"
             @click="swapPanels"
@@ -413,14 +413,12 @@
               <h2
                 id="sinhala-legacy-label"
                 class="font-serif text-lg font-bold"
-              >
-                Legacy Text
-              </h2>
-              <p class="text-xs text-base-content/55">传统字体编码与字形预览</p>
+              >{{ translate('common.sections.legacyText') }}</h2>
+              <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.legacyEncodingAndGlyphPreview') }}</p>
             </hgroup>
             <div class="flex min-w-0 shrink-0 items-end gap-2">
               <label class="label block text-xs w-24 sm:w-42">
-                字体
+                {{ translate('common.fontSelect.font') }}
                 <FontSelect
                   ref="legacyFontSelect"
                   v-model="legacyFontId"
@@ -432,19 +430,19 @@
                   local-preview-language="si"
                   local-font-coverage="sinhala-legacy"
                   size="xs"
-                  aria-label="Legacy 字形预览字体"
+                  :aria-label="translate('tools.sinhalaFontConverter.legacyPreviewFont')"
                   :disabled="showLegacySource"
                   @select="onLegacyFontSelected"
                 />
               </label>
-              <div class="tooltip" data-tip="加粗">
+              <div class="tooltip" :data-tip="translate('tools.sinhalaFontConverter.bold')">
                 <button
                   type="button"
                   class="btn btn-ghost btn-square btn-sm"
                   :class="{ 'btn-active': legacyBold }"
                   :aria-pressed="legacyBold"
-                  aria-label="加粗 Legacy 字形"
-                  title="加粗 Legacy 字形"
+                  :aria-label="translate('tools.sinhalaFontConverter.boldLegacyGlyphs')"
+                  :title="translate('tools.sinhalaFontConverter.boldLegacyGlyphs')"
                   :disabled="showLegacySource"
                   @click="toggleLegacyBold"
                 >
@@ -479,11 +477,11 @@
               :data-placeholder="
                 showLegacySource
                   ? isDirectionReversed
-                    ? '在此输入传统字体源码……'
-                    : '传统字体源码预览'
+                    ? translate('tools.sinhalaFontConverter.enterLegacyFontSourceHere')
+                    : translate('tools.sinhalaFontConverter.legacyFontSourcePreview')
                   : isDirectionReversed
-                    ? '在此输入传统字体文本……'
-                    : '传统字体字形预览'
+                    ? translate('tools.sinhalaFontConverter.enterLegacyFontTextHere')
+                    : translate('tools.sinhalaFontConverter.legacyGlyphPreview')
               "
               class="min-h-24 w-full overflow-y-auto whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 text-lg leading-7 empty:before:pointer-events-none empty:before:font-serif empty:before:text-base-content/40 empty:before:content-[attr(data-placeholder)] lg:min-h-32"
               :class="{
@@ -519,15 +517,15 @@
             <label
               for="clear-text-2"
               class="tooltip absolute right-2 top-2"
-              data-tip="清空全部"
+              :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
               <button
                 v-if="hasText && isDirectionReversed"
                 type="button"
                 id="clear-text-2"
                 class="btn btn-ghost btn-circle btn-sm"
-                aria-label="清空全部"
-                title="清空全部"
+                :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
+                :title="translate('tools.sinhalaFontConverter.clearAll')"
                 @click="clearText"
               >
                 <i class="ri-close-line" aria-hidden="true"></i>
@@ -570,14 +568,14 @@
                 <div
                   v-if="!isDirectionReversed"
                   class="tooltip tooltip-right"
-                  data-tip="下载 Legacy DOCX 文档"
+                  :data-tip="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
                 >
                   <button
                     type="button"
                     class="btn btn-ghost btn-circle btn-sm"
                     :disabled="!fmText || downloadingField === 'legacy'"
-                    aria-label="下载 Legacy DOCX 文档"
-                    title="下载 Legacy DOCX 文档"
+                    :aria-label="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
+                    :title="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
                     @click="downloadDocument('legacy')"
                   >
                     <i class="ri-download-line" aria-hidden="true"></i>
@@ -592,7 +590,7 @@
                     aria-controls="sinhala-fm-text-preview"
                     @change="handleLegacySourceChange"
                   />
-                  <span class="text-xs">显示源码</span>
+                  <span class="text-xs">{{ translate('tools.sinhalaFontConverter.showSource') }}</span>
                 </label>
 
                 <span
@@ -618,7 +616,7 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ fmText.length }} 字符
+                {{ fmText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
               </span>
             </div>
           </div>
@@ -629,15 +627,15 @@
         v-if="inputMode === 'text' && sourceTextLength >= LONG_TEXT_THRESHOLD"
         class="mt-3 text-sm text-base-content/70"
       >
-        文本较长（{{ sourceTextLength }} 字符），建议改用
+        {{ translate('tools.sinhalaFontConverter.longText') }}{{ sourceTextLength }} {{ translate('tools.sinhalaFontConverter.charactersConsiderUsing') }}
         <button
           type="button"
           class="link link-primary"
           @click="inputMode = 'document'"
         >
-          文档模式
+          {{ translate('tools.sinhalaFontConverter.documentMode') }}
         </button>
-        转换 DOCX 或 PDF。
+        {{ translate('tools.sinhalaFontConverter.toConvertDocxOrPdfFiles') }}
       </p>
 
       <div
@@ -654,10 +652,8 @@
               @change="handleConversionOptionsChange"
             />
             <span class="min-w-0">
-              <span class="block text-sm font-medium">保留缩写辅音</span>
-              <span class="block text-xs text-base-content/55">
-                Preserve reduced consonant forms
-              </span>
+              <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.preserveAbbreviatedConsonants') }}</span>
+              <span class="block text-xs text-base-content/55">{{ translate('common.sections.reducedForms') }}</span>
             </span>
           </label>
 
@@ -681,7 +677,7 @@
                   (යංශය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  关闭后拆为可见的 ්ය
+                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible') }}
                 </span>
               </span>
             </label>
@@ -702,7 +698,7 @@
                   (රකාරාංශය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  关闭后拆为可见的 ්ර
+                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible2') }}
                 </span>
               </span>
             </label>
@@ -723,7 +719,7 @@
                   (රේඵය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  关闭后拆为可见的
+                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible3') }}
                   <span class="font-[Noto_Sans_Sinhala]">ර්◌</span>
                 </span>
               </span>
@@ -740,10 +736,8 @@
               @change="handleConversionOptionsChange"
             />
             <span class="min-w-0">
-              <span class="block text-sm font-medium">保留辅音合写</span>
-              <span class="block text-xs text-base-content/55">
-                Preserve conjunct forms
-              </span>
+              <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.preserveConsonantConjuncts') }}</span>
+              <span class="block text-xs text-base-content/55">{{ translate('common.sections.conjunctForms') }}</span>
             </span>
           </label>
 
@@ -752,7 +746,7 @@
             class="ms-4 min-w-0 border-s border-base-300 ps-6"
           >
             <fieldset class="flex min-w-0 flex-col gap-x-6 gap-y-3">
-              <legend class="sr-only">统一形式</legend>
+              <legend class="sr-only">{{ translate('tools.sinhalaFontConverter.unifiedForm') }}</legend>
               <label class="label cursor-pointer justify-start gap-3 p-0">
                 <input
                   v-model="unifiedConjunctForm"
@@ -763,10 +757,8 @@
                   @change="handleConversionOptionsChange"
                 />
                 <span class="min-w-0">
-                  <span class="block text-sm font-medium">非连合形式</span>
-                  <span class="block text-xs text-base-content/55">
-                    Unjoined conjunct forms
-                  </span>
+                  <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.unjoinedForm') }}</span>
+                  <span class="block text-xs text-base-content/55">{{ translate('common.sections.unjoinedForms') }}</span>
                 </span>
               </label>
 
@@ -780,10 +772,8 @@
                   @change="handleConversionOptionsChange"
                 />
                 <span class="min-w-0">
-                  <span class="block text-sm font-medium">连合形式</span>
-                  <span class="block text-xs text-base-content/55">
-                    Ligated conjunct forms
-                  </span>
+                  <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.joinedForm') }}</span>
+                  <span class="block text-xs text-base-content/55">{{ translate('common.sections.ligatedForms') }}</span>
                 </span>
               </label>
             </fieldset>
@@ -801,10 +791,8 @@
             @change="handleConversionOptionsChange"
           />
           <span class="min-w-0">
-            <span class="block text-sm font-medium">ද 的紧凑组合字形</span>
-            <span class="block text-xs text-base-content/55">
-              Compact “ද” forms
-            </span>
+            <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.compactConjunctGlyphsFor') }}</span>
+            <span class="block text-xs text-base-content/55">{{ translate('common.sections.compactDa') }}</span>
           </span>
         </label>
       </div>
@@ -819,6 +807,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText, message: localeMessage } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -971,11 +962,11 @@ const encodingSuggestion = computed(() => {
 
   return isDirectionReversed.value
     ? {
-        message: "源编码：",
+        get message() { return translate('tools.sinhalaFontConverter.sourceEncoding2'); },
         actionLabel: "Unicode",
       }
     : {
-        message: "源编码：",
+        get message() { return translate('tools.sinhalaFontConverter.sourceEncoding2'); },
         actionLabel: "Legacy",
       };
 });
@@ -1157,8 +1148,8 @@ function handleLegacySourceChange() {
   flushFmPreviewConversion();
   refreshFmPreview();
   liveMessage.value = showLegacySource.value
-    ? "已显示 Legacy 源码"
-    : "已显示 Legacy 字形预览";
+    ? translate('tools.sinhalaFontConverter.legacySourceIsNowVisible')
+    : translate('tools.sinhalaFontConverter.legacyGlyphPreviewIsNowVisible');
   scheduleTextareaResize();
 }
 
@@ -1277,7 +1268,7 @@ watch(
       scheduleTextareaResize();
     } catch {
       if (request === unicodeFontRequest) {
-        liveMessage.value = "无法加载所选 Unicode 字体，请重新选择";
+        liveMessage.value = translate('tools.sinhalaFontConverter.cannotLoadTheUnicodeFontPleaseChooseAgain');
       }
     }
   },
@@ -1325,7 +1316,7 @@ watch(
       scheduleTextareaResize();
     } catch {
       if (request === legacyFontRequest) {
-        liveMessage.value = "无法加载所选字体，请重新选择";
+        liveMessage.value = translate('tools.sinhalaFontConverter.cannotLoadTheSelectedFontPleaseChooseAgain');
       }
     }
   },
@@ -1864,7 +1855,7 @@ function handleConversionOptionsChange(event) {
     fmTextDerivedFromUnicode.value = true;
   }
   refreshFmPreview({ preserveSelection: isFmPreviewEditing.value });
-  liveMessage.value = "已更新转换选项";
+  liveMessage.value = translate('tools.sinhalaFontConverter.conversionOptionsUpdated');
   stabilizeControlViewport(event);
 }
 
@@ -1874,7 +1865,7 @@ function swapPanels(event) {
   isDirectionReversed.value = !isDirectionReversed.value;
   resetFmHistory();
   refreshFmPreview();
-  liveMessage.value = "已交换源编码与目标编码位置";
+  liveMessage.value = translate('tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped');
   stabilizeControlViewport(event);
 }
 
@@ -1918,7 +1909,7 @@ function applyEncodingSuggestion() {
   }
   resetFmHistory();
   refreshFmPreview();
-  liveMessage.value = "已保留输入内容并交换转换方向";
+  liveMessage.value = translate('tools.sinhalaFontConverter.conversionDirectionSwappedInputPreserved');
   scheduleTextareaResize();
 }
 
@@ -1936,7 +1927,7 @@ async function clearText() {
   resetFmHistory();
   refreshFmPreview();
   resetCopyStatus();
-  liveMessage.value = "内容已清空";
+  liveMessage.value = translate('tools.sinhalaFontConverter.contentCleared');
   await nextTick();
   resizeAllTextareas();
   if (isDirectionReversed.value) {
@@ -2013,8 +2004,8 @@ async function pasteText(field) {
     pastedField.value = field;
     liveMessage.value =
       field === "unicode"
-        ? "已从剪贴板粘贴 Unicode 文本"
-        : "已从剪贴板粘贴 Legacy 编码文本";
+        ? translate('tools.sinhalaFontConverter.unicodeTextPastedFromClipboard')
+        : translate('tools.sinhalaFontConverter.legacyTextPastedFromClipboard');
 
     await nextTick();
     if (field === "unicode") {
@@ -2029,7 +2020,7 @@ async function pasteText(field) {
     }
   } catch {
     pasteFailedField.value = field;
-    liveMessage.value = "无法读取剪贴板，请允许剪贴板访问或手动粘贴";
+    liveMessage.value = translate('tools.sinhalaFontConverter.allowClipboardAccessOrPasteManually');
   }
 
   resetCopyTimer = window.setTimeout(resetCopyStatus, 1800);
@@ -2046,10 +2037,10 @@ async function copyText(field) {
     await writeClipboard(text);
     copiedField.value = field;
     liveMessage.value =
-      field === "unicode" ? "Unicode 文本已复制" : "Legacy 编码文本已复制";
+      field === "unicode" ? translate('tools.sinhalaFontConverter.unicodeTextCopied') : translate('tools.sinhalaFontConverter.legacyTextCopied');
   } catch {
     copyFailedField.value = field;
-    liveMessage.value = "无法自动复制，请手动选择文本";
+    liveMessage.value = translate('tools.sinhalaFontConverter.cannotCopyAutomaticallyPleaseSelectTheTextManually');
   }
 
   resetCopyTimer = window.setTimeout(resetCopyStatus, 1800);
@@ -2167,7 +2158,7 @@ async function setDocumentFile(file) {
   try {
     const text = await readSinhalaDocument(file);
     if (documentFile.value !== file) return;
-    if (!text.trim()) throw new Error("未读取到文字；扫描版 PDF 暂不支持");
+    if (!text.trim()) throw new Error(translate('tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet'));
     documentText.value = text;
     const detectedEncoding = detectSinhalaEncoding(text);
     documentDetectedEncoding.value = detectedEncoding;
@@ -2177,13 +2168,13 @@ async function setDocumentFile(file) {
       refreshFmPreview();
     }
     liveMessage.value = detectedEncoding
-      ? `已读取 ${file.name}，检测到${detectedEncoding === "legacy" ? "Legacy" : "Unicode"}编码`
-      : `已读取 ${file.name}，未能识别源编码`;
+      ? translate('tools.sinhalaFontConverter.readDetectedEncoding', { p0: file.name, p1: detectedEncoding === "legacy" ? "Legacy" : "Unicode" })
+      : translate('tools.sinhalaFontConverter.readSourceEncodingCouldNotBeDetected', { p0: file.name });
   } catch (error) {
     if (documentFile.value === file) {
       documentError.value =
-        error instanceof Error ? error.message : "文件读取失败";
-      liveMessage.value = documentError.value;
+        error instanceof Error ? error.message : translate('tools.sinhalaFontConverter.failedToReadFile');
+      liveMessage.value = localizeText(documentError.value);
     }
   } finally {
     if (documentFile.value === file) documentBusy.value = false;
@@ -2230,9 +2221,9 @@ async function convertUploadedDocument() {
     anchor.download = `${documentFile.value.name.replace(/\.(docx|pdf)$/iu, "")}-${target}.docx`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    liveMessage.value = "转换后的 DOCX 文档已下载";
+    liveMessage.value = translate('tools.sinhalaFontConverter.convertedDocxDownloaded');
   } catch {
-    documentError.value = "文档转换失败，请重试";
+    documentError.value = localeMessage('tools.sinhalaFontConverter.documentConversionFailedPleaseRetry');
     liveMessage.value = documentError.value;
   } finally {
     documentBusy.value = false;
@@ -2263,18 +2254,18 @@ async function downloadDocument(field) {
     anchor.download = `sinhala-${field}.docx`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    liveMessage.value = `${field === "unicode" ? "Unicode" : "Legacy"} 文档已下载`;
+    liveMessage.value = translate('tools.sinhalaFontConverter.documentDownloaded', { p0: field === "unicode" ? "Unicode" : "Legacy" });
   } catch {
-    liveMessage.value = "文档生成失败，请重试";
+    liveMessage.value = translate('tools.sinhalaFontConverter.documentGenerationFailedPleaseRetry');
   } finally {
     downloadingField.value = "";
   }
 }
 
 function copyLabel(field) {
-  if (copiedField.value === field) return "已复制";
-  if (copyFailedField.value === field) return "复制失败";
-  return field === "unicode" ? "复制 Unicode 文本" : "复制 Legacy 编码文本";
+  if (copiedField.value === field) return translate('tools.sinhalaFontConverter.copied');
+  if (copyFailedField.value === field) return translate('tools.sinhalaFontConverter.copyFailed');
+  return field === "unicode" ? translate('tools.sinhalaFontConverter.copyUnicodeText') : translate('tools.sinhalaFontConverter.copyLegacyText');
 }
 
 function copyIcon(field) {
@@ -2282,9 +2273,9 @@ function copyIcon(field) {
 }
 
 function pasteLabel(field) {
-  if (pastedField.value === field) return "已粘贴";
-  if (pasteFailedField.value === field) return "粘贴失败";
-  return "从剪贴板粘贴";
+  if (pastedField.value === field) return translate('tools.sinhalaFontConverter.pasted');
+  if (pasteFailedField.value === field) return translate('tools.sinhalaFontConverter.pasteFailed');
+  return translate('tools.serverInfo.pasteFromClipboard');
 }
 
 function pasteIcon(field) {

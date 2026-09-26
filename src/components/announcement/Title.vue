@@ -13,7 +13,7 @@
         :datetime="announcement.startsAt"
         class="hidden text-xs font-normal text-base-content/45 sm:block"
       >
-        {{ formatAnnouncementDate(announcement.startsAt, true) }}
+        {{ formatAnnouncementDate(announcement.startsAt, true, uiLocale) }}
       </time>
     </span>
   </hgroup>
@@ -21,6 +21,8 @@
 </template>
 
 <script setup>
+import { useLocale } from "@/i18n";
+const { locale: uiLocale } = useLocale();
 import AnnouncementBadges from "@/components/announcement/Badges.vue";
 import { formatAnnouncementDate } from "@/utils/announcements";
 

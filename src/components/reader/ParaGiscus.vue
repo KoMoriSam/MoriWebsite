@@ -12,12 +12,14 @@
     emit-metadata="1"
     input-position="bottom"
     :theme="giscusTheme"
-    lang="zh-CN"
+    :lang="commentLocale"
     loading="lazy"
   />
 </template>
 
 <script setup>
+import { useLocale } from "@/i18n";
+const { commentLocale } = useLocale();
 import { computed, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import Giscus from "@giscus/vue";

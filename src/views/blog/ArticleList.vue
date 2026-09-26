@@ -1,9 +1,9 @@
 <template>
-  <ContentPage eyebrow="Posts &amp; Articles" title="文章列表">
+  <ContentPage :eyebrow="translate('common.sections.posts')" :title="translate('pages.articleList.articles')">
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
-        {{ articles.length }} 文章
+        {{ articles.length }} {{ translate('pages.articleList.articles2') }}
       </span>
       <client-only>
         <span
@@ -12,12 +12,12 @@
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
-            {{ formatReadCount(articleTotalReads) }} 阅读
+            {{ formatReadCount(articleTotalReads) }} {{ translate('reader.chapterList.reads') }}
           </template>
           <span
             v-else
             class="loading loading-dots loading-xs"
-            aria-label="正在读取文章总阅读量"
+            :aria-label="translate('pages.articleList.loadingTotalArticleReads')"
           ></span>
         </span>
       </client-only>
@@ -28,12 +28,12 @@
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
-            {{ formatReadCount(articleTotalComments) }} 评论
+            {{ formatReadCount(articleTotalComments) }} {{ translate('markdown.moment.comments') }}
           </template>
           <span
             v-else
             class="loading loading-dots loading-xs"
-            aria-label="正在读取文章总评论量"
+            :aria-label="translate('pages.articleList.loadingTotalArticleComments')"
           ></span>
         </span>
       </client-only>
@@ -44,18 +44,18 @@
         type="application/rss+xml"
       >
         <i class="ri-rss-fill" aria-hidden="true"></i>
-        RSS 订阅
+        {{ translate('pages.home.rssSubscription') }}
       </a>
     </template>
 
     <template v-if="loading || articles.length">
       <!-- 检索区域 -->
-      <section class="my-6" aria-label="文章检索">
+      <section class="my-6" :aria-label="translate('pages.articleList.articleSearch')">
         <div ref="searchBox" class="relative min-w-0">
           <div
             class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
           >
-            <label for="article-search" class="sr-only">搜索文章</label>
+            <label for="article-search" class="sr-only">{{ translate('pages.articleList.searchArticles') }}</label>
             <i
               class="ri-search-line shrink-0 text-base-content/45"
               aria-hidden="true"
@@ -70,7 +70,7 @@
                 :key="`tag-${tag}`"
                 type="button"
                 class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
-                :aria-label="`移除标签 ${tag}`"
+                :aria-label="translate('pages.articleList.removeTag', { p0: tag })"
                 @click="removeTag(tag)"
               >
                 <span class="truncate">{{ formatTag(tag) }}</span>
@@ -82,7 +82,7 @@
                 :key="`year-${year}`"
                 type="button"
                 class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
-                :aria-label="`移除年份 ${year}`"
+                :aria-label="translate('common.search.removeYear', { p0: year })"
                 @click="removeYear(year)"
               >
                 {{ year }}
@@ -97,7 +97,7 @@
               type="search"
               role="combobox"
               class="min-w-32 flex-1"
-              placeholder="搜索文章"
+              :placeholder="translate('pages.articleList.searchArticles')"
               autocomplete="off"
               spellcheck="false"
               aria-autocomplete="list"
@@ -129,7 +129,7 @@
               v-if="advancedFilterCount"
               type="button"
               class="btn btn-circle btn-ghost btn-xs shrink-0"
-              aria-label="清除全部搜索条件"
+              :aria-label="translate('common.search.clearAllSearchFilters')"
               @click="resetFilter"
             >
               <i class="ri-delete-bin-line" aria-hidden="true"></i>
@@ -142,7 +142,7 @@
             class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xl"
             role="listbox"
             :aria-label="
-              activeFilterQuery.type === 'tag' ? '标签筛选建议' : '年份筛选建议'
+              activeFilterQuery.type === 'tag' ? translate('common.search.tagFilterSuggestions') : translate('common.search.yearFilterSuggestions')
             "
           >
             <div
@@ -158,14 +158,14 @@
                   aria-hidden="true"
                 ></i>
                 {{
-                  activeFilterQuery.type === "tag" ? "选择标签" : "选择发布年份"
+                  activeFilterQuery.type === "tag" ? translate('pages.articleList.chooseTags') : translate('common.search.choosePublicationYear')
                 }}
               </span>
               <span class="hidden sm:inline">
                 <kbd class="kbd kbd-xs">↑</kbd
-                ><kbd class="kbd kbd-xs">↓</kbd> 选择 ·
-                <kbd class="kbd kbd-xs">Enter</kbd> 确认 ·
-                <kbd class="kbd kbd-xs">Esc</kbd> 关闭
+                ><kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select') }}
+                <kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.confirm') }}
+                <kbd class="kbd kbd-xs">Esc</kbd> {{ translate('common.modal.close') }}
               </span>
             </div>
 
@@ -187,7 +187,7 @@
                     {{ group.label }}
                   </span>
                   <span class="shrink-0 font-normal text-base-content/40">
-                    {{ group.count }} 篇
+                    {{ group.count }} {{ translate('pages.articleList.articles3') }}
                   </span>
                 </div>
 
@@ -207,8 +207,8 @@
                       role="option"
                       :aria-label="
                         option.type === 'tag'
-                          ? `标签 ${option.fullLabel}`
-                          : `年份 ${option.label}`
+                          ? translate('pages.articleList.tag', { p0: option.fullLabel })
+                          : translate('common.search.year', { p0: option.label })
                       "
                       :aria-selected="activeFilterIndex === option.index"
                       class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
@@ -240,7 +240,7 @@
                         {{ option.label }}
                       </span>
                       <span class="text-xs text-base-content/40">
-                        {{ option.count }} 篇
+                        {{ option.count }} {{ translate('pages.articleList.articles3') }}
                       </span>
                     </button>
                   </li>
@@ -254,16 +254,16 @@
             >
               {{
                 activeFilterQuery.query
-                  ? `没有匹配“${activeFilterQuery.query}”的选项`
-                  : "没有更多可选条件"
+                  ? translate('common.search.noOptionsMatch', { p0: activeFilterQuery.query })
+                  : translate('common.search.noMoreFiltersAvailable')
               }}
             </p>
           </div>
         </div>
 
         <p class="mt-2 px-1 text-xs text-base-content/45">
-          输入 <kbd class="kbd kbd-xs">#</kbd> 筛选标签，输入
-          <kbd class="kbd kbd-xs">/</kbd> 筛选年份，可组合多个条件。
+          {{ translate('common.search.enter') }} <kbd class="kbd kbd-xs">#</kbd> {{ translate('pages.articleList.toFilterTagsEnter') }}
+          <kbd class="kbd kbd-xs">/</kbd> {{ translate('common.search.toFilterYearsYouCanCombineFilters') }}
         </p>
       </section>
 
@@ -281,28 +281,28 @@
               v-if="keyword.trim()"
               class="font-medium text-base-content/75"
             >
-              没有找到与“{{ keyword.trim() }}”相关的文章
+              {{ translate('pages.articleList.noArticlesFoundFor') }}{{ keyword.trim() }}{{ translate('pages.articleList.message') }}
             </span>
           </template>
 
           <template v-else>
             <span>
-              <span v-if="!hasFilter">共 </span>
-              <span v-else>找到 </span>
+              <span v-if="!hasFilter">{{ translate('common.pagination.of') }} </span>
+              <span v-else>{{ translate('pages.articleList.found') }} </span>
               <strong class="font-semibold text-base-content">
                 {{ filteredArticles.length }}
               </strong>
-              篇
+              {{ translate('pages.articleList.articles3') }}
               <span
                 v-if="filteredArticles.length > 1"
                 class="text-base-content/50"
               >
-                （当前查看{{ pageDisplayText }}）
+                {{ translate('pages.articleList.viewing') }}{{ pageDisplayText }}）
               </span>
             </span>
 
             <span v-if="keyword.trim()" class="ml-2">
-              关键词：
+              {{ translate('pages.articleList.keywords') }}
               <span class="badge badge-primary badge-soft badge-xs">
                 {{ keyword.trim() }}
               </span>
@@ -312,7 +312,7 @@
 
         <p class="text-xs text-base-content/50">
           <template v-if="filteredArticles.length">
-            第 {{ currentPage }} / {{ totalPages }} 页
+            {{ translate('common.pagination.page') }} {{ currentPage }} / {{ totalPages }} {{ translate('common.pagination.pages') }}
           </template>
         </p>
       </div>
@@ -325,9 +325,9 @@
           role="status"
           aria-live="polite"
           aria-busy="true"
-          aria-label="文章列表加载中"
+          :aria-label="translate('pages.articleList.loadingArticles')"
         >
-          <span class="sr-only">文章列表加载中</span>
+          <span class="sr-only">{{ translate('pages.articleList.loadingArticles') }}</span>
 
           <div
             class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
@@ -517,17 +517,17 @@
                 >
                   <time class="flex items-center gap-1.5">
                     <i class="ri-calendar-line"></i>
-                    {{ useDateFormat(item.date, "YYYY/M/D") }}
+                    {{ formatLocalizedDate(item.date) }}
                   </time>
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-time-line"></i>
-                    {{ estimateReadingTime(item.length) }} 分钟
+                    {{ estimateReadingTime(item.length) }} {{ translate('pages.articleList.minutes') }}
                   </span>
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-file-text-line"></i>
-                    {{ item.length || 0 }} 字
+                    {{ item.length || 0 }} {{ translate('reader.chapterList.characters') }}
                   </span>
 
                   <client-only>
@@ -540,12 +540,12 @@
                     >
                       <i class="ri-eye-line" aria-hidden="true"></i>
                       <template v-if="Number.isFinite(getArticleReads(item))">
-                        {{ formatReadCount(getArticleReads(item)) }} 阅读
+                        {{ formatReadCount(getArticleReads(item)) }} {{ translate('reader.chapterList.reads') }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="`正在读取《${item.title}》的阅读量`"
+                        :aria-label="translate('reader.chapterList.loadingReadsFor', { p0: item.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -562,12 +562,12 @@
                       <template
                         v-if="Number.isFinite(getArticleComments(item))"
                       >
-                        {{ formatReadCount(getArticleComments(item)) }} 评论
+                        {{ formatReadCount(getArticleComments(item)) }} {{ translate('markdown.moment.comments') }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="`正在读取《${item.title}》的评论量`"
+                        :aria-label="translate('reader.chapterList.loadingCommentsFor', { p0: item.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -586,7 +586,7 @@
                   <span
                     class="ml-auto flex items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5"
                   >
-                    阅读全文
+                    {{ translate('pages.articleList.readMore') }}
                     <i class="ri-arrow-right-line"></i>
                   </span>
                 </div>
@@ -596,7 +596,7 @@
 
           <Pagination
             v-if="totalPages > 1"
-            aria-label="文章列表分页"
+            :aria-label="translate('pages.articleList.articlePagination')"
             :current-page="currentPage"
             :total-pages="totalPages"
             :get-page-route="getPageRoute"
@@ -613,10 +613,10 @@
             class="ri-search-eye-line mb-4 block text-5xl text-base-content/25"
           ></i>
 
-          <h2 class="text-lg font-semibold">未找到匹配的文章</h2>
+          <h2 class="text-lg font-semibold">{{ translate('pages.articleList.noMatchingArticles') }}</h2>
 
           <p class="mt-2 text-sm text-base-content/50">
-            尝试修改关键词、标签或年份
+            {{ translate('pages.articleList.tryChangingKeywordsTagsOrYears') }}
           </p>
 
           <button
@@ -625,7 +625,7 @@
             @click="resetFilter"
           >
             <i class="ri-refresh-line"></i>
-            清除全部条件
+            {{ translate('pages.articleList.clearAllFilters') }}
           </button>
         </div>
       </div>
@@ -637,13 +637,16 @@
       class="my-24 rounded-box border border-dashed border-base-300 px-6 py-20 text-center"
     >
       <i class="ri-article-line mb-4 block text-5xl text-base-content/25"></i>
-      <h2 class="text-lg font-semibold">暂无文章</h2>
-      <p class="mt-2 text-sm text-base-content/50">文章发布后会显示在这里</p>
+      <h2 class="text-lg font-semibold">{{ translate('pages.articleList.noArticlesYet') }}</h2>
+      <p class="mt-2 text-sm text-base-content/50">{{ translate('pages.articleList.publishedArticlesWillAppearHere') }}</p>
     </div>
   </ContentPage>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, number: formatNumber, date: formatLocalizedDate } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -654,7 +657,6 @@ import {
   toRef,
   watch,
 } from "vue";
-import { useDateFormat } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
@@ -710,7 +712,7 @@ const analyticsStore = useAnalyticsStore();
 const commentCountsStore = useCommentCountsStore();
 const { analyticsAvailable } = storeToRefs(analyticsStore);
 const { commentCountsAvailable } = storeToRefs(commentCountsStore);
-const readCountFormatter = new Intl.NumberFormat("zh-CN");
+const readCountFormatter = { format: (value) => formatNumber(value) };
 const formatReadCount = (value) => readCountFormatter.format(Number(value));
 const articleTotalReads = computed(() =>
   analyticsStore.getContentTypeReads("article"),
@@ -787,9 +789,9 @@ const pageEnd = computed(() => {
 
 const pageDisplayText = computed(() => {
   if (pageStart.value === pageEnd.value) {
-    return `第 ${pageStart.value} 篇`;
+    return translate('pages.articleList.article', { p0: pageStart.value });
   }
-  return `第 ${pageStart.value}-${pageEnd.value} 篇`;
+  return translate('pages.articleList.articles4', { p0: pageStart.value, p1: pageEnd.value });
 });
 
 const handlePageChange = async (page) => {
@@ -824,7 +826,7 @@ const highlightParts = (value) => {
 const getResultSummary = (article) => {
   return (
     createSearchExcerpt(article?.content, keyword.value, article?.summary) ||
-    "暂无文章摘要"
+    translate('pages.articleList.noSummaryAvailable')
   );
 };
 const getAdditionalMetadata = (article) => {

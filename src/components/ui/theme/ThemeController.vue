@@ -4,10 +4,10 @@
     type="button"
     popovertarget="theme-controller"
     style="anchor-name: --theme-controller-anchor"
-    aria-label="选择界面主题"
+    :aria-label="translate('common.themeController.chooseInterfaceTheme')"
   >
     <i :class="currentTheme.icon" class="text-xl"></i>
-    <span class="hidden xl:block">主题</span>
+    <span class="hidden xl:block">{{ translate('common.themeController.theme') }}</span>
     <i class="ri-arrow-down-s-line hidden xl:block"></i>
   </button>
 
@@ -16,27 +16,27 @@
     popover="auto"
     class="dropdown dropdown-end mt-2 max-h-[min(78dvh,32rem)] w-96 overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 p-2 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]! sm:p-3"
     style="position-anchor: --theme-controller-anchor"
-    aria-label="主题选择"
+    :aria-label="translate('common.themeController.themeSelection')"
   >
     <div class="mb-2 flex items-center justify-between gap-3 px-1">
-      <h2 class="font-serif mt-0.5 text-lg font-semibold">界面主题</h2>
-      <span class="badge badge-primary badge-sm">{{ currentTheme.name }}</span>
+      <h2 class="font-serif mt-0.5 text-lg font-semibold">{{ translate('common.themeController.interfaceTheme') }}</h2>
+      <span class="badge badge-primary badge-sm">{{ currentTheme.name === 'System' ? translate('reader.formatSetting.systemDefault') : currentTheme.name }}</span>
     </div>
 
     <label
       class="border-base-300 bg-base-200/55 mb-3 flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-box border px-3 py-2"
     >
       <span class="min-w-0 flex-1">
-        <span class="block text-sm font-semibold">跟随系统</span>
+        <span class="block text-sm font-semibold">{{ translate('reader.formatSetting.systemDefault') }}</span>
         <span class="text-base-content/60 block text-xs">
-          自动匹配系统的浅色或深色外观
+          {{ translate('reader.formatSetting.matchYourSystemSLightOrDarkAppearance') }}
         </span>
       </span>
       <input
         v-model="followSystem"
         type="checkbox"
         class="toggle toggle-sm mr-1 shrink-0"
-        aria-label="跟随系统主题"
+        :aria-label="translate('common.themeController.followSystemTheme')"
       />
     </label>
 
@@ -53,7 +53,7 @@
           type="radio"
           name="theme-navigation"
           class="theme-controller absolute inset-0 cursor-pointer appearance-none rounded-box opacity-0"
-          :aria-label="`${style.name}：${style.description}`"
+          :aria-label="`${style.name}：${localizeText(style.description)}`"
           :value="style.value"
           :disabled="followSystem"
         />
@@ -68,7 +68,7 @@
             {{ style.name }}
           </span>
           <span class="text-base-content/55 block text-[0.625rem]">
-            {{ style.description }}
+            {{ localizeText(style.description) }}
           </span>
         </span>
         <i
@@ -85,6 +85,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { storeToRefs } from "pinia";
 
 import { useThemeStore } from "@/stores/themeStore";

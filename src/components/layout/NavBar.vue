@@ -24,12 +24,12 @@
         ref="searchTriggerButton"
         type="button"
         class="btn btn-ghost max-md:btn-square"
-        aria-label="打开全局内容搜索"
+        :aria-label="translate('common.navBar.openSiteSearch')"
         aria-keyshortcuts="Control+K Meta+K"
         @click="activateSearch"
       >
         <i class="ri-search-line text-lg" aria-hidden="true"></i>
-        <span class="hidden xl:inline">搜索</span>
+        <span class="hidden xl:inline">{{ translate('common.navBar.search') }}</span>
         <kbd class="kbd kbd-sm hidden xl:inline-flex">
           {{ searchShortcutLabel }} K
         </kbd>
@@ -54,12 +54,16 @@
     </nav>
     <nav class="navbar-end">
       <AnnouncementCenter />
+      <LanguageController />
       <ThemeController />
     </nav>
   </header>
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 import {
   computed,
   nextTick,
@@ -83,6 +87,7 @@ import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
 import AnnouncementCenter from "@/components/announcement/NoticeCenter.vue";
 import ThemeController from "@/components/ui/theme/ThemeController.vue";
+import LanguageController from "@/components/ui/LanguageController.vue";
 
 const readerNavbarVisible = ref(false);
 const searchTriggerButton = ref(null);

@@ -5,7 +5,7 @@
     <button
       type="button"
       class="btn btn-circle btn-ghost btn-sm"
-      aria-label="返回阅读控制"
+      :aria-label="translate('reader.readerControls.backToReadingControls')"
       @click="$emit('back')"
     >
       <i class="ri-arrow-left-line text-xl" aria-hidden="true"></i>
@@ -23,6 +23,9 @@
   </header>
 </template>
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate } = useLocale();
+
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: "" },

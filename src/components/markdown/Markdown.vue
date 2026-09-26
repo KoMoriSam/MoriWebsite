@@ -1,5 +1,6 @@
 <template>
   <article
+    :lang="isReaderMode ? 'zh-CN' : undefined"
     ref="articleRef"
     :id="contentId"
     :class="[
@@ -35,7 +36,7 @@
       />
 
       <h1 v-if="isReaderMode && !renderedPages.length">
-        加载失败，请稍后重试。
+        {{ translate('markdown.markdown.loadingFailedPleaseTryAgainLater') }}
       </h1>
     </template>
 
@@ -46,6 +47,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, text: localizeText } = useLocale();
+
 import { computed, h, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
@@ -272,7 +276,7 @@ const syncPreviewImages = (root = articleRef.value) => {
 
     if (!image.hasAttribute("aria-label")) {
       const alt = image.getAttribute("alt")?.trim();
-      image.setAttribute("aria-label", alt ? `预览图片：${alt}` : "预览图片");
+      image.setAttribute("aria-label", alt ? translate('markdown.markdown.previewImage2', { p0: alt }) : translate('markdown.markdown.previewImage'));
     }
   });
 };
@@ -685,7 +689,7 @@ const sharedPlugins = computed(() => [
   [MarkdownItAttrs, { allowedAttributes: ["id", "class"] }],
   highlightLazyPlugin,
   anchorPlugin,
-  alertPlugin,
+  [alertPlugin, { translateTitle: localizeText }],
   chatHeaderPlugin,
   chatContainerPlugin,
   momentsPlugin,
@@ -714,7 +718,7 @@ const renderedPages = computed(() => {
           paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
           ...sharedPlugins.value,
         ]
-      : [alertPlugin, codePlugin];
+      : [[alertPlugin, { translateTitle: localizeText }], codePlugin];
 
     return {
       ...page,

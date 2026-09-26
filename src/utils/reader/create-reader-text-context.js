@@ -198,12 +198,12 @@ const getNearestTextOffset = (text, offset) => {
   return -1;
 };
 
-const getTextBoundary = (text, offset) => {
+const getTextBoundary = (text, offset, language = "zh-CN") => {
   const index = getNearestTextOffset(text, offset);
   if (index < 0) return null;
 
   if (typeof Intl?.Segmenter === "function") {
-    const segments = new Intl.Segmenter(document.documentElement.lang || "zh", {
+    const segments = new Intl.Segmenter(language, {
       granularity: "word",
     }).segment(text);
     for (const segment of segments) {
@@ -467,7 +467,7 @@ export const selectReaderTextAtPoint = ({
     offset = 0;
   }
 
-  const boundary = getTextBoundary(textNode?.textContent || "", offset);
+  const boundary = getTextBoundary(textNode?.textContent || "", offset, textNode?.parentElement?.closest('[lang]')?.lang || "zh-CN");
   if (!textNode || !boundary) return null;
 
   const range = document.createRange();

@@ -1,9 +1,9 @@
 <template>
-  <ContentPage eyebrow="Site Announcements" title="站点公告">
+  <ContentPage :eyebrow="translate('common.sections.siteAnnouncements')" :title="translate('pages.announcements.announcements')">
     <template #meta>
       <span v-if="updatedAt" class="inline-flex items-center gap-1">
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        更新于 {{ formatAnnouncementDate(updatedAt, true) }}
+        {{ translate('pages.announcements.updated') }} {{ formatAnnouncementDate(updatedAt, true, uiLocale) }}
       </span>
     </template>
 
@@ -14,7 +14,7 @@
     >
       <i class="ri-error-warning-line text-xl" aria-hidden="true"></i>
       <div>
-        <h2 class="font-semibold">公告暂时没有加载成功</h2>
+        <h2 class="font-semibold">{{ translate('pages.announcements.announcementsCouldNotBeLoaded') }}</h2>
         <p class="text-sm opacity-80">{{ error }}</p>
       </div>
       <button
@@ -24,7 +24,7 @@
         @click="store.fetchAnnouncements({ force: true })"
       >
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        重新加载
+        {{ translate('pages.announcements.reload') }}
       </button>
     </section>
 
@@ -35,14 +35,14 @@
         role="status"
       >
         <i class="ri-error-warning-line" aria-hidden="true"></i>
-        <span>刷新失败，当前显示上次加载的公告。</span>
+        <span>{{ translate('pages.announcements.refreshFailedShowingPreviouslyLoadedAnnouncements') }}</span>
         <button
           type="button"
           class="btn btn-sm"
           :disabled="loading"
           @click="store.fetchAnnouncements({ force: true })"
         >
-          重试
+          {{ translate('pages.announcements.retry') }}
         </button>
       </div>
 
@@ -73,7 +73,7 @@
           role="status"
           aria-busy="true"
         >
-          <span class="sr-only">正在加载{{ group.title }}</span>
+          <span class="sr-only">{{ translate('pages.announcements.loading') }}{{ group.title }}</span>
           <div
             v-for="index in group.skeletonCount"
             :key="index"
@@ -131,7 +131,7 @@
                   :datetime="announcement.startsAt"
                   class="sm:hidden text-xs font-normal text-base-content/45"
                 >
-                  {{ formatAnnouncementDate(announcement.startsAt, true) }}
+                  {{ formatAnnouncementDate(announcement.startsAt, true, uiLocale) }}
                 </time>
               </AnnouncementTitle>
             </summary>
@@ -155,6 +155,9 @@
 </template>
 
 <script setup>
+import { useLocale } from '@/i18n';
+const { t: translate, locale: uiLocale } = useLocale();
+
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
@@ -189,12 +192,12 @@ const announcementGroups = computed(() => [
   {
     key: "active",
     eyebrow: "Active",
-    title: "当前公告",
+    get title() { return translate('pages.announcements.currentAnnouncements'); },
     titleId: "active-announcements-title",
     items: pageActiveAnnouncements.value,
     sectionClass: "my-8",
     emptyIcon: "ri-notification-off-line",
-    emptyText: "当前没有有效公告。",
+    get emptyText() { return translate('pages.announcements.thereAreNoActiveAnnouncements'); },
     skeletonCount: 3,
     markRead: true,
     forceRead: false,
@@ -202,12 +205,12 @@ const announcementGroups = computed(() => [
   {
     key: "history",
     eyebrow: "Archive",
-    title: "历史公告",
+    get title() { return translate('pages.announcements.pastAnnouncements'); },
     titleId: "history-announcements-title",
     items: historyAnnouncements.value,
     sectionClass: "my-12",
     emptyIcon: "ri-archive-line",
-    emptyText: "暂时没有历史公告。",
+    get emptyText() { return translate('pages.announcements.thereAreNoPastAnnouncementsYet'); },
     skeletonCount: 2,
     markRead: false,
     forceRead: true,
