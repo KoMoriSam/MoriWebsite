@@ -23,13 +23,13 @@
       id="notification-center"
       ref="panelRef"
       popover="auto"
-      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,38rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-0 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
+      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,38rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 lg:p-0 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
       style="position-anchor: --notification-center-anchor"
       aria-labelledby="notification-center-title"
       @toggle="handleToggle"
     >
       <header
-        class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3"
+        class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 max-lg:gap-2 max-lg:px-0 max-lg:pt-0 max-lg:pb-1.5"
       >
         <h2
           id="notification-center-title"
@@ -49,23 +49,23 @@
       </header>
 
       <div
-        class="scrollbar-thin max-h-[min(58dvh,29rem)] overflow-y-auto overscroll-contain p-3"
+        class="scrollbar-thin max-h-[min(58dvh,29rem)] overflow-y-auto overscroll-contain p-3 max-lg:px-0 max-lg:py-1.5"
       >
         <div v-if="loading && !loaded" role="status" aria-busy="true">
           <span class="sr-only">{{ translate('common.noticeCenter.loadingAnnouncements') }}</span>
-          <ul class="grid gap-2" aria-hidden="true">
+          <ul class="grid gap-2 max-lg:gap-1.5" aria-hidden="true">
             <li
               v-for="index in 3"
               :key="index"
               class="card card-border card-sm w-full"
             >
-              <div class="card-body">
-                <div class="flex items-center gap-2">
+              <div class="card-body max-lg:gap-1.5 max-lg:p-2">
+                <div class="flex items-center gap-2 max-lg:gap-1.5">
                   <span class="skeleton size-2 shrink-0 rounded-full"></span>
                   <span class="skeleton h-4 w-10 rounded-selector"></span>
                   <span class="skeleton h-4 w-1/2"></span>
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-2 max-lg:space-y-1.5">
                   <span class="skeleton block h-3 w-full"></span>
                   <span class="skeleton block h-3 w-4/5"></span>
                 </div>
@@ -80,7 +80,7 @@
 
         <div
           v-else-if="error && !loaded"
-          class="alert alert-error alert-soft items-start"
+          class="alert alert-error alert-soft items-start max-lg:gap-2 max-lg:p-2"
           role="alert"
         >
           <i class="ri-error-warning-line" aria-hidden="true"></i>
@@ -89,7 +89,7 @@
             <p class="mt-0.5 text-xs opacity-80">{{ error }}</p>
             <button
               type="button"
-              class="btn btn-sm mt-3"
+              class="btn btn-sm mt-3 max-lg:mt-2"
               :disabled="loading"
               @click="store.fetchAnnouncements({ force: true })"
             >
@@ -101,7 +101,7 @@
 
         <div
           v-else-if="!activeAnnouncements.length"
-          class="grid min-h-36 place-items-center text-center text-base-content/55"
+          class="grid min-h-36 place-items-center text-center text-base-content/55 max-lg:min-h-28"
         >
           <div>
             <i class="ri-notification-off-line text-2xl" aria-hidden="true"></i>
@@ -109,7 +109,7 @@
           </div>
         </div>
 
-        <ul v-else class="grid gap-2">
+        <ul v-else class="grid gap-2 max-lg:gap-1.5">
           <li
             v-for="announcement in activeAnnouncements"
             :key="`${announcement.id}:${announcement.revision}`"
@@ -117,7 +117,7 @@
             class="card card-border card-sm w-full group hover:border-primary/25 hover:bg-primary/5 cursor-pointer"
             @click="openAnnouncement(announcement)"
           >
-            <div class="card-body">
+            <div class="card-body max-lg:gap-1.5 max-lg:p-2">
               <AnnouncementTitle
                 :announcement="announcement"
                 :read="store.isRead(announcement)"
@@ -126,7 +126,7 @@
               <p>
                 {{ announcement.summary }}
               </p>
-              <div class="card-actions justify-end items-center">
+              <div class="card-actions justify-end items-center max-lg:gap-1.5">
                 <time
                   :datetime="announcement.startsAt"
                   class="flex-1 text-[0.6875rem] text-base-content/45"
@@ -146,7 +146,7 @@
 
         <p
           v-if="error && loaded"
-          class="mt-3 text-xs text-warning"
+          class="mt-3 text-xs text-warning max-lg:mt-2"
           role="status"
         >
           <i class="ri-error-warning-line" aria-hidden="true"></i>
@@ -154,7 +154,7 @@
         </p>
       </div>
 
-      <footer class="border-t border-base-300 p-2">
+      <footer class="border-t border-base-300 p-2 max-lg:p-0 max-lg:pt-1.5">
         <RouterLink
           to="/announcements"
           class="btn btn-ghost btn-sm w-full justify-between"

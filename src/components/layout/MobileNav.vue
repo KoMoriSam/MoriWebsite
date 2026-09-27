@@ -23,11 +23,11 @@
       @toggle="handleToggle"
     >
       <section aria-labelledby="mobile-primary-navigation">
-        <ul class="grid grid-cols-4 gap-2 sm:grid-cols-2">
+        <ul class="grid grid-cols-4 gap-2 sm:grid-cols-2 max-lg:gap-1.5">
           <li v-for="link in NAV_LINKS" :key="link.to.name">
             <RouterLink
               :to="link.to"
-              class="btn h-fit flex-col sm:flex-row gap-0 sm:gap-2 py-2 w-full"
+              class="btn h-fit flex-col sm:flex-row gap-0 sm:gap-2 py-2 w-full max-lg:min-h-11 max-lg:px-2 max-lg:py-1.5"
               :class="
                 isNavigationLinkActive(route, link)
                   ? 'btn-primary'
@@ -48,7 +48,7 @@
       </section>
 
       <section aria-labelledby="mobile-project-navigation">
-        <div class="divider my-3 justify-between">
+        <div class="divider my-3 justify-between max-lg:my-2">
           <h2 class="text-base-content/55 text-xs font-bold">
             {{ translate('common.mobileNav.projects') }}
             <span class="badge badge-ghost badge-xs mb-0.75">
@@ -68,20 +68,20 @@
           </a>
         </div>
 
-        <div class="grid gap-2">
+        <div class="grid gap-2 max-lg:gap-1.5">
           <component
             :is="project.to ? RouterLink : 'a'"
             v-for="project in PROJECTS"
             :key="project.name"
             v-bind="projectLinkProps(project)"
-            class="border-base-300 hover:bg-base-200 focus-visible:outline-primary group flex min-h-16 items-center gap-3 rounded-box border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            class="border-base-300 hover:bg-base-200 focus-visible:outline-primary group flex min-h-16 items-center gap-3 rounded-box border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 max-lg:min-h-12 max-lg:gap-2 max-lg:p-2"
             :class="
               isProjectActive(project) ? 'border-primary/50 bg-primary/10' : ''
             "
             @click="closeMenu"
           >
             <span
-              class="bg-base-200 group-hover:bg-primary group-hover:text-primary-content grid size-10 shrink-0 place-items-center rounded-field transition-colors"
+              class="bg-base-200 group-hover:bg-primary group-hover:text-primary-content grid size-10 shrink-0 place-items-center rounded-field transition-colors max-lg:size-8"
               :class="
                 isProjectActive(project)
                   ? 'bg-primary text-primary-content'
@@ -105,6 +105,8 @@
           </component>
         </div>
       </section>
+
+      <ThemeController inline />
     </div>
   </div>
 </template>
@@ -118,6 +120,7 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { NAV_LINKS, isNavigationLinkActive } from "@/constants/navigation.js";
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
+import ThemeController from "@/components/ui/theme/ThemeController.vue";
 
 const route = useRoute();
 const emit = defineEmits(["open-change"]);

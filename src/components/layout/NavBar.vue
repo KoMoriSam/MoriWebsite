@@ -29,7 +29,9 @@
         @click="activateSearch"
       >
         <i class="ri-search-line text-lg" aria-hidden="true"></i>
-        <span class="hidden xl:inline">{{ translate('common.navBar.search') }}</span>
+        <span class="hidden xl:inline">{{
+          translate("common.navBar.search")
+        }}</span>
         <kbd class="kbd kbd-sm hidden xl:inline-flex">
           {{ searchShortcutLabel }} K
         </kbd>
@@ -42,8 +44,15 @@
       />
     </nav>
     <nav class="navbar-center max-lg:min-w-0 max-lg:shrink">
-      <a @click="router.push('/')" class="lg:hidden btn btn-ghost min-w-0 max-w-full text-xl">
-        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8 min-w-0 object-contain" />
+      <a
+        @click="router.push('/')"
+        class="lg:hidden btn btn-ghost min-w-0 max-w-full text-xl"
+      >
+        <img
+          src="/assets/images/icons/logo.webp"
+          alt="KoMoriSam"
+          class="h-10 min-w-0 object-contain"
+        />
       </a>
       <div class="hidden items-center lg:flex">
         <ul class="menu menu-horizontal px-1">
@@ -53,15 +62,17 @@
       </div>
     </nav>
     <nav class="navbar-end">
-      <AnnouncementCenter />
       <LanguageController />
-      <ThemeController />
+      <AnnouncementCenter />
+      <div class="hidden lg:block">
+        <ThemeController />
+      </div>
     </nav>
   </header>
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import {
