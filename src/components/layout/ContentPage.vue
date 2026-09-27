@@ -3,7 +3,7 @@
     class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
-    <nav v-if="crumbs.length" class="breadcrumbs text-sm" aria-label="面包屑导航">
+    <nav v-if="crumbs.length" class="breadcrumbs text-sm" :class="compactMobileHeader ? 'hidden lg:block' : ''" aria-label="面包屑导航">
       <ul>
         <li v-for="(crumb, index) in crumbs" :key="crumb.name ?? crumb.path">
           <router-link v-if="crumb.to" :to="crumb.to">
@@ -19,12 +19,12 @@
         </li>
       </ul>
     </nav>
-    <header v-if="showHeader" class="mb-6">
+    <header v-if="showHeader" :class="compactMobileHeader ? 'mb-3 lg:mb-6' : 'mb-6'">
       <section
         class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
       >
         <hgroup class="max-w-3xl min-w-0">
-          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1" :class="compactMobileHeader ? 'max-lg:sr-only' : ''">
             <h1
               :id="titleId"
               class="font-serif text-3xl font-bold md:text-4xl text-balance"
@@ -42,7 +42,8 @@
 
           <div
             v-if="$slots.meta"
-            class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
+            class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
+            :class="compactMobileHeader ? 'lg:mt-3' : 'mt-3'"
             :aria-label="metasLabel || undefined"
           >
             <slot name="meta"></slot>
@@ -51,6 +52,7 @@
           <p
             v-if="$slots.description || (showMeta && description)"
             class="mt-3 text-pretty text-base-content/70"
+            :class="compactMobileHeader ? 'hidden lg:block' : ''"
           >
             <slot name="description">{{ description }}</slot>
           </p>
@@ -59,6 +61,7 @@
         <aside
           v-if="$slots.actions"
           class="flex flex-wrap items-center gap-x-5 gap-y-2 md:justify-end"
+          :class="hideMobileActions ? 'hidden lg:flex' : ''"
           :aria-label="translate('common.contentPage.pageActions')"
         >
           <slot name="actions"></slot>
@@ -68,7 +71,7 @@
 
     <slot></slot>
   </main>
-  <FootBar v-if="showFooter" />
+  <FootBar v-if="showFooter" :class="hideMobileFooter ? 'hidden lg:grid' : ''" />
 </template>
 
 <script setup>
@@ -111,6 +114,18 @@ defineProps({
   showFooter: {
     type: Boolean,
     default: true,
+  },
+  compactMobileHeader: {
+    type: Boolean,
+    default: false,
+  },
+  hideMobileFooter: {
+    type: Boolean,
+    default: false,
+  },
+  hideMobileActions: {
+    type: Boolean,
+    default: false,
   },
   metasLabel: {
     type: String,

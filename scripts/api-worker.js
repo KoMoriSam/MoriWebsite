@@ -1,3 +1,6 @@
+import { handleGames } from './games/gateway.js';
+export { GameRoom } from './games/room.js';
+
 const HERO_CACHE_TTL_SECONDS = 60 * 60;
 
 const ANNOUNCEMENTS_KV_KEY = "announcements:v1";
@@ -1762,6 +1765,9 @@ export default {
     const corsOrigin = resolveCorsOrigin(request, env);
     const url = new URL(request.url);
     const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    if (pathname === '/games/rooms' || pathname.startsWith('/games/rooms/')) {
+      return handleGames(request, env);
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, {

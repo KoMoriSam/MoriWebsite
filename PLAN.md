@@ -1,140 +1,47 @@
-# 全站三语言支持
+# 网站通用桌游系统与阿瓦隆首版
 
-## 目标与默认行为
+## 目标
 
-- 支持简体中文 `zh-CN`、英语 `en`、僧伽罗语 `si`，覆盖全部正式页面界面。
-- 保持现有网址；文章、小说、公告、更新日志正文及许可证原文不翻译，开发测试页不纳入翻译范围。
-- 首次访问按 `navigator.languages` 顺序匹配三种语言，区域变体归并到对应语言，未匹配时使用中文；保存的手动选择优先。
+建设可接入多款桌游的通用房间系统，首款游戏为阿瓦隆：**5–10 人、昵称加入、房间码邀请、外部语音讨论、刷新重连**。房间基础设施不限定游戏或人数；不包含账号、公开匹配、聊天或内置语音。支持原版八种角色及房主自选配置。
 
-## 基础接入
+## 页面与房间
 
-- 新增 `src/i18n/`，采用 Vue I18n Composition API，每个 ViteSSG 应用创建独立实例，避免静态渲染共享语言状态。
-- 中文语言包同步载入，英文和僧伽罗语按需载入；按公共界面、页面、阅读器、工具组织相同语义键，使用参数插值，缺失翻译回退中文。
-- 提供语言切换、语言代码归一化和日期／数字格式化入口；非组件代码通过显式传入翻译函数或消息键接入，不引用可变全局实例。
-- 偏好保存到 `GLOBAL_INFO.SET_LOCALE`。静态渲染及首次水合固定中文，挂载后恢复偏好或检测浏览器语言；存储不可用时仍可在当前会话切换。
-- 目标语言包加载成功后再切换和保存；加载失败保留当前语言并提示，允许重试，连续切换以最后一次选择为准。
+- 新增独立游戏入口 `/games`，桌面和移动导航增加“游戏”；阿瓦隆页面为 `/games/avalon`，不放入工具集。邀请链接使用 `?room=房间码`，避免为每个房间生成静态页面。
+- 游戏目录统一登记前端入口、名称、介绍和人数范围；各游戏复用创建／加入、邀请、等待室、准备、房主管理和重连界面。
+- 使用现有 Vue、daisyUI 和页面布局，适配手机；界面文案接入现有三语言系统。
+- 玩家创建房间或输入房间码加入，填写昵称并准备；房主在所有玩家准备且人数满足要求后开始。房主可在大厅确认踢出其他玩家，删除其座位、连接与待用连接票据；被踢出的客户端清除旧凭证并停止自动重连。此能力位于通用房间层。
+- 开局锁定座位，不允许新玩家中途加入。页面显示身份查看入口、玩家座位、队长、任务进度、当前操作与公共记录。
+- 阿瓦隆开局先进入夜晚：身份牌默认盖住，逐人私密翻牌、确认阵营信息后盖牌；全员确认才天亮。夜晚翻牌直接显示能力与已知玩家，无详情按钮；揭开的身份牌按好人／坏人阵营使用不同颜色。随后先进行圆桌讨论，每次换队长或进入下一任务前均回到讨论阶段。确认进度持久化，刷新与重连不会跳过夜晚。
+- 网站的讨论节奏从慢车开始全局交替：慢车按每人 30 秒计算总时长，全员自由发言；快车给队长 15 秒指定另一名玩家，随后进行 60 秒双人对话，邀请不可更换，超时默认邀请下一座位。服务端限制快车快捷发言仅队长与受邀玩家可发送。计时结束自动进入组队，圆桌通过倒计时进度条向所有玩家显示剩余时间；桌面与移动端快车邀约均在玩家列表通过 radio 单选并直接发送玩家 ID，同步展示邀约进度条，圆桌提示可直接前往邀约，移动端发言页同步显示慢车、快车邀约与双人讨论进度。队长可经确认弹窗提前结束慢车、快车邀约或双人讨论并进入组队，服务端校验队长、阶段与计时状态。时间、模式与受邀玩家持久化；通用适配器提供可选 tick/deadline，Durable Object 的单个 alarm 同时调度讨论结束、房主转移与房间过期。此节奏是网站约定，并非原版固定计时规则。
+- 结束后公开身份和胜负原因；房主可以开启下一局，重新准备和随机分配身份。
+- 天亮时身份牌默认揭开，圆桌已知身份同步显示；玩家可手动盖回并在本局保留该选择。任务阶段仅为队员将表决牌区域替换为任务牌，复用拖放与点击提交；好人只能执行，坏人可执行或阻挠。提交仍需确认，换阶段或已提交后取消旧选择。
+- 房主可在结束后快速开始或局内快速重开：保留当前玩家与配置，跳过准备，但要求人数合规且全员在线，重新发牌进入夜晚。复制邀请以外的房间操作使用确认弹窗。天亮后的身份牌旁提供赞成／反对卡片，支持鼠标及触屏拖入投票区，也可点击选牌；确认后提交，阶段变化取消旧操作。
 
-## 界面与文案迁移
+## 游戏与后端
 
-- 导航栏右侧主题按钮前增加 daisyUI 语言下拉菜单，显示 `简体中文`、`English`、`සිංහල`，标识当前选择；支持键盘、关闭后焦点恢复及移动端布局。
-- 迁移导航、首页介绍、列表与筛选、阅读设置、搜索、工具说明、公告界面、更新日志界面、许可界面、404，以及按钮、空状态、错误、Toast、弹窗和无障碍标签。
-- 用响应式计算生成文案数组和格式化结果，避免切换后仍显示初始化时的语言。程序创建的 Toast／Modal 应用接入同一翻译实例；已发出的短暂提示保留原显示语言。
-- Markdown 自动生成的操作标签和默认提示标题翻译，作者写入的标题与正文保留原文；分享卡片只翻译系统标签。Worker 及工具计算逻辑保持现有行为，界面按错误标识翻译提示。
-- 评论语言使用中文或英文；僧伽罗语界面中的 Giscus 使用英文，其现有语言目录没有僧伽罗语。评论映射和讨论标识保持稳定。
-- 复用现有僧伽罗字体，为界面补齐字体回退；长文案允许换行，语言切换不清空工具输入、阅读进度或筛选状态。
+- 在现有 API Worker 中新增通用 `/games/rooms` 接口，使用 `GAME_ROOMS` 绑定和 `GameRoom` SQLite Durable Object；一个房间对应一个对象，通过通用 WebSocket 协议同步状态。[官方说明](https://developers.cloudflare.com/durable-objects/concepts/what-are-durable-objects/)
+- 房间保存 `gameType`、通用生命周期、玩家与独立 `gameState`；注册游戏适配器提供人数限制、开局、规则推进、终止和逐玩家视图。阿瓦隆规则与私密身份留在独立模块，凭证、限流、房主转移和持久化由通用房间服务负责。
+- HTTP 提供创建房间、加入房间和恢复连接凭证；WebSocket 接收准备、开始、组队、表决、任务出牌、刺杀及结束对局等操作。
+- 服务端随机分配梅林、派西维尔、亚瑟的忠臣、刺客、莫甘娜、莫德雷德、奥伯伦和莫德雷德的爪牙。默认启用派西维尔与莫甘娜；房主可在阿瓦隆大厅勾选特殊角色，普通角色按人数与阵营名额补齐。配置公开持久化，修改后全员重新准备，开局校验名额。梅林看不到莫德雷德但能看到奥伯伦，派西维尔不能区分梅林与莫甘娜，奥伯伦与其他坏人互不可见。按人数应用原版阵营比例、任务人数及胜负规则；实现组队、同时表决、秘密任务出牌、三次失败、连续五次否决和刺杀梅林。7 人及以上第四次任务需要两张失败票才失败。[原版规则书](https://cdn.1j1ju.com/medias/a6/dc/c1-the-resistance-avalon-rulebook.pdf)
+- 每名玩家只收到自己的身份和规则允许知道的信息；队长提交队伍时服务端自动记录其赞成票，队长不可重复表决，票数计入多数判断并随房间持久化；队长牌区显示自动赞成，其余玩家继续秘密表决，全部完成后公开个人表决，任务只公布成功／失败票数量，不公布出牌者。新增任务结算时通过 useModal 弹窗提示成功或失败，展示任务序号、执行／阻挠牌数、队员与累计结果；刷新首次加载不重复弹出历史结果，换局与离开关闭旧弹窗。公共记录按任务分组，按发生顺序展示带时间、图标和类型标签的开始组队、提交队伍、完整表决、任务结算、刺杀与终止；任务卡片通过 tooltip-content 展示相同详情与当前进度，旧记录缺少时间时仍按原顺序展示。
+- 天亮后提供 9 类、58 条快捷发言，覆盖指控、申辩、信息、身份、组队、表决、任务、策略与交流；支持指定玩家、声明角色、引用任务，发送前预览。通用房间层持久化并广播最近 60 条记录，刷新与重连可恢复，开新局清空；每人发言间隔至少 1.5 秒。游戏适配器校验短语和参数，发言不推进阶段，不验证身份声明真伪，也不代替出牌。
+- 圆桌名单区分系统已知信息与本地手动推测；未知玩家明确标为未知角色。编辑按钮打开图标与名称组成的 daisyUI 下拉标注菜单，支持动画与点击外部关闭，按本局角色配置与私密已知信息筛选候选。推测按房间、座位和局数存于浏览器，仅对当前玩家可见；本局结束、终止或快速重开后清空。身份牌内容居中，操作置于牌内，天亮后的详细说明使用 daisyUI tooltip-content，支持悬浮、键盘聚焦和触屏点击，宽度与位置限制在视口内；表决牌使用等高对齐布局；好人获胜、坏人获胜或提前终止后，表决区域替换为同尺寸结果卡片，保留身份牌并排展示，用阵营颜色与图标区分结果，展示胜负原因与刺杀目标。
+- 移动端通过底部 daisyUI dock 切换首位议事（阶段提示、讨论倒计时与操作指引，按当前阶段临时展示最近一次公开议程详情，如提议队伍、完整表决、任务结果或刺杀结果；议程推进后替换，完整历史留在记录）、圆桌（身份、任务、表决与结果）、独立玩家名单（组队 checkbox 多选、快车邀约与刺杀目标 radio 单选、本地标注）、圆桌发言与公共记录；提交队伍成功后移动端从玩家页自动返回圆桌；收到其他玩家的新发言时，发言 dock 使用 badge-error 显示未读消息数量，进入发言页后清除并定位最新消息，新局重置。桌面同时展示全部内容，夜晚隐藏 dock，底部预留安全区。游戏开始后移动端内容页隐藏面包屑、标题与描述，保留 meta，actions 在移动端使用 FloatingActionButton 悬浮菜单并避开底部 dock，桌面保留内容页 actions；游戏房间页面的移动端隐藏页脚。议事提示内提供选队、邀约、发言、表决、任务执行与结果的对应入口，支持切换移动端视图并定位；表决、任务与结果的跳转按钮仅在移动端显示；离线或连接被替换时，错误提示内可直接确认重连。
+- 服务端校验身份、阶段、操作权限和选队人数；使用操作编号与阶段版本防止重复提交和旧请求推进游戏。关键状态先持久化，再推送结果。
 
-## 页面信息与验收
+## 重连与默认行为
 
-- 页面界面标题、通用描述和 `html lang` 跟随语言；内容正文标记实际语言，文章结构化数据保留中文。静态产物默认中文，不新增语言路由或 `hreflang`。
-- 定向检查三套语言包键、插值参数和 Vue 文件编译；检查语言归一化、非法偏好、存储异常及加载失败行为，不主动运行全量构建。
-- 用户手动验收三种语言的导航、工具、阅读器、搜索、弹窗、评论和移动端布局；确认刷新记住选择、首次跟随浏览器、水合无语言冲突。
-- 保留现有 `MarkdownSample.md` 未提交修改。不新增其他说明文档，不自动提交。
-- 完成后提供实际改动文件及统一提交消息：`feat: 添加全站中文英文及僧伽罗语支持`。
+- 每个座位使用服务端生成的随机凭证，同一浏览器保存凭证后可恢复；昵称不能作为恢复凭据，同一座位的新连接替换旧连接。
+- 断线保留座位和已提交操作，不自动代投；房主可主动终止卡住的对局，终止不计胜负。
+- 房主主动离开或断线超过 60 秒，将管理权限交给座位顺序中的下一位在线玩家；进行中的座位仍保留。
+- 房间连续 24 小时没有有效操作后过期，凭证随之失效。
+- 限制创建、加入和消息频率，校验连接来源及消息大小；私密身份、凭证和任务出牌不写入公共日志。
 
-## 实施结果
+## 验证与交付
 
-- 已完成三语言基础接入、正式页面界面迁移、共享弹窗与提示、评论语言及页面元信息。
-- 定向检查通过：1073 个消息键及参数、83 个 Vue 文件编译、运行时语言与存储检查、图片转换检查、Markdown XSS 检查。
-- 未运行全量构建或浏览器交互验收；由用户手动验收。
-- MarkdownSample.md 原有未提交修改保持不变，不包含在以下改动清单。
-
-### 实际改动文件
-
-- PLAN.md
-- package.json
-- pnpm-lock.yaml
-- scripts/check-i18n-runtime.mjs
-- scripts/check-i18n.mjs
-- src/App.vue
-- src/assets/main.css
-- src/components/announcement/Badges.vue
-- src/components/announcement/Modal.vue
-- src/components/announcement/NoticeCenter.vue
-- src/components/announcement/Title.vue
-- src/components/base/Pagination.vue
-- src/components/base/ToTop.vue
-- src/components/layout/ContentPage.vue
-- src/components/layout/FootBar.vue
-- src/components/layout/MobileNav.vue
-- src/components/layout/NavBar.vue
-- src/components/layout/NavLinks.vue
-- src/components/layout/ProjectMenu.vue
-- src/components/layout/Search.vue
-- src/components/layout/SideBar.vue
-- src/components/markdown/Alert.vue
-- src/components/markdown/Chat.vue
-- src/components/markdown/CodeBlock.vue
-- src/components/markdown/Markdown.vue
-- src/components/markdown/Mermaid.vue
-- src/components/markdown/Moment.vue
-- src/components/novel/ChapterController.vue
-- src/components/novel/ChapterHeader.vue
-- src/components/novel/ChapterList.vue
-- src/components/novel/ChapterStatusBadges.vue
-- src/components/novel/ChapterToc.vue
-- src/components/novel/mobile/PagedReader.vue
-- src/components/novel/mobile/PageFootnotes.vue
-- src/components/novel/mobile/ReaderControls.vue
-- src/components/novel/mobile/ReaderDialogHeader.vue
-- src/components/novel/mobile/ReaderMoreSettings.vue
-- src/components/novel/mobile/ReaderStatusBar.vue
-- src/components/novel/mobile/ScrollReader.vue
-- src/components/novel/mobile/TapZoneEditor.vue
-- src/components/novel/NovelContentSearch.vue
-- src/components/reader/CommentTrigger.vue
-- src/components/reader/ContextMenu.vue
-- src/components/reader/FormatSetting.vue
-- src/components/reader/ParaGiscus.vue
-- src/components/reader/Reader.vue
-- src/components/reader/ReaderBody.vue
-- src/components/reader/ReaderToc.vue
-- src/components/reader/ShareCard.vue
-- src/components/reader/StyleMenu.vue
-- src/components/reader/TocFrame.vue
-- src/components/ServerInfo.vue
-- src/components/tools/sinhala/Info.vue
-- src/components/tools/sinhala/Notes.vue
-- src/components/ui/button/FloatingActionButton.vue
-- src/components/ui/FontSelect.vue
-- src/components/ui/ImagePreview.vue
-- src/components/ui/LanguageController.vue
-- src/components/ui/menu/Menu.vue
-- src/components/ui/menu/Submenu.vue
-- src/components/ui/Modal.vue
-- src/components/ui/theme/ThemeController.vue
-- src/components/ui/Toast.vue
-- src/composables/useModal.js
-- src/composables/useToast.js
-- src/i18n/index.js
-- src/i18n/locale.js
-- src/i18n/messages/en.json
-- src/i18n/messages/si.json
-- src/i18n/messages/zh-CN.json
-- src/main.js
-- src/services/search-content.js
-- src/utils/announcements.js
-- src/utils/image-converter-messages.js
-- src/utils/markdown/markdown-component-props.js
-- src/utils/markdown/markdown-it-alert.js
-- src/utils/reader/create-reader-share-card.js
-- src/utils/reader/create-reader-share-content.js
-- src/utils/reader/create-reader-text-context.js
-- src/utils/storage/use-global-storage.js
-- src/utils/storage/use-reader-settings-storage.js
-- src/utils/storage/use-reading-state-storage.js
-- src/views/Announcements.vue
-- src/views/Blog.vue
-- src/views/blog/ArticleList.vue
-- src/views/blog/ArticleReader.vue
-- src/views/Changelog.vue
-- src/views/Home.vue
-- src/views/Licenses.vue
-- src/views/NotFound.vue
-- src/views/novel/NovelDetail.vue
-- src/views/novel/NovelReader.vue
-- src/views/projects/Kaiming.vue
-- src/views/Tools.vue
-- src/views/tools/ImageConverter.vue
-- src/views/tools/ServerStatus.vue
-- src/views/tools/SinhalaFontConverter.vue
-- src/workers/image-converter.worker.js
+- 用针对性规则测试覆盖各人数配置、平票否决、五次否决、第四次任务特殊规则及刺杀结果；使用不同人数限制的第二种测试适配器验证通用房间不依赖阿瓦隆。
+- 验证信息隔离、越权操作、重复提交、刷新重连和持久化恢复。
+- 角色选择与最终预览共用紧凑卡片，描述右侧提供恢复默认设定；发言区在 lg 及以上采用左侧消息、右侧快捷短语的两列布局，短语分类 tabs 保持单行，溢出时横向滚动并让键盘选中的分类保持可见。
+- 用户手动验证多人联机及手机操作；不默认运行全量构建或额外浏览器测试。
+- 本地后端使用 `pnpm dev:games-api`；定向检查使用 `pnpm check:games` 和 `pnpm check:avalon`。
+- 保留当前 Markdown 示例的未提交修改，不自动提交或部署。交付修改文件清单及一条中文提交消息：`feat: 添加通用桌游房间系统与阿瓦隆联机游戏`。

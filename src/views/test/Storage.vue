@@ -34,12 +34,14 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { useModal } from "@/composables/useModal";
 import { useGlobalStorage } from "@/utils/storage/use-global-storage";
 import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
 import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
 import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
 
 import TestPage from "./_TestPage.vue";
+const modal = useModal();
 
 const { GLOBAL_INFO } = useGlobalStorage();
 const { READER_SETTINGS } = useReaderSettingsStorage();
@@ -91,15 +93,18 @@ function refreshStorage() {
 }
 
 function clearStorage() {
-  if (!window.confirm("确定清空测试页展示的三组持久化数据？")) return;
-
-  ["GLOBAL_INFO", "READER_SETTINGS", "READING_STATE"].forEach((key) =>
-    localStorage.removeItem(key),
-  );
-  GLOBAL_INFO.value = {};
-  READER_SETTINGS.value = {};
-  READING_STATE.value = {};
-  refreshStorage();
+  modal.confirm("清空三组持久化数据", "确定清空测试页展示的三组持久化数据？", {
+    buttonText: "清空",
+    onSubmit: () => {
+      ["GLOBAL_INFO", "READER_SETTINGS", "READING_STATE"].forEach((key) =>
+        localStorage.removeItem(key),
+      );
+      GLOBAL_INFO.value = {};
+      READER_SETTINGS.value = {};
+      READING_STATE.value = {};
+      refreshStorage();
+    },
+  });
 }
 
 function seedCommentCount() {

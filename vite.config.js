@@ -13,6 +13,11 @@ export default defineConfig({
   base: "/",
   server: {
     proxy: {
+      "/api/games/rooms": {
+        target: "http://127.0.0.1:8787",
+        ws: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
       "/api/announcements": {
         target: "https://api.komori.cc",
         changeOrigin: true,

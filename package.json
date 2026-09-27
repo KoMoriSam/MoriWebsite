@@ -10,6 +10,7 @@
   "scripts": {
     "predev": "node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "dev": "vite --host 0.0.0.0",
+    "dev:games-api": "wrangler dev --config wrangler.games-dev.jsonc --port 8787",
     "prebuild": "node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "build": "vite-ssg build && node scripts/generate-pagefind-index.mjs",
     "postbuild": "node scripts/generate-third-party-licenses.mjs --dist",
@@ -26,6 +27,8 @@
     "check:changelog": "node scripts/changelog-cli.mjs check",
     "check:image-converter": "node scripts/check-image-converter.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "check:avalon": "node scripts/check-avalon.mjs",
+    "check:games": "node scripts/check-games.mjs",
     "check:markdown-xss": "node scripts/check-markdown-xss.mjs",
     "check:rss": "node scripts/check-rss.mjs"
   },

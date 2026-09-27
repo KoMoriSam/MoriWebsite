@@ -2,9 +2,10 @@
   <client-only
     ><div
       v-if="!actions.length && mainOnClick"
-      class="fab max-lg:hidden"
+      class="fab"
       :class="[
         fabClass,
+        !mobileFloating && 'max-lg:hidden',
         mainVisible ? 'opacity-100' : 'opacity-0 pointer-events-none',
       ]"
     >
@@ -21,7 +22,7 @@
       </div>
     </div>
 
-    <div v-else :class="['fab max-lg:hidden', fabClass]">
+    <div v-else :class="['fab', !mobileFloating && 'max-lg:hidden', fabClass]">
       <div
         tabindex="0"
         role="button"
@@ -44,23 +45,27 @@
         <div class="tooltip tooltip-left" :data-tip="action.label">
           <label
             v-if="action.for"
-            :for="action.for"
+            :for="action.disabled ? undefined : action.for"
+            :aria-disabled="action.disabled || undefined"
             :class="[
               'btn btn-lg btn-circle',
               action.buttonClass ?? 'btn-primary',
             ]"
-            @click="action.onClick?.()"
+            @click="!action.disabled && action.onClick?.()"
           >
             <i :class="[action.icon, 'text-xl']"></i>
           </label>
 
           <button
             v-else
+            type="button"
+            :disabled="action.disabled"
+            :aria-label="action.label"
             :class="[
               'btn btn-lg btn-circle',
               action.buttonClass ?? 'btn-primary',
             ]"
-            @click="action.onClick?.()"
+            @click="!action.disabled && action.onClick?.()"
           >
             <i :class="[action.icon, 'text-xl']"></i>
           </button>
@@ -69,7 +74,7 @@
     </div>
 
     <label
-      v-if="!actions.length && mainOnClick"
+      v-if="!mobileFloating && !actions.length && mainOnClick"
       class="lg:hidden tooltip tooltip-left fixed right-6 bottom-18 z-1 transition-opacity duration-500"
       :class="mainVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'"
       :aria-label="localizeText(mainLabel)"
@@ -91,27 +96,30 @@
       </div>
     </label>
 
-    <template
-      v-for="(action, index) in actions"
-      :key="`mobile-${action.key ?? `${action.label}-${index}`}`"
-    >
-      <label
-        :for="action.for || undefined"
-        class="lg:hidden"
-        :aria-label="action.label"
-        @click="action.onClick?.()"
+    <template v-if="!mobileFloating">
+      <template
+        v-for="(action, index) in actions"
+        :key="`mobile-${action.key ?? `${action.label}-${index}`}`"
       >
-        <div class="lg:tooltip lg:tooltip-left" :data-tip="action.label">
-          <div
-            tabindex="0"
-            role="button"
-            class="lg:btn lg:btn-soft lg:btn-circle lg:btn-lg lg:shadow-sm"
-          >
-            <i :class="['m-4', action.icon]"></i>
+        <label
+          :for="action.disabled ? undefined : action.for || undefined"
+          class="lg:hidden"
+          :aria-label="action.label"
+          :aria-disabled="action.disabled || undefined"
+          @click="!action.disabled && action.onClick?.()"
+        >
+          <div class="lg:tooltip lg:tooltip-left" :data-tip="action.label">
+            <div
+              :tabindex="action.disabled ? -1 : 0"
+              role="button"
+              class="lg:btn lg:btn-soft lg:btn-circle lg:btn-lg lg:shadow-sm"
+            >
+              <i :class="['m-4', action.icon]"></i>
+            </div>
           </div>
-        </div>
-        <span class="dock-label lg:hidden">{{ action.label }}</span>
-      </label>
+          <span class="dock-label lg:hidden">{{ action.label }}</span>
+        </label>
+      </template>
     </template>
   </client-only>
 </template>
@@ -120,6 +128,10 @@
 import { useLocale } from '@/i18n';
 const { text: localizeText } = useLocale();
 defineProps({
+  mobileFloating: {
+    type: Boolean,
+    default: false,
+  },
   actions: {
     type: Array,
     default: () => [],

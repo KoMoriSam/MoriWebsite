@@ -36,6 +36,7 @@ import { useDiscardStorage } from "@/utils/storage/discard-storage";
 import { useLocale } from "@/i18n";
 import { useGlobalStorage } from "@/utils/storage/use-global-storage";
 import { useToast } from "@/composables/useToast";
+import { findRouteGame } from '@/games/catalog';
 
 const { t: translate, locale, text: localizeText, restoreLocale } = useLocale();
 const { GLOBAL_INFO } = useGlobalStorage();
@@ -64,6 +65,7 @@ const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
 const KEYWORDS = "远方之森,个人博客,技术博客,独立开发,原创小说,向远方";
 
 const PAGE_DESCRIPTIONS = {
+  get games() { return translate('games.description'); },
   get licenses() { return translate('pages.app.licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons'); },
   get blog() { return translate('pages.app.readKomoriSTechnologyExplorationsEssaysAndReadingNotes'); },
   get "blog-article"() { return translate('pages.app.readKomoriSBlogArticles'); },
@@ -104,6 +106,9 @@ const isIndexable = computed(
 );
 
 const pageTitle = computed(() => {
+  const game = findRouteGame(routeName.value);
+  if (game) return `${translate(game.titleKey)} | ${SITE_NAME}`;
+  if (routeName.value === 'games') return `${translate('games.title')} | ${SITE_NAME}`;
   if (routeName.value === "home") return localizeText(DEFAULT_TITLE);
   if (routeName.value === "novel-reader") return novelTitle.value;
   if (route.meta.blogList) {
@@ -121,6 +126,7 @@ const pageDescription = computed(() => {
 
   const description =
     article.value?.summary ||
+    (findRouteGame(routeName.value) ? translate(findRouteGame(routeName.value).descriptionKey) : '') ||
     PAGE_DESCRIPTIONS[routeName.value] ||
     localizeText(DEFAULT_DESCRIPTION);
 

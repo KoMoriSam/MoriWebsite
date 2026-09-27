@@ -6,6 +6,10 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"durable_objects": {
+		"bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]
+	},
+	"migrations": [{ "tag": "games-v1", "new_sqlite_classes": ["GameRoom"] }],
 	"kv_namespaces": [
 		{
 			"binding": "RATE_LIMIT_KV",

@@ -19,6 +19,11 @@ export const NAV_LINKS = [
     icon: "ri-pencil-ruler-2",
     to: { name: "tools" },
   },
+  {
+    name: "游戏",
+    icon: "ri-gamepad",
+    to: { name: "games" },
+  },
   ...(import.meta.env.DEV
     ? [
         {

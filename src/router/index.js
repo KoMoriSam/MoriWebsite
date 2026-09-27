@@ -9,6 +9,7 @@ import {
   createWebHistory,
   createMemoryHistory,
 } from "vue-router";
+import { gameRoutes } from '@/games/catalog';
 
 const testRoutes = import.meta.env.DEV
   ? (await import("./test-routes")).testRoutes
@@ -123,6 +124,13 @@ export const routes = [
     component: () => import("@/views/Tools.vue"),
     meta: { title: "工具集 | 远方之森", navName: "tools" },
   },
+  {
+    path: "/games",
+    name: "games",
+    component: () => import("@/views/Games.vue"),
+    meta: { title: "游戏 | 远方之森", navName: "games" },
+  },
+  ...gameRoutes,
   {
     path: "/tools/server-status",
     name: "server-status",
