@@ -691,7 +691,8 @@
       "noMoreFiltersAvailable": "没有更多可选条件"
     },
     "sideBar": {
-      "closeSidebar": "关闭侧边栏"
+      "closeSidebar": "关闭侧边栏",
+      "openSidebar": "打开侧边栏"
     },
     "fontSelect": {
       "searchFonts": "搜索字体",
@@ -1260,6 +1261,24 @@
     "people": "人",
     "twoFails": "需要两张失败票",
     "rejected": "连续否决 {n}/5",
+    "agendaStatus": {
+      "lastReject": "再否决一次，坏人获胜",
+      "slow": "全员自由发言",
+      "inviteSelf": "请邀约对话玩家",
+      "inviteWait": "等待队长邀约",
+      "dialogueSelf": "你可以参与对话",
+      "dialogueWait": "快车对话中",
+      "teamSelf": "已选 {n}/{total} 人",
+      "teamReady": "队伍已选齐，请提交",
+      "teamWait": "队长正在组队",
+      "voteSelf": "请提交表决牌",
+      "voteWait": "等待其他玩家表决",
+      "questSelf": "请提交任务牌",
+      "questWait": "等待任务队员出牌",
+      "assassinateSelf": "请选择刺杀目标",
+      "assassinateConfirm": "请确认刺杀目标",
+      "assassinateWait": "等待刺客决定"
+    },
     "teamHint": "队长 {name} 需要选择 {n} 名玩家执行任务。",
     "teamHintSelf": "请你选择 {n} 名玩家执行本次任务。",
     "selected": "已选择 {n}/{total} 人",
@@ -1416,8 +1435,8 @@
         "well_played": "这局玩得不错，感谢大家！"
       }
     },
-    "approved": "队伍通过",
-    "rejectedLabel": "队伍否决",
+    "approved": "通过",
+    "rejectedLabel": "否决",
     "failCount": "失败票：{n}",
     "records": {
       "required": "队伍 {n} 人",
@@ -1479,6 +1498,8 @@
     },
     "config": {
       "title": "本局角色配置",
+      "viewRole": "查看{name}的详情",
+      "toggleRole": "启用或停用{name}",
       "hint": "梅林与刺客固定各一名。特殊角色替换同阵营普通角色，剩余位置自动补齐。",
       "classic": "梅林与派西维尔 · 莫甘娜与刺客",
       "restore": "恢复默认设定",
@@ -1486,6 +1507,22 @@
       "disabled": "未启用",
       "preview": "{n} 人配置预览 · 好人 {good} 人 / 坏人 {evil} 人",
       "resetReady": "只有房主可以修改；配置变化后，全员需要重新准备。人数不足 5 人时按 5 人预览。"
+    },
+    "rulebook": {
+      "title": "规则书",
+      "intro": "以下是本站实际采用的阿瓦隆规则。角色能力以本局配置为准。",
+      "night": "开局随机分配身份。夜晚独自查看身份和可获知的玩家；全员确认后天亮。",
+      "discussion": "每轮先议事。慢车按每人 30 秒计时，全员可发言；快车由队长在 15 秒内邀约一人，再进行 60 秒双人对话。计时结束或队长提前结束后进入组队。",
+      "team": "队长按下表人数选择任务队伍。队长提交队伍时自动投赞成票。",
+      "vote": "其余玩家秘密投赞成或反对；超过半数赞成才执行任务，平票视为否决。连续五次否决使坏人获胜。",
+      "quest": "只有任务队员秘密出牌。好人只能执行，坏人可执行或阻挠；通常一张阻挠牌就使任务失败。",
+      "victory": "三次任务失败，坏人获胜。三次任务成功后，刺客猜测梅林；刺中则坏人获胜，否则好人获胜。",
+      "teamSizes": "各人数的阵营与任务人数",
+      "players": "玩家",
+      "good": "好人",
+      "evil": "坏人",
+      "questNumber": "任务{n}",
+      "twoFails": "7 人及以上的第 4 次任务需要至少两张阻挠牌才会失败。"
     },
     "winners": {
       "good": "好人获胜",
@@ -1554,7 +1591,10 @@
     "questResult": {
       "success": "第 {n} 次任务成功",
       "failure": "第 {n} 次任务失败",
-      "score": "当前任务结果：成功 {success} 次 · 失败 {failure} 次"
+      "goodRemaining": "好人再完成 1 个任务，且梅林不被刺杀，即可获胜。 | 好人还需完成 {n} 个任务，且梅林不被刺杀，才能获胜。",
+      "evilRemaining": "坏人再破坏 1 个任务，就能赢得本局。 | 坏人还需破坏 {n} 个任务，才能赢得本局。",
+      "assassination": "好人已完成三个任务，进入刺杀阶段；刺客仍有机会帮坏人逆转。",
+      "evilVictory": "坏人已破坏三个任务，赢得本局。"
     }
   },
   "games": {
@@ -1576,6 +1616,7 @@
       "HOST_ONLY": "只有房主可以操作。",
       "KICKED": "房主已将你移出房间。",
       "KICK_TARGET": "只能移除大厅中的其他玩家。",
+      "SEAT": "这个座位不可用，请选择空位。",
       "ALREADY_SUBMITTED": "你已经提交，不能修改。",
       "NOT_READY": "人数不符合游戏要求，或有玩家尚未在线并准备。",
       "QUICK_NOT_READY": "快速开局需要人数符合游戏要求，并且所有玩家在线。",
@@ -1617,6 +1658,8 @@
     "you": "（你）",
     "host": "房主",
     "disconnected": "已断线",
+    "emptySeat": "空位",
+    "moveSeat": "移至 {n} 号座位",
     "departed": "已离开的玩家",
     "connections": {
       "offline": "未连接",
@@ -1640,12 +1683,15 @@
       "offline": "等待 {n} 名玩家重新连接",
       "unready": "还有 {n} 名玩家未准备",
       "connection": "全员准备就绪，等待恢复连接",
-      "readyHost": "全员准备就绪，可以开始游戏",
-      "readyGuest": "全员准备就绪，等待房主开始",
+      "starting": "全员准备就绪，即将自动开始",
+      "startingIn": "距离开局还有",
+      "seconds": "{n} 秒后开始",
+      "secondsUnit": "秒",
+      "countdownHint": "有人取消准备、离线或新玩家加入时，倒计时会取消。",
       "morePlayers": "也可以继续邀请朋友加入，当前还有 {n} 个空位。",
       "full": "房间人数已满。"
     },
-    "lobbyHint": "需要 {min}–{max} 名玩家全部在线并准备，随后由房主开始游戏。",
+    "lobbyHint": "需要 {min}–{max} 名玩家全部在线并准备，5 秒后自动开始。",
     "prepare": "准备",
     "confirmEnd": "确认终止本局？不计胜负。"
   }

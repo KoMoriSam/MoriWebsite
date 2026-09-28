@@ -1,13 +1,9 @@
 import { ensure, GameError, randomInt } from '../games/utils.js';
-import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, isEvil, roleRoster } from '../../shared/games/avalon.js';
+import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, isEvil, roleRoster } from '../../shared/games/avalon.js';
 import { findPhrase } from '../../shared/games/avalon-phrases.js';
 import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS } from '../../shared/games/avalon-discussion.js';
 export { GOOD_COUNTS, SPECIAL_ROLES, isEvil } from '../../shared/games/avalon.js';
-export const QUEST_TEAMS = {
-  5: [2, 3, 2, 3, 3], 6: [2, 3, 4, 3, 4],
-  7: [2, 3, 3, 4, 4], 8: [3, 4, 4, 5, 5],
-  9: [3, 4, 4, 5, 5], 10: [3, 4, 4, 5, 5],
-};
+export { QUEST_TEAMS } from '../../shared/games/avalon.js';
 export function normalizeConfig(config = { specialRoles: DEFAULT_SPECIAL_ROLES }) {
   ensure(config && typeof config === 'object' && !Array.isArray(config) && Object.keys(config).every(key => key === 'specialRoles'), 'ROLE_CONFIG');
   ensure(Array.isArray(config.specialRoles) && config.specialRoles.every(role => SPECIAL_ROLES.includes(role)) && new Set(config.specialRoles).size === config.specialRoles.length, 'ROLE_CONFIG');
@@ -166,7 +162,7 @@ function view(state, _players, playerId) {
   };
 }
 export const avalon = {
-  id: 'avalon', minPlayers: 5, maxPlayers: 10, normalizeConfig, create, apply, view, tick,
+  id: 'avalon', minPlayers: 5, maxPlayers: 10, normalizeConfig, validateConfig: roleList, create, apply, view, tick,
   deadline: state => state.phase === 'discussion' ? state.discussion?.endsAt ?? null : null,
   phrase(action, state, players, config, playerId, now = Date.now()) {
     ensure(state.phase !== 'night', 'CHAT_PHASE');

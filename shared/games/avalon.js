@@ -1,4 +1,9 @@
 export const GOOD_COUNTS = { 5: 3, 6: 4, 7: 4, 8: 5, 9: 6, 10: 6 };
+export const QUEST_TEAMS = {
+  5: [2, 3, 2, 3, 3], 6: [2, 3, 4, 3, 4],
+  7: [2, 3, 3, 4, 4], 8: [3, 4, 4, 5, 5],
+  9: [3, 4, 4, 5, 5], 10: [3, 4, 4, 5, 5],
+};
 export const SPECIAL_ROLES = ['percival', 'morgana', 'mordred', 'oberon'];
 export const DEFAULT_SPECIAL_ROLES = ['percival', 'morgana'];
 export const isEvil = role => ['assassin', 'minion', 'morgana', 'mordred', 'oberon'].includes(role);

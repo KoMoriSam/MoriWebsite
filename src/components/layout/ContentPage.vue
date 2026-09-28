@@ -1,9 +1,10 @@
 <template>
   <main
     class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
+    :class="fillHeight ? 'flex h-full min-h-0 flex-col overflow-hidden max-lg:pb-0 max-sm:px-4' : ''"
     :aria-labelledby="showHeader ? titleId : undefined"
   >
-    <nav v-if="crumbs.length" class="breadcrumbs text-sm" :class="compactMobileHeader ? 'hidden lg:block' : ''" aria-label="面包屑导航">
+    <nav v-if="crumbs.length && !compactHeader" class="breadcrumbs text-sm" aria-label="面包屑导航">
       <ul>
         <li v-for="(crumb, index) in crumbs" :key="crumb.name ?? crumb.path">
           <router-link v-if="crumb.to" :to="crumb.to">
@@ -19,12 +20,12 @@
         </li>
       </ul>
     </nav>
-    <header v-if="showHeader" :class="compactMobileHeader ? 'mb-3 lg:mb-6' : 'mb-6'">
+    <header v-if="showHeader" :class="[compactHeader ? 'mb-3' : 'mb-6', fillHeight ? 'shrink-0' : '']">
       <section
-        class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 md:flex-nowrap md:items-end md:gap-4"
       >
-        <hgroup class="max-w-3xl min-w-0">
-          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1" :class="compactMobileHeader ? 'max-lg:sr-only' : ''">
+        <hgroup class="contents md:block md:max-w-3xl md:min-w-0">
+          <div class="order-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:order-none" :class="compactHeader ? 'sr-only' : 'w-full md:w-auto'">
             <h1
               :id="titleId"
               class="font-serif text-3xl font-bold md:text-4xl text-balance"
@@ -42,8 +43,8 @@
 
           <div
             v-if="$slots.meta"
-            class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
-            :class="compactMobileHeader ? 'lg:mt-3' : 'mt-3'"
+            class="order-2 flex max-w-full shrink-0 flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60 md:order-none md:shrink"
+            :class="compactHeader ? '' : 'md:mt-3'"
             :aria-label="metasLabel || undefined"
           >
             <slot name="meta"></slot>
@@ -51,8 +52,8 @@
 
           <p
             v-if="$slots.description || (showMeta && description)"
-            class="mt-3 text-pretty text-base-content/70"
-            :class="compactMobileHeader ? 'hidden lg:block' : ''"
+            class="order-4 w-full text-pretty text-base-content/70 md:order-none md:mt-3 md:w-auto"
+            :class="compactHeader ? 'hidden' : ''"
           >
             <slot name="description">{{ description }}</slot>
           </p>
@@ -60,7 +61,7 @@
 
         <aside
           v-if="$slots.actions"
-          class="flex flex-wrap items-center gap-x-5 gap-y-2 md:justify-end"
+          class="order-3 flex max-w-full shrink-0 flex-wrap items-center gap-x-5 gap-y-2 md:order-none md:shrink md:justify-end"
           :class="hideMobileActions ? 'hidden lg:flex' : ''"
           :aria-label="translate('common.contentPage.pageActions')"
         >
@@ -87,6 +88,10 @@ const route = useRoute();
 const router = useRouter();
 
 defineProps({
+  fillHeight: {
+    type: Boolean,
+    default: false,
+  },
   eyebrow: {
     type: String,
     default: "",
@@ -115,7 +120,7 @@ defineProps({
     type: Boolean,
     default: true,
   },
-  compactMobileHeader: {
+  compactHeader: {
     type: Boolean,
     default: false,
   },

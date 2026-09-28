@@ -34,6 +34,7 @@
           :enabled="specialRoles.includes(role)"
           :disabled="!canAct"
           @change="toggle(role, $event)"
+          @details="showRoleDetails"
         />
       </div>
       <p class="text-sm text-base-content/70" aria-live="polite">
@@ -51,6 +52,7 @@
           :key="role"
           :role="role"
           :count="n"
+          @details="showRoleDetails"
         />
       </div>
       <p v-if="!roster.valid" role="alert" class="mt-2 text-sm text-error">
@@ -61,22 +63,30 @@
       </p>
     </div>
   </section>
+  <AvalonRulebook class="mt-4" />
 </template>
 <script setup>
-import { computed } from "vue";
+import { computed, h, onBeforeUnmount } from "vue";
 import { useLocale } from "@/i18n";
+import { useModal } from "@/composables/useModal";
+import { ROLE_ICONS } from "@/games/avalon-presentation";
 import {
   SPECIAL_ROLES,
   DEFAULT_SPECIAL_ROLES,
+  isEvil,
   roleRoster,
 } from "../../../../shared/games/avalon.js";
 import AvalonRoleOption from "./AvalonRoleOption.vue";
+import AvalonRulebook from "./AvalonRulebook.vue";
 const props = defineProps({
   room: { type: Object, required: true },
   canAct: Boolean,
   run: { type: Function, required: true },
 });
 const { t } = useLocale();
+const modal = useModal();
+let roleModal;
+onBeforeUnmount(() => roleModal?.close());
 const isHost = computed(() => props.room.hostId === props.room.selfId);
 const specialRoles = computed(
   () => props.room.gameConfig?.specialRoles ?? DEFAULT_SPECIAL_ROLES,
@@ -93,6 +103,27 @@ const roleCounts = computed(() =>
     }, {}),
   ),
 );
+function showRoleDetails(role) {
+  roleModal?.close();
+  roleModal = modal.info(
+    t(`avalon.roles.${role}`),
+    h("div", { class: "space-y-3" }, [
+      h(
+        "p",
+        { class: "flex items-center gap-2 text-sm text-base-content/70" },
+        [
+          h("i", {
+            class: `${ROLE_ICONS[role]} text-xl`,
+            "aria-hidden": "true",
+          }),
+          t(isEvil(role) ? "avalon.night.evil" : "avalon.night.good"),
+        ],
+      ),
+      h("p", { class: "text-sm leading-7" }, t(`avalon.roleHints.${role}`)),
+    ]),
+    { buttonMode: "close" },
+  );
+}
 function configure(roles) {
   if (!isHost.value || !props.canAct) return;
   if (

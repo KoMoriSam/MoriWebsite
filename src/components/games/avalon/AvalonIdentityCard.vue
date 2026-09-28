@@ -147,13 +147,29 @@
         >
           <p>{{ t(`avalon.roleHints.${self.role}`) }}</p>
           <p v-if="companions.length">
-            {{ t(self.role === 'merlin' ? 'avalon.night.merlinVision' : 'avalon.night.evilVision', { names: companions.map(playerName).join(', ') }) }}
+            {{
+              t(
+                self.role === "merlin"
+                  ? "avalon.night.merlinVision"
+                  : "avalon.night.evilVision",
+                { names: companions.map(playerName).join(", ") },
+              )
+            }}
           </p>
           <p v-if="self.knownCandidates?.length">
-            {{ t('avalon.night.percivalVision', { names: self.knownCandidates.map(playerName).join(', ') }) }}
+            {{
+              t("avalon.night.percivalVision", {
+                names: self.knownCandidates.map(playerName).join(", "),
+              })
+            }}
           </p>
         </div>
-        <button type="button" class="btn btn-ghost btn-xs" :aria-describedby="detailsOpen ? detailsId : undefined" @click="openDetails">
+        <button
+          type="button"
+          class="btn btn-ghost btn-xs"
+          :aria-describedby="detailsOpen ? detailsId : undefined"
+          @click="openDetails"
+        >
           <i class="ri-information-line" aria-hidden="true"></i>
           {{ t("avalon.roleDetails") }}
         </button>
@@ -163,7 +179,15 @@
   </div>
 </template>
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useId,
+  watch,
+} from "vue";
 import { useLocale } from "@/i18n";
 import { ROLE_ICONS } from "@/games/avalon-presentation";
 import { isEvil } from "../../../../shared/games/avalon.js";
@@ -185,9 +209,13 @@ const detailsOpen = ref(false);
 function alignDetails() {
   const wrapper = detailsTooltip.value;
   if (!wrapper || !detailsOpen.value) return;
-  const content = wrapper.querySelector('.tooltip-content');
+  const content = wrapper.querySelector(".tooltip-content");
   const viewportWidth = document.documentElement.clientWidth;
-  content.style.setProperty('max-width', `${Math.max(0, viewportWidth - 32)}px`, 'important');
+  content.style.setProperty(
+    "max-width",
+    `${Math.max(0, viewportWidth - 32)}px`,
+    "important",
+  );
   const bounds = wrapper.getBoundingClientRect();
   const width = content.offsetWidth;
   const centered = bounds.left + bounds.width / 2 - width / 2;
@@ -199,23 +227,27 @@ function openDetails() {
   void nextTick(alignDetails);
 }
 function leaveDetails() {
-  if (!detailsTooltip.value?.contains(document.activeElement)) detailsOpen.value = false;
+  if (!detailsTooltip.value?.contains(document.activeElement))
+    detailsOpen.value = false;
 }
 function closeDetails() {
   detailsOpen.value = false;
-  detailsTooltip.value?.querySelector('button')?.blur();
+  detailsTooltip.value?.querySelector("button")?.blur();
 }
 function dismissDetails(event) {
-  if (detailsOpen.value && !detailsTooltip.value?.contains(event.target)) closeDetails();
+  if (detailsOpen.value && !detailsTooltip.value?.contains(event.target))
+    closeDetails();
 }
-watch([() => props.faceUp, () => props.self.role], () => { detailsOpen.value = false; });
+watch([() => props.faceUp, () => props.self.role], () => {
+  detailsOpen.value = false;
+});
 onMounted(() => {
-  window.addEventListener('resize', alignDetails);
-  document.addEventListener('pointerdown', dismissDetails);
+  window.addEventListener("resize", alignDetails);
+  document.addEventListener("pointerdown", dismissDetails);
 });
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', alignDetails);
-  document.removeEventListener('pointerdown', dismissDetails);
+  window.removeEventListener("resize", alignDetails);
+  document.removeEventListener("pointerdown", dismissDetails);
 });
 const companions = computed(() =>
   (props.self.knownEvil ?? []).filter((id) => id !== props.selfId),

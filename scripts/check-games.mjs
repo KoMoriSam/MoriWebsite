@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { advanceRoomTime, applyRoomAction, createPlayer, createRoom, ensure, roomView, ROOM_TTL } from './games/state.js';
+import { advanceRoomTime, applyRoomAction, createPlayer, createRoom, ensure, LOBBY_START_DELAY, roomView, ROOM_TTL } from './games/state.js';
 import { QUEST_TEAMS } from './avalon/rules.js';
 let checks = 0;
 const check = (actual, expected) => { assert.deepEqual(actual, expected); checks++; };
@@ -18,6 +18,35 @@ const participants = Array.from({ length: 2 }, (_, i) => ({ ...createPlayer('C' 
 let sharedRoom = createRoom('ABCDEFGH', 'counter', participants[0], Date.now(), resolveCounter); sharedRoom.players = participants;
 const cmd = (room, type) => ({ type, stage: room.stage, id: crypto.randomUUID() });
 const apply = (room, type) => applyRoomAction(room, room.hostId, cmd(room, type), Date.now(), undefined, resolveCounter).room;
+let countdownRoom = createRoom('HGFEDCBA', 'counter', { ...participants[0], ready: false }, 1_000, resolveCounter);
+countdownRoom.players.push({ ...participants[1], ready: false });
+countdownRoom = applyRoomAction(countdownRoom, participants[0].id, { ...cmd(countdownRoom, 'ready'), ready: true }, 2_000, undefined, resolveCounter).room;
+check(countdownRoom.lobbyStartsAt, null);
+countdownRoom = applyRoomAction(countdownRoom, participants[1].id, { ...cmd(countdownRoom, 'ready'), ready: true }, 3_000, undefined, resolveCounter).room;
+check(countdownRoom.lobbyStartsAt, 3_000 + LOBBY_START_DELAY);
+check(advanceRoomTime(countdownRoom, 7_999, resolveCounter).changed, false);
+countdownRoom = applyRoomAction(countdownRoom, participants[1].id, { ...cmd(countdownRoom, 'ready'), ready: false }, 4_000, undefined, resolveCounter).room;
+check(countdownRoom.lobbyStartsAt, null);
+check(advanceRoomTime(countdownRoom, 8_000, resolveCounter).changed, false);
+countdownRoom = applyRoomAction(countdownRoom, participants[1].id, { ...cmd(countdownRoom, 'ready'), ready: true }, 5_000, undefined, resolveCounter).room;
+check(countdownRoom.lobbyStartsAt, 5_000 + LOBBY_START_DELAY);
+countdownRoom.players[1].seat = 2;
+const countdownResult = advanceRoomTime(countdownRoom, 10_000, resolveCounter);
+check(countdownResult.changed, true); check(countdownResult.room.status, 'playing');
+check(countdownResult.room.lobbyStartsAt, null); check(countdownResult.room.round, 1);
+check(countdownResult.room.players.map(player => player.seat), [0, 1]);
+let seatRoom = createRoom('HGFEDCBA', 'counter', participants[0], 11_000, resolveCounter);
+seatRoom.players.push({ ...participants[1], seat: 1 });
+seatRoom = applyRoomAction(seatRoom, participants[1].id, { ...cmd(seatRoom, 'move_seat'), seat: 2 }, 12_000, undefined, resolveCounter).room;
+check(roomView(seatRoom, participants[0].id, resolveCounter).players.map(player => player.seat), [0, 2]);
+assert.throws(() => applyRoomAction(seatRoom, participants[0].id, { ...cmd(seatRoom, 'move_seat'), seat: 2 }, 12_001, undefined, resolveCounter), error => error.code === 'SEAT'); checks++;
+assert.throws(() => applyRoomAction(seatRoom, participants[0].id, { ...cmd(seatRoom, 'move_seat'), seat: 3 }, 12_001, undefined, resolveCounter), error => error.code === 'SEAT'); checks++;
+seatRoom = applyRoomAction(seatRoom, participants[0].id, { ...cmd(seatRoom, 'move_seat'), seat: 1 }, 13_000, undefined, resolveCounter).room;
+check(seatRoom.players.map(player => player.id), [participants[0].id, participants[1].id]);
+check(seatRoom.players.map(player => player.seat), [1, 2]);
+seatRoom = applyRoomAction(seatRoom, participants[0].id, cmd(seatRoom, 'start'), 14_000, undefined, resolveCounter).room;
+check(seatRoom.players.map(player => player.seat), [0, 1]);
+check(seatRoom.gameState.privatePlayers, [participants[0].id, participants[1].id]);
 sharedRoom = apply(sharedRoom, 'start');
 check(sharedRoom.status, 'playing'); check(sharedRoom.gameType, 'counter');
 check(advanceRoomTime(sharedRoom, Date.now(), resolveCounter).changed, false);
@@ -61,6 +90,7 @@ const bundle = await build({
       async advanceHost() { const room = this.read(); const host = room.players.find(p => p.id === room.hostId); host.online = false; host.disconnectedAt = Date.now() - 61000; this.save(room); await this.alarm(); }
       async expire() { const room = this.read(); room.lastActivityAt = Date.now() - ${ROOM_TTL + 1}; this.save(room); await this.alarm(); }
       async advanceDiscussion() { const room = this.read(false); room.gameState.discussion.endsAt = Date.now() - 1; this.save(room); await this.alarm(); }
+      async advanceLobby() { const room = this.read(false); room.lobbyStartsAt = Date.now() - 1; this.save(room); await this.alarm(); }
     }
     export default { async fetch(request, env) {
       const url = new URL(request.url);
@@ -71,6 +101,7 @@ const bundle = await build({
         if (url.pathname === '/__test/host') { await stub.advanceHost(); return new Response('ok'); }
         if (url.pathname === '/__test/expire') { await stub.expire(); return new Response('ok'); }
         if (url.pathname === '/__test/discussion') { await stub.advanceDiscussion(); return new Response('ok'); }
+        if (url.pathname === '/__test/lobby') { await stub.advanceLobby(); return new Response('ok'); }
       }
       return worker.fetch(request, env);
     } };
@@ -170,6 +201,21 @@ try {
   check((await http(`/games/rooms/${seat.code}/connect`, { token: extraSeat.token })).status, 401);
   const staleTicket = await mf.dispatchFetch(`https://api.komori.cc/games/rooms/${seat.code}/socket`, { headers: { Origin: 'https://komori.cc', Upgrade: 'websocket', 'Sec-WebSocket-Protocol': `games,ticket-${spareTicket.ticket}` } });
   check(staleTicket.status, 401);
+  await send(clients[2], 'move_seat', { seat: 9 });
+  await clients[0].events.until(() => clients[0].events.state.players.find(player => player.id === clients[2].events.state.selfId)?.seat === 9);
+  await clients[1].events.until(() => clients[1].events.state.players.find(player => player.id === clients[2].events.state.selfId)?.seat === 9);
+  check((await inspect(seat.code)).players.at(-1).seat, 9);
+  const occupiedSeat = await send(clients[1], 'move_seat', { seat: 9 }, 'error');
+  check(clients[1].events.messages.find(message => message.id === occupiedSeat.id).error, 'SEAT');
+  const fillResponse = await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: 'SeatFill' } });
+  check(fillResponse.status, 201);
+  const fillSeat = await fillResponse.json();
+  check((await inspect(seat.code)).players.find(player => player.id === fillSeat.playerId).seat, 2);
+  await clients[0].events.until(() => clients[0].events.state.players.some(player => player.id === fillSeat.playerId));
+  await send(clients[0], 'kick', { targetId: fillSeat.playerId });
+  await clients[2].events.until(() => clients[2].events.state.players.length === 5 && !clients[2].events.state.players.some(player => player.id === fillSeat.playerId));
+  await send(clients[2], 'move_seat', { seat: 2 });
+  await clients[0].events.until(() => clients[0].events.state.players.find(player => player.id === clients[2].events.state.selfId)?.seat === 2);
   // A replay must only acknowledge the original command, even with a forged new target.
   clients[0].ws.send(JSON.stringify({ ...kickedAction, targetId: clients[1].events.state.selfId }));
   await clients[0].events.until(messages => messages.filter(message => message.id === kickedAction.id).length === 2);
@@ -186,7 +232,15 @@ try {
   await send(clients[0], 'configure', { config: { specialRoles: ['percival', 'morgana'] } });
   for (const client of clients) await client.events.until(() => client.events.state.gameConfig?.specialRoles.includes('morgana'));
   for (const client of clients) await send(client, 'ready', { ready: true });
-  await send(clients[0], 'start');
+  await clients[0].events.until(() => clients[0].events.state.lobbyStartsAt !== null);
+  check((await inspect(seat.code)).lobbyStartsAt > Date.now(), true);
+  await send(clients[1], 'ready', { ready: false });
+  await clients[0].events.until(() => clients[0].events.state.lobbyStartsAt === null);
+  check((await inspect(seat.code)).status, 'lobby');
+  await send(clients[1], 'ready', { ready: true });
+  await clients[0].events.until(() => clients[0].events.state.lobbyStartsAt !== null);
+  check(await (await mf.dispatchFetch(`http://localhost/__test/alarm?code=${seat.code}`)).json(), clients[0].events.state.lobbyStartsAt);
+  await mf.dispatchFetch(`http://localhost/__test/lobby?code=${seat.code}`);
   await clients[0].events.until(() => clients[0].events.state.game?.phase === 'night');
   const inGameKick = await send(clients[0], 'kick', { targetId: clients[1].events.state.selfId }, 'error');
   check(clients[0].events.messages.find(message => message.id === inGameKick.id).error, 'PHASE');

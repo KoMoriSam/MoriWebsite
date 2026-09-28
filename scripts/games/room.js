@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { advanceRoomTime, applyRoomAction, createPlayer, createRoom, ensure, GameError, HOST_GRACE, roomView, ROOM_TTL, transferHost } from './state.js';
+import { advanceRoomTime, applyRoomAction, assignSeats, createPlayer, createRoom, ensure, GameError, HOST_GRACE, roomView, ROOM_TTL, syncLobbyStart, transferHost } from './state.js';
 import { getGame } from './registry.js';
 
 export async function hashToken(token) {
@@ -51,7 +51,7 @@ export class GameRoom extends DurableObject {
     const host = room.players.find(p => p.id === room.hostId);
     const deadline = !host?.online && host && host.disconnectedAt + HOST_GRACE > now ? host.disconnectedAt + HOST_GRACE : Infinity;
     const gameDeadline = room.status === 'playing' ? getGame(room.gameType).deadline?.(room.gameState) : null;
-    await this.ctx.storage.setAlarm(Math.min(room.lastActivityAt + ROOM_TTL, deadline, gameDeadline ?? Infinity));
+    await this.ctx.storage.setAlarm(Math.min(room.lastActivityAt + ROOM_TTL, deadline, gameDeadline ?? Infinity, room.lobbyStartsAt ?? Infinity));
   }
   authenticate(room, tokenHash) {
     const player = room.players.find(p => p.tokenHash === tokenHash);
@@ -78,7 +78,11 @@ export class GameRoom extends DurableObject {
     ensure(room.players.length < getGame(room.gameType).maxPlayers, 'ROOM_FULL', 409);
     const player = createPlayer(nickname, tokenHash);
     ensure(!room.players.some(p => p.nickname.toLocaleLowerCase() === player.nickname.toLocaleLowerCase()), 'NICKNAME_TAKEN', 409);
+    assignSeats(room);
+    player.seat = Array.from({ length: getGame(room.gameType).maxPlayers }, (_, seat) => seat).find(seat => !room.players.some(occupant => occupant.seat === seat));
     room.players.push(player); room.revision++; room.lastActivityAt = Date.now();
+    room.players.sort((a, b) => a.seat - b.seat);
+    syncLobbyStart(room, room.lastActivityAt);
     this.save(room); this.broadcast(room);
     await this.schedule(room);
     return { code: room.code, gameType: room.gameType, token, playerId: player.id };
@@ -124,6 +128,7 @@ export class GameRoom extends DurableObject {
       this.ctx.acceptWebSocket(server);
       player.online = true; player.disconnectedAt = null;
       transferHost(room); room.revision++;
+      syncLobbyStart(room);
       this.save(room); this.broadcast(room);
       await this.schedule(room);
       return new Response(null, { status: 101, webSocket: client, headers: { 'Sec-WebSocket-Protocol': 'games' } });
@@ -176,6 +181,7 @@ export class GameRoom extends DurableObject {
     const player = room?.players.find(p => p.id === data.playerId);
     if (!player || !player.online) return;
     player.online = false; player.disconnectedAt = Date.now(); room.revision++;
+    syncLobbyStart(room, player.disconnectedAt);
     this.save(room); this.broadcast(room);
     await this.schedule(room);
   }

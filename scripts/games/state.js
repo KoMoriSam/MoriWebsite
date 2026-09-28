@@ -5,10 +5,25 @@ export { GameError, ensure, randomInt } from './utils.js';
 
 export const ROOM_TTL = 24 * 60 * 60 * 1000;
 export const HOST_GRACE = 60_000;
+export const LOBBY_START_DELAY = 5_000;
 const participants = room => room.players.map(({ id, nickname }) => ({ id, nickname }));
+export function assignSeats(room) {
+  room.players.forEach((player, index) => { if (!Number.isInteger(player.seat)) player.seat = index; });
+  room.players.sort((a, b) => a.seat - b.seat);
+}
+function compactSeats(room) {
+  assignSeats(room);
+  room.players.forEach((player, index) => { player.seat = index; });
+}
+const readyToStart = (room, definition) => room.players.length >= definition.minPlayers && room.players.length <= definition.maxPlayers && room.players.every(player => player.ready && player.online);
+export function syncLobbyStart(room, now = Date.now(), resolveGame = getGame) {
+  room.lobbyStartsAt = room.status === 'lobby' && readyToStart(room, resolveGame(room.gameType))
+    ? room.lobbyStartsAt ?? now + LOBBY_START_DELAY
+    : null;
+}
 export function createRoom(code, gameType, player, now = Date.now(), resolveGame = getGame) {
   const definition = resolveGame(gameType);
-  return { code, gameType, hostId: player.id, players: [player], status: 'lobby', stage: 1, revision: 1, round: 0, lastActivityAt: now, gameState: null, gameConfig: definition.normalizeConfig?.() ?? null, messages: [] };
+  return { code, gameType, hostId: player.id, players: [{ ...player, seat: 0 }], status: 'lobby', lobbyStartsAt: null, stage: 1, revision: 1, round: 0, lastActivityAt: now, gameState: null, gameConfig: definition.normalizeConfig?.() ?? null, messages: [] };
 }
 export function createPlayer(nickname, tokenHash, now = Date.now()) {
   ensure(typeof nickname === 'string', 'NICKNAME'); nickname = nickname.trim();
@@ -33,10 +48,20 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
   const definition = resolveGame(room.gameType);
   const host = () => ensure(room.hostId === playerId, 'HOST_ONLY', 403);
   switch (action.type) {
+    case 'move_seat':
+      ensure(room.status === 'lobby', 'PHASE');
+      ensure(Number.isInteger(action.seat) && action.seat >= 0 && action.seat < definition.maxPlayers, 'SEAT');
+      assignSeats(room);
+      ensure(!room.players.some(occupant => occupant.seat === action.seat), 'SEAT');
+      player.seat = action.seat;
+      room.players.sort((a, b) => a.seat - b.seat);
+      room.lobbyStartsAt = null;
+      room.stage++; break;
     case 'kick':
       host(); ensure(room.status === 'lobby', 'PHASE');
       ensure(action.targetId !== playerId && room.players.some(target => target.id === action.targetId), 'KICK_TARGET');
       room.players = room.players.filter(target => target.id !== action.targetId);
+      room.lobbyStartsAt = null;
       room.stage++; break;
     case 'say': {
       ensure(['playing', 'finished'].includes(room.status) && typeof definition.phrase === 'function', 'PHASE');
@@ -51,15 +76,19 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
       ensure(typeof definition.normalizeConfig === 'function', 'INVALID');
       ensure(action.config !== undefined, 'INVALID');
       room.gameConfig = definition.normalizeConfig(action.config);
+      room.lobbyStartsAt = null;
       room.players.forEach(p => { p.ready = false; }); room.stage++; break;
     case 'ready':
       ensure(room.status === 'lobby' && typeof action.ready === 'boolean', 'PHASE');
+      if (action.ready && room.players.length >= definition.minPlayers && room.players.every(p => p.id === playerId ? p.online : p.ready && p.online))
+        definition.validateConfig?.(room.players.length, room.gameConfig ?? undefined);
       player.ready = action.ready; break;
     case 'start':
       host(); ensure(room.status === 'lobby', 'PHASE');
       ensure(room.players.length >= definition.minPlayers && room.players.length <= definition.maxPlayers && room.players.every(p => p.ready && p.online), 'NOT_READY');
+      compactSeats(room);
       room.gameState = definition.create(participants(room), rng, room.gameConfig ?? undefined);
-      room.messages = []; room.status = 'playing'; room.round++; room.stage++; break;
+      room.messages = []; room.status = 'playing'; room.lobbyStartsAt = null; room.round++; room.stage++; break;
     case 'end':
       host(); ensure(room.status === 'playing', 'PHASE');
       room.gameState = definition.abort(room.gameState);
@@ -67,18 +96,20 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
     case 'quick_start':
       host(); ensure(['playing', 'finished'].includes(room.status), 'PHASE');
       ensure(room.players.length >= definition.minPlayers && room.players.length <= definition.maxPlayers && room.players.every(p => p.online), 'QUICK_NOT_READY');
+      compactSeats(room);
       room.gameState = definition.create(participants(room), rng, room.gameConfig ?? undefined);
       room.players.forEach(p => { p.ready = false; });
       room.messages = []; room.status = 'playing'; room.round++; room.stage++; break;
     case 'restart':
       host(); ensure(room.status === 'finished', 'PHASE');
-      room.status = 'lobby'; room.gameState = null; room.messages = [];
+      room.status = 'lobby'; room.lobbyStartsAt = null; room.gameState = null; room.messages = [];
       room.players.forEach(p => { p.ready = false; }); room.stage++; break;
     case 'leave':
       player.online = false; player.disconnectedAt = now;
       transferHost(room, now, true);
       if (room.status !== 'playing') {
         room.players = room.players.filter(p => p.id !== playerId);
+        room.lobbyStartsAt = null;
         if (room.hostId === playerId) room.hostId = room.players[0]?.id ?? null;
         room.stage++;
       }
@@ -91,11 +122,22 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
       if (transition.finished) room.status = 'finished';
     }
   }
+  syncLobbyStart(room, now, resolveGame);
   player.receipts = [...player.receipts.slice(-63), action.id];
   room.lastActivityAt = now; room.revision++;
   return { room, duplicate: false };
 }
 export function advanceRoomTime(source, now = Date.now(), resolveGame = getGame) {
+  if (source.status === 'lobby' && source.lobbyStartsAt && now >= source.lobbyStartsAt) {
+    const room = structuredClone(source);
+    if (readyToStart(room, resolveGame(room.gameType))) {
+      compactSeats(room);
+      room.gameState = resolveGame(room.gameType).create(participants(room), randomInt, room.gameConfig ?? undefined);
+      room.messages = []; room.status = 'playing'; room.round++; room.stage++;
+    }
+    room.lobbyStartsAt = null; room.revision++; room.lastActivityAt = now;
+    return { room, changed: true };
+  }
   if (source.status !== 'playing') return { room: source, changed: false };
   const transition = resolveGame(source.gameType).tick?.(source.gameState, participants(source), now);
   if (!transition) return { room: source, changed: false };
@@ -110,9 +152,9 @@ export function roomView(room, playerId, resolveGame = getGame) {
   ensure(room.players.some(p => p.id === playerId), 'UNAUTHORIZED', 401);
   const definition = resolveGame(room.gameType);
   return {
-    code: room.code, gameType: room.gameType, status: room.status, hostId: room.hostId,
+    code: room.code, gameType: room.gameType, status: room.status, lobbyStartsAt: room.lobbyStartsAt ?? null, hostId: room.hostId,
     stage: room.stage, revision: room.revision, round: room.round, selfId: playerId,
-    players: room.players.map(({ id, nickname, ready, online }) => ({ id, nickname, ready, online })),
+    players: room.players.map(({ id, nickname, ready, online, seat }, index) => ({ id, nickname, ready, online, seat: seat ?? index })),
     limits: { minPlayers: definition.minPlayers, maxPlayers: definition.maxPlayers },
     gameConfig: room.gameConfig ?? definition.normalizeConfig?.() ?? null,
     messages: room.messages ?? [],

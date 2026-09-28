@@ -1,7 +1,10 @@
 <template>
-  <section class="card">
-    <div class="card-body gap-4 p-0">
-      <div class="flex flex-wrap items-center justify-between gap-2">
+  <section class="card" :class="compact || fillHeight ? 'h-full min-h-0' : ''">
+    <div class="card-body gap-4 p-0" :class="compact || fillHeight ? 'h-full min-h-0' : ''">
+      <div
+        v-if="!compact"
+        class="flex flex-wrap items-center justify-between gap-2"
+      >
         <h2 class="card-title font-serif">
           <i class="ri-user-voice-line font-normal" aria-hidden="true"></i>
           {{ t("avalon.phrases.title") }}
@@ -11,15 +14,30 @@
         }}</span>
       </div>
       <slot name="discussion-timer"></slot>
-      <div class="grid min-w-0 gap-4 lg:grid-cols-2 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-3">
+      <div
+        class="min-w-0 gap-4"
+        :class="
+          compact || fillHeight
+            ? 'flex min-h-0 flex-1 flex-col'
+            : 'grid lg:grid-cols-2 lg:items-start'
+        "
+      >
+        <div
+          class="flex min-w-0 flex-col gap-3"
+          :class="compact || fillHeight ? 'min-h-0 flex-1' : ''"
+        >
           <div
             ref="log"
             role="log"
+            :tabindex="compact || fillHeight ? 0 : undefined"
             aria-live="polite"
             aria-relevant="additions"
             :aria-label="t('avalon.phrases.title')"
-            class="max-h-60 overflow-y-auto overscroll-contain scrollbar-thin sm:max-h-80 lg:max-h-128"
+            :class="
+              compact || fillHeight
+                ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin'
+                : 'max-h-60 overflow-y-auto overscroll-contain scrollbar-thin sm:max-h-80 lg:max-h-128'
+            "
             @scroll="trackScroll"
           >
             <div
@@ -61,36 +79,69 @@
             <i class="ri-arrow-down-line" aria-hidden="true"></i
             >{{ t("avalon.phrases.unread", { n: unread }) }}
           </button>
+          <span v-if="compact" class="self-end shrink-0 text-xs text-base-content/50">{{
+            t("avalon.phrases.limit", { n: MESSAGE_LIMIT })
+          }}</span>
         </div>
-        <div class="min-w-0 space-y-4">
-          <div
-            role="tablist"
-            :aria-label="t('avalon.phrases.categoriesLabel')"
-            class="tabs tabs-border tabs-sm max-w-full flex-nowrap justify-center overflow-x-auto overscroll-x-contain scrollbar-thin"
-          >
-            <button
-              v-for="group in PHRASE_GROUPS"
-              :id="`${panelId}-${group.id}`"
-              :key="group.id"
-              type="button"
-              role="tab"
-              class="tab shrink-0 flex-nowrap gap-1 whitespace-nowrap"
-              :class="category === group.id ? 'tab-active' : ''"
-              :aria-selected="category === group.id"
-              :aria-controls="panelId"
-              :tabindex="category === group.id ? 0 : -1"
-              @click="
-                selectCategory(group.id);
-                revealTab($event.currentTarget);
-              "
-              @keydown="navigateTabs(group.id, $event)"
-            >
-              <i :class="group.icon" aria-hidden="true"></i
-              >{{ t(`avalon.phrases.categories.${group.id}`) }}
-            </button>
-          </div>
+        <div
+          class="min-w-0 space-y-4"
+          :class="
+            fillHeight
+              ? 'max-h-[55%] shrink-0 overflow-y-auto overscroll-contain scrollbar-thin'
+              : compact
+                ? 'shrink-0'
+                : ''
+          "
+        >
           <div>
-            <div class="flex min-w-0 flex-wrap items-end gap-2">
+            <div
+              class="flex min-w-0 flex-wrap items-end gap-2"
+            >
+              <div
+                class="grid min-w-0 basis-full grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2"
+              >
+                <fieldset class="fieldset min-w-0">
+                  <legend class="fieldset-legend pb-0">
+                    {{ t("avalon.phrases.categoriesLabel") }}
+                  </legend>
+                  <select
+                    :value="category"
+                    class="select max-sm:select-sm min-w-0 w-full"
+                    @change="selectCategory($event.target.value)"
+                  >
+                    <SelectLabel
+                      :text="t(`avalon.phrases.categories.${category}`)"
+                    />
+                    <option
+                      v-for="group in PHRASE_GROUPS"
+                      :key="group.id"
+                      :value="group.id"
+                    >
+                      {{ t(`avalon.phrases.categories.${group.id}`) }}
+                    </option>
+                  </select>
+                </fieldset>
+
+                <fieldset class="fieldset min-w-0">
+                  <legend class="fieldset-legend pb-0">
+                    {{ t("avalon.phrases.compose") }}
+                  </legend>
+                  <select
+                    v-model="selectedId"
+                    class="select max-sm:select-sm min-w-0 w-full"
+                  >
+                    <SelectLabel :text="preview(selected)" />
+                    <option
+                      v-for="phrase in currentGroup.phrases"
+                      :key="phrase.id"
+                      :value="phrase.id"
+                    >
+                      {{ preview(phrase) }}
+                    </option>
+                  </select>
+                </fieldset>
+              </div>
+
               <fieldset
                 v-if="selected.player"
                 class="fieldset min-w-0 flex-1 basis-40"
@@ -98,7 +149,11 @@
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.target") }}
                 </legend>
-                <select v-model="targetId" class="select w-full">
+                <select
+                  v-model="targetId"
+                  class="select max-sm:select-sm min-w-0 w-full"
+                >
+                  <SelectLabel :text="targetName" />
                   <option
                     v-for="player in room.players"
                     :key="player.id"
@@ -116,7 +171,8 @@
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.role") }}
                 </legend>
-                <select v-model="role" class="select w-full">
+                <select v-model="role" class="select max-sm:select-sm min-w-0 w-full">
+                  <SelectLabel :text="t(`avalon.roles.${role}`)" />
                   <option v-for="option in roles" :key="option" :value="option">
                     {{ t(`avalon.roles.${option}`) }}
                   </option>
@@ -130,7 +186,11 @@
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.quest") }}
                 </legend>
-                <select v-model.number="quest" class="select w-full">
+                <select
+                  v-model.number="quest"
+                  class="select max-sm:select-sm min-w-0 w-full"
+                >
+                  <SelectLabel :text="t('avalon.questNumber', { n: quest })" />
                   <option
                     v-for="number in room.questIndex + 1"
                     :key="number"
@@ -142,14 +202,15 @@
               </fieldset>
 
               <fieldset
-                class="fieldset min-w-0 basis-full sm:flex-1 sm:basis-auto"
+                class="fieldset min-w-0 flex-1 basis-full"
+                :class="parameterCount === 1 ? 'sm:flex-[2] sm:basis-40' : ''"
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.preview") }}
                 </legend>
 
                 <div class="flex min-w-0 gap-2">
-                  <div class="input min-w-0 flex-1">
+                  <div class="input max-sm:input-sm min-w-0 flex-1">
                     <span class="block min-w-0 truncate">
                       {{ preview(selected) }}
                     </span>
@@ -157,46 +218,22 @@
 
                   <button
                     type="button"
-                    class="btn shrink-0 max-sm:btn-square"
+                    class="btn shrink-0 max-sm:btn-sm"
                     :disabled="!canAct || cooling"
                     @click="send"
                   >
                     <i class="ri-send-ins-line" aria-hidden="true"></i>
-                    <span class="hidden sm:block">
-                      {{
-                        t(
-                          cooling
-                            ? "avalon.phrases.cooldown"
-                            : "avalon.phrases.send",
-                        )
-                      }}
-                    </span>
+                    {{
+                      t(
+                        cooling
+                          ? "avalon.phrases.cooldown"
+                          : "avalon.phrases.send",
+                      )
+                    }}
                   </button>
                 </div>
               </fieldset>
             </div>
-
-            <span class="text-base-content/50 text-xs leading-5">
-              {{ t("avalon.phrases.hint") }}
-            </span>
-          </div>
-          <div
-            :id="panelId"
-            role="tabpanel"
-            :aria-labelledby="`${panelId}-${category}`"
-            class="grid gap-2 sm:grid-cols-2"
-          >
-            <button
-              v-for="phrase in currentGroup.phrases"
-              :key="phrase.id"
-              type="button"
-              class="btn btn-sm h-auto min-h-9 min-w-0 justify-start py-2 text-left font-normal"
-              :class="selectedId === phrase.id ? 'btn-active' : 'btn-ghost'"
-              :aria-pressed="selectedId === phrase.id"
-              @click="selectedId = phrase.id"
-            >
-              {{ preview(phrase) }}
-            </button>
           </div>
         </div>
       </div>
@@ -204,7 +241,16 @@
   </section>
 </template>
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  h,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { useLocale } from "@/i18n";
 import {
   DEFAULT_SPECIAL_ROLES,
@@ -222,10 +268,26 @@ const props = defineProps({
   room: { type: Object, required: true },
   canAct: Boolean,
   active: { type: Boolean, default: true },
+  compact: Boolean,
+  fillHeight: Boolean,
   run: { type: Function, required: true },
 });
+const SelectLabel = defineComponent({
+  props: { text: { type: String, default: "" } },
+  setup(props) {
+    return () =>
+      h(
+        "button",
+        {
+          type: "button",
+          class:
+            "min-w-0 flex-1 overflow-hidden border-0 bg-transparent p-0 text-left text-sm text-base-content max-sm:text-xs",
+        },
+        h("span", { class: "block truncate" }, props.text),
+      );
+  },
+});
 const { t, locale } = useLocale();
-const panelId = `phrase-panel-${useId()}`;
 const category = ref(PHRASE_GROUPS[0].id);
 const selectedId = ref(PHRASE_GROUPS[0].phrases[0].id);
 const targetId = ref("");
@@ -240,6 +302,14 @@ const currentGroup = computed(() =>
   PHRASE_GROUPS.find((group) => group.id === category.value),
 );
 const selected = computed(() => findPhrase(selectedId.value));
+const parameterCount = computed(
+  () => ["player", "role", "quest"].filter((key) => selected.value?.[key]).length,
+);
+const targetName = computed(
+  () =>
+    props.room.players.find((player) => player.id === targetId.value)
+      ?.nickname ?? t("avalon.phrases.target"),
+);
 const roles = computed(() => [
   ...new Set(
     roleRoster(
@@ -253,9 +323,7 @@ const messages = computed(() =>
 );
 function preview(phrase) {
   return t(`avalon.phrases.items.${phrase.id}`, {
-    name:
-      props.room.players.find((player) => player.id === targetId.value)
-        ?.nickname ?? t("avalon.phrases.target"),
+    name: targetName.value,
     role: t(`avalon.roles.${role.value}`),
     quest: quest.value,
   });
@@ -278,37 +346,8 @@ function selectCategory(id) {
   category.value = id;
   selectedId.value = currentGroup.value.phrases[0].id;
 }
-function revealTab(tab) {
-  const parent = tab.parentElement;
-  const left =
-    tab.getBoundingClientRect().left -
-    parent.getBoundingClientRect().left +
-    parent.scrollLeft;
-  if (left < parent.scrollLeft) parent.scrollLeft = left;
-  else if (left + tab.offsetWidth > parent.scrollLeft + parent.clientWidth)
-    parent.scrollLeft = left + tab.offsetWidth - parent.clientWidth;
-}
-function navigateTabs(id, event) {
-  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-  event.preventDefault();
-  const current = PHRASE_GROUPS.findIndex((group) => group.id === id);
-  const index =
-    event.key === "Home"
-      ? 0
-      : event.key === "End"
-        ? PHRASE_GROUPS.length - 1
-        : (current +
-            (event.key === "ArrowRight" ? 1 : -1) +
-            PHRASE_GROUPS.length) %
-          PHRASE_GROUPS.length;
-  selectCategory(PHRASE_GROUPS[index].id);
-  const tab = event.currentTarget.parentElement.querySelector(
-    `#${panelId}-${category.value}`,
-  );
-  tab?.focus({ preventScroll: true });
-  if (tab) revealTab(tab);
-}
 function trackScroll() {
+  if (!log.value) return;
   atBottom.value =
     log.value.scrollHeight - log.value.scrollTop - log.value.clientHeight < 24;
   if (atBottom.value) unread.value = 0;
@@ -319,9 +358,15 @@ async function scrollToLatest() {
   atBottom.value = true;
   unread.value = 0;
 }
-watch(() => props.active, (active) => {
-  if (active) void scrollToLatest();
+onMounted(() => {
+  if (props.active) void scrollToLatest();
 });
+watch(
+  () => props.active,
+  (active) => {
+    if (active) void scrollToLatest();
+  },
+);
 async function send() {
   if (!props.canAct || cooling.value) return;
   const phrase = selected.value;

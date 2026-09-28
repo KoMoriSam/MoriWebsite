@@ -167,7 +167,7 @@ try {
       const html = await renderToString(app);
       assert.ok(html.includes(expected), `${file}: ${code} render`);
       if (file.endsWith('/AvalonTable.vue') && props.room.game.phase !== 'night') assert.ok(/<[^>]*class="[^"]*hover-3d[^>]*aria-pressed="true"/.test(html), `Daytime identity starts face up: ${props.room.game.phase} ${html.match(/<[^>]*hover-3d[^>]*>/)?.[0]}`);
-      if (file.endsWith('/AvalonTable.vue') && props.room === teamLeaderTable) assert.equal((html.match(/type="checkbox"/g) ?? []).length, 5, 'Team selection uses player checkboxes');
+      if (file.endsWith('/AvalonTable.vue') && props.room === teamLeaderTable) assert.equal((html.match(/type="checkbox" class="checkbox checkbox-sm/g) ?? []).length, 5, 'Team selection uses player checkboxes');
       if (file.endsWith('/AvalonTable.vue') && props.room === invitationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 4, 'Invitation uses one radio per other player');
       if (file.endsWith('/AvalonTable.vue') && props.room === assassinationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 3, 'Assassination excludes self and known allies');
       if (file.endsWith('/AvalonBallotCards.vue') && props.mode === 'quest' && !props.allowFail) assert.ok(!html.includes(code === 'en' ? 'Sabotage' : 'බාධා කරන්න'), 'Good players cannot choose Sabotage');

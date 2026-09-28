@@ -691,7 +691,8 @@
       "noMoreFiltersAvailable": "No more filters available"
     },
     "sideBar": {
-      "closeSidebar": "Close sidebar"
+      "closeSidebar": "Close sidebar",
+      "openSidebar": "Open sidebar"
     },
     "fontSelect": {
       "searchFonts": "Search fonts",
@@ -1260,6 +1261,24 @@
     "people": "p",
     "twoFails": "Two fails required",
     "rejected": "Rejections {n}/5",
+    "agendaStatus": {
+      "lastReject": "One more rejection gives Evil the win",
+      "slow": "Everyone may speak",
+      "inviteSelf": "Invite a player to talk",
+      "inviteWait": "Waiting for the leader's invite",
+      "dialogueSelf": "You may join this dialogue",
+      "dialogueWait": "Fast dialogue in progress",
+      "teamSelf": "Selected {n}/{total} players",
+      "teamReady": "Team ready to propose",
+      "teamWait": "Leader is building the team",
+      "voteSelf": "Submit your ballot",
+      "voteWait": "Waiting for other ballots",
+      "questSelf": "Submit your quest card",
+      "questWait": "Waiting for quest cards",
+      "assassinateSelf": "Choose an assassination target",
+      "assassinateConfirm": "Confirm your target",
+      "assassinateWait": "Waiting for the Assassin"
+    },
     "teamHint": "Leader {name} must select {n} players for the quest.",
     "teamHintSelf": "Choose {n} players for this quest.",
     "selected": "Selected {n}/{total}",
@@ -1416,8 +1435,8 @@
         "well_played": "Well played, everyone. Thanks for the game!"
       }
     },
-    "approved": "Team approved",
-    "rejectedLabel": "Team rejected",
+    "approved": "Approved",
+    "rejectedLabel": "Rejected",
     "failCount": "Fail cards: {n}",
     "records": {
       "required": "Team of {n}",
@@ -1479,6 +1498,8 @@
     },
     "config": {
       "title": "Roles for this game",
+      "viewRole": "View details for {name}",
+      "toggleRole": "Enable or disable {name}",
       "hint": "One Merlin and one Assassin are always included. Special roles replace ordinary roles on the same side; remaining seats are filled automatically.",
       "classic": "Merlin and Percival · Morgana and Assassin",
       "restore": "Restore defaults",
@@ -1486,6 +1507,22 @@
       "disabled": "Off",
       "preview": "{n}-player preview · {good} Good / {evil} Evil",
       "resetReady": "Only the host can change roles. Everyone must ready again after changes. With fewer than 5 players, the preview uses 5 seats."
+    },
+    "rulebook": {
+      "title": "Rulebook",
+      "intro": "These are the Avalon rules used on this site. Role abilities follow this game's configuration.",
+      "night": "Roles are assigned at random. At night, privately view your role and anyone you are allowed to know. Daybreak begins once everyone confirms.",
+      "discussion": "Each round begins with discussion. In a slow round, everyone can speak for 30 seconds per player. In a fast round, the leader has 15 seconds to invite one player, followed by a 60-second dialogue. Team selection begins when time runs out or the leader ends discussion early.",
+      "team": "The leader selects a quest team of the size shown below. Submitting the team automatically records the leader's approval.",
+      "vote": "Other players secretly approve or reject. The team proceeds only with more than half the votes; a tie rejects it. Five consecutive rejections give Evil the win.",
+      "quest": "Only quest members secretly play cards. Good players must Execute; Evil players may Execute or Sabotage. Usually one Sabotage card fails the quest.",
+      "victory": "Three failed quests give Evil the win. After three successful quests, the Assassin names Merlin: a correct guess wins for Evil, otherwise Good wins.",
+      "teamSizes": "Teams and quest sizes by player count",
+      "players": "Players",
+      "good": "Good",
+      "evil": "Evil",
+      "questNumber": "Quest {n}",
+      "twoFails": "With 7 or more players, the fourth quest needs at least two Sabotage cards to fail."
     },
     "winners": {
       "good": "Good wins",
@@ -1554,7 +1591,10 @@
     "questResult": {
       "success": "Quest {n} succeeded",
       "failure": "Quest {n} failed",
-      "score": "Quest results so far: {success} successes · {failure} failures"
+      "goodRemaining": "Good wins with one more successful quest, provided Merlin survives assassination. | Good wins with {n} more successful quests, provided Merlin survives assassination.",
+      "evilRemaining": "Evil is one sabotaged quest away from victory. | Evil needs {n} more sabotaged quests to win.",
+      "assassination": "Good has completed three quests. The assassination phase begins, and the Assassin can still win for Evil.",
+      "evilVictory": "Evil has sabotaged three quests and wins the game."
     }
   },
   "games": {
@@ -1576,6 +1616,7 @@
       "HOST_ONLY": "Only the host can do this.",
       "KICKED": "The host removed you from the room.",
       "KICK_TARGET": "Only other players in the lobby can be removed.",
+      "SEAT": "That seat is unavailable. Choose an empty seat.",
       "ALREADY_SUBMITTED": "You already submitted. It cannot be changed.",
       "NOT_READY": "The player count is outside the game limits, or some players are not online and ready.",
       "QUICK_NOT_READY": "Quick start requires a valid player count and every player online.",
@@ -1617,6 +1658,8 @@
     "you": "(you)",
     "host": "Host",
     "disconnected": "Disconnected",
+    "emptySeat": "Empty",
+    "moveSeat": "Move to seat {n}",
     "departed": "Departed player",
     "connections": {
       "offline": "Offline",
@@ -1640,12 +1683,15 @@
       "offline": "Waiting for players to reconnect: {n}",
       "unready": "Players not ready: {n}",
       "connection": "Everyone is ready. Waiting for the connection to recover",
-      "readyHost": "Everyone is ready. You can start the game",
-      "readyGuest": "Everyone is ready. Waiting for the host to start",
+      "starting": "Everyone is ready. The game will start automatically",
+      "startingIn": "Starting in",
+      "seconds": "Starting in {n} seconds",
+      "secondsUnit": "seconds",
+      "countdownHint": "The countdown stops if someone cancels readiness, disconnects, or joins.",
       "morePlayers": "You can also invite more friends. There are {n} places available.",
       "full": "The room is full."
     },
-    "lobbyHint": "All {min}–{max} players must be online and ready. The host can then start.",
+    "lobbyHint": "All {min}–{max} players must be online and ready. The game starts automatically after 5 seconds.",
     "prepare": "Ready up",
     "confirmEnd": "End this game without a winner?"
   }
