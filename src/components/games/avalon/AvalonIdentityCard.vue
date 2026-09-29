@@ -1,17 +1,17 @@
 <template>
   <div
     class="relative w-full min-w-0"
-    :class="compact ? 'h-52 sm:h-72' : 'h-112 sm:h-128'"
+    :class="compact ? 'h-52 sm:h-72' : 'aspect-[2/3]'"
   >
     <div
       class="hover-3d h-full min-h-0 w-full rounded-box text-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      :class="disabled ? 'opacity-50' : 'cursor-pointer'"
-      role="button"
-      :tabindex="disabled ? -1 : 0"
-      :aria-disabled="disabled"
-      :aria-pressed="faceUp"
+      :class="preview ? '' : disabled ? 'opacity-50' : 'cursor-pointer'"
+      :role="preview ? undefined : 'button'"
+      :tabindex="preview ? undefined : disabled ? -1 : 0"
+      :aria-disabled="preview ? undefined : disabled"
+      :aria-pressed="preview ? undefined : faceUp"
       :aria-label="
-        t(
+        preview ? undefined : t(
           faceUp
             ? 'avalon.hideRole'
             : self.roleRevealed
@@ -43,93 +43,103 @@
           <div
             v-if="faceUp && self.role"
             key="face"
-            class="flex h-full min-h-0 flex-col items-center justify-center"
-            :class="
-              compact
-                ? 'gap-1.5 p-2 pb-10 sm:gap-3 sm:p-4 sm:pb-10'
-                : 'gap-2 p-3 pb-12 sm:gap-3 sm:p-5 sm:pb-12'
-            "
+            class="relative h-full min-h-0 w-full overflow-hidden"
           >
-            <span class="text-xs text-base-content/60">{{
-              t(isEvil(self.role) ? "avalon.night.evil" : "avalon.night.good")
-            }}</span>
-            <i
-              :class="[
-                ROLE_ICONS[self.role],
-                compact ? 'text-2xl sm:text-4xl' : 'text-4xl',
-              ]"
-              class="text-base-content/70"
-              aria-hidden="true"
-            ></i>
-            <h3
-              class="font-serif font-bold"
-              :class="compact ? 'text-base sm:text-2xl' : 'text-3xl'"
-            >
-              {{ t(`avalon.roles.${self.role}`) }}
-            </h3>
+            <img
+              :src="`/assets/images/games/avalon/${self.role}.webp`"
+              alt=""
+              class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+            />
             <div
-              v-if="!compact"
-              class="max-w-full space-y-2 text-pretty text-xs leading-5 text-base-content/70 sm:text-sm sm:leading-6"
+              class="absolute inset-x-0 bottom-0 flex min-h-0 flex-col items-center justify-end gap-1 overflow-hidden bg-gradient-to-t from-black/95 via-black/85 to-transparent text-center text-white"
+              :class="compact ? 'h-[62%] px-2 pb-10 pt-8 sm:px-3' : 'h-[82%] px-3 pb-3 pt-6 sm:px-4 lg:h-[70%] lg:pb-4 lg:pt-14'"
             >
-              <div>{{ t(`avalon.roleHints.${self.role}`) }}</div>
-              <div v-if="companions.length">
-                {{
-                  t(
-                    self.role === "merlin"
-                      ? "avalon.night.merlinVision"
-                      : "avalon.night.evilVision",
-                    { names: companions.map(playerName).join(", ") },
-                  )
-                }}
-              </div>
-              <div v-if="self.knownCandidates?.length">
-                {{
-                  t("avalon.night.percivalVision", {
-                    names: self.knownCandidates.map(playerName).join(", "),
-                  })
-                }}
+              <span
+                class="text-xs font-medium"
+                :class="isEvil(self.role) ? 'text-error' : 'text-success'"
+              >
+                {{ t(isEvil(self.role) ? "avalon.night.evil" : "avalon.night.good") }}
+              </span>
+              <h3
+                class="font-serif font-bold leading-tight"
+                :class="compact ? 'text-base sm:text-2xl' : 'text-2xl sm:text-3xl'"
+              >
+                {{ t(`avalon.roles.${self.role}`) }}
+              </h3>
+              <div
+                v-if="!compact"
+                class="min-h-0 w-full space-y-1 overflow-y-auto overscroll-contain text-pretty text-xs leading-4 text-white/85 scrollbar-thin sm:space-y-2 sm:text-sm sm:leading-6"
+              >
+                <p>{{ t(`avalon.roleHints.${self.role}`) }}</p>
+                <div
+                  v-if="companions.length || self.knownCandidates?.length"
+                  class="mt-2 space-y-1 rounded-box border border-white/20 bg-black/35 p-2 text-center sm:mt-3 sm:space-y-2 sm:p-3"
+                >
+                  <p class="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
+                    <i class="ri-eye-line" aria-hidden="true"></i>
+                    {{ t("avalon.night.visionTitle") }}
+                  </p>
+                  <div v-if="companions.length">
+                    <p class="text-xs text-white/65">
+                      {{
+                        t(
+                          self.role === "merlin"
+                            ? "avalon.night.merlinVisionLabel"
+                            : "avalon.night.evilVisionLabel",
+                        )
+                      }}
+                    </p>
+                    <p class="wrap-break-word font-medium text-white">
+                      {{ companions.map(playerName).join(", ") }}
+                    </p>
+                  </div>
+                  <div v-if="self.knownCandidates?.length">
+                    <p class="text-xs text-white/65">
+                      {{ t("avalon.night.percivalVisionLabel") }}
+                    </p>
+                    <p class="wrap-break-word font-medium text-white">
+                      {{ self.knownCandidates.map(playerName).join(", ") }}
+                    </p>
+                    <p class="mt-1 text-xs text-white/75">
+                      {{ t("avalon.night.percivalVisionWarning") }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <div
             v-else
             key="back"
-            class="flex h-full min-h-0 flex-col items-center justify-center"
-            :class="compact ? 'gap-2 p-2 sm:gap-4 sm:p-4' : 'gap-3 p-5'"
+            class="relative h-full min-h-0 w-full overflow-hidden"
           >
-            <i
-              :class="[
-                self.nightConfirmed
-                  ? 'ri-shield-check-line'
-                  : 'ri-shield-keyhole-line',
-                compact ? 'text-2xl sm:text-4xl' : 'text-5xl',
-              ]"
-              class="text-base-content/50"
-              aria-hidden="true"
-            ></i>
-            <span
-              class="font-serif font-semibold"
-              :class="compact ? 'text-sm sm:text-xl' : 'text-xl'"
-              >{{ backTitle }}</span
+            <img
+              src="/assets/images/games/avalon/card.webp"
+              alt=""
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+            <div
+              class="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-gradient-to-t from-black/95 via-black/85 to-transparent px-3 pb-5 pt-12 text-center text-white"
             >
-            <span
-              class="text-base-content/60"
-              :class="
-                compact ? 'text-xs leading-4 sm:leading-6' : 'text-sm leading-7'
-              "
-              >{{ backHint }}</span
-            >
+              <span
+                class="font-serif font-semibold"
+                :class="compact ? 'text-sm sm:text-xl' : 'text-xl'"
+                >{{ backTitle }}</span
+              >
+              <span :class="compact ? 'text-xs leading-4' : 'text-sm leading-6'"
+                >{{ backHint }}</span
+              >
+            </div>
           </div>
         </Transition>
       </article>
       <div v-for="zone in 8" :key="zone" aria-hidden="true"></div>
     </div>
     <div
-      v-if="faceUp && self.role"
+      v-if="compact && faceUp && self.role"
       class="absolute inset-x-2 bottom-3 z-20 flex flex-wrap items-center justify-center gap-2"
     >
       <div
-        v-if="compact"
         ref="detailsTooltip"
         class="tooltip group"
         :class="{ 'tooltip-open': detailsOpen }"
@@ -174,7 +184,6 @@
           {{ t("avalon.roleDetails") }}
         </button>
       </div>
-      <slot name="actions"></slot>
     </div>
   </div>
 </template>
@@ -189,7 +198,6 @@ import {
   watch,
 } from "vue";
 import { useLocale } from "@/i18n";
-import { ROLE_ICONS } from "@/games/avalon-presentation";
 import { isEvil } from "../../../../shared/games/avalon.js";
 const props = defineProps({
   self: { type: Object, required: true },
@@ -197,9 +205,10 @@ const props = defineProps({
   playerName: { type: Function, required: true },
   faceUp: Boolean,
   compact: Boolean,
+  preview: Boolean,
   disabled: Boolean,
-  backTitle: { type: String, required: true },
-  backHint: { type: String, required: true },
+  backTitle: { type: String, default: "" },
+  backHint: { type: String, default: "" },
 });
 const emit = defineEmits(["flip"]);
 const { t } = useLocale();
@@ -253,7 +262,7 @@ const companions = computed(() =>
   (props.self.knownEvil ?? []).filter((id) => id !== props.selfId),
 );
 function flip() {
-  if (!props.disabled) emit("flip");
+  if (!props.preview && !props.disabled) emit("flip");
 }
 </script>
 <style scoped>

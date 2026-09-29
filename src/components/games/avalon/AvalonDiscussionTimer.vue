@@ -55,6 +55,8 @@ const label = computed(() => {
   const mode =
     props.discussion.mode === "slow"
       ? "slow"
+      : props.discussion.mode === "evil"
+        ? "evil"
       : props.discussion.partnerId
         ? "fast"
         : "invite";

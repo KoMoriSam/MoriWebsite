@@ -1,34 +1,41 @@
 <template>
-  <section
-    class="card card-border h-52 min-w-0 bg-base-200/40 sm:h-full lg:h-72"
+  <details
+    class="collapse min-w-0 border border-base-300 bg-base-200/40"
+    :class="requiresAction ? 'collapse-open' : 'collapse-arrow'"
+    :open="showCards"
+    @toggle="onToggle"
   >
-    <div class="card-body h-full min-h-0 gap-2 p-4">
-      <div class="flex min-w-0 shrink-0 items-start gap-1">
-        <h3
-          class="line-clamp-2 min-w-0 flex-1 font-serif font-semibold text-lg leading-6"
-        >
+    <summary
+      class="collapse-title flex min-w-0 items-center gap-1 [&::-webkit-details-marker]:hidden"
+      :class="requiresAction ? 'pr-4' : 'pr-12'"
+      @click="requiresAction && $event.preventDefault()"
+    >
+      <hgroup class="min-w-0 flex-1">
+        <h3 class="font-serif text-lg font-semibold leading-6">
           {{ t(`${textPrefix}.title`) }}
         </h3>
-        <AvalonRoleInfo
-          class="max-w-[60%]"
-          :self="self"
-          :self-id="selfId"
-          :player-name="playerName"
-        />
-      </div>
-      <span
-        class="line-clamp-2 shrink-0 text-xs leading-4 text-base-content/60 sm:leading-5"
-        >{{ t(hintKey) }}</span
-      >
+        <p class="text-xs leading-4 text-base-content/60">
+          {{ summaryStatus }}
+        </p>
+      </hgroup>
+      <AvalonRoleInfo
+        class="max-w-[60%]"
+        :self="self"
+        :self-id="selfId"
+        :player-name="playerName"
+        @click.stop.prevent
+      />
+    </summary>
+    <div class="collapse-content flex flex-col gap-2 px-4 pb-4">
       <div
-        class="grid min-h-0 flex-1 auto-rows-fr items-stretch gap-2 sm:gap-3"
+        class="grid auto-rows-fr items-stretch gap-2 sm:gap-3"
         :class="choices.length === 1 ? 'grid-cols-1' : 'grid-cols-2'"
       >
         <button
           v-for="approve in choices"
           :key="String(approve)"
           type="button"
-          class="card card-border m-0 h-full min-h-0 min-w-0 self-stretch select-none bg-base-100 text-center touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          class="card card-border m-0 min-w-0 self-stretch select-none bg-base-100 text-center touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           :class="[
             selected === approve || (autoApproved && submitted && approve)
               ? approve
@@ -54,7 +61,7 @@
           @click="selectCard(approve)"
         >
           <span
-            class="flex h-full min-h-0 w-full flex-col items-center justify-center gap-1 p-1 sm:gap-2 sm:p-3"
+            class="flex w-full flex-col items-center justify-center gap-1 px-2 py-3 sm:gap-2 sm:p-4"
           >
             <i
               :class="[
@@ -71,9 +78,10 @@
         </button>
       </div>
       <button
+        v-if="requiresAction"
         ref="dropZone"
         type="button"
-        class="flex min-h-8 shrink-0 items-center justify-center gap-1 rounded-box border-2 border-dashed p-1 text-center text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:min-h-12 sm:gap-2 sm:p-2 sm:text-sm"
+        class="flex items-center justify-center gap-1 rounded-box border-2 border-dashed p-2 text-center text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:gap-2 sm:p-3 sm:text-sm"
         :class="
           overDrop
             ? 'border-base-content bg-base-100'
@@ -87,7 +95,7 @@
           class="hidden text-xl sm:inline"
           aria-hidden="true"
         ></i>
-        <span class="line-clamp-2">{{
+        <span>{{
           t(
             submitted
               ? "avalon.submitted"
@@ -99,7 +107,7 @@
         }}</span>
       </button>
     </div>
-  </section>
+  </details>
 </template>
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from "vue";
@@ -123,6 +131,30 @@ const questMode = computed(() => props.mode === "quest");
 const canPlay = computed(
   () => props.active && props.canSubmit && !props.submitted,
 );
+const expanded = ref(false);
+const requiresAction = computed(() => props.active && !props.submitted);
+const showCards = computed(() => requiresAction.value || expanded.value);
+function onToggle(event) {
+  if (!requiresAction.value) expanded.value = event.target.open;
+}
+const collapsedStatus = computed(() =>
+  props.submitted
+    ? !questMode.value && props.autoApproved
+      ? t("avalon.ballot.autoApprovedCompact")
+      : t("avalon.submitted")
+    : t("avalon.ballot.inactive"),
+);
+const summaryStatus = computed(() =>
+  requiresAction.value
+    ? t(
+        questMode.value
+          ? props.allowFail
+            ? "avalon.questCards.hint"
+            : "avalon.questCards.goodHint"
+          : "avalon.ballot.compactHint",
+      )
+    : collapsedStatus.value,
+);
 const choices = computed(() =>
   (questMode.value && !props.allowFail) ||
   (!questMode.value && props.autoApproved && props.submitted)
@@ -131,19 +163,6 @@ const choices = computed(() =>
 );
 const textPrefix = computed(() =>
   questMode.value ? "avalon.questCards" : "avalon.ballot",
-);
-const hintKey = computed(() =>
-  props.submitted
-    ? !questMode.value && props.autoApproved
-      ? "avalon.ballot.leaderApproved"
-      : "avalon.submitted"
-    : questMode.value
-      ? props.allowFail
-        ? "avalon.questCards.hint"
-        : "avalon.questCards.goodHint"
-      : props.active
-        ? "avalon.ballot.compactHint"
-        : "avalon.ballot.compactWait",
 );
 const choiceLabel = (choice) =>
   questMode.value
@@ -257,6 +276,12 @@ watch(
     cancelDrag();
     selected.value = null;
     ignoreClickUntil = 0;
+  },
+);
+watch(
+  [() => props.context, () => props.mode, () => props.active, () => props.submitted],
+  () => {
+    expanded.value = false;
   },
 );
 onBeforeUnmount(cancelDrag);

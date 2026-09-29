@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 const ENDPOINT = (import.meta.env.VITE_GAMES_API || (import.meta.env.PROD ? 'https://api.komori.cc/games/rooms' : '/api/games/rooms')).replace(/\/+$/, '');
 const VALID_CODE = /^[A-HJ-NP-Z2-9]{8}$/;
+const MAX_RECONNECT_ATTEMPTS = 3;
 const key = code => `mori:games:room:${code}`;
 function commandId() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
@@ -12,6 +13,7 @@ export function useGameRoom(gameType) {
   const route = useRoute(); const router = useRouter();
   const room = ref(null); const code = ref(''); const error = ref('');
   const connection = ref('offline'); const busy = ref(false); const sending = ref(false);
+  const canReconnect = ref(false);
   const storageAvailable = ref(true);
   let credentials = null; let socket = null; let epoch = 0; let stopped = false;
   let retry = null; let heartbeat = null; let handshake = null; let attempt = 0;
@@ -57,6 +59,11 @@ export function useGameRoom(gameType) {
   }
   function scheduleReconnect(generation) {
     if (stopped || generation !== epoch) return;
+    if (attempt >= MAX_RECONNECT_ATTEMPTS) {
+      connection.value = 'offline';
+      if (!error.value) error.value = 'NETWORK';
+      return;
+    }
     connection.value = 'reconnecting';
     retry = setTimeout(() => { void connect(generation); }, Math.min(30_000, 1000 * 2 ** Math.min(attempt++, 5)));
   }
@@ -72,11 +79,13 @@ export function useGameRoom(gameType) {
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       const ws = new WebSocket(url, ['games', `ticket-${session.ticket}`]);
       socket = ws;
+      let openedAt = 0;
       const current = () => generation === epoch && socket === ws && !stopped;
       handshake = setTimeout(() => { if (current() && ws.readyState !== WebSocket.OPEN) ws.close(); }, 10_000);
       ws.onopen = () => {
         if (!current()) { ws.close(); return; }
-        clearTimeout(handshake); attempt = 0; connection.value = 'online'; error.value = '';
+        clearTimeout(handshake); openedAt = Date.now();
+        connection.value = 'online'; error.value = '';
         let lastPong = Date.now();
         ws._pong = () => { lastPong = Date.now(); };
         heartbeat = setInterval(() => {
@@ -103,16 +112,20 @@ export function useGameRoom(gameType) {
       ws.onclose = event => {
         if (!current()) return;
         socket = null; clearInterval(heartbeat); clearTimeout(handshake);
+        if (openedAt && Date.now() - openedAt >= 60_000) attempt = 0;
         if (event.code === 4003) {
           error.value = 'KICKED'; connection.value = 'offline';
           forget(credentials.code); rejectPending('KICKED');
-          credentials = null; room.value = null;
+          credentials = null; canReconnect.value = false; room.value = null;
           return;
         }
         if ([4001, 4002, 4004].includes(event.code)) {
           connection.value = event.code === 4001 ? 'replaced' : 'offline';
-          error.value = event.code === 4001 ? 'REPLACED' : event.code === 4004 ? 'EXPIRED' : '';
-          if (event.code === 4004) forget(credentials.code);
+          error.value = event.code === 4001 ? 'REPLACED' : 'EXPIRED';
+          if (event.code !== 4001) {
+            forget(credentials.code); credentials = null;
+            canReconnect.value = false; room.value = null;
+          }
           rejectPending(event.code === 4001 ? 'REPLACED' : 'EXPIRED');
           return;
         }
@@ -123,13 +136,15 @@ export function useGameRoom(gameType) {
       if (generation !== epoch || stopped) return;
       error.value = cause.message;
       if (['UNAUTHORIZED', 'EXPIRED', 'NOT_FOUND', 'GAME_MISMATCH'].includes(cause.message)) {
-        forget(credentials.code); connection.value = 'offline'; rejectPending(cause.message);
+        forget(credentials.code); credentials = null; canReconnect.value = false;
+        room.value = null; connection.value = 'offline'; rejectPending(cause.message);
       } else scheduleReconnect(generation);
     }
   }
   async function enter(value) {
     epoch++; cleanupConnection(); rejectPending('NETWORK');
-    credentials = value; code.value = value.code; room.value = null; attempt = 0;
+    credentials = value; canReconnect.value = true;
+    code.value = value.code; room.value = null; attempt = 0;
     saveCredentials(value);
     await router.replace({ path: route.path, query: { ...route.query, room: value.code } });
     await connect(epoch);
@@ -172,10 +187,14 @@ export function useGameRoom(gameType) {
     }
     epoch++; cleanupConnection(); rejectPending('NETWORK');
     if (remove && credentials) forget(credentials.code);
-    credentials = null; room.value = null; connection.value = 'offline'; error.value = '';
+    credentials = null; canReconnect.value = false;
+    room.value = null; connection.value = 'offline'; error.value = '';
     await router.replace({ path: route.path, query: { ...route.query, room: undefined } });
   }
-  function reconnect() { epoch++; attempt = 0; error.value = ''; void connect(epoch); }
+  function reconnect() {
+    if (!credentials || stopped) return;
+    epoch++; attempt = 0; error.value = ''; void connect(epoch);
+  }
   onMounted(() => {
     let roomCode = typeof route.query.room === 'string' ? route.query.room.toUpperCase() : '';
     if (!roomCode) { try { roomCode = sessionStorage.getItem(lastKey) || ''; } catch { /* Optional convenience. */ } }
@@ -187,10 +206,16 @@ export function useGameRoom(gameType) {
   watch(() => route.query.room, value => {
     const roomCode = typeof value === 'string' ? value.toUpperCase() : '';
     if (credentials?.code === roomCode) return;
-    epoch++; cleanupConnection(); rejectPending('NETWORK'); credentials = null; room.value = null; connection.value = 'offline';
+    epoch++; cleanupConnection(); rejectPending('NETWORK');
+    credentials = null; canReconnect.value = false;
+    room.value = null; connection.value = 'offline';
     code.value = roomCode;
-    if (VALID_CODE.test(roomCode)) { credentials = readCredentials(roomCode); if (credentials) void connect(epoch); }
+    if (VALID_CODE.test(roomCode)) {
+      credentials = readCredentials(roomCode);
+      canReconnect.value = Boolean(credentials);
+      if (credentials) void connect(epoch);
+    }
   });
   onBeforeUnmount(() => { stopped = true; epoch++; cleanupConnection(); rejectPending('NETWORK'); });
-  return { room, code, error, connection, busy, sending, storageAvailable, openRoom, run, leave, reconnect };
+  return { room, code, error, connection, canReconnect, busy, sending, storageAvailable, openRoom, run, leave, reconnect };
 }

@@ -5,7 +5,9 @@
     :class="
       showSidebar
         ? 'drawer drawer-end max-lg:fixed max-lg:inset-x-0 max-lg:top-16 max-lg:bottom-0 max-lg:grid-rows-[minmax(0,1fr)] max-lg:overflow-hidden lg:drawer-open'
-        : 'flex flex-col'
+        : nightPhase
+          ? 'flex min-h-dvh flex-col lg:min-h-0'
+          : 'flex flex-col'
     "
   >
     <input
@@ -103,6 +105,7 @@
             </button>
           </div>
           <div v-else class="flex flex-wrap items-center gap-1">
+            <slot name="page-actions" :room="room"></slot>
             <div
               v-for="action in roomActions"
               :key="action.key"
@@ -111,12 +114,13 @@
             >
               <button
                 type="button"
-                class="btn btn-square btn-ghost btn-xs"
+                :class="action.key === 'reconnect' ? 'btn btn-sm' : 'btn btn-square btn-ghost btn-xs'"
                 :aria-label="action.label"
                 :disabled="action.disabled"
                 @click="action.onClick()"
               >
                 <i :class="action.icon" aria-hidden="true"></i>
+                <span v-if="action.key === 'reconnect'">{{ action.label }}</span>
               </button>
             </div>
           </div>
@@ -128,7 +132,7 @@
         >
           <span class="min-w-0 flex-1 text-sm">{{ errorText }}</span>
           <button
-            v-if="room && ['offline', 'replaced'].includes(connection)"
+            v-if="room && canReconnect && connection !== 'online'"
             type="button"
             class="btn btn-sm"
             @click="confirmReconnect"
@@ -197,7 +201,7 @@
                 <label class="label" for="room-code">{{
                   t("games.roomCode")
                 }}</label>
-                <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-start gap-3">
                   <div class="min-w-0">
                     <label
                       class="otp validator"
@@ -238,10 +242,20 @@
                   </div>
                   <button
                     type="submit"
-                    class="btn btn-primary"
+                    class="btn btn-primary shrink-0 self-start"
                     :disabled="busy"
                   >
                     {{ t("games.join") }}
+                  </button>
+                  <button
+                    v-if="canReconnect && connection !== 'online'"
+                    type="button"
+                    class="btn shrink-0 self-start"
+                    :disabled="busy"
+                    @click="confirmReconnect"
+                  >
+                    <i class="ri-cloud-line" aria-hidden="true"></i>
+                    {{ t("games.reconnect") }}
                   </button>
                 </div>
               </fieldset>
@@ -491,8 +505,10 @@ import FootBar from "@/components/layout/FootBar.vue";
 import { useLocale } from "@/i18n";
 import { findGame } from "@/games/catalog";
 import { useGameRoom } from "@/composables/useGameRoom";
+import { useGameRoomActivity } from "@/composables/useGameRoomActivity";
 import { useModal } from "@/composables/useModal";
 const props = defineProps({ gameType: { type: String, required: true } });
+const emit = defineEmits(["room-state", "room-activity"]);
 const slots = useSlots();
 const roomRoot = ref(null);
 const sidebarId = `game-sidebar-${useId()}`;
@@ -502,7 +518,12 @@ let sidebarMedia;
 let scrollFrame = 0;
 let pendingGameScroll = false;
 function scrollPastNavbar() {
-  if (!pendingGameScroll || !desktopViewport.value || !roomRoot.value) return;
+  if (
+    !pendingGameScroll ||
+    (!desktopViewport.value && !nightPhase.value) ||
+    !roomRoot.value
+  )
+    return;
   const top = Math.ceil(
     roomRoot.value.getBoundingClientRect().top + window.scrollY,
   );
@@ -530,14 +551,25 @@ function updateSidebarViewport() {
   desktopViewport.value = sidebarMedia.matches;
   if (desktopViewport.value && !wasDesktop) sidebarExpanded.value = true;
 }
+function setMobileGameViewport(active) {
+  document.documentElement.classList.toggle("game-room-viewport", active);
+  document.body.classList.toggle("game-room-viewport", active);
+  if (active) {
+    pendingGameScroll = false;
+    cancelAnimationFrame(scrollFrame);
+    window.scrollTo(0, 0);
+  }
+}
 onMounted(() => {
   sidebarMedia = window.matchMedia("(min-width: 1024px)");
   updateSidebarViewport();
   sidebarMedia.addEventListener("change", updateSidebarViewport);
+  setMobileGameViewport(showSidebar.value && !desktopViewport.value);
 });
 onBeforeUnmount(() => {
   sidebarMedia?.removeEventListener("change", updateSidebarViewport);
   cancelAnimationFrame(scrollFrame);
+  setMobileGameViewport(false);
 });
 const definition = findGame(props.gameType);
 const { t, i18n } = useLocale();
@@ -547,6 +579,7 @@ const {
   code,
   error,
   connection,
+  canReconnect,
   busy,
   sending,
   storageAvailable,
@@ -555,13 +588,28 @@ const {
   leave,
   reconnect,
 } = useGameRoom(props.gameType);
+const roomActivity = useGameRoomActivity((kind) => emit("room-activity", kind));
+watch([room, connection], ([state, status]) => {
+  emit("room-state", state, status);
+  roomActivity.observe(state, status);
+}, { immediate: true });
+const nightPhase = computed(() => room.value?.game?.phase === "night");
 const showSidebar = computed(
-  () =>
-    !!slots.sidebar && !!room.value?.game && room.value.game.phase !== "night",
+  () => !!slots.sidebar && !!room.value?.game && !nightPhase.value,
 );
+const mobileGameViewport = computed(
+  () => showSidebar.value && !desktopViewport.value,
+);
+watch(mobileGameViewport, (active, wasActive) => {
+  setMobileGameViewport(active);
+  if (!active && wasActive && showSidebar.value && desktopViewport.value) {
+    pendingGameScroll = true;
+    scheduleScrollPastNavbar();
+  }
+}, { flush: "post" });
 watch(
-  [() => room.value?.status, () => room.value?.code, connection],
-  ([status, roomCode, connectionState], [previousStatus, previousCode, previousConnection]) => {
+  [() => room.value?.status, () => room.value?.code, connection, nightPhase],
+  ([status, roomCode, connectionState, isNight], [previousStatus, previousCode, previousConnection, wasNight]) => {
     if (!status) {
       pendingGameScroll = false;
       return;
@@ -571,7 +619,7 @@ watch(
     const changedRoom = roomCode !== previousCode;
     const reconnected =
       connectionState === "online" && previousConnection !== "online";
-    if (enteredGame || changedRoom || reconnected) {
+    if (enteredGame || changedRoom || reconnected || (isNight && !wasNight)) {
       pendingGameScroll = true;
       scheduleScrollPastNavbar();
     }
@@ -704,7 +752,7 @@ const roomActions = computed(() => {
   const add = (key, icon, label, onClick, disabled = false) => {
     actions.push({ key, icon, label, onClick, disabled });
   };
-  if (connection.value !== "online")
+  if (canReconnect.value && connection.value !== "online")
     add("reconnect", "ri-cloud-line", t("games.reconnect"), confirmReconnect);
   add(
     "invite",
@@ -905,13 +953,24 @@ function leaveRoom() {
   );
 }
 function confirmReconnect() {
-  const code = room.value.code;
+  const roomCode = room.value?.code || code.value;
   modal.confirm(t("games.reconnect"), t("games.confirmReconnect"), {
     buttonText: t("games.reconnect"),
     onSubmit: () => {
-      if (room.value?.code === code && connection.value !== "online")
+      if (code.value === roomCode && canReconnect.value && connection.value !== "online")
         reconnect();
     },
   });
 }
 </script>
+<style>
+@media (max-width: 1023px) {
+  html.game-room-viewport,
+  body.game-room-viewport {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+</style>

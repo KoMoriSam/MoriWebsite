@@ -126,7 +126,7 @@ export class GameRoom extends DurableObject {
       const [client, server] = Object.values(new WebSocketPair());
       server.serializeAttachment({ playerId: player.id, count: 0, window: Date.now() });
       this.ctx.acceptWebSocket(server);
-      player.online = true; player.disconnectedAt = null;
+      player.online = true; player.departed = false; player.disconnectedAt = null;
       transferHost(room); room.revision++;
       syncLobbyStart(room);
       this.save(room); this.broadcast(room);

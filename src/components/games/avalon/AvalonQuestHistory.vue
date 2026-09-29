@@ -1,41 +1,35 @@
 <template>
-  <div
-    class="w-full min-w-0 max-w-full space-y-3 wrap-break-word text-left text-sm"
-  >
-    <header class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="font-serif font-semibold">
-        {{ t("avalon.questNumber", { n: quest + 1 }) }}
-      </h3>
-      <span
-        class="badge badge-sm badge-soft"
-        :class="
-          result
-            ? result.success
-              ? 'badge-success'
-              : 'badge-error'
-            : 'badge-ghost'
-        "
-      >
-        {{ status }}
-      </span>
+  <section class="min-w-0 space-y-3 text-left text-sm">
+    <header class="space-y-1">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h3 class="font-serif text-base font-semibold">
+          {{ t("avalon.questNumber", { n: quest + 1 }) }}
+        </h3>
+        <span
+          class="text-xs font-medium"
+          :class="result ? result.success ? 'text-success' : 'text-error' : 'text-base-content/60'"
+        >
+          {{ status }}
+        </span>
+      </div>
+      <p class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
+        <span
+          ><i class="ri-group-line" aria-hidden="true"></i>
+          {{ t("avalon.records.required", { n: room.teamSizes[quest] }) }}</span
+        >
+        <span
+          ><i class="ri-sword-line" aria-hidden="true"></i>
+          {{
+            t("avalon.records.threshold", {
+              n: room.participants.length >= 7 && quest === 3 ? 2 : 1,
+            })
+          }}</span
+        >
+      </p>
     </header>
-    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
-      <span
-        ><i class="ri-group-line" aria-hidden="true"></i>
-        {{ t("avalon.records.required", { n: room.teamSizes[quest] }) }}</span
-      >
-      <span
-        ><i class="ri-sword-line" aria-hidden="true"></i>
-        {{
-          t("avalon.records.threshold", {
-            n: room.participants.length >= 7 && quest === 3 ? 2 : 1,
-          })
-        }}</span
-      >
-    </div>
     <div
       v-if="showProgress && current && ['vote', 'quest'].includes(room.phase)"
-      class="space-y-1 rounded-box bg-base-200/50 p-2 text-xs"
+      class="space-y-1 text-xs leading-5"
     >
       <p class="wrap-break-word">
         {{
@@ -59,30 +53,20 @@
         }}
       </p>
     </div>
-    <p v-if="!entries.length" class="text-xs text-base-content/60">
-      {{ t(current ? "avalon.records.waiting" : "avalon.records.empty") }}
-    </p>
-    <ol
-      v-else
-      class="timeline timeline-vertical timeline-compact timeline-snap-icon min-w-0"
-    >
-      <li
-        v-for="(entry, index) in entries"
-        :key="entry.sequence"
-        class="w-full min-w-0 [--timeline-col-start:0] [--timeline-col-end:minmax(0,1fr)]"
-      >
-        <hr v-if="index > 0" class="bg-base-200 -translate-y-2.25" />
-        <div class="timeline-middle text-base-content/60 -translate-y-2.25">
-          <i
-            :class="icons[entry.type] || 'ri-history-line'"
-            aria-hidden="true"
-          ></i>
-        </div>
-        <div class="timeline-end m-0 mb-4 min-w-0 w-full pl-2">
+    <div class="border-t border-base-300 pt-2">
+      <p v-if="!entries.length" class="text-xs text-base-content/60">
+        {{ t(current ? "avalon.records.waiting" : "avalon.records.empty") }}
+      </p>
+      <ol v-else class="space-y-3">
+        <li
+          v-for="entry in entries"
+          :key="entry.sequence"
+          class="min-w-0 border-l-2 border-base-300 pl-3"
+          :class="entry.type === 'quest' ? entry.success ? 'border-success' : 'border-error' : entry.type === 'vote' ? entry.approved ? 'border-success' : 'border-error' : ''"
+        >
           <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span class="badge badge-xs">{{
-              t(`avalon.records.types.${entry.type}`)
-            }}</span>
+            <i :class="icons[entry.type] || 'ri-history-line'" class="text-base-content/60" aria-hidden="true"></i>
+            <strong class="font-medium">{{ t(`avalon.records.types.${entry.type}`) }}</strong>
             <span
               v-if="entry.type === 'vote'"
               class="text-xs font-medium"
@@ -115,7 +99,7 @@
               ></span
             >
           </div>
-          <div class="mt-2 space-y-1 text-xs leading-5">
+          <div class="mt-1 space-y-1 text-xs leading-5">
             <p
               v-if="entry.leaderId"
               class="wrap-break-word text-base-content/60"
@@ -129,7 +113,7 @@
                 )
               }}
             </p>
-            <p v-if="entry.team" class="wrap-break-word">
+            <p v-if="entry.team && entry.type !== 'quest'" class="wrap-break-word">
               {{
                 t("avalon.teamNames", {
                   names: entry.team.map(playerName).join(", "),
@@ -152,11 +136,11 @@
                   })
                 }}
               </p>
-              <ul class="space-y-1.5">
+              <ul class="flex min-w-0 flex-wrap gap-x-3 gap-y-1">
                 <li
                   v-for="vote in entry.votes"
                   :key="vote.playerId"
-                  class="flex min-w-0 items-start gap-1"
+                  class="inline-flex min-w-0 items-start gap-1"
                   :class="vote.approve ? 'text-success' : 'text-error'"
                 >
                   <i
@@ -185,6 +169,9 @@
                 })
               }}
             </p>
+            <p v-if="entry.type === 'quest'" class="wrap-break-word">
+              {{ t('avalon.agendaSummary.executors', { names: entry.team.map(playerName).join(', ') }) }}
+            </p>
             <template v-if="entry.type === 'assassinate'">
               <p class="wrap-break-word">
                 {{
@@ -209,14 +196,10 @@
               {{ t("avalon.reasons.aborted") }}
             </p>
           </div>
-        </div>
-        <hr
-          v-if="index < entries.length - 1"
-          class="bg-base-200 -translate-y-2.25"
-        />
-      </li>
-    </ol>
-  </div>
+        </li>
+      </ol>
+    </div>
+  </section>
 </template>
 <script setup>
 import { computed } from "vue";
@@ -230,6 +213,8 @@ const props = defineProps({
 const { t, date } = useLocale();
 const icons = {
   dialogue: "ri-chat-3-line",
+  begin_evil_discussion: "ri-chat-smile-3-line",
+  begin_assassinate: "ri-sword-line",
   begin_team: "ri-discuss-line",
   team: "ri-group-line",
   vote: "ri-hand-coin-line",

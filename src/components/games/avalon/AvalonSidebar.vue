@@ -98,10 +98,10 @@
       :id="`${panelId}-history`"
       role="region"
       :aria-labelledby="`${panelId}-menu-history`"
-      class="card min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
+      class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
       :class="panel === 'history' ? '' : 'hidden'"
     >
-      <div class="card-body p-0">
+      <div class="min-w-0">
         <p
           v-if="!gameRoom.history.length"
           class="py-5 text-sm text-base-content/50"
@@ -112,7 +112,7 @@
           <li
             v-for="quest in recordedQuests"
             :key="quest"
-            class="card card-border border-base-300 p-3 sm:p-4"
+            class="min-w-0 border-t border-base-300 pt-4 first:border-t-0 first:pt-0"
           >
             <AvalonQuestHistory :room="gameRoom" :quest="quest" />
           </li>

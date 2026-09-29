@@ -2,7 +2,7 @@
   <section
     role="status"
     aria-live="polite"
-    class="card card-border h-52 min-w-0 sm:h-full lg:h-72"
+    class="card card-border min-w-0"
     :class="
       result.winner === 'good'
         ? 'border-success/40 bg-success/10'
@@ -12,7 +12,7 @@
     "
   >
     <div
-      class="card-body h-full min-h-0 items-center justify-center gap-2 p-4 text-center"
+      class="card-body items-center gap-2 p-4 text-center"
     >
       <span class="shrink-0 text-xs text-base-content/60">{{
         t("avalon.phases.finished")
@@ -31,9 +31,7 @@
       <h3 class="shrink-0 font-serif text-base font-semibold sm:text-2xl">
         {{ t(`avalon.winners.${result.winner || "none"}`) }}
       </h3>
-      <div
-        class="min-h-0 max-w-full space-y-1 overflow-y-auto overscroll-contain text-pretty text-xs leading-5 text-base-content/70 scrollbar-thin sm:text-sm sm:leading-6"
-      >
+      <div class="max-w-full space-y-1 text-pretty text-xs leading-5 text-base-content/70 sm:text-sm sm:leading-6">
         <p>{{ t(`avalon.reasons.${result.reason}`) }}</p>
         <p v-if="result.targetId">
           {{

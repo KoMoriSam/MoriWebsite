@@ -63,20 +63,22 @@
       </p>
     </div>
   </section>
-  <AvalonRulebook class="mt-4" />
+  <AvalonRulebook />
+  <AvalonRolePreviewPopover
+    ref="rolePopover"
+    :role="selectedRole"
+  />
 </template>
 <script setup>
-import { computed, h, onBeforeUnmount } from "vue";
+import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
-import { useModal } from "@/composables/useModal";
-import { ROLE_ICONS } from "@/games/avalon-presentation";
 import {
   SPECIAL_ROLES,
   DEFAULT_SPECIAL_ROLES,
-  isEvil,
   roleRoster,
 } from "../../../../shared/games/avalon.js";
 import AvalonRoleOption from "./AvalonRoleOption.vue";
+import AvalonRolePreviewPopover from "./AvalonRolePreviewPopover.vue";
 import AvalonRulebook from "./AvalonRulebook.vue";
 const props = defineProps({
   room: { type: Object, required: true },
@@ -84,9 +86,8 @@ const props = defineProps({
   run: { type: Function, required: true },
 });
 const { t } = useLocale();
-const modal = useModal();
-let roleModal;
-onBeforeUnmount(() => roleModal?.close());
+const selectedRole = ref(null);
+const rolePopover = ref(null);
 const isHost = computed(() => props.room.hostId === props.room.selfId);
 const specialRoles = computed(
   () => props.room.gameConfig?.specialRoles ?? DEFAULT_SPECIAL_ROLES,
@@ -104,25 +105,8 @@ const roleCounts = computed(() =>
   ),
 );
 function showRoleDetails(role) {
-  roleModal?.close();
-  roleModal = modal.info(
-    t(`avalon.roles.${role}`),
-    h("div", { class: "space-y-3" }, [
-      h(
-        "p",
-        { class: "flex items-center gap-2 text-sm text-base-content/70" },
-        [
-          h("i", {
-            class: `${ROLE_ICONS[role]} text-xl`,
-            "aria-hidden": "true",
-          }),
-          t(isEvil(role) ? "avalon.night.evil" : "avalon.night.good"),
-        ],
-      ),
-      h("p", { class: "text-sm leading-7" }, t(`avalon.roleHints.${role}`)),
-    ]),
-    { buttonMode: "close" },
-  );
+  selectedRole.value = role;
+  void rolePopover.value?.open();
 }
 function configure(roles) {
   if (!isHost.value || !props.canAct) return;

@@ -344,9 +344,14 @@ try {
     for (const client of clients) await client.events.until(() => client.events.state.game?.phase === 'quest');
     for (const client of clients.filter(c => c.events.state.game.team.includes(c.events.state.selfId))) await send(client, 'quest', { success: true });
   }
-  for (const client of clients) await client.events.until(() => client.events.state.game?.phase === 'assassinate');
+  for (const client of clients) await client.events.until(() => client.events.state.game?.phase === 'evil_discussion');
   const assassinClient = clients.find(c => c.events.state.game.self.role === 'assassin');
   const merlinClient = clients.find(c => c.events.state.game.self.role === 'merlin');
+  check('revealedRoles' in assassinClient.events.state.game, false);
+  const premature = await send(assassinClient, 'assassinate', { targetId: merlinClient.events.state.selfId }, 'error');
+  check(assassinClient.events.messages.find(message => message.id === premature.id).error, 'PHASE');
+  await send(assassinClient, 'end_assassination_discussion');
+  for (const client of clients) await client.events.until(() => client.events.state.game?.phase === 'assassinate');
   await send(assassinClient, 'assassinate', { targetId: merlinClient.events.state.selfId });
   for (const client of clients) await client.events.until(() => client.events.state.game?.phase === 'finished');
   check(rejoined.events.state.game.result.winner, 'evil');

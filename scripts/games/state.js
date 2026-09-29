@@ -28,7 +28,7 @@ export function createRoom(code, gameType, player, now = Date.now(), resolveGame
 export function createPlayer(nickname, tokenHash, now = Date.now()) {
   ensure(typeof nickname === 'string', 'NICKNAME'); nickname = nickname.trim();
   ensure(nickname.length > 0 && nickname.length <= 24 && !/[\p{Cc}\p{Cf}]/u.test(nickname), 'NICKNAME');
-  return { id: crypto.randomUUID(), nickname, tokenHash, ready: false, online: false, disconnectedAt: now, receipts: [] };
+  return { id: crypto.randomUUID(), nickname, tokenHash, ready: false, online: false, departed: false, disconnectedAt: now, receipts: [] };
 }
 export function transferHost(room, now = Date.now(), immediate = false) {
   const host = room.players.find(p => p.id === room.hostId);
@@ -106,6 +106,7 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
       room.players.forEach(p => { p.ready = false; }); room.stage++; break;
     case 'leave':
       player.online = false; player.disconnectedAt = now;
+      if (room.status === 'playing') player.departed = true;
       transferHost(room, now, true);
       if (room.status !== 'playing') {
         room.players = room.players.filter(p => p.id !== playerId);
@@ -154,7 +155,7 @@ export function roomView(room, playerId, resolveGame = getGame) {
   return {
     code: room.code, gameType: room.gameType, status: room.status, lobbyStartsAt: room.lobbyStartsAt ?? null, hostId: room.hostId,
     stage: room.stage, revision: room.revision, round: room.round, selfId: playerId,
-    players: room.players.map(({ id, nickname, ready, online, seat }, index) => ({ id, nickname, ready, online, seat: seat ?? index })),
+    players: room.players.map(({ id, nickname, ready, online, departed, seat }, index) => ({ id, nickname, ready, online, departed: !!departed, seat: seat ?? index })),
     limits: { minPlayers: definition.minPlayers, maxPlayers: definition.maxPlayers },
     gameConfig: room.gameConfig ?? definition.normalizeConfig?.() ?? null,
     messages: room.messages ?? [],

@@ -1,7 +1,7 @@
 import { ensure, GameError, randomInt } from '../games/utils.js';
 import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, isEvil, roleRoster } from '../../shared/games/avalon.js';
 import { findPhrase } from '../../shared/games/avalon-phrases.js';
-import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS } from '../../shared/games/avalon-discussion.js';
+import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS, ASSASSINATION_DISCUSSION_SECONDS } from '../../shared/games/avalon-discussion.js';
 export { GOOD_COUNTS, SPECIAL_ROLES, isEvil } from '../../shared/games/avalon.js';
 export { QUEST_TEAMS } from '../../shared/games/avalon.js';
 export function normalizeConfig(config = { specialRoles: DEFAULT_SPECIAL_ROLES }) {
@@ -28,15 +28,25 @@ function startDiscussion(state, now) {
   state.phase = 'discussion'; state.discussionCount = index + 1;
   state.discussion = { mode, startedAt: now, endsAt: now + seconds * 1000, partnerId: null };
 }
+function startAssassinationDiscussion(state, now) {
+  state.phase = 'evil_discussion';
+  state.discussion = { mode: 'evil', startedAt: now, endsAt: now + ASSASSINATION_DISCUSSION_SECONDS * 1000, partnerId: null };
+  record(state, { type: 'begin_evil_discussion' }, now);
+}
+function beginAssassination(state, now) {
+  state.phase = 'assassinate';
+  record(state, { type: 'begin_assassinate' }, now);
+}
 function invitePartner(state, partnerId, now) {
   state.discussion = { ...state.discussion, partnerId, startedAt: now, endsAt: now + FAST_DIALOGUE_SECONDS * 1000 };
   record(state, { type: 'dialogue', leaderId: state.participants[state.leaderIndex].id, targetId: partnerId }, now);
 }
 function tick(source, _players, now = Date.now()) {
-  if (source.phase !== 'discussion') return null;
+  if (!['discussion', 'evil_discussion'].includes(source.phase)) return null;
   if (source.discussion && now < source.discussion.endsAt) return null;
   const state = structuredClone(source);
-  if (!state.discussion) startDiscussion(state, now);
+  if (state.phase === 'evil_discussion') beginAssassination(state, state.discussion?.endsAt ?? now);
+  else if (!state.discussion) startDiscussion(state, now);
   else if (state.discussion.mode === 'fast' && !state.discussion.partnerId) {
     invitePartner(state, state.participants[(state.leaderIndex + 1) % state.participants.length].id, state.discussion.endsAt);
     if (now >= state.discussion.endsAt) {
@@ -88,6 +98,11 @@ function apply(source, players, playerId, action, now = Date.now()) {
       ensure(now < state.discussion.endsAt, 'DISCUSSION_CLOSED');
       ensure(action.targetId !== playerId && state.participants.some(player => player.id === action.targetId), 'DIALOGUE_TARGET');
       invitePartner(state, action.targetId, now); break;
+    case 'end_assassination_discussion':
+      ensure(state.phase === 'evil_discussion', 'PHASE');
+      ensure(isEvil(state.roles[playerId]) && state.roles[playerId] !== 'oberon', 'EVIL_ONLY', 403);
+      ensure(now < state.discussion.endsAt, 'DISCUSSION_CLOSED');
+      beginAssassination(state, now); break;
     case 'team':
       ensure(state.phase === 'team', 'PHASE');
       ensure(state.participants[state.leaderIndex].id === playerId, 'LEADER_ONLY', 403);
@@ -121,7 +136,7 @@ function apply(source, players, playerId, action, now = Date.now()) {
         state.quests.push(result); record(state, result); state.questCards = {};
         const successes = state.quests.filter(q => q.success).length;
         if (state.quests.length - successes === 3) finish(state, 'evil', 'quests');
-        else if (successes === 3) state.phase = 'assassinate';
+        else if (successes === 3) startAssassinationDiscussion(state, now);
         else { state.questIndex++; nextLeader(state); startDiscussion(state, now); state.team = []; }
       }
       break;
@@ -158,15 +173,15 @@ function view(state, _players, playerId) {
     twoFails: state.participants.length >= 7 && state.questIndex === 3,
     voteCount: Object.keys(state.ballots).length, questCount: Object.keys(state.questCards).length,
     quests: state.quests, rejected: state.rejected, history: state.history, result: state.result,
-    discussion: state.phase === 'discussion' ? state.discussion ?? null : null,
+    discussion: ['discussion', 'evil_discussion'].includes(state.phase) ? state.discussion ?? null : null,
   };
 }
 export const avalon = {
   id: 'avalon', minPlayers: 5, maxPlayers: 10, normalizeConfig, validateConfig: roleList, create, apply, view, tick,
-  deadline: state => state.phase === 'discussion' ? state.discussion?.endsAt ?? null : null,
+  deadline: state => ['discussion', 'evil_discussion'].includes(state.phase) ? state.discussion?.endsAt ?? null : null,
   phrase(action, state, players, config, playerId, now = Date.now()) {
     ensure(state.phase !== 'night', 'CHAT_PHASE');
-    ensure(state.phase !== 'discussion' || (canDiscuss(state, playerId) && now < state.discussion.endsAt), 'DISCUSSION_SPEAKER');
+    ensure(!['discussion', 'evil_discussion'].includes(state.phase) || (canDiscuss(state, playerId) && now < state.discussion.endsAt), 'DISCUSSION_SPEAKER');
     const phrase = findPhrase(action.phraseId);
     ensure(phrase, 'CHAT_PHRASE');
     const params = {};

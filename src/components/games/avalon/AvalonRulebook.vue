@@ -1,60 +1,41 @@
 <template>
-  <details class="collapse collapse-arrow border border-base-300 bg-base-100">
-    <summary
-      class="collapse-title flex items-center gap-2 font-serif text-lg font-semibold"
-    >
-      <i class="ri-book-open-line text-xl font-normal" aria-hidden="true"></i>
-      {{ t("avalon.rulebook.title") }}
-    </summary>
-    <div class="collapse-content space-y-5 text-sm leading-7">
+  <div class="divider"></div>
+  <section class="card">
+    <div class="card-body gap-4 p-0 text-sm leading-6">
+      <h2 class="card-title font-serif">
+        <i class="ri-book-open-line font-normal" aria-hidden="true"></i>
+        {{ t("avalon.rulebook.title") }}
+      </h2>
       <p class="text-base-content/70">{{ t("avalon.rulebook.intro") }}</p>
-      <ol class="list-decimal space-y-2 pl-5">
-        <li v-for="step in steps" :key="step">
-          {{ t(`avalon.rulebook.${step}`) }}
+      <ol class="divide-y divide-base-300 border-y border-base-300">
+        <li v-for="(step, index) in steps" :key="step" class="flex gap-3 py-3">
+          <span class="font-mono text-base-content/50">{{ String(index + 1).padStart(2, "0") }}</span>
+          <div class="min-w-0">
+            <h3 class="font-semibold">{{ t(`avalon.rulebook.steps.${step}.title`) }}</h3>
+            <p class="text-base-content/70">{{ t(`avalon.rulebook.steps.${step}.detail`) }}</p>
+          </div>
         </li>
       </ol>
-      <div>
-        <h3 class="mb-2 font-serif font-semibold">
-          {{ t("avalon.rulebook.teamSizes") }}
-        </h3>
-        <div
-          class="max-w-full overflow-x-auto rounded-box border border-base-300"
-        >
-          <table class="table table-xs min-w-128 text-center">
-            <thead>
-              <tr>
-                <th scope="col">{{ t("avalon.rulebook.players") }}</th>
-                <th scope="col">{{ t("avalon.rulebook.good") }}</th>
-                <th scope="col">{{ t("avalon.rulebook.evil") }}</th>
-                <th v-for="quest in 5" :key="quest" scope="col">
-                  {{ t("avalon.rulebook.questNumber", { n: quest }) }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in teamSizes" :key="row.players">
-                <th scope="row">{{ row.players }}</th>
-                <td>{{ row.good }}</td>
-                <td>{{ row.evil }}</td>
-                <td v-for="(size, index) in row.quests" :key="index">
-                  {{ size }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="space-y-2">
+        <h3 class="font-serif font-semibold">{{ t("avalon.rulebook.teamSizes") }}</h3>
+        <p class="text-xs text-base-content/60">{{ t("avalon.rulebook.sequenceHint") }}</p>
+        <div class="divide-y divide-base-300 border-y border-base-300">
+          <div v-for="row in teamSizes" :key="row.players" class="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2">
+            <strong class="min-w-11">{{ t("avalon.rulebook.playerCount", { n: row.players }) }}</strong>
+            <span class="text-base-content/60">{{ t("avalon.rulebook.campCounts", { good: row.good, evil: row.evil }) }}</span>
+            <span class="font-mono tabular-nums sm:ml-auto">{{ row.quests.join(" → ") }}</span>
+          </div>
         </div>
-        <p class="mt-2 text-xs text-base-content/60">
-          {{ t("avalon.rulebook.twoFails") }}
-        </p>
+        <p class="text-xs text-base-content/60">{{ t("avalon.rulebook.twoFails") }}</p>
       </div>
     </div>
-  </details>
+  </section>
 </template>
 <script setup>
 import { useLocale } from "@/i18n";
 import { GOOD_COUNTS, QUEST_TEAMS } from "../../../../shared/games/avalon.js";
 const { t } = useLocale();
-const steps = ["night", "discussion", "team", "vote", "quest", "victory"];
+const steps = ["night", "discussion", "team", "vote", "quest", "evilDiscussion", "victory"];
 const teamSizes = Object.entries(QUEST_TEAMS).map(([count, quests]) => ({
   players: Number(count),
   good: GOOD_COUNTS[count],

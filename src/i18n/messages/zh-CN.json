@@ -1234,12 +1234,21 @@
     "genre": "身份推理 · 阵营对抗",
     "description": "与朋友一起寻找梅林。5–10 人房间联机，秘密身份、组队投票与任务冒险。",
     "howTo": "如何开始",
+    "audio": {
+      "enable": "开启音效",
+      "disable": "关闭音效"
+    },
     "night": {
       "invitation": "请独自查看身份牌，记住你能看到的人。所有人确认后，一同迎接天亮。",
       "sealed": "一张未揭开的身份牌",
       "peek": "点击翻开，只对你可见",
       "good": "亚瑟阵营",
       "evil": "莫德雷德阵营",
+      "visionTitle": "夜晚所见",
+      "merlinVisionLabel": "你辨认出的坏人",
+      "evilVisionLabel": "你认出的同伴",
+      "percivalVisionLabel": "可能的梅林",
+      "percivalVisionWarning": "其中一位是莫甘娜，你无法分辨谁是谁。",
       "merlinVision": "你在黑暗中辨认出了邪恶阵营：{names}",
       "evilVision": "你认出了同伴：{names}",
       "percivalVision": "你看到了可能的梅林：{names}。但其中一位是莫甘娜，你无法分辨两人的身份。",
@@ -1268,6 +1277,7 @@
       "inviteWait": "等待队长邀约",
       "dialogueSelf": "你可以参与对话",
       "dialogueWait": "快车对话中",
+      "evilDiscussion": "邪恶阵营讨论中",
       "teamSelf": "已选 {n}/{total} 人",
       "teamReady": "队伍已选齐，请提交",
       "teamWait": "队长正在组队",
@@ -1293,6 +1303,8 @@
       "title": "你的表决牌",
       "compactHint": "拖放或点击投票",
       "compactWait": "等待开始表决",
+      "inactive": "当前无需表决",
+      "autoApprovedCompact": "已自动赞成，等待其他玩家",
       "compactSelected": "提交：{choice}",
       "hint": "将一张牌拖入下方投票区；也可以点击选牌，再点击投票区。确认前不会提交。",
       "wait": "表决开始后，请将你选择的牌放上桌面。",
@@ -1318,8 +1330,13 @@
     "success": "成功",
     "failure": "失败",
     "waitQuest": "等待任务队员秘密出牌。",
-    "assassinateHint": "好人已完成三次任务。坏人讨论后，由刺客选择目标；只有刺中梅林才能让坏人获胜。",
-    "assassinateHintSelf": "好人已完成三次任务。请你与同伴讨论后选择刺杀目标；只有刺中梅林，你的阵营才能获胜。",
+    "assassinateHint": "讨论已结束，刺客将锁定一名玩家。刺中梅林则邪恶阵营获胜，否则好人获胜。",
+    "assassinateHintSelf": "讨论已结束。请锁定一名玩家作为刺杀目标；刺中梅林，你的阵营才能获胜。",
+    "evilDiscussion": {
+      "hint": "第三次任务成功，进入 2 分钟邪恶阵营讨论。所有人的身份仍保密；任何人都能发言，也可以自行声明身份。",
+      "next": "讨论结束后才可选刺杀目标。除奥伯伦外的邪恶阵营玩家可以提前结束讨论。",
+      "confirmEnd": "确定提前结束讨论，让刺客开始选择目标吗？剩余讨论时间将被跳过。"
+    },
     "target": "刺杀目标",
     "chooseTarget": "选择一名玩家",
     "assassinate": "确认刺杀",
@@ -1438,6 +1455,13 @@
     "approved": "通过",
     "rejectedLabel": "否决",
     "failCount": "失败票：{n}",
+    "agendaSummary": {
+      "title": "当前任务",
+      "score": "已完成：成功 {success} · 失败 {failure}",
+      "latest": "最新公开记录",
+      "empty": "暂无公开记录。",
+      "executors": "执行者：{names}"
+    },
     "records": {
       "required": "队伍 {n} 人",
       "threshold": "{n} 张阻挠牌才会失败",
@@ -1455,6 +1479,8 @@
       "empty": "本任务尚无公开操作记录。",
       "types": {
         "begin_team": "开始组队",
+        "begin_evil_discussion": "邪恶阵营开始讨论",
+        "begin_assassinate": "刺客开始选择目标",
         "team": "提交队伍",
         "vote": "队伍表决",
         "quest": "任务结算",
@@ -1470,6 +1496,7 @@
       "lobby": "等待伙伴",
       "night": "夜幕降临 · 确认身份",
       "discussion": "圆桌议事",
+      "evil_discussion": "邪恶阵营讨论",
       "team": "队长组队",
       "vote": "全员表决",
       "quest": "执行任务",
@@ -1510,7 +1537,19 @@
     },
     "rulebook": {
       "title": "规则书",
-      "intro": "以下是本站实际采用的阿瓦隆规则。角色能力以本局配置为准。",
+      "intro": "按以下顺序进行；任务人数见下方。角色能力以本局配置为准。",
+      "steps": {
+        "night": { "title": "夜晚认身份", "detail": "系统随机发牌。每人私下查看自己的身份与可获知的玩家；全员确认后天亮。" },
+        "discussion": { "title": "轮流议事", "detail": "慢车：全员自由发言，每人 30 秒。快车：队长 15 秒内邀约一人，再进行 60 秒双人对话。队长可提前结束。" },
+        "team": { "title": "队长组队", "detail": "队长按下方人数表选出任务队员；提交队伍时，队长自动投赞成票。" },
+        "vote": { "title": "全员表决", "detail": "其他人秘密投赞成或反对。赞成票超过半数才出发；否则换队长再议事。连续五次否决，邪恶阵营获胜。" },
+        "quest": { "title": "秘密执行任务", "detail": "只有队员出牌。好人只能执行，坏人可执行或阻挠；通常只需一张阻挠牌，任务就会失败。" },
+        "evilDiscussion": { "title": "三次成功后的讨论", "detail": "任务成功三次后，全员身份仍保密，任何人可自由发言或自曝。讨论 2 分钟；除奥伯伦外的坏人可提前结束。" },
+        "victory": { "title": "判定胜负", "detail": "三次任务失败则坏人获胜。三次成功后，刺客锁定一人：刺中梅林则坏人获胜，否则好人获胜。" }
+      },
+      "sequenceHint": "每行最后五个数字依次对应第 1 至第 5 次任务的队员人数。",
+      "playerCount": "{n} 人",
+      "campCounts": "好人 {good} · 坏人 {evil}",
       "night": "开局随机分配身份。夜晚独自查看身份和可获知的玩家；全员确认后天亮。",
       "discussion": "每轮先议事。慢车按每人 30 秒计时，全员可发言；快车由队长在 15 秒内邀约一人，再进行 60 秒双人对话。计时结束或队长提前结束后进入组队。",
       "team": "队长按下表人数选择任务队伍。队长提交队伍时自动投赞成票。",
@@ -1545,6 +1584,7 @@
       "CHAT_QUEST": "只能谈论当前或已经进行的任务。",
       "TEAM_ONLY": "只有任务队员可以出牌。",
       "ASSASSIN_ONLY": "只有刺客可以决定目标。",
+      "EVIL_ONLY": "只有除奥伯伦外的邪恶阵营玩家可以提前结束讨论。",
       "GOOD_CANNOT_FAIL": "好人只能出成功票。",
       "TEAM": "队伍人数或成员无效。",
       "TARGET": "请选择除自己以外的一名玩家作为目标。",
@@ -1560,6 +1600,7 @@
       "slow": "慢车讨论 · {time}",
       "fast": "快车对话 · {time}",
       "invite": "快车邀约 · {time}",
+      "evil": "刺杀前讨论 · {time}",
       "slowHint": "慢车按每人 30 秒计算总时长，全员自由发言。倒计时结束后自动进入组队。",
       "inviteSelf": "请在 15 秒内指定一名玩家，与你进行 60 秒对话。超时将自动邀请你下一座位的玩家。",
       "inviteWait": "等待队长指定对话玩家；邀请超时会自动选择队长下一座位的玩家。",
@@ -1581,12 +1622,45 @@
       "players": "玩家",
       "agenda": "议事"
     },
+    "mobileHints": {
+      "vote": "请在下方提交赞成或反对票。",
+      "quest": "请秘密提交任务牌，提交后不可修改。",
+      "team": "选择任务队员 · 已选 {n}/{total}",
+      "invite": "请选择一名玩家进行快车对话。",
+      "assassinate": "请选择一名玩家作为刺杀目标。",
+      "slowDiscussion": "慢车讨论：所有人都可以发言。",
+      "fastDiscussion": "快车对话：本轮只有你与对话玩家可以发言。",
+      "evilDiscussion": "刺杀前讨论：所有人可发言或自行声明身份。"
+    },
+    "mobileHints": {
+      "vote": "请在下方提交赞成或反对票。",
+      "quest": "请秘密提交任务牌，提交后不可修改。",
+      "team": "选择任务队员 · 已选 {n}/{total}",
+      "invite": "请选择一名玩家进行快车对话。",
+      "assassinate": "请选择一名玩家作为刺杀目标。",
+      "slowDiscussion": "慢车讨论：所有人都可以发言。",
+      "fastDiscussion": "快车对话：本轮只有你与对话玩家可以发言。",
+      "evilDiscussion": "刺杀前讨论：所有人可发言或自行声明身份。"
+    },
     "promptActions": {
       "team": "选择队员",
       "discussion": "前往发言",
       "vote": "前往表决",
       "quest": "执行任务",
       "result": "查看结果"
+    },
+    "voteResult": {
+      "approved": "组队表决通过",
+      "rejected": "组队表决被否决",
+      "approvedReason": "赞成票达到至少 {needed} 票的过半门槛，队伍可以出发。",
+      "rejectedReason": "赞成票未达到至少 {needed} 票的过半门槛，队伍不能出发。",
+      "tieReason": "赞成与反对票数相同；按规则，平票视为否决。",
+      "nextMember": "下一步：你在任务队伍中，请秘密提交执行牌。",
+      "nextObserver": "下一步：等待任务队员秘密提交执行牌。",
+      "nextLeaderDiscussion": "下一步：你是新队长。先进入讨论，之后重新选择队伍。",
+      "nextDiscussion": "下一步：由新队长 {name} 带领讨论，之后重新组队。",
+      "nextLeaderTeam": "下一步：你是新队长，请选择新的任务队伍。",
+      "nextTeam": "下一步：等待新队长 {name} 选择任务队伍。"
     },
     "questResult": {
       "success": "第 {n} 次任务成功",
@@ -1667,6 +1741,17 @@
       "reconnecting": "正在重连",
       "online": "已连接",
       "replaced": "座位已在其他页面打开"
+    },
+    "roomActivity": {
+      "joined": "{name} 加入了房间",
+      "left": "{name} 离开了房间",
+      "offline": "{name} 掉线了",
+      "online": "{name} 已重新上线",
+      "selfOnline": "已恢复与房间的连接",
+      "ready": "{name} 已准备",
+      "unready": "{name} 取消了准备",
+      "host": "{name} 成为房主",
+      "seat": "{name} 移到了 {n} 号位"
     },
     "confirmLeave": "离开后本局仍会等待你的操作，可在同一浏览器重新加入。确认离开？",
     "title": "游戏",

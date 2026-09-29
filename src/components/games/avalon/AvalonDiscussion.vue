@@ -1,6 +1,9 @@
 <template>
   <section class="card" :class="compact || fillHeight ? 'h-full min-h-0' : ''">
-    <div class="card-body gap-4 p-0" :class="compact || fillHeight ? 'h-full min-h-0' : ''">
+    <div
+      class="card-body gap-4 p-0"
+      :class="compact || fillHeight ? 'h-full min-h-0' : ''"
+    >
       <div
         v-if="!compact"
         class="flex flex-wrap items-center justify-between gap-2"
@@ -79,9 +82,11 @@
             <i class="ri-arrow-down-line" aria-hidden="true"></i
             >{{ t("avalon.phrases.unread", { n: unread }) }}
           </button>
-          <span v-if="compact" class="self-end shrink-0 text-xs text-base-content/50">{{
-            t("avalon.phrases.limit", { n: MESSAGE_LIMIT })
-          }}</span>
+          <span
+            v-if="compact"
+            class="self-end shrink-0 text-xs text-base-content/50"
+            >{{ t("avalon.phrases.limit", { n: MESSAGE_LIMIT }) }}</span
+          >
         </div>
         <div
           class="min-w-0 space-y-4"
@@ -94,9 +99,7 @@
           "
         >
           <div>
-            <div
-              class="flex min-w-0 flex-wrap items-end gap-2"
-            >
+            <div class="flex min-w-0 flex-wrap items-end gap-2">
               <div
                 class="grid min-w-0 basis-full grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2"
               >
@@ -144,7 +147,7 @@
 
               <fieldset
                 v-if="selected.player"
-                class="fieldset min-w-0 flex-1 basis-40"
+                class="fieldset min-w-0 w-26 shrink-0"
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.target") }}
@@ -171,7 +174,10 @@
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.role") }}
                 </legend>
-                <select v-model="role" class="select max-sm:select-sm min-w-0 w-full">
+                <select
+                  v-model="role"
+                  class="select max-sm:select-sm min-w-0 w-full"
+                >
                   <SelectLabel :text="t(`avalon.roles.${role}`)" />
                   <option v-for="option in roles" :key="option" :value="option">
                     {{ t(`avalon.roles.${option}`) }}
@@ -218,18 +224,11 @@
 
                   <button
                     type="button"
-                    class="btn shrink-0 max-sm:btn-sm"
+                    class="btn btn-square shrink-0 max-sm:btn-sm"
                     :disabled="!canAct || cooling"
                     @click="send"
                   >
                     <i class="ri-send-ins-line" aria-hidden="true"></i>
-                    {{
-                      t(
-                        cooling
-                          ? "avalon.phrases.cooldown"
-                          : "avalon.phrases.send",
-                      )
-                    }}
                   </button>
                 </div>
               </fieldset>
@@ -303,7 +302,8 @@ const currentGroup = computed(() =>
 );
 const selected = computed(() => findPhrase(selectedId.value));
 const parameterCount = computed(
-  () => ["player", "role", "quest"].filter((key) => selected.value?.[key]).length,
+  () =>
+    ["player", "role", "quest"].filter((key) => selected.value?.[key]).length,
 );
 const targetName = computed(
   () =>

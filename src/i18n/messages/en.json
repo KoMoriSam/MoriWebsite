@@ -1234,12 +1234,21 @@
     "genre": "Social deduction · Team rivalry",
     "description": "Find Merlin with friends. A 5–10 player game of hidden roles, team votes and quests.",
     "howTo": "How to play",
+    "audio": {
+      "enable": "Turn on sound",
+      "disable": "Mute sound"
+    },
     "night": {
       "invitation": "Night falls. Look at your identity card in private, remember who you can see. Dawn comes once everyone has confirmed.",
       "sealed": "An unrevealed identity card",
       "peek": "Turn it over. Only you can see it",
       "good": "Arthur's allies",
       "evil": "Mordred's allies",
+      "visionTitle": "What you saw tonight",
+      "merlinVisionLabel": "Evil players you recognised",
+      "evilVisionLabel": "Allies you recognised",
+      "percivalVisionLabel": "Possible Merlin",
+      "percivalVisionWarning": "One of them is Morgana. You cannot tell which is which.",
       "merlinVision": "In the darkness, you recognise the agents of evil: {names}",
       "evilVision": "You recognise your allies: {names}",
       "percivalVision": "Possible Merlin: {names}. But one of them is Morgana, you cannot distinguish their identities.",
@@ -1268,6 +1277,7 @@
       "inviteWait": "Waiting for the leader's invite",
       "dialogueSelf": "You may join this dialogue",
       "dialogueWait": "Fast dialogue in progress",
+      "evilDiscussion": "Evil discussion in progress",
       "teamSelf": "Selected {n}/{total} players",
       "teamReady": "Team ready to propose",
       "teamWait": "Leader is building the team",
@@ -1293,6 +1303,8 @@
       "title": "Your ballot cards",
       "compactHint": "Drag or tap to vote",
       "compactWait": "Waiting for voting",
+      "inactive": "No vote needed right now",
+      "autoApprovedCompact": "Approved automatically; waiting for others",
       "compactSelected": "Submit: {choice}",
       "hint": "Drag a card into the voting area, or select a card and click the area. Nothing is submitted until you confirm.",
       "wait": "Place your chosen card on the table when voting begins.",
@@ -1318,8 +1330,13 @@
     "success": "Success",
     "failure": "Failure",
     "waitQuest": "Waiting for the quest team to play their secret cards.",
-    "assassinateHint": "Good completed three quests. After Evil discusses, the Assassin chooses a target. Only killing Merlin wins for Evil.",
-    "assassinateHintSelf": "Good completed three quests. Discuss with your allies, then choose your target. Your side wins only if you kill Merlin.",
+    "assassinateHint": "Discussion has ended. The Assassin will lock in one target. Evil wins if it is Merlin; otherwise Good wins.",
+    "assassinateHintSelf": "Discussion has ended. Lock in one target. Your side wins only if you find Merlin.",
+    "evilDiscussion": {
+      "hint": "The third quest succeeded. A two-minute discussion begins. Everyone's role remains secret; anyone may speak or claim a role.",
+      "next": "The Assassin can choose a target only after discussion. Any Evil player except Oberon may end it early.",
+      "confirmEnd": "End discussion early so the Assassin can choose a target? The remaining time will be skipped."
+    },
     "target": "Assassination target",
     "chooseTarget": "Choose a player",
     "assassinate": "Assassinate",
@@ -1438,6 +1455,13 @@
     "approved": "Approved",
     "rejectedLabel": "Rejected",
     "failCount": "Fail cards: {n}",
+    "agendaSummary": {
+      "title": "Current quest",
+      "score": "Completed: {success} success · {failure} fail",
+      "latest": "Latest public record",
+      "empty": "No public actions recorded yet.",
+      "executors": "Quest team: {names}"
+    },
     "records": {
       "required": "Team of {n}",
       "threshold": "{n} sabotage cards needed to fail",
@@ -1455,6 +1479,8 @@
       "empty": "No public actions recorded for this quest yet.",
       "types": {
         "begin_team": "Begin team selection",
+        "begin_evil_discussion": "Evil discussion begins",
+        "begin_assassinate": "Assassin begins target selection",
         "team": "Team proposed",
         "vote": "Team vote",
         "quest": "Quest result",
@@ -1470,6 +1496,7 @@
       "lobby": "Waiting for players",
       "night": "Night falls · Discover your identity",
       "discussion": "Round table discussion",
+      "evil_discussion": "Evil discussion",
       "team": "Build a team",
       "vote": "Team vote",
       "quest": "Quest in progress",
@@ -1510,7 +1537,19 @@
     },
     "rulebook": {
       "title": "Rulebook",
-      "intro": "These are the Avalon rules used on this site. Role abilities follow this game's configuration.",
+      "intro": "Play in this order. Quest team sizes are below; role abilities follow this game's configuration.",
+      "steps": {
+        "night": { "title": "Discover your role", "detail": "Roles are dealt randomly. Privately view your role and any players you may know. Daybreak starts once everyone confirms." },
+        "discussion": { "title": "Discuss each round", "detail": "Slow round: everyone may talk, 30 seconds per player. Fast round: the leader has 15 seconds to invite one player, then they talk for 60 seconds. The leader may end early." },
+        "team": { "title": "Build the quest team", "detail": "The leader selects the number of players shown below. Proposing the team automatically casts the leader's approval vote." },
+        "vote": { "title": "Vote together", "detail": "Others secretly approve or reject. More than half must approve; otherwise a new leader starts another discussion. Five consecutive rejections give Evil the win." },
+        "quest": { "title": "Play quest cards", "detail": "Only team members play. Good must Execute; Evil may Execute or Sabotage. Usually one Sabotage card fails the quest." },
+        "evilDiscussion": { "title": "Discuss after three successes", "detail": "All roles stay secret, but anyone may speak or claim a role. Discussion lasts two minutes. Any Evil player except Oberon may end it early." },
+        "victory": { "title": "Decide the winner", "detail": "Three failed quests give Evil the win. After three successes, the Assassin locks in one target: finding Merlin wins for Evil; otherwise Good wins." }
+      },
+      "sequenceHint": "The five numbers at the end of each row are the team sizes for quests 1 through 5.",
+      "playerCount": "{n} players",
+      "campCounts": "Good {good} · Evil {evil}",
       "night": "Roles are assigned at random. At night, privately view your role and anyone you are allowed to know. Daybreak begins once everyone confirms.",
       "discussion": "Each round begins with discussion. In a slow round, everyone can speak for 30 seconds per player. In a fast round, the leader has 15 seconds to invite one player, followed by a 60-second dialogue. Team selection begins when time runs out or the leader ends discussion early.",
       "team": "The leader selects a quest team of the size shown below. Submitting the team automatically records the leader's approval.",
@@ -1545,6 +1584,7 @@
       "CHAT_QUEST": "Only discuss the current quest or an earlier quest.",
       "TEAM_ONLY": "Only quest team members can play a card.",
       "ASSASSIN_ONLY": "Only the Assassin can choose the target.",
+      "EVIL_ONLY": "Only Evil players other than Oberon may end this discussion early.",
       "GOOD_CANNOT_FAIL": "Good players must play success.",
       "TEAM": "Invalid team size or members.",
       "TARGET": "Choose a player other than yourself.",
@@ -1560,6 +1600,7 @@
       "slow": "Open discussion · {time}",
       "fast": "Pair dialogue · {time}",
       "invite": "Choose partner · {time}",
+      "evil": "Pre-assassination discussion · {time}",
       "slowHint": "Open discussion allows everyone to speak, with 30 seconds per player in the total time budget. Team selection begins automatically when time expires.",
       "inviteSelf": "Choose one player within 15 seconds for a 60-second dialogue. If time expires, the player in the next seat is invited automatically.",
       "inviteWait": "Waiting for the leader to choose a dialogue partner. The next seat is invited automatically if time expires.",
@@ -1581,12 +1622,35 @@
       "players": "Players",
       "agenda": "Briefing"
     },
+    "mobileHints": {
+      "vote": "Submit an approval or rejection below.",
+      "quest": "Play your secret quest card. You cannot change it afterward.",
+      "team": "Select quest members · {n}/{total} selected",
+      "invite": "Choose one player for the fast dialogue.",
+      "assassinate": "Choose one player as your assassination target.",
+      "slowDiscussion": "Open discussion: everyone may speak.",
+      "fastDiscussion": "Pair dialogue: only you and the other speaker may talk.",
+      "evilDiscussion": "Pre-assassination discussion: anyone may speak or claim a role."
+    },
     "promptActions": {
       "team": "Choose players",
       "discussion": "Join discussion",
       "vote": "Go to voting",
       "quest": "Carry out quest",
       "result": "View result"
+    },
+    "voteResult": {
+      "approved": "Team vote approved",
+      "rejected": "Team vote rejected",
+      "approvedReason": "The team received the required majority of at least {needed} approvals and may depart.",
+      "rejectedReason": "The team did not reach the required majority of at least {needed} approvals and cannot depart.",
+      "tieReason": "Approvals and rejections are tied. By rule, a tie rejects the team.",
+      "nextMember": "Next: you are on the quest team. Secretly submit your quest card.",
+      "nextObserver": "Next: wait for the quest team to submit their cards in secret.",
+      "nextLeaderDiscussion": "Next: you are the new leader. Discuss first, then choose a new team.",
+      "nextDiscussion": "Next: the new leader, {name}, leads discussion before choosing another team.",
+      "nextLeaderTeam": "Next: you are the new leader. Choose a new quest team.",
+      "nextTeam": "Next: wait for the new leader, {name}, to choose a quest team."
     },
     "questResult": {
       "success": "Quest {n} succeeded",
@@ -1667,6 +1731,17 @@
       "reconnecting": "Reconnecting",
       "online": "Connected",
       "replaced": "Seat opened elsewhere"
+    },
+    "roomActivity": {
+      "joined": "{name} joined the room",
+      "left": "{name} left the room",
+      "offline": "{name} disconnected",
+      "online": "{name} reconnected",
+      "selfOnline": "Your room connection is restored",
+      "ready": "{name} is ready",
+      "unready": "{name} is no longer ready",
+      "host": "{name} is now the host",
+      "seat": "{name} moved to seat {n}"
     },
     "confirmLeave": "The game will still wait for your actions. You can rejoin in this browser. Leave?",
     "title": "Games",
