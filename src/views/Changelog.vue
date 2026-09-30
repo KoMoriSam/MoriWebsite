@@ -231,7 +231,7 @@
                     <span lang="zh-CN">{{ release.summary }}</span>
                   </p>
 
-                  <Markdown
+                  <Renderer
                     lang="zh-CN"
                     v-if="release.intro"
                     mode="standard"
@@ -259,7 +259,7 @@
                       >
                         {{ localizeText(typeText(changeGroup.type)) }}
                       </span>
-                      <Markdown
+                      <Renderer
                         lang="zh-CN"
                     mode="standard"
                         prose-size="sm"
@@ -289,7 +289,7 @@
                       <p class="text-sm font-semibold">
                         {{ release.warning ? translate('pages.changelog.beforeUpgrading') : translate('pages.changelog.releaseNotes') }}
                       </p>
-                      <Markdown
+                      <Renderer
                         lang="zh-CN"
                     mode="standard"
                         prose-size="sm"
@@ -318,7 +318,7 @@ import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import Markdown from "@/components/markdown/Markdown.vue";
+import Renderer from "@/components/markdown/Renderer.vue";
 import ssgData from "@/router/ssg-data";
 import { useChangelogStore } from "@/stores/changelogStore";
 import { typeText } from "@/utils/type-changelog";

@@ -10,8 +10,8 @@ import {
   getUnpromptedAnnouncements,
   isAnnouncementRead,
   withAnnouncementRead,
-} from "@/utils/announcement-state";
-import { useGlobalStorage } from "@/utils/storage/use-global-storage";
+} from "@/utils/announcement/state";
+import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const SESSION_PROMPTED_KEY = "ANNOUNCEMENT_PROMPTED_V1";

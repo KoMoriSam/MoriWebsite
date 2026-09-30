@@ -1,7 +1,7 @@
 <template>
-  <Reader ref="readerRef" toc :aside="showReaderAside">
+  <ReadingLayout ref="readerRef" toc :aside="showReaderAside">
     <!-- 文章内容 -->
-    <Markdown
+    <Renderer
       v-if="article && (loading || content)"
       :ref="scrollRef"
       :content="content"
@@ -341,7 +341,7 @@
           </RouterLink>
         </nav>
       </template>
-    </Markdown>
+    </Renderer>
 
     <!-- 错误状态 -->
     <div v-else-if="error" class="alert alert-error my-16">
@@ -395,7 +395,7 @@
         loading="lazy"
       />
     </template>
-  </Reader>
+  </ReadingLayout>
 </template>
 
 <script setup>
@@ -413,18 +413,18 @@ import { useReaderStore } from "@/stores/readerStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
-import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
-import { useContentReadTracking } from "@/composables/useContentReadTracking";
-import { normalizeArticleDate } from "@/composables/useArticleFilter";
+import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
+import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
+import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
 import CONFIG from "@/constants/config";
 
-import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
-import Reader from "@/components/reader/Reader.vue";
-import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Markdown from "@/components/markdown/Markdown.vue";
+import FloatingActionButton from "@/components/interaction/controls/FloatingActionButton.vue";
+import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
+import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
+import Renderer from "@/components/markdown/Renderer.vue";
 
 const ContextMenu = defineAsyncComponent(
-  () => import("@/components/reader/ContextMenu.vue"),
+  () => import("@/components/reader/interaction/ContextMenu.vue"),
 );
 
 const readerRef = ref(null);

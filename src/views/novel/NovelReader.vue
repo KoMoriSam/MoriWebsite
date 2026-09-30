@@ -1,5 +1,5 @@
 <template>
-  <Reader
+  <ReadingLayout
     ref="readerRef"
     :toc="!isMobileReader"
     :aside="!isMobileReader"
@@ -142,7 +142,7 @@
         @comment="handleChapterComments"
       />
 
-      <Markdown
+      <Renderer
         v-if="currentChapter && !isMobileReader"
         :content="currentChapterContent"
         :is-loading="isLoadingContent"
@@ -161,7 +161,7 @@
         <template #after>
           <ChapterController v-if="!isLoadingContent" class="not-prose" />
         </template>
-      </Markdown>
+      </Renderer>
     </section>
 
     <template #aside>
@@ -208,7 +208,7 @@
     <template #format-setting>
       <FormatSetting />
     </template>
-  </Reader>
+  </ReadingLayout>
 
   <dialog
     v-if="!isMobileReader"
@@ -261,38 +261,38 @@ const { t: translate, commentLocale, number: formatNumber, date: formatLocalized
 
 import { storeToRefs } from "pinia";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
-import { useNovelStore } from "@/stores/novelStore";
+import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 
 import Giscus from "@giscus/vue";
-import Reader from "@/components/reader/Reader.vue";
+import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import ChapterController from "@/components/novel/ChapterController.vue";
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
-import PagedReader from "@/components/novel/mobile/PagedReader.vue";
-import ScrollReader from "@/components/novel/mobile/ScrollReader.vue";
-import ReaderControls from "@/components/novel/mobile/ReaderControls.vue";
-import ReaderStatusBar from "@/components/novel/mobile/ReaderStatusBar.vue";
-import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Markdown from "@/components/markdown/Markdown.vue";
-import FloatingActionButton from "@/components/ui/button/FloatingActionButton.vue";
+import PagedReader from "@/components/novel/mobile/layout/PagedReader.vue";
+import ScrollReader from "@/components/novel/mobile/layout/ScrollReader.vue";
+import ReaderControls from "@/components/novel/mobile/controls/ReaderControls.vue";
+import ReaderStatusBar from "@/components/novel/mobile/display/ReaderStatusBar.vue";
+import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
+import Renderer from "@/components/markdown/Renderer.vue";
+import FloatingActionButton from "@/components/interaction/controls/FloatingActionButton.vue";
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
 import { useMediaQuery } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
-import { useGiscus } from "@/composables/useGiscus";
+import { useGiscus } from "@/composables/novel/useGiscus";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
-import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
-import { useContentReadTracking } from "@/composables/useContentReadTracking";
+import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
+import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
 import { useModalClose } from "@/composables/useModal";
 import {
   getChapterContextTitle,
   getChapterDisplayTitle,
-} from "@/utils/format-chapter-label";
+} from "@/utils/novel/format-label";
 import {
   MOBILE_READING_MODES,
   MOBILE_READER_VOLUME_KEY_EVENT,
@@ -377,7 +377,7 @@ import {
 } from "vue";
 
 const ContextMenu = defineAsyncComponent(
-  () => import("@/components/reader/ContextMenu.vue"),
+  () => import("@/components/reader/interaction/ContextMenu.vue"),
 );
 
 const stopNovelPosTracker = ref(null);

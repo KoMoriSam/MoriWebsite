@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="to-top">
+  <PageShell section-id="to-top">
     <section title="浮动按钮与回到顶部">
       <div class="flex min-h-[calc(100vh+24rem)] flex-col">
         <p class="text-sm text-base-content/60">
@@ -12,9 +12,9 @@
         </div>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 </script>

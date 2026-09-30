@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="page-layout">
+  <PageShell section-id="page-layout">
     <section title="ContentPage 内容页">
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div>
@@ -37,9 +37,9 @@
         </div>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 </script>

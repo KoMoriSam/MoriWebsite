@@ -17,7 +17,7 @@ import {
   getUnpromptedAnnouncements,
   isAnnouncementRead,
   withAnnouncementRead,
-} from "../src/utils/announcement-state.js";
+} from "../src/utils/announcement/state.js";
 import {
   MARKDOWN_MODE_STANDARD,
   renderMarkdown,

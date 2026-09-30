@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="rss">
+  <PageShell section-id="rss">
     <section aria-labelledby="rss-preview-title">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="min-w-0">
@@ -165,7 +165,7 @@
         </div>
       </template>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
@@ -174,7 +174,7 @@ import { computed, onMounted, ref } from "vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { sanitizeMarkdownHtml } from "@/utils/markdown/sanitize-html";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const RSS_CONTENT_NAMESPACE = "http://purl.org/rss/1.0/modules/content/";
 const RSS_DC_NAMESPACE = "http://purl.org/dc/elements/1.1/";

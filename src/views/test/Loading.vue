@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="loading">
+  <PageShell section-id="loading">
     <section title="Loading 状态">
       <div class="mb-4 flex flex-wrap items-center gap-4">
         <button
@@ -21,19 +21,19 @@
       <div
         class="flex min-h-[100px] items-center justify-center rounded-lg bg-base-100 p-6"
       >
-        <Loading v-if="loadingOn" size="my-4" />
+        <LoadingIndicator v-if="loadingOn" size="my-4" />
         <p v-else class="opacity-50">点击按钮查看 Loading 组件</p>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { onBeforeUnmount, ref } from "vue";
 import { useToast } from "@/composables/useToast";
-import Loading from "@/components/base/Loading.vue";
+import LoadingIndicator from "@/components/feedback/LoadingIndicator.vue";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const toast = useToast({
   position: "center-top",

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { GOOD_COUNTS, isEvil, QUEST_TEAMS, SPECIAL_ROLES, normalizeConfig, roleList } from './avalon/rules.js';
 import { advanceRoomTime, applyRoomAction as applyAction, createPlayer, createRoom, HOST_GRACE, roomView as playerView, transferHost } from './games/state.js';
-import { knownPlayer, possibleRoles } from '../src/games/avalon-presentation.js';
-import { possibleMarks } from '../src/games/avalon-notes.js';
-import { QUICK_PHRASES } from '../shared/games/avalon-phrases.js';
+import { knownPlayer, possibleRoles } from '../src/games/avalon/presentation.js';
+import { possibleMarks } from '../src/games/avalon/notes.js';
+import { QUICK_PHRASES } from '../shared/games/avalon/phrases.js';
 import { MESSAGE_COOLDOWN, MESSAGE_LIMIT } from '../shared/games/messages.js';
 import fs from 'node:fs';
 

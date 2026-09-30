@@ -206,7 +206,7 @@ const { t: translate } = useLocale();
 import { computed, ref } from "vue";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import CodeBlock from "@/components/markdown/CodeBlock.vue";
+import CodeBlock from "@/components/markdown/code/CodeBlock.vue";
 
 const weight = ref(400);
 const family = ref("serif");

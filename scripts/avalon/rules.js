@@ -1,9 +1,9 @@
 import { ensure, GameError, randomInt } from '../games/utils.js';
-import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, isEvil, roleRoster } from '../../shared/games/avalon.js';
-import { findPhrase } from '../../shared/games/avalon-phrases.js';
-import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS, ASSASSINATION_DISCUSSION_SECONDS } from '../../shared/games/avalon-discussion.js';
-export { GOOD_COUNTS, SPECIAL_ROLES, isEvil } from '../../shared/games/avalon.js';
-export { QUEST_TEAMS } from '../../shared/games/avalon.js';
+import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, isEvil, roleRoster } from '../../shared/games/avalon/index.js';
+import { findPhrase } from '../../shared/games/avalon/phrases.js';
+import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS, ASSASSINATION_DISCUSSION_SECONDS } from '../../shared/games/avalon/discussion.js';
+export { GOOD_COUNTS, SPECIAL_ROLES, isEvil } from '../../shared/games/avalon/index.js';
+export { QUEST_TEAMS } from '../../shared/games/avalon/index.js';
 export function normalizeConfig(config = { specialRoles: DEFAULT_SPECIAL_ROLES }) {
   ensure(config && typeof config === 'object' && !Array.isArray(config) && Object.keys(config).every(key => key === 'specialRoles'), 'ROLE_CONFIG');
   ensure(Array.isArray(config.specialRoles) && config.specialRoles.every(role => SPECIAL_ROLES.includes(role)) && new Set(config.specialRoles).size === config.specialRoles.length, 'ROLE_CONFIG');

@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="codeblock">
+  <PageShell section-id="codeblock">
     <section class="min-w-0">
       <p class="mb-3 text-sm text-base-content/60">
         第一段包含跨行高亮与超长行；窄屏时应只滚动代码区域，行号保持可见。
@@ -19,12 +19,12 @@
         code="Magnam dolore beatae necessitatibus nemopsum itaque sit. Et porro quae qui et et dolore ratione."
       />
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
-import CodeBlock from "@/components/markdown/CodeBlock.vue";
-import TestPage from "./_TestPage.vue";
+import CodeBlock from "@/components/markdown/code/CodeBlock.vue";
+import PageShell from "./PageShell.vue";
 
 const sampleCode = `interface Test {
   name: string;

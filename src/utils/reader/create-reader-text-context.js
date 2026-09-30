@@ -2,7 +2,7 @@ import { createReaderShareContent } from "@/utils/reader/create-reader-share-con
 import {
   getLatexFormula,
   getLatexSelection,
-} from "@/utils/reader/reader-latex";
+} from "@/utils/reader/latex";
 
 const IGNORED_TEXT_SELECTOR = [
   ".comment-trigger",

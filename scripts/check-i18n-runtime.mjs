@@ -15,8 +15,9 @@ const cardTestPlugin = {
   resolveId: id => id === 'virtual:avalon-cards' ? cardRuntimeId : undefined,
   load(id) {
     if (id !== cardRuntimeId) return;
-    const { descriptor } = parse(readFileSync(path.resolve('src/components/games/avalon/AvalonBallotCards.vue'), 'utf8'));
-    return compileScript(descriptor, { id: 'card-interaction-test', inlineTemplate: true }).content;
+    const { descriptor } = parse(readFileSync(path.resolve('src/components/games/avalon/interaction/BallotCards.vue'), 'utf8'));
+    return compileScript(descriptor, { id: 'card-interaction-test', inlineTemplate: true }).content
+      .replace(/^import RoleInfo from .*;$/m, 'const RoleInfo = { render: () => null };');
   },
 };
 const server = await createServer({ configFile: false, cacheDir: 'node_modules/.cache/i18n-runtime', plugins: [cardTestPlugin, vuePlugin()], optimizeDeps: { noDiscovery: true, include: [] }, resolve: { alias: { '@': path.resolve('src') } }, server: { middlewareMode: true, watch: null }, appType: 'custom' });
@@ -121,66 +122,70 @@ try {
   const finishedTable = roomView(tableRoom, tableRoom.hostId);
   const identityProps = { selfId: revealedTable.selfId, playerName: id => tablePlayers.find(player => player.id === id)?.nickname ?? id, faceUp: true, backTitle: '', backHint: '' };
   const cases = [
-    ['/src/components/games/avalon/AvalonDiscussionTimer.vue', { discussion: { mode: 'slow', startedAt: 0, endsAt: 150000, partnerId: null }, serverNow: 105000 }, 'Open discussion · 00:45', 'විවෘත සාකච්ඡාව · 00:45'],
-    ['/src/components/games/avalon/AvalonDiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 15000, partnerId: null }, serverNow: 0 }, 'Choose partner · 00:15', 'සහකරු තේරීම · 00:15'],
-    ['/src/components/games/avalon/AvalonDiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 60000, partnerId: 'partner' }, serverNow: 0 }, 'Pair dialogue · 01:00', 'දෙදෙනාගේ සංවාදය · 01:00'],
-    ['/src/components/games/avalon/AvalonQuestHistory.vue', { room: questHistoryView, quest: 0 }, 'Execute 2 · Sabotage 0', 'ක්‍රියාත්මක 2 · බාධා 0'],
-    ['/src/components/games/avalon/AvalonQuestHistory.vue', { room: questHistoryView, quest: 1 }, 'Team of 3', 'කණ්ඩායමේ 3 දෙනෙක්'],
-    ['/src/components/games/avalon/AvalonQuestHistory.vue', { room: legacyHistoryView, quest: 0 }, 'Execute 2 · Sabotage 0', 'ක්‍රියාත්මක 2 · බාධා 0'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: historyView, canAct: true, run: () => {} }, 'Public game record', 'පොදු ක්‍රීඩා වාර්තාව'],
-    ['/src/components/games/avalon/AvalonIdentityCard.vue', { ...identityProps, self: { role: 'merlin', knownEvil: ['known-evil'] } }, 'known-evil', 'known-evil'],
-    ['/src/components/games/avalon/AvalonIdentityCard.vue', { ...identityProps, self: { role: 'morgana', knownEvil: ['known-ally'] } }, 'known-ally', 'known-ally'],
-    ['/src/components/games/avalon/AvalonDiscussion.vue', { room: discussionMessages, canAct: true, run: () => {} }, 'I claim to be Merlin.', 'මගේ චරිතය මර්ලින් බව මම ප්‍රකාශ කරනවා.'],
-    ['/src/components/games/avalon/AvalonBallotCards.vue', { active: true, canSubmit: true, submitted: false, context: 'room:1:2' }, 'Your ballot cards', 'ඔබේ ඡන්ද කාඩ්පත්'],
-    ['/src/components/games/avalon/AvalonBallotCards.vue', { active: true, canSubmit: false, submitted: true, context: 'room:1:2' }, 'Submitted', 'යවා ඇත'],
-    ['/src/components/games/avalon/AvalonBallotCards.vue', { active: true, canSubmit: false, submitted: true, autoApproved: true, context: 'room:1:2' }, 'Your proposed team has your automatic approval', 'ඔබ යෝජනා කළ කණ්ඩායමට ඔබේ අනුමැතිය ස්වයංක්‍රීයව සටහන් කර ඇත'],
-    ['/src/components/games/avalon/AvalonBallotCards.vue', { mode: 'quest', active: true, canSubmit: true, allowFail: true, context: 'room:1:3' }, 'Sabotage', 'බාධා කරන්න'],
-    ['/src/components/games/avalon/AvalonBallotCards.vue', { mode: 'quest', active: true, canSubmit: true, allowFail: false, context: 'room:1:3' }, 'Execute', 'ක්‍රියාත්මක කරන්න'],
+    ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'slow', startedAt: 0, endsAt: 150000, partnerId: null }, serverNow: 105000 }, 'Open discussion · 00:45', 'විවෘත සාකච්ඡාව · 00:45'],
+    ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 15000, partnerId: null }, serverNow: 0 }, 'Choose partner · 00:15', 'සහකරු තේරීම · 00:15'],
+    ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 60000, partnerId: 'partner' }, serverNow: 0 }, 'Pair dialogue · 01:00', 'දෙදෙනාගේ සංවාදය · 01:00'],
+    ['/src/components/games/avalon/display/QuestHistory.vue', { room: questHistoryView, quest: 0 }, 'Execute 2 · Sabotage 0', 'ක්‍රියාත්මක 2 · බාධා 0'],
+    ['/src/components/games/avalon/display/QuestHistory.vue', { room: questHistoryView, quest: 1 }, 'Team of 3', 'කණ්ඩායමේ 3 දෙනෙක්'],
+    ['/src/components/games/avalon/display/QuestHistory.vue', { room: legacyHistoryView, quest: 0 }, 'Execute 2 · Sabotage 0', 'ක්‍රියාත්මක 2 · බාධා 0'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: historyView, canAct: true, run: () => {} }, 'Public game record', 'පොදු ක්‍රීඩා වාර්තාව'],
+    ['/src/components/games/avalon/display/IdentityCard.vue', { ...identityProps, self: { role: 'merlin', knownEvil: ['known-evil'] } }, 'known-evil', 'known-evil'],
+    ['/src/components/games/avalon/display/IdentityCard.vue', { ...identityProps, self: { role: 'morgana', knownEvil: ['known-ally'] } }, 'known-ally', 'known-ally'],
+    ['/src/components/games/avalon/interaction/Discussion.vue', { room: discussionMessages, canAct: true, run: () => {} }, 'I claim to be Merlin.', 'මගේ චරිතය මර්ලින් බව මම ප්‍රකාශ කරනවා.'],
+    ['/src/components/games/avalon/interaction/BallotCards.vue', { active: true, canSubmit: true, submitted: false, context: 'room:1:2' }, 'Your ballot cards', 'ඔබේ ඡන්ද කාඩ්පත්'],
+    ['/src/components/games/avalon/interaction/BallotCards.vue', { active: true, canSubmit: false, submitted: true, context: 'room:1:2' }, 'Submitted', 'යවා ඇත'],
+    ['/src/components/games/avalon/interaction/BallotCards.vue', { active: true, canSubmit: false, submitted: true, autoApproved: true, context: 'room:1:2' }, 'Approved automatically; waiting for others', 'ස්වයංක්‍රීයව අනුමතයි; අනෙක් අය බලා සිටී'],
+    ['/src/components/games/avalon/interaction/BallotCards.vue', { mode: 'quest', active: true, canSubmit: true, allowFail: true, context: 'room:1:3' }, 'Sabotage', 'බාධා කරන්න'],
+    ['/src/components/games/avalon/interaction/BallotCards.vue', { mode: 'quest', active: true, canSubmit: true, allowFail: false, context: 'room:1:3' }, 'Execute', 'ක්‍රියාත්මක කරන්න'],
     ['/src/views/Games.vue', {}, 'Available board games', 'ලබාගත හැකි පුවරු ක්‍රීඩා'],
     ['/src/views/games/Avalon.vue', {}, 'Create room', 'කාමරයක් සාදන්න'],
-    ['/src/components/games/avalon/AvalonSettings.vue', { room: lobbyTable, canAct: true, run: () => {} }, 'Roles for this game', 'මෙම ක්‍රීඩාවේ චරිත'],
-    ['/src/components/games/avalon/AvalonSettings.vue', { room: { ...lobbyTable, selfId: tablePlayers[1].id }, canAct: true, run: () => {} }, '5-player preview', 'ක්‍රීඩකයන් 5 සඳහා පෙරදසුන'],
-    ['/src/components/games/avalon/AvalonSettings.vue', { room: { ...lobbyTable, gameConfig: { specialRoles: ['morgana', 'mordred', 'oberon'] } }, canAct: true, run: () => {} }, 'Too many special roles', 'විශේෂ චරිත වැඩියි'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: percivalTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: nightTable, canAct: true, run: () => {} }, 'An unrevealed identity card', 'තවමත් විවෘත නොකළ අනන්‍යතා කාඩ්පතක්'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: revealedTable, canAct: true, run: () => {} }, 'Remembered.', 'මතක තබාගත්තා'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: waitingTable, canAct: true, run: () => {} }, 'Your identity card is face down', 'ඔබේ අනන්‍යතා කාඩ්පත වසා ඇත'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: discussionTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: teamLeaderTable, canAct: true, run: () => {} }, 'Build a team', 'කණ්ඩායම සාදන්න'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: invitationTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: assassinationTable, canAct: true, run: () => {} }, 'Choose a player', 'ක්‍රීඩකයෙක් තෝරන්න'],
-    ['/src/components/games/avalon/AvalonTable.vue', { room: finishedTable, canAct: true, run: () => {} }, 'Game ended without a winner', 'ජයග්‍රාහකයෙකු නොමැතිව ක්‍රීඩාව අවසන් විය'],
+    ['/src/components/games/avalon/interaction/Settings.vue', { room: lobbyTable, canAct: true, run: () => {} }, 'Roles for this game', 'මෙම ක්‍රීඩාවේ චරිත'],
+    ['/src/components/games/avalon/interaction/Settings.vue', { room: { ...lobbyTable, selfId: tablePlayers[1].id }, canAct: true, run: () => {} }, '5-player preview', 'ක්‍රීඩකයන් 5 සඳහා පෙරදසුන'],
+    ['/src/components/games/avalon/interaction/Settings.vue', { room: { ...lobbyTable, gameConfig: { specialRoles: ['morgana', 'mordred', 'oberon'] } }, canAct: true, run: () => {} }, 'Too many special roles', 'විශේෂ චරිත වැඩියි'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: percivalTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: nightTable, canAct: true, run: () => {} }, 'An unrevealed identity card', 'තවමත් විවෘත නොකළ අනන්‍යතා කාඩ්පතක්'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: revealedTable, canAct: true, run: () => {} }, 'Remembered.', 'මතක තබාගත්තා'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: waitingTable, canAct: true, run: () => {} }, 'Your identity card is face down', 'ඔබේ අනන්‍යතා කාඩ්පත වසා ඇත'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: discussionTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: teamLeaderTable, canAct: true, run: () => {} }, 'Build a team', 'කණ්ඩායම සාදන්න'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: invitationTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: assassinationTable, canAct: true, run: () => {} }, 'Find Merlin', 'මර්ලින් සොයන්න'],
+    ['/src/components/games/avalon/layout/RoundTable.vue', { room: finishedTable, canAct: true, run: () => {} }, 'Game ended without a winner', 'ජයග්‍රාහකයෙකු නොමැතිව ක්‍රීඩාව අවසන් විය'],
     ['/src/views/Tools.vue', {}, 'Image converter', 'රූප පරිවර්තකය'],
     ['/src/components/layout/NavLinks.vue', {}, 'Home', 'මුල් පිටුව'],
-    ['/src/components/ui/Modal.vue', { visible: true }, 'Close', 'වසන්න'],
-    ['/src/components/base/Pagination.vue', { currentPage: 1, totalPages: 3 }, 'Next page', 'ඊළඟ පිටුව'],
+    ['/src/components/interaction/overlay/Modal.vue', { visible: true }, 'Close', 'වසන්න'],
+    ['/src/components/interaction/navigation/Pagination.vue', { currentPage: 1, totalPages: 3 }, 'Next page', 'ඊළඟ පිටුව'],
     ['/src/components/tools/sinhala/Info.vue', {}, 'About Sinhala', 'සිංහල පැරණි'],
     ['/src/views/tools/SinhalaFontConverter.vue', {}, 'Unicode text', 'Unicode පෙළ'],
     ['/src/views/tools/ImageConverter.vue', {}, 'Image converter', 'රූප පරිවර්තකය'],
   ];
   for (const [file, props, en, si] of cases) {
     const { default: component } = await server.ssrLoadModule(file);
+    const renderProps = file.endsWith('/RoundTable.vue')
+      ? { playersTargetId: 'i18n-test-players', ...props }
+      : file.endsWith('/BallotCards.vue')
+        ? { self: revealedTable.game.self, selfId: revealedTable.selfId, playerName: identityProps.playerName, ...props }
+        : props;
     for (const [code, expected] of [['en', en], ['si', si]]) {
-      const app = createSSRApp({ render: () => h(component, props) });
+      const app = createSSRApp({ render: () => h(component, renderProps) });
       app.use(createPinia()); app.use(router); a.install(app);
       await a.switchLocale(code, { save: false });
       const html = await renderToString(app);
-      assert.ok(html.includes(expected), `${file}: ${code} render`);
-      if (file.endsWith('/AvalonTable.vue') && props.room.game.phase !== 'night') assert.ok(/<[^>]*class="[^"]*hover-3d[^>]*aria-pressed="true"/.test(html), `Daytime identity starts face up: ${props.room.game.phase} ${html.match(/<[^>]*hover-3d[^>]*>/)?.[0]}`);
-      if (file.endsWith('/AvalonTable.vue') && props.room === teamLeaderTable) assert.equal((html.match(/type="checkbox" class="checkbox checkbox-sm/g) ?? []).length, 5, 'Team selection uses player checkboxes');
-      if (file.endsWith('/AvalonTable.vue') && props.room === invitationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 4, 'Invitation uses one radio per other player');
-      if (file.endsWith('/AvalonTable.vue') && props.room === assassinationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 3, 'Assassination excludes self and known allies');
-      if (file.endsWith('/AvalonBallotCards.vue') && props.mode === 'quest' && !props.allowFail) assert.ok(!html.includes(code === 'en' ? 'Sabotage' : 'බාධා කරන්න'), 'Good players cannot choose Sabotage');
-      if (file.endsWith('/AvalonBallotCards.vue') && props.autoApproved) {
+      assert.ok(html.includes(expected), `${file}: ${code} render missing ${expected}`);
+      if (file.endsWith('/RoundTable.vue') && props.room === teamLeaderTable) assert.equal((html.match(/type="checkbox" class="checkbox checkbox-sm/g) ?? []).length, 5, 'Team selection uses player checkboxes');
+      if (file.endsWith('/RoundTable.vue') && props.room === invitationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 4, 'Invitation uses one radio per other player');
+      if (file.endsWith('/RoundTable.vue') && props.room === assassinationTable) assert.equal((html.match(/type="radio"/g) ?? []).length, 3, 'Assassination excludes self and known allies');
+      if (file.endsWith('/BallotCards.vue') && props.mode === 'quest' && !props.allowFail) assert.ok(!html.includes(code === 'en' ? 'Sabotage' : 'බාධා කරන්න'), 'Good players cannot choose Sabotage');
+      if (file.endsWith('/BallotCards.vue') && props.autoApproved) {
         assert.ok(!html.includes(a.t('avalon.reject')), 'Leader approval has no reject card');
         assert.ok(html.includes('aria-pressed="true"'), 'Leader approval card is selected');
       }
-      if (file.endsWith('/AvalonIdentityCard.vue')) {
+      if (file.endsWith('/IdentityCard.vue')) {
         assert.ok(html.includes(props.self.role === 'merlin' ? 'bg-success/10' : 'bg-error/10'), 'Identity face uses faction color');
         assert.ok(!html.includes(a.t('avalon.roleDetails')), 'Night card shows details directly');
         assert.ok(html.includes(a.t(`avalon.roleHints.${props.self.role}`)), 'Night role ability is present');
       }
-      if (file.endsWith('/AvalonQuestHistory.vue')) {
+      if (file.endsWith('/QuestHistory.vue')) {
         if (props.quest === 0) {
           assert.ok(html.indexOf(a.t('avalon.records.types.vote')) < html.indexOf(a.t('avalon.records.types.quest')), 'Vote precedes quest result');
           assert.ok(!html.includes(a.t('avalon.rejectedLabel')), 'Another quest rejection stays in its own group');
@@ -189,7 +194,7 @@ try {
           assert.ok(!html.includes(a.t('avalon.records.types.quest')), 'Unfinished quest has no fabricated result');
         }
       }
-      if (file.endsWith('/AvalonTable.vue') && props.room === historyView) assert.equal((html.match(/id="quest-detail-[^"]+" role="tooltip"/g) ?? []).length, 5, 'Every quest has details');
+      if (file.endsWith('/RoundTable.vue') && props.room === historyView) assert.equal((html.match(/id="quest-detail-[^"]+" role="tooltip"/g) ?? []).length, 5, 'Every quest has details');
     }
   }
   // Exercise the shared card interactions without starting a browser.
@@ -210,7 +215,7 @@ try {
     parentNode: node => node.parent, nextSibling: node => node.parent?.children[node.parent.children.indexOf(node) + 1] ?? null,
   });
   const { default: ChoiceCards } = await server.ssrLoadModule('virtual:avalon-cards');
-  const cardProps = ref({ active: true, canSubmit: true, mode: 'vote', allowFail: true, submitted: false, context: 'room:1:1' });
+  const cardProps = ref({ self: revealedTable.game.self, selfId: revealedTable.selfId, playerName: identityProps.playerName, active: true, canSubmit: true, mode: 'vote', allowFail: true, submitted: false, context: 'room:1:1' });
   const submittedCards = [];
   const cardRoot = makeNode('root');
   const cardApp = cardRenderer.createApp({ render: () => h(ChoiceCards, { ...cardProps.value, onVote: value => submittedCards.push(['vote', value]), onQuest: value => submittedCards.push(['quest', value]) }) });
@@ -238,10 +243,10 @@ try {
     sabotage.props.onClick(); drop().props.onClick(); assert.equal(submittedCards.length, count);
     cards()[0].props.onClick(); drop().props.onClick(); assert.deepEqual(submittedCards.at(-1), ['quest', true]);
     cardProps.value = { ...cardProps.value, submitted: true }; await nextTick();
-    cards()[0].props.onClick(); drop().props.onClick(); assert.equal(submittedCards.length, count + 1);
+    cards()[0].props.onClick(); assert.equal(submittedCards.length, count + 1);
   } finally { cardApp.unmount(); }
   // Local notes survive a refresh, never cross seats/rounds, and clear on finish.
-  const { useAvalonNotes } = await server.ssrLoadModule('/src/composables/useAvalonNotes.js');
+  const { useAvalonNotes } = await server.ssrLoadModule('/src/composables/games/avalon/useAvalonNotes.js');
   const noteStorage = new Map();
   const noteWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
   const noteScope = effectScope(); const restoredScope = effectScope();

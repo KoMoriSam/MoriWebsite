@@ -1,6 +1,6 @@
 // src/composables/useToast.js
 import { createApp, ref, h } from "vue";
-import Toast from "@/components/ui/Toast.vue";
+import Toast from "@/components/feedback/Toast.vue";
 import { useLocale } from "@/i18n";
 import {
   TOAST_POSITIONS,

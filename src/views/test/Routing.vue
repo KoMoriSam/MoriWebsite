@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="routing">
+  <PageShell section-id="routing">
     <section title="路由与导航">
       <div class="mb-3 flex flex-wrap gap-2">
         <router-link
@@ -16,14 +16,14 @@
         {{ routes.length }} 个
       </p>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const router = useRouter();
 const routes = computed(() =>

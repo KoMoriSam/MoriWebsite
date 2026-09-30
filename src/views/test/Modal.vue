@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="modal">
+  <PageShell section-id="modal">
     <section title="Modal 弹窗">
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article class="rounded-box border border-base-300 p-4">
@@ -81,16 +81,16 @@
         @close="inlineModal = false"
       />
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { h, ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import { useModal } from "@/composables/useModal";
-import Modal from "@/components/ui/Modal.vue";
+import Modal from "@/components/interaction/overlay/Modal.vue";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const toast = useToast({
   position: "center-top",

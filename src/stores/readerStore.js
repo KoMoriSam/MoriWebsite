@@ -12,7 +12,7 @@ import {
   READER_LAYOUT_STYLE_KEYS,
   STYLE_CONFIG_KEYS,
 } from "@/constants/reader";
-import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
+import { useReaderSettingsStorage } from "@/composables/storage/useReaderSettingsStorage";
 
 export const useReaderStore = defineStore("reader", () => {
   const { getSetting, setSetting } = useReaderSettingsStorage();

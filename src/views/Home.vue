@@ -340,14 +340,14 @@
       </section>
     </section>
   </section>
-  <FootBar />
+  <Footer />
 </template>
 
 <script setup>
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
-import FootBar from "@/components/layout/FootBar.vue";
+import Footer from "@/components/layout/Footer.vue";
 
 import { useImageLoad } from "@/composables/useImageLoad";
 

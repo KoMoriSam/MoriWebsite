@@ -63,7 +63,7 @@
     </nav>
     <nav class="navbar-end">
       <LanguageController />
-      <AnnouncementCenter />
+      <NoticeCenter />
       <div class="hidden lg:block">
         <ThemeController />
       </div>
@@ -96,9 +96,9 @@ const route = useRoute();
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
-import AnnouncementCenter from "@/components/announcement/NoticeCenter.vue";
-import ThemeController from "@/components/ui/theme/ThemeController.vue";
-import LanguageController from "@/components/ui/LanguageController.vue";
+import NoticeCenter from "@/components/announcement/interaction/NoticeCenter.vue";
+import ThemeController from "@/components/interaction/controls/ThemeController.vue";
+import LanguageController from "@/components/interaction/controls/LanguageController.vue";
 
 const readerNavbarVisible = ref(false);
 const searchTriggerButton = ref(null);
@@ -120,7 +120,7 @@ const showReaderNavbar = () => {
 
 const ensureSearch = async () => {
   if (!searchPromise) {
-    searchPromise = import("@/components/layout/Search.vue")
+    searchPromise = import("@/components/interaction/overlay/SiteSearch.vue")
       .then(({ default: component }) => {
         searchComponent.value = component;
       })

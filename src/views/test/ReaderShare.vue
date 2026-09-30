@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="reader-share">
+  <PageShell section-id="reader-share">
     <section class="min-w-0">
       <p class="max-w-3xl text-sm leading-relaxed text-base-content/65">
         生成结果应为 1080 × 1350
@@ -15,13 +15,13 @@
       </div>
       <ShareCard ref="shareDialogRef" />
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import ShareCard from "@/components/reader/ShareCard.vue";
-import TestPage from "./_TestPage.vue";
+import ShareCard from "@/components/reader/interaction/ShareCard.vue";
+import PageShell from "./PageShell.vue";
 
 const shareDialogRef = ref(null);
 

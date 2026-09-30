@@ -1,9 +1,9 @@
-import ParaGiscus from "@/components/reader/ParaGiscus.vue";
+import ParagraphComments from "@/components/reader/display/ParagraphComments.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { h } from "vue";
 import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
-import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
+import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 
 export const useParagraphComments = () => {
   const modal = useModal();
@@ -252,7 +252,7 @@ export const useParagraphComments = () => {
       ),
     ]);
 
-    modal.info(titleNode, h(ParaGiscus, { paragraphId, sourceType }), {
+    modal.info(titleNode, h(ParagraphComments, { paragraphId, sourceType }), {
       buttonMode: "close",
       scrollContent: true,
     });

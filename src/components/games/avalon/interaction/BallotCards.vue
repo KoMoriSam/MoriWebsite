@@ -1,0 +1,288 @@
+<template>
+  <details
+    class="collapse min-w-0 border border-base-300 bg-base-200/40"
+    :class="requiresAction ? 'collapse-open' : 'collapse-arrow'"
+    :open="showCards"
+    @toggle="onToggle"
+  >
+    <summary
+      class="collapse-title flex min-w-0 items-center gap-1 [&::-webkit-details-marker]:hidden"
+      :class="requiresAction ? 'pr-4' : 'pr-12'"
+      @click="requiresAction && $event.preventDefault()"
+    >
+      <hgroup class="min-w-0 flex-1">
+        <h3 class="font-serif text-lg font-semibold leading-6">
+          {{ t(`${textPrefix}.title`) }}
+        </h3>
+        <p class="text-xs leading-4 text-base-content/60">
+          {{ summaryStatus }}
+        </p>
+      </hgroup>
+      <RoleInfo
+        class="max-w-[60%]"
+        :self="self"
+        :self-id="selfId"
+        :player-name="playerName"
+        @click.stop.prevent
+      />
+    </summary>
+    <div class="collapse-content flex flex-col gap-2 px-4 pb-4">
+      <div
+        class="grid auto-rows-fr items-stretch gap-2 sm:gap-3"
+        :class="choices.length === 1 ? 'grid-cols-1' : 'grid-cols-2'"
+      >
+        <button
+          v-for="approve in choices"
+          :key="String(approve)"
+          type="button"
+          class="card card-border m-0 min-w-0 self-stretch select-none bg-base-100 text-center touch-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          :class="[
+            selected === approve || (autoApproved && submitted && approve)
+              ? approve
+                ? 'border-success'
+                : 'border-error'
+              : '',
+            drag?.approve === approve
+              ? 'relative z-20 cursor-grabbing shadow-xl'
+              : canPlay
+                ? 'cursor-grab hover:border-base-content/50'
+                : 'opacity-50',
+          ]"
+          :style="cardStyle(approve)"
+          :disabled="!canPlay"
+          :aria-pressed="
+            selected === approve || (autoApproved && submitted && approve)
+          "
+          @pointerdown="beginDrag(approve, $event)"
+          @pointermove="moveDrag"
+          @pointerup="endDrag"
+          @pointercancel="cancelDrag"
+          @lostpointercapture="cancelDrag"
+          @click="selectCard(approve)"
+        >
+          <span
+            class="flex w-full flex-col items-center justify-center gap-1 px-2 py-3 sm:gap-2 sm:p-4"
+          >
+            <i
+              :class="[
+                choiceIcon(approve),
+                approve ? 'text-success' : 'text-error',
+              ]"
+              class="text-xl sm:text-3xl"
+              aria-hidden="true"
+            ></i>
+            <span class="font-serif text-xs font-semibold sm:text-lg">{{
+              t(choiceLabel(approve))
+            }}</span>
+          </span>
+        </button>
+      </div>
+      <button
+        v-if="requiresAction"
+        ref="dropZone"
+        type="button"
+        class="flex items-center justify-center gap-1 rounded-box border-2 border-dashed p-2 text-center text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:gap-2 sm:p-3 sm:text-sm"
+        :class="
+          overDrop
+            ? 'border-base-content bg-base-100'
+            : 'border-base-300 text-base-content/60'
+        "
+        :disabled="!canPlay || selected === null"
+        @click="submitSelected"
+      >
+        <i
+          :class="submitted ? 'ri-check-double-line' : 'ri-hand-coin-line'"
+          class="hidden text-xl sm:inline"
+          aria-hidden="true"
+        ></i>
+        <span>{{
+          t(
+            submitted
+              ? "avalon.submitted"
+              : selected === null
+                ? `${textPrefix}.drop`
+                : `${textPrefix}.compactSelected`,
+            { choice: selected === null ? "" : t(choiceLabel(selected)) },
+          )
+        }}</span>
+      </button>
+    </div>
+  </details>
+</template>
+<script setup>
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { useLocale } from "@/i18n";
+import RoleInfo from "@/components/games/avalon/display/RoleInfo.vue";
+const props = defineProps({
+  self: { type: Object, required: true },
+  selfId: { type: String, required: true },
+  playerName: { type: Function, required: true },
+  active: Boolean,
+  canSubmit: Boolean,
+  submitted: Boolean,
+  autoApproved: Boolean,
+  allowFail: Boolean,
+  mode: { type: String, default: "vote" },
+  context: { type: String, required: true },
+});
+const emit = defineEmits(["vote", "quest"]);
+const { t } = useLocale();
+const questMode = computed(() => props.mode === "quest");
+const canPlay = computed(
+  () => props.active && props.canSubmit && !props.submitted,
+);
+const expanded = ref(false);
+const requiresAction = computed(() => props.active && !props.submitted);
+const showCards = computed(() => requiresAction.value || expanded.value);
+function onToggle(event) {
+  if (!requiresAction.value) expanded.value = event.target.open;
+}
+const collapsedStatus = computed(() =>
+  props.submitted
+    ? !questMode.value && props.autoApproved
+      ? t("avalon.ballot.autoApprovedCompact")
+      : t("avalon.submitted")
+    : t("avalon.ballot.inactive"),
+);
+const summaryStatus = computed(() =>
+  requiresAction.value
+    ? t(
+        questMode.value
+          ? props.allowFail
+            ? "avalon.questCards.hint"
+            : "avalon.questCards.goodHint"
+          : "avalon.ballot.compactHint",
+      )
+    : collapsedStatus.value,
+);
+const choices = computed(() =>
+  (questMode.value && !props.allowFail) ||
+  (!questMode.value && props.autoApproved && props.submitted)
+    ? [true]
+    : [true, false],
+);
+const textPrefix = computed(() =>
+  questMode.value ? "avalon.questCards" : "avalon.ballot",
+);
+const choiceLabel = (choice) =>
+  questMode.value
+    ? choice
+      ? "avalon.questCards.execute"
+      : "avalon.questCards.sabotage"
+    : choice
+      ? "avalon.approve"
+      : "avalon.reject";
+const choiceIcon = (choice) =>
+  questMode.value
+    ? choice
+      ? "ri-shield-check-line"
+      : "ri-sword-line"
+    : choice
+      ? "ri-thumb-up-line"
+      : "ri-thumb-down-line";
+const selected = ref(null);
+const drag = ref(null);
+const overDrop = ref(false);
+const dropZone = ref(null);
+let capture = null;
+let ignoreClickUntil = 0;
+function beginDrag(approve, event) {
+  if (
+    !canPlay.value ||
+    !choices.value.includes(approve) ||
+    !event.isPrimary ||
+    event.button !== 0 ||
+    drag.value
+  )
+    return;
+  selected.value = approve;
+  drag.value = {
+    approve,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    x: 0,
+    y: 0,
+    moved: false,
+    context: props.context,
+    mode: props.mode,
+  };
+  capture = event.currentTarget;
+  capture.setPointerCapture(event.pointerId);
+}
+function withinDrop(x, y) {
+  const bounds = dropZone.value?.getBoundingClientRect();
+  return (
+    !!bounds &&
+    x >= bounds.left &&
+    x <= bounds.right &&
+    y >= bounds.top &&
+    y <= bounds.bottom
+  );
+}
+function moveDrag(event) {
+  const state = drag.value;
+  if (!state || state.pointerId !== event.pointerId) return;
+  state.x = event.clientX - state.startX;
+  state.y = event.clientY - state.startY;
+  state.moved ||= Math.hypot(state.x, state.y) > 6;
+  if (state.moved) event.preventDefault();
+  overDrop.value = state.moved && withinDrop(event.clientX, event.clientY);
+}
+function endDrag(event) {
+  const state = drag.value;
+  if (!state || state.pointerId !== event.pointerId) return;
+  const submit =
+    state.moved &&
+    withinDrop(event.clientX, event.clientY) &&
+    state.context === props.context &&
+    state.mode === props.mode;
+  if (state.moved) ignoreClickUntil = Date.now() + 350;
+  cancelDrag();
+  if (submit) submitSelected();
+}
+function cancelDrag() {
+  const pointerId = drag.value?.pointerId;
+  drag.value = null;
+  overDrop.value = false;
+  const element = capture;
+  capture = null;
+  if (pointerId !== undefined && element?.hasPointerCapture(pointerId))
+    element.releasePointerCapture(pointerId);
+}
+function selectCard(approve) {
+  if (
+    canPlay.value &&
+    choices.value.includes(approve) &&
+    Date.now() >= ignoreClickUntil
+  )
+    selected.value = approve;
+}
+function cardStyle(approve) {
+  const state = drag.value;
+  return state?.approve === approve
+    ? {
+        transform: `translate(${state.x}px, ${state.y}px) rotate(${state.x / 20}deg)`,
+      }
+    : {};
+}
+function submitSelected() {
+  if (canPlay.value && choices.value.includes(selected.value))
+    emit(questMode.value ? "quest" : "vote", selected.value);
+}
+watch(
+  [() => props.context, () => props.mode, () => props.allowFail, canPlay],
+  () => {
+    cancelDrag();
+    selected.value = null;
+    ignoreClickUntil = 0;
+  },
+);
+watch(
+  [() => props.context, () => props.mode, () => props.active, () => props.submitted],
+  () => {
+    expanded.value = false;
+  },
+);
+onBeforeUnmount(cancelDrag);
+</script>

@@ -1,5 +1,5 @@
 <template>
-  <GameRoom game-type="avalon" @room-state="observeAudio" @room-activity="playRoomActivity">
+  <Room game-type="avalon" @room-state="observeAudio" @room-activity="playRoomActivity">
     <template #instructions>
       <h2 class="font-serif text-xl font-bold">{{ t('avalon.howTo') }}</h2>
       <ol class="mt-5 space-y-4 text-sm leading-7 text-base-content/70">
@@ -25,22 +25,22 @@
       </div>
     </template>
     <template #settings="{ room, canAct, run }">
-      <AvalonSettings :room="room" :can-act="canAct" :run="run" />
+      <Settings :room="room" :can-act="canAct" :run="run" />
     </template>
     <template #default="{ room, canAct, run }">
-      <AvalonTable :room="room" :can-act="canAct" :run="run" :players-target-id="playersTargetId" @request-sidebar-panel="sidebarPanel = $event" />
+      <RoundTable :room="room" :can-act="canAct" :run="run" :players-target-id="playersTargetId" @request-sidebar-panel="sidebarPanel = $event" />
     </template>
     <template #sidebar="{ room, canAct, run, expandSidebar }">
-      <AvalonSidebar :room="room" :can-act="canAct" :run="run" :panel="sidebarPanel" :players-target-id="playersTargetId" @select-panel="sidebarPanel = $event; expandSidebar()" />
+      <Sidebar :room="room" :can-act="canAct" :run="run" :panel="sidebarPanel" :players-target-id="playersTargetId" @select-panel="sidebarPanel = $event; expandSidebar()" />
     </template>
-  </GameRoom>
+  </Room>
 </template>
 <script setup>
-import GameRoom from '@/components/games/GameRoom.vue';
-import AvalonTable from '@/components/games/avalon/AvalonTable.vue';
-import AvalonSidebar from '@/components/games/avalon/AvalonSidebar.vue';
-import AvalonSettings from '@/components/games/avalon/AvalonSettings.vue';
-import { useAvalonAudio } from '@/composables/useAvalonAudio';
+import Room from '@/components/games/Room.vue';
+import RoundTable from '@/components/games/avalon/layout/RoundTable.vue';
+import Sidebar from '@/components/games/avalon/layout/Sidebar.vue';
+import Settings from '@/components/games/avalon/interaction/Settings.vue';
+import { useAvalonAudio } from '@/composables/games/avalon/useAvalonAudio';
 import { useLocale } from '@/i18n';
 import { ref, useId } from 'vue';
 const { t } = useLocale();

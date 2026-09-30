@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="markdown">
+  <PageShell section-id="markdown">
     <section title="Markdown 渲染与样式测试">
       <div role="tablist" aria-label="Markdown 示例" class="tabs tabs-border">
         <router-link
@@ -17,7 +17,7 @@
         </router-link>
       </div>
 
-      <Reader
+      <ReadingLayout
         toc
         aside
         root-tag="div"
@@ -26,7 +26,7 @@
         container-class="my-4"
         sticky-top="1rem"
       >
-        <Markdown
+        <Renderer
           ref="markdownPreviewRef"
           :content="markdownContent"
           :header-data="markdownHeaderData"
@@ -68,7 +68,7 @@
             <FormatSetting controls-only />
           </fieldset>
         </template>
-      </Reader>
+      </ReadingLayout>
 
       <ContextMenu
         v-if="ContextMenuMounted"
@@ -78,24 +78,24 @@
         @search="openContextSearch"
       />
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
-import { useReaderTextContext } from "@/composables/novel/useReaderTextContext";
-import Markdown from "@/components/markdown/Markdown.vue";
-import FormatSetting from "@/components/reader/FormatSetting.vue";
-import Reader from "@/components/reader/Reader.vue";
-import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
+import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
+import Renderer from "@/components/markdown/Renderer.vue";
+import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
+import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
+import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 import { MARKDOWN_SAMPLES as markdownSamples } from "./markdown-samples";
 
 const ContextMenu = defineAsyncComponent(
-  () => import("@/components/reader/ContextMenu.vue"),
+  () => import("@/components/reader/interaction/ContextMenu.vue"),
 );
 
 const readerStore = useReaderStore();

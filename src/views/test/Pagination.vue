@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="pagination">
+  <PageShell section-id="pagination">
     <section title="Pagination 分页">
       <p class="mb-3 text-xs opacity-60">
         完全由当前测试页本地状态驱动：当前第 {{ currentPage }} 页，共
@@ -41,14 +41,14 @@
         最近事件：<code>{{ eventLog }}</code>
       </p>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import Pagination from "@/components/base/Pagination.vue";
+import Pagination from "@/components/interaction/navigation/Pagination.vue";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const currentPage = ref(12);
 const totalPages = ref(24);

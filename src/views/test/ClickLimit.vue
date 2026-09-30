@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="click-limit">
+  <PageShell section-id="click-limit">
     <section class="min-w-0">
       <p class="mb-2 text-xs opacity-60">
         连点 ≥{{ limitOptions.maxClicks }} 次 → 冷却
@@ -22,13 +22,13 @@
         </span>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useClickLimit } from "@/composables/useClickLimit";
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const limitOptions = { maxClicks: 5, cooldown: 3000 };
 const clickLimit = useClickLimit(limitOptions);

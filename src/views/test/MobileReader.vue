@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="mobile-reader">
+  <PageShell section-id="mobile-reader">
     <section
       class="grid min-w-0 gap-6 xl:grid-cols-[minmax(17rem,22rem)_minmax(0,1fr)]"
     >
@@ -115,14 +115,14 @@
         </div>
       </section>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { useNovelStore } from "@/stores/novelStore";
-import TestPage from "./_TestPage.vue";
+import { useNovelStore } from "@/stores/novel";
+import PageShell from "./PageShell.vue";
 
 const viewportPresets = Object.freeze([
   { label: "小屏手机", width: 320, height: 700 },

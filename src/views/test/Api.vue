@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="api">
+  <PageShell section-id="api">
     <section class="min-w-0">
       <div class="mb-3 flex flex-wrap gap-2">
         <button
@@ -56,7 +56,7 @@
       >
       <p v-if="apiError" class="text-sm text-error">{{ apiError }}</p>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
@@ -68,8 +68,8 @@ import {
   fetchParagraphCountsBatch,
   hasParagraphCountsApi,
 } from "@/services/api-paragraph-comments";
-import { getChapterContextTitle } from "@/utils/format-chapter-label";
-import TestPage from "./_TestPage.vue";
+import { getChapterContextTitle } from "@/utils/novel/format-label";
+import PageShell from "./PageShell.vue";
 
 const apiLoading = ref(false);
 const apiResult = ref(null);

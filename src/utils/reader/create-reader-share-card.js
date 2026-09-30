@@ -1,4 +1,4 @@
-import { createLatexSvg, loadLatexSvgImage } from "@/utils/reader/reader-latex";
+import { createLatexSvg, loadLatexSvgImage } from "@/utils/reader/latex";
 
 export const READER_SHARE_CARD_WIDTH = 1080;
 export const READER_SHARE_CARD_HEIGHT = 1350;

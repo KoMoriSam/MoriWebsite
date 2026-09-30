@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { createI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
 import { alertPlugin } from '../src/utils/markdown/markdown-it-alert.js';
-import { describeImageMessage } from '../src/utils/image-converter-messages.js';
+import { describeImageMessage } from '../src/utils/image/messages.js';
 import { normalizeLocale, detectLocale, readLocalePreference, writeLocalePreference, createLocaleSwitcher } from '../src/i18n/locale.js';
 
 const require = createRequire(import.meta.url);

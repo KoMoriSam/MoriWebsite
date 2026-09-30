@@ -16,12 +16,12 @@ import {
   patchWebPLoopCount,
   readImageDimensions,
   readWebPLoopCount,
-} from "../src/utils/image-converter.js";
+} from "../src/utils/image/converter.js";
 import {
   calculateWatermarkBaseSize,
   calculateWatermarkGraphicSize,
   drawImageWatermark,
-} from "../src/utils/image-watermark.js";
+} from "../src/utils/image/watermark.js";
 
 const bytes = (...values) => Uint8Array.from(values);
 const ascii = (text) => new TextEncoder().encode(text);

@@ -18,7 +18,7 @@
       <slot></slot>
     </section>
   </main>
-  <FootBar />
+  <Footer />
 </template>
 
 <script setup>
@@ -26,7 +26,7 @@ import { ref } from "vue";
 
 import { useImageLoad } from "@/composables/useImageLoad";
 
-import FootBar from "@/components/layout/FootBar.vue";
+import Footer from "@/components/layout/Footer.vue";
 
 defineProps({
   imageSrc: {

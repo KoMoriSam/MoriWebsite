@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { useChapterSetup } from "@/composables/useChapterSetup";
+import { useChapterSetup } from "@/composables/novel/useChapterSetup";
 import { computed, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
 

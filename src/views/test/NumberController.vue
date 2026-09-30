@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="number-controller">
+  <PageShell section-id="number-controller">
     <section title="NumberController 组件">
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div>
@@ -40,14 +40,14 @@
         </div>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import NumberController from "@/components/ui/input/NumberController.vue";
+import NumberController from "@/components/interaction/controls/NumberController.vue";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const fontSize = ref(24);
 const fontGap = ref(0);

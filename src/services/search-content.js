@@ -4,7 +4,7 @@ import {
   formatArticleTag,
   normalizeArticleDate,
   normalizeArticleTag,
-} from "@/composables/useArticleFilter";
+} from "@/composables/blog/useArticleFilter";
 import { useArticleApi } from "@/services/api-articles";
 import { useChapterApi } from "@/services/api-chapters";
 import { fetchChangelogWithFallback } from "@/services/api-changelog";

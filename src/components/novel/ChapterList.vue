@@ -301,11 +301,11 @@ const { t: translate, number: formatNumber, date: formatLocalizedDate } = useLoc
 
 import { storeToRefs } from "pinia";
 
-import { useNovelStore } from "@/stores/novelStore";
+import { useNovelStore } from "@/stores/novel";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 
-import { useChapters } from "@/composables/useChapters";
+import { useChapters } from "@/composables/novel/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
 
 import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";

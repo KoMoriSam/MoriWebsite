@@ -1,5 +1,5 @@
 import { createApp, ref, h, onBeforeUnmount } from "vue";
-import Modal from "@/components/ui/Modal.vue";
+import Modal from "@/components/interaction/overlay/Modal.vue";
 import { useLocale } from "@/i18n";
 import {
   captureTrackedPosition,

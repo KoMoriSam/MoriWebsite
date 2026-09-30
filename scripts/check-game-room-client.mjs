@@ -57,7 +57,7 @@ try {
     requests.push({ url, options });
     return { ok: true, json: async () => url.endsWith('/connect') ? { ticket: 'b'.repeat(64), gameType: 'avalon' } : credential };
   });
-  const { useGameRoom } = await server.ssrLoadModule('/src/composables/useGameRoom.js');
+  const { useGameRoom } = await server.ssrLoadModule('/src/composables/games/useGameRoom.js');
   let client;
   app = renderer.createApp({ setup() { client = useGameRoom('avalon'); return () => h('p'); } });
   app.use(router); app.mount({ children: [] });

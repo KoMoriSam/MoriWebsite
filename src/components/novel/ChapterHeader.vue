@@ -92,7 +92,7 @@ import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
 import { computed } from "vue";
-import CommentTrigger from "@/components/reader/CommentTrigger.vue";
+import CommentTrigger from "@/components/reader/interaction/CommentTrigger.vue";
 
 const props = defineProps({
   chapter: {

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { usePreferredDark } from "@vueuse/core";
-import { useGlobalStorage } from "@/utils/storage/use-global-storage";
+import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 
 const isDark = usePreferredDark();
 

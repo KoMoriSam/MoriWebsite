@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="storage">
+  <PageShell section-id="storage">
     <section title="localStorage">
       <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <div
@@ -29,18 +29,18 @@
         </button>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 import { useModal } from "@/composables/useModal";
-import { useGlobalStorage } from "@/utils/storage/use-global-storage";
-import { useReaderSettingsStorage } from "@/utils/storage/use-reader-settings-storage";
-import { useReadingStateStorage } from "@/utils/storage/use-reading-state-storage";
-import { useParagraphCommentsStorage } from "@/utils/storage/use-paragraph-comments-storage";
+import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
+import { useReaderSettingsStorage } from "@/composables/storage/useReaderSettingsStorage";
+import { useReadingStateStorage } from "@/composables/storage/useReadingStateStorage";
+import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 const modal = useModal();
 
 const { GLOBAL_INFO } = useGlobalStorage();

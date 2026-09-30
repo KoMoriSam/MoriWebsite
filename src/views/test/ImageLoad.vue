@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="image-load">
+  <PageShell section-id="image-load">
     <section class="min-w-0">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div class="relative h-32 w-32 overflow-hidden rounded-lg bg-base-300">
@@ -47,14 +47,14 @@
         </div>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 import { useImageLoad } from "@/composables/useImageLoad";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const mode = ref("success");
 const imageKey = ref(0);

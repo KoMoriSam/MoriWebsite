@@ -1278,8 +1278,8 @@ import {
 } from "vue";
 import "@/assets/font/reader-fonts.css";
 import ContentPage from "@/components/layout/ContentPage.vue";
-import FontSelect from "@/components/ui/FontSelect.vue";
-import ImagePreview from "@/components/ui/ImagePreview.vue";
+import FontSelect from "@/components/interaction/controls/FontSelect.vue";
+import ImagePreview from "@/components/interaction/overlay/ImagePreview.vue";
 import { useToast } from "@/composables/useToast";
 import { FONTS } from "@/constants/reader";
 import remixIconTags from "@/data/remixicon-tags.json";
@@ -1287,7 +1287,7 @@ import {
   calculateWatermarkBaseSize,
   calculateWatermarkGraphicSize,
   drawImageWatermark,
-} from "@/utils/image-watermark";
+} from "@/utils/image/watermark";
 import {
   IMAGE_FORMATS,
   calculateOutputDimensions,
@@ -1298,7 +1298,7 @@ import {
   isAnimatedWebP,
   makeUniqueName,
   readImageDimensions,
-} from "@/utils/image-converter";
+} from "@/utils/image/converter";
 
 const MAX_FILES = 100;
 const SMALL_SCREEN_QUERY = "(max-width: 639px)";

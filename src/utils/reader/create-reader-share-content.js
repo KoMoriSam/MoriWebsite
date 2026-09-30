@@ -1,4 +1,4 @@
-import { getLatexFormula } from "@/utils/reader/reader-latex";
+import { getLatexFormula } from "@/utils/reader/latex";
 
 const IGNORED_CONTENT_SELECTOR = [
   ".comment-trigger",

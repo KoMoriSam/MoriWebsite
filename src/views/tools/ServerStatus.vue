@@ -15,7 +15,7 @@
       </span>
     </template>
 
-    <ServerInfo />
+    <StatusPanel />
   </ContentPage>
 </template>
 
@@ -24,5 +24,5 @@ import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import ServerInfo from "@/components/ServerInfo.vue";
+import StatusPanel from "@/components/tools/server/StatusPanel.vue";
 </script>

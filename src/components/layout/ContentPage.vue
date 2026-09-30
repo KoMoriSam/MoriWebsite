@@ -72,7 +72,7 @@
 
     <slot></slot>
   </main>
-  <FootBar v-if="showFooter" :class="hideMobileFooter ? 'hidden lg:grid' : ''" />
+  <Footer v-if="showFooter" :class="hideMobileFooter ? 'hidden lg:grid' : ''" />
 </template>
 
 <script setup>
@@ -82,7 +82,7 @@ const { t: translate } = useLocale();
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import FootBar from "@/components/layout/FootBar.vue";
+import Footer from "@/components/layout/Footer.vue";
 
 const route = useRoute();
 const router = useRouter();

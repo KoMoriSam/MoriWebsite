@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="environment">
+  <PageShell section-id="environment">
     <section class="min-w-0">
       <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <template v-for="(value, key) in environmentInfo" :key="key">
@@ -8,12 +8,12 @@
         </template>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const environmentInfo = computed(() => ({
   MODE: import.meta.env.MODE,

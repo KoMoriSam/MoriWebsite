@@ -19,7 +19,6 @@ src/router/ssg-data.generated.js
 src/router/license-data.generated.js
 
 .agents
-AGENTS.MD
 skills-lock.json
 
 announcements

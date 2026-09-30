@@ -49,10 +49,10 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { useChapters } from "@/composables/useChapters";
+import { useChapters } from "@/composables/novel/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
 import { useModalClose } from "@/composables/useModal";
-import { useNovelStore } from "@/stores/novelStore";
+import { useNovelStore } from "@/stores/novel";
 import { MOBILE_READING_MODES } from "@/constants/reader";
 
 const props = defineProps({

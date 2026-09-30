@@ -137,7 +137,7 @@
       class="grid gap-12 py-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-0 lg:py-16"
     >
       <section class="min-w-0 lg:pr-10 xl:pr-12" :aria-label="translate('reader.novelDetail.novelChapters')">
-        <Chapters />
+        <ChapterList />
       </section>
 
       <section
@@ -170,7 +170,7 @@
       </section>
     </div>
   </main>
-  <FootBar />
+  <Footer />
 </template>
 
 <script setup>
@@ -180,24 +180,24 @@ const { t: translate, commentLocale, number: formatNumber } = useLocale();
 import { computed, watch } from "vue";
 import Giscus from "@giscus/vue";
 
-import { useChapters } from "@/composables/useChapters";
+import { useChapters } from "@/composables/novel/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
 import {
   getChapterContextTitle,
   getChapterDisplayTitle,
-} from "@/utils/format-chapter-label";
+} from "@/utils/novel/format-label";
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
 
 import { storeToRefs } from "pinia";
-import { useNovelStore } from "@/stores/novelStore";
+import { useNovelStore } from "@/stores/novel";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
 
-import Chapters from "@/components/novel/ChapterList.vue";
-import FootBar from "@/components/layout/FootBar.vue";
+import ChapterList from "@/components/novel/ChapterList.vue";
+import Footer from "@/components/layout/Footer.vue";
 
 const novelStore = useNovelStore();
 const {

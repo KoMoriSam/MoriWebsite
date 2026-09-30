@@ -117,7 +117,7 @@
             "
           >
             <summary class="collapse-title">
-              <AnnouncementTitle
+              <NoticeTitle
                 :announcement="announcement"
                 :read="group.forceRead || store.isRead(announcement)"
                 show-time
@@ -133,12 +133,12 @@
                 >
                   {{ formatAnnouncementDate(announcement.startsAt, true, uiLocale) }}
                 </time>
-              </AnnouncementTitle>
+              </NoticeTitle>
             </summary>
             <div
               class="collapse-content border-t border-base-300 px-5 py-5 sm:px-6"
             >
-              <Markdown
+              <Renderer
                 :content="announcement.body"
                 :content-id="`announcement-${announcement.id}-${announcement.revision}`"
                 mode="standard"
@@ -161,11 +161,11 @@ const { t: translate, locale: uiLocale } = useLocale();
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import AnnouncementTitle from "@/components/announcement/Title.vue";
+import NoticeTitle from "@/components/announcement/display/NoticeTitle.vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
-import Markdown from "@/components/markdown/Markdown.vue";
+import Renderer from "@/components/markdown/Renderer.vue";
 import { useAnnouncementStore } from "@/stores/announcementStore";
-import { formatAnnouncementDate } from "@/utils/announcements";
+import { formatAnnouncementDate } from "@/utils/announcement/format";
 
 const store = useAnnouncementStore();
 const {

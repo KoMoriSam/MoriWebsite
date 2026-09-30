@@ -1,5 +1,5 @@
 <template>
-  <TestPage section-id="toast">
+  <PageShell section-id="toast">
     <section title="Toast 通知">
       <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
         <button
@@ -45,7 +45,7 @@
         </button>
       </div>
     </section>
-  </TestPage>
+  </PageShell>
 </template>
 
 <script setup>
@@ -53,7 +53,7 @@ import { onBeforeUnmount, ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import { TOAST_ICONS, TOAST_POSITIONS } from "@/constants/toast";
 
-import TestPage from "./_TestPage.vue";
+import PageShell from "./PageShell.vue";
 
 const toast = useToast({
   position: "center-top",

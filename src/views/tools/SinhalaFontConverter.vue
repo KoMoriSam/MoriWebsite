@@ -798,9 +798,9 @@
       </div>
     </section>
 
-    <SinhalaConverterNotes />
+    <Notes />
 
-    <SinhalaConverterInfo @announcement="liveMessage = $event" />
+    <Info @announcement="liveMessage = $event" />
 
     <p class="sr-only" aria-live="polite">{{ liveMessage }}</p>
   </ContentPage>
@@ -821,9 +821,9 @@ import {
 import { useRoute, useRouter } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import FontSelect from "@/components/ui/FontSelect.vue";
-import SinhalaConverterInfo from "@/components/tools/sinhala/Info.vue";
-import SinhalaConverterNotes from "@/components/tools/sinhala/Notes.vue";
+import FontSelect from "@/components/interaction/controls/FontSelect.vue";
+import Info from "@/components/tools/sinhala/Info.vue";
+import Notes from "@/components/tools/sinhala/Notes.vue";
 import { createSinhalaDocx } from "@/utils/sinhala/create-docx";
 import { readSinhalaDocument } from "@/utils/sinhala/read-document";
 import {

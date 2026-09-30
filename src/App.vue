@@ -1,6 +1,6 @@
 <template>
   <NavBar />
-  <AnnouncementModal
+  <NoticeDialog
     :mode="overlayMode"
     :selected-announcement="selectedAnnouncement"
     :summary-announcements="summaryAnnouncements"
@@ -12,7 +12,7 @@
     @open="announcementStore.openAnnouncement"
   />
   <router-view />
-  <ToTop v-if="!route.meta.hideToTop" />
+  <BackToTop v-if="!route.meta.hideToTop" />
 </template>
 
 <script setup>
@@ -22,19 +22,19 @@ import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import NavBar from "@/components/layout/NavBar.vue";
-import AnnouncementModal from "@/components/announcement/Modal.vue";
-import ToTop from "./components/base/ToTop.vue";
-import { useNovelStore } from "@/stores/novelStore";
+import NoticeDialog from "@/components/announcement/interaction/NoticeDialog.vue";
+import BackToTop from "./components/interaction/navigation/BackToTop.vue";
+import { useNovelStore } from "@/stores/novel";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { useAnnouncementStore } from "@/stores/announcementStore";
 import { getBlogPagePath } from "@/constants/blog-pagination";
 
 import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight";
 
-import { useStorageMigration } from "@/utils/storage/migrate-storage";
-import { useDiscardStorage } from "@/utils/storage/discard-storage";
+import { useStorageMigration } from "@/composables/storage/useStorageMigration";
+import { useDiscardStorage } from "@/composables/storage/useDiscardStorage";
 import { useLocale } from "@/i18n";
-import { useGlobalStorage } from "@/utils/storage/use-global-storage";
+import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 import { useToast } from "@/composables/useToast";
 import { findRouteGame } from '@/games/catalog';
 

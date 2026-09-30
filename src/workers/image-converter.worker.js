@@ -1,4 +1,4 @@
-import { describeImageMessage } from "../utils/image-converter-messages.js";
+import { describeImageMessage } from "../utils/image/messages.js";
 import {
   IMAGE_FORMATS,
   calculateOutputDimensions,
@@ -9,8 +9,8 @@ import {
   readGifLoopCount,
   readWebPLoopCount,
   validateEncodedImage,
-} from "@/utils/image-converter";
-import { drawImageWatermark } from "@/utils/image-watermark";
+} from "@/utils/image/converter";
+import { drawImageWatermark } from "@/utils/image/watermark";
 
 const cancelledJobs = new Set();
 
@@ -153,7 +153,7 @@ async function decodeStatic(buffer, format) {
       if (image) return { width: image.width, height: image.height, frames: [{ data: image.data, duration: 0 }], loopCount: 0 };
     }
     if (format === "webp") {
-      const { decodeWebP } = await import("@/utils/webp-codec");
+      const { decodeWebP } = await import("@/utils/image/webp-codec");
       const image = await decodeWebP(new Uint8Array(buffer));
       if (image) return { width: image.width, height: image.height, frames: [{ data: image.data, duration: 0 }], loopCount: 0 };
     }
@@ -162,7 +162,7 @@ async function decodeStatic(buffer, format) {
 }
 
 async function decodeAnimatedWebP(bytes) {
-  const { decodeAnimatedWebP: decodeAnimation } = await import("@/utils/webp-codec");
+  const { decodeAnimatedWebP: decodeAnimation } = await import("@/utils/image/webp-codec");
   const decoded = await decodeAnimation(bytes);
   if (!decoded?.length) throw new Error("无法解码动画 WebP");
   const width = decoded[0].width;
@@ -302,7 +302,7 @@ async function encodeStatic(frame, width, height, settings) {
 }
 
 async function encodeWebP(frames, width, height, loopCount, settings) {
-  const { encodeWebP: encode, encodeAnimatedWebP: encodeAnimation } = await import("@/utils/webp-codec");
+  const { encodeWebP: encode, encodeAnimatedWebP: encodeAnimation } = await import("@/utils/image/webp-codec");
   const config = { lossless: settings.lossless ? 1 : 0, quality: settings.quality };
   let bytes;
   if (frames.length > 1) {

@@ -170,13 +170,13 @@ import { storeToRefs } from "pinia";
 import { computed, ref, useId, watch } from "vue";
 
 import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";
-import TocFrame from "@/components/reader/TocFrame.vue";
-import { useChapters } from "@/composables/useChapters";
+import TocFrame from "@/components/reader/navigation/TocFrame.vue";
+import { useChapters } from "@/composables/novel/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
 import { useRevealCurrentItem } from "@/composables/useRevealCurrentItem";
 import { useScrollMask } from "@/composables/useScrollMask";
-import { useNovelStore } from "@/stores/novelStore";
-import { getChapterDisplayTitle } from "@/utils/format-chapter-label";
+import { useNovelStore } from "@/stores/novel";
+import { getChapterDisplayTitle } from "@/utils/novel/format-label";
 
 const props = defineProps({
   mobile: {
