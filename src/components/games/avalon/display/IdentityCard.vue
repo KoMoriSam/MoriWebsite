@@ -52,23 +52,24 @@
             />
             <div
               class="absolute inset-x-0 bottom-0 flex min-h-0 flex-col items-center justify-end gap-1 overflow-hidden bg-gradient-to-t from-black/95 via-black/85 to-transparent text-center text-white"
-              :class="compact ? 'h-[62%] px-2 pb-10 pt-8 sm:px-3' : 'h-[82%] px-3 pb-3 pt-6 sm:px-4 lg:h-[70%] lg:pb-4 lg:pt-14'"
+              :class="compact ? 'h-[62%] px-2 pb-10 pt-8 sm:px-3' : preview ? 'h-[82%] px-3 pb-5 pt-6 sm:px-4 lg:h-[70%] lg:pb-4 lg:pt-14' : 'h-[82%] px-3 pb-3 pt-6 sm:px-4 lg:h-[70%] lg:pb-4 lg:pt-14'"
             >
               <span
-                class="text-xs font-medium"
-                :class="isEvil(self.role) ? 'text-error' : 'text-success'"
+                class="font-medium"
+                :class="[isEvil(self.role) ? 'text-error' : 'text-success', preview ? 'text-sm lg:text-xs' : 'text-xs']"
               >
                 {{ t(isEvil(self.role) ? "avalon.night.evil" : "avalon.night.good") }}
               </span>
               <h3
                 class="font-serif font-bold leading-tight"
-                :class="compact ? 'text-base sm:text-2xl' : 'text-2xl sm:text-3xl'"
+                :class="compact ? 'text-base sm:text-2xl' : preview ? 'text-3xl' : 'text-2xl sm:text-3xl'"
               >
                 {{ t(`avalon.roles.${self.role}`) }}
               </h3>
               <div
                 v-if="!compact"
-                class="min-h-0 w-full space-y-1 overflow-y-auto overscroll-contain text-pretty text-xs leading-4 text-white/85 scrollbar-thin sm:space-y-2 sm:text-sm sm:leading-6"
+                class="min-h-0 w-full overflow-y-auto overscroll-contain text-pretty text-white/85 scrollbar-thin"
+                :class="preview ? 'space-y-2 text-sm leading-6' : 'space-y-1 text-xs leading-4 sm:space-y-2 sm:text-sm sm:leading-6'"
               >
                 <p>{{ t(`avalon.roleHints.${self.role}`) }}</p>
                 <div

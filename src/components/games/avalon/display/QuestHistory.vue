@@ -6,6 +6,7 @@
           {{ t("avalon.questNumber", { n: quest + 1 }) }}
         </h3>
         <span
+          v-if="room"
           class="text-xs font-medium"
           :class="result ? result.success ? 'text-success' : 'text-error' : 'text-base-content/60'"
         >
@@ -15,13 +16,13 @@
       <p class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-base-content/60">
         <span
           ><i class="ri-group-line" aria-hidden="true"></i>
-          {{ t("avalon.records.required", { n: room.teamSizes[quest] }) }}</span
+          {{ t("avalon.records.required", { n: teamSize }) }}</span
         >
         <span
           ><i class="ri-sword-line" aria-hidden="true"></i>
           {{
             t("avalon.records.threshold", {
-              n: room.participants.length >= 7 && quest === 3 ? 2 : 1,
+              n: participantCount >= 7 && quest === 3 ? 2 : 1,
             })
           }}</span
         >
@@ -53,7 +54,7 @@
         }}
       </p>
     </div>
-    <div class="border-t border-base-300 pt-2">
+    <div v-if="room" class="border-t border-base-300 pt-2">
       <p v-if="!entries.length" class="text-xs text-base-content/60">
         {{ t(current ? "avalon.records.waiting" : "avalon.records.empty") }}
       </p>
@@ -204,13 +205,22 @@
 <script setup>
 import { computed } from "vue";
 import { useLocale } from "@/i18n";
+import { QUEST_TEAMS } from "../../../../../shared/games/avalon/index.js";
 const props = defineProps({
-  room: { type: Object, required: true },
+  room: { type: Object, default: null },
+  playerCount: { type: Number, default: 5 },
   quest: { type: Number, required: true },
   sequence: { type: Number, default: null },
   showProgress: { type: Boolean, default: true },
 });
 const { t, date } = useLocale();
+const participantCount = computed(
+  () => props.room?.participants.length ?? props.playerCount,
+);
+const teamSize = computed(
+  () => props.room?.teamSizes[props.quest] ??
+    (QUEST_TEAMS[participantCount.value] ?? QUEST_TEAMS[5])[props.quest],
+);
 const icons = {
   dialogue: "ri-chat-3-line",
   begin_evil_discussion: "ri-chat-smile-3-line",
@@ -223,11 +233,15 @@ const icons = {
   end: "ri-stop-circle-line",
 };
 const result = computed(() =>
-  props.room.quests.find((entry) => entry.quest === props.quest),
+  props.room?.quests.find((entry) => entry.quest === props.quest),
 );
 const current = computed(
   () =>
-    props.quest === props.room.questIndex && props.room.phase !== "finished",
+    Boolean(
+      props.room &&
+      props.quest === props.room.questIndex &&
+      props.room.phase !== "finished",
+    ),
 );
 const status = computed(() =>
   result.value
@@ -235,13 +249,13 @@ const status = computed(() =>
     : t(
         current.value
           ? "avalon.records.current"
-          : props.room.phase === "finished"
+          : props.room?.phase === "finished"
             ? "avalon.records.unplayed"
             : "avalon.records.upcoming",
       ),
 );
 const entries = computed(() =>
-  props.room.history
+  (props.room?.history ?? [])
     .map((entry, index) => ({ ...entry, sequence: index + 1 }))
     .filter(
       (entry) =>

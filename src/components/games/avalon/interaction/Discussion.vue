@@ -31,6 +31,7 @@
         >
           <div
             ref="log"
+            class="min-w-0 overflow-x-hidden"
             role="log"
             :tabindex="compact || fillHeight ? 0 : undefined"
             aria-live="polite"
@@ -49,29 +50,31 @@
             >
               {{ t("avalon.phrases.empty") }}
             </div>
-            <div
-              v-for="message in messages"
-              :key="message.id"
-              class="chat"
-              :class="
-                message.playerId === room.selfId ? 'chat-end' : 'chat-start'
-              "
-            >
-              <div class="chat-header text-xs text-base-content/60">
-                {{ message.nickname
-                }}<time class="ml-2 opacity-60">{{
-                  messageTime(message.at)
-                }}</time>
-              </div>
+            <TransitionGroup tag="div" name="chat-message" appear class="relative min-w-0 overflow-x-clip">
               <div
-                class="chat-bubble min-h-0 wrap-break-word text-sm"
+                v-for="message in messages"
+                :key="message.id"
+                class="chat"
                 :class="
-                  message.playerId === room.selfId ? 'chat-bubble-primary' : ''
+                  message.playerId === room.selfId ? 'chat-end' : 'chat-start'
                 "
               >
-                {{ messageText(message) }}
+                <div class="chat-header text-xs text-base-content/60">
+                  {{ message.nickname
+                  }}<time class="ml-2 opacity-60">{{
+                    messageTime(message.at)
+                  }}</time>
+                </div>
+                <div
+                  class="chat-bubble min-h-0 wrap-break-word text-sm"
+                  :class="
+                    message.playerId === room.selfId ? 'chat-bubble-primary' : ''
+                  "
+                >
+                  {{ messageText(message) }}
+                </div>
               </div>
-            </div>
+            </TransitionGroup>
           </div>
           <button
             v-if="unread"
@@ -92,7 +95,7 @@
           class="min-w-0 space-y-4"
           :class="
             fillHeight
-              ? 'max-h-[55%] shrink-0 overflow-y-auto overscroll-contain scrollbar-thin'
+              ? '-mx-1 max-h-[55%] shrink-0 overflow-y-auto overscroll-contain px-1 py-1 scrollbar-thin'
               : compact
                 ? 'shrink-0'
                 : ''
@@ -169,7 +172,7 @@
 
               <fieldset
                 v-if="selected.role"
-                class="fieldset min-w-0 flex-1 basis-40"
+                class="fieldset min-w-0 w-26 shrink-0"
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.role") }}
@@ -187,7 +190,7 @@
 
               <fieldset
                 v-if="selected.quest"
-                class="fieldset min-w-0 flex-1 basis-40"
+                class="fieldset min-w-0 w-26 shrink-0"
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.quest") }}
@@ -208,8 +211,8 @@
               </fieldset>
 
               <fieldset
-                class="fieldset min-w-0 flex-1 basis-full"
-                :class="parameterCount === 1 ? 'sm:flex-[2] sm:basis-40' : ''"
+                class="fieldset min-w-0 flex-1"
+                :class="parameterCount === 1 ? 'basis-40 flex-[2]' : 'basis-full'"
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.preview") }}
@@ -438,3 +441,35 @@ onBeforeUnmount(() => {
   clearTimeout(cooldownTimer);
 });
 </script>
+
+<style scoped>
+@media (prefers-reduced-motion: no-preference) {
+  .chat-message-enter-active {
+    transition: opacity 360ms ease, transform 360ms ease;
+  }
+
+  .chat-message-leave-active {
+    position: absolute;
+    width: 100%;
+    transition: opacity 220ms ease, transform 220ms ease;
+  }
+
+  .chat-message-move {
+    transition: transform 300ms ease;
+  }
+
+  .chat-message-enter-from,
+  .chat-message-leave-to {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+
+  .chat-message-enter-from.chat-end {
+    transform: translateX(1rem);
+  }
+
+  .chat-message-leave-to.chat-start {
+    transform: translateX(1rem);
+  }
+}
+</style>

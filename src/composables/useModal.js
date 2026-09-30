@@ -11,6 +11,7 @@ const retiredFallbackListeners = new Map();
 let modalFallbackSequence = 0;
 let activeModalFallbacks = 0;
 let modalFallbackRestoreFrame = 0;
+const modalPopstateHandlers = [];
 
 const beginModalFallback = () => {
   activeModalFallbacks += 1;
@@ -55,13 +56,17 @@ const getFallbackState = (state = window.history.state) =>
   state?.[MODAL_FALLBACK_STATE_KEY] ?? null;
 
 const setModalPopstateHandler = (handler) => {
-  globalThis.__moriModalFallbackPopstateHandler = handler;
+  const index = modalPopstateHandlers.indexOf(handler);
+  if (index !== -1) modalPopstateHandlers.splice(index, 1);
+  modalPopstateHandlers.push(handler);
+  globalThis.__moriModalFallbackPopstateHandler = modalPopstateHandlers.at(-1);
 };
 
 const clearModalPopstateHandler = (handler) => {
-  if (globalThis.__moriModalFallbackPopstateHandler === handler) {
-    globalThis.__moriModalFallbackPopstateHandler = null;
-  }
+  const index = modalPopstateHandlers.indexOf(handler);
+  if (index !== -1) modalPopstateHandlers.splice(index, 1);
+  globalThis.__moriModalFallbackPopstateHandler =
+    modalPopstateHandlers.at(-1) ?? null;
 };
 
 const withoutFallbackState = (state = window.history.state) => {

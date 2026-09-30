@@ -46,7 +46,7 @@
         tag="ol"
         name="recent-record"
         appear
-        class="relative flex flex-col gap-3"
+        class="relative flex min-w-0 flex-col gap-3 overflow-x-clip"
       >
         <li
           v-for="(entry, index) in recentRecords"

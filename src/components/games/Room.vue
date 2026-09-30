@@ -114,13 +114,12 @@
             >
               <button
                 type="button"
-                :class="action.key === 'reconnect' ? 'btn btn-sm' : 'btn btn-square btn-ghost btn-xs'"
+                class="btn btn-square btn-ghost btn-xs"
                 :aria-label="action.label"
                 :disabled="action.disabled"
                 @click="action.onClick()"
               >
                 <i :class="action.icon" aria-hidden="true"></i>
-                <span v-if="action.key === 'reconnect'">{{ action.label }}</span>
               </button>
             </div>
           </div>
@@ -766,7 +765,7 @@ const roomActions = computed(() => {
   if (isHost.value && room.value.status === "finished") {
     add(
       "restart",
-      "ri-restart-line",
+      "ri-arrow-go-back-line",
       t("games.restart"),
       () =>
         confirmRoomAction("restart", "confirmRestart", "restart", "finished"),

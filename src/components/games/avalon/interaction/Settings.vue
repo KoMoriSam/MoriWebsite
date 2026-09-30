@@ -1,4 +1,5 @@
 <template>
+  <Rulebook :player-count="previewCount" />
   <div class="divider"></div>
   <section class="card">
     <div class="card-body gap-3 p-0">
@@ -37,24 +38,7 @@
           @details="showRoleDetails"
         />
       </div>
-      <p class="text-sm text-base-content/70" aria-live="polite">
-        {{
-          t("avalon.config.preview", {
-            n: previewCount,
-            good: roster.goodSlots,
-            evil: roster.evilSlots,
-          })
-        }}
-      </p>
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        <RoleOption
-          v-for="[role, n] in roleCounts"
-          :key="role"
-          :role="role"
-          :count="n"
-          @details="showRoleDetails"
-        />
-      </div>
+      <RoleRoster :room="room" split />
       <p v-if="!roster.valid" role="alert" class="mt-2 text-sm text-error">
         {{ t("avalon.errors.ROLE_CAPACITY") }}
       </p>
@@ -63,7 +47,6 @@
       </p>
     </div>
   </section>
-  <Rulebook />
   <RolePreviewPopover
     ref="rolePopover"
     :role="selectedRole"
@@ -79,6 +62,7 @@ import {
 } from "../../../../../shared/games/avalon/index.js";
 import RoleOption from "./RoleOption.vue";
 import RolePreviewPopover from "./RolePreviewPopover.vue";
+import RoleRoster from "../display/RoleRoster.vue";
 import Rulebook from "../display/Rulebook.vue";
 const props = defineProps({
   room: { type: Object, required: true },
@@ -95,14 +79,6 @@ const specialRoles = computed(
 const previewCount = computed(() => Math.max(5, props.room.players.length));
 const roster = computed(() =>
   roleRoster(previewCount.value, specialRoles.value),
-);
-const roleCounts = computed(() =>
-  Object.entries(
-    roster.value.roles.reduce((counts, role) => {
-      counts[role] = (counts[role] ?? 0) + 1;
-      return counts;
-    }, {}),
-  ),
 );
 function showRoleDetails(role) {
   selectedRole.value = role;

@@ -6,7 +6,7 @@
     >
       <div
         role="tablist"
-        class="tabs tabs-border tabs-sm hidden w-full flex-nowrap overflow-x-auto lg:is-drawer-open:flex"
+        class="tabs tabs-border tabs-sm hidden w-full flex-nowrap overflow-x-auto scrollbar-thin lg:is-drawer-open:flex"
       >
         <button
           v-for="item in visibleMenuItems"
@@ -92,7 +92,29 @@
         :active="panel === 'discussion'"
         compact
         :run="run"
-      />
+      >
+        <template #discussion-timer>
+          <div
+            v-if="midDesktop && ['discussion', 'evil_discussion'].includes(gameRoom.phase)"
+            class="flex shrink-0 items-center gap-2"
+          >
+            <DiscussionTimer
+              class="min-w-0 flex-1"
+              :discussion="gameRoom.discussion"
+              :server-now="gameRoom.serverNow"
+            />
+            <button
+              v-if="canEndDiscussion"
+              type="button"
+              class="btn shrink-0"
+              :disabled="!canAct"
+              @click="emit('end-discussion')"
+            >
+              {{ t("avalon.discussionTimer.endEarly") }}
+            </button>
+          </div>
+        </template>
+      </Discussion>
     </div>
     <section
       :id="`${panelId}-history`"
@@ -128,6 +150,15 @@
     >
       <div :id="playersTargetId" class="min-w-0"></div>
     </section>
+    <section
+      :id="`${panelId}-reference`"
+      role="region"
+      :aria-labelledby="`${panelId}-menu-reference`"
+      class="min-h-0 flex-1 lg:is-drawer-close:hidden"
+      :class="panel === 'reference' ? '' : 'hidden'"
+    >
+      <ReferenceContent :room="room" in-sidebar />
+    </section>
   </div>
 </template>
 
@@ -136,8 +167,11 @@ import { computed, ref, useId, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import { useLocale } from "@/i18n";
 import { canDiscuss } from "../../../../../shared/games/avalon/discussion.js";
+import { isEvil } from "../../../../../shared/games/avalon/index.js";
 import Discussion from "../interaction/Discussion.vue";
+import DiscussionTimer from "../display/DiscussionTimer.vue";
 import QuestHistory from "../display/QuestHistory.vue";
+import ReferenceContent from "../display/ReferenceContent.vue";
 
 const props = defineProps({
   room: { type: Object, required: true },
@@ -146,7 +180,7 @@ const props = defineProps({
   panel: { type: String, default: "discussion" },
   playersTargetId: { type: String, required: true },
 });
-const emit = defineEmits(["select-panel"]);
+const emit = defineEmits(["select-panel", "end-discussion"]);
 const { t } = useLocale();
 const panelId = `avalon-sidebar-${useId()}`;
 const midDesktop = useMediaQuery("(min-width: 1024px) and (max-width: 1279px)");
@@ -158,6 +192,7 @@ const menuItems = [
     label: "avalon.mobile.discussion",
   },
   { id: "history", icon: "ri-history-line", label: "avalon.mobile.history" },
+  { id: "reference", icon: "ri-book-2-line", label: "avalon.reference" },
 ];
 const visibleMenuItems = computed(() =>
   midDesktop.value
@@ -177,6 +212,13 @@ const gameRoom = computed(() => ({
 }));
 const canSpeak = computed(() =>
   canDiscuss(gameRoom.value, gameRoom.value.selfId),
+);
+const canEndDiscussion = computed(() =>
+  gameRoom.value.phase === "discussion"
+    ? gameRoom.value.leaderId === gameRoom.value.selfId
+    : gameRoom.value.phase === "evil_discussion" &&
+      isEvil(gameRoom.value.self.role) &&
+      gameRoom.value.self.role !== "oberon",
 );
 const recordedQuests = computed(() =>
   [...new Set(gameRoom.value.history.map((entry) => entry.quest))].sort(

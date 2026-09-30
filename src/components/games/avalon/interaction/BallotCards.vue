@@ -286,3 +286,34 @@ watch(
 );
 onBeforeUnmount(cancelDrag);
 </script>
+
+<style scoped>
+.collapse::details-content {
+  overflow: clip;
+}
+
+.collapse[open]::details-content {
+  overflow: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collapse::details-content {
+    transition: content-visibility 200ms allow-discrete,
+      visibility 200ms allow-discrete,
+      min-height 200ms ease-out allow-discrete,
+      padding 100ms ease-out 20ms,
+      background-color 200ms ease-out,
+      height 200ms;
+  }
+
+  .collapse[open]::details-content {
+    animation: ballot-reveal 200ms step-end;
+  }
+
+  @keyframes ballot-reveal {
+    from, to {
+      overflow: clip;
+    }
+  }
+}
+</style>

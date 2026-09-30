@@ -42,13 +42,19 @@
           @flip="flipIdentity"
         />
         <button
-          v-if="showRole && room.self.role && !room.self.nightConfirmed"
           type="button"
           class="btn"
-          :disabled="!canAct"
+          :class="{ invisible: !room.self.role || (!showRole && !room.self.nightConfirmed) }"
+          :disabled="!canAct || !showRole || room.self.nightConfirmed"
           @click="run('confirm_role')"
         >
-          {{ t("avalon.night.confirm") }}
+          {{
+            t(
+              room.self.nightConfirmed
+                ? 'avalon.night.confirmed'
+                : 'avalon.night.confirm',
+            )
+          }}
         </button>
         <p
           role="status"
@@ -243,58 +249,10 @@
               <AgendaSummary :room="room" :player-name="playerName" />
             </div>
             <div class="flex max-h-full min-h-0 shrink-0 flex-col gap-3 lg:gap-5">
-            <div
+            <QuestList
               v-if="room.game > 0 && !['lobby', 'night'].includes(room.phase)"
-              ref="questProgress"
-              class="grid shrink-0 grid-cols-5 gap-2"
-              :aria-label="t('avalon.quests')"
-            >
-              <div
-                v-for="(size, index) in room.teamSizes"
-                :key="index"
-                class="tooltip tooltip-bottom group min-w-0 [--tt-bg:var(--color-base-100)] after:hidden! hover:z-30 focus-within:z-30"
-                :class="openQuest === index ? 'tooltip-open' : ''"
-                @mouseenter="alignQuestTooltip"
-                @focusin="
-                  openQuest = index;
-                  alignQuestTooltip($event);
-                "
-                @focusout="closeQuestTooltip($event)"
-              >
-                <div
-                  :id="`${questTooltipId}-${index}`"
-                  role="tooltip"
-                  class="tooltip-content quest-tooltip fixed! bottom-auto! right-auto! hidden max-h-[min(24rem,50dvh)] w-80! max-w-[calc(100vw-2rem)]! transform-none! overflow-y-auto overscroll-contain border border-base-300 bg-base-100! p-3! text-left! text-base-content! shadow-lg scrollbar-thin group-hover:block group-focus-within:block group-hover:pointer-events-auto! group-focus-within:pointer-events-auto!"
-                >
-                  <QuestHistory :room="room" :quest="index" />
-                </div>
-                <button
-                  type="button"
-                  class="block h-full w-full min-w-0 wrap-break-word rounded-box border p-2 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-3"
-                  :class="questClasses(index)"
-                  :aria-describedby="`${questTooltipId}-${index}`"
-                  @click="$event.currentTarget.focus()"
-                  @keydown.esc="
-                    openQuest = null;
-                    $event.currentTarget.blur();
-                  "
-                >
-                  <p class="text-xs">
-                    {{ t("avalon.questNumber", { n: index + 1 }) }}
-                  </p>
-                  <p class="mt-1 text-lg font-semibold">
-                    {{ size }}
-                    <span class="text-xs">{{ questLabel(index) }}</span>
-                  </p>
-                  <p
-                    v-if="room.players.length >= 7 && index === 3"
-                    class="mt-1 text-xs"
-                  >
-                    {{ t("avalon.twoFails") }}
-                  </p>
-                </button>
-              </div>
-            </div>
+              :room="room"
+            />
 
             <div
               v-if="
@@ -379,14 +337,14 @@
           >
             <section class="card">
               <div class="card-body gap-4 p-0">
-                <div class="flex items-center justify-between gap-3">
+                <div v-if="!midDesktop" class="flex items-center justify-between gap-3">
                   <h2 class="card-title font-serif">
                     <i class="ri-group-line font-normal" aria-hidden="true"></i>
                     {{ t("avalon.players", { n: room.players.length }) }}
                   </h2>
                 </div>
                 <p
-                  v-if="room.phase !== 'finished'"
+                  v-if="!midDesktop && room.phase !== 'finished'"
                   class="text-xs leading-6 text-base-content/60"
                 >
                   {{ t("avalon.knowledge.hint") }}
@@ -643,7 +601,7 @@
     <div
       v-if="room.phase !== 'night' && !desktop"
       :id="`${mobilePanelId}-discussion`"
-      class="min-h-0 flex-1 flex-col gap-3"
+      class="min-h-0 flex-1 flex-col gap-3 px-1.5"
       :class="mobilePanel === 'discussion' ? 'flex' : 'hidden'"
     >
       <div
@@ -754,7 +712,7 @@ import {
   computed,
   h,
   onBeforeUnmount,
-  onMounted,
+
   ref,
   useId,
   watch,
@@ -771,6 +729,7 @@ import Discussion from "../interaction/Discussion.vue";
 import DiscussionTimer from "../display/DiscussionTimer.vue";
 import { canDiscuss } from "../../../../../shared/games/avalon/discussion.js";
 import QuestHistory from "../display/QuestHistory.vue";
+import QuestList from "../display/QuestList.vue";
 import AgendaSummary from "../display/AgendaSummary.vue";
 import { knownPlayer, ROLE_ICONS } from "@/games/avalon/presentation";
 import { possibleMarks } from "@/games/avalon/notes";
@@ -855,9 +814,7 @@ const mobilePanels = [
 const selected = ref([]);
 const target = ref("");
 const showRole = ref(false);
-const questTooltipId = `quest-detail-${useId()}`;
-const openQuest = ref(null);
-const questProgress = ref(null);
+
 const recordedQuests = computed(() =>
   [...new Set(room.value.history.map((entry) => entry.quest))].sort(
     (a, b) => a - b,
@@ -1030,66 +987,7 @@ onBeforeUnmount(() => {
   questResultModal?.close();
   voteResultModal?.close();
 });
-function alignQuestTooltip(event) {
-  const wrapper = event.currentTarget;
-  const content = wrapper.querySelector(".tooltip-content");
-  const bounds = wrapper.getBoundingClientRect();
-  const viewportWidth = document.documentElement.clientWidth;
-  const viewportHeight = window.innerHeight;
-  const edge = 16;
-  const gap = 8;
-  const dock = document.querySelector(".dock");
-  const bottom =
-    dock && getComputedStyle(dock).display !== "none"
-      ? dock.getBoundingClientRect().top - edge
-      : viewportHeight - edge;
-  const below = bounds.bottom + gap;
-  const spaceBelow = Math.max(0, bottom - below);
-  const spaceAbove = Math.max(0, bounds.top - gap - edge);
-  const heightLimit = Math.min(
-    viewportHeight * 0.5,
-    24 * parseFloat(getComputedStyle(document.documentElement).fontSize),
-  );
-  const preferredHeight = Math.min(
-    content.scrollHeight + content.offsetHeight - content.clientHeight,
-    heightLimit,
-  );
-  const placeBelow = spaceBelow >= preferredHeight || spaceBelow >= spaceAbove;
-  content.style.maxHeight = `${Math.min(heightLimit, placeBelow ? spaceBelow : spaceAbove)}px`;
-  content.style.setProperty(
-    "max-width",
-    `${Math.max(0, viewportWidth - edge * 2)}px`,
-    "important",
-  );
-  const width = content.offsetWidth;
-  const height = content.offsetHeight;
-  const left = Math.max(
-    edge,
-    Math.min(
-      bounds.left + bounds.width / 2 - width / 2,
-      viewportWidth - width - edge,
-    ),
-  );
-  content.style.left = `${left}px`;
-  content.style.top = `${placeBelow ? below : bounds.top - gap - height}px`;
-}
-function closeQuestTooltip(event) {
-  if (!event.currentTarget.contains(event.relatedTarget))
-    openQuest.value = null;
-}
-function realignQuestTooltip() {
-  for (const wrapper of questProgress.value?.querySelectorAll(".tooltip") ??
-    []) {
-    if (wrapper.matches(":hover, :focus-within"))
-      alignQuestTooltip({ currentTarget: wrapper });
-  }
-}
-onMounted(() => {
-  window.addEventListener("resize", realignQuestTooltip);
-});
-onBeforeUnmount(() => {
-  window.removeEventListener("resize", realignQuestTooltip);
-});
+
 const isLeader = computed(() => room.value.leaderId === room.value.selfId);
 const canSpeak = computed(() => canDiscuss(room.value, room.value.selfId));
 const canEndEvilDiscussion = computed(() => evil.value && room.value.self.role !== "oberon");
@@ -1383,26 +1281,7 @@ function playerClasses(player) {
         }[tone] || "border-base-300";
   return [background, border];
 }
-function questClasses(index) {
-  const result = room.value.quests[index];
-  return result
-    ? result.success
-      ? "border-success/40 bg-success/10"
-      : "border-error/40 bg-error/10"
-    : index === room.value.questIndex
-      ? "border-base-content/40 bg-base-200"
-      : "border-base-300";
-}
-function questLabel(index) {
-  const result = room.value.quests[index];
-  return t(
-    result
-      ? result.success
-        ? "avalon.success"
-        : "avalon.failure"
-      : "avalon.people",
-  );
-}
+
 function playQuest(success) {
   if (
     !isQuestMember.value ||
@@ -1456,6 +1335,11 @@ function endEvilDiscussion() {
     "end_assassination_discussion",
   );
 }
+function endCurrentDiscussion() {
+  if (room.value.phase === "evil_discussion") endEvilDiscussion();
+  else endDiscussion();
+}
+defineExpose({ endCurrentDiscussion });
 function confirmGameAction(title, description, type, payload) {
   const { code, stage } = room.value;
   modal.confirm(title, description, {
@@ -1486,18 +1370,4 @@ function confirmGameAction(title, description, type, payload) {
   });
 }
 </script>
-<style scoped>
-@media (prefers-reduced-motion: no-preference) {
-  .quest-tooltip {
-    transition-property: opacity, transform, display;
-    transition-behavior: allow-discrete;
-  }
 
-  @starting-style {
-    .quest-tooltip {
-      opacity: 0;
-      --tt-pos: 0.25rem;
-    }
-  }
-}
-</style>
