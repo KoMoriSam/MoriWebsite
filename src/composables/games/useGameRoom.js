@@ -149,7 +149,7 @@ export function useGameRoom(gameType) {
     await router.replace({ path: route.path, query: { ...route.query, room: value.code } });
     await connect(epoch);
   }
-  async function openRoom(join = false, nickname = '') {
+  async function openRoom(join = false, nickname = '', profile) {
     if (busy.value) return;
     error.value = ''; busy.value = true;
     try {
@@ -159,7 +159,7 @@ export function useGameRoom(gameType) {
         const saved = readCredentials(roomCode);
         if (saved) { await enter(saved); return; }
       }
-      const value = await request(join ? `/${roomCode}/join` : '', { nickname, gameType });
+      const value = await request(join ? `/${roomCode}/join` : '', { nickname, gameType, ...(profile ? { profile } : {}) });
       if (!stopped) await enter(value);
     } catch (cause) { error.value = cause.message; }
     finally { busy.value = false; }
@@ -176,8 +176,8 @@ export function useGameRoom(gameType) {
     });
   }
   async function run(type, payload) {
-    if (sending.value) return;
-    try { await action(type, payload); } catch (cause) { error.value = cause.message; }
+    if (sending.value) return false;
+    try { await action(type, payload); return true; } catch (cause) { error.value = cause.message; return false; }
   }
   async function leave() {
     if (busy.value || sending.value) return;

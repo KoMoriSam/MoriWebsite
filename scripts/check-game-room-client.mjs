@@ -61,7 +61,9 @@ try {
   let client;
   app = renderer.createApp({ setup() { client = useGameRoom('avalon'); return () => h('p'); } });
   app.use(router); app.mount({ children: [] });
-  await client.openRoom(false, 'Tester'); await nextTick();
+  const profile = { profileSource: 'github', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4' };
+  await client.openRoom(false, 'Tester', profile); await nextTick();
+  assert.deepEqual(JSON.parse(requests[0].options.body).profile, profile);
   assert.equal(client.connection.value, 'online');
   assert.equal(client.room.value.selfId, player.id);
   assert.equal(router.currentRoute.value.query.room, credential.code);
@@ -81,6 +83,12 @@ try {
   assert.equal(sent[0].id, sent[1].id);
   assert.match(sent[0].id, /^[a-f0-9]{32}$/);
   assert.equal(client.room.value.players[0].ready, true);
+  await client.run('profile', { nickname: 'Actual GitHub display name exceeding twenty four chars', profile }); await nextTick();
+  assert.equal(client.room.value.players[0].avatarUrl, profile.avatarUrl);
+  assert.equal(client.room.value.players[0].profileSource, 'github');
+  assert.equal(client.room.value.players[0].ready, false);
+  client.reconnect(); for (let i = 0; i < 8; i++) await nextTick();
+  assert.equal(client.room.value.players[0].avatarUrl, profile.avatarUrl);
   sockets.at(-1).close(4001); await nextTick();
   assert.equal(client.connection.value, 'replaced');
   assert.equal(client.error.value, 'REPLACED');

@@ -1,5 +1,7 @@
 <template>
   <section class="flex min-h-0 flex-col" :aria-label="translate('reader.novelContentSearch.searchTheNovel')">
+    <LoginGate v-if="!auth.authenticated.value" />
+    <template v-else>
     <label class="input flex w-full shrink-0 items-center gap-2">
       <i class="ri-search-line text-base-content/55" aria-hidden="true"></i>
       <input
@@ -84,6 +86,7 @@
         </li>
       </ul>
     </div>
+    </template>
   </section>
 </template>
 
@@ -91,6 +94,9 @@
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText, message: localeMessage } = useLocale();
 
+import LoginGate from '@/components/auth/LoginGate.vue';
+import { useGithubSession } from '@/composables/auth/useGithubSession';
+const auth = useGithubSession();
 import { computed, nextTick, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
@@ -123,12 +129,17 @@ const entries = ref([]);
 const isLoading = ref(false);
 const errorMessage = ref("");
 let initialized = false;
+let request = 0;
+watch(() => [auth.state.authenticated, auth.state.revision], () => {
+  request++; initialized = false; entries.value = []; keyword.value = ''; errorMessage.value = ''; isLoading.value = false;
+  if (auth.state.authenticated && props.active) void initialize();
+}, { flush: 'sync' });
 
 const normalizedKeyword = computed(() => keyword.value.trim());
 
 const results = computed(() => {
   const query = normalizedKeyword.value;
-  if (!query) return [];
+  if (!auth.state.authenticated || !query) return [];
 
   return entries.value
     .flatMap((entry) => {
@@ -174,18 +185,22 @@ const results = computed(() => {
 });
 
 const initialize = async () => {
-  if (initialized || isLoading.value) return;
+  if (!auth.state.authenticated || initialized || isLoading.value) return;
+  const id = ++request;
   isLoading.value = true;
   errorMessage.value = "";
 
   try {
-    entries.value = await fetchNovelSearchIndex();
+    const value = await fetchNovelSearchIndex();
+    if (id !== request || !auth.state.authenticated) return;
+    entries.value = value;
     initialized = true;
   } catch (error) {
+    if (id !== request) return;
     console.error("初始化小说搜索失败:", error);
     errorMessage.value = localeMessage('reader.novelContentSearch.novelContentIsUnavailablePleaseTryAgainLater');
   } finally {
-    isLoading.value = false;
+    if (id === request) isLoading.value = false;
   }
 };
 

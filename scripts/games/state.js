@@ -25,10 +25,23 @@ export function createRoom(code, gameType, player, now = Date.now(), resolveGame
   const definition = resolveGame(gameType);
   return { code, gameType, hostId: player.id, players: [{ ...player, seat: 0 }], status: 'lobby', lobbyStartsAt: null, stage: 1, revision: 1, round: 0, lastActivityAt: now, gameState: null, gameConfig: definition.normalizeConfig?.() ?? null, messages: [] };
 }
-export function createPlayer(nickname, tokenHash, now = Date.now()) {
+export function normalizePlayerProfile(nickname, profile) {
+  ensure(profile == null || (typeof profile === 'object' && !Array.isArray(profile)), 'PROFILE');
+  const source = profile?.profileSource ?? 'guest';
+  ensure(['guest', 'github'].includes(source), 'PROFILE');
   ensure(typeof nickname === 'string', 'NICKNAME'); nickname = nickname.trim();
-  ensure(nickname.length > 0 && nickname.length <= 24 && !/[\p{Cc}\p{Cf}]/u.test(nickname), 'NICKNAME');
-  return { id: crypto.randomUUID(), nickname, tokenHash, ready: false, online: false, departed: false, disconnectedAt: now, receipts: [] };
+  ensure(nickname.length > 0 && nickname.length <= (source === 'github' ? 256 : 24) && !/[\p{Cc}\p{Cf}]/u.test(nickname), 'NICKNAME');
+  let avatarUrl = null;
+  if (source === 'github' && profile?.avatarUrl) {
+    ensure(typeof profile.avatarUrl === 'string' && profile.avatarUrl.length <= 512, 'PROFILE');
+    let url; try { url = new URL(profile.avatarUrl); } catch { ensure(false, 'PROFILE'); }
+    ensure(url.protocol === 'https:' && url.hostname === 'avatars.githubusercontent.com' && !url.port && !url.username && !url.password && !url.hash && /^\/u\/\d+$/.test(url.pathname), 'PROFILE');
+    avatarUrl = url.href;
+  }
+  return { nickname, avatarUrl, profileSource: source };
+}
+export function createPlayer(nickname, tokenHash, now = Date.now(), profile = null) {
+  return { id: crypto.randomUUID(), ...normalizePlayerProfile(nickname, profile), tokenHash, ready: false, online: false, departed: false, disconnectedAt: now, receipts: [] };
 }
 export function transferHost(room, now = Date.now(), immediate = false) {
   const host = room.players.find(p => p.id === room.hostId);
@@ -48,6 +61,14 @@ export function applyRoomAction(source, playerId, action, now = Date.now(), rng 
   const definition = resolveGame(room.gameType);
   const host = () => ensure(room.hostId === playerId, 'HOST_ONLY', 403);
   switch (action.type) {
+    case 'profile': {
+      ensure(room.status === 'lobby', 'PHASE');
+      const profile = normalizePlayerProfile(action.nickname, action.profile);
+      ensure(!room.players.some(other => other.id !== playerId && other.nickname.toLocaleLowerCase() === profile.nickname.toLocaleLowerCase()), 'NICKNAME_TAKEN', 409);
+      Object.assign(player, profile);
+      player.ready = false; room.lobbyStartsAt = null; room.stage++;
+      break;
+    }
     case 'move_seat':
       ensure(room.status === 'lobby', 'PHASE');
       ensure(Number.isInteger(action.seat) && action.seat >= 0 && action.seat < definition.maxPlayers, 'SEAT');
@@ -155,7 +176,7 @@ export function roomView(room, playerId, resolveGame = getGame) {
   return {
     code: room.code, gameType: room.gameType, status: room.status, lobbyStartsAt: room.lobbyStartsAt ?? null, hostId: room.hostId,
     stage: room.stage, revision: room.revision, round: room.round, selfId: playerId,
-    players: room.players.map(({ id, nickname, ready, online, departed, seat }, index) => ({ id, nickname, ready, online, departed: !!departed, seat: seat ?? index })),
+    players: room.players.map(({ id, nickname, avatarUrl, profileSource, ready, online, departed, seat }, index) => ({ id, nickname, avatarUrl: avatarUrl ?? null, profileSource: profileSource ?? 'guest', ready, online, departed: !!departed, seat: seat ?? index })),
     limits: { minPlayers: definition.minPlayers, maxPlayers: definition.maxPlayers },
     gameConfig: room.gameConfig ?? definition.normalizeConfig?.() ?? null,
     messages: room.messages ?? [],

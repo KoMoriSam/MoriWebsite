@@ -1,3 +1,5 @@
+import { watch } from "vue";
+import { githubSession } from "@/composables/auth/useGithubSession";
 import { useTitle, useDebounceFn } from "@vueuse/core";
 
 import { useToast } from "@/composables/useToast";
@@ -17,6 +19,12 @@ export const useNovelActions = (state, getters) => {
 
   const toast = useToast({ position: "center-top", closable: false });
   let contentRequestToken = 0;
+  watch(() => [githubSession.authenticated, githubSession.revision], () => {
+    contentRequestToken++;
+    state.currentChapterContent.value = '';
+    state.contentCache.value = {};
+    state.isLoadingContent.value = false;
+  }, { flush: 'sync' });
 
   const UUID_PATTERN =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -261,6 +269,8 @@ export const useNovelActions = (state, getters) => {
     forceUpdate = false,
     requestedUuid = state.currentChapterUuid.value,
   ) => {
+    if (!githubSession.authenticated) return;
+    const authRevision = githubSession.revision;
     const chapterUuid = String(requestedUuid || "");
     const chapter = state.flatChapters.value.find(
       (item) => String(item.uuid) === chapterUuid,
@@ -269,6 +279,7 @@ export const useNovelActions = (state, getters) => {
 
     const requestToken = ++contentRequestToken;
     const isCurrentRequest = () =>
+      githubSession.authenticated && authRevision === githubSession.revision &&
       requestToken === contentRequestToken &&
       String(state.currentChapterUuid.value || "") === chapterUuid;
     const cachedContent = normalizeChapterContent(
@@ -298,6 +309,7 @@ export const useNovelActions = (state, getters) => {
       state.isLoadingContent.value = true;
 
       const markdownRaw = await fetchContent(chapter.path);
+      if (!isCurrentRequest()) return;
       const { body: content } = fm(markdownRaw);
       // const parsedContent = splitMarkdown(content);
       const parsedContent = content;
@@ -347,6 +359,7 @@ export const useNovelActions = (state, getters) => {
   }, 500);
 
   const getChapterPageCount = async (uuid) => {
+    if (!githubSession.authenticated) return 1;
     const chapterUuid = String(uuid || "");
     const cachedContent = normalizeChapterContent(
       state.contentCache.value[chapterUuid],

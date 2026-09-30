@@ -22,7 +22,7 @@
     :aria-label="translate('common.themeController.themeSelection')"
   >
     <div
-      v-if="inline"
+      v-if="inline && !hideHeader"
       class="divider my-3 h-auto min-h-6 justify-between gap-2 before:min-w-0 before:basis-0 after:min-w-0 after:basis-0 max-lg:my-2 max-lg:gap-1.5"
     >
       <h2 class="text-base-content/55 shrink-0 text-xs font-bold">
@@ -41,7 +41,7 @@
       </label>
     </div>
 
-    <div v-else class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2">
+    <div v-else-if="!inline" class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2">
       <h2 class="font-serif mt-0.5 text-lg font-semibold">
         {{ translate("common.themeController.interfaceTheme") }}
       </h2>
@@ -76,13 +76,12 @@
       />
     </label>
 
-    <div class="grid grid-cols-1 gap-2 min-[22rem]:grid-cols-2 max-lg:gap-1.5">
+    <div class="grid grid-cols-1 gap-2 py-1 min-[22rem]:grid-cols-2 max-lg:gap-1.5">
       <label
         v-for="style in themeList"
         :key="style.value"
         class="focus-within:outline-primary relative flex min-h-14 items-center gap-2 rounded-box border p-3 pr-8 transition-colors focus-within:outline-2 focus-within:outline-offset-2 max-lg:min-h-12 max-lg:gap-1.5 max-lg:p-2"
         :class="themeOptionClass(style)"
-        :aria-disabled="followSystem"
       >
         <input
           v-model="themeStore.theme"
@@ -91,7 +90,6 @@
           class="theme-controller absolute inset-0 cursor-pointer appearance-none rounded-box opacity-0"
           :aria-label="`${style.name}：${localizeText(style.description)}`"
           :value="style.value"
-          :disabled="followSystem"
         />
         <span
           class="grid size-8 shrink-0 place-items-center rounded-field transition-colors max-lg:size-7"
@@ -130,6 +128,7 @@ import { useThemeStore } from "@/stores/themeStore";
 
 defineProps({
   inline: Boolean,
+  hideHeader: Boolean,
 });
 
 const themeStore = useThemeStore();
@@ -138,11 +137,9 @@ const { themeList, currentTheme, followSystem } = storeToRefs(themeStore);
 const isThemeActive = (style) => style.value === themeStore.theme;
 
 const themeOptionClass = (style) =>
-  followSystem.value
-    ? "cursor-not-allowed border-base-300 bg-base-200/40 opacity-50"
-    : isThemeActive(style)
-      ? "border-primary/50 bg-primary/10"
-      : "cursor-pointer border-base-300 hover:bg-base-200";
+  isThemeActive(style)
+    ? "border-primary/50 bg-primary/10"
+    : "cursor-pointer border-base-300 hover:bg-base-200";
 
 const themeIconClass = (style) =>
   isThemeActive(style) ? "text-primary" : "text-base-content";

@@ -153,6 +153,7 @@
         </header>
 
         <Giscus
+          :key="githubSession.revision"
           :repo="GISCUS.novelRepo.name"
           :repo-id="GISCUS.novelRepo.id"
           :category="GISCUS.categories.general.name"
@@ -178,6 +179,7 @@ import { useLocale } from '@/i18n';
 const { t: translate, commentLocale, number: formatNumber } = useLocale();
 
 import { computed, watch } from "vue";
+import { githubSession } from '@/composables/auth/useGithubSession';
 import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/novel/useChapters";

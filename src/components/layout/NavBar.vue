@@ -62,17 +62,14 @@
       </div>
     </nav>
     <nav class="navbar-end">
-      <LanguageController />
-      <NoticeCenter />
-      <div class="hidden lg:block">
-        <ThemeController />
-      </div>
+      <AccountControl />
     </nav>
   </header>
 </template>
 
 <script setup>
 import { useLocale } from "@/i18n";
+import { githubSession } from '@/composables/auth/useGithubSession';
 const { t: translate } = useLocale();
 
 import {
@@ -93,12 +90,10 @@ import {
 const router = useRouter();
 const route = useRoute();
 
+import AccountControl from '@/components/auth/AccountControl.vue';
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
-import NoticeCenter from "@/components/announcement/interaction/NoticeCenter.vue";
-import ThemeController from "@/components/interaction/controls/ThemeController.vue";
-import LanguageController from "@/components/interaction/controls/LanguageController.vue";
 
 const readerNavbarVisible = ref(false);
 const searchTriggerButton = ref(null);
@@ -107,7 +102,7 @@ const searchComponent = shallowRef(null);
 const searchShortcutLabel = ref("Ctrl");
 let searchPromise;
 
-const isNovelReaderRoute = computed(() => route.name === "novel-reader");
+const isNovelReaderRoute = computed(() => route.name === "novel-reader" && githubSession.authenticated);
 
 const hideReaderNavbar = () => {
   readerNavbarVisible.value = false;

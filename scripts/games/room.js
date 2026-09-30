@@ -58,25 +58,25 @@ export class GameRoom extends DurableObject {
     ensure(player, 'UNAUTHORIZED', 401);
     return player;
   }
-  async create(code, gameType, nickname) {
+  async create(code, gameType, nickname, profile) {
     getGame(gameType);
     const token = secret();
     const tokenHash = await hashToken(token);
     ensure(!this.read(false), 'CONFLICT', 409);
-    const player = createPlayer(nickname, tokenHash);
+    const player = createPlayer(nickname, tokenHash, Date.now(), profile);
     const room = createRoom(code, gameType, player);
     this.save(room);
     await this.schedule(room);
     return { code, gameType, token, playerId: player.id };
   }
-  async join(nickname, gameType) {
+  async join(nickname, gameType, profile) {
     const token = secret();
     const tokenHash = await hashToken(token);
     const room = this.read();
     ensure(room.gameType === gameType, 'GAME_MISMATCH', 409);
     ensure(room.status === 'lobby', 'ROOM_LOCKED', 409);
     ensure(room.players.length < getGame(room.gameType).maxPlayers, 'ROOM_FULL', 409);
-    const player = createPlayer(nickname, tokenHash);
+    const player = createPlayer(nickname, tokenHash, Date.now(), profile);
     ensure(!room.players.some(p => p.nickname.toLocaleLowerCase() === player.nickname.toLocaleLowerCase()), 'NICKNAME_TAKEN', 409);
     assignSeats(room);
     player.seat = Array.from({ length: getGame(room.gameType).maxPlayers }, (_, seat) => seat).find(seat => !room.players.some(occupant => occupant.seat === seat));

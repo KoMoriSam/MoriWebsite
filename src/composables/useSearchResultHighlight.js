@@ -1,5 +1,6 @@
 import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
+import { githubSession } from '@/composables/auth/useGithubSession';
 
 const HIGHLIGHT_SELECTOR = "mark[data-global-search-highlight]";
 const SEARCH_ANCHOR_PREFIX = "search-content-";
@@ -274,7 +275,7 @@ export function useSearchResultHighlight() {
   };
 
   watch(
-    () => [route.path, route.hash, route.query.q],
+    () => [route.path, route.hash, route.query.q, githubSession.authenticated],
     scheduleHighlight,
     { flush: "post" },
   );

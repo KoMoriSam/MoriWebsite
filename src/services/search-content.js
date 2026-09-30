@@ -1,3 +1,5 @@
+import { watch } from 'vue';
+import { githubSession } from '@/composables/auth/useGithubSession';
 import fm from "front-matter";
 
 import {
@@ -99,6 +101,7 @@ const DATE_FRONTMATTER_KEYS = new Set([
 let blogSearchPromise;
 let novelSearchPromise;
 let globalSearchPromise;
+watch(() => [githubSession.authenticated, githubSession.revision], () => { novelSearchPromise = null; }, { flush: 'sync' });
 
 const uniqueStrings = (values) => {
   return [
@@ -409,9 +412,10 @@ const fetchBlogEntries = async () => {
   });
 };
 
-const fetchNovelEntries = async () => {
+const fetchNovelEntries = async (includeContent = true) => {
   const { fetchChapters, fetchContent } = useChapterApi();
   const chaptersByVolume = await fetchChapters();
+  if (!githubSession.authenticated) throw new Error("LOGIN_REQUIRED");
   let catalogOrder = 0;
   const chapters = Object.values(chaptersByVolume || {}).flatMap(
     (volume, volumeOrder) => {
@@ -434,7 +438,7 @@ const fetchNovelEntries = async () => {
       let frontmatter = { ...chapter };
 
       try {
-        const rawContent = chapter?.path
+        const rawContent = includeContent && chapter?.path
           ? await fetchContent(chapter.path)
           : "";
         const document = fm(String(rawContent || ""));
@@ -496,16 +500,29 @@ const fetchNovelEntries = async () => {
 };
 
 export const fetchNovelSearchIndex = async () => {
+  if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
   if (novelSearchPromise) return novelSearchPromise;
-
-  novelSearchPromise = fetchNovelEntries();
+  const revision = githubSession.revision;
+  const pending = fetchNovelEntries().then(entries => {
+    if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
+    return entries;
+  });
+  novelSearchPromise = pending;
 
   try {
     return await novelSearchPromise;
   } catch (error) {
-    novelSearchPromise = null;
+    if (novelSearchPromise === pending) novelSearchPromise = null;
     throw error;
   }
+};
+
+export const fetchNovelSearchCatalog = async () => {
+  if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
+  const revision = githubSession.revision;
+  const entries = await fetchNovelEntries(false);
+  if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
+  return entries;
 };
 
 const fetchChangelogEntries = async () => {
@@ -674,7 +691,6 @@ export const fetchGlobalSearchIndex = async () => {
   globalSearchPromise = (async () => {
     const sources = await Promise.allSettled([
       fetchBlogEntries(),
-      fetchNovelSearchIndex(),
       fetchChangelogEntries(),
       fetchLicenseEntries(),
     ]);

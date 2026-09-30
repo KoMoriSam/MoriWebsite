@@ -55,14 +55,14 @@ export async function handleGames(request, env) {
       getGame(body?.gameType);
       for (let attempt = 0; attempt < 3; attempt++) {
         const code = Array.from({ length: 8 }, () => ALPHABET[randomInt(ALPHABET.length)]).join('');
-        try { return json(await env.GAME_ROOMS.getByName(`room:${code}`).create(code, body.gameType, body?.nickname), 201); }
+        try { return json(await env.GAME_ROOMS.getByName(`room:${code}`).create(code, body.gameType, body?.nickname, body?.profile), 201); }
         catch (error) { if (error?.message !== 'CONFLICT' || attempt === 2) throw error; }
       }
     }
     const code = match[1]; ensure(CODE.test(code), 'NOT_FOUND', 404);
     const room = env.GAME_ROOMS.getByName(`room:${code}`);
     if (operation === 'socket') return await room.fetch(request);
-    if (operation === 'join') { const body = await readBody(request); return json(await room.join(body?.nickname, body?.gameType), 201); }
+    if (operation === 'join') { const body = await readBody(request); return json(await room.join(body?.nickname, body?.gameType, body?.profile), 201); }
     const token = request.headers.get('Authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
     ensure(token, 'UNAUTHORIZED', 401);
     return json(await room.ticket(token));

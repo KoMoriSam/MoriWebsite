@@ -1,6 +1,6 @@
 <template>
   <Giscus
-    :key="paragraphId"
+    :key="`${paragraphId}-${githubSession.revision}`"
     :repo="currentRepo.name"
     :repo-id="currentRepo.id"
     :category="currentCategory.name"
@@ -22,6 +22,7 @@ import { useLocale } from "@/i18n";
 const { commentLocale } = useLocale();
 import { computed, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
+import { githubSession } from '@/composables/auth/useGithubSession';
 import Giscus from "@giscus/vue";
 import { useThemeStore } from "@/stores/themeStore";
 

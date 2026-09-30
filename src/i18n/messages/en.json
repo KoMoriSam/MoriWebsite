@@ -746,11 +746,11 @@
       "actions": "Actions"
     },
     "themeController": {
-      "chooseInterfaceTheme": "Choose interface theme",
+      "chooseInterfaceTheme": "Choose theme",
       "theme": "Theme",
       "themeSelection": "Theme selection",
-      "interfaceTheme": "Interface theme",
-      "followSystemTheme": "Follow system theme"
+      "interfaceTheme": "Theme",
+      "followSystemTheme": "Follow system"
     },
     "navigation": {
       "home": "Home",
@@ -1541,13 +1541,34 @@
       "previousStep": "Previous step",
       "nextStep": "Next step",
       "steps": {
-        "night": { "title": "Confirm your role at night", "detail": "Roles are dealt randomly. Privately view your role and any players you may know. Daybreak starts once everyone confirms." },
-        "discussion": { "title": "Round-by-round discussion", "detail": "Slow round: everyone may speak freely. Fast round: the leader invites one player for a two-person conversation. The leader may end the discussion early." },
-        "team": { "title": "The leader selects a team", "detail": "The leader selects quest members according to the team-size table below." },
-        "vote": { "title": "Everyone votes", "detail": "Players approve or reject the team. A majority must approve to proceed; otherwise a new leader starts another discussion. Five consecutive rejections give Evil the win." },
-        "quest": { "title": "Carry out the quest in secret", "detail": "Team members play quest cards. Good must Execute; Evil may Execute or Sabotage. Usually one Sabotage card is enough to fail the quest." },
-        "evilDiscussion": { "title": "Assassination discussion", "detail": "After three successful quests, all roles remain secret. Anyone may speak or reveal their own role." },
-        "victory": { "title": "Decide the winner", "detail": "Three failed quests give Evil the win. After three successes, the Assassin locks in one target: finding Merlin wins for Evil; otherwise Good wins." }
+        "night": {
+          "title": "Confirm your role at night",
+          "detail": "Roles are dealt randomly. Privately view your role and any players you may know. Daybreak starts once everyone confirms."
+        },
+        "discussion": {
+          "title": "Round-by-round discussion",
+          "detail": "Slow round: everyone may speak freely. Fast round: the leader invites one player for a two-person conversation. The leader may end the discussion early."
+        },
+        "team": {
+          "title": "The leader selects a team",
+          "detail": "The leader selects quest members according to the team-size table below."
+        },
+        "vote": {
+          "title": "Everyone votes",
+          "detail": "Players approve or reject the team. A majority must approve to proceed; otherwise a new leader starts another discussion. Five consecutive rejections give Evil the win."
+        },
+        "quest": {
+          "title": "Carry out the quest in secret",
+          "detail": "Team members play quest cards. Good must Execute; Evil may Execute or Sabotage. Usually one Sabotage card is enough to fail the quest."
+        },
+        "evilDiscussion": {
+          "title": "Assassination discussion",
+          "detail": "After three successful quests, all roles remain secret. Anyone may speak or reveal their own role."
+        },
+        "victory": {
+          "title": "Decide the winner",
+          "detail": "Three failed quests give Evil the win. After three successes, the Assassin locks in one target: finding Merlin wins for Evil; otherwise Good wins."
+        }
       },
       "sequenceHint": "Hover over or tap a quest card to see its team size and special rule.",
       "playerCount": "{n} players",
@@ -1692,7 +1713,8 @@
       "ROOM_CODE": "Enter a valid 8-character room code.",
       "SERVER": "The game service is temporarily unavailable.",
       "GAME_TYPE": "This game is not supported yet.",
-      "GAME_MISMATCH": "This room belongs to another game. Use its invitation link."
+      "GAME_MISMATCH": "This room belongs to another game. Use its invitation link.",
+      "PROFILE": "Invalid player profile."
     },
     "nickname": "Nickname",
     "kick": "Remove player",
@@ -1771,5 +1793,27 @@
     "lobbyHint": "All {min}–{max} players must be online and ready. The game starts automatically after 5 seconds.",
     "prepare": "Ready up",
     "confirmEnd": "End this game without a winner?"
+  },
+  "auth": {
+    "login": "Sign in with GitHub",
+    "logout": "Sign out",
+    "retry": "Retry profile",
+    "guest": "Guest",
+    "loadingProfile": "Loading GitHub profile",
+    "checking": "Checking GitHub session…",
+    "novelGate": "Sign in to read chapters and search the novel text.",
+    "fallback": "Sign in through Giscus comments",
+    "close": "Close",
+    "githubProfile": "Use GitHub name and avatar",
+    "customProfile": "Custom name and default avatar",
+    "saveProfile": "Save player profile",
+    "profileError": "GitHub profile is unavailable. Retry or use a custom name.",
+    "nickname": "Custom name",
+    "avatar": "Player avatar",
+    "account": "Account and settings",
+    "email": "Email",
+    "emailPrivate": "Email not public",
+    "loginTitle": "Sign in to continue reading",
+    "editProfile": "Edit player profile"
   }
 }

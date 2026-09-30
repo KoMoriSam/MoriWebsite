@@ -6,6 +6,7 @@ import { useToast } from "@/composables/useToast";
 import { useReadingStateStorage } from "@/composables/storage/useReadingStateStorage";
 
 import { useNovelStore } from "@/stores/novel";
+import { githubSession } from '@/composables/auth/useGithubSession';
 
 export function useChapters() {
   const toast = useToast({ position: "center", closable: false });
@@ -54,7 +55,7 @@ export function useChapters() {
   };
 
   const scrollToReadingStart = async (uuid) => {
-    if (import.meta.env.SSR || typeof window === "undefined") return;
+    if (import.meta.env.SSR || typeof window === "undefined" || !githubSession.authenticated) return;
 
     await waitForChapterRender(uuid);
     await nextTick();

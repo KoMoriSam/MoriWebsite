@@ -418,30 +418,24 @@ for (const [index, license] of (
 }
 
 const novelRecords = await loadNovelRecords();
-const records = [
-  ...blogRecords,
-  ...novelRecords,
-  ...changelogRecords,
-  ...licenseRecords,
-];
-const { index, errors } = await createIndex({ includeCharacters: "@/+-._" });
-
-if (!index || errors.length) {
-  throw new Error(`创建 Pagefind 索引失败：${errors.join("；") || "未知错误"}`);
-}
-
-for (const record of records) {
-  const result = await index.addCustomRecord(record);
-  if (result.errors.length) {
-    throw new Error(`索引 ${record.url} 失败：${result.errors.join("；")}`);
+const publicRecords = [...blogRecords, ...changelogRecords, ...licenseRecords];
+async function writeIndex(records, outputPath, novel) {
+  if (!records.length || records.some(record =>
+    (record.meta.type === 'novel') !== novel ||
+    !['blog', 'novel', 'changelog', 'licenses'].includes(record.meta.type) ||
+    record.filters.type.length !== 1 || record.filters.type[0] !== record.meta.type ||
+    /^\/novel(?:\/|$)/.test(record.url) !== novel
+  )) throw new Error('Pagefind 内容归属错误');
+  const { index, errors } = await createIndex({ includeCharacters: '@/+-._' });
+  if (!index || errors.length) throw new Error(errors.join(';'));
+  for (const record of records) {
+    const result = await index.addCustomRecord(record);
+    if (result.errors.length) throw new Error(result.errors.join(';'));
   }
+  const output = await index.writeFiles({ outputPath });
+  if (output.errors.length) throw new Error(output.errors.join(';'));
+  await index.deleteIndex();
 }
-
-const output = await index.writeFiles({ outputPath: OUTPUT_PATH });
-if (output.errors.length) {
-  throw new Error(`写入 Pagefind 索引失败：${output.errors.join("；")}`);
-}
-
-console.log(
-  `Pagefind indexed ${records.length} records: ${blogRecords.length} blog blocks, ${novelRecords.length} novel blocks, ${changelogRecords.length} changelog versions, and ${licenseRecords.length} license notices.`,
-);
+await writeIndex(publicRecords, OUTPUT_PATH, false);
+await writeIndex(novelRecords, resolve('dist', 'pagefind-novel'), true);
+console.log('Pagefind: '+publicRecords.length+' public records, '+novelRecords.length+' novel records in isolated bundles.');

@@ -1,6 +1,7 @@
 <template>
   <div>
     <button
+      v-if="!inline"
       type="button"
       class="btn btn-ghost btn-square"
       popovertarget="notification-center"
@@ -20,18 +21,20 @@
     </button>
 
     <section
-      id="notification-center"
+      :id="inline ? undefined : 'notification-center'"
       ref="panelRef"
-      popover="auto"
-      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,38rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 lg:p-0 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
-      style="position-anchor: --notification-center-anchor"
-      aria-labelledby="notification-center-title"
+      :popover="inline ? undefined : 'auto'"
+      :class="inline ? 'flex min-h-0 flex-1 flex-col' : 'dropdown dropdown-end mt-2 max-h-[min(78dvh,38rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 lg:p-0 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!'"
+      :style="inline ? undefined : 'position-anchor: --notification-center-anchor'"
+      :aria-labelledby="inline ? undefined : 'notification-center-title'"
+      :aria-label="inline ? translate('common.noticeCenter.notifications') : undefined"
       @toggle="handleToggle"
     >
       <header
-        class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 max-lg:gap-2 max-lg:px-0 max-lg:pt-0 max-lg:pb-1.5"
+        :class="inline ? 'mb-2 flex shrink-0 justify-end' : 'flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 max-lg:gap-2 max-lg:px-0 max-lg:pt-0 max-lg:pb-1.5'"
       >
         <h2
+          v-if="!inline"
           id="notification-center-title"
           class="font-serif text-lg font-semibold"
         >
@@ -49,7 +52,7 @@
       </header>
 
       <div
-        class="scrollbar-thin max-h-[min(58dvh,29rem)] overflow-y-auto overscroll-contain p-3 max-lg:px-0 max-lg:py-1.5"
+        :class="inline ? 'scrollbar-thin min-h-0 max-h-[min(18rem,max(0px,calc(78dvh-20rem)))] flex-1 overflow-y-auto overscroll-contain' : 'scrollbar-thin max-h-[min(58dvh,29rem)] overflow-y-auto overscroll-contain p-3 max-lg:px-0 max-lg:py-1.5'"
       >
         <div v-if="loading && !loaded" role="status" aria-busy="true">
           <span class="sr-only">{{ translate('common.noticeCenter.loadingAnnouncements') }}</span>
@@ -154,14 +157,15 @@
         </p>
       </div>
 
-      <footer class="border-t border-base-300 p-2 max-lg:p-0 max-lg:pt-1.5">
+      <footer :class="inline ? 'mt-2 shrink-0' : 'border-t border-base-300 p-2 max-lg:p-0 max-lg:pt-1.5'">
         <RouterLink
           to="/announcements"
-          class="btn btn-ghost btn-sm w-full justify-between"
+          :class="inline ? 'flex min-h-10 items-center gap-2 rounded-field px-2 py-2 text-sm text-base-content/65 transition-colors hover:bg-base-200 hover:text-base-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' : 'btn btn-ghost btn-sm w-full justify-between'"
           @click="closePanel"
         >
-          {{ translate('common.noticeCenter.viewAllAndPastAnnouncements') }}
-          <i class="ri-arrow-right-line" aria-hidden="true"></i>
+          <i v-if="inline" class="ri-history-line shrink-0" aria-hidden="true"></i>
+          <span class="min-w-0 flex-1">{{ translate('common.noticeCenter.viewAllAndPastAnnouncements') }}</span>
+          <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
         </RouterLink>
       </footer>
     </section>
@@ -179,6 +183,8 @@ import NoticeTitle from "@/components/announcement/display/NoticeTitle.vue";
 import { useAnnouncementStore } from "@/stores/announcementStore";
 import { formatAnnouncementDate } from "@/utils/announcement/format";
 
+const props = defineProps({ inline: Boolean });
+const emit = defineEmits(['navigate']);
 const store = useAnnouncementStore();
 const { activeAnnouncements, error, loaded, loading, unreadAnnouncements } =
   storeToRefs(store);
@@ -191,7 +197,10 @@ const triggerLabel = computed(() =>
     : translate('common.noticeCenter.openAnnouncements'),
 );
 
-const closePanel = () => panelRef.value?.hidePopover?.();
+const closePanel = () => {
+  if (props.inline) emit('navigate');
+  else if (panelRef.value?.matches(':popover-open')) panelRef.value.hidePopover();
+};
 
 const openAnnouncement = (announcement) => {
   closePanel();

@@ -76,6 +76,26 @@ for (const targetId of [sharedRoom.hostId, 'missing']) {
 const kickedGeneric = applyRoomAction(sharedRoom, sharedRoom.hostId, { ...cmd(sharedRoom, 'kick'), targetId: genericGuest.id }, Date.now(), undefined, resolveCounter).room;
 check(kickedGeneric.players.map(player => player.id), [sharedRoom.hostId]);
 check(kickedGeneric.stage, sharedRoom.stage + 1);
+// 玩家资料兼容、名称长度、头像地址及准备状态变更。
+const githubProfile = { profileSource: 'github', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4' };
+const longName = 'GitHub display name longer than twenty four characters';
+const githubPlayer = createPlayer(longName, 'github-hash', 1000, githubProfile);
+check(githubPlayer.nickname, longName);
+assert.throws(() => createPlayer(longName, 'guest-hash'), error => error.code === 'NICKNAME'); checks++;
+for (const avatarUrl of ['https://example.com/u/1', 'http://avatars.githubusercontent.com/u/1', 'https://avatars.githubusercontent.com.evil/u/1', 'https://avatars.githubusercontent.com/u/1#bad', 'https://user@avatars.githubusercontent.com/u/1']) {
+ assert.throws(() => createPlayer('Name', 'hash', 1000, { ...githubProfile, avatarUrl }), error => error.code === 'PROFILE'); checks++;
+}
+const oldRoom = structuredClone(sharedRoom); delete oldRoom.players[0].avatarUrl; delete oldRoom.players[0].profileSource;
+check(roomView(oldRoom, oldRoom.hostId, resolveCounter).players[0].avatarUrl, null);
+check(roomView(oldRoom, oldRoom.hostId, resolveCounter).players[0].profileSource, 'guest');
+let profileRoom = createRoom('ABCDEFGH', 'counter', { ...participants[0], ready: true }, 1000, resolveCounter);
+profileRoom.players.push({ ...participants[1], ready: true }); profileRoom.lobbyStartsAt = 2000;
+profileRoom = applyRoomAction(profileRoom, profileRoom.hostId, { ...cmd(profileRoom, 'profile'), nickname: longName, profile: githubProfile }, 1500, undefined, resolveCounter).room;
+check(profileRoom.players[0].nickname, longName); check(profileRoom.players[0].ready, false); check(profileRoom.lobbyStartsAt, null);
+const guestProfileRoom = applyRoomAction(profileRoom, profileRoom.hostId, { ...cmd(profileRoom, 'profile'), nickname: 'Custom', profile: { profileSource: 'guest' } }, 1600, undefined, resolveCounter).room;
+check(guestProfileRoom.players[0].avatarUrl, null);
+assert.throws(() => applyRoomAction(profileRoom, profileRoom.hostId, { ...cmd(profileRoom, 'profile'), nickname: participants[1].nickname }, 1700, undefined, resolveCounter), error => error.code === 'NICKNAME_TAKEN'); checks++;
+assert.throws(() => applyRoomAction({ ...profileRoom, status: 'playing' }, profileRoom.hostId, { ...cmd(profileRoom, 'profile'), nickname: 'Other' }, 1800, undefined, resolveCounter), error => error.code === 'PHASE'); checks++;
 // Use Wrangler's installed runtime; no new dependency or remote service is needed.
 const require = createRequire(import.meta.url);
 const runtimeRequire = createRequire(require.resolve('wrangler/package.json'));
@@ -170,19 +190,27 @@ try {
   const unknown = await http('/games/rooms', { body: { gameType: '__proto__', nickname: 'Unknown' }, ip: '4.4.4.4' });
   check(unknown.status, 400); check((await unknown.json()).error, 'GAME_TYPE');
   check((await http('/games/rooms', { body: { gameType: 'avalon', nickname: '' }, ip: '1.1.1.1' })).status, 400);
-  const response = await http('/games/rooms', { body: { gameType: 'avalon', nickname: 'Host' }, ip: '2.2.2.2' });
+  const response = await http('/games/rooms', { body: { gameType: 'avalon', nickname: 'Host', profile: githubProfile }, ip: '2.2.2.2' });
   check(response.status, 201); check(response.headers.get('Cache-Control'), 'no-store');
   const seat = await response.json(); check(/^[A-HJ-NP-Z2-9]{8}$/.test(seat.code), true);
   check(seat.gameType, 'avalon');
   const clients = [await connect(seat)];
+  check(clients[0].events.state.players[0].avatarUrl, githubProfile.avatarUrl);
+  check(clients[0].events.state.players[0].profileSource, 'github');
   const wrongGame = await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'other', nickname: 'WrongGame' } });
   check(wrongGame.status, 409); check((await wrongGame.json()).error, 'GAME_MISMATCH');
   check((await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: 'Host' } })).status, 409);
   check((await http(`/games/rooms/${seat.code}/connect`, { token: 'a'.repeat(64) })).status, 401);
   for (let i = 1; i < 5; i++) {
-    const joined = await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: `Player${i}` } });
+    const joined = await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: `Player${i}`, ...(i === 1 ? { profile: githubProfile } : {}) } });
     check(joined.status, 201); clients.push(await connect(await joined.json()));
+    check(clients[i].events.state.players.find(p => p.nickname === `Player${i}`).profileSource, i === 1 ? 'github' : 'guest');
   }
+  await send(clients[1], 'profile', { nickname: longName, profile: githubProfile });
+  for (const client of clients) await client.events.until(() => client.events.state.players.some(p => p.nickname === longName && p.avatarUrl === githubProfile.avatarUrl));
+  check((await inspect(seat.code)).players.find(p => p.nickname === longName).profileSource, 'github');
+  await send(clients[1], 'profile', { nickname: 'Player1', profile: { profileSource: 'guest' } });
+  for (const client of clients) await client.events.until(() => client.events.state.players.some(p => p.nickname === 'Player1' && p.avatarUrl === null));
   const extraResponse = await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: 'Guest' } });
   check(extraResponse.status, 201);
   const extraSeat = await extraResponse.json(); const extraClient = await connect(extraSeat);
@@ -242,6 +270,8 @@ try {
   check(await (await mf.dispatchFetch(`http://localhost/__test/alarm?code=${seat.code}`)).json(), clients[0].events.state.lobbyStartsAt);
   await mf.dispatchFetch(`http://localhost/__test/lobby?code=${seat.code}`);
   await clients[0].events.until(() => clients[0].events.state.game?.phase === 'night');
+  const inGameProfile = await send(clients[0], 'profile', { nickname: 'Changed' }, 'error');
+  check(clients[0].events.messages.find(message => message.id === inGameProfile.id).error, 'PHASE');
   const inGameKick = await send(clients[0], 'kick', { targetId: clients[1].events.state.selfId }, 'error');
   check(clients[0].events.messages.find(message => message.id === inGameKick.id).error, 'PHASE');
   check((await http(`/games/rooms/${seat.code}/join`, { body: { gameType: 'avalon', nickname: 'Late' } })).status, 409);

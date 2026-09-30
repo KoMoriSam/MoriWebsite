@@ -106,7 +106,6 @@
         </div>
       </section>
 
-      <ThemeController inline />
     </div>
   </div>
 </template>
@@ -120,7 +119,6 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { NAV_LINKS, isNavigationLinkActive } from "@/constants/navigation.js";
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
-import ThemeController from "@/components/interaction/controls/ThemeController.vue";
 
 const route = useRoute();
 const emit = defineEmits(["open-change"]);

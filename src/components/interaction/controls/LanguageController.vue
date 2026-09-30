@@ -1,6 +1,7 @@
 <template>
   <div>
     <button
+      v-if="!inline"
       ref="trigger"
       type="button"
       class="btn btn-ghost max-xl:btn-square"
@@ -15,16 +16,17 @@
       <i class="ri-arrow-down-s-line hidden xl:block" aria-hidden="true"></i>
     </button>
     <section
-      id="language-controller"
+      :id="inline ? undefined : 'language-controller'"
       ref="menu"
-      popover="auto"
-      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,32rem)] w-72 overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 p-3 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
-      style="position-anchor: --language-controller-anchor"
-      aria-labelledby="language-controller-title"
+      :popover="inline ? undefined : 'auto'"
+      :class="inline ? '' : 'dropdown dropdown-end mt-2 max-h-[min(78dvh,32rem)] w-72 overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 p-3 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!'"
+      :style="inline ? undefined : 'position-anchor: --language-controller-anchor'"
+      :aria-labelledby="inline ? undefined : 'language-controller-title'"
+      :aria-label="inline ? t('common.language') : undefined"
       @toggle="onToggle"
-      @keydown.esc.prevent="close"
+      @keydown.esc="handleEscape"
     >
-      <div class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2">
+      <div v-if="!inline" class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2">
         <h2
           id="language-controller-title"
           class="font-serif mt-0.5 text-lg font-semibold"
@@ -77,6 +79,7 @@
 <script setup>
 import { computed, ref, nextTick } from "vue";
 import { useLocale, LOCALES } from "@/i18n";
+const props = defineProps({ inline: Boolean });
 const { t, locale, switchLocale } = useLocale();
 const currentLanguageName = computed(
   () => LOCALES.find((language) => language.code === locale.value)?.name,
@@ -112,6 +115,9 @@ const close = () => {
   if (!menu.value?.matches(":popover-open")) return;
   menu.value.hidePopover();
   void nextTick(() => trigger.value?.focus());
+};
+const handleEscape = event => {
+  if (!props.inline) { event.preventDefault(); close(); }
 };
 const select = async (code) => {
   const current = ++request;

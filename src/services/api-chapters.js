@@ -1,5 +1,7 @@
 import { useFetch } from "@vueuse/core";
 
+import { githubSession } from '@/composables/auth/useGithubSession';
+
 const BASE_URL = import.meta.env.VITE_NOVEL_RAW;
 
 export function useChapterApi() {
@@ -12,12 +14,15 @@ export function useChapterApi() {
   };
 
   const fetchContent = async (path) => {
+    if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
+    const revision = githubSession.revision;
     const { data: markdownRaw, error } = await useFetch(
       `${BASE_URL}/${path}`,
     ).text();
     if (error.value) {
       throw new Error("获取内容失败");
     }
+    if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
     return markdownRaw.value;
   };
 

@@ -504,8 +504,13 @@ import {
   CONTENT_TYPES,
   createSearchExcerpt,
   fetchGlobalSearchIndex,
+  fetchNovelSearchIndex,
+  fetchNovelSearchCatalog,
 } from "@/services/search-content";
 
+import { useGithubSession } from '@/composables/auth/useGithubSession';
+import { searchPagefindBundle } from '@/services/search-access';
+const auth = useGithubSession();
 const route = useRoute();
 const router = useRouter();
 const emit = defineEmits(["restore-focus"]);
@@ -535,6 +540,8 @@ const isComposing = ref(false);
 
 let searchEntries = [];
 let pagefindEngine = null;
+let novelPagefindEngine = null;
+let initializationId = 0;
 let engineType = "";
 let searchTimer;
 let urlSyncTimer;
@@ -886,17 +893,17 @@ const normalizePagefindExcerpt = (value) =>
     .replace(/\s+([，。！？；：、）】》])/gu, "$1")
     .replace(/([（【《])\s+/gu, "$1");
 
-const loadPagefindEngine = async () => {
+const loadPagefindEngine = async (novel = false) => {
   if (typeof window === "undefined") return null;
 
   const baseUrl = String(import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
   const module = await import(
-    /* @vite-ignore */ `${baseUrl}pagefind/pagefind.js`
+    /* @vite-ignore */ `${baseUrl}${novel ? "pagefind-novel" : "pagefind"}/pagefind.js?isolation=2`
   );
 
-  await module.options({ excerptLength: 42 });
-  await module.init();
-  return module;
+  const engine = module.createInstance({ basePath: `${baseUrl}${novel ? 'pagefind-novel' : 'pagefind'}/`, excerptLength: 42 });
+  try { await engine.init(); return engine; }
+  catch (error) { await engine.destroy(); throw error; }
 };
 
 const mapPagefindResult = async (result) => {
@@ -958,15 +965,23 @@ const searchPagefindIndex = async () => {
     })
     .replace(/\s+/g, " ")
     .trim();
-  const response = await pagefindEngine.search(segmentedQuery, { filters });
-  if (!response?.results?.length) return [];
-
-  const mappedResults = await Promise.all(
-    response.results.map(mapPagefindResult),
-  );
+  const revision = auth.state.revision;
+  const canReadNovel = () => auth.state.authenticated && auth.state.revision === revision;
+  const selected = selectedTypes.value;
+  const searchPublic = !selected.length || selected.some(type => type !== 'novel');
+  const searchNovel = canReadNovel() && (!selected.length || selected.includes('novel'));
+  const responses = await Promise.all([
+    searchPublic ? searchPagefindBundle(pagefindEngine, segmentedQuery, filters) : [],
+    searchNovel ? searchPagefindBundle(novelPagefindEngine, segmentedQuery, filters, canReadNovel) : [],
+  ]);
+  const mappedResults = await Promise.all(responses.flat().map(mapPagefindResult));
+  // 某一个 bundle 不可用时，仅该内容类型使用本地回退。
+  const local = searchIndex().filter(entry => entry.type === 'novel' ? searchNovel && !novelPagefindEngine : searchPublic && !pagefindEngine);
+  mappedResults.push(...local);
   const seenReaderPages = new Set();
 
   return mappedResults.filter((result) => {
+    if (result.type === "novel" && !canReadNovel()) return false;
     if (!["blog", "novel"].includes(result.type)) return true;
 
     const resolved = router.resolve(result.url || "/");
@@ -979,17 +994,34 @@ const searchPagefindIndex = async () => {
 };
 
 const loadSearchEngine = async () => {
-  const [entriesResult, pagefindResult] = await Promise.allSettled([
+  const id = ++initializationId;
+  const revision = auth.state.revision;
+  const includeNovel = auth.state.authenticated;
+  const [entriesResult, pagefindResult, novelEntriesResult, novelPagefindResult] = await Promise.allSettled([
     fetchGlobalSearchIndex(),
     loadPagefindEngine(),
+    includeNovel ? fetchNovelSearchCatalog() : [],
+    includeNovel ? loadPagefindEngine(true) : null,
   ]);
+  let novelEntries = novelEntriesResult.status === 'fulfilled' ? novelEntriesResult.value : [];
+  if (includeNovel && novelPagefindResult.status === 'rejected' && auth.state.authenticated && revision === auth.state.revision) {
+    try { novelEntries = await fetchNovelSearchIndex(); } catch { novelEntries = []; }
+  }
+  if (id !== initializationId || revision !== auth.state.revision || includeNovel !== auth.state.authenticated) {
+    if (pagefindResult.status === 'fulfilled') void pagefindResult.value?.destroy();
+    if (novelPagefindResult.status === 'fulfilled') void novelPagefindResult.value?.destroy();
+    return false;
+  }
 
   searchEntries =
-    entriesResult.status === "fulfilled" ? entriesResult.value : [];
+    (entriesResult.status === "fulfilled" ? entriesResult.value : []).concat(novelEntries);
+  void pagefindEngine?.destroy();
+  void novelPagefindEngine?.destroy();
   pagefindEngine =
     pagefindResult.status === "fulfilled" ? pagefindResult.value : null;
 
-  if (!searchEntries.length && !pagefindEngine) {
+  novelPagefindEngine = novelPagefindResult.status === 'fulfilled' ? novelPagefindResult.value : null;
+  if (!searchEntries.length && !pagefindEngine && !novelPagefindEngine) {
     throw (
       entriesResult.reason ||
       pagefindResult.reason ||
@@ -1045,7 +1077,8 @@ const loadSearchEngine = async () => {
     .sort((a, b) => b.value.localeCompare(a.value));
   availableTagGroupCounts.value = buildTagGroupCounts(searchEntries);
   reconcileSelectedTags();
-  engineType = pagefindEngine ? "pagefind" : "local";
+  engineType = pagefindEngine || novelPagefindEngine ? "pagefind" : "local";
+  return true;
 };
 
 const initializeSearch = async (force = false) => {
@@ -1055,7 +1088,7 @@ const initializeSearch = async (force = false) => {
   engineType = "";
 
   try {
-    await loadSearchEngine();
+    if (await loadSearchEngine() === false) return;
   } catch (error) {
     console.error("初始化全局搜索失败:", error);
     errorMessage.value = localeMessage('common.search.refreshThePageAndTryAgain');
@@ -1072,6 +1105,7 @@ const searchIndex = () => {
   const query = keyword.value.trim();
 
   return searchEntries.flatMap((entry) => {
+    if (entry.type === "novel" && !auth.state.authenticated) return [];
     const matchesType = typeSet.size === 0 || typeSet.has(entry.type);
     const entryTagSet = new Set(
       (Array.isArray(entry.filterTags) ? entry.filterTags : []).map(
@@ -1561,6 +1595,19 @@ const handleOutsidePointerDown = (event) => {
   if (!searchBox.value?.contains(event.target)) closeFilterMenu();
 };
 
+watch(() => [auth.state.authenticated, auth.state.revision], () => {
+  initializationId++; searchRequestId++; window.clearTimeout(searchTimer);
+  void novelPagefindEngine?.destroy();
+  novelPagefindEngine = null; searchEntries = searchEntries.filter(entry => entry.type !== 'novel');
+  results.value = results.value.filter(entry => entry.type !== 'novel');
+  selectedTags.value = selectedTags.value.filter(tag => !tag.startsWith('novel:'));
+  selectedYears.value = [];
+  availableTypes.value = CONTENT_TYPES.map(type => ({ ...type, count: 0 }));
+  availableTags.value = []; availableYears.value = []; availableTagGroupCounts.value = new Map();
+  activeIndex.value = -1; isLoading.value = false; engineType = '';
+  if (isOpen.value) void initializeSearch(true);
+}, { flush: 'sync' });
+
 watch(filteredFilterOptions, (options) => {
   if (!options.length) {
     activeFilterIndex.value = -1;
@@ -1624,6 +1671,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  initializationId++; searchRequestId++;
+  void pagefindEngine?.destroy();
+  void novelPagefindEngine?.destroy();
   document.removeEventListener("pointerdown", handleOutsidePointerDown);
   window.clearTimeout(searchTimer);
   window.clearTimeout(urlSyncTimer);

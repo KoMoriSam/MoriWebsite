@@ -3,6 +3,7 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novel";
+import { githubSession } from '@/composables/auth/useGithubSession';
 import ssgData from "@/router/ssg-data";
 
 import { useToast } from "@/composables/useToast";
@@ -139,6 +140,8 @@ export function useChapterSetup() {
         route.query.chapter,
         route.query.p,
         route.query.page,
+        githubSession.authenticated,
+        githubSession.revision,
       ],
       async () => {
         await syncChapterFromRoute();

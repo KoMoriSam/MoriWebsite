@@ -746,11 +746,11 @@
       "actions": "操作"
     },
     "themeController": {
-      "chooseInterfaceTheme": "选择界面主题",
+      "chooseInterfaceTheme": "选择主题",
       "theme": "主题",
       "themeSelection": "主题选择",
-      "interfaceTheme": "界面主题",
-      "followSystemTheme": "跟随系统主题"
+      "interfaceTheme": "主题",
+      "followSystemTheme": "跟随系统"
     },
     "navigation": {
       "home": "主页",
@@ -1723,7 +1723,8 @@
       "ROOM_CODE": "请输入有效的 8 位房间码。",
       "SERVER": "游戏服务暂时不可用，请稍后重试。",
       "GAME_TYPE": "暂不支持这款游戏。",
-      "GAME_MISMATCH": "房间属于另一款游戏，请使用正确的游戏邀请链接。"
+      "GAME_MISMATCH": "房间属于另一款游戏，请使用正确的游戏邀请链接。",
+      "PROFILE": "玩家资料无效。"
     },
     "nickname": "昵称",
     "kick": "移出房间",
@@ -1802,5 +1803,27 @@
     "lobbyHint": "需要 {min}–{max} 名玩家全部在线并准备，5 秒后自动开始。",
     "prepare": "准备",
     "confirmEnd": "确认终止本局？不计胜负。"
+  },
+  "auth": {
+    "login": "使用 GitHub 登录",
+    "logout": "退出",
+    "retry": "重试资料",
+    "guest": "游客",
+    "loadingProfile": "正在读取 GitHub 资料",
+    "checking": "正在确认 GitHub 登录状态…",
+    "novelGate": "登录后可阅读章节和搜索小说正文。",
+    "fallback": "在 Giscus 评论中登录",
+    "close": "关闭",
+    "githubProfile": "使用 GitHub 昵称和头像",
+    "customProfile": "自定义昵称和默认头像",
+    "saveProfile": "保存玩家资料",
+    "profileError": "GitHub 资料暂不可用，可重试或使用自定义昵称。",
+    "nickname": "自定义昵称",
+    "avatar": "玩家头像",
+    "account": "账户与设置",
+    "email": "邮箱",
+    "emailPrivate": "未公开邮箱",
+    "loginTitle": "登录后继续阅读",
+    "editProfile": "编辑玩家资料"
   }
 }

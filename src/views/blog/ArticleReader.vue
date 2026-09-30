@@ -379,7 +379,7 @@
 
     <template #aside v-if="content && article?.id != null">
       <Giscus
-        :key="`article-comments-${article.id}`"
+        :key="`article-comments-${article.id}-${githubSession.revision}`"
         :repo="GISCUS.blogRepo.name"
         :repo-id="GISCUS.blogRepo.id"
         :category="GISCUS.categories.announcements.name"
@@ -404,6 +404,7 @@ const { t: translate, text: localizeText, locale: uiLocale, commentLocale, numbe
 
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { githubSession } from '@/composables/auth/useGithubSession';
 import Giscus from "@giscus/vue";
 import { useRoute, useRouter } from "vue-router";
 

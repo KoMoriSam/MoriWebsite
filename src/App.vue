@@ -1,5 +1,6 @@
 <template>
   <NavBar />
+  <SessionProbe />
   <NoticeDialog
     :mode="overlayMode"
     :selected-announcement="selectedAnnouncement"
@@ -18,9 +19,11 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, watch } from "vue";
 import { useHead } from "@unhead/vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
+import SessionProbe from '@/components/auth/SessionProbe.vue';
+import { useGithubSession } from '@/composables/auth/useGithubSession';
 import NavBar from "@/components/layout/NavBar.vue";
 import NoticeDialog from "@/components/announcement/interaction/NoticeDialog.vue";
 import BackToTop from "./components/interaction/navigation/BackToTop.vue";
@@ -43,6 +46,9 @@ const { GLOBAL_INFO } = useGlobalStorage();
 const localeToast = useToast();
 
 const route = useRoute();
+const auth = useGithubSession();
+const stopAuth = auth.start(useRouter());
+onBeforeUnmount(() => stopAuth?.());
 const novelStore = useNovelStore();
 const analyticsStore = useAnalyticsStore();
 const announcementStore = useAnnouncementStore();
