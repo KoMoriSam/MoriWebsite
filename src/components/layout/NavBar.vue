@@ -23,7 +23,7 @@
       <button
         ref="searchTriggerButton"
         type="button"
-        class="btn btn-ghost max-md:btn-square"
+        class="btn btn-ghost max-lg:btn-square mx-2"
         :aria-label="translate('common.navBar.openSiteSearch')"
         aria-keyshortcuts="Control+K Meta+K"
         @click="activateSearch"
@@ -69,7 +69,7 @@
 
 <script setup>
 import { useLocale } from "@/i18n";
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { githubSession } from "@/composables/auth/useGithubSession";
 const { t: translate } = useLocale();
 
 import {
@@ -90,7 +90,7 @@ import {
 const router = useRouter();
 const route = useRoute();
 
-import AccountControl from '@/components/auth/AccountControl.vue';
+import AccountControl from "@/components/auth/AccountControl.vue";
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
@@ -102,7 +102,9 @@ const searchComponent = shallowRef(null);
 const searchShortcutLabel = ref("Ctrl");
 let searchPromise;
 
-const isNovelReaderRoute = computed(() => route.name === "novel-reader" && githubSession.authenticated);
+const isNovelReaderRoute = computed(
+  () => route.name === "novel-reader" && githubSession.authenticated,
+);
 
 const hideReaderNavbar = () => {
   readerNavbarVisible.value = false;
