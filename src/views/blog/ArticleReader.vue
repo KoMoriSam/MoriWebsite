@@ -82,7 +82,10 @@
               v-if="article?.tags?.length"
               class="mb-3 flex flex-wrap items-center gap-2"
             >
-              <nav class="tooltip tooltip-right" :data-tip="translate('pages.articleReader.backToArticles')">
+              <nav
+                class="tooltip tooltip-right"
+                :data-tip="translate('pages.articleReader.backToArticles')"
+              >
                 <RouterLink
                   class="btn btn-xs btn-circle lg:btn-sm"
                   :class="
@@ -193,7 +196,9 @@
                 class="inline-flex items-center gap-1"
               >
                 <i class="ri-file-text-line"></i>
-                {{ translate('pages.articleReader.about') }} {{ article.length }} {{ translate('reader.chapterList.characters') }}
+                {{ translate("pages.articleReader.about") }}
+                {{ article.length }}
+                {{ translate("reader.chapterList.characters") }}
               </span>
 
               <span
@@ -201,7 +206,8 @@
                 class="inline-flex items-center gap-1"
               >
                 <i class="ri-time-line"></i>
-                {{ estimateReadingTime(article.length) }} {{ translate('pages.articleReader.minRead') }}
+                {{ estimateReadingTime(article.length) }}
+                {{ translate("pages.articleReader.minRead") }}
               </span>
 
               <span
@@ -211,13 +217,16 @@
                 <i class="ri-eye-line" aria-hidden="true"></i>
 
                 <template v-if="Number.isFinite(articleReads)">
-                  {{ formatReadCount(articleReads) }} {{ translate('reader.chapterList.reads') }}
+                  {{ formatReadCount(articleReads) }}
+                  {{ translate("reader.chapterList.reads") }}
                 </template>
 
                 <span
                   v-else
                   class="loading loading-dots loading-xs"
-                  :aria-label="translate('pages.articleReader.loadingArticleReads')"
+                  :aria-label="
+                    translate('pages.articleReader.loadingArticleReads')
+                  "
                 ></span>
               </span>
 
@@ -230,13 +239,16 @@
                 <i class="ri-chat-3-line" aria-hidden="true"></i>
 
                 <template v-if="Number.isFinite(articleComments)">
-                  {{ formatReadCount(articleComments) }} {{ translate('markdown.moment.comments') }}
+                  {{ formatReadCount(articleComments) }}
+                  {{ translate("markdown.moment.comments") }}
                 </template>
 
                 <span
                   v-else
                   class="loading loading-dots loading-xs"
-                  :aria-label="translate('pages.articleReader.loadingArticleComments')"
+                  :aria-label="
+                    translate('pages.articleReader.loadingArticleComments')
+                  "
                 ></span>
               </span>
             </div>
@@ -252,7 +264,9 @@
           aria-busy="true"
           :aria-label="translate('pages.articleReader.loadingArticleContent')"
         >
-          <span class="sr-only">{{ translate('pages.articleReader.loadingArticleContent') }}</span>
+          <span class="sr-only">{{
+            translate("pages.articleReader.loadingArticleContent")
+          }}</span>
 
           <div class="mx-auto max-w-4xl space-y-7" aria-hidden="true">
             <div class="skeleton h-8 w-2/5"></div>
@@ -280,7 +294,11 @@
             v-if="previousArticle"
             :to="getArticleRoute(previousArticle)"
             class="btn btn-sm h-fit min-w-0 max-w-full justify-start gap-2 py-1 md:btn-md md:max-w-[calc(50%-0.25rem)] lg:gap-3"
-            :aria-label="translate('pages.articleReader.previousArticle2', { p0: previousArticle.title })"
+            :aria-label="
+              translate('pages.articleReader.previousArticle2', {
+                p0: previousArticle.title,
+              })
+            "
             @click="handleArticleNavigation(previousArticle, $event)"
           >
             <i class="ri-arrow-left-s-line shrink-0 text-lg md:text-xl"></i>
@@ -291,7 +309,7 @@
               <span
                 class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
               >
-                {{ translate('pages.articleReader.previousArticle') }}
+                {{ translate("pages.articleReader.previousArticle") }}
               </span>
 
               <span class="max-w-full truncate text-left">
@@ -303,7 +321,8 @@
                 :datetime="getArticleDate(previousArticle)"
                 class="text-base-content/50 text-[0.5625rem] font-semibold tracking-wide"
               >
-                {{ translate('pages.articleReader.published') }} {{ formatArticleDate(previousArticle) }}
+                {{ translate("pages.articleReader.published") }}
+                {{ formatArticleDate(previousArticle) }}
               </time>
             </div>
           </RouterLink>
@@ -312,7 +331,11 @@
             v-if="nextArticle"
             :to="getArticleRoute(nextArticle)"
             class="btn btn-neutral btn-sm h-fit min-w-0 max-w-full self-end justify-end gap-2 py-1 md:btn-md md:ml-auto md:max-w-[calc(50%-0.25rem)] md:self-auto lg:gap-3"
-            :aria-label="translate('pages.articleReader.nextArticle2', { p0: nextArticle.title })"
+            :aria-label="
+              translate('pages.articleReader.nextArticle2', {
+                p0: nextArticle.title,
+              })
+            "
             @click="handleArticleNavigation(nextArticle, $event)"
           >
             <div
@@ -321,7 +344,7 @@
               <span
                 class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
               >
-                {{ translate('pages.articleReader.nextArticle') }}
+                {{ translate("pages.articleReader.nextArticle") }}
               </span>
 
               <span class="max-w-full truncate text-right">
@@ -333,7 +356,8 @@
                 :datetime="getArticleDate(nextArticle)"
                 class="text-neutral-content/50 text-[0.5625rem] font-semibold tracking-wide"
               >
-                {{ translate('pages.articleReader.published') }} {{ formatArticleDate(nextArticle) }}
+                {{ translate("pages.articleReader.published") }}
+                {{ formatArticleDate(nextArticle) }}
               </time>
             </div>
 
@@ -348,7 +372,9 @@
       <i class="ri-error-warning-line text-3xl"></i>
 
       <div>
-        <h2 class="font-bold">{{ translate('pages.articleReader.articleFailedToLoad') }}</h2>
+        <h2 class="font-bold">
+          {{ translate("pages.articleReader.articleFailedToLoad") }}
+        </h2>
         <p class="text-sm">{{ error }}</p>
       </div>
     </div>
@@ -356,7 +382,9 @@
     <!-- 空状态 -->
     <div v-else class="my-32 text-center text-base-content/50">
       <i class="ri-file-unknow-line mb-4 block text-5xl"></i>
-      <p>{{ translate('pages.articleReader.articleNotFoundOrFailedToLoad') }}</p>
+      <p>
+        {{ translate("pages.articleReader.articleNotFoundOrFailedToLoad") }}
+      </p>
     </div>
 
     <ContextMenu
@@ -388,7 +416,7 @@
         :term="String(article.id)"
         strict="0"
         reactions-enabled="1"
-        emit-metadata="0"
+        emit-metadata="1"
         input-position="bottom"
         :theme="giscusTheme"
         :lang="commentLocale"
@@ -399,12 +427,19 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
-const { t: translate, text: localizeText, locale: uiLocale, commentLocale, number: formatNumber, date: formatLocalizedDate } = useLocale();
+import { useLocale } from "@/i18n";
+const {
+  t: translate,
+  text: localizeText,
+  locale: uiLocale,
+  commentLocale,
+  number: formatNumber,
+  date: formatLocalizedDate,
+} = useLocale();
 
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { githubSession } from "@/composables/auth/useGithubSession";
 import Giscus from "@giscus/vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -641,22 +676,28 @@ const articleShareMeta = computed(() => {
     ? props.article.tags.map((tag) => String(tag).trim()).filter(Boolean)
     : [];
   const tagsText = tags.join(" · ");
-  const displayDate = date
-    ? formatLocalizedDate(props.article?.date)
-    : "";
+  const displayDate = date ? formatLocalizedDate(props.article?.date) : "";
   const lengthText =
-    Number.isFinite(length) && length > 0 ? translate('pages.articleReader.characters', { p0: length }) : "";
+    Number.isFinite(length) && length > 0
+      ? translate("pages.articleReader.characters", { p0: length })
+      : "";
   const readingTimeText = lengthText
-    ? translate('pages.articleReader.minRead2', { p0: estimateReadingTime(length) })
+    ? translate("pages.articleReader.minRead2", {
+        p0: estimateReadingTime(length),
+      })
     : "";
   const aliasesText = aliasList.value.join(" ");
   const renderedMetadata = [displayDate, lengthText, readingTimeText].filter(
     Boolean,
   );
-  const publicationInfo = date ? translate('pages.articleReader.published2', { p0: displayDate }) : "";
+  const publicationInfo = date
+    ? translate("pages.articleReader.published2", { p0: displayDate })
+    : "";
   const contentInfo = [
     Number.isFinite(length) && length > 0
-      ? translate('pages.articleReader.aboutCharacters', { p0: length.toLocaleString(uiLocale.value) })
+      ? translate("pages.articleReader.aboutCharacters", {
+          p0: length.toLocaleString(uiLocale.value),
+        })
       : "",
     tagsText ? tagsText : "",
   ]
@@ -664,10 +705,14 @@ const articleShareMeta = computed(() => {
     .join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(articleReads.value)
-      ? translate('pages.articleReader.reads', { p0: formatReadCount(articleReads.value) })
+      ? translate("pages.articleReader.reads", {
+          p0: formatReadCount(articleReads.value),
+        })
       : "",
     commentCountsAvailable.value && Number.isFinite(articleComments.value)
-      ? translate('pages.articleReader.comments', { p0: formatReadCount(articleComments.value) })
+      ? translate("pages.articleReader.comments", {
+          p0: formatReadCount(articleComments.value),
+        })
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");
@@ -676,7 +721,9 @@ const articleShareMeta = computed(() => {
   );
 
   return {
-    get sourceLabel() { return translate('pages.articleReader.blog'); },
+    get sourceLabel() {
+      return translate("pages.articleReader.blog");
+    },
     title: props.article?.title || "",
     detail: detailLines.join(" · "),
     detailLines,
@@ -824,35 +871,45 @@ const fabActions = computed(() => {
   const actions = [
     {
       key: "bottom",
-      get label() { return translate('pages.articleReader.toBottom'); },
+      get label() {
+        return translate("pages.articleReader.toBottom");
+      },
       icon: "ri-skip-down-line",
       buttonClass: "btn-info btn-soft",
       onClick: scrollToBottom,
     },
     {
       key: "top",
-      get label() { return translate('pages.articleReader.toTop'); },
+      get label() {
+        return translate("pages.articleReader.toTop");
+      },
       icon: "ri-skip-up-line",
       buttonClass: "btn-info btn-soft",
       onClick: scrollToTop,
     },
     {
       key: "settings",
-      get label() { return translate('reader.formatSetting.readingLayout'); },
+      get label() {
+        return translate("reader.formatSetting.readingLayout");
+      },
       icon: "ri-settings-3-line",
       buttonClass: "btn-primary btn-soft",
       onClick: () => readerRef.value?.openFormatSetting(),
     },
     {
       key: "refresh",
-      get label() { return translate('pages.articleReader.refreshArticle'); },
+      get label() {
+        return translate("pages.articleReader.refreshArticle");
+      },
       icon: props.loading ? "ri-loader-4-line animate-spin" : "ri-refresh-line",
       buttonClass: "btn-success btn-soft",
       onClick: handleRefresh,
     },
     {
       key: "back",
-      get label() { return translate('pages.articleReader.backToArticles'); },
+      get label() {
+        return translate("pages.articleReader.backToArticles");
+      },
       icon: "ri-arrow-go-back-line",
       buttonClass: "btn-secondary btn-soft",
       onClick: handleBack,

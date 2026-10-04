@@ -37,7 +37,9 @@
           <p
             class="mt-6 max-w-2xl font-serif text-justify text-base leading-8 text-base-content/70 sm:text-lg"
           >
-            <span lang="zh-CN">方远洛生在潋城县一个普通的教师家庭。从家属院的童年，到异乡求学的青春，他在家人的守望、朋友的陪伴与一次次离别中慢慢长大。曾经，他以为离开家门便是远方；后来才明白，远方既是不断抵达的新生活，也是始终牵引他回望的故乡。</span>
+            <span lang="zh-CN"
+              >方远洛生在潋城县一个普通的教师家庭。从家属院的童年，到异乡求学的青春，他在家人的守望、朋友的陪伴与一次次离别中慢慢长大。曾经，他以为离开家门便是远方；后来才明白，远方既是不断抵达的新生活，也是始终牵引他回望的故乡。</span
+            >
           </p>
         </section>
 
@@ -75,7 +77,9 @@
             >
               <i class="ri-sparkling-2-line shrink-0 text-lg"></i>
               <span class="min-w-0 text-left">
-                <span class="block text-xs font-normal"> {{ translate('reader.chapterToc.latestChapter') }} </span>
+                <span class="block text-xs font-normal">
+                  {{ translate("reader.chapterToc.latestChapter") }}
+                </span>
                 <span class="block truncate" :title="latestChapterTitle">
                   {{ latestChapterTitle }}
                 </span>
@@ -88,15 +92,18 @@
           >
             <span class="inline-flex items-center gap-1">
               <i class="ri-book-open-line"></i>
-              {{ readChapters.length }} {{ translate('reader.novelDetail.chaptersRead') }}
+              {{ readChapters.length }}
+              {{ translate("reader.novelDetail.chaptersRead") }}
             </span>
             <span class="inline-flex items-center gap-1">
               <i class="ri-stack-line"></i>
-              {{ flatChapters.length }} {{ translate('reader.novelDetail.chaptersIncluded') }}
+              {{ flatChapters.length }}
+              {{ translate("reader.novelDetail.chaptersIncluded") }}
             </span>
             <span class="inline-flex items-center gap-1">
               <i class="ri-edit-line"></i>
-              {{ translate('common.pagination.of') }} {{ totalWordCount }} {{ translate('reader.chapterList.characters') }}
+              {{ translate("common.pagination.of") }} {{ totalWordCount }}
+              {{ translate("reader.chapterList.characters") }}
             </span>
             <client-only v-if="analyticsAvailable || commentCountsAvailable">
               <span
@@ -105,12 +112,15 @@
               >
                 <i class="ri-eye-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalReads)">
-                  {{ formatReadCount(novelTotalReads) }} {{ translate('reader.chapterList.reads') }}
+                  {{ formatReadCount(novelTotalReads) }}
+                  {{ translate("reader.chapterList.reads") }}
                 </template>
                 <span
                   v-else
                   class="loading loading-dots loading-xs"
-                  :aria-label="translate('reader.novelDetail.loadingTotalNovelReads')"
+                  :aria-label="
+                    translate('reader.novelDetail.loadingTotalNovelReads')
+                  "
                 ></span>
               </span>
               <span
@@ -119,12 +129,15 @@
               >
                 <i class="ri-chat-3-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalComments)">
-                  {{ formatReadCount(novelTotalComments) }} {{ translate('markdown.moment.comments') }}
+                  {{ formatReadCount(novelTotalComments) }}
+                  {{ translate("markdown.moment.comments") }}
                 </template>
                 <span
                   v-else
                   class="loading loading-dots loading-xs"
-                  :aria-label="translate('reader.novelDetail.loadingTotalNovelComments')"
+                  :aria-label="
+                    translate('reader.novelDetail.loadingTotalNovelComments')
+                  "
                 ></span>
               </span>
             </client-only>
@@ -136,7 +149,10 @@
     <div
       class="grid gap-12 py-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-0 lg:py-16"
     >
-      <section class="min-w-0 lg:pr-10 xl:pr-12" :aria-label="translate('reader.novelDetail.novelChapters')">
+      <section
+        class="min-w-0 lg:pr-10 xl:pr-12"
+        :aria-label="translate('reader.novelDetail.novelChapters')"
+      >
         <ChapterList />
       </section>
 
@@ -145,9 +161,11 @@
       >
         <header class="mb-6">
           <hgroup>
-            <p class="text-sm text-base-content/55">{{ translate('common.sections.discussion') }}</p>
+            <p class="text-sm text-base-content/55">
+              {{ translate("common.sections.discussion") }}
+            </p>
             <h2 class="font-serif text-2xl font-semibold text-balance">
-              {{ translate('reader.novelDetail.bookComments') }}
+              {{ translate("reader.novelDetail.bookComments") }}
             </h2>
           </hgroup>
         </header>
@@ -162,7 +180,7 @@
           :term="GISCUS.defaultTerm"
           strict="0"
           reactions-enabled="1"
-          emit-metadata="0"
+          emit-metadata="1"
           input-position="top"
           :theme="themeStore.giscusTheme"
           :lang="commentLocale"
@@ -175,11 +193,11 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate, commentLocale, number: formatNumber } = useLocale();
 
 import { computed, watch } from "vue";
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { githubSession } from "@/composables/auth/useGithubSession";
 import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/novel/useChapters";
@@ -271,16 +289,22 @@ const { handleFirstChapter, handleAnyChapter } = useChapters();
 
 const hasReadingHistory = computed(() => readChapters.value.length > 0);
 const primaryActionLabel = computed(() =>
-  hasReadingHistory.value ? translate('reader.novelDetail.continueReading') : translate('reader.novelDetail.startReading'),
+  hasReadingHistory.value
+    ? translate("reader.novelDetail.continueReading")
+    : translate("reader.novelDetail.startReading"),
 );
 const primaryChapter = computed(() =>
   hasReadingHistory.value ? currentChapter.value : flatChapters.value[0],
 );
 const primaryChapterTitle = computed(
-  () => getChapterDisplayTitle(primaryChapter.value) || translate('reader.novelDetail.loading'),
+  () =>
+    getChapterDisplayTitle(primaryChapter.value) ||
+    translate("reader.novelDetail.loading"),
 );
 const latestChapterTitle = computed(
-  () => getChapterDisplayTitle(latestChapter.value) || translate('reader.novelDetail.loading'),
+  () =>
+    getChapterDisplayTitle(latestChapter.value) ||
+    translate("reader.novelDetail.loading"),
 );
 const primaryChapterDisabled = computed(() =>
   hasReadingHistory.value

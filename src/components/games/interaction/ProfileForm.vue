@@ -56,7 +56,7 @@
       </label>
       <template v-if="state.error">
         <span class="text-xs text-base-content/60">{{
-          t("auth.profileError")
+          t(`auth.errors.${state.error}`)
         }}</span>
         <button
           type="button"
@@ -87,7 +87,7 @@ const emit = defineEmits([
   "blur",
   "commit",
 ]);
-const { profile, state, retry, login, showFallback } = useGithubSession();
+const { profile, state, retry, login } = useGithubSession();
 const { t } = useLocale();
 const inputId = `player-nickname-${useId()}`;
 const input = ref(null);
@@ -115,8 +115,7 @@ const chooseGithub = (event) => {
       /* Storage can be unavailable. */
     }
     event.target.checked = false;
-    if (state.error === "session") showFallback();
-    else login();
+    login();
     return;
   }
   emit("update:github", checked);

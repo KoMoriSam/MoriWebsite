@@ -1801,7 +1801,7 @@
   "auth": {
     "login": "使用 GitHub 登录",
     "logout": "退出",
-    "retry": "重试资料",
+    "retry": "重新确认",
     "guest": "游客",
     "loadingProfile": "正在读取 GitHub 资料",
     "checking": "正在确认 GitHub 登录状态…",
@@ -1818,7 +1818,22 @@
     "email": "邮箱",
     "emailPrivate": "未公开邮箱",
     "loginTitle": "登录后继续阅读",
-    "editProfile": "编辑玩家资料"
+    "editProfile": "编辑玩家资料",
+    "errors": {
+      "profile": "GitHub 资料暂不可用，请重试。",
+      "token-missing": "未找到登录凭证，请重新登录。",
+      "token-invalid": "GitHub 凭证已失效，请重新登录。",
+      "token-expired": "Giscus 会话已过期，请重新登录。",
+      "session-invalid": "登录凭证无法解析，请重新登录。",
+      "session-mismatch": "会话与返回的登录状态不一致，请重新确认或登录。",
+      "rate-limit": "GitHub 请求受到限流，请稍后重新确认。",
+      "forbidden": "GitHub 请求被拒绝（403），请检查授权后重试。",
+      "network": "网络连接失败，登录状态未知，请重新确认。",
+      "discussion": "登录确认所用的讨论不可用，请重试。",
+      "api": "登录确认接口暂不可用，请重新确认。",
+      "timeout": "登录确认超时，状态未知，请重新确认。",
+      "storage": "无法读取或清理登录缓存，请允许浏览器存储后重试。"
+    }
   },
   "fogport": {
     "title": "雾港商纪",

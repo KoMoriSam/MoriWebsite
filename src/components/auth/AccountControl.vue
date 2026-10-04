@@ -79,7 +79,7 @@
           </div>
           <LoginButton v-if="!panelState.authenticated" class="max-sm:btn-sm" />
           <button
-            v-else
+            v-if="panelState.hasSession || panelState.authenticated"
             type="button"
             class="btn btn-ghost max-sm:btn-sm shrink-0"
             @click="signOut"
@@ -93,7 +93,7 @@
           class="my-2 flex shrink-0 items-center justify-between gap-2 px-2 text-xs text-base-content/65"
           role="status"
         >
-          <span>{{ t("auth.profileError") }}</span>
+          <span>{{ t(`auth.errors.${panelState.error}`) }}</span>
           <button type="button" class="btn btn-ghost btn-xs" @click="retry">
             {{ t("auth.retry") }}
           </button>
@@ -216,7 +216,13 @@ const handleBeforeToggle = (event) => {
 };
 // 退场期间保留当前账户展示，下一次打开时再同步最新资料。
 watch(
-  () => [state.authenticated, state.profile, state.checking, state.error],
+  () => [
+    state.authenticated,
+    state.hasSession,
+    state.profile,
+    state.checking,
+    state.error,
+  ],
   () => {
     if (open.value) panelState.value = { ...state };
   },

@@ -1801,7 +1801,7 @@
   "auth": {
     "login": "Sign in with GitHub",
     "logout": "Sign out",
-    "retry": "Retry profile",
+    "retry": "Recheck",
     "guest": "Guest",
     "loadingProfile": "Loading GitHub profile",
     "checking": "Checking GitHub session…",
@@ -1818,7 +1818,22 @@
     "email": "Email",
     "emailPrivate": "Email not public",
     "loginTitle": "Sign in to continue reading",
-    "editProfile": "Edit player profile"
+    "editProfile": "Edit player profile",
+    "errors": {
+      "profile": "GitHub profile is unavailable. Please retry.",
+      "token-missing": "No sign-in credential was found. Please sign in again.",
+      "token-invalid": "The GitHub credential is invalid. Please sign in again.",
+      "token-expired": "The Giscus session has expired. Please sign in again.",
+      "session-invalid": "The sign-in credential could not be decoded. Please sign in again.",
+      "session-mismatch": "The session and returned sign-in state do not match. Recheck or sign in again.",
+      "rate-limit": "GitHub requests are rate limited. Recheck later.",
+      "forbidden": "GitHub denied the request (403). Check authorization and retry.",
+      "network": "The network request failed. Sign-in state is unknown. Please recheck.",
+      "discussion": "The discussion used to confirm sign-in is unavailable. Please retry.",
+      "api": "The sign-in check service is unavailable. Please recheck.",
+      "timeout": "The sign-in check timed out. State is unknown. Please recheck.",
+      "storage": "Sign-in storage could not be read or cleared. Allow browser storage and retry."
+    }
   },
   "fogport": {
     "title": "Union Works: Industry & Trade",
