@@ -101,9 +101,12 @@ for (let count = 5; count <= 10; count++) {
     check(view.game.self.knownEvil.length, room.gameState.roles[p.id] === 'merlin' || isEvil(room.gameState.roles[p.id]) ? count - GOOD_COUNTS[count] : 0);
   }
   for (let i = 0; i < 3; i++) room = quest(room);
-  check(room.gameState.phase, 'assassinate');
+  check(room.gameState.phase, 'evil_discussion');
   const assassin = room.players.find(p => room.gameState.roles[p.id] === 'assassin');
   const merlin = room.players.find(p => room.gameState.roles[p.id] === 'merlin');
+  rejects(() => act(room, assassin.id, 'assassinate', { targetId: merlin.id }), 'PHASE');
+  room = act(room, assassin.id, 'end_assassination_discussion');
+  check(room.gameState.phase, 'assassinate');
   rejects(() => act(room, merlin.id, 'assassinate', { targetId: assassin.id }), 'ASSASSIN_ONLY');
   const evilWin = act(room, assassin.id, 'assassinate', { targetId: merlin.id });
   check(evilWin.gameState.result.winner, 'evil');
@@ -279,6 +282,7 @@ rejects(() => act(full, full.hostId, 'configure', { config: { specialRoles: [] }
 for (let i = 0; i < 3; i++) full = quest(full);
 const fullAssassin = full.players.find(p => full.gameState.roles[p.id] === 'assassin');
 const fullOberon = full.players.find(p => full.gameState.roles[p.id] === 'oberon');
+full = act(full, fullAssassin.id, 'end_assassination_discussion');
 // An unknown evil target must not act as an oracle or reveal Oberon's affiliation via an error.
 check(act(full, fullAssassin.id, 'assassinate', { targetId: fullOberon.id }).gameState.result.winner, 'good');
 rejects(() => act(full, fullAssassin.id, 'assassinate', { targetId: fullAssassin.id }), 'TARGET');

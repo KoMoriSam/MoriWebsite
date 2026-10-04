@@ -30,7 +30,8 @@
     "check:avalon": "node scripts/check-avalon.mjs",
     "check:games": "node scripts/check-games.mjs",
     "check:markdown-xss": "node scripts/check-markdown-xss.mjs",
-    "check:rss": "node scripts/check-rss.mjs"
+    "check:rss": "node scripts/check-rss.mjs",
+    "check:fogport": "node scripts/check-fogport.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

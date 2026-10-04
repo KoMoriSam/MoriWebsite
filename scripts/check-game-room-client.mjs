@@ -7,7 +7,7 @@ import { applyRoomAction, createPlayer, createRoom, roomView } from './games/sta
 
 // Exercise the real composable with a lost acknowledgement and seat replacement.
 const server = await createServer({ configFile: false, cacheDir: 'node_modules/.cache/game-room-client', optimizeDeps: { noDiscovery: true, include: [] }, resolve: { alias: { '@': path.resolve('src') } }, server: { middlewareMode: true, watch: null }, appType: 'custom' });
-const globals = ['window', 'localStorage', 'sessionStorage', 'fetch', 'WebSocket', 'crypto'];
+const globals = ['window', 'localStorage', 'sessionStorage', 'fetch', 'WebSocket', 'crypto', 'document'];
 const previous = new Map(globals.map(name => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
 const token = 'a'.repeat(64); const credential = { gameType: 'avalon', code: 'ABCDEFGH', token, playerId: '' };
 const player = { ...createPlayer('Tester', 'hash'), online: true };
@@ -111,6 +111,42 @@ try {
   assert.equal(client.room.value, null);
   assert.equal(storage.getItem(`mori:games:room:${credential.code}`), null);
   assert.equal(router.currentRoute.value.query.room, undefined);
+  // Default audio belongs to every Room, with reconnect snapshots and stages deduplicated.
+  const listeners=new Map();let tones=0,closed=0;
+  class FakeAudioContext {
+    state='running';currentTime=0;destination={};
+    createOscillator(){return {frequency:{setValueAtTime(){}},connect:g=>g,start(){tones++;},stop(){}};}
+    createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};}
+    resume(){return Promise.resolve();} close(){closed++;return Promise.resolve();}
+  }
+  setGlobal('document',{hidden:false});
+  Object.assign(window,{localStorage:storage,AudioContext:FakeAudioContext,addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)});
+  const {useGameAudio}=await server.ssrLoadModule('/src/composables/games/useGameAudio.js');
+  const {audioSnapshot,audioCue}=await server.ssrLoadModule('/src/games/audio.js');
+  let audio;const audioApp=renderer.createApp({setup(){audio=useGameAudio('fogport');return ()=>h('p');}});audioApp.mount({children:[]});
+  assert.equal(audio.enabled.value,true);listeners.get('pointerdown')();
+  audio.playActivity('joined');assert.equal(tones,2);
+  const audioRoom={code:'FGABCDEF',round:1,stage:1,selfId:'self',status:'playing',game:{phase:'turn',era:'canal',actorId:'self',history:[]}};
+  audio.observe(audioRoom,'online');assert.equal(tones,2);
+  const updated={...audioRoom,stage:2,game:{...audioRoom.game,history:[{type:'build'}]}};
+  audio.observe(updated,'online');assert.equal(tones,4);
+  audio.observe({...updated},'online');assert.equal(tones,4);
+  audio.observe(updated,'reconnecting');audio.observe({...updated,stage:5},'online');assert.equal(tones,4);
+  audio.observe({...updated,stage:6},'online');assert.equal(tones,6);
+  audio.toggle();assert.equal(storage.getItem('games:audio-enabled'),'false');audio.playActivity('ready');assert.equal(tones,6);
+  audio.toggle();audio.playActivity('ready');assert.equal(tones,8);
+  const baseline=audioSnapshot(audioRoom);
+  assert.equal(audioCue('fogport',{...baseline,era:'rail'},baseline),'questSuccess');
+  assert.equal(audioCue('fogport',{...baseline,phase:'liquidation'},baseline),'rejected');
+  assert.equal(audioCue('fogport',{...baseline,actor:'self'},{...baseline,actor:'other'}),'team');
+  assert.equal(audioCue('fogport',{...baseline,phase:'finished'},baseline),'ended');
+  assert.equal(audioCue('avalon',{...baseline,phase:'vote'},{...baseline,phase:'team'}),'vote');
+  assert.equal(audioCue('avalon',{...baseline,voteCount:1,approved:false},{...baseline,voteCount:0}),'rejected');
+  assert.equal(audioCue('avalon',{...baseline,questCount:1,questSuccess:true},{...baseline,questCount:0}),'questSuccess');
+  audioApp.unmount();assert.equal(closed,1);assert.equal(listeners.size,0);
+  storage.removeItem('games:audio-enabled');storage.setItem('avalon:audio-enabled','false');
+  const legacyApp=renderer.createApp({setup(){assert.equal(useGameAudio('avalon').enabled.value,false);assert.equal(useGameAudio('fogport').enabled.value,true);return()=>h('p');}});legacyApp.mount({children:[]});legacyApp.unmount();
+  console.log('Game audio: enabled by default, room activity, Fogport actions/turns/eras/debt/results, Avalon cues, stage deduplication, reconnect baseline, mute and cleanup passed.');
   console.log('Game room client: room entry, credential privacy, lost acknowledgement recovery, duplicate prevention, seat replacement, reclaim, kick credential cleanup and lobby departure passed.');
 } finally {
   app?.unmount();

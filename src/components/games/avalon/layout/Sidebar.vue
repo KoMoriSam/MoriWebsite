@@ -1,82 +1,12 @@
 <template>
   <div class="flex h-full min-h-0 min-w-0 flex-col">
-    <nav
-      class="mb-4 shrink-0 lg:is-drawer-open:pr-10"
-      :aria-label="t('avalon.mobile.navigation')"
-    >
-      <div
-        role="tablist"
-        class="tabs tabs-border tabs-sm hidden w-full flex-nowrap overflow-x-auto scrollbar-thin lg:is-drawer-open:flex"
-      >
-        <button
-          v-for="item in visibleMenuItems"
-          :id="`${panelId}-menu-${item.id}`"
-          :key="item.id"
-          type="button"
-          role="tab"
-          class="tab min-w-0 shrink-0 gap-2 whitespace-nowrap"
-          :class="panel === item.id ? 'tab-active' : ''"
-          :aria-selected="panel === item.id"
-          :aria-controls="`${panelId}-${item.id}`"
-          @click="emit('select-panel', item.id)"
-        >
-          <span class="indicator">
-            <span
-              v-if="item.id === 'discussion' && unread"
-              class="indicator-item badge badge-error badge-xs min-w-5 px-1 font-semibold tabular-nums"
-              aria-hidden="true"
-              >{{ unread }}</span
-            >
-            <i
-              :class="item.icon"
-              class="text-lg leading-none"
-              aria-hidden="true"
-            ></i>
-          </span>
-          {{ t(item.label) }}
-          <span v-if="item.id === 'discussion' && unread" class="sr-only">{{
-            t("avalon.phrases.unread", { n: unread })
-          }}</span>
-        </button>
-      </div>
-      <ul class="menu w-full gap-1 p-0 lg:is-drawer-open:hidden">
-        <li
-          v-for="item in visibleMenuItems"
-          :key="item.id"
-          class="lg:is-drawer-close:tooltip lg:is-drawer-close:tooltip-left lg:is-drawer-close:flex! lg:is-drawer-close:items-center"
-          :data-tip="t(item.label)"
-        >
-          <button
-            :id="`${panelId}-menu-${item.id}-collapsed`"
-            type="button"
-            class="btn btn-ghost btn-sm min-w-0 gap-2 whitespace-nowrap lg:is-drawer-close:btn-square"
-            :class="panel === item.id ? 'btn-active' : ''"
-            :aria-label="t(item.label)"
-            :aria-pressed="panel === item.id"
-            :aria-controls="`${panelId}-${item.id}`"
-            @click="emit('select-panel', item.id)"
-          >
-            <span class="indicator">
-              <span
-                v-if="item.id === 'discussion' && unread"
-                class="indicator-item badge badge-error badge-xs min-w-5 px-1 font-semibold tabular-nums"
-                aria-hidden="true"
-                >{{ unread }}</span
-              >
-              <i
-                :class="item.icon"
-                class="text-lg leading-none"
-                aria-hidden="true"
-              ></i>
-            </span>
-            <span class="lg:is-drawer-close:hidden">{{ t(item.label) }}</span>
-            <span v-if="item.id === 'discussion' && unread" class="sr-only">{{
-              t("avalon.phrases.unread", { n: unread })
-            }}</span>
-          </button>
-        </li>
-      </ul>
-    </nav>
+    <SidebarNavigation
+      :items="navigationItems"
+      :panel="panel"
+      :panel-id="panelId"
+      :label="t('avalon.mobile.navigation')"
+      @select-panel="emit('select-panel', $event)"
+    />
     <div
       ref="discussionPanel"
       :id="`${panelId}-discussion`"
@@ -95,7 +25,10 @@
       >
         <template #discussion-timer>
           <div
-            v-if="midDesktop && ['discussion', 'evil_discussion'].includes(gameRoom.phase)"
+            v-if="
+              midDesktop &&
+              ['discussion', 'evil_discussion'].includes(gameRoom.phase)
+            "
             class="flex shrink-0 items-center gap-2"
           >
             <DiscussionTimer
@@ -168,6 +101,7 @@ import { useMediaQuery } from "@vueuse/core";
 import { useLocale } from "@/i18n";
 import { canDiscuss } from "../../../../../shared/games/avalon/discussion.js";
 import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import SidebarNavigation from "../../layout/SidebarNavigation.vue";
 import Discussion from "../interaction/Discussion.vue";
 import DiscussionTimer from "../display/DiscussionTimer.vue";
 import QuestHistory from "../display/QuestHistory.vue";
@@ -198,6 +132,13 @@ const visibleMenuItems = computed(() =>
   midDesktop.value
     ? menuItems
     : menuItems.filter((item) => item.id !== "players"),
+);
+const navigationItems = computed(() =>
+  visibleMenuItems.value.map((item) => ({
+    ...item,
+    badge: item.id === "discussion" ? unread.value : 0,
+    badgeLabel: t("avalon.phrases.unread", { n: unread.value }),
+  })),
 );
 const gameRoom = computed(() => ({
   ...props.room,

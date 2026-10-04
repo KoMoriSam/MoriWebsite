@@ -1,14 +1,22 @@
 <template>
   <section class="min-w-0 space-y-3 text-left text-sm">
     <header class="space-y-1">
-      <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+      <div
+        class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1"
+      >
         <h3 class="font-serif text-base font-semibold">
           {{ t("avalon.questNumber", { n: quest + 1 }) }}
         </h3>
         <span
           v-if="room"
           class="text-xs font-medium"
-          :class="result ? result.success ? 'text-success' : 'text-error' : 'text-base-content/60'"
+          :class="
+            result
+              ? result.success
+                ? 'text-success'
+                : 'text-error'
+              : 'text-base-content/60'
+          "
         >
           {{ status }}
         </span>
@@ -59,15 +67,26 @@
         {{ t(current ? "avalon.records.waiting" : "avalon.records.empty") }}
       </p>
       <ol v-else class="space-y-3">
-        <li
+        <RecordEntry
           v-for="entry in entries"
           :key="entry.sequence"
-          class="min-w-0 border-l-2 border-base-300 pl-3"
-          :class="entry.type === 'quest' ? entry.success ? 'border-success' : 'border-error' : entry.type === 'vote' ? entry.approved ? 'border-success' : 'border-error' : ''"
+          :title="t(`avalon.records.types.${entry.type}`)"
+          :icon="icons[entry.type]"
+          :sequence="entry.sequence"
+          :at="entry.at"
+          :tone="
+            entry.type === 'quest'
+              ? entry.success
+                ? 'success'
+                : 'error'
+              : entry.type === 'vote'
+                ? entry.approved
+                  ? 'success'
+                  : 'error'
+                : ''
+          "
         >
-          <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <i :class="icons[entry.type] || 'ri-history-line'" class="text-base-content/60" aria-hidden="true"></i>
-            <strong class="font-medium">{{ t(`avalon.records.types.${entry.type}`) }}</strong>
+          <template #heading>
             <span
               v-if="entry.type === 'vote'"
               class="text-xs font-medium"
@@ -84,125 +103,113 @@
                 t(entry.success ? "avalon.success" : "avalon.failure")
               }}</span
             >
-            <span class="ml-auto font-mono text-xs text-base-content/40"
-              >#{{ entry.sequence
-              }}<time
-                v-if="entry.at"
-                :datetime="new Date(entry.at).toISOString()"
-                class="ml-2"
-                >{{
-                  date(entry.at, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
-                }}</time
-              ></span
-            >
-          </div>
-          <div class="mt-1 space-y-1 text-xs leading-5">
-            <p
-              v-if="entry.leaderId"
-              class="wrap-break-word text-base-content/60"
-            >
+          </template>
+          <p v-if="entry.leaderId" class="wrap-break-word text-base-content/60">
+            {{
+              t(
+                entry.leaderId === room.selfId
+                  ? "avalon.records.leaderSelf"
+                  : "avalon.records.leader",
+                { name: playerName(entry.leaderId) },
+              )
+            }}
+          </p>
+          <p
+            v-if="entry.team && entry.type !== 'quest'"
+            class="wrap-break-word"
+          >
+            {{
+              t("avalon.teamNames", {
+                names: entry.team.map(playerName).join(", "),
+              })
+            }}
+          </p>
+          <p v-if="entry.type === 'dialogue'" class="wrap-break-word">
+            {{
+              t("avalon.discussionTimer.dialogueRecord", {
+                name: playerName(entry.targetId),
+              })
+            }}
+          </p>
+          <template v-if="entry.type === 'vote'">
+            <p class="text-base-content/60">
+              {{
+                t("avalon.records.tally", {
+                  yes: entry.votes.filter((vote) => vote.approve).length,
+                  no: entry.votes.filter((vote) => !vote.approve).length,
+                })
+              }}
+            </p>
+            <ul class="flex min-w-0 flex-wrap gap-x-3 gap-y-1">
+              <li
+                v-for="vote in entry.votes"
+                :key="vote.playerId"
+                class="inline-flex min-w-0 items-start gap-1"
+                :class="vote.approve ? 'text-success' : 'text-error'"
+              >
+                <i
+                  :class="
+                    vote.approve ? 'ri-thumb-up-line' : 'ri-thumb-down-line'
+                  "
+                  class="shrink-0"
+                  aria-hidden="true"
+                ></i>
+                <span class="sr-only"
+                  >{{
+                    t(vote.approve ? "avalon.approve" : "avalon.reject")
+                  }}:</span
+                >
+                <span class="min-w-0 wrap-break-word">{{
+                  playerName(vote.playerId)
+                }}</span>
+              </li>
+            </ul>
+          </template>
+          <p v-if="entry.type === 'quest'" class="text-base-content/60">
+            {{
+              t("avalon.records.cards", {
+                passed: entry.team.length - entry.failures,
+                failed: entry.failures,
+              })
+            }}
+          </p>
+          <p v-if="entry.type === 'quest'" class="wrap-break-word">
+            {{
+              t("avalon.agendaSummary.executors", {
+                names: entry.team.map(playerName).join(", "),
+              })
+            }}
+          </p>
+          <template v-if="entry.type === 'assassinate'">
+            <p class="wrap-break-word">
               {{
                 t(
-                  entry.leaderId === room.selfId
-                    ? "avalon.records.leaderSelf"
-                    : "avalon.records.leader",
-                  { name: playerName(entry.leaderId) },
+                  entry.playerId === room.selfId
+                    ? "avalon.records.assassinationSelf"
+                    : entry.targetId === room.selfId
+                      ? "avalon.records.assassinationTargetSelf"
+                      : "avalon.records.assassination",
+                  {
+                    name: playerName(entry.playerId),
+                    target: playerName(entry.targetId),
+                  },
                 )
               }}
             </p>
-            <p v-if="entry.team && entry.type !== 'quest'" class="wrap-break-word">
-              {{
-                t("avalon.teamNames", {
-                  names: entry.team.map(playerName).join(", "),
-                })
-              }}
+            <p class="text-base-content/60">
+              {{ t(`avalon.reasons.${entry.reason}`) }}
             </p>
-            <p v-if="entry.type === 'dialogue'" class="wrap-break-word">
-              {{
-                t("avalon.discussionTimer.dialogueRecord", {
-                  name: playerName(entry.targetId),
-                })
-              }}
-            </p>
-            <template v-if="entry.type === 'vote'">
-              <p class="text-base-content/60">
-                {{
-                  t("avalon.records.tally", {
-                    yes: entry.votes.filter((vote) => vote.approve).length,
-                    no: entry.votes.filter((vote) => !vote.approve).length,
-                  })
-                }}
-              </p>
-              <ul class="flex min-w-0 flex-wrap gap-x-3 gap-y-1">
-                <li
-                  v-for="vote in entry.votes"
-                  :key="vote.playerId"
-                  class="inline-flex min-w-0 items-start gap-1"
-                  :class="vote.approve ? 'text-success' : 'text-error'"
-                >
-                  <i
-                    :class="
-                      vote.approve ? 'ri-thumb-up-line' : 'ri-thumb-down-line'
-                    "
-                    class="shrink-0"
-                    aria-hidden="true"
-                  ></i>
-                  <span class="sr-only"
-                    >{{
-                      t(vote.approve ? "avalon.approve" : "avalon.reject")
-                    }}:</span
-                  >
-                  <span class="min-w-0 wrap-break-word">{{
-                    playerName(vote.playerId)
-                  }}</span>
-                </li>
-              </ul>
-            </template>
-            <p v-if="entry.type === 'quest'" class="text-base-content/60">
-              {{
-                t("avalon.records.cards", {
-                  passed: entry.team.length - entry.failures,
-                  failed: entry.failures,
-                })
-              }}
-            </p>
-            <p v-if="entry.type === 'quest'" class="wrap-break-word">
-              {{ t('avalon.agendaSummary.executors', { names: entry.team.map(playerName).join(', ') }) }}
-            </p>
-            <template v-if="entry.type === 'assassinate'">
-              <p class="wrap-break-word">
-                {{
-                  t(
-                    entry.playerId === room.selfId
-                      ? "avalon.records.assassinationSelf"
-                      : entry.targetId === room.selfId
-                        ? "avalon.records.assassinationTargetSelf"
-                        : "avalon.records.assassination",
-                    {
-                      name: playerName(entry.playerId),
-                      target: playerName(entry.targetId),
-                    },
-                  )
-                }}
-              </p>
-              <p class="text-base-content/60">
-                {{ t(`avalon.reasons.${entry.reason}`) }}
-              </p>
-            </template>
-            <p v-if="entry.type === 'end'" class="text-base-content/60">
-              {{ t("avalon.reasons.aborted") }}
-            </p>
-          </div>
-        </li>
+          </template>
+          <p v-if="entry.type === 'end'" class="text-base-content/60">
+            {{ t("avalon.reasons.aborted") }}
+          </p>
+        </RecordEntry>
       </ol>
     </div>
   </section>
 </template>
 <script setup>
+import RecordEntry from "../../display/RecordEntry.vue";
 import { computed } from "vue";
 import { useLocale } from "@/i18n";
 import { QUEST_TEAMS } from "../../../../../shared/games/avalon/index.js";
@@ -213,12 +220,13 @@ const props = defineProps({
   sequence: { type: Number, default: null },
   showProgress: { type: Boolean, default: true },
 });
-const { t, date } = useLocale();
+const { t } = useLocale();
 const participantCount = computed(
   () => props.room?.participants.length ?? props.playerCount,
 );
 const teamSize = computed(
-  () => props.room?.teamSizes[props.quest] ??
+  () =>
+    props.room?.teamSizes[props.quest] ??
     (QUEST_TEAMS[participantCount.value] ?? QUEST_TEAMS[5])[props.quest],
 );
 const icons = {
@@ -235,13 +243,12 @@ const icons = {
 const result = computed(() =>
   props.room?.quests.find((entry) => entry.quest === props.quest),
 );
-const current = computed(
-  () =>
-    Boolean(
-      props.room &&
-      props.quest === props.room.questIndex &&
-      props.room.phase !== "finished",
-    ),
+const current = computed(() =>
+  Boolean(
+    props.room &&
+    props.quest === props.room.questIndex &&
+    props.room.phase !== "finished",
+  ),
 );
 const status = computed(() =>
   result.value

@@ -8,7 +8,9 @@
     "
   >
     <section v-if="room.phase === 'night'" class="card">
-      <div class="card-body items-center gap-6 px-0 py-4 text-center max-lg:gap-3 max-lg:py-2">
+      <div
+        class="card-body items-center gap-6 px-0 py-4 text-center max-lg:gap-3 max-lg:py-2"
+      >
         <hgroup class="flex flex-col gap-4 items-center max-lg:gap-2">
           <h2 class="card-title font-serif text-xl sm:text-2xl">
             <i class="ri-moon-clear-line font-normal" aria-hidden="true"></i>
@@ -44,15 +46,18 @@
         <button
           type="button"
           class="btn"
-          :class="{ invisible: !room.self.role || (!showRole && !room.self.nightConfirmed) }"
+          :class="{
+            invisible:
+              !room.self.role || (!showRole && !room.self.nightConfirmed),
+          }"
           :disabled="!canAct || !showRole || room.self.nightConfirmed"
           @click="run('confirm_role')"
         >
           {{
             t(
               room.self.nightConfirmed
-                ? 'avalon.night.confirmed'
-                : 'avalon.night.confirm',
+                ? "avalon.night.confirmed"
+                : "avalon.night.confirm",
             )
           }}
         </button>
@@ -186,7 +191,9 @@
                   </p>
                 </template>
                 <template v-else-if="room.phase === 'evil_discussion'">
-                  <p class="text-sm leading-6">{{ t("avalon.evilDiscussion.hint") }}</p>
+                  <p class="text-sm leading-6">
+                    {{ t("avalon.evilDiscussion.hint") }}
+                  </p>
                   <p class="text-sm text-base-content/60">
                     {{ t("avalon.evilDiscussion.next") }}
                   </p>
@@ -226,11 +233,17 @@
                 :server-now="room.serverNow"
               />
               <button
-                v-if="room.phase === 'discussion' ? isLeader : canEndEvilDiscussion"
+                v-if="
+                  room.phase === 'discussion' ? isLeader : canEndEvilDiscussion
+                "
                 type="button"
                 class="btn shrink-0"
                 :disabled="!canAct"
-                @click="room.phase === 'discussion' ? endDiscussion() : endEvilDiscussion()"
+                @click="
+                  room.phase === 'discussion'
+                    ? endDiscussion()
+                    : endEvilDiscussion()
+                "
               >
                 {{ t("avalon.discussionTimer.endEarly") }}
               </button>
@@ -248,68 +261,75 @@
             >
               <AgendaSummary :room="room" :player-name="playerName" />
             </div>
-            <div class="flex max-h-full min-h-0 shrink-0 flex-col gap-3 lg:gap-5">
-            <QuestList
-              v-if="room.game > 0 && !['lobby', 'night'].includes(room.phase)"
-              :room="room"
-            />
-
             <div
-              v-if="
-                (room.phase === 'vote' && !room.self.voted) ||
-                (isQuestMember && !room.self.questSubmitted)
-              "
-              role="status"
-              class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
+              class="flex max-h-full min-h-0 shrink-0 flex-col gap-3 lg:gap-5"
             >
-              <i class="ri-information-line shrink-0 text-info" aria-hidden="true"></i>
-              <span class="min-w-0">
-                {{
-                  room.phase === 'vote'
-                    ? t('avalon.mobileHints.vote')
-                    : t('avalon.mobileHints.quest')
-                }}
-              </span>
-            </div>
+              <QuestList
+                v-if="room.game > 0 && !['lobby', 'night'].includes(room.phase)"
+                :room="room"
+              />
 
-            <section
-              v-if="room.phase !== 'night' && room.self.role"
-              class="min-h-0 min-w-0 overflow-y-auto overscroll-contain scrollbar-thin"
-            >
-              <ResultCard
-                v-if="room.phase === 'finished'"
-                :result="room.result"
-                :self-id="room.selfId"
-                :player-name="playerName"
-              />
-              <BallotCards
-                v-else-if="isQuestMember"
-                :self="room.self"
-                :self-id="room.selfId"
-                :player-name="playerName"
-                mode="quest"
-                active
-                :allow-fail="evil"
-                :can-submit="!room.self.questSubmitted && canAct"
-                :submitted="room.self.questSubmitted"
-                :context="`${room.code}:${room.game}:${room.stage}`"
-                @quest="playQuest"
-              />
-              <BallotCards
-                v-else
-                :self="room.self"
-                :self-id="room.selfId"
-                :player-name="playerName"
-                :active="room.phase === 'vote'"
-                :can-submit="
-                  room.phase === 'vote' && !room.self.voted && canAct
+              <div
+                v-if="
+                  (room.phase === 'vote' && !room.self.voted) ||
+                  (isQuestMember && !room.self.questSubmitted)
                 "
-                :submitted="room.phase === 'vote' && room.self.voted"
-                :auto-approved="room.phase === 'vote' && room.self.autoApproved"
-                :context="`${room.code}:${room.game}:${room.stage}`"
-                @vote="castVote"
-              />
-            </section>
+                role="status"
+                class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
+              >
+                <i
+                  class="ri-information-line shrink-0 text-info"
+                  aria-hidden="true"
+                ></i>
+                <span class="min-w-0">
+                  {{
+                    room.phase === "vote"
+                      ? t("avalon.mobileHints.vote")
+                      : t("avalon.mobileHints.quest")
+                  }}
+                </span>
+              </div>
+
+              <section
+                v-if="room.phase !== 'night' && room.self.role"
+                class="min-h-0 min-w-0 overflow-y-auto overscroll-contain scrollbar-thin"
+              >
+                <ResultCard
+                  v-if="room.phase === 'finished'"
+                  :result="room.result"
+                  :self-id="room.selfId"
+                  :player-name="playerName"
+                />
+                <BallotCards
+                  v-else-if="isQuestMember"
+                  :self="room.self"
+                  :self-id="room.selfId"
+                  :player-name="playerName"
+                  mode="quest"
+                  active
+                  :allow-fail="evil"
+                  :can-submit="!room.self.questSubmitted && canAct"
+                  :submitted="room.self.questSubmitted"
+                  :context="`${room.code}:${room.game}:${room.stage}`"
+                  @quest="playQuest"
+                />
+                <BallotCards
+                  v-else
+                  :self="room.self"
+                  :self-id="room.selfId"
+                  :player-name="playerName"
+                  :active="room.phase === 'vote'"
+                  :can-submit="
+                    room.phase === 'vote' && !room.self.voted && canAct
+                  "
+                  :submitted="room.phase === 'vote' && room.self.voted"
+                  :auto-approved="
+                    room.phase === 'vote' && room.self.autoApproved
+                  "
+                  :context="`${room.code}:${room.game}:${room.stage}`"
+                  @vote="castVote"
+                />
+              </section>
             </div>
           </div>
         </div>
@@ -337,7 +357,10 @@
           >
             <section class="card">
               <div class="card-body gap-4 p-0">
-                <div v-if="!midDesktop" class="flex items-center justify-between gap-3">
+                <div
+                  v-if="!midDesktop"
+                  class="flex items-center justify-between gap-3"
+                >
                   <h2 class="card-title font-serif">
                     <i class="ri-group-line font-normal" aria-hidden="true"></i>
                     {{ t("avalon.players", { n: room.players.length }) }}
@@ -353,7 +376,8 @@
                   v-if="['discussion', 'evil_discussion'].includes(room.phase)"
                   class="items-center gap-2"
                   :class="
-                    room.phase === 'discussion' && room.discussion?.mode === 'fast' &&
+                    room.phase === 'discussion' &&
+                    room.discussion?.mode === 'fast' &&
                     !room.discussion.partnerId
                       ? 'flex'
                       : 'hidden lg:flex'
@@ -365,11 +389,19 @@
                     :server-now="room.serverNow"
                   />
                   <button
-                    v-if="room.phase === 'discussion' ? isLeader : canEndEvilDiscussion"
+                    v-if="
+                      room.phase === 'discussion'
+                        ? isLeader
+                        : canEndEvilDiscussion
+                    "
                     type="button"
                     class="btn shrink-0"
                     :disabled="!canAct"
-                    @click="room.phase === 'discussion' ? endDiscussion() : endEvilDiscussion()"
+                    @click="
+                      room.phase === 'discussion'
+                        ? endDiscussion()
+                        : endEvilDiscussion()
+                    "
                   >
                     {{ t("avalon.discussionTimer.endEarly") }}
                   </button>
@@ -379,24 +411,42 @@
                   role="status"
                   class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
-                  <i class="ri-information-line shrink-0 text-info" aria-hidden="true"></i>
-                  <span class="min-w-0">{{ t("avalon.mobileHints.team", { n: selected.length, total: teamSize }) }}</span>
+                  <i
+                    class="ri-information-line shrink-0 text-info"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="min-w-0">{{
+                    t("avalon.mobileHints.team", {
+                      n: selected.length,
+                      total: teamSize,
+                    })
+                  }}</span>
                 </div>
                 <div
                   v-else-if="selectionMode === 'invite'"
                   role="status"
                   class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
-                  <i class="ri-information-line shrink-0 text-info" aria-hidden="true"></i>
-                  <span class="min-w-0">{{ t("avalon.mobileHints.invite") }}</span>
+                  <i
+                    class="ri-information-line shrink-0 text-info"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="min-w-0">{{
+                    t("avalon.mobileHints.invite")
+                  }}</span>
                 </div>
                 <div
                   v-else-if="selectionMode === 'assassinate'"
                   role="status"
                   class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
-                  <i class="ri-information-line shrink-0 text-info" aria-hidden="true"></i>
-                  <span class="min-w-0">{{ t("avalon.mobileHints.assassinate") }}</span>
+                  <i
+                    class="ri-information-line shrink-0 text-info"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="min-w-0">{{
+                    t("avalon.mobileHints.assassinate")
+                  }}</span>
                 </div>
                 <ol class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                   <li
@@ -442,7 +492,11 @@
                       :is="guessable[player.id] ? 'button' : 'div'"
                       :type="guessable[player.id] ? 'button' : undefined"
                       class="shrink-0 border-0 bg-transparent p-0"
-                      :class="guessable[player.id] ? 'indicator cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary' : ''"
+                      :class="
+                        guessable[player.id]
+                          ? 'indicator cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                          : ''
+                      "
                       :role="guessable[player.id] ? undefined : 'img'"
                       :aria-label="
                         guessable[player.id]
@@ -451,17 +505,27 @@
                             ? t(`avalon.roles.${portraits[player.id].role}`)
                             : t('avalon.knowledge.unknown')
                       "
-                      @click="guessable[player.id] && notesMenu.open(player, $event)"
+                      @click="
+                        guessable[player.id] && notesMenu.open(player, $event)
+                      "
                     >
                       <span
                         v-if="guessable[player.id]"
                         class="indicator-item indicator-bottom indicator-end badge badge-xs z-10 size-4! rounded-full! p-0! text-[10px] ring-1 ring-base-100"
-                        style="--indicator-e: 0; --indicator-b: 0; --indicator-x: 0; --indicator-y: 0"
+                        style="
+                          --indicator-e: 0;
+                          --indicator-b: 0;
+                          --indicator-x: 0;
+                          --indicator-y: 0;
+                        "
                         aria-hidden="true"
-                      ><i class="ri-pencil-line" aria-hidden="true"></i></span>
+                        ><i class="ri-pencil-line" aria-hidden="true"></i
+                      ></span>
                       <div
                         class="avatar"
-                        :class="player.online ? 'avatar-online' : 'avatar-offline'"
+                        :class="
+                          player.online ? 'avatar-online' : 'avatar-offline'
+                        "
                       >
                         <div
                           class="relative size-12 overflow-hidden rounded-full border bg-base-200"
@@ -480,7 +544,11 @@
                             :src="`/assets/images/games/avalon/${portraits[player.id].role}.webp`"
                             alt=""
                             class="absolute inset-0 h-full w-full origin-top scale-150 object-cover object-top"
-                            :class="portraits[player.id].guessed ? 'grayscale opacity-70' : ''"
+                            :class="
+                              portraits[player.id].guessed
+                                ? 'grayscale opacity-70'
+                                : ''
+                            "
                           />
                           <img
                             v-else
@@ -530,7 +598,11 @@
                           t("games.ready")
                         }}</span>
                         <span v-if="!player.online">{{
-                          t(player.departed ? "games.departed" : "games.disconnected")
+                          t(
+                            player.departed
+                              ? "games.departed"
+                              : "games.disconnected",
+                          )
                         }}</span>
                         <span
                           v-if="knowledge[player.id]"
@@ -592,12 +664,7 @@
       </Teleport>
     </div>
 
-    <NotesMenu
-      ref="notesMenu"
-      :room="room"
-      :marks="marks"
-      @mark="markPlayer"
-    />
+    <NotesMenu ref="notesMenu" :room="room" :marks="marks" @mark="markPlayer" />
     <div
       v-if="room.phase !== 'night' && !desktop"
       :id="`${mobilePanelId}-discussion`"
@@ -605,11 +672,16 @@
       :class="mobilePanel === 'discussion' ? 'flex' : 'hidden'"
     >
       <div
-        v-if="['discussion', 'evil_discussion'].includes(room.phase) && canSpeak"
+        v-if="
+          ['discussion', 'evil_discussion'].includes(room.phase) && canSpeak
+        "
         role="status"
         class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80"
       >
-        <i class="ri-information-line shrink-0 text-info" aria-hidden="true"></i>
+        <i
+          class="ri-information-line shrink-0 text-info"
+          aria-hidden="true"
+        ></i>
         <span class="min-w-0">{{ mobileDiscussionHint }}</span>
       </div>
       <Discussion
@@ -631,11 +703,17 @@
               :server-now="room.serverNow"
             />
             <button
-              v-if="room.phase === 'discussion' ? isLeader : canEndEvilDiscussion"
+              v-if="
+                room.phase === 'discussion' ? isLeader : canEndEvilDiscussion
+              "
               type="button"
               class="btn shrink-0"
               :disabled="!canAct"
-              @click="room.phase === 'discussion' ? endDiscussion() : endEvilDiscussion()"
+              @click="
+                room.phase === 'discussion'
+                  ? endDiscussion()
+                  : endEvilDiscussion()
+              "
             >
               {{ t("avalon.discussionTimer.endEarly") }}
             </button>
@@ -674,53 +752,23 @@
         </ol>
       </div>
     </section>
-    <nav
+    <MobileDock
       v-if="room.phase !== 'night'"
-      class="dock z-30 lg:hidden"
-      :aria-label="t('avalon.mobile.navigation')"
-    >
-      <button
-        v-for="panel in mobilePanels"
-        :key="panel.id"
-        type="button"
-        :class="{ 'dock-active': mobilePanel === panel.id }"
-        :aria-current="mobilePanel === panel.id ? 'page' : undefined"
-        :aria-controls="`${mobilePanelId}-${panel.id}`"
-        @click="goToPanel(panel.id)"
-      >
-        <span class="indicator">
-          <span
-            v-if="panel.id === 'discussion' && unreadMessages"
-            class="indicator-item badge badge-error badge-sm min-w-5 px-1 font-semibold tabular-nums"
-            aria-hidden="true"
-            >{{ unreadMessages }}</span
-          >
-          <i :class="panel.icon" class="text-xl" aria-hidden="true"></i>
-        </span>
-        <span class="dock-label">{{ t(panel.label) }}</span>
-        <span
-          v-if="panel.id === 'discussion' && unreadMessages"
-          class="sr-only"
-          >{{ t("avalon.phrases.unread", { n: unreadMessages }) }}</span
-        >
-      </button>
-    </nav>
+      :items="dockItems"
+      :panel="mobilePanel"
+      :panel-id="mobilePanelId"
+      :label="t('avalon.mobile.navigation')"
+      @select-panel="goToPanel"
+    />
   </div>
 </template>
 <script setup>
-import {
-  computed,
-  h,
-  onBeforeUnmount,
-
-  ref,
-  useId,
-  watch,
-} from "vue";
+import { computed, h, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useLocale } from "@/i18n";
 import { useMediaQuery } from "@vueuse/core";
 import { useModal } from "@/composables/useModal";
 import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import MobileDock from "../../layout/MobileDock.vue";
 import IdentityCard from "../display/IdentityCard.vue";
 import BallotCards from "../interaction/BallotCards.vue";
 import ResultCard from "../display/ResultCard.vue";
@@ -811,6 +859,13 @@ const mobilePanels = [
   },
   { id: "history", icon: "ri-history-line", label: "avalon.mobile.history" },
 ];
+const dockItems = computed(() =>
+  mobilePanels.map((item) => ({
+    ...item,
+    badge: item.id === "discussion" ? unreadMessages.value : 0,
+    badgeLabel: t("avalon.phrases.unread", { n: unreadMessages.value }),
+  })),
+);
 const selected = ref([]);
 const target = ref("");
 const showRole = ref(false);
@@ -902,13 +957,17 @@ watch(
       return;
     }
     const votes = history.filter((entry) => entry.type === "vote");
-    if (votes.length <= previous[2].filter((entry) => entry.type === "vote").length)
+    if (
+      votes.length <=
+      previous[2].filter((entry) => entry.type === "vote").length
+    )
       return;
     const result = votes.at(-1);
     const state = room.value;
     if (
       (result.approved && state.phase !== "quest") ||
-      (!result.approved && !["discussion", "team", "finished"].includes(state.phase))
+      (!result.approved &&
+        !["discussion", "team", "finished"].includes(state.phase))
     )
       return;
     const yes = result.votes.filter((vote) => vote.approve).length;
@@ -949,7 +1008,11 @@ watch(
           "aria-hidden": true,
         }),
         h("div", { class: "min-w-0 space-y-1" }, [
-          h("p", { class: "font-semibold" }, t("avalon.records.tally", { yes, no })),
+          h(
+            "p",
+            { class: "font-semibold" },
+            t("avalon.records.tally", { yes, no }),
+          ),
           h(
             "p",
             { class: "text-base-content/60" },
@@ -977,12 +1040,15 @@ watch(
   },
   { immediate: true },
 );
-watch(() => room.value.phase, (phase) => {
-  if (!voteResultModal || phase === voteModalPhase) return;
-  voteResultModal.close();
-  voteResultModal = null;
-  voteModalPhase = null;
-});
+watch(
+  () => room.value.phase,
+  (phase) => {
+    if (!voteResultModal || phase === voteModalPhase) return;
+    voteResultModal.close();
+    voteResultModal = null;
+    voteModalPhase = null;
+  },
+);
 onBeforeUnmount(() => {
   questResultModal?.close();
   voteResultModal?.close();
@@ -990,7 +1056,9 @@ onBeforeUnmount(() => {
 
 const isLeader = computed(() => room.value.leaderId === room.value.selfId);
 const canSpeak = computed(() => canDiscuss(room.value, room.value.selfId));
-const canEndEvilDiscussion = computed(() => evil.value && room.value.self.role !== "oberon");
+const canEndEvilDiscussion = computed(
+  () => evil.value && room.value.self.role !== "oberon",
+);
 const discussionPartner = ref("");
 const discussionHint = computed(() => {
   const discussion = room.value.discussion;
@@ -1044,17 +1112,19 @@ const portraits = computed(() =>
   Object.fromEntries(
     room.value.players.map((player) => {
       const label = knowledge.value[player.id]?.label;
-      const knownRole = room.value.phase === "finished"
-        ? player.role
-        : label?.startsWith("avalon.roles.")
-          ? label.slice("avalon.roles.".length)
-          : null;
+      const knownRole =
+        room.value.phase === "finished"
+          ? player.role
+          : label?.startsWith("avalon.roles.")
+            ? label.slice("avalon.roles.".length)
+            : null;
       if (knownRole && Object.hasOwn(ROLE_ICONS, knownRole))
         return [player.id, { role: knownRole, guessed: false }];
       const mark = marks.value[player.id];
-      return [player.id, Object.hasOwn(ROLE_ICONS, mark)
-        ? { role: mark, guessed: true }
-        : null];
+      return [
+        player.id,
+        Object.hasOwn(ROLE_ICONS, mark) ? { role: mark, guessed: true } : null,
+      ];
     }),
   ),
 );
@@ -1328,7 +1398,12 @@ function endDiscussion() {
   );
 }
 function endEvilDiscussion() {
-  if (!canEndEvilDiscussion.value || room.value.phase !== "evil_discussion" || !props.canAct) return;
+  if (
+    !canEndEvilDiscussion.value ||
+    room.value.phase !== "evil_discussion" ||
+    !props.canAct
+  )
+    return;
   confirmGameAction(
     t("avalon.discussionTimer.endEarly"),
     t("avalon.evilDiscussion.confirmEnd"),
@@ -1351,8 +1426,11 @@ function confirmGameAction(title, description, type, payload) {
       )
         return;
       if (type === "vote" && room.value.self.voted) return;
-      if (type === "end_assassination_discussion" &&
-        (!canEndEvilDiscussion.value || room.value.phase !== "evil_discussion")) return;
+      if (
+        type === "end_assassination_discussion" &&
+        (!canEndEvilDiscussion.value || room.value.phase !== "evil_discussion")
+      )
+        return;
       if (
         type === "quest" &&
         (!isQuestMember.value ||
@@ -1370,4 +1448,3 @@ function confirmGameAction(title, description, type, payload) {
   });
 }
 </script>
-

@@ -111,6 +111,7 @@ const bundle = await build({
       async expire() { const room = this.read(); room.lastActivityAt = Date.now() - ${ROOM_TTL + 1}; this.save(room); await this.alarm(); }
       async advanceDiscussion() { const room = this.read(false); room.gameState.discussion.endsAt = Date.now() - 1; this.save(room); await this.alarm(); }
       async advanceLobby() { const room = this.read(false); room.lobbyStartsAt = Date.now() - 1; this.save(room); await this.alarm(); }
+      async fogDebt() { const room=this.read(false),s=room.gameState,p=s.players.find(p=>p.id===room.hostId); p.money=0;p.income=3;s.phase='liquidation';s.settlement={playerId:p.id,debt:7,queue:[p.id]};s.buildings=[{id:'b1',tileId:p.inventory.cotton.shift(),location:'d20',slot:0,owner:p.id,flipped:false,resources:0}];s.nextBuilding=2;room.stage++;this.save(room);this.broadcast(room); }
     }
     export default { async fetch(request, env) {
       const url = new URL(request.url);
@@ -122,6 +123,7 @@ const bundle = await build({
         if (url.pathname === '/__test/expire') { await stub.expire(); return new Response('ok'); }
         if (url.pathname === '/__test/discussion') { await stub.advanceDiscussion(); return new Response('ok'); }
         if (url.pathname === '/__test/lobby') { await stub.advanceLobby(); return new Response('ok'); }
+        if (url.pathname === '/__test/fog-debt') { await stub.fogDebt(); return new Response('ok'); }
       }
       return worker.fetch(request, env);
     } };
@@ -406,6 +408,46 @@ try {
   check((await http(`/games/rooms/${seat.code}/connect`, { token: seat.token })).status, 404);
   for (let i = 0; i < 5; i++) check((await http('/games/rooms', { body: { gameType: 'avalon', nickname: 'Rate' }, ip: '3.3.3.3' })).status, 201);
   check((await http('/games/rooms', { body: { gameType: 'avalon', nickname: 'Rate' }, ip: '3.3.3.3' })).status, 429);
+  const fogSeat = await (await http('/games/rooms', { body: { gameType:'fogport',nickname:'FogHost' },ip:'8.8.8.8' })).json();
+  const fogGuest = await (await http(`/games/rooms/${fogSeat.code}/join`, { body:{gameType:'fogport',nickname:'FogGuest'},ip:'8.8.8.9' })).json();
+  const fogClients=[await connect(fogSeat),await connect(fogGuest)];
+  check(fogClients[0].events.state.gameConfig,{mode:'full'});
+  await send(fogClients[0],'configure',{config:{mode:'introductory'}});
+  for(const client of fogClients) await client.events.until(()=>client.events.state.gameConfig.mode==='introductory');
+  for(const client of fogClients) {await send(client,'ready',{ready:true});for(const peer of fogClients) await peer.events.until(()=>peer.events.state.players.find(p=>p.id===client.events.state.selfId).ready);}
+  await mf.dispatchFetch(`http://localhost/__test/lobby?code=${fogSeat.code}`);
+  for(const client of fogClients) await client.events.until(()=>client.events.state.status==='playing');
+  const fogActor=fogClients.find(c=>c.events.state.selfId===c.events.state.game.actorId),fogOther=fogClients.find(c=>c!==fogActor);
+  for(const client of fogClients) {
+    check('deck' in client.events.state.game,false);
+    check(client.events.state.game.players.every(p=>!('hiddenDiscard' in p)),true);
+    check(client.events.state.game.players.filter(p=>p.id!==client.events.state.selfId).every(p=>!('hand' in p)),true);
+  }
+  const denied=await send(fogOther,'fogport_pass',{card:'c0'},'error');check(fogOther.events.messages.find(m=>m.id===denied.id).error,'TURN');
+  const fogStage=fogActor.events.state.stage;
+  const passed=await send(fogActor,'fogport_pass',{card:fogActor.events.state.game.players.find(p=>p.id===fogActor.events.state.selfId).hand[0].id});
+  for(const client of fogClients) await client.events.until(()=>client.events.state.stage===fogStage+1);
+  const fogStored=await inspect(fogSeat.code);
+  fogActor.ws.send(JSON.stringify(passed));await fogActor.events.until(ms=>ms.filter(m=>m.id===passed.id).length===2);check((await inspect(fogSeat.code)).revision,fogStored.revision);
+  const expired=await send(fogOther,'fogport_pass',{stage:fogStage,card:'c0'},'error');check(fogOther.events.messages.find(m=>m.id===expired.id).error,'STALE');
+  await mf.unsafeEvictDurableObject('games-test','TestedGameRoom',{name:`room:${fogSeat.code}`,webSockets:'hibernate'});
+  check((await inspect(fogSeat.code)).gameState,fogStored.gameState);
+  const fogRecovered=await connect(fogSeat);check(fogRecovered.events.state.game,fogClients[0].events.state.game);
+  await mf.dispatchFetch(`http://localhost/__test/fog-debt?code=${fogSeat.code}`);
+  for(const client of [fogRecovered,fogClients[1]]) await client.events.until(()=>client.events.state.game.phase==='liquidation');
+  const debtStored=await inspect(fogSeat.code);
+  await mf.unsafeEvictDurableObject('games-test','TestedGameRoom',{name:`room:${fogSeat.code}`,webSockets:'hibernate'});
+  check((await inspect(fogSeat.code)).gameState,debtStored.gameState);
+  const debtRecovered=await connect(fogSeat);check(debtRecovered.events.state.game.settlement,{playerId:fogSeat.playerId,debt:7,queue:[fogSeat.playerId]});
+  const forbiddenDebt=await send(fogClients[1],'fogport_liquidate',{building:'b1'},'error');check(fogClients[1].events.messages.find(m=>m.id===forbiddenDebt.id).error,'TURN');
+  await send(debtRecovered,'fogport_liquidate',{building:'b1'});await debtRecovered.events.until(()=>debtRecovered.events.state.game.phase==='turn');
+  check(debtRecovered.events.state.game.settlement,null);check(debtRecovered.events.state.game.buildings,[]);
+  fogRecovered.ws=debtRecovered.ws;fogRecovered.events=debtRecovered.events;
+  await send(fogRecovered,'end');for(const client of [fogRecovered,fogClients[1]]) await client.events.until(()=>client.events.state.status==='finished');
+  await send(fogRecovered,'quick_start');for(const client of [fogRecovered,fogClients[1]]) await client.events.until(()=>client.events.state.round===2);
+  check(fogRecovered.events.state.game.mode,'introductory');check(fogRecovered.events.state.game.buildings,[]);
+  await send(fogRecovered,'end');await fogRecovered.events.until(()=>fogRecovered.events.state.status==='finished');
+  await send(fogRecovered,'restart');await fogRecovered.events.until(()=>fogRecovered.events.state.status==='lobby');check(fogRecovered.events.state.players.every(p=>!p.ready),true);
   console.log(`Games: ${checks} integration assertions passed, including SQLite persistence, hibernation, WebSockets, seat recovery, duplicate commands, host transfer, expiry, CORS and rate limits.`);
 } finally {
   for (const ws of sockets) { try { ws.close(1000); } catch { /* Already closed. */ } }

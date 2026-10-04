@@ -26,11 +26,14 @@
       <ContentPage
         :title="t(definition.titleKey)"
         :description="t(definition.descriptionKey)"
-        :show-footer="!showSidebar"
-        :fill-height="showSidebar"
+        :show-footer="!viewportFrame"
+        :fill-height="viewportFrame"
         :compact-header="!!room && room.status !== 'lobby'"
         hide-mobile-footer
       >
+        <template v-if="$slots['page-notice']" #header-notice>
+          <slot name="page-notice"></slot>
+        </template>
         <template #meta>
           <template v-if="!room">
             <span class="inline-flex items-center gap-1.5">
@@ -65,7 +68,7 @@
               {{ t("games.onlinePlayers", { n: onlinePlayerCount }) }}
             </span>
             <span
-              class="inline-flex items-center gap-1.5"
+              class="inline-flex min-w-0 items-center gap-1.5"
               role="status"
               aria-live="polite"
             >
@@ -75,7 +78,11 @@
                 aria-hidden="true"
               ></span>
               <i v-else :class="connectionIcon" aria-hidden="true"></i>
-              {{ t(`games.connections.${connection}`) }}
+              <span
+                class="truncate"
+                :title="t(`games.connections.${connection}`)"
+                >{{ t(`games.connections.${connection}`) }}</span
+              >
             </span>
           </template>
         </template>
@@ -104,7 +111,26 @@
               {{ t(`games.${mode}`) }}
             </button>
           </div>
-          <div v-else class="flex flex-wrap items-center gap-1">
+          <div v-else class="flex items-center gap-1">
+            <button
+              type="button"
+              class="btn btn-square btn-ghost btn-xs"
+              :aria-label="
+                t(audioEnabled ? 'games.audio.disable' : 'games.audio.enable')
+              "
+              :title="
+                t(audioEnabled ? 'games.audio.disable' : 'games.audio.enable')
+              "
+              :aria-pressed="audioEnabled"
+              @click="toggleAudio"
+            >
+              <i
+                :class="
+                  audioEnabled ? 'ri-volume-up-line' : 'ri-volume-mute-line'
+                "
+                aria-hidden="true"
+              ></i>
+            </button>
             <slot name="page-actions" :room="room"></slot>
             <div
               v-for="action in roomActions"
@@ -157,9 +183,25 @@
               novalidate
               @submit.prevent="enterRoom(entryMode === 'join')"
             >
-              <ProfileForm ref="nicknameInput" v-model:nickname="nickname" :github="useGithubProfile" :disabled="busy" :checked="nicknameChecked" @update:github="chooseProfile" @blur="nicknameChecked = true" @commit="joinCompletedRoom">
+              <ProfileForm
+                ref="nicknameInput"
+                v-model:nickname="nickname"
+                :github="useGithubProfile"
+                :disabled="busy"
+                :checked="nicknameChecked"
+                @update:github="chooseProfile"
+                @blur="nicknameChecked = true"
+                @commit="joinCompletedRoom"
+              >
                 <template #action>
-                  <button v-if="entryMode === 'create'" type="submit" class="btn shrink-0" :disabled="busy">{{ t('games.create') }}</button>
+                  <button
+                    v-if="entryMode === 'create'"
+                    type="submit"
+                    class="btn shrink-0"
+                    :disabled="busy"
+                  >
+                    {{ t("games.create") }}
+                  </button>
                 </template>
                 <fieldset v-if="entryMode === 'join'" class="fieldset">
                   <label class="label" for="room-code">{{
@@ -316,11 +358,26 @@
                     <Avatar :src="player.avatarUrl" :name="player.nickname" />
                     <div class="min-w-0 flex-1">
                       <div class="flex min-w-0 items-center gap-1">
-                        <p class="min-w-0 truncate text-sm font-medium" :title="player.nickname">
+                        <p
+                          class="min-w-0 truncate text-sm font-medium"
+                          :title="player.nickname"
+                        >
                           {{ player.nickname }}
-                          <span v-if="player.id === room.selfId" class="text-base-content/50">{{ t('games.you') }}</span>
+                          <span
+                            v-if="player.id === room.selfId"
+                            class="text-base-content/50"
+                            >{{ t("games.you") }}</span
+                          >
                         </p>
-                        <button v-if="player.id === room.selfId" type="button" class="btn btn-ghost btn-square btn-xs shrink-0" :aria-label="t('auth.editProfile')" :title="t('auth.editProfile')" :disabled="!canAct" @click="editProfile">
+                        <button
+                          v-if="player.id === room.selfId"
+                          type="button"
+                          class="btn btn-ghost btn-square btn-xs shrink-0"
+                          :aria-label="t('auth.editProfile')"
+                          :title="t('auth.editProfile')"
+                          :disabled="!canAct"
+                          @click="editProfile"
+                        >
                           <i class="ri-pencil-line" aria-hidden="true"></i>
                         </button>
                       </div>
@@ -380,6 +437,12 @@
                 </li>
               </ol>
               <slot
+                name="lobby-guide"
+                :room="room"
+                :can-act="canAct"
+                :run="run"
+              ></slot>
+              <slot
                 name="settings"
                 :room="room"
                 :can-act="canAct"
@@ -391,7 +454,12 @@
             v-else
             :class="showSidebar ? 'min-h-0 flex-1 max-lg:overflow-hidden' : ''"
           >
-            <slot :room="room" :can-act="canAct" :run="run"></slot>
+            <slot
+              :room="room"
+              :can-act="canAct"
+              :run="run"
+              :error="error ? errorText : ''"
+            ></slot>
           </div>
         </div>
       </ContentPage>
@@ -470,10 +538,11 @@ import ContentPage from "@/components/layout/ContentPage.vue";
 import Footer from "@/components/layout/Footer.vue";
 import { useLocale } from "@/i18n";
 import { findGame } from "@/games/catalog";
-import Avatar from '@/components/auth/Avatar.vue';
-import ProfileForm from '@/components/games/interaction/ProfileForm.vue';
-import { useGithubSession } from '@/composables/auth/useGithubSession';
+import Avatar from "@/components/auth/Avatar.vue";
+import ProfileForm from "@/components/games/interaction/ProfileForm.vue";
+import { useGithubSession } from "@/composables/auth/useGithubSession";
 import { useGameRoom } from "@/composables/games/useGameRoom";
+import { useGameAudio } from "@/composables/games/useGameAudio";
 import { useGameRoomActivity } from "@/composables/games/useGameRoomActivity";
 import { useModal } from "@/composables/useModal";
 const props = defineProps({ gameType: { type: String, required: true } });
@@ -533,7 +602,7 @@ onMounted(() => {
   sidebarMedia = window.matchMedia("(min-width: 1024px)");
   updateSidebarViewport();
   sidebarMedia.addEventListener("change", updateSidebarViewport);
-  setMobileGameViewport(showSidebar.value && !desktopViewport.value);
+  setMobileGameViewport(viewportFrame.value && !desktopViewport.value);
 });
 onBeforeUnmount(() => {
   sidebarMedia?.removeEventListener("change", updateSidebarViewport);
@@ -557,28 +626,50 @@ const {
   leave,
   reconnect,
 } = useGameRoom(props.gameType);
-const roomActivity = useGameRoomActivity((kind) => emit("room-activity", kind));
-watch([room, connection], ([state, status]) => {
-  emit("room-state", state, status);
-  roomActivity.observe(state, status);
-}, { immediate: true });
+const {
+  enabled: audioEnabled,
+  observe: observeAudio,
+  toggle: toggleAudio,
+  playActivity,
+} = useGameAudio(props.gameType);
+const roomActivity = useGameRoomActivity((kind) => {
+  playActivity(kind);
+  emit("room-activity", kind);
+});
+watch(
+  [room, connection],
+  ([state, status]) => {
+    observeAudio(state, status);
+    emit("room-state", state, status);
+    roomActivity.observe(state, status);
+  },
+  { immediate: true },
+);
 const nightPhase = computed(() => room.value?.game?.phase === "night");
 const showSidebar = computed(
   () => !!slots.sidebar && !!room.value?.game && !nightPhase.value,
 );
+const viewportFrame = showSidebar;
 const mobileGameViewport = computed(
-  () => showSidebar.value && !desktopViewport.value,
+  () => viewportFrame.value && !desktopViewport.value,
 );
-watch(mobileGameViewport, (active, wasActive) => {
-  setMobileGameViewport(active);
-  if (!active && wasActive && showSidebar.value && desktopViewport.value) {
-    pendingGameScroll = true;
-    scheduleScrollPastNavbar();
-  }
-}, { flush: "post" });
+watch(
+  mobileGameViewport,
+  (active, wasActive) => {
+    setMobileGameViewport(active);
+    if (!active && wasActive && showSidebar.value && desktopViewport.value) {
+      pendingGameScroll = true;
+      scheduleScrollPastNavbar();
+    }
+  },
+  { flush: "post" },
+);
 watch(
   [() => room.value?.status, () => room.value?.code, connection, nightPhase],
-  ([status, roomCode, connectionState, isNight], [previousStatus, previousCode, previousConnection, wasNight]) => {
+  (
+    [status, roomCode, connectionState, isNight],
+    [previousStatus, previousCode, previousConnection, wasNight],
+  ) => {
     if (!status) {
       pendingGameScroll = false;
       return;
@@ -621,18 +712,47 @@ let customChoice = false;
 let profileSyncPending = false;
 let profileSyncing = false;
 let profileSaving = false;
-const selectedProfile = computed(() => ({ profileSource: useGithubProfile.value && auth.profile.value ? 'github' : 'guest', avatarUrl: useGithubProfile.value ? auth.profile.value?.avatarUrl || null : null }));
-const entryNickname = computed({ get: () => useGithubProfile.value && auth.profile.value ? auth.profile.value.name : nickname.value, set: value => { if (!useGithubProfile.value) nickname.value = value; } });
+const selectedProfile = computed(() => ({
+  profileSource:
+    useGithubProfile.value && auth.profile.value ? "github" : "guest",
+  avatarUrl: useGithubProfile.value
+    ? auth.profile.value?.avatarUrl || null
+    : null,
+}));
+const entryNickname = computed({
+  get: () =>
+    useGithubProfile.value && auth.profile.value
+      ? auth.profile.value.name
+      : nickname.value,
+  set: (value) => {
+    if (!useGithubProfile.value) nickname.value = value;
+  },
+});
 function chooseProfile(value) {
-  customChoice = !value; useGithubProfile.value = value;
-  try { localStorage.setItem('mori:games:profile-source', value ? 'github' : 'guest'); } catch { /* Keep the choice for this page. */ }
+  customChoice = !value;
+  useGithubProfile.value = value;
+  try {
+    localStorage.setItem(
+      "mori:games:profile-source",
+      value ? "github" : "guest",
+    );
+  } catch {
+    /* Keep the choice for this page. */
+  }
 }
 function fallbackNickname() {
-  const others = room.value?.players.filter(p => p.id !== room.value.selfId).map(p => p.nickname.toLocaleLowerCase()) || [];
+  const others =
+    room.value?.players
+      .filter((p) => p.id !== room.value.selfId)
+      .map((p) => p.nickname.toLocaleLowerCase()) || [];
   const custom = nickname.value.trim();
-  const base = custom && custom.length <= 24 && !/[\p{Cc}\p{Cf}]/u.test(custom) ? custom : t('auth.guest');
+  const base =
+    custom && custom.length <= 24 && !/[\p{Cc}\p{Cf}]/u.test(custom)
+      ? custom
+      : t("auth.guest");
   let name = base;
-  for (let n = 1; others.includes(name.toLocaleLowerCase()); n++) name = base.slice(0, 20) + ' ' + n;
+  for (let n = 1; others.includes(name.toLocaleLowerCase()); n++)
+    name = base.slice(0, 20) + " " + n;
   return name;
 }
 let profileEditor = null;
@@ -641,56 +761,103 @@ function closeProfileEditor() {
   profileEditor = null;
 }
 onBeforeUnmount(closeProfileEditor);
-watch([() => room.value?.code, () => room.value?.status], () => closeProfileEditor());
+watch([() => room.value?.code, () => room.value?.status], () =>
+  closeProfileEditor(),
+);
 function editProfile() {
-  if (room.value?.status !== 'lobby' || !canAct.value || profileEditor) return;
+  if (room.value?.status !== "lobby" || !canAct.value || profileEditor) return;
   const roomCode = room.value.code;
   const draftNickname = ref(nickname.value);
-  const draftGithub = ref(selfPlayer.value?.profileSource === 'github' && !!auth.profile.value);
+  const draftGithub = ref(
+    selfPlayer.value?.profileSource === "github" && !!auth.profile.value,
+  );
   const checked = ref(false);
   const saving = ref(false);
-  const failure = ref('');
+  const failure = ref("");
   const form = ref(null);
   const editor = {
     setup() {
-      watch(auth.profile, profile => { if (!profile) draftGithub.value = false; });
-      return () => h('div', [
-        h(ProfileForm, {
-          ref: form,
-          nickname: draftNickname.value,
-          github: draftGithub.value,
-          disabled: saving.value || !canAct.value,
-          checked: checked.value,
-          'onUpdate:nickname': value => { draftNickname.value = value; failure.value = ''; },
-          'onUpdate:github': value => { draftGithub.value = value; failure.value = ''; },
-          onBlur: () => { checked.value = true; },
-        }),
-        failure.value ? h('p', { class: 'mt-3 text-sm text-error', role: 'alert' }, failure.value) : null,
-      ]);
+      watch(auth.profile, (profile) => {
+        if (!profile) draftGithub.value = false;
+      });
+      return () =>
+        h("div", [
+          h(ProfileForm, {
+            ref: form,
+            nickname: draftNickname.value,
+            github: draftGithub.value,
+            disabled: saving.value || !canAct.value,
+            checked: checked.value,
+            "onUpdate:nickname": (value) => {
+              draftNickname.value = value;
+              failure.value = "";
+            },
+            "onUpdate:github": (value) => {
+              draftGithub.value = value;
+              failure.value = "";
+            },
+            onBlur: () => {
+              checked.value = true;
+            },
+          }),
+          failure.value
+            ? h(
+                "p",
+                { class: "mt-3 text-sm text-error", role: "alert" },
+                failure.value,
+              )
+            : null,
+        ]);
     },
   };
-  const handle = modal.confirm(t('auth.editProfile'), h(editor), {
-    buttonText: t('auth.saveProfile'),
-    cancelText: t('common.modal.cancel'),
-    onCancel: () => { profileEditor = null; },
+  const handle = modal.confirm(t("auth.editProfile"), h(editor), {
+    buttonText: t("auth.saveProfile"),
+    cancelText: t("common.modal.cancel"),
+    onCancel: () => {
+      profileEditor = null;
+    },
     onSubmit: () => {
-      if (saving.value || !canAct.value || room.value?.code !== roomCode || room.value.status !== 'lobby') return false;
+      if (
+        saving.value ||
+        !canAct.value ||
+        room.value?.code !== roomCode ||
+        room.value.status !== "lobby"
+      )
+        return false;
       checked.value = true;
       const githubProfile = draftGithub.value ? auth.profile.value : null;
       const name = githubProfile ? githubProfile.name : draftNickname.value;
-      if (!name.trim() || name.length > (githubProfile ? 256 : 24) || /[\p{Cc}\p{Cf}]/u.test(name)) {
-        form.value?.focus(); return false;
+      if (
+        !name.trim() ||
+        name.length > (githubProfile ? 256 : 24) ||
+        /[\p{Cc}\p{Cf}]/u.test(name)
+      ) {
+        form.value?.focus();
+        return false;
       }
-      const profile = { profileSource: githubProfile ? 'github' : 'guest', avatarUrl: githubProfile?.avatarUrl || null };
-      saving.value = true; profileSaving = true; failure.value = '';
-      void run('profile', { nickname: name, profile }).then(saved => {
-        if (saved && room.value?.code === roomCode) {
-          nickname.value = draftNickname.value;
-          chooseProfile(!!githubProfile && auth.profile.value === githubProfile);
-          if (profileEditor === handle) profileEditor = null;
-          handle.close();
-        } else if (!saved) failure.value = errorText.value;
-      }).finally(() => { saving.value = false; profileSaving = false; void syncProfile(); });
+      const profile = {
+        profileSource: githubProfile ? "github" : "guest",
+        avatarUrl: githubProfile?.avatarUrl || null,
+      };
+      saving.value = true;
+      profileSaving = true;
+      failure.value = "";
+      void run("profile", { nickname: name, profile })
+        .then((saved) => {
+          if (saved && room.value?.code === roomCode) {
+            nickname.value = draftNickname.value;
+            chooseProfile(
+              !!githubProfile && auth.profile.value === githubProfile,
+            );
+            if (profileEditor === handle) profileEditor = null;
+            handle.close();
+          } else if (!saved) failure.value = errorText.value;
+        })
+        .finally(() => {
+          saving.value = false;
+          profileSaving = false;
+          void syncProfile();
+        });
       // useModal 的确认回调同步判断返回值；异步保存成功后再关闭。
       return false;
     },
@@ -698,29 +865,55 @@ function editProfile() {
   profileEditor = handle;
 }
 async function syncProfile() {
-  if (!profileSyncPending || profileSyncing || profileSaving || room.value?.status !== 'lobby' || !canAct.value) return;
-  profileSyncing = true; profileSyncPending = false;
-  for (let attempt = 0; attempt < 3 && room.value?.status === 'lobby' && canAct.value; attempt++) {
-    const name = useGithubProfile.value ? entryNickname.value : fallbackNickname();
+  if (
+    !profileSyncPending ||
+    profileSyncing ||
+    profileSaving ||
+    room.value?.status !== "lobby" ||
+    !canAct.value
+  )
+    return;
+  profileSyncing = true;
+  profileSyncPending = false;
+  for (
+    let attempt = 0;
+    attempt < 3 && room.value?.status === "lobby" && canAct.value;
+    attempt++
+  ) {
+    const name = useGithubProfile.value
+      ? entryNickname.value
+      : fallbackNickname();
     const profile = selectedProfile.value;
-    if (selfPlayer.value?.nickname === name && (selfPlayer.value?.avatarUrl ?? null) === profile.avatarUrl && (selfPlayer.value?.profileSource ?? 'guest') === profile.profileSource) break;
-    const saved = await run('profile', { nickname: name, profile });
-    if (saved || error.value !== 'STALE') break;
+    if (
+      selfPlayer.value?.nickname === name &&
+      (selfPlayer.value?.avatarUrl ?? null) === profile.avatarUrl &&
+      (selfPlayer.value?.profileSource ?? "guest") === profile.profileSource
+    )
+      break;
+    const saved = await run("profile", { nickname: name, profile });
+    if (saved || error.value !== "STALE") break;
     await nextTick();
   }
   profileSyncing = false;
   if (profileSyncPending) void syncProfile();
 }
-watch(() => auth.profile.value, (profile, previous) => {
-  useGithubProfile.value = !!profile && !customChoice;
-  if (profile || previous) { profileSyncPending = true; void syncProfile(); }
-});
+watch(
+  () => auth.profile.value,
+  (profile, previous) => {
+    useGithubProfile.value = !!profile && !customChoice;
+    if (profile || previous) {
+      profileSyncPending = true;
+      void syncProfile();
+    }
+  },
+);
 const entryMode = ref("create");
 const nicknameStorageKey = "mori:games:nickname";
 onMounted(() => {
   if (code.value) entryMode.value = "join";
   try {
-    customChoice = localStorage.getItem('mori:games:profile-source') === 'guest';
+    customChoice =
+      localStorage.getItem("mori:games:profile-source") === "guest";
     useGithubProfile.value = !!auth.profile.value && !customChoice;
     const saved = localStorage.getItem(nicknameStorageKey);
     if (saved !== null && saved.length <= 24) nickname.value = saved;
@@ -739,7 +932,12 @@ const nicknameInput = ref(null);
 const codeInput = ref(null);
 const nicknameChecked = ref(false);
 const codeChecked = ref(false);
-const validNickname = computed(() => entryNickname.value.trim().length > 0 && entryNickname.value.length <= (useGithubProfile.value ? 256 : 24) && !/[\p{Cc}\p{Cf}]/u.test(entryNickname.value));
+const validNickname = computed(
+  () =>
+    entryNickname.value.trim().length > 0 &&
+    entryNickname.value.length <= (useGithubProfile.value ? 256 : 24) &&
+    !/[\p{Cc}\p{Cf}]/u.test(entryNickname.value),
+);
 const validCode = computed(() => /^[A-HJ-NP-Z2-9]{8}$/.test(code.value));
 function selectEntryMode(mode, event) {
   if (busy.value) return;
@@ -795,7 +993,11 @@ const selfPlayer = computed(() =>
 watch(
   () => selfPlayer.value?.nickname,
   (value) => {
-    if (typeof value === "string" && selfPlayer.value?.profileSource !== "github") nickname.value = value;
+    if (
+      typeof value === "string" &&
+      selfPlayer.value?.profileSource !== "github"
+    )
+      nickname.value = value;
   },
 );
 const isHost = computed(() => room.value?.hostId === room.value?.selfId);
@@ -812,16 +1014,38 @@ const lobbySeats = computed(() => {
   return seats;
 });
 const canAct = computed(() => connection.value === "online" && !sending.value);
-watch([canAct, () => room.value?.status, () => auth.state.authenticated, () => auth.state.checking], () => {
-  if (!profileSyncing && room.value?.status === 'lobby' && selfPlayer.value?.profileSource === 'github' && !auth.state.authenticated && !auth.state.checking) {
-    useGithubProfile.value = false; profileSyncPending = true;
-  }
-  void syncProfile();
-}, { flush: 'post' });
-watch(() => room.value?.code, () => {
-  useGithubProfile.value = !!auth.profile.value && !customChoice;
-  if (room.value) { profileSyncPending = true; void syncProfile(); }
-});
+watch(
+  [
+    canAct,
+    () => room.value?.status,
+    () => auth.state.authenticated,
+    () => auth.state.checking,
+  ],
+  () => {
+    if (
+      !profileSyncing &&
+      room.value?.status === "lobby" &&
+      selfPlayer.value?.profileSource === "github" &&
+      !auth.state.authenticated &&
+      !auth.state.checking
+    ) {
+      useGithubProfile.value = false;
+      profileSyncPending = true;
+    }
+    void syncProfile();
+  },
+  { flush: "post" },
+);
+watch(
+  () => room.value?.code,
+  () => {
+    useGithubProfile.value = !!auth.profile.value && !customChoice;
+    if (room.value) {
+      profileSyncPending = true;
+      void syncProfile();
+    }
+  },
+);
 const roomActions = computed(() => {
   if (!room.value) return [];
   const actions = [];
@@ -1033,7 +1257,11 @@ function confirmReconnect() {
   modal.confirm(t("games.reconnect"), t("games.confirmReconnect"), {
     buttonText: t("games.reconnect"),
     onSubmit: () => {
-      if (code.value === roomCode && canReconnect.value && connection.value !== "online")
+      if (
+        code.value === roomCode &&
+        canReconnect.value &&
+        connection.value !== "online"
+      )
         reconnect();
     },
   });

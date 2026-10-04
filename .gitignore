@@ -22,3 +22,7 @@ src/router/license-data.generated.js
 skills-lock.json
 
 announcements
+
+# Ignore test assets
+public/assets/images/games/fogport
+PLAN.md

@@ -138,7 +138,7 @@ export function useToast(defaultOptions = {}) {
       addToast(message, {
         type: "info",
         icon: TOAST_ICONS.loading,
-        closable: false, // loading toast 强制不可关闭
+        closable: false, // 无独立关闭键，沿用 Toast 本体点击关闭
         duration: 0,
         ...options, // 仍然允许覆盖其他选项
       }),

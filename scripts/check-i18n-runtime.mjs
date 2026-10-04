@@ -75,7 +75,7 @@ try {
     if (previousNavigator) Object.defineProperty(globalThis, 'navigator', previousNavigator);
     else delete globalThis.navigator;
   }
-  const router = createRouter({ history: createMemoryHistory(), routes: ['home','blog','novel','tools','test','image-converter','server-status','sinhala-font-converter','changelog','licenses','games','avalon'].map(name => ({ path: name === 'home' ? '/' : '/'+name, name, component: { render: () => null } })) });
+  const router = createRouter({ history: createMemoryHistory(), routes: ['home','blog','novel','tools','test','image-converter','server-status','sinhala-font-converter','changelog','licenses','games','avalon','fogport'].map(name => ({ path: name === 'home' ? '/' : '/'+name, name, component: { render: () => null } })) });
   await router.push('/');
   await router.isReady();
   const tablePlayers = Array.from({ length: 5 }, (_, index) => ({ ...createPlayer('Seat ' + index, 'private-' + index), ready: true, online: true }));
@@ -118,10 +118,18 @@ try {
   const historyView = roomView(historyRoom, historyRoom.hostId);
   const questHistoryView = { ...historyView, ...historyView.game, game: historyView.round };
   const legacyHistoryView = { ...questHistoryView, history: questHistoryView.history.filter(entry => ['vote', 'quest'].includes(entry.type)).map(({ at, ...entry }) => entry) };
+  const fogPlayers=tablePlayers.slice(0,2);
+  let fogRoom=createRoom('FGABCDEFG','fogport',fogPlayers[0]);fogRoom.players=fogPlayers;
+  fogRoom=applyRoomAction(fogRoom,fogRoom.hostId,{id:crypto.randomUUID(),stage:fogRoom.stage,type:'start'}).room;
+  const fogView=roomView(fogRoom,fogRoom.gameState.order[0]);
   tableRoom = applyRoomAction(tableRoom, tableRoom.hostId, { id: crypto.randomUUID(), stage: tableRoom.stage, type: 'end' }).room;
   const finishedTable = roomView(tableRoom, tableRoom.hostId);
   const identityProps = { selfId: revealedTable.selfId, playerName: id => tablePlayers.find(player => player.id === id)?.nickname ?? id, faceUp: true, backTitle: '', backHint: '' };
   const cases = [
+    ['/src/components/games/fogport/layout/PlayTable.vue',{room:fogView,canAct:true,run:()=>{}},'Hand cards','අතේ කාඩ්පත්'],
+    ['/src/components/games/fogport/display/Rulebook.vue',{},'How to play','ක්‍රීඩා ක්‍රමය'],
+    ['/src/components/games/fogport/display/PublicInfo.vue',{game:fogView.game},'Round spending','වටයේ වියදම'],
+    ...['build','network','develop','sell','loan','scout','pass'].map(kind=>['/src/components/games/fogport/interaction/ActionEditor.vue',{game:fogView.game,initial:{kind},canAct:true,run:()=>{}},'Confirm action','ක්‍රියාව තහවුරු කරන්න']),
     ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'slow', startedAt: 0, endsAt: 150000, partnerId: null }, serverNow: 105000 }, 'Open discussion · 00:45', 'විවෘත සාකච්ඡාව · 00:45'],
     ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 15000, partnerId: null }, serverNow: 0 }, 'Choose partner · 00:15', 'සහකරු තේරීම · 00:15'],
     ['/src/components/games/avalon/display/DiscussionTimer.vue', { discussion: { mode: 'fast', startedAt: 0, endsAt: 60000, partnerId: 'partner' }, serverNow: 0 }, 'Pair dialogue · 01:00', 'දෙදෙනාගේ සංවාදය · 01:00'],
@@ -140,7 +148,7 @@ try {
     ['/src/views/Games.vue', {}, 'Available board games', 'ලබාගත හැකි පුවරු ක්‍රීඩා'],
     ['/src/views/games/Avalon.vue', {}, 'Create room', 'කාමරයක් සාදන්න'],
     ['/src/components/games/avalon/interaction/Settings.vue', { room: lobbyTable, canAct: true, run: () => {} }, 'Roles for this game', 'මෙම ක්‍රීඩාවේ චරිත'],
-    ['/src/components/games/avalon/interaction/Settings.vue', { room: { ...lobbyTable, selfId: tablePlayers[1].id }, canAct: true, run: () => {} }, '5-player preview', 'ක්‍රීඩකයන් 5 සඳහා පෙරදසුන'],
+    ['/src/components/games/avalon/interaction/Settings.vue', { room: { ...lobbyTable, selfId: tablePlayers[1].id }, canAct: true, run: () => {} }, 'Merlin', 'මර්ලින්'],
     ['/src/components/games/avalon/interaction/Settings.vue', { room: { ...lobbyTable, gameConfig: { specialRoles: ['morgana', 'mordred', 'oberon'] } }, canAct: true, run: () => {} }, 'Too many special roles', 'විශේෂ චරිත වැඩියි'],
     ['/src/components/games/avalon/layout/RoundTable.vue', { room: percivalTable, canAct: true, run: () => {} }, 'Round table discussion', 'වට මේස සාකච්ඡාව'],
     ['/src/components/games/avalon/layout/RoundTable.vue', { room: nightTable, canAct: true, run: () => {} }, 'An unrevealed identity card', 'තවමත් විවෘත නොකළ අනන්‍යතා කාඩ්පතක්'],
