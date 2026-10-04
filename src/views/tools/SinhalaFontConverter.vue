@@ -1,13 +1,16 @@
 <template>
-  <ContentPage :title="translate('pages.home.sinhalaFontEncodingConverter')" :metas-label="translate('tools.imageConverter.toolInformation')">
+  <ContentPage
+    :title="translate('pages.home.sinhalaFontEncodingConverter')"
+    :metas-label="translate('tools.imageConverter.toolInformation')"
+  >
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-repeat-2-line" aria-hidden="true"></i>
-        {{ translate('tools.sinhalaFontConverter.bidirectionalConversion') }}
+        {{ translate("tools.sinhalaFontConverter.bidirectionalConversion") }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        {{ translate('tools.imageConverter.processedInYourBrowser') }}
+        {{ translate("tools.imageConverter.processedInYourBrowser") }}
       </span>
     </template>
     <template #actions>
@@ -21,7 +24,7 @@
           @click="inputMode = 'text'"
         >
           <i class="ri-t-box-line" aria-hidden="true"></i>
-          {{ translate('tools.imageConverter.text2') }}
+          {{ translate("tools.imageConverter.text2") }}
         </button>
         <button
           type="button"
@@ -32,7 +35,7 @@
           @click="inputMode = 'document'"
         >
           <i class="ri-file-text-line" aria-hidden="true"></i>
-          {{ translate('tools.imageConverter.documents') }}
+          {{ translate("tools.imageConverter.documents") }}
         </button>
       </div>
     </template>
@@ -43,17 +46,31 @@
             <h2 class="block font-serif text-lg font-bold">
               {{ isDirectionReversed ? "Legacy" : "Unicode" }}
             </h2>
-            <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.sourceEncoding') }}</p>
+            <p class="text-xs text-base-content/55">
+              {{ translate("tools.sinhalaFontConverter.sourceEncoding") }}
+            </p>
           </hgroup>
           <div
             class="tooltip"
-            :data-tip="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
+            :data-tip="
+              translate(
+                'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+              )
+            "
           >
             <button
               type="button"
               class="btn btn-ghost btn-circle"
-              :aria-label="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodings')"
-              :title="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
+              :aria-label="
+                translate(
+                  'tools.sinhalaFontConverter.swapSourceAndTargetEncodings',
+                )
+              "
+              :title="
+                translate(
+                  'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+                )
+              "
               @click="swapPanels"
             >
               <i
@@ -66,7 +83,9 @@
             <h2 class="block font-serif text-lg font-bold">
               {{ isDirectionReversed ? "Unicode" : "Legacy" }}
             </h2>
-            <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.targetEncoding') }}</p>
+            <p class="text-xs text-base-content/55">
+              {{ translate("tools.sinhalaFontConverter.targetEncoding") }}
+            </p>
           </hgroup>
         </div>
         <div
@@ -103,8 +122,18 @@
               >
                 {{
                   documentDetectedEncoding
-                    ? translate('tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect', { p0: documentDetectedEncoding === "legacy" ? "Legacy" : "Unicode" })
-                    : translate('tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection')
+                    ? translate(
+                        "tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect",
+                        {
+                          p0:
+                            documentDetectedEncoding === "legacy"
+                              ? "Legacy"
+                              : "Unicode",
+                        },
+                      )
+                    : translate(
+                        "tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection",
+                      )
                 }}
               </p>
               <p class="max-w-full break-all font-medium">
@@ -115,14 +144,15 @@
                 ></span>
                 <span v-else>
                   <i class="ri-checkbox-circle-fill text-success"></i>
-                  <span class="badge badge-success badge-soft badge-xs"
-                    >{{ translate('tools.sinhalaFontConverter.conversionSuccessful') }}</span
-                  >
+                  <span class="badge badge-success badge-soft badge-xs">{{
+                    translate("tools.sinhalaFontConverter.conversionSuccessful")
+                  }}</span>
                 </span>
                 {{ documentFile.name }}
               </p>
               <p class="text-xs text-base-content/60">
-                {{ documentText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
+                {{ documentText.length }}
+                {{ translate("tools.sinhalaFontConverter.characters") }}
               </p>
               <p v-if="documentError" role="alert" class="text-sm text-error">
                 {{ localizeText(documentError) }}
@@ -134,7 +164,7 @@
                   for="sinhala-document-upload"
                 >
                   <i class="ri-upload-line"></i>
-                  {{ translate('tools.sinhalaFontConverter.changeFile') }}
+                  {{ translate("tools.sinhalaFontConverter.changeFile") }}
                 </label>
                 <button
                   type="button"
@@ -151,9 +181,9 @@
                   {{
                     documentBusy
                       ? documentText
-                        ? translate('tools.sinhalaFontConverter.converting')
-                        : translate('tools.sinhalaFontConverter.reading')
-                      : translate('tools.sinhalaFontConverter.downloadDocx')
+                        ? translate("tools.sinhalaFontConverter.converting")
+                        : translate("tools.sinhalaFontConverter.reading")
+                      : translate("tools.sinhalaFontConverter.downloadDocx")
                   }}
                 </button>
               </div>
@@ -163,12 +193,18 @@
                 <h3 class="font-serif text-base font-bold lg:text-lg">
                   {{
                     isDocumentDragging
-                      ? translate('tools.imageConverter.dropFilesHere')
-                      : translate('tools.sinhalaFontConverter.dropDocxOrPdfFilesHere')
+                      ? translate("tools.imageConverter.dropFilesHere")
+                      : translate(
+                          "tools.sinhalaFontConverter.dropDocxOrPdfFilesHere",
+                        )
                   }}
                 </h3>
                 <p class="mt-1 text-xs text-base-content/60 lg:text-sm">
-                  {{ translate('tools.sinhalaFontConverter.selectADocumentToDetectItsEncodingAndConvertIt') }}
+                  {{
+                    translate(
+                      "tools.sinhalaFontConverter.selectADocumentToDetectItsEncodingAndConvertIt",
+                    )
+                  }}
                 </p>
               </div>
               <label
@@ -177,7 +213,7 @@
                 for="sinhala-document-upload"
               >
                 <i class="ri-folder-open-line" aria-hidden="true"></i>
-                {{ translate('tools.sinhalaFontConverter.chooseDocument') }}
+                {{ translate("tools.sinhalaFontConverter.chooseDocument") }}
               </label>
             </template>
             <input
@@ -198,16 +234,24 @@
           class="min-w-0 space-y-2"
           :class="isDirectionReversed ? 'order-3' : 'order-1'"
         >
-          <div class="min-w-0 flex flex-wrap items-center justify-between gap-2">
+          <div
+            class="min-w-0 flex flex-wrap items-center justify-between gap-2"
+          >
             <hgroup class="min-w-0">
-              <h2 class="block font-serif text-lg font-bold">{{ translate('common.sections.unicodeText') }}</h2>
+              <h2 class="block font-serif text-lg font-bold">
+                {{ translate("common.sections.unicodeText") }}
+              </h2>
               <p class="text-xs text-base-content/55">
-                {{ translate('tools.sinhalaFontConverter.standardUnicodeSinhalaText') }}
+                {{
+                  translate(
+                    "tools.sinhalaFontConverter.standardUnicodeSinhalaText",
+                  )
+                }}
               </p>
             </hgroup>
             <div class="flex min-w-0 shrink-0 items-end gap-2">
               <label class="label block text-xs w-24 sm:w-42">
-                {{ translate('common.fontSelect.font') }}
+                {{ translate("common.fontSelect.font") }}
                 <FontSelect
                   ref="unicodeFontSelect"
                   v-model="unicodeFontId"
@@ -219,18 +263,27 @@
                   local-preview-language="si"
                   local-font-coverage="sinhala-unicode"
                   size="xs"
-                  :aria-label="translate('tools.sinhalaFontConverter.unicodeFont')"
+                  :aria-label="
+                    translate('tools.sinhalaFontConverter.unicodeFont')
+                  "
                   @select="onUnicodeFontSelected"
                 />
               </label>
-              <div class="tooltip" :data-tip="translate('tools.sinhalaFontConverter.bold')">
+              <div
+                class="tooltip"
+                :data-tip="translate('tools.sinhalaFontConverter.bold')"
+              >
                 <button
                   type="button"
                   class="btn btn-ghost btn-square btn-sm"
                   :class="{ 'btn-active': unicodeBold }"
                   :aria-pressed="unicodeBold"
-                  :aria-label="translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')"
-                  :title="translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')"
+                  :aria-label="
+                    translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')
+                  "
+                  :title="
+                    translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')
+                  "
                   @click="toggleUnicodeBold"
                 >
                   <i
@@ -251,49 +304,69 @@
                 isDirectionReversed,
             }"
           >
-            <textarea
-              id="sinhala-unicode-text"
-              ref="unicodeInput"
-              v-model="unicodeText"
-              class="min-h-32 w-full resize-none overflow-y-auto bg-transparent px-3 py-2 font-abhaya placeholder:font-serif placeholder:text-lg text-lg leading-7 lg:min-h-48"
-              :class="{ 'pr-10': hasText && !isDirectionReversed }"
-              :style="{
-                fontFamily: unicodeFontFamily,
-                fontWeight: unicodeBold ? 700 : 400,
-                fontSize: unicodePreviewSize,
-              }"
-              :readonly="isDirectionReversed"
-              :placeholder="
-                !isDirectionReversed
-                  ? translate('tools.sinhalaFontConverter.enterUnicodeSinhalaTextHere')
-                  : translate('tools.sinhalaFontConverter.unicodeTextPreview')
-              "
-              lang="si"
-              spellcheck="false"
-              autofocus
-              @input="handleUnicodeInput"
+            <div
+              ref="unicodeViewportEl"
+              class="relative min-h-32 w-full overflow-y-auto lg:min-h-48"
               @scroll.passive="syncTextScroll('unicode')"
-            ></textarea>
-
-            <label
-              v-if="hasText && !isDirectionReversed"
-              for="clear-text-1"
-              class="tooltip tooltip-end absolute right-2 top-2"
-              :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
-              <button
-                type="button"
-                id="clear-text-1"
-                class="btn btn-ghost btn-circle btn-sm"
-                :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
-                :title="translate('tools.sinhalaFontConverter.clearAll')"
-                @click="clearText"
-              >
-                <i class="ri-close-line" aria-hidden="true"></i>
-              </button>
-            </label>
+              <div
+                id="sinhala-unicode-text"
+                ref="unicodeInput"
+                role="textbox"
+                tabindex="0"
+                aria-multiline="true"
+                :aria-label="translate('common.sections.unicodeText')"
+                class="min-h-32 w-full whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 font-abhaya text-lg leading-7 outline-none empty:after:pointer-events-none empty:after:font-serif empty:after:text-base-content/40 empty:after:content-[attr(data-placeholder)] lg:min-h-48"
+                :class="{
+                  'before:float-right before:ml-2 before:h-8 before:w-8 before:content-[\'\']':
+                    hasText && !isDirectionReversed,
+                  'cursor-text': !isDirectionReversed,
+                }"
+                :style="{
+                  fontFamily: unicodeFontFamily,
+                  fontWeight: unicodeBold ? 700 : 400,
+                  fontSize: unicodePreviewSize,
+                }"
+                :contenteditable="
+                  isDirectionReversed ? 'false' : 'plaintext-only'
+                "
+                :aria-readonly="isDirectionReversed"
+                :data-placeholder="
+                  !isDirectionReversed
+                    ? translate(
+                        'tools.sinhalaFontConverter.enterUnicodeSinhalaTextHere',
+                      )
+                    : translate('tools.sinhalaFontConverter.unicodeTextPreview')
+                "
+                lang="si"
+                spellcheck="false"
+                @input="handleUnicodeEditableInput"
+                @compositionstart="isUnicodeComposing = true"
+                @compositionend="handleUnicodeCompositionEnd"
+              ></div>
 
-            <div class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2">
+              <label
+                v-if="hasText && !isDirectionReversed"
+                for="clear-text-1"
+                class="tooltip tooltip-left absolute right-2 top-2"
+                :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
+              >
+                <button
+                  type="button"
+                  id="clear-text-1"
+                  class="btn btn-ghost btn-circle btn-sm"
+                  :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
+                  :title="translate('tools.sinhalaFontConverter.clearAll')"
+                  @click="clearText"
+                >
+                  <i class="ri-close-line" aria-hidden="true"></i>
+                </button>
+              </label>
+            </div>
+
+            <div
+              class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2"
+            >
               <section class="flex min-w-0 flex-wrap gap-2 items-center">
                 <label
                   for="unicode-field-action"
@@ -339,14 +412,24 @@
                 <div
                   v-if="isDirectionReversed"
                   class="tooltip tooltip-right"
-                  :data-tip="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
+                  :data-tip="
+                    translate('tools.sinhalaFontConverter.downloadUnicodeDocx')
+                  "
                 >
                   <button
                     type="button"
                     class="btn btn-ghost btn-circle btn-sm"
                     :disabled="!unicodeText || downloadingField === 'unicode'"
-                    :aria-label="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
-                    :title="translate('tools.sinhalaFontConverter.downloadUnicodeDocx')"
+                    :aria-label="
+                      translate(
+                        'tools.sinhalaFontConverter.downloadUnicodeDocx',
+                      )
+                    "
+                    :title="
+                      translate(
+                        'tools.sinhalaFontConverter.downloadUnicodeDocx',
+                      )
+                    "
                     @click="downloadDocument('unicode')"
                   >
                     <i class="ri-download-line" aria-hidden="true"></i>
@@ -376,7 +459,8 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ unicodeText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
+                {{ unicodeText.length }}
+                {{ translate("tools.sinhalaFontConverter.characters") }}
               </span>
             </div>
           </div>
@@ -385,14 +469,26 @@
         <label
           for="swap-direction"
           class="tooltip before:max-w-[calc(100vw-3rem)] order-2 justify-self-center self-start md:mt-1.5"
-          :data-tip="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
+          :data-tip="
+            translate(
+              'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+            )
+          "
         >
           <button
             type="button"
             id="swap-direction"
             class="btn btn-ghost btn-circle"
-            :aria-label="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodings')"
-            :title="translate('tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS')"
+            :aria-label="
+              translate(
+                'tools.sinhalaFontConverter.swapSourceAndTargetEncodings',
+              )
+            "
+            :title="
+              translate(
+                'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+              )
+            "
             @pointerdown.capture="captureControlViewport"
             @keydown.capture="captureControlViewport"
             @click="swapPanels"
@@ -408,17 +504,27 @@
           class="min-w-0 space-y-2"
           :class="isDirectionReversed ? 'order-1' : 'order-3'"
         >
-          <div class="min-w-0 flex flex-wrap items-center justify-between gap-2">
+          <div
+            class="min-w-0 flex flex-wrap items-center justify-between gap-2"
+          >
             <hgroup class="min-w-0">
               <h2
                 id="sinhala-legacy-label"
                 class="font-serif text-lg font-bold"
-              >{{ translate('common.sections.legacyText') }}</h2>
-              <p class="text-xs text-base-content/55">{{ translate('tools.sinhalaFontConverter.legacyEncodingAndGlyphPreview') }}</p>
+              >
+                {{ translate("common.sections.legacyText") }}
+              </h2>
+              <p class="text-xs text-base-content/55">
+                {{
+                  translate(
+                    "tools.sinhalaFontConverter.legacyEncodingAndGlyphPreview",
+                  )
+                }}
+              </p>
             </hgroup>
             <div class="flex min-w-0 shrink-0 items-end gap-2">
               <label class="label block text-xs w-24 sm:w-42">
-                {{ translate('common.fontSelect.font') }}
+                {{ translate("common.fontSelect.font") }}
                 <FontSelect
                   ref="legacyFontSelect"
                   v-model="legacyFontId"
@@ -430,19 +536,28 @@
                   local-preview-language="si"
                   local-font-coverage="sinhala-legacy"
                   size="xs"
-                  :aria-label="translate('tools.sinhalaFontConverter.legacyPreviewFont')"
+                  :aria-label="
+                    translate('tools.sinhalaFontConverter.legacyPreviewFont')
+                  "
                   :disabled="showLegacySource"
                   @select="onLegacyFontSelected"
                 />
               </label>
-              <div class="tooltip" :data-tip="translate('tools.sinhalaFontConverter.bold')">
+              <div
+                class="tooltip"
+                :data-tip="translate('tools.sinhalaFontConverter.bold')"
+              >
                 <button
                   type="button"
                   class="btn btn-ghost btn-square btn-sm"
                   :class="{ 'btn-active': legacyBold }"
                   :aria-pressed="legacyBold"
-                  :aria-label="translate('tools.sinhalaFontConverter.boldLegacyGlyphs')"
-                  :title="translate('tools.sinhalaFontConverter.boldLegacyGlyphs')"
+                  :aria-label="
+                    translate('tools.sinhalaFontConverter.boldLegacyGlyphs')
+                  "
+                  :title="
+                    translate('tools.sinhalaFontConverter.boldLegacyGlyphs')
+                  "
                   :disabled="showLegacySource"
                   @click="toggleLegacyBold"
                 >
@@ -465,74 +580,91 @@
             }"
           >
             <div
-              id="sinhala-fm-text-preview"
-              ref="fmPreviewInput"
-              role="textbox"
-              :contenteditable="
-                isDirectionReversed ? 'plaintext-only' : 'false'
-              "
-              :aria-readonly="!isDirectionReversed"
-              aria-multiline="true"
-              aria-labelledby="sinhala-legacy-label"
-              :data-placeholder="
-                showLegacySource
-                  ? isDirectionReversed
-                    ? translate('tools.sinhalaFontConverter.enterLegacyFontSourceHere')
-                    : translate('tools.sinhalaFontConverter.legacyFontSourcePreview')
-                  : isDirectionReversed
-                    ? translate('tools.sinhalaFontConverter.enterLegacyFontTextHere')
-                    : translate('tools.sinhalaFontConverter.legacyGlyphPreview')
-              "
-              class="min-h-24 w-full overflow-y-auto whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 text-lg leading-7 empty:before:pointer-events-none empty:before:font-serif empty:before:text-base-content/40 empty:before:content-[attr(data-placeholder)] lg:min-h-32"
-              :class="{
-                'pr-10': hasText && isDirectionReversed,
-                'cursor-text outline-none': isDirectionReversed,
-                'font-mono [font-variant-ligatures:none]': showLegacySource,
-                'empty:before:font-bold': legacyBold && !showLegacySource,
-              }"
-              :style="{
-                '--legacy-preview-font': legacyFontFamily,
-                '--legacy-preview-non-sinhala-font': legacyNonSinhalaFontFamily,
-                '--legacy-preview-non-sinhala-weight':
-                  legacyBold || legacyNonSinhalaBold ? 700 : 400,
-                '--legacy-preview-size': legacyPreviewSize,
-                '--legacy-preview-weight': legacyBold ? 700 : 400,
-              }"
-              lang="si"
-              spellcheck="false"
-              v-html="renderedFmPreviewHtml"
-              @focus="isFmPreviewEditing = true"
-              @blur="handleFmPreviewBlur"
-              @beforeinput="handleFmPreviewBeforeInput"
-              @input="handleFmPreviewInput"
-              @compositionstart="handleFmPreviewCompositionStart"
-              @compositionend="handleFmPreviewCompositionEnd"
-              @copy="handleFmPreviewCopy"
-              @cut="handleFmPreviewCut"
-              @paste="handleFmPreviewPaste"
-              @keydown="handleFmPreviewKeydown"
+              ref="fmViewportEl"
+              class="relative min-h-32 w-full overflow-y-auto lg:min-h-48"
               @scroll.passive="syncTextScroll('legacy')"
-            ></div>
-
-            <label
-              v-if="hasText && isDirectionReversed"
-              for="clear-text-2"
-              class="tooltip tooltip-end absolute right-2 top-2"
-              :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
             >
-              <button
-                type="button"
-                id="clear-text-2"
-                class="btn btn-ghost btn-circle btn-sm"
-                :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
-                :title="translate('tools.sinhalaFontConverter.clearAll')"
-                @click="clearText"
-              >
-                <i class="ri-close-line" aria-hidden="true"></i>
-              </button>
-            </label>
+              <div
+                id="sinhala-fm-text-preview"
+                ref="fmPreviewInput"
+                role="textbox"
+                :contenteditable="
+                  isDirectionReversed ? 'plaintext-only' : 'false'
+                "
+                :aria-readonly="!isDirectionReversed"
+                aria-multiline="true"
+                aria-labelledby="sinhala-legacy-label"
+                :data-placeholder="
+                  showLegacySource
+                    ? isDirectionReversed
+                      ? translate(
+                          'tools.sinhalaFontConverter.enterLegacyFontSourceHere',
+                        )
+                      : translate(
+                          'tools.sinhalaFontConverter.legacyFontSourcePreview',
+                        )
+                    : isDirectionReversed
+                      ? translate(
+                          'tools.sinhalaFontConverter.enterLegacyFontTextHere',
+                        )
+                      : translate(
+                          'tools.sinhalaFontConverter.legacyGlyphPreview',
+                        )
+                "
+                class="min-h-32 w-full whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 text-lg leading-7 empty:after:pointer-events-none empty:after:font-serif empty:after:text-base-content/40 empty:after:content-[attr(data-placeholder)] lg:min-h-48"
+                :class="{
+                  'before:float-right before:ml-2 before:h-8 before:w-8 before:content-[\'\']':
+                    hasText && isDirectionReversed,
+                  'cursor-text outline-none': isDirectionReversed,
+                  'font-mono [font-variant-ligatures:none]': showLegacySource,
+                  'empty:after:font-bold': legacyBold && !showLegacySource,
+                }"
+                :style="{
+                  '--legacy-preview-font': legacyFontFamily,
+                  '--legacy-preview-non-sinhala-font':
+                    legacyNonSinhalaFontFamily,
+                  '--legacy-preview-non-sinhala-weight':
+                    legacyBold || legacyNonSinhalaBold ? 700 : 400,
+                  '--legacy-preview-size': legacyPreviewSize,
+                  '--legacy-preview-weight': legacyBold ? 700 : 400,
+                }"
+                lang="si"
+                spellcheck="false"
+                v-html="renderedFmPreviewHtml"
+                @focus="isFmPreviewEditing = true"
+                @blur="handleFmPreviewBlur"
+                @beforeinput="handleFmPreviewBeforeInput"
+                @input="handleFmPreviewInput"
+                @compositionstart="handleFmPreviewCompositionStart"
+                @compositionend="handleFmPreviewCompositionEnd"
+                @copy="handleFmPreviewCopy"
+                @cut="handleFmPreviewCut"
+                @paste="handleFmPreviewPaste"
+                @keydown="handleFmPreviewKeydown"
+              ></div>
 
-            <div class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2">
+              <label
+                v-if="hasText && isDirectionReversed"
+                for="clear-text-2"
+                class="tooltip tooltip-left absolute right-2 top-2"
+                :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
+              >
+                <button
+                  type="button"
+                  id="clear-text-2"
+                  class="btn btn-ghost btn-circle btn-sm"
+                  :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
+                  :title="translate('tools.sinhalaFontConverter.clearAll')"
+                  @click="clearText"
+                >
+                  <i class="ri-close-line" aria-hidden="true"></i>
+                </button>
+              </label>
+            </div>
+
+            <div
+              class="flex min-h-10 flex-wrap items-end justify-between gap-2 pt-0 p-2"
+            >
               <section class="flex min-w-0 flex-wrap gap-2 items-center">
                 <label
                   for="fm-field-action"
@@ -568,21 +700,29 @@
                 <div
                   v-if="!isDirectionReversed"
                   class="tooltip tooltip-right"
-                  :data-tip="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
+                  :data-tip="
+                    translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                  "
                 >
                   <button
                     type="button"
                     class="btn btn-ghost btn-circle btn-sm"
                     :disabled="!fmText || downloadingField === 'legacy'"
-                    :aria-label="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
-                    :title="translate('tools.sinhalaFontConverter.downloadLegacyDocx')"
+                    :aria-label="
+                      translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                    "
+                    :title="
+                      translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                    "
                     @click="downloadDocument('legacy')"
                   >
                     <i class="ri-download-line" aria-hidden="true"></i>
                   </button>
                 </div>
 
-                <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer gap-2 p-0">
+                <label
+                  class="label min-w-0 max-w-full whitespace-normal cursor-pointer gap-2 p-0"
+                >
                   <input
                     v-model="showLegacySource"
                     type="checkbox"
@@ -590,7 +730,9 @@
                     aria-controls="sinhala-fm-text-preview"
                     @change="handleLegacySourceChange"
                   />
-                  <span class="text-xs">{{ translate('tools.sinhalaFontConverter.showSource') }}</span>
+                  <span class="text-xs">{{
+                    translate("tools.sinhalaFontConverter.showSource")
+                  }}</span>
                 </label>
 
                 <span
@@ -616,7 +758,8 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ fmText.length }} {{ translate('tools.sinhalaFontConverter.characters') }}
+                {{ fmText.length }}
+                {{ translate("tools.sinhalaFontConverter.characters") }}
               </span>
             </div>
           </div>
@@ -627,15 +770,17 @@
         v-if="inputMode === 'text' && sourceTextLength >= LONG_TEXT_THRESHOLD"
         class="mt-3 text-sm text-base-content/70"
       >
-        {{ translate('tools.sinhalaFontConverter.longText') }}{{ sourceTextLength }} {{ translate('tools.sinhalaFontConverter.charactersConsiderUsing') }}
+        {{ translate("tools.sinhalaFontConverter.longText")
+        }}{{ sourceTextLength }}
+        {{ translate("tools.sinhalaFontConverter.charactersConsiderUsing") }}
         <button
           type="button"
           class="link link-primary"
           @click="inputMode = 'document'"
         >
-          {{ translate('tools.sinhalaFontConverter.documentMode') }}
+          {{ translate("tools.sinhalaFontConverter.documentMode") }}
         </button>
-        {{ translate('tools.sinhalaFontConverter.toConvertDocxOrPdfFiles') }}
+        {{ translate("tools.sinhalaFontConverter.toConvertDocxOrPdfFiles") }}
       </p>
 
       <div
@@ -644,7 +789,9 @@
         @keydown.capture="captureControlViewport"
       >
         <div class="flex min-w-0 max-w-full flex-col gap-3">
-          <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+          <label
+            class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+          >
             <input
               v-model="preserveCurrentReducedForms"
               type="checkbox"
@@ -652,8 +799,14 @@
               @change="handleConversionOptionsChange"
             />
             <span class="min-w-0">
-              <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.preserveAbbreviatedConsonants') }}</span>
-              <span class="block text-xs text-base-content/55">{{ translate('common.sections.reducedForms') }}</span>
+              <span class="block text-sm font-medium">{{
+                translate(
+                  "tools.sinhalaFontConverter.preserveAbbreviatedConsonants",
+                )
+              }}</span>
+              <span class="block text-xs text-base-content/55">{{
+                translate("common.sections.reducedForms")
+              }}</span>
             </span>
           </label>
 
@@ -661,7 +814,9 @@
             v-if="!preserveCurrentReducedForms"
             class="ms-4 flex min-w-0 max-w-full flex-col gap-3 border-s border-base-300 ps-6"
           >
-            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+            <label
+              class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+            >
               <input
                 v-model="preserveYansaya"
                 type="checkbox"
@@ -677,12 +832,18 @@
                   (යංශය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible') }}
+                  {{
+                    translate(
+                      "tools.sinhalaFontConverter.whenOffExpandToVisible",
+                    )
+                  }}
                 </span>
               </span>
             </label>
 
-            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+            <label
+              class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+            >
               <input
                 v-model="preserveRakaransaya"
                 type="checkbox"
@@ -698,12 +859,18 @@
                   (රකාරාංශය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible2') }}
+                  {{
+                    translate(
+                      "tools.sinhalaFontConverter.whenOffExpandToVisible2",
+                    )
+                  }}
                 </span>
               </span>
             </label>
 
-            <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+            <label
+              class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+            >
               <input
                 v-model="preserveRepaya"
                 type="checkbox"
@@ -719,7 +886,11 @@
                   (රේඵය)
                 </span>
                 <span class="block text-xs text-base-content/55">
-                  {{ translate('tools.sinhalaFontConverter.whenOffExpandToVisible3') }}
+                  {{
+                    translate(
+                      "tools.sinhalaFontConverter.whenOffExpandToVisible3",
+                    )
+                  }}
                   <span class="font-[Noto_Sans_Sinhala]">ර්◌</span>
                 </span>
               </span>
@@ -728,7 +899,9 @@
         </div>
 
         <div class="flex min-w-0 max-w-full flex-col gap-3">
-          <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+          <label
+            class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+          >
             <input
               v-model="preserveCurrentConjuncts"
               type="checkbox"
@@ -736,8 +909,14 @@
               @change="handleConversionOptionsChange"
             />
             <span class="min-w-0">
-              <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.preserveConsonantConjuncts') }}</span>
-              <span class="block text-xs text-base-content/55">{{ translate('common.sections.conjunctForms') }}</span>
+              <span class="block text-sm font-medium">{{
+                translate(
+                  "tools.sinhalaFontConverter.preserveConsonantConjuncts",
+                )
+              }}</span>
+              <span class="block text-xs text-base-content/55">{{
+                translate("common.sections.conjunctForms")
+              }}</span>
             </span>
           </label>
 
@@ -746,8 +925,12 @@
             class="ms-4 min-w-0 border-s border-base-300 ps-6"
           >
             <fieldset class="flex min-w-0 flex-col gap-x-6 gap-y-3">
-              <legend class="sr-only">{{ translate('tools.sinhalaFontConverter.unifiedForm') }}</legend>
-              <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+              <legend class="sr-only">
+                {{ translate("tools.sinhalaFontConverter.unifiedForm") }}
+              </legend>
+              <label
+                class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+              >
                 <input
                   v-model="unifiedConjunctForm"
                   type="radio"
@@ -757,12 +940,18 @@
                   @change="handleConversionOptionsChange"
                 />
                 <span class="min-w-0">
-                  <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.unjoinedForm') }}</span>
-                  <span class="block text-xs text-base-content/55">{{ translate('common.sections.unjoinedForms') }}</span>
+                  <span class="block text-sm font-medium">{{
+                    translate("tools.sinhalaFontConverter.unjoinedForm")
+                  }}</span>
+                  <span class="block text-xs text-base-content/55">{{
+                    translate("common.sections.unjoinedForms")
+                  }}</span>
                 </span>
               </label>
 
-              <label class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0">
+              <label
+                class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+              >
                 <input
                   v-model="unifiedConjunctForm"
                   type="radio"
@@ -772,8 +961,12 @@
                   @change="handleConversionOptionsChange"
                 />
                 <span class="min-w-0">
-                  <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.joinedForm') }}</span>
-                  <span class="block text-xs text-base-content/55">{{ translate('common.sections.ligatedForms') }}</span>
+                  <span class="block text-sm font-medium">{{
+                    translate("tools.sinhalaFontConverter.joinedForm")
+                  }}</span>
+                  <span class="block text-xs text-base-content/55">{{
+                    translate("common.sections.ligatedForms")
+                  }}</span>
                 </span>
               </label>
             </fieldset>
@@ -791,8 +984,12 @@
             @change="handleConversionOptionsChange"
           />
           <span class="min-w-0">
-            <span class="block text-sm font-medium">{{ translate('tools.sinhalaFontConverter.compactConjunctGlyphsFor') }}</span>
-            <span class="block text-xs text-base-content/55">{{ translate('common.sections.compactDa') }}</span>
+            <span class="block text-sm font-medium">{{
+              translate("tools.sinhalaFontConverter.compactConjunctGlyphsFor")
+            }}</span>
+            <span class="block text-xs text-base-content/55">{{
+              translate("common.sections.compactDa")
+            }}</span>
           </span>
         </label>
       </div>
@@ -807,8 +1004,12 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
-const { t: translate, text: localizeText, message: localeMessage } = useLocale();
+import { useLocale } from "@/i18n";
+const {
+  t: translate,
+  text: localizeText,
+  message: localeMessage,
+} = useLocale();
 
 import {
   computed,
@@ -893,6 +1094,9 @@ function onLegacyFontSelected(fontId) {
 }
 const unicodeInput = ref(null);
 const fmPreviewInput = ref(null);
+const unicodeViewportEl = ref(null);
+const fmViewportEl = ref(null);
+let isUnicodeComposing = false;
 const unicodeFieldEl = ref(null);
 const fmFieldEl = ref(null);
 const copiedField = ref("");
@@ -962,11 +1166,15 @@ const encodingSuggestion = computed(() => {
 
   return isDirectionReversed.value
     ? {
-        get message() { return translate('tools.sinhalaFontConverter.sourceEncoding2'); },
+        get message() {
+          return translate("tools.sinhalaFontConverter.sourceEncoding2");
+        },
         actionLabel: "Unicode",
       }
     : {
-        get message() { return translate('tools.sinhalaFontConverter.sourceEncoding2'); },
+        get message() {
+          return translate("tools.sinhalaFontConverter.sourceEncoding2");
+        },
         actionLabel: "Legacy",
       };
 });
@@ -1080,8 +1288,10 @@ let lastTextScrollSide = "unicode";
 let expectedSyncedScroll = null;
 
 function syncTextScroll(side) {
-  const source = side === "unicode" ? unicodeInput.value : fmPreviewInput.value;
-  const target = side === "unicode" ? fmPreviewInput.value : unicodeInput.value;
+  const source =
+    side === "unicode" ? unicodeViewportEl.value : fmViewportEl.value;
+  const target =
+    side === "unicode" ? fmViewportEl.value : unicodeViewportEl.value;
   if (!source || !target) return;
   if (
     expectedSyncedScroll?.side === side &&
@@ -1107,8 +1317,8 @@ function syncTextScroll(side) {
 
 function resizeAllTextareas() {
   if (inputMode.value !== "text") return;
-  const unicodeTextarea = unicodeInput.value;
-  const fmPreviewTextarea = fmPreviewInput.value;
+  const unicodeTextarea = unicodeViewportEl.value;
+  const fmPreviewTextarea = fmViewportEl.value;
   const unicodeField = unicodeFieldEl.value;
   const fmField = fmFieldEl.value;
   if (!unicodeTextarea || !fmPreviewTextarea || !unicodeField || !fmField) {
@@ -1148,8 +1358,8 @@ function handleLegacySourceChange() {
   flushFmPreviewConversion();
   refreshFmPreview();
   liveMessage.value = showLegacySource.value
-    ? translate('tools.sinhalaFontConverter.legacySourceIsNowVisible')
-    : translate('tools.sinhalaFontConverter.legacyGlyphPreviewIsNowVisible');
+    ? translate("tools.sinhalaFontConverter.legacySourceIsNowVisible")
+    : translate("tools.sinhalaFontConverter.legacyGlyphPreviewIsNowVisible");
   scheduleTextareaResize();
 }
 
@@ -1268,7 +1478,9 @@ watch(
       scheduleTextareaResize();
     } catch {
       if (request === unicodeFontRequest) {
-        liveMessage.value = translate('tools.sinhalaFontConverter.cannotLoadTheUnicodeFontPleaseChooseAgain');
+        liveMessage.value = translate(
+          "tools.sinhalaFontConverter.cannotLoadTheUnicodeFontPleaseChooseAgain",
+        );
       }
     }
   },
@@ -1316,7 +1528,9 @@ watch(
       scheduleTextareaResize();
     } catch {
       if (request === legacyFontRequest) {
-        liveMessage.value = translate('tools.sinhalaFontConverter.cannotLoadTheSelectedFontPleaseChooseAgain');
+        liveMessage.value = translate(
+          "tools.sinhalaFontConverter.cannotLoadTheSelectedFontPleaseChooseAgain",
+        );
       }
     }
   },
@@ -1353,6 +1567,33 @@ watch(inputMode, (mode) => {
   if (mode === "text") scheduleTextareaResize();
   else cancelScheduledTextareaResize();
 });
+
+watch(
+  unicodeText,
+  () => {
+    const element = unicodeInput.value;
+    if (
+      element &&
+      !isUnicodeComposing &&
+      editablePlainText(element) !== unicodeText.value
+    ) {
+      element.textContent = unicodeText.value;
+    }
+  },
+  { flush: "post" },
+);
+
+function handleUnicodeEditableInput(event) {
+  if (isDirectionReversed.value || isUnicodeComposing || event?.isComposing)
+    return;
+  unicodeText.value = editablePlainText(unicodeInput.value);
+  handleUnicodeInput();
+}
+
+function handleUnicodeCompositionEnd() {
+  isUnicodeComposing = false;
+  handleUnicodeEditableInput();
+}
 
 function resetCopyStatus() {
   copiedField.value = "";
@@ -1855,7 +2096,9 @@ function handleConversionOptionsChange(event) {
     fmTextDerivedFromUnicode.value = true;
   }
   refreshFmPreview({ preserveSelection: isFmPreviewEditing.value });
-  liveMessage.value = translate('tools.sinhalaFontConverter.conversionOptionsUpdated');
+  liveMessage.value = translate(
+    "tools.sinhalaFontConverter.conversionOptionsUpdated",
+  );
   stabilizeControlViewport(event);
 }
 
@@ -1865,7 +2108,9 @@ function swapPanels(event) {
   isDirectionReversed.value = !isDirectionReversed.value;
   resetFmHistory();
   refreshFmPreview();
-  liveMessage.value = translate('tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped');
+  liveMessage.value = translate(
+    "tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped",
+  );
   stabilizeControlViewport(event);
 }
 
@@ -1909,11 +2154,14 @@ function applyEncodingSuggestion() {
   }
   resetFmHistory();
   refreshFmPreview();
-  liveMessage.value = translate('tools.sinhalaFontConverter.conversionDirectionSwappedInputPreserved');
+  liveMessage.value = translate(
+    "tools.sinhalaFontConverter.conversionDirectionSwappedInputPreserved",
+  );
   scheduleTextareaResize();
 }
 
 async function clearText() {
+  isUnicodeComposing = false;
   window.clearTimeout(fmPreviewConversionTimer);
   fmPreviewConversionTimer = null;
   window.clearTimeout(fmCompositionCommitTimer);
@@ -1927,7 +2175,7 @@ async function clearText() {
   resetFmHistory();
   refreshFmPreview();
   resetCopyStatus();
-  liveMessage.value = translate('tools.sinhalaFontConverter.contentCleared');
+  liveMessage.value = translate("tools.sinhalaFontConverter.contentCleared");
   await nextTick();
   resizeAllTextareas();
   if (isDirectionReversed.value) {
@@ -1942,6 +2190,7 @@ onMounted(() => {
   textareaViewportHeight = window.innerHeight;
   refreshFmPreview();
   resizeAllTextareas();
+  unicodeInput.value?.focus({ preventScroll: true });
   document.fonts?.ready.then(scheduleTextareaResize);
   window.addEventListener("resize", handleWindowResize);
   window.addEventListener("keydown", handleGlobalKeydown);
@@ -2004,13 +2253,16 @@ async function pasteText(field) {
     pastedField.value = field;
     liveMessage.value =
       field === "unicode"
-        ? translate('tools.sinhalaFontConverter.unicodeTextPastedFromClipboard')
-        : translate('tools.sinhalaFontConverter.legacyTextPastedFromClipboard');
+        ? translate("tools.sinhalaFontConverter.unicodeTextPastedFromClipboard")
+        : translate("tools.sinhalaFontConverter.legacyTextPastedFromClipboard");
 
     await nextTick();
     if (field === "unicode") {
       unicodeInput.value?.focus();
-      unicodeInput.value?.setSelectionRange(text.length, text.length);
+      restoreEditableSelection(unicodeInput.value, {
+        start: text.length,
+        end: text.length,
+      });
     } else {
       fmPreviewInput.value?.focus();
       restoreEditableSelection(fmPreviewInput.value, {
@@ -2020,7 +2272,9 @@ async function pasteText(field) {
     }
   } catch {
     pasteFailedField.value = field;
-    liveMessage.value = translate('tools.sinhalaFontConverter.allowClipboardAccessOrPasteManually');
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.allowClipboardAccessOrPasteManually",
+    );
   }
 
   resetCopyTimer = window.setTimeout(resetCopyStatus, 1800);
@@ -2037,10 +2291,14 @@ async function copyText(field) {
     await writeClipboard(text);
     copiedField.value = field;
     liveMessage.value =
-      field === "unicode" ? translate('tools.sinhalaFontConverter.unicodeTextCopied') : translate('tools.sinhalaFontConverter.legacyTextCopied');
+      field === "unicode"
+        ? translate("tools.sinhalaFontConverter.unicodeTextCopied")
+        : translate("tools.sinhalaFontConverter.legacyTextCopied");
   } catch {
     copyFailedField.value = field;
-    liveMessage.value = translate('tools.sinhalaFontConverter.cannotCopyAutomaticallyPleaseSelectTheTextManually');
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.cannotCopyAutomaticallyPleaseSelectTheTextManually",
+    );
   }
 
   resetCopyTimer = window.setTimeout(resetCopyStatus, 1800);
@@ -2158,7 +2416,12 @@ async function setDocumentFile(file) {
   try {
     const text = await readSinhalaDocument(file);
     if (documentFile.value !== file) return;
-    if (!text.trim()) throw new Error(translate('tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet'));
+    if (!text.trim())
+      throw new Error(
+        translate(
+          "tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet",
+        ),
+      );
     documentText.value = text;
     const detectedEncoding = detectSinhalaEncoding(text);
     documentDetectedEncoding.value = detectedEncoding;
@@ -2168,12 +2431,20 @@ async function setDocumentFile(file) {
       refreshFmPreview();
     }
     liveMessage.value = detectedEncoding
-      ? translate('tools.sinhalaFontConverter.readDetectedEncoding', { p0: file.name, p1: detectedEncoding === "legacy" ? "Legacy" : "Unicode" })
-      : translate('tools.sinhalaFontConverter.readSourceEncodingCouldNotBeDetected', { p0: file.name });
+      ? translate("tools.sinhalaFontConverter.readDetectedEncoding", {
+          p0: file.name,
+          p1: detectedEncoding === "legacy" ? "Legacy" : "Unicode",
+        })
+      : translate(
+          "tools.sinhalaFontConverter.readSourceEncodingCouldNotBeDetected",
+          { p0: file.name },
+        );
   } catch (error) {
     if (documentFile.value === file) {
       documentError.value =
-        error instanceof Error ? error.message : translate('tools.sinhalaFontConverter.failedToReadFile');
+        error instanceof Error
+          ? error.message
+          : translate("tools.sinhalaFontConverter.failedToReadFile");
       liveMessage.value = localizeText(documentError.value);
     }
   } finally {
@@ -2221,9 +2492,13 @@ async function convertUploadedDocument() {
     anchor.download = `${documentFile.value.name.replace(/\.(docx|pdf)$/iu, "")}-${target}.docx`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    liveMessage.value = translate('tools.sinhalaFontConverter.convertedDocxDownloaded');
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.convertedDocxDownloaded",
+    );
   } catch {
-    documentError.value = localeMessage('tools.sinhalaFontConverter.documentConversionFailedPleaseRetry');
+    documentError.value = localeMessage(
+      "tools.sinhalaFontConverter.documentConversionFailedPleaseRetry",
+    );
     liveMessage.value = documentError.value;
   } finally {
     documentBusy.value = false;
@@ -2254,18 +2529,27 @@ async function downloadDocument(field) {
     anchor.download = `sinhala-${field}.docx`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    liveMessage.value = translate('tools.sinhalaFontConverter.documentDownloaded', { p0: field === "unicode" ? "Unicode" : "Legacy" });
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.documentDownloaded",
+      { p0: field === "unicode" ? "Unicode" : "Legacy" },
+    );
   } catch {
-    liveMessage.value = translate('tools.sinhalaFontConverter.documentGenerationFailedPleaseRetry');
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.documentGenerationFailedPleaseRetry",
+    );
   } finally {
     downloadingField.value = "";
   }
 }
 
 function copyLabel(field) {
-  if (copiedField.value === field) return translate('tools.sinhalaFontConverter.copied');
-  if (copyFailedField.value === field) return translate('tools.sinhalaFontConverter.copyFailed');
-  return field === "unicode" ? translate('tools.sinhalaFontConverter.copyUnicodeText') : translate('tools.sinhalaFontConverter.copyLegacyText');
+  if (copiedField.value === field)
+    return translate("tools.sinhalaFontConverter.copied");
+  if (copyFailedField.value === field)
+    return translate("tools.sinhalaFontConverter.copyFailed");
+  return field === "unicode"
+    ? translate("tools.sinhalaFontConverter.copyUnicodeText")
+    : translate("tools.sinhalaFontConverter.copyLegacyText");
 }
 
 function copyIcon(field) {
@@ -2273,9 +2557,11 @@ function copyIcon(field) {
 }
 
 function pasteLabel(field) {
-  if (pastedField.value === field) return translate('tools.sinhalaFontConverter.pasted');
-  if (pasteFailedField.value === field) return translate('tools.sinhalaFontConverter.pasteFailed');
-  return translate('tools.serverInfo.pasteFromClipboard');
+  if (pastedField.value === field)
+    return translate("tools.sinhalaFontConverter.pasted");
+  if (pasteFailedField.value === field)
+    return translate("tools.sinhalaFontConverter.pasteFailed");
+  return translate("tools.serverInfo.pasteFromClipboard");
 }
 
 function pasteIcon(field) {
