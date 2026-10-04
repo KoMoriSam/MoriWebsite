@@ -891,7 +891,6 @@
                       "tools.sinhalaFontConverter.whenOffExpandToVisible3",
                     )
                   }}
-                  <span class="font-[Noto_Sans_Sinhala]">ර්◌</span>
                 </span>
               </span>
             </label>
