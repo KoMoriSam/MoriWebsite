@@ -122,6 +122,7 @@ const props = defineProps({
   submitted: Boolean,
   autoApproved: Boolean,
   allowFail: Boolean,
+  allowedChoices: { type: Array, default: null },
   mode: { type: String, default: "vote" },
   context: { type: String, required: true },
 });
@@ -148,18 +149,24 @@ const summaryStatus = computed(() =>
   requiresAction.value
     ? t(
         questMode.value
-          ? props.allowFail
-            ? "avalon.questCards.hint"
-            : "avalon.questCards.goodHint"
+          ? choices.value.length === 1 && !choices.value[0]
+            ? "avalon.questCards.lunaticHint"
+            : !props.allowFail && props.self.role === 'brute'
+              ? "avalon.questCards.bruteHint"
+              : props.allowFail
+                ? "avalon.questCards.hint"
+                : "avalon.questCards.goodHint"
           : "avalon.ballot.compactHint",
       )
     : collapsedStatus.value,
 );
 const choices = computed(() =>
-  (questMode.value && !props.allowFail) ||
-  (!questMode.value && props.autoApproved && props.submitted)
-    ? [true]
-    : [true, false],
+  questMode.value && props.allowedChoices?.length
+    ? props.allowedChoices
+    : (questMode.value && !props.allowFail) ||
+      (!questMode.value && props.autoApproved && props.submitted)
+      ? [true]
+      : [true, false],
 );
 const textPrefix = computed(() =>
   questMode.value ? "avalon.questCards" : "avalon.ballot",
@@ -271,7 +278,7 @@ function submitSelected() {
     emit(questMode.value ? "quest" : "vote", selected.value);
 }
 watch(
-  [() => props.context, () => props.mode, () => props.allowFail, canPlay],
+  [() => props.context, () => props.mode, () => props.allowFail, () => props.allowedChoices?.join(','), canPlay],
   () => {
     cancelDrag();
     selected.value = null;

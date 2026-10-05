@@ -1,10 +1,9 @@
-import { possibleRoles } from './presentation.js';
-import { isEvil } from '../../../shared/games/avalon/index.js';
+import { possibleRoles, currentRoleAlignment } from './presentation.js';
 export function possibleMarks(room, id) {
   const roles = possibleRoles(room, id);
   if (roles.length <= 1) return [];
-  const good = roles.filter(role => !isEvil(role));
-  const evil = roles.filter(isEvil);
+  const good = roles.filter(role => currentRoleAlignment(room, role) === 'good');
+  const evil = roles.filter(role => currentRoleAlignment(room, role) === 'evil');
   const mixed = good.length > 0 && evil.length > 0;
   return [
     ...(mixed && good.length > 1 ? ['good'] : []),

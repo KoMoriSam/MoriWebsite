@@ -1239,6 +1239,8 @@
       "disable": "Mute sound"
     },
     "night": {
+      "openingEvilLabel": "Evil players seen at the start",
+      "openingEvilVision": "Initially Evil players: {names}. Lancelots may now have changed allegiance.",
       "invitation": "Night falls. Look at your identity card in private, remember who you can see. Dawn comes once everyone has confirmed.",
       "sealed": "An unrevealed identity card",
       "peek": "Turn it over. Only you can see it",
@@ -1256,7 +1258,9 @@
       "confirmed": "Your identity card is face down",
       "wait": "Keep your secret while the other players complete their night confirmation.",
       "progress": "Identities confirmed: {n}/{total}",
-      "daybreak": "Dawn breaks. Everyone at the round table has a secret."
+      "daybreak": "Dawn breaks. Everyone at the round table has a secret.",
+      "clericVision": "The starting Leader, {name}, is on the {side} side.",
+      "lancelotVision": "You recognize {name} as {role}. They also know your identity."
     },
     "discussionHint": "{name} leads this round.",
     "discussionHintSelf": "You are the leader for this round.",
@@ -1325,7 +1329,9 @@
       "hint": "Drag or tap Execute or Sabotage",
       "goodHint": "Drag or tap to play Execute",
       "drop": "Place your quest card here",
-      "compactSelected": "Submit: {choice}"
+      "compactSelected": "Submit: {choice}",
+      "lunaticHint": "The Lunatic must Fail; drag or tap to submit Fail",
+      "bruteHint": "The Brute must play Success on quests 4–5; drag or tap to submit"
     },
     "success": "Success",
     "failure": "Failure",
@@ -1350,11 +1356,14 @@
     "yourRole": "Your role: {role}",
     "knownEvil": "Known Evil players: {names}",
     "knowledge": {
+      "nightEvil": "Initially Evil · current allegiance uncertain",
+      "openingLoyalty": "Opening allegiance known · current allegiance uncertain",
       "unknown": "Unknown role",
       "evil": "Known Evil",
       "ally": "Evil ally",
       "candidate": "Possible Merlin",
-      "hint": "Markers show only what you know. Unmarked players have unknown affiliations."
+      "hint": "Markers show only what you know. Unmarked players have unknown affiliations.",
+      "good": "Known Good"
     },
     "leader": "Leader",
     "onTeam": "On the quest",
@@ -1478,6 +1487,7 @@
       "waiting": "Waiting for the leader to begin team selection.",
       "empty": "No public actions recorded for this quest yet.",
       "types": {
+        "lancelot_draw": "Lancelot allegiance card",
         "begin_team": "Begin team selection",
         "begin_evil_discussion": "Evil discussion begins",
         "begin_assassinate": "Assassin begins target selection",
@@ -1486,8 +1496,10 @@
         "quest": "Quest result",
         "assassinate": "Assassination",
         "end": "Game ended",
-        "dialogue": "Pair dialogue"
-      }
+        "dialogue": "Pair dialogue",
+        "reveal_role": "Role revealed"
+      },
+      "roleRevealed": "Two quests have failed. {name} is publicly revealed as {role}."
     },
     "confirmSuccess": "Play a success card? This cannot be changed.",
     "confirmFailure": "Play a fail card? This cannot be changed.",
@@ -1511,7 +1523,66 @@
       "percival": "Percival",
       "morgana": "Morgana",
       "mordred": "Mordred",
-      "oberon": "Oberon"
+      "oberon": "Oberon",
+      "cleric": "Cleric",
+      "lunatic": "Lunatic",
+      "brute": "Brute",
+      "revealer": "Revealer",
+      "good_lancelot": "Good Lancelot",
+      "evil_lancelot": "Evil Lancelot"
+    },
+    "lancelot": {
+      "title": "Lancelot rules",
+      "modes": {
+        "fixed": "Fixed allegiance",
+        "switching": "Changing allegiance"
+      },
+      "pair": "Good and Evil Lancelot are configured together. Selecting or removing either also changes the other; they use one Good and one Evil slot.",
+      "rules": {
+        "nightTitle": "Night information",
+        "conversionTitle": "Allegiance cards",
+        "outcomeTitle": "Quests and victory",
+        "mutual": "Both Lancelots recognise each other at the start.",
+        "unchanged": "Their allegiances remain fixed throughout the game.",
+        "unrecognised": "The Lancelots do not recognise each other at the start.",
+        "evilVision": "Evil Lancelot sees no other Evil players. Other Evil players, except Oberon, see Evil Lancelot.",
+        "deck": "Shuffle 6 allegiance cards at the start: 4 No Change and 2 Switch Allegiance.",
+        "draw": "Publicly draw 1 card without replacement at the start of each new Quest. Rejected teams do not trigger another draw.",
+        "limit": "Allegiances can switch at most twice.",
+        "swap": "A Switch card swaps both Lancelots’ current allegiances; their character identities stay the same.",
+        "permissions": "Currently Good players can only play Success; currently Evil players may play Success or Fail.",
+        "settlement": "Final allegiance determines their winning team.",
+        "secret": "Allegiance changes do not publicly reveal either Lancelot’s identity."
+      },
+      "current": "Current allegiance: {side}",
+      "changed": "Lancelot allegiances switched. You now belong to {side}; your Quest cards and winning team have been updated.",
+      "publicSwitchTitle": "Lancelot allegiance switch",
+      "publicSwitchState": "Allegiances exchanged",
+      "publicSwitchHint": "A Switch card was drawn this round. Both Lancelots have exchanged their current allegiances; their identities remain secret.",
+      "opening": "Opening allegiance: {side}",
+      "currentHints": {
+        "good": "You currently belong to Good. You can only play Success on Quests.",
+        "evil": "You currently belong to Evil. You can play Success or Fail on Quests."
+      },
+      "states": {
+        "unchanged": "Unchanged",
+        "redeemed": "Redeemed",
+        "fallen": "Fallen to darkness",
+        "returned": "Returned"
+      },
+      "stateHints": {
+        "unchanged": "No allegiance switches yet. You still belong to your opening side: {side}.",
+        "switched": "Your allegiance has switched {n} time. You currently belong to {side}.",
+        "returned": "Your allegiance has switched {n} times. You have returned to {side}."
+      },
+      "switchRecord": "Switch Allegiance drawn: both Lancelots swap allegiances. Identities remain secret.",
+      "stayRecord": "No Change drawn: both Lancelots keep their current allegiances.",
+      "won": "Your final allegiance is {side}. You won.",
+      "lost": "Your final allegiance is {side}. You lost.",
+      "roleHints": {
+        "good_lancelot": "You start as Good. Your allegiance may switch during this game, and your available Quest cards change with your current allegiance.",
+        "evil_lancelot": "You start as Evil. Your allegiance may switch during this game, and your available Quest cards change with your current allegiance."
+      }
     },
     "roleHints": {
       "merlin": "You are Good. You see Evil players except Mordred, including Oberon, but not their specific roles. Help quests succeed while keeping your identity secret.",
@@ -1521,20 +1592,39 @@
       "percival": "You are Good. You can see Merlin and Morgana but cannot distinguish between them. Protect Merlin and beware of deception.",
       "morgana": "You are Evil and appear alongside Merlin to Percival. You know Evil players except Oberon, but not their specific roles.",
       "mordred": "You are Evil and invisible to Merlin. You know Evil players except Oberon, but not their specific roles.",
-      "oberon": "You are Evil. You and other Evil players do not recognise each other. Merlin sees you. Hide your identity and sabotage quests."
+      "oberon": "You are Evil. You and other Evil players do not recognise each other. Merlin sees you. Hide your identity and sabotage quests.",
+      "cleric": "You are Good. At night, you learn the starting Leader’s allegiance, but not their exact role. Use this information to guide Good’s decisions.",
+      "lunatic": "You are Evil and know Evil players except Oberon, but not their exact roles. You must Sabotage every quest you join.",
+      "brute": "You are Evil and know Evil players except Oberon, but not their exact roles. You may Sabotage quests 1–3; after that, you must Execute.",
+      "revealer": "You are Evil and know Evil players except Oberon, but not their exact roles. Your identity becomes public after the second failed quest.",
+      "good_lancelot": "You are Good. You and Evil Lancelot recognize each other at night. Your allegiance is fixed, and you must Execute quests.",
+      "evil_lancelot": "You are Evil. You and Good Lancelot recognize each other at night. Your allegiance is fixed; you may Execute or Sabotage quests."
     },
     "reference": "Reference",
+    "catalog": {
+      "title": "Role card overview",
+      "paired": "Paired roles"
+    },
     "config": {
       "title": "Roles for this game",
       "viewRole": "View details for {name}",
       "toggleRole": "Enable or disable {name}",
-      "hint": "One Merlin and one Assassin are always included. Special roles replace ordinary roles on the same side; remaining seats are filled automatically.",
+      "hint": "Special roles replace same-side basics · Remaining slots auto-filled",
+      "fixedRoles": "One Merlin and one Assassin required",
       "classic": "Merlin and Percival · Morgana and Assassin",
       "restore": "Restore defaults",
       "enabled": "Enabled",
       "disabled": "Off",
       "campCount": "{n} players",
-      "resetReady": "Only the host can change roles. Everyone must ready again after changes. With fewer than 5 players, the preview uses 5 seats."
+      "resetReady": "Host edits only · Everyone readies again after changes",
+      "recommendation": "Recommended for {n} players",
+      "recommendationHint": "A reference; customize freely",
+      "levels": {
+        "recommended": "Recommended",
+        "optional": "Optional",
+        "discouraged": "Not advised at this player count"
+      },
+      "lancelots": "Lancelot pair"
     },
     "rulebook": {
       "title": "How to play",
@@ -1559,7 +1649,7 @@
         },
         "quest": {
           "title": "Carry out the quest in secret",
-          "detail": "Team members play quest cards. Good must Execute; Evil may Execute or Sabotage. Usually one Sabotage card is enough to fail the quest."
+          "detail": "Team members submit cards secretly. Good must play Success; Evil usually has a choice. The Lunatic must Fail, while the Brute must play Success on quests 4–5. One Fail usually fails a quest."
         },
         "evilDiscussion": {
           "title": "Assassination discussion",
@@ -1599,6 +1689,7 @@
       "aborted": "The host ended the game. There is no winner."
     },
     "errors": {
+      "LANCELOT_MODE": "Choose a valid Lancelot mode.",
       "LEADER_ONLY": "Only the current leader can propose a team.",
       "CHAT_PHASE": "Please stay silent during the night. Talk after daybreak.",
       "CHAT_PHRASE": "Choose a valid quick phrase.",
@@ -1612,10 +1703,13 @@
       "TEAM": "Invalid team size or members.",
       "TARGET": "Choose a player other than yourself.",
       "ROLE_CONFIG": "Invalid role configuration. Choose the roles again.",
-      "ROLE_CAPACITY": "Too many special roles for the current team sizes. Remove special roles or wait for more players.",
+      "ROLE_CAPACITY": "Special roles exceed a side’s slots. Remove roles or add players.",
       "DIALOGUE_TARGET": "Choose a player in this game other than the leader.",
       "DISCUSSION_CLOSED": "The invitation period has ended. Please wait for the updated state.",
-      "DISCUSSION_SPEAKER": "Only the leader and invited player may speak during pair dialogue. Please wait for your turn."
+      "DISCUSSION_SPEAKER": "Only the leader and invited player may speak during pair dialogue. Please wait for your turn.",
+      "ROLE_PAIR": "Both Lancelots must be enabled or disabled together.",
+      "LUNATIC_MUST_FAIL": "The Lunatic must play Fail on every quest they join.",
+      "BRUTE_CANNOT_FAIL": "The Brute may only play Success on quests 4 and 5."
     },
     "discussionTimer": {
       "label": "Discussion countdown",
@@ -1682,7 +1776,9 @@
       "evilRemaining": "Evil is one sabotaged quest away from victory. | Evil needs {n} more sabotaged quests to win.",
       "assassination": "Good has completed three quests. The assassination phase begins, and the Assassin can still win for Evil.",
       "evilVictory": "Evil has sabotaged three quests and wins the game."
-    }
+    },
+    "questHintLunatic": "You are on this quest. The Lunatic must submit Fail. Your card cannot be changed after submission.",
+    "questHintBrute": "You are on this quest. The Brute must submit Success on quests 4 and 5. Your card cannot be changed after submission."
   },
   "games": {
     "audio": {

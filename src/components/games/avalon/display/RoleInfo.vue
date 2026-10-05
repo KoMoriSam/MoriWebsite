@@ -10,7 +10,7 @@
     ></i>
     <span
       class="min-w-0 truncate text-right text-xs font-medium sm:text-sm"
-      :class="isEvil(self.role) ? 'text-error' : 'text-success'"
+      :class="selfAlignment(self) === 'evil' ? 'text-error' : 'text-success'"
     >
       {{ t(`avalon.roles.${self.role}`) }}
     </span>
@@ -39,7 +39,7 @@
 import { ref, useId } from "vue";
 import { useLocale } from "@/i18n";
 import { ROLE_ICONS } from "@/games/avalon/presentation";
-import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import { selfAlignment } from "../../../../../shared/games/avalon/index.js";
 import RolePreviewPopover from "../interaction/RolePreviewPopover.vue";
 
 defineProps({

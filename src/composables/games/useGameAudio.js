@@ -10,6 +10,7 @@ const notes = {
   approved: [[523, 0, 0.12, "sine"], [784, 0.16, 0.25, "sine"]],
   rejected: [[440, 0, 0.15, "triangle"], [330, 0.2, 0.27, "triangle"]],
   quest: [[392, 0, 0.12, "sine"], [587, 0.17, 0.24, "sine"]],
+  lancelotSwitch: [[330, 0, 0.12, "triangle"], [784, 0, 0.12, "sine"], [440, 0.16, 0.12, "triangle"], [659, 0.16, 0.12, "sine"], [659, 0.32, 0.12, "triangle"], [440, 0.32, 0.12, "sine"], [523, 0.5, 0.3, "sine"], [784, 0.5, 0.3, "sine"]],
   questSuccess: [[523, 0, 0.13, "sine"], [659, 0.17, 0.13, "sine"], [784, 0.34, 0.27, "sine"]],
   questFailure: [[392, 0, 0.17, "triangle"], [311, 0.22, 0.18, "triangle"], [262, 0.44, 0.3, "triangle"]],
   evilDiscussion: [[587, 0, 0.12, "triangle"], [440, 0.19, 0.16, "triangle"], [370, 0.42, 0.24, "triangle"]],

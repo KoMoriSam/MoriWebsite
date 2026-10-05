@@ -33,6 +33,9 @@
       </h3>
       <div class="max-w-full space-y-1 text-pretty text-xs leading-5 text-base-content/70 sm:text-sm sm:leading-6">
         <p>{{ t(`avalon.reasons.${result.reason}`) }}</p>
+        <p v-if="won !== null && alignment">
+          {{ t(won ? 'avalon.lancelot.won' : 'avalon.lancelot.lost', { side: t(`avalon.night.${alignment}`) }) }}
+        </p>
         <p v-if="result.targetId">
           {{
             t(
@@ -53,6 +56,8 @@ import { useLocale } from "@/i18n";
 defineProps({
   result: { type: Object, required: true },
   selfId: { type: String, required: true },
+  won: { type: Boolean, default: null },
+  alignment: { type: String, default: null },
   playerName: { type: Function, required: true },
 });
 const { t } = useLocale();

@@ -12,10 +12,19 @@
         class="card-body items-center gap-6 px-0 py-4 text-center max-lg:gap-3 max-lg:py-2"
       >
         <hgroup class="flex flex-col gap-4 items-center max-lg:gap-2">
-          <h2 class="card-title font-serif text-xl sm:text-2xl">
-            <i class="ri-moon-clear-line font-normal" aria-hidden="true"></i>
-            {{ t("avalon.phases.night") }}
-          </h2>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <h2 class="card-title font-serif text-xl sm:text-2xl">
+              <i class="ri-moon-clear-line font-normal" aria-hidden="true"></i>
+              {{ t("avalon.phases.night") }}
+            </h2>
+            <button
+              type="button"
+              class="btn btn-ghost btn-xs"
+              @click="reviewConfiguration"
+            >
+              {{ t("avalon.config.title") }}
+            </button>
+          </div>
           <p class="max-w-lg text-pretty text-sm text-base-content/70">
             {{ t("avalon.night.invitation") }}
           </p>
@@ -166,15 +175,7 @@
                 </template>
                 <template v-else-if="room.phase === 'quest'">
                   <p class="text-sm leading-6">
-                    {{
-                      t(
-                        isQuestMember
-                          ? evil
-                            ? "avalon.questHintEvil"
-                            : "avalon.questHintGood"
-                          : "avalon.questHint",
-                      )
-                    }}
+                    {{ t(isQuestMember ? questHintKey : "avalon.questHint") }}
                   </p>
                   <p v-if="room.twoFails" class="text-sm text-warning">
                     {{ t("avalon.twoFails") }}
@@ -297,6 +298,8 @@
                 <ResultCard
                   v-if="room.phase === 'finished'"
                   :result="room.result"
+                  :won="room.self.won"
+                  :alignment="room.self.alignment"
                   :self-id="room.selfId"
                   :player-name="playerName"
                 />
@@ -307,7 +310,8 @@
                   :player-name="playerName"
                   mode="quest"
                   active
-                  :allow-fail="evil"
+                  :allow-fail="allowedQuestCards.includes(false)"
+                  :allowed-choices="allowedQuestCards"
                   :can-submit="!room.self.questSubmitted && canAct"
                   :submitted="room.self.questSubmitted"
                   :context="`${room.code}:${room.game}:${room.stage}`"
@@ -340,41 +344,31 @@
       ></div>
       <Teleport :to="`#${playersTargetId}`" :disabled="!midDesktop" defer>
         <div
-          class="min-w-0 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-2 lg:scrollbar-thin xl:order-1"
-          :class="
-            mobilePanel === 'players'
-              ? 'max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:scrollbar-thin'
-              : 'max-lg:hidden'
-          "
+          class="flex min-h-0 min-w-0 flex-col lg:h-full xl:order-1"
+          :class="mobilePanel === 'players' ? 'max-lg:flex-1' : 'max-lg:hidden'"
         >
           <div
             v-if="room.phase !== 'night'"
             :id="`${mobilePanelId}-players`"
-            class="space-y-5"
+            class="flex min-h-0 flex-1 flex-col"
             :class="
-              midDesktop || mobilePanel === 'players' ? '' : 'hidden lg:block'
+              midDesktop || mobilePanel === 'players' ? '' : 'hidden lg:flex'
             "
           >
-            <section class="card">
-              <div class="card-body gap-4 p-0">
+            <section class="card min-h-0 flex-1">
+              <div class="card-body min-h-0 flex-1 gap-4 p-0">
                 <div
                   v-if="!midDesktop"
-                  class="flex items-center justify-between gap-3"
+                  class="flex shrink-0 items-center justify-between gap-3"
                 >
                   <h2 class="card-title font-serif">
                     <i class="ri-group-line font-normal" aria-hidden="true"></i>
                     {{ t("avalon.players", { n: room.players.length }) }}
                   </h2>
                 </div>
-                <p
-                  v-if="!midDesktop && room.phase !== 'finished'"
-                  class="text-xs leading-6 text-base-content/60"
-                >
-                  {{ t("avalon.knowledge.hint") }}
-                </p>
                 <div
                   v-if="['discussion', 'evil_discussion'].includes(room.phase)"
-                  class="items-center gap-2"
+                  class="shrink-0 items-center gap-2"
                   :class="
                     room.phase === 'discussion' &&
                     room.discussion?.mode === 'fast' &&
@@ -409,7 +403,7 @@
                 <div
                   v-if="selectionMode === 'team'"
                   role="status"
-                  class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
+                  class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
                   <i
                     class="ri-information-line shrink-0 text-info"
@@ -425,7 +419,7 @@
                 <div
                   v-else-if="selectionMode === 'invite'"
                   role="status"
-                  class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
+                  class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
                   <i
                     class="ri-information-line shrink-0 text-info"
@@ -438,7 +432,7 @@
                 <div
                   v-else-if="selectionMode === 'assassinate'"
                   role="status"
-                  class="flex items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
+                  class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
                   <i
                     class="ri-information-line shrink-0 text-info"
@@ -448,7 +442,9 @@
                     t("avalon.mobileHints.assassinate")
                   }}</span>
                 </div>
-                <ol class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                <ol
+                  class="grid min-h-0 flex-1 content-start gap-2 overflow-y-auto overscroll-contain p-1 scrollbar-thin sm:grid-cols-2 lg:grid-cols-1"
+                >
                   <li
                     v-for="(player, index) in room.players"
                     :key="player.id"
@@ -533,7 +529,10 @@
                             portraits[player.id]?.guessed
                               ? 'border-base-content/30'
                               : portraits[player.id]
-                                ? isEvil(portraits[player.id].role)
+                                ? currentRoleAlignment(
+                                    room,
+                                    portraits[player.id].role,
+                                  ) === 'evil'
                                   ? 'border-error/40'
                                   : 'border-success/40'
                                 : 'border-base-300'
@@ -541,7 +540,9 @@
                         >
                           <img
                             v-if="portraits[player.id]"
-                            :src="`/assets/images/games/avalon/${portraits[player.id].role}.webp`"
+                            :src="roleImage(portraits[player.id].role)"
+                            @error="$event.currentTarget.style.opacity = '0'"
+                            @load="$event.currentTarget.style.opacity = ''"
                             alt=""
                             class="absolute inset-0 h-full w-full origin-top scale-150 object-cover object-top"
                             :class="
@@ -625,6 +626,22 @@
                           <i class="ri-question-line" aria-hidden="true"></i>
                           {{ t("avalon.knowledge.unknown") }}
                         </span>
+                        <button
+                          v-if="player.id === room.selfId && lancelotStatus"
+                          type="button"
+                          class="badge badge-xs gap-1"
+                          :class="lancelotStatus.tone"
+                          :aria-label="lancelotStatus.description"
+                          @click="reviewLancelotStatus"
+                        >
+                          <i
+                            :class="lancelotStatus.icon"
+                            aria-hidden="true"
+                          ></i>
+                          {{
+                            t(`avalon.lancelot.states.${lancelotStatus.label}`)
+                          }}
+                        </button>
                         <span
                           v-if="marks[player.id]"
                           class="inline-flex items-center gap-1"
@@ -642,7 +659,7 @@
                 </ol>
                 <button
                   v-if="isLeader && room.phase === 'team'"
-                  class="btn"
+                  class="btn shrink-0"
                   :disabled="!canAct || selected.length !== teamSize"
                   @click="run('team', { team: selected })"
                 >
@@ -651,7 +668,7 @@
                 <button
                   v-if="selectionMode === 'assassinate'"
                   type="button"
-                  class="btn"
+                  class="btn shrink-0"
                   :disabled="!canAct || !target"
                   @click="assassinate"
                 >
@@ -695,7 +712,7 @@
         <template #discussion-timer>
           <div
             v-if="['discussion', 'evil_discussion'].includes(room.phase)"
-            class="flex items-center gap-2 lg:hidden"
+            class="flex shrink-0 items-center gap-2 lg:hidden"
           >
             <DiscussionTimer
               class="min-w-0 flex-1"
@@ -752,6 +769,14 @@
         </ol>
       </div>
     </section>
+    <RolePreviewPopover
+      ref="switchPopover"
+      allegiance-switch
+      :self="switchSelf"
+      :switch-from-alignment="switchFromAlignment"
+      :face-up="switchFaceUp"
+      @closed="finishSwitchPresentation"
+    />
     <MobileDock
       v-if="room.phase !== 'night'"
       :items="dockItems"
@@ -767,9 +792,16 @@ import { computed, h, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useLocale } from "@/i18n";
 import { useMediaQuery } from "@vueuse/core";
 import { useModal } from "@/composables/useModal";
-import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import {
+  selfAlignment,
+  roleAlignment,
+  LANCELOTS,
+} from "../../../../../shared/games/avalon/index.js";
+import { useToast } from "@/composables/useToast";
 import MobileDock from "../../layout/MobileDock.vue";
 import IdentityCard from "../display/IdentityCard.vue";
+import RolePreviewPopover from "../interaction/RolePreviewPopover.vue";
+import ConfigurationSummary from "../display/ConfigurationSummary.vue";
 import BallotCards from "../interaction/BallotCards.vue";
 import ResultCard from "../display/ResultCard.vue";
 import NotesMenu from "../interaction/NotesMenu.vue";
@@ -779,7 +811,13 @@ import { canDiscuss } from "../../../../../shared/games/avalon/discussion.js";
 import QuestHistory from "../display/QuestHistory.vue";
 import QuestList from "../display/QuestList.vue";
 import AgendaSummary from "../display/AgendaSummary.vue";
-import { knownPlayer, ROLE_ICONS } from "@/games/avalon/presentation";
+import {
+  knownPlayer,
+  ROLE_ICONS,
+  roleImage,
+  currentRoleAlignment,
+  playerAlignment,
+} from "@/games/avalon/presentation";
 import { possibleMarks } from "@/games/avalon/notes";
 import { useAvalonNotes } from "@/composables/games/avalon/useAvalonNotes";
 const props = defineProps({
@@ -791,6 +829,7 @@ const props = defineProps({
 const emit = defineEmits(["request-sidebar-panel"]);
 const { t } = useLocale();
 const modal = useModal();
+const toast = useToast();
 const room = computed(() => ({
   ...props.room,
   ...props.room.game,
@@ -803,6 +842,78 @@ const room = computed(() => ({
   })),
 }));
 const run = (...args) => props.run(...args);
+const lancelotStatus = computed(() => {
+  const self = room.value.self;
+  if (self.lancelotMode !== "switching" || !LANCELOTS.includes(self.role))
+    return null;
+  const count = room.value.history.filter(
+    (entry) => entry.type === "lancelot_draw" && entry.switched,
+  ).length;
+  const state =
+    count === 0 ? "unchanged" : count === 1 ? "switched" : "returned";
+  const current = selfAlignment(self);
+  return {
+    count,
+    initial: roleAlignment(self.role),
+    current,
+    state,
+    label:
+      state === "switched"
+        ? current === "good"
+          ? "redeemed"
+          : "fallen"
+        : state,
+    tone: {
+      unchanged: "badge-ghost",
+      switched: current === "good" ? "badge-success" : "badge-error",
+      returned: "badge-success",
+    }[state],
+    icon: {
+      unchanged: "ri-time-line",
+      switched: current === "good" ? "ri-shield-check-line" : "ri-skull-line",
+      returned: "ri-arrow-go-back-line",
+    }[state],
+    description: t(`avalon.lancelot.stateHints.${state}`, {
+      n: count,
+      side: t(`avalon.night.${current}`),
+    }),
+  };
+});
+function reviewLancelotStatus() {
+  const status = lancelotStatus.value;
+  if (!status) return;
+  modal.info(
+    t(`avalon.lancelot.states.${status.label}`),
+    h("div", { class: "space-y-2 text-sm" }, [
+      h(
+        "p",
+        { class: "text-base-content/60" },
+        t("avalon.lancelot.opening", {
+          side: t(`avalon.night.${status.initial}`),
+        }),
+      ),
+      h("p", status.description),
+    ]),
+  );
+}
+watch(
+  () => [room.value.code, room.value.game, room.value.self.alignment],
+  (value, previous) => {
+    if (
+      !previous ||
+      value[0] !== previous[0] ||
+      value[1] !== previous[1] ||
+      !previous[2] ||
+      value[2] === previous[2] ||
+      !LANCELOTS.includes(room.value.self.role)
+    )
+      return;
+    toast.info(
+      t("avalon.lancelot.changed", { side: t(`avalon.night.${value[2]}`) }),
+      { duration: 6000 },
+    );
+  },
+);
 const { marks, markPlayer } = useAvalonNotes(room);
 const notesMenu = ref(null);
 const markLabel = (mark) =>
@@ -869,6 +980,45 @@ const dockItems = computed(() =>
 const selected = ref([]);
 const target = ref("");
 const showRole = ref(false);
+let configurationModal = null;
+function reviewConfiguration() {
+  if (room.value.phase !== "night") return;
+  configurationModal?.close();
+  configurationModal = modal.info(
+    t("avalon.config.title"),
+    h(ConfigurationSummary, { room: room.value }),
+    {
+      scrollContent: true,
+      buttonText: t("common.modal.close"),
+    },
+  );
+}
+watch(
+  [
+    () => room.value.code,
+    () => room.value.game,
+    () => room.value.selfId,
+    () => room.value.phase,
+  ],
+  ([code, game, selfId, phase], previous) => {
+    const changed =
+      !previous ||
+      code !== previous[0] ||
+      game !== previous[1] ||
+      selfId !== previous[2];
+    if (changed || phase !== "night") {
+      configurationModal?.close();
+      configurationModal = null;
+    }
+    if (
+      phase === "night" &&
+      (changed || previous[3] !== "night") &&
+      !room.value.self.roleRevealed
+    )
+      reviewConfiguration();
+  },
+  { immediate: true, flush: "post" },
+);
 
 const recordedQuests = computed(() =>
   [...new Set(room.value.history.map((entry) => entry.quest))].sort(
@@ -878,12 +1028,118 @@ const recordedQuests = computed(() =>
 let questResultModal = null;
 let voteResultModal = null;
 let voteModalPhase = null;
+const switchPopover = ref(null);
+const switchFaceUp = ref(false);
+const switchSelf = ref(null);
+const switchFromAlignment = ref(null);
+let switchPresenting = false;
+let switchPresentation = 0;
+let switchFlipTimer = 0;
+let switchCloseTimer = 0;
+let switchResumeTimer = 0;
+let pendingQuestResult = null;
+
+function clearSwitchTimers() {
+  window.clearTimeout(switchFlipTimer);
+  window.clearTimeout(switchCloseTimer);
+  window.clearTimeout(switchResumeTimer);
+}
+
+function resetSwitchPresentation() {
+  clearSwitchTimers();
+  switchPresentation += 1;
+  switchPresenting = false;
+  pendingQuestResult = null;
+  switchPopover.value?.close();
+}
+
+function finishSwitchPresentation() {
+  if (!switchPresenting) return;
+  clearSwitchTimers();
+  const presentation = switchPresentation;
+  switchResumeTimer = window.setTimeout(() => {
+    if (presentation !== switchPresentation) return;
+    switchPresenting = false;
+    const showResult = pendingQuestResult;
+    pendingQuestResult = null;
+    showResult?.();
+  }, 300);
+}
+
+async function presentLancelotSwitch() {
+  resetSwitchPresentation();
+  const presentation = switchPresentation;
+  switchFaceUp.value = false;
+  const self = room.value.self;
+  switchSelf.value =
+    self.lancelotMode === "switching" && LANCELOTS.includes(self.role)
+      ? { role: self.role, alignment: selfAlignment(self) }
+      : null;
+  // Snapshot both faces of the most recent switch; role identity stays unchanged.
+  switchFromAlignment.value = switchSelf.value
+    ? switchSelf.value.alignment === "evil"
+      ? "good"
+      : "evil"
+    : null;
+  switchPresenting = true;
+  questResultModal?.close();
+  questResultModal = null;
+  voteResultModal?.close();
+  voteResultModal = null;
+  voteModalPhase = null;
+  await switchPopover.value?.open();
+  if (presentation !== switchPresentation || !switchPresenting) return;
+  switchFlipTimer = window.setTimeout(
+    () => {
+      switchFaceUp.value = true;
+    },
+    switchSelf.value ? 1000 : 400,
+  );
+  switchCloseTimer = window.setTimeout(
+    () => {
+      switchPopover.value?.close();
+    },
+    switchSelf.value ? 4400 : 3400,
+  );
+}
+
+watch(
+  [
+    () => room.value.code,
+    () => room.value.game,
+    () => room.value.selfId,
+    () => room.value.history,
+    () => room.value.phase,
+  ],
+  ([code, game, selfId, history, phase], previous) => {
+    if (
+      !previous ||
+      code !== previous[0] ||
+      game !== previous[1] ||
+      selfId !== previous[2] ||
+      phase === "finished"
+    ) {
+      resetSwitchPresentation();
+      return;
+    }
+    // Public draw records contain no player identities; existing snapshots are not replayed.
+    if (
+      history
+        .slice(previous[3].length)
+        .some((entry) => entry.type === "lancelot_draw" && entry.switched)
+    ) {
+      void presentLancelotSwitch();
+    }
+  },
+  { immediate: true },
+);
 watch(
   [() => room.value.code, () => room.value.game, () => room.value.quests],
   ([code, game, quests], previous) => {
     if (!previous || code !== previous[0] || game !== previous[1]) {
       questResultModal?.close();
       questResultModal = null;
+      pendingQuestResult = null;
       return;
     }
     if (quests.length <= previous[2].length) return;
@@ -935,15 +1191,19 @@ watch(
     voteResultModal = null;
     voteModalPhase = null;
     questResultModal?.close();
-    questResultModal = modal.info(
-      t(
-        result.success
-          ? "avalon.questResult.success"
-          : "avalon.questResult.failure",
-        { n: result.quest + 1 },
-      ),
-      description,
-    );
+    const showResult = () => {
+      questResultModal = modal.info(
+        t(
+          result.success
+            ? "avalon.questResult.success"
+            : "avalon.questResult.failure",
+          { n: result.quest + 1 },
+        ),
+        description,
+      );
+    };
+    if (switchPresenting) pendingQuestResult = showResult;
+    else showResult();
   },
   { immediate: true },
 );
@@ -1050,6 +1310,8 @@ watch(
   },
 );
 onBeforeUnmount(() => {
+  resetSwitchPresentation();
+  configurationModal?.close();
   questResultModal?.close();
   voteResultModal?.close();
 });
@@ -1095,7 +1357,24 @@ const mobileDiscussionHint = computed(() =>
 const teamSize = computed(
   () => room.value.teamSizes[room.value.questIndex] || 0,
 );
-const evil = computed(() => isEvil(room.value.self.role));
+const evil = computed(() => selfAlignment(room.value.self) === "evil");
+const allowedQuestCards = computed(() =>
+  room.value.self.questChoices?.length
+    ? room.value.self.questChoices
+    : evil.value
+      ? [true, false]
+      : [true],
+);
+const questHintKey = computed(() =>
+  allowedQuestCards.value.length === 1 && !allowedQuestCards.value[0]
+    ? "avalon.questHintLunatic"
+    : room.value.self.role === "brute" &&
+        !allowedQuestCards.value.includes(false)
+      ? "avalon.questHintBrute"
+      : evil.value
+        ? "avalon.questHintEvil"
+        : "avalon.questHintGood",
+);
 const isQuestMember = computed(
   () =>
     room.value.phase === "quest" && room.value.team.includes(room.value.selfId),
@@ -1139,7 +1418,8 @@ const guessable = computed(() =>
 const targets = computed(() =>
   room.value.players.filter(
     (p) =>
-      p.id !== room.value.selfId && !room.value.self.knownEvil.includes(p.id),
+      p.id !== room.value.selfId &&
+      playerAlignment(room.value, p.id) !== "evil",
   ),
 );
 const selectionMode = computed(() => {
@@ -1357,7 +1637,7 @@ function playQuest(success) {
     !isQuestMember.value ||
     room.value.self.questSubmitted ||
     !props.canAct ||
-    (!success && !evil.value)
+    !allowedQuestCards.value.includes(success)
   )
     return;
   confirmGameAction(

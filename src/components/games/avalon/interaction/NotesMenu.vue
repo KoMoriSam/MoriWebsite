@@ -70,8 +70,7 @@ import {
 } from "vue";
 import { useLocale } from "@/i18n";
 import { possibleMarks } from "@/games/avalon/notes";
-import { ROLE_ICONS } from "@/games/avalon/presentation";
-import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import { ROLE_ICONS, currentRoleAlignment } from "@/games/avalon/presentation";
 const props = defineProps({
   room: { type: Object, required: true },
   marks: { type: Object, required: true },
@@ -93,7 +92,7 @@ const groups = computed(() =>
       tone: "text-success",
       mark: options.value.includes("good") ? "good" : null,
       roles: options.value.filter(
-        (mark) => Object.hasOwn(ROLE_ICONS, mark) && !isEvil(mark),
+        (mark) => Object.hasOwn(ROLE_ICONS, mark) && currentRoleAlignment(props.room, mark) === 'good',
       ),
     },
     {
@@ -103,7 +102,7 @@ const groups = computed(() =>
       tone: "text-error",
       mark: options.value.includes("evil") ? "evil" : null,
       roles: options.value.filter(
-        (mark) => Object.hasOwn(ROLE_ICONS, mark) && isEvil(mark),
+        (mark) => Object.hasOwn(ROLE_ICONS, mark) && currentRoleAlignment(props.room, mark) === 'evil',
       ),
     },
   ].filter((group) => group.roles.length),

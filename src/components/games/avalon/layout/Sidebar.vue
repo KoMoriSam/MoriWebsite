@@ -78,10 +78,10 @@
       :id="`${panelId}-players`"
       role="region"
       :aria-labelledby="`${panelId}-menu-players`"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
-      :class="midDesktop && panel === 'players' ? '' : 'hidden'"
+      class="min-h-0 flex-1 flex-col lg:is-drawer-close:hidden"
+      :class="midDesktop && panel === 'players' ? 'flex' : 'hidden'"
     >
-      <div :id="playersTargetId" class="min-w-0"></div>
+      <div :id="playersTargetId" class="flex min-h-0 min-w-0 flex-1 flex-col"></div>
     </section>
     <section
       :id="`${panelId}-reference`"
@@ -100,7 +100,7 @@ import { computed, ref, useId, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import { useLocale } from "@/i18n";
 import { canDiscuss } from "../../../../../shared/games/avalon/discussion.js";
-import { isEvil } from "../../../../../shared/games/avalon/index.js";
+import { selfAlignment } from "../../../../../shared/games/avalon/index.js";
 import SidebarNavigation from "../../layout/SidebarNavigation.vue";
 import Discussion from "../interaction/Discussion.vue";
 import DiscussionTimer from "../display/DiscussionTimer.vue";
@@ -158,7 +158,7 @@ const canEndDiscussion = computed(() =>
   gameRoom.value.phase === "discussion"
     ? gameRoom.value.leaderId === gameRoom.value.selfId
     : gameRoom.value.phase === "evil_discussion" &&
-      isEvil(gameRoom.value.self.role) &&
+      selfAlignment(gameRoom.value.self) === 'evil' &&
       gameRoom.value.self.role !== "oberon",
 );
 const recordedQuests = computed(() =>

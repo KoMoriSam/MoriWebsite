@@ -2,7 +2,7 @@
   <div class="flex h-full min-h-0 min-w-0 flex-col">
     <div
       role="tablist"
-      class="tabs shrink-0"
+      class="tabs flex max-w-full shrink-0 flex-nowrap overflow-x-auto scrollbar-thin"
       :class="
         inSidebar
           ? 'tabs-box tabs-sm w-fit bg-base-200/70 p-1'
@@ -15,7 +15,7 @@
         :key="item.id"
         type="button"
         role="tab"
-        class="tab gap-2"
+        class="tab shrink-0 gap-2 whitespace-nowrap"
         :class="panel === item.id ? 'tab-active' : ''"
         :aria-selected="panel === item.id"
         :aria-controls="`${panelId}-${item.id}`"
@@ -47,6 +47,15 @@
         :class="panel === 'rules' ? '' : 'hidden'"
       >
         <Rulebook sidebar flow-only />
+        <LancelotRules :room="room" class="mt-3" />
+      </section>
+      <section
+        :id="`${panelId}-catalog`"
+        role="tabpanel"
+        :aria-labelledby="`${panelId}-tab-catalog`"
+        :class="panel === 'catalog' ? '' : 'hidden'"
+      >
+        <RoleCatalog :mode="room.game?.lancelotMode ?? room.lancelotMode ?? room.gameConfig?.lancelotMode ?? 'fixed'" />
       </section>
     </div>
   </div>
@@ -57,6 +66,8 @@ import { ref, useId } from "vue";
 import { useLocale } from "@/i18n";
 import RoleRoster from "./RoleRoster.vue";
 import Rulebook from "./Rulebook.vue";
+import LancelotRules from "./LancelotRules.vue";
+import RoleCatalog from "./RoleCatalog.vue";
 
 defineProps({
   room: { type: Object, required: true },
@@ -70,6 +81,7 @@ const contentScroll = ref(null);
 const panels = [
   { id: "roles", icon: "ri-id-card-line", label: "avalon.config.title" },
   { id: "rules", icon: "ri-book-open-line", label: "avalon.rulebook.title" },
+  { id: "catalog", icon: "ri-gallery-line", label: "avalon.catalog.title" },
 ];
 function selectPanel(nextPanel) {
   if (panel.value === nextPanel) return;

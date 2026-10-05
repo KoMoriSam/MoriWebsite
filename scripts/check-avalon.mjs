@@ -1,20 +1,25 @@
 import assert from 'node:assert/strict';
-import { GOOD_COUNTS, isEvil, QUEST_TEAMS, SPECIAL_ROLES, normalizeConfig, roleList } from './avalon/rules.js';
+import { GOOD_COUNTS, isEvil, QUEST_TEAMS, SPECIAL_ROLES, normalizeConfig, roleList, avalon } from './avalon/rules.js';
 import { advanceRoomTime, applyRoomAction as applyAction, createPlayer, createRoom, HOST_GRACE, roomView as playerView, transferHost } from './games/state.js';
-import { knownPlayer, possibleRoles } from '../src/games/avalon/presentation.js';
+import { knownPlayer, possibleRoles, playerAlignment, currentRoleAlignment } from '../src/games/avalon/presentation.js';
 import { possibleMarks } from '../src/games/avalon/notes.js';
 import { QUICK_PHRASES } from '../shared/games/avalon/phrases.js';
 import { MESSAGE_COOLDOWN, MESSAGE_LIMIT } from '../shared/games/messages.js';
 import fs from 'node:fs';
+import { LANCELOTS, roleRoster, roleDependenciesValid } from '../shared/games/avalon/index.js';
+import { ROLE_RECOMMENDATIONS, roleRecommendations } from '../shared/games/avalon/recommendations.js';
+import { roleImage, ROLE_ICONS } from '../src/games/avalon/presentation.js';
+
+const ORIGINAL_SPECIAL_ROLES = ['percival', 'morgana', 'mordred', 'oberon'];
 
 let checks = 0;
 const check = (actual, expected) => { assert.deepEqual(actual, expected); checks++; };
 const rejects = (fn, code) => { assert.throws(fn, error => error.code === code); checks++; };
 const command = (room, type, payload = {}) => ({ type, id: crypto.randomUUID(), stage: room.stage, ...payload });
-function fixture(count = 5, night = false, specialRoles = []) {
+function fixture(count = 5, night = false, specialRoles = [], lancelotMode = 'fixed') {
   const players = Array.from({ length: count }, (_, i) => ({ ...createPlayer(`P${i + 1}`, `secret-${i}`), online: true, ready: true, disconnectedAt: null }));
   const room = createRoom('ABCDEFGH', 'avalon', players[0]); room.players = players;
-  room.gameConfig = { specialRoles };
+  room.gameConfig = { specialRoles, ...(lancelotMode === 'switching' ? { lancelotMode } : {}) };
   let started = applyAction(room, room.hostId, command(room, 'start'), Date.now(), () => 0).room;
   if (night) return started;
   for (const player of started.players) {
@@ -247,7 +252,7 @@ rejects(() => act(room, room.players.at(-1).id, 'ready', { ready: true }), 'ROLE
 room.players.at(-1).ready = true;
 rejects(() => act(room, room.hostId, 'start'), 'ROLE_CAPACITY');
 check(room.status, 'lobby');
-let full = fixture(10, false, SPECIAL_ROLES);
+let full = fixture(10, false, ORIGINAL_SPECIAL_ROLES);
 const byRole = role => full.players.find(p => full.gameState.roles[p.id] === role);
 const markerView = role => { const view = playerView(full, byRole(role).id); return { ...view, ...view.game }; };
 check(knownPlayer(markerView('merlin'), byRole('mordred'), true), null);
@@ -287,7 +292,7 @@ full = act(full, fullAssassin.id, 'end_assassination_discussion');
 check(act(full, fullAssassin.id, 'assassinate', { targetId: fullOberon.id }).gameState.result.winner, 'good');
 rejects(() => act(full, fullAssassin.id, 'assassinate', { targetId: fullAssassin.id }), 'TARGET');
 full = act(full, full.hostId, 'end'); full = act(full, full.hostId, 'restart');
-check(full.gameConfig, { specialRoles: SPECIAL_ROLES });
+check(full.gameConfig, { specialRoles: ORIGINAL_SPECIAL_ROLES });
 for (let count = 5; count <= 10; count++) {
   let quick = fixture(count, false, ['percival', 'morgana']);
   quick = quest(quick); quick.players.forEach(p => { p.ready = false; });
@@ -368,7 +373,7 @@ for (const code of ['zh-CN', 'en', 'si']) {
     check([...items[phrase.id].matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort(), expected);
   }
 }
-let talking = fixture(10, false, SPECIAL_ROLES);
+let talking = fixture(10, false, ORIGINAL_SPECIAL_ROLES);
 let spokenAt = Date.now();
 const speech = (phrase, payload = {}, id = talking.hostId) => ({ ...command(talking, 'say'), phraseId: phrase, ...payload });
 const originalRules = structuredClone(talking.gameState);
@@ -462,5 +467,300 @@ const legacyDiscussion = structuredClone(paced); delete legacyDiscussion.gameSta
 const migrated = advanceRoomTime(legacyDiscussion, invitationDeadline).room;
 check(migrated.gameState.discussion.mode, 'slow');
 check(migrated.gameState.discussion.endsAt, invitationDeadline + 150_000);
+// Expanded roles: recommendations never hide roles or exceed either faction's slots.
+for (let count = 5; count <= 10; count++) {
+  const groups = roleRecommendations(count);
+  check(groups.flatMap(group => group.roles).sort(), [...SPECIAL_ROLES].sort());
+  check(roleRoster(count, ROLE_RECOMMENDATIONS[count].recommended).valid, true);
+  for (let mask = 0; mask < 2 ** SPECIAL_ROLES.length; mask++) {
+    const roles = SPECIAL_ROLES.filter((_, index) => mask & (1 << index));
+    if (!roleDependenciesValid(roles)) { rejects(() => roleList(count, { specialRoles: roles }), 'ROLE_PAIR'); continue; }
+    const roster = roleRoster(count, roles);
+    if (!roster.valid) { rejects(() => roleList(count, { specialRoles: roles }), 'ROLE_CAPACITY'); continue; }
+    const actual = roleList(count, { specialRoles: roles });
+    check(actual.length, count);
+    check(actual.filter(role => !isEvil(role)).length, GOOD_COUNTS[count]);
+  }
+}
+for (const locale of ['zh-CN', 'en', 'si']) {
+  const messages = JSON.parse(fs.readFileSync(`src/i18n/messages/${locale}.json`, 'utf8')).avalon;
+  check(typeof messages.records.types.reveal_role, 'string');
+  for (const role of SPECIAL_ROLES) {
+    check(typeof messages.roles[role], 'string');
+    check(typeof messages.roleHints[role], 'string');
+    check(typeof ROLE_ICONS[role], 'string');
+    // New role portraits have dedicated paths and will be supplied separately.
+    if (ORIGINAL_SPECIAL_ROLES.includes(role)) check(fs.existsSync(`public${roleImage(role)}`), true);
+  }
+}
+
+// The fixed-allegiance Lancelots recognize each other, privately, only after peeking.
+let paired = fixture(7, true, ['cleric', 'oberon', ...LANCELOTS]);
+const pairedId = role => paired.players.find(p => paired.gameState.roles[p.id] === role).id;
+const clericId = pairedId('cleric');
+const openingLeaderId = paired.gameState.openingLeaderId;
+for (const player of paired.players) {
+  const hidden = playerView(paired, player.id).game;
+  check(hidden.self.knownRoles, {}); check(hidden.self.knownLoyalties, {});
+  check(hidden.self.questChoices, []); check(hidden.publicRoles, {});
+}
+for (const player of paired.players) paired = act(paired, player.id, 'peek_role');
+for (const role of LANCELOTS) {
+  const partnerRole = LANCELOTS.find(other => other !== role);
+  const view = playerView(paired, pairedId(role));
+  check(view.game.self.knownRoles, { [pairedId(partnerRole)]: partnerRole });
+  check(possibleRoles({ ...view, ...view.game }, pairedId(partnerRole)), [partnerRole]);
+}
+check(playerView(paired, pairedId('merlin')).game.self.knownEvil.includes(pairedId('evil_lancelot')), true);
+check(playerView(paired, pairedId('merlin')).game.self.knownEvil.includes(pairedId('good_lancelot')), false);
+check(playerView(paired, pairedId('evil_lancelot')).game.self.knownEvil.includes(pairedId('oberon')), false);
+const leaderLoyalty = isEvil(paired.gameState.roles[openingLeaderId]) ? 'evil' : 'good';
+check(playerView(paired, clericId).game.self.knownLoyalties, { [openingLeaderId]: leaderLoyalty });
+check(playerView(paired, pairedId('assassin')).game.self.knownLoyalties, {});
+for (const player of paired.players) paired = act(paired, player.id, 'confirm_role');
+paired = endDiscussion(paired);
+paired = vote(propose(paired, paired.players.slice(0, QUEST_TEAMS[7][0]).map(player => player.id)), false);
+check(playerView(paired, clericId).game.self.knownLoyalties, { [openingLeaderId]: leaderLoyalty });
+
+// Check actual local candidates for every legal expanded roster: private information
+// must never exclude the true role or expose a role not present in the game.
+for (const specialRoles of [['cleric'], ['lunatic'], ['brute'], ['revealer'], LANCELOTS, ['cleric', 'mordred', ...LANCELOTS]]) {
+  const started = fixture(10, false, specialRoles);
+  for (const viewer of started.players) {
+    const view = playerView(started, viewer.id);
+    const local = { ...view, ...view.game };
+    for (const other of started.players.filter(p => p.id !== viewer.id))
+      check(possibleRoles(local, other.id).includes(started.gameState.roles[other.id]), true);
+  }
+}
+
+let crazy = fixture(7, false, ['lunatic']);
+const crazyId = crazy.players.find(p => crazy.gameState.roles[p.id] === 'lunatic').id;
+const crazyTeam = [crazyId, ...crazy.players.filter(p => p.id !== crazyId).slice(0, 1).map(p => p.id)];
+crazy = vote(propose(crazy, crazyTeam));
+const unmodifiedCrazy = structuredClone(crazy);
+rejects(() => act(crazy, crazyId, 'quest', { success: true }), 'LUNATIC_MUST_FAIL');
+check(crazy, unmodifiedCrazy);
+check(playerView(crazy, crazyId).game.self.questChoices, [false]);
+check(act(crazy, crazyId, 'quest', { success: false }).gameState.questCards[crazyId], false);
+
+// One compulsory Lunatic Fail still does not fail quest 4 in a seven-player game.
+let doubleFail = fixture(7, false, ['lunatic']);
+const doubleFailLunatic = doubleFail.players.find(p => doubleFail.gameState.roles[p.id] === 'lunatic').id;
+doubleFail.gameState.questIndex = 3;
+doubleFail.gameState.quests = [{ quest: 0, success: true }, { quest: 1, success: false }, { quest: 2, success: false }];
+const doubleFailTeam = [doubleFailLunatic, ...doubleFail.players.filter(p => !isEvil(doubleFail.gameState.roles[p.id])).slice(0, 3).map(p => p.id)];
+doubleFail = vote(propose(doubleFail, doubleFailTeam));
+for (const id of doubleFailTeam) doubleFail = act(doubleFail, id, 'quest', { success: id !== doubleFailLunatic });
+check(doubleFail.gameState.quests.at(-1).success, true);
+check(doubleFail.gameState.quests.at(-1).failures, 1);
+check(doubleFail.gameState.phase, 'discussion');
+
+let bruteRoom = fixture(7, false, ['brute']);
+const bruteId = bruteRoom.players.find(p => bruteRoom.gameState.roles[p.id] === 'brute').id;
+for (let questIndex = 0; questIndex < 5; questIndex++) {
+  const test = structuredClone(bruteRoom);
+  test.gameState.questIndex = questIndex;
+  test.gameState.phase = 'quest';
+  test.gameState.team = [bruteId, ...test.players.filter(p => p.id !== bruteId).slice(0, QUEST_TEAMS[7][questIndex] - 1).map(p => p.id)];
+  if (questIndex >= 3) {
+    rejects(() => act(test, bruteId, 'quest', { success: false }), 'BRUTE_CANNOT_FAIL');
+    check(playerView(test, bruteId).game.self.questChoices, [true]);
+  } else check(act(test, bruteId, 'quest', { success: false }).gameState.questCards[bruteId], false);
+  check(act(test, bruteId, 'quest', { success: true }).gameState.questCards[bruteId], true);
+}
+
+let revealed = fixture(7, false, ['revealer']);
+const revealerId = revealed.players.find(p => revealed.gameState.roles[p.id] === 'revealer').id;
+revealed = quest(revealed, 1);
+for (const p of revealed.players) check(playerView(revealed, p.id).game.publicRoles, {});
+revealed = quest(revealed, 1);
+check(revealed.gameState.history.filter(entry => entry.type === 'reveal_role').length, 1);
+check(revealed.gameState.history.at(-1).type, 'reveal_role');
+check(revealed.gameState.history.at(-1).at, revealed.gameState.history.at(-2).at);
+for (const p of revealed.players) {
+  const view = playerView(revealed, p.id);
+  check(view.game.publicRoles, { [revealerId]: 'revealer' });
+  check('revealedRoles' in view.game, false);
+  check(knownPlayer({ ...view, ...view.game }, revealed.players.find(p => p.id === revealerId), false).label, 'avalon.roles.revealer');
+}
+check(playerView(structuredClone(revealed), revealed.hostId).game.publicRoles, { [revealerId]: 'revealer' });
+revealed = quest(revealed, 1);
+check(revealed.gameState.result.winner, 'evil');
+check(revealed.gameState.history.filter(entry => entry.type === 'reveal_role').length, 1);
+
+// Good Lancelot and the Cleric do not add assassination targets or alternate wins.
+let lancelotWin = fixture(7, false, ['cleric', ...LANCELOTS]);
+for (let index = 0; index < 3; index++) lancelotWin = quest(lancelotWin);
+const lancelotAssassin = lancelotWin.players.find(p => lancelotWin.gameState.roles[p.id] === 'assassin').id;
+const lancelotMerlin = lancelotWin.players.find(p => lancelotWin.gameState.roles[p.id] === 'merlin').id;
+lancelotWin = act(lancelotWin, lancelotAssassin, 'end_assassination_discussion');
+check(act(lancelotWin, lancelotAssassin, 'assassinate', { targetId: lancelotMerlin }).gameState.result.winner, 'evil');
+for (const role of ['cleric', 'good_lancelot', 'evil_lancelot']) {
+  const targetId = lancelotWin.players.find(p => lancelotWin.gameState.roles[p.id] === role).id;
+  check(act(lancelotWin, lancelotAssassin, 'assassinate', { targetId }).gameState.result.winner, 'good');
+}
+check(normalizeConfig({ specialRoles: LANCELOTS, lancelotMode: 'fixed' }), { specialRoles: LANCELOTS });
+check(normalizeConfig({ specialRoles: LANCELOTS, lancelotMode: 'switching' }), { specialRoles: LANCELOTS, lancelotMode: 'switching' });
+rejects(() => normalizeConfig({ specialRoles: LANCELOTS, lancelotMode: 'other' }), 'LANCELOT_MODE');
+rejects(() => normalizeConfig({ specialRoles: [], lancelotMode: 'switching' }), 'ROLE_PAIR');
+for (const role of LANCELOTS) rejects(() => normalizeConfig({ specialRoles: [role], lancelotMode: 'switching' }), 'ROLE_PAIR');
+
+function switchingOpening(deck) {
+  let room = fixture(7, true, ['cleric', ...LANCELOTS], 'switching');
+  check(room.gameState.lancelotDeck.length, 6);
+  check(room.gameState.lancelotDeck.filter(Boolean).length, 2);
+  if (deck) room.gameState.lancelotDeck = deck;
+  for (const player of room.players) room = act(room, player.id, 'peek_role');
+  return room;
+}
+function confirmAll(room) {
+  for (const player of room.players) room = act(room, player.id, 'confirm_role');
+  return room;
+}
+const roleId = (room, role) => room.players.find(player => room.gameState.roles[player.id] === role).id;
+const localView = (room, id) => { const view = playerView(room, id); return { ...view, ...view.game, game: view.round }; };
+function currentQuest(room, failer = null) {
+  const team = [failer, ...room.players.map(p => p.id).filter(id => id !== failer)].filter(Boolean).slice(0, QUEST_TEAMS[room.players.length][room.gameState.questIndex]);
+  room = vote(propose(room, team));
+  for (const id of team) room = act(room, id, 'quest', { success: id !== failer });
+  return room;
+}
+let switching = switchingOpening([true, false, true, false, false, false]);
+const originalRoles = structuredClone(switching.gameState.roles);
+const goodL = roleId(switching, 'good_lancelot');
+const evilL = roleId(switching, 'evil_lancelot');
+const assassinL = roleId(switching, 'assassin');
+const merlinL = roleId(switching, 'merlin');
+const clericL = roleId(switching, 'cleric');
+// The Cleric's evidence must remain the opening allegiance after the first draw.
+switching.gameState.openingLeaderId = evilL;
+const initialViews = Object.fromEntries(switching.players.map(p => [p.id, playerView(switching, p.id).game.self]));
+check(initialViews[evilL].knownEvil, []);
+check(initialViews[evilL].knownRoles, {});
+check(initialViews[goodL].knownRoles, {});
+check(initialViews[assassinL].knownEvil.includes(evilL), true);
+check(initialViews[merlinL].knownEvil.includes(evilL), true);
+check(initialViews[clericL].knownLoyalties, { [evilL]: 'evil' });
+check(switching.gameState.history, []);
+switching = confirmAll(switching);
+check(switching.gameState.phase, 'discussion');
+check(switching.gameState.roles, originalRoles);
+check(switching.gameState.allegiances[goodL], 'evil');
+check(switching.gameState.allegiances[evilL], 'good');
+check(switching.gameState.history.at(-1).type, 'lancelot_draw');
+check(switching.gameState.history.at(-1).switched, true);
+for (const player of switching.players) {
+  const view = playerView(switching, player.id).game;
+  for (const field of ['knownEvil', 'knownRoles', 'knownLoyalties', 'knownCandidates']) check(view.self[field], initialViews[player.id][field]);
+  check(view.alignmentCounts, { good: 4, evil: 3 });
+  check('lancelotDeck' in view, false);
+  check('allegiances' in view, false);
+  check('revealedAllegiances' in view, false);
+  const local = localView(switching, player.id);
+  for (const other of switching.players.filter(p => p.id !== player.id)) check(possibleRoles(local, other.id).includes(originalRoles[other.id]), true);
+}
+check(playerView(switching, goodL).game.self.questChoices, [true, false]);
+check(playerView(switching, evilL).game.self.questChoices, [true]);
+check(playerAlignment(localView(switching, goodL), goodL), 'evil');
+check(currentRoleAlignment(localView(switching, goodL), 'evil_lancelot'), 'good');
+check(knownPlayer(localView(switching, goodL), switching.players.find(p => p.id === goodL), true).tone, 'evil');
+check(knownPlayer(localView(switching, merlinL), switching.players.find(p => p.id === evilL), true).label, 'avalon.knowledge.nightEvil');
+check(playerAlignment(localView(switching, assassinL), evilL), null);
+check(possibleMarks(localView(switching, assassinL), evilL).includes('evil_lancelot'), true);
+// Serialised room recovery keeps the private deck, allegiance and permissions.
+check(playerView(JSON.parse(JSON.stringify(switching)), evilL).game, playerView(switching, evilL).game);
+const questTeam = [goodL, evilL];
+let switchedQuest = vote(propose(switching, questTeam));
+rejects(() => act(switchedQuest, evilL, 'quest', { success: false }), 'GOOD_CANNOT_FAIL');
+switchedQuest = act(switchedQuest, goodL, 'quest', { success: false });
+switchedQuest = act(switchedQuest, evilL, 'quest', { success: true });
+check(switchedQuest.gameState.quests.at(-1).success, false);
+check(switchedQuest.gameState.history.filter(e => e.type === 'lancelot_draw').map(e => e.switched), [true, false]);
+check(switchedQuest.gameState.lancelotSwitched, true);
+// A rejected team stays on this Quest and never consumes another card.
+switchedQuest = vote(propose(switchedQuest, switchedQuest.players.slice(0, 3).map(p => p.id)), false);
+check(switchedQuest.gameState.history.filter(e => e.type === 'lancelot_draw').length, 2);
+switchedQuest = currentQuest(switchedQuest);
+check(switchedQuest.gameState.lancelotSwitched, false);
+check(switchedQuest.gameState.allegiances[goodL], 'good');
+check(switchedQuest.gameState.allegiances[evilL], 'evil');
+check(switchedQuest.gameState.history.filter(e => e.type === 'lancelot_draw').map(e => e.switched), [true, false, true]);
+check(playerView(switchedQuest, goodL).game.self.questChoices, [true]);
+check(playerView(switchedQuest, evilL).game.self.questChoices, [true, false]);
+switchedQuest = currentQuest(switchedQuest);
+switchedQuest = currentQuest(switchedQuest);
+check(switchedQuest.gameState.phase, 'evil_discussion');
+check(switchedQuest.gameState.history.filter(e => e.type === 'lancelot_draw').length, 4);
+rejects(() => act(switchedQuest, goodL, 'end_assassination_discussion'), 'EVIL_ONLY');
+switchedQuest = act(switchedQuest, evilL, 'end_assassination_discussion');
+const settled = act(switchedQuest, assassinL, 'assassinate', { targetId: goodL });
+check(settled.gameState.result.winner, 'good');
+check(playerView(settled, goodL).game.self.won, true);
+check(playerView(settled, evilL).game.self.won, false);
+check(playerView(settled, assassinL).game.revealedAllegiances, settled.gameState.allegiances);
+
+// One switch: the original Good Lancelot now belongs to Evil, including assassination discussion and final wins.
+let once = confirmAll(switchingOpening([true, false, false, false, false, true]));
+const onceGood = roleId(once, 'good_lancelot'), onceEvil = roleId(once, 'evil_lancelot'), onceAssassin = roleId(once, 'assassin');
+for (let index = 0; index < 3; index++) once = currentQuest(once);
+check(once.gameState.history.filter(e => e.type === 'lancelot_draw').length, 3);
+rejects(() => act(once, onceEvil, 'end_assassination_discussion'), 'EVIL_ONLY');
+once = act(once, onceGood, 'end_assassination_discussion');
+const evilWin = act(once, onceAssassin, 'assassinate', { targetId: roleId(once, 'merlin') });
+check(playerView(evilWin, onceGood).game.self.won, true);
+check(playerView(evilWin, onceEvil).game.self.won, false);
+const goodWin = act(once, onceAssassin, 'assassinate', { targetId: onceGood });
+check(playerView(goodWin, onceGood).game.self.won, false);
+check(playerView(goodWin, onceEvil).game.self.won, true);
+const abortedL = act(once, once.hostId, 'end');
+check(playerView(abortedL, onceGood).game.self.won, null);
+// A zero-switch game and the fixed game retain their original allegiances.
+let noSwitch = confirmAll(switchingOpening([false, false, false, false, true, true]));
+for (let i = 0; i < 3; i++) noSwitch = currentQuest(noSwitch);
+check(noSwitch.gameState.lancelotSwitched, false);
+check(noSwitch.gameState.history.filter(e => e.type === 'lancelot_draw').map(e => e.switched), [false, false, false]);
+check(fixture(7, false, LANCELOTS).gameState.history.some(e => e.type === 'lancelot_draw'), false);
+// Every placement of the two Switch cards: five draws, no repeat, correct parity and final ownership.
+for (let first = 0; first < 6; first++) for (let second = first + 1; second < 6; second++) {
+  const deck = Array.from({ length: 6 }, (_, index) => index === first || index === second);
+  let room = confirmAll(switchingOpening(deck));
+  const assassin = roleId(room, 'assassin');
+  for (let index = 0; index < 5; index++) {
+    const visible = playerView(room, room.hostId).game;
+    check(visible.lancelotSwitched, deck.slice(0, index + 1).filter(Boolean).length % 2 === 1);
+    check(visible.alignmentCounts, { good: 4, evil: 3 });
+    check(visible.history.filter(e => e.type === 'lancelot_draw').map(e => e.switched), deck.slice(0, index + 1));
+    room = currentQuest(room, index < 2 ? assassin : null);
+  }
+  check(room.gameState.phase, 'evil_discussion');
+  room = act(room, assassin, 'end_assassination_discussion');
+  room = act(room, assassin, 'assassinate', { targetId: roleId(room, 'merlin') });
+  check(room.gameState.history.filter(e => e.type === 'lancelot_draw').length, 5);
+  const finalSwitched = deck.slice(0, 5).filter(Boolean).length % 2 === 1;
+  check(playerView(room, roleId(room, 'good_lancelot')).game.self.won, finalSwitched);
+  check(playerView(room, roleId(room, 'evil_lancelot')).game.self.won, !finalSwitched);
+}
+// Distinct deterministic RNG choices generate distinct decks without changing the card supply.
+const samplePlayers = switching.players;
+const unshuffledDeck = avalon.create(samplePlayers, max => max - 1, { specialRoles: LANCELOTS, lancelotMode: 'switching' }).lancelotDeck;
+const shuffledDeck = avalon.create(samplePlayers, () => 0, { specialRoles: LANCELOTS, lancelotMode: 'switching' }).lancelotDeck;
+check(unshuffledDeck, [false, false, false, false, true, true]);
+check(shuffledDeck.filter(Boolean).length, 2);
+check(shuffledDeck.join(',') === unshuffledDeck.join(','), false);
+// Rejection and failed-Quest wins use the switched allegiance too, with no extra draw after game end.
+let rejectedL = structuredClone(switching);
+for (let index = 0; index < 5; index++) rejectedL = vote(propose(rejectedL, [goodL, evilL]), false);
+check(rejectedL.gameState.result.winner, 'evil');
+check(rejectedL.gameState.history.filter(e => e.type === 'lancelot_draw').length, 1);
+check(playerView(rejectedL, goodL).game.self.won, true);
+check(playerView(rejectedL, evilL).game.self.won, false);
+let failedL = confirmAll(switchingOpening([true, false, false, false, false, true]));
+const failedGood = roleId(failedL, 'good_lancelot'), failedEvil = roleId(failedL, 'evil_lancelot');
+for (let index = 0; index < 3; index++) failedL = currentQuest(failedL, failedGood);
+check(failedL.gameState.result.winner, 'evil');
+check(failedL.gameState.history.filter(e => e.type === 'lancelot_draw').length, 3);
+check(playerView(failedL, failedGood).game.self.won, true);
+check(playerView(failedL, failedEvil).game.self.won, false);
 console.log(`Avalon rules: ${checks} assertions passed.`);
 

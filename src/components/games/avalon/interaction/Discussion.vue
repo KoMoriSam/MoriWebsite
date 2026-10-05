@@ -6,7 +6,7 @@
     >
       <div
         v-if="!compact"
-        class="flex flex-wrap items-center justify-between gap-2"
+        class="flex shrink-0 flex-wrap items-center justify-between gap-2"
       >
         <h2 class="card-title font-serif">
           <i class="ri-user-voice-line font-normal" aria-hidden="true"></i>

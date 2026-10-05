@@ -116,6 +116,12 @@
             <p v-if="entry.type === 'end'" class="text-base-content/60">
               {{ t('avalon.reasons.aborted') }}
             </p>
+            <p v-if="entry.type === 'reveal_role'" class="wrap-break-word">
+              {{ t('avalon.records.roleRevealed', { name: playerName(entry.playerId), role: t(`avalon.roles.${entry.role}`) }) }}
+            </p>
+            <p v-if="entry.type === 'lancelot_draw'" class="wrap-break-word">
+              {{ t(entry.switched ? 'avalon.lancelot.switchRecord' : 'avalon.lancelot.stayRecord') }}
+            </p>
           </div>
         </li>
       </TransitionGroup>
@@ -134,6 +140,8 @@ const props = defineProps({
 const { t, date } = useLocale();
 const summaryRoot = ref(null);
 const icons = {
+  lancelot_draw: 'ri-arrow-left-right-line',
+  reveal_role: 'ri-eye-2-line',
   dialogue: 'ri-chat-3-line',
   begin_evil_discussion: 'ri-chat-smile-3-line',
   begin_assassinate: 'ri-sword-line',

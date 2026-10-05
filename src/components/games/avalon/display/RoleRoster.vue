@@ -44,9 +44,11 @@
             @click="showRoleDetails(role)"
           >
             <img
-              :src="`/assets/images/games/avalon/${role}.webp`"
+              :src="roleImage(role)"
               alt=""
               class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+              @error="$event.currentTarget.style.opacity = '0'"
+              @load="$event.currentTarget.style.opacity = ''"
             />
             <span
               class="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 bg-linear-to-t from-black/95 via-black/75 to-transparent px-2 pb-2 pt-10 text-center"
@@ -55,12 +57,12 @@
               <span
                 class="min-w-0 max-w-full text-xs font-medium text-nowrap"
                 :class="[
-                  isEvil(role) ? 'text-error' : 'text-success',
+                  currentRoleAlignment(room, role) === 'evil' ? 'text-error' : 'text-success',
                   labelClasses,
                 ]"
               >
                 {{
-                  t(isEvil(role) ? "avalon.night.evil" : "avalon.night.good")
+                  t(`avalon.night.${currentRoleAlignment(room, role)}`)
                 }}
               </span>
               <span
@@ -76,6 +78,8 @@
     <RolePreviewPopover
       ref="rolePopover"
       :role="selectedRole"
+      :mode="lancelotMode"
+      :alignment="selectedRole ? currentRoleAlignment(room, selectedRole) : undefined"
       :target="previewTarget"
     />
   </section>
@@ -84,9 +88,9 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
+import { roleImage, currentRoleAlignment } from "@/games/avalon/presentation";
 import {
   DEFAULT_SPECIAL_ROLES,
-  isEvil,
   roleRoster,
 } from "../../../../../shared/games/avalon/index.js";
 import RolePreviewPopover from "../interaction/RolePreviewPopover.vue";
@@ -100,6 +104,7 @@ const props = defineProps({
 const { t } = useLocale();
 const selectedRole = ref(null);
 const rolePopover = ref(null);
+const lancelotMode = computed(() => props.room.game?.lancelotMode ?? props.room.lancelotMode ?? props.room.gameConfig?.lancelotMode ?? 'fixed');
 const playerCount = computed(() =>
   Math.max(5, props.room.participants?.length ?? props.room.players.length),
 );
@@ -112,7 +117,7 @@ const roster = computed(() =>
 const roleGroups = computed(() =>
   ["good", "evil"].map((side) => {
     const roles = roster.value.roles.filter((role) =>
-      side === "evil" ? isEvil(role) : !isEvil(role),
+      currentRoleAlignment(props.room, role) === side,
     );
     return {
       side,

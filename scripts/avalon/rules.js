@@ -1,13 +1,17 @@
 import { ensure, GameError, randomInt } from '../games/utils.js';
-import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, isEvil, roleRoster } from '../../shared/games/avalon/index.js';
+import { SPECIAL_ROLES, DEFAULT_SPECIAL_ROLES, QUEST_TEAMS, LANCELOTS, LANCELOT_MODES, isEvil, roleAlignment, roleRoster, roleDependenciesValid, questChoices } from '../../shared/games/avalon/index.js';
 import { findPhrase } from '../../shared/games/avalon/phrases.js';
 import { canDiscuss, SLOW_SECONDS_PER_PLAYER, FAST_INVITE_SECONDS, FAST_DIALOGUE_SECONDS, ASSASSINATION_DISCUSSION_SECONDS } from '../../shared/games/avalon/discussion.js';
 export { GOOD_COUNTS, SPECIAL_ROLES, isEvil } from '../../shared/games/avalon/index.js';
 export { QUEST_TEAMS } from '../../shared/games/avalon/index.js';
 export function normalizeConfig(config = { specialRoles: DEFAULT_SPECIAL_ROLES }) {
-  ensure(config && typeof config === 'object' && !Array.isArray(config) && Object.keys(config).every(key => key === 'specialRoles'), 'ROLE_CONFIG');
+  ensure(config && typeof config === 'object' && !Array.isArray(config) && Object.keys(config).every(key => ['specialRoles', 'lancelotMode'].includes(key)), 'ROLE_CONFIG');
   ensure(Array.isArray(config.specialRoles) && config.specialRoles.every(role => SPECIAL_ROLES.includes(role)) && new Set(config.specialRoles).size === config.specialRoles.length, 'ROLE_CONFIG');
-  return { specialRoles: SPECIAL_ROLES.filter(role => config.specialRoles.includes(role)) };
+  ensure(roleDependenciesValid(config.specialRoles), 'ROLE_PAIR');
+  const mode = config.lancelotMode ?? 'fixed';
+  ensure(LANCELOT_MODES.includes(mode), 'LANCELOT_MODE');
+  ensure(mode === 'fixed' || LANCELOTS.every(role => config.specialRoles.includes(role)), 'ROLE_PAIR');
+  return { specialRoles: SPECIAL_ROLES.filter(role => config.specialRoles.includes(role)), ...(mode === 'switching' ? { lancelotMode: mode } : {}) };
 }
 export function roleList(count, config) {
   const { specialRoles } = normalizeConfig(config);
@@ -58,16 +62,36 @@ function tick(source, _players, now = Date.now()) {
   return { state, stageChanged: true, finished: false };
 }
 function nextLeader(state) { state.leaderIndex = (state.leaderIndex + 1) % state.participants.length; }
+const allegiance = (state, id) => state.allegiances?.[id] ?? roleAlignment(state.roles[id]);
+function beginQuest(state, now) {
+  if (state.lancelotMode !== 'switching') return;
+  const switched = state.lancelotDeck[state.questIndex];
+  if (switched) {
+    state.lancelotSwitched = !state.lancelotSwitched;
+    for (const player of state.participants) {
+      if (LANCELOTS.includes(state.roles[player.id])) state.allegiances[player.id] = roleAlignment(state.roles[player.id], state.lancelotSwitched);
+    }
+  }
+  record(state, { type: 'lancelot_draw', switched }, now);
+}
 function create(players, rng = randomInt, config) {
   const count = players.length;
   const roles = roleList(count, config);
   for (let i = roles.length - 1; i > 0; i--) {
     const j = rng(i + 1); [roles[i], roles[j]] = [roles[j], roles[i]];
   }
+  const leaderIndex = rng(count);
+  const lancelotMode = normalizeConfig(config).lancelotMode ?? 'fixed';
+  const lancelotDeck = lancelotMode === 'switching' ? [false, false, false, false, true, true] : [];
+  for (let i = lancelotDeck.length - 1; i > 0; i--) {
+    const j = rng(i + 1); [lancelotDeck[i], lancelotDeck[j]] = [lancelotDeck[j], lancelotDeck[i]];
+  }
   return {
     phase: 'night', participants: players, roles: Object.fromEntries(players.map((p, i) => [p.id, roles[i]])),
+    allegiances: Object.fromEntries(players.map((p, i) => [p.id, roleAlignment(roles[i])])),
+    lancelotMode, lancelotDeck, lancelotSwitched: false,
     roleRevealed: {}, nightConfirmed: {},
-    questIndex: 0, leaderIndex: rng(count), team: [], ballots: {}, questCards: {},
+    questIndex: 0, leaderIndex, openingLeaderId: players[leaderIndex].id, team: [], ballots: {}, questCards: {},
     quests: [], rejected: 0, history: [], result: null, discussionCount: 0, discussion: null,
   };
 }
@@ -83,7 +107,7 @@ function apply(source, players, playerId, action, now = Date.now()) {
       ensure(state.phase === 'night' && Object.hasOwn(state.roleRevealed, playerId), 'PHASE');
       ensure(!Object.hasOwn(state.nightConfirmed, playerId), 'ALREADY_SUBMITTED', 409);
       state.nightConfirmed[playerId] = true;
-      if (Object.keys(state.nightConfirmed).length === count) startDiscussion(state, now);
+      if (Object.keys(state.nightConfirmed).length === count) { beginQuest(state, now); startDiscussion(state, now); }
       break;
     case 'begin_team':
       ensure(state.phase === 'discussion', 'PHASE');
@@ -100,7 +124,7 @@ function apply(source, players, playerId, action, now = Date.now()) {
       invitePartner(state, action.targetId, now); break;
     case 'end_assassination_discussion':
       ensure(state.phase === 'evil_discussion', 'PHASE');
-      ensure(isEvil(state.roles[playerId]) && state.roles[playerId] !== 'oberon', 'EVIL_ONLY', 403);
+      ensure(allegiance(state, playerId) === 'evil' && state.roles[playerId] !== 'oberon', 'EVIL_ONLY', 403);
       ensure(now < state.discussion.endsAt, 'DISCUSSION_CLOSED');
       beginAssassination(state, now); break;
     case 'team':
@@ -127,17 +151,26 @@ function apply(source, players, playerId, action, now = Date.now()) {
       ensure(state.phase === 'quest' && typeof action.success === 'boolean', 'PHASE');
       ensure(state.team.includes(playerId), 'TEAM_ONLY', 403);
       ensure(!Object.hasOwn(state.questCards, playerId), 'ALREADY_SUBMITTED', 409);
-      ensure(action.success || isEvil(state.roles[playerId]), 'GOOD_CANNOT_FAIL', 403);
+      const role = state.roles[playerId];
+      ensure(action.success || allegiance(state, playerId) === 'evil', 'GOOD_CANNOT_FAIL', 403);
+      ensure(questChoices(role, state.questIndex, allegiance(state, playerId)).includes(action.success), role === 'lunatic' ? 'LUNATIC_MUST_FAIL' : 'BRUTE_CANNOT_FAIL', 403);
       state.questCards[playerId] = action.success;
       if (Object.keys(state.questCards).length === state.team.length) {
         const failures = Object.values(state.questCards).filter(value => !value).length;
         const threshold = count >= 7 && state.questIndex === 3 ? 2 : 1;
         const result = { type: 'quest', quest: state.questIndex, team: [...state.team], failures, success: failures < threshold };
-        state.quests.push(result); record(state, result); state.questCards = {};
+        state.quests.push(result); record(state, result, now); state.questCards = {};
         const successes = state.quests.filter(q => q.success).length;
+        if (state.quests.length - successes >= 2 && !state.revealerRevealed) {
+          const revealer = state.participants.find(p => state.roles[p.id] === 'revealer');
+          if (revealer) {
+            state.revealerRevealed = true;
+            record(state, { type: 'reveal_role', playerId: revealer.id, role: 'revealer' }, now);
+          }
+        }
         if (state.quests.length - successes === 3) finish(state, 'evil', 'quests');
         else if (successes === 3) startAssassinationDiscussion(state, now);
-        else { state.questIndex++; nextLeader(state); startDiscussion(state, now); state.team = []; }
+        else { state.questIndex++; nextLeader(state); beginQuest(state, now); startDiscussion(state, now); state.team = []; }
       }
       break;
     }
@@ -157,17 +190,27 @@ function apply(source, players, playerId, action, now = Date.now()) {
 function view(state, _players, playerId) {
   const role = state.roles[playerId];
   const roleRevealed = state.phase !== 'night' || Object.hasOwn(state.roleRevealed || {}, playerId);
-  const knownEvil = !roleRevealed || role === 'oberon' ? [] : state.participants.filter(p => {
+  // Night evidence refers to opening identities; later switches must not reveal new allies.
+  const switching = state.lancelotMode === 'switching';
+  const knownEvil = !roleRevealed || role === 'oberon' || (switching && role === 'evil_lancelot') ? [] : state.participants.filter(p => {
     const other = state.roles[p.id];
     return role === 'merlin' ? isEvil(other) && other !== 'mordred' : isEvil(role) && isEvil(other) && other !== 'oberon';
   }).map(p => p.id);
   // Preserve seat order: candidate order must not distinguish Merlin from Morgana.
   const knownCandidates = roleRevealed && role === 'percival' ? state.participants.filter(p => ['merlin', 'morgana'].includes(state.roles[p.id])).map(p => p.id) : [];
+  const knownRoles = roleRevealed && !switching && LANCELOTS.includes(role)
+    ? Object.fromEntries(state.participants.filter(p => p.id !== playerId && LANCELOTS.includes(state.roles[p.id])).map(p => [p.id, state.roles[p.id]])) : {};
+  const openingLeaderId = state.openingLeaderId ?? state.participants[state.leaderIndex].id;
+  const knownLoyalties = roleRevealed && role === 'cleric' ? { [openingLeaderId]: isEvil(state.roles[openingLeaderId]) ? 'evil' : 'good' } : {};
+  const publicRoles = state.revealerRevealed ? Object.fromEntries(state.participants.filter(p => state.roles[p.id] === 'revealer').map(p => [p.id, 'revealer'])) : {};
   return {
     phase: state.phase, participants: state.participants,
-    self: { role: roleRevealed ? role : null, roleRevealed, nightConfirmed: Object.hasOwn(state.nightConfirmed || {}, playerId), knownEvil, knownCandidates, voted: Object.hasOwn(state.ballots, playerId), autoApproved: state.phase === 'vote' && state.participants[state.leaderIndex].id === playerId && state.ballots[playerId] === true, questSubmitted: Object.hasOwn(state.questCards, playerId) },
+    self: { role: roleRevealed ? role : null, alignment: roleRevealed ? allegiance(state, playerId) : null, lancelotMode: state.lancelotMode ?? 'fixed', won: state.result?.winner ? allegiance(state, playerId) === state.result.winner : null, roleRevealed, nightConfirmed: Object.hasOwn(state.nightConfirmed || {}, playerId), knownEvil, knownCandidates, knownRoles, knownLoyalties, questChoices: roleRevealed ? questChoices(role, state.questIndex, allegiance(state, playerId)) : [], voted: Object.hasOwn(state.ballots, playerId), autoApproved: state.phase === 'vote' && state.participants[state.leaderIndex].id === playerId && state.ballots[playerId] === true, questSubmitted: Object.hasOwn(state.questCards, playerId) },
+    lancelotMode: state.lancelotMode ?? 'fixed', lancelotSwitched: state.lancelotSwitched ?? false,
+    alignmentCounts: state.participants.reduce((counts, p) => { counts[allegiance(state, p.id)]++; return counts; }, { good: 0, evil: 0 }),
+    publicRoles,
     nightCount: Object.keys(state.nightConfirmed || {}).length,
-    ...(state.phase === 'finished' ? { revealedRoles: state.roles } : {}),
+    ...(state.phase === 'finished' ? { revealedRoles: state.roles, revealedAllegiances: Object.fromEntries(state.participants.map(p => [p.id, allegiance(state, p.id)])) } : {}),
     leaderId: state.phase === 'night' ? null : state.participants[state.leaderIndex]?.id ?? null,
     questIndex: state.questIndex, team: state.team, teamSizes: QUEST_TEAMS[state.participants.length],
     twoFails: state.participants.length >= 7 && state.questIndex === 3,
