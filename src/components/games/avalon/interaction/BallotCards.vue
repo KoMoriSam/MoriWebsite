@@ -23,6 +23,7 @@
         :self="self"
         :self-id="selfId"
         :player-name="playerName"
+        :game-config="gameConfig"
         @click.stop.prevent
       />
     </summary>
@@ -115,6 +116,7 @@ import { useLocale } from "@/i18n";
 import RoleInfo from "@/components/games/avalon/display/RoleInfo.vue";
 const props = defineProps({
   self: { type: Object, required: true },
+  gameConfig: { type: Object, default: () => ({}) },
   selfId: { type: String, required: true },
   playerName: { type: Function, required: true },
   active: Boolean,
@@ -151,7 +153,7 @@ const summaryStatus = computed(() =>
         questMode.value
           ? choices.value.length === 1 && !choices.value[0]
             ? "avalon.questCards.lunaticHint"
-            : !props.allowFail && props.self.role === 'brute'
+            : !props.allowFail && props.self.role === "brute"
               ? "avalon.questCards.bruteHint"
               : props.allowFail
                 ? "avalon.questCards.hint"
@@ -164,7 +166,7 @@ const choices = computed(() =>
   questMode.value && props.allowedChoices?.length
     ? props.allowedChoices
     : (questMode.value && !props.allowFail) ||
-      (!questMode.value && props.autoApproved && props.submitted)
+        (!questMode.value && props.autoApproved && props.submitted)
       ? [true]
       : [true, false],
 );
@@ -278,7 +280,13 @@ function submitSelected() {
     emit(questMode.value ? "quest" : "vote", selected.value);
 }
 watch(
-  [() => props.context, () => props.mode, () => props.allowFail, () => props.allowedChoices?.join(','), canPlay],
+  [
+    () => props.context,
+    () => props.mode,
+    () => props.allowFail,
+    () => props.allowedChoices?.join(","),
+    canPlay,
+  ],
   () => {
     cancelDrag();
     selected.value = null;
@@ -286,7 +294,12 @@ watch(
   },
 );
 watch(
-  [() => props.context, () => props.mode, () => props.active, () => props.submitted],
+  [
+    () => props.context,
+    () => props.mode,
+    () => props.active,
+    () => props.submitted,
+  ],
   () => {
     expanded.value = false;
   },
@@ -305,7 +318,8 @@ onBeforeUnmount(cancelDrag);
 
 @media (prefers-reduced-motion: no-preference) {
   .collapse::details-content {
-    transition: content-visibility 200ms allow-discrete,
+    transition:
+      content-visibility 200ms allow-discrete,
       visibility 200ms allow-discrete,
       min-height 200ms ease-out allow-discrete,
       padding 100ms ease-out 20ms,
@@ -318,7 +332,8 @@ onBeforeUnmount(cancelDrag);
   }
 
   @keyframes ballot-reveal {
-    from, to {
+    from,
+    to {
       overflow: clip;
     }
   }

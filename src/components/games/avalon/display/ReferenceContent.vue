@@ -38,7 +38,12 @@
           :room="room"
           :preview-target="previewTarget"
           :narrow="inSidebar"
-        />
+        >
+          <template #group-details="{ side }">
+            <SpecialRules :room="room" :side="side" hide-heading />
+          </template>
+        </RoleRoster>
+        <SpecialRules :room="room" extensions-only hide-heading class="mt-4" />
       </section>
       <section
         :id="`${panelId}-rules`"
@@ -47,7 +52,6 @@
         :class="panel === 'rules' ? '' : 'hidden'"
       >
         <Rulebook sidebar flow-only />
-        <LancelotRules :room="room" class="mt-3" />
       </section>
       <section
         :id="`${panelId}-catalog`"
@@ -55,7 +59,14 @@
         :aria-labelledby="`${panelId}-tab-catalog`"
         :class="panel === 'catalog' ? '' : 'hidden'"
       >
-        <RoleCatalog :mode="room.game?.lancelotMode ?? room.lancelotMode ?? room.gameConfig?.lancelotMode ?? 'fixed'" />
+        <RoleCatalog
+          :mode="
+            room.game?.lancelotMode ??
+            room.lancelotMode ??
+            room.gameConfig?.lancelotMode ??
+            'fixed'
+          "
+        />
       </section>
     </div>
   </div>
@@ -66,7 +77,7 @@ import { ref, useId } from "vue";
 import { useLocale } from "@/i18n";
 import RoleRoster from "./RoleRoster.vue";
 import Rulebook from "./Rulebook.vue";
-import LancelotRules from "./LancelotRules.vue";
+import SpecialRules from "./SpecialRules.vue";
 import RoleCatalog from "./RoleCatalog.vue";
 
 defineProps({

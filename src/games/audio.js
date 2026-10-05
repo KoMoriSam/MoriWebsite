@@ -16,7 +16,8 @@ export function audioSnapshot(room) {
     approved: votes.at(-1)?.approved,
     questCount: quests.length,
     questSuccess: quests.at(-1)?.success,
-    lancelotSwitches: game?.history?.filter((entry) => entry.type === "lancelot_draw" && entry.switched).length ?? 0,
+    lancelotSwitches:
+      game?.self?.lancelotDraws?.filter((entry) => entry.switched).length ?? 0,
     winner: game?.result?.winner,
     event: game?.history?.at(-1)?.type,
   };
@@ -64,11 +65,14 @@ export function audioCue(type, current, previous) {
     if (current.phase !== previous.phase)
       return (
         {
+          opening: "night",
           night: "night",
+          lady: "team",
           discussion: "discussion",
           team: "team",
           vote: "vote",
           quest: "quest",
+          recruit: "team",
         }[current.phase] ?? null
       );
   }

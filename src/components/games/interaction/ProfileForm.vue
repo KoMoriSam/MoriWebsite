@@ -17,7 +17,6 @@
             :class="{ 'input-error': checked && !validName }"
             :value="displayName"
             :title="displayName"
-            :readonly="usingGithub"
             :disabled="disabled"
             :maxlength="usingGithub ? undefined : 24"
             required
@@ -92,9 +91,7 @@ const { t } = useLocale();
 const inputId = `player-nickname-${useId()}`;
 const input = ref(null);
 const usingGithub = computed(() => props.github && !!profile.value);
-const displayName = computed(() =>
-  usingGithub.value ? profile.value.name : props.nickname,
-);
+const displayName = computed(() => props.nickname);
 const validName = computed(
   () =>
     displayName.value.trim().length > 0 &&
@@ -102,7 +99,7 @@ const validName = computed(
     !/[\p{Cc}\p{Cf}]/u.test(displayName.value),
 );
 const updateNickname = (event) => {
-  if (!usingGithub.value) emit("update:nickname", event.target.value);
+  emit("update:nickname", event.target.value);
 };
 const chooseGithub = (event) => {
   const checked = event.target.checked;

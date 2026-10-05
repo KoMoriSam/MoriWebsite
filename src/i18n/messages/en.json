@@ -1259,8 +1259,15 @@
       "wait": "Keep your secret while the other players complete their night confirmation.",
       "progress": "Identities confirmed: {n}/{total}",
       "daybreak": "Dawn breaks. Everyone at the round table has a secret.",
-      "clericVision": "The starting Leader, {name}, is on the {side} side.",
-      "lancelotVision": "You recognize {name} as {role}. They also know your identity."
+      "clericVision": "First Leader {name} reported: {side}.",
+      "lancelotVision": "You recognize {name} as {role}. They also know your identity.",
+      "roleVision": "You recognize {name} as {role}.",
+      "merlinSignalWarning": "The Untrustworthy Servant may be among them; they are not necessarily all Evil.",
+      "openingVisionWarning": "Night information stays unchanged after later allegiance switches.",
+      "roleVisionLabel": "{role} you recognised",
+      "lancelotVisionWarning": "They also know your identity.",
+      "merlinSignalLabel": "Players seen by Merlin",
+      "merlinSignalVision": "Merlin's vision: {names}. The Untrustworthy Servant may be among them, so they are not all necessarily Evil."
     },
     "discussionHint": "{name} leads this round.",
     "discussionHintSelf": "You are the leader for this round.",
@@ -1291,7 +1298,10 @@
       "questWait": "Waiting for quest cards",
       "assassinateSelf": "Choose an assassination target",
       "assassinateConfirm": "Confirm your target",
-      "assassinateWait": "Waiting for the Assassin"
+      "assassinateWait": "Waiting for assassination",
+      "recruitSelf": "Choose a recruitment target",
+      "recruitConfirm": "Confirm recruitment target",
+      "recruitWait": "Waiting for recruitment"
     },
     "teamHint": "Leader {name} must select {n} players for the quest.",
     "teamHintSelf": "Choose {n} players for this quest.",
@@ -1336,17 +1346,17 @@
     "success": "Success",
     "failure": "Failure",
     "waitQuest": "Waiting for the quest team to play their secret cards.",
-    "assassinateHint": "Discussion has ended. The Assassin will lock in one target. Evil wins if it is Merlin; otherwise Good wins.",
+    "assassinateHint": "Discussion has ended. The player performing the assassination will lock in a target. Evil wins if it is Merlin; otherwise Good wins.",
     "assassinateHintSelf": "Discussion has ended. Lock in one target. Your side wins only if you find Merlin.",
     "evilDiscussion": {
       "hint": "The third quest succeeded. A two-minute discussion begins. Everyone's role remains secret; anyone may speak or claim a role.",
-      "next": "The Assassin can choose a target only after discussion. Any Evil player except Oberon may end it early.",
-      "confirmEnd": "End discussion early so the Assassin can choose a target? The remaining time will be skipped."
+      "next": "After discussion, recruitment (if the Untrustworthy Servant is enabled) or assassination begins. Any Evil player except Oberon may end discussion early.",
+      "confirmEnd": "End discussion early and proceed to recruitment or assassination? The remaining time will be skipped."
     },
     "target": "Assassination target",
     "chooseTarget": "Choose a player",
     "assassinate": "Assassinate",
-    "waitAssassin": "Waiting for the Assassin.",
+    "waitAssassin": "Waiting for the player performing the assassination.",
     "targetName": "Target: {name}",
     "targetNameSelf": "Target: you",
     "players": "Round table · {n}/10",
@@ -1363,7 +1373,11 @@
       "ally": "Evil ally",
       "candidate": "Possible Merlin",
       "hint": "Markers show only what you know. Unmarked players have unknown affiliations.",
-      "good": "Known Good"
+      "good": "Known Good",
+      "openingGood": "Initially Good",
+      "openingEvil": "Initially Evil",
+      "merlinSignal": "Merlin's vision · allegiance uncertain",
+      "currentUnknown": "Current allegiance unknown"
     },
     "leader": "Leader",
     "onTeam": "On the quest",
@@ -1487,17 +1501,20 @@
       "waiting": "Waiting for the leader to begin team selection.",
       "empty": "No public actions recorded for this quest yet.",
       "types": {
-        "lancelot_draw": "Lancelot allegiance card",
         "begin_team": "Begin team selection",
         "begin_evil_discussion": "Evil discussion begins",
-        "begin_assassinate": "Assassin begins target selection",
+        "begin_assassinate": "Choose the assassination target",
         "team": "Team proposed",
         "vote": "Team vote",
         "quest": "Quest result",
         "assassinate": "Assassination",
         "end": "Game ended",
         "dialogue": "Pair dialogue",
-        "reveal_role": "Role revealed"
+        "reveal_role": "Role revealed",
+        "begin_recruit": "Recruit the Untrustworthy Servant",
+        "recruit": "Recruit the Untrustworthy Servant",
+        "begin_lady": "Lady of the Lake",
+        "lady": "Examine loyalty"
       },
       "roleRevealed": "Two quests have failed. {name} is publicly revealed as {role}."
     },
@@ -1513,7 +1530,10 @@
       "vote": "Team vote",
       "quest": "Quest in progress",
       "assassinate": "Find Merlin",
-      "finished": "Game over"
+      "finished": "Game over",
+      "recruit": "Recruit the Untrustworthy Servant",
+      "opening": "First Leader",
+      "lady": "Lady of the Lake"
     },
     "roles": {
       "merlin": "Merlin",
@@ -1529,36 +1549,18 @@
       "brute": "Brute",
       "revealer": "Revealer",
       "good_lancelot": "Good Lancelot",
-      "evil_lancelot": "Evil Lancelot"
+      "evil_lancelot": "Evil Lancelot",
+      "untrustworthy_servant": "Untrustworthy Servant",
+      "trickster": "Trickster"
     },
     "lancelot": {
-      "title": "Lancelot rules",
+      "title": "Lancelot",
       "modes": {
         "fixed": "Fixed allegiance",
         "switching": "Changing allegiance"
       },
-      "pair": "Good and Evil Lancelot are configured together. Selecting or removing either also changes the other; they use one Good and one Evil slot.",
-      "rules": {
-        "nightTitle": "Night information",
-        "conversionTitle": "Allegiance cards",
-        "outcomeTitle": "Quests and victory",
-        "mutual": "Both Lancelots recognise each other at the start.",
-        "unchanged": "Their allegiances remain fixed throughout the game.",
-        "unrecognised": "The Lancelots do not recognise each other at the start.",
-        "evilVision": "Evil Lancelot sees no other Evil players. Other Evil players, except Oberon, see Evil Lancelot.",
-        "deck": "Shuffle 6 allegiance cards at the start: 4 No Change and 2 Switch Allegiance.",
-        "draw": "Publicly draw 1 card without replacement at the start of each new Quest. Rejected teams do not trigger another draw.",
-        "limit": "Allegiances can switch at most twice.",
-        "swap": "A Switch card swaps both Lancelots’ current allegiances; their character identities stay the same.",
-        "permissions": "Currently Good players can only play Success; currently Evil players may play Success or Fail.",
-        "settlement": "Final allegiance determines their winning team.",
-        "secret": "Allegiance changes do not publicly reveal either Lancelot’s identity."
-      },
       "current": "Current allegiance: {side}",
       "changed": "Lancelot allegiances switched. You now belong to {side}; your Quest cards and winning team have been updated.",
-      "publicSwitchTitle": "Lancelot allegiance switch",
-      "publicSwitchState": "Allegiances exchanged",
-      "publicSwitchHint": "A Switch card was drawn this round. Both Lancelots have exchanged their current allegiances; their identities remain secret.",
       "opening": "Opening allegiance: {side}",
       "currentHints": {
         "good": "You currently belong to Good. You can only play Success on Quests.",
@@ -1575,14 +1577,15 @@
         "switched": "Your allegiance has switched {n} time. You currently belong to {side}.",
         "returned": "Your allegiance has switched {n} times. You have returned to {side}."
       },
-      "switchRecord": "Switch Allegiance drawn: both Lancelots swap allegiances. Identities remain secret.",
-      "stayRecord": "No Change drawn: both Lancelots keep their current allegiances.",
       "won": "Your final allegiance is {side}. You won.",
       "lost": "Your final allegiance is {side}. You lost.",
       "roleHints": {
         "good_lancelot": "You start as Good. Your allegiance may switch during this game, and your available Quest cards change with your current allegiance.",
         "evil_lancelot": "You start as Evil. Your allegiance may switch during this game, and your available Quest cards change with your current allegiance."
-      }
+      },
+      "privateStay": "No Change was drawn. Your current allegiance stays the same.",
+      "switchTitle": "Lancelot allegiance switch",
+      "enableSwitch": "Enable allegiance changes"
     },
     "roleHints": {
       "merlin": "You are Good. You see Evil players except Mordred, including Oberon, but not their specific roles. Help quests succeed while keeping your identity secret.",
@@ -1598,11 +1601,14 @@
       "brute": "You are Evil and know Evil players except Oberon, but not their exact roles. You may Sabotage quests 1–3; after that, you must Execute.",
       "revealer": "You are Evil and know Evil players except Oberon, but not their exact roles. Your identity becomes public after the second failed quest.",
       "good_lancelot": "You are Good. You and Evil Lancelot recognize each other at night. Your allegiance is fixed, and you must Execute quests.",
-      "evil_lancelot": "You are Evil. You and Good Lancelot recognize each other at night. Your allegiance is fixed; you may Execute or Sabotage quests."
+      "evil_lancelot": "You are Evil. You and Good Lancelot recognize each other at night. Your allegiance is fixed; you may Execute or Sabotage quests.",
+      "untrustworthy_servant": "You are Good and know the Assassin, but Merlin sees you among Evil. Play only Success on Quests. If recruited, become Evil and assassinate Merlin instead of the Assassin.",
+      "trickster": "You are Evil and know the other Evil players except Oberon. When your loyalty is checked, you may report Good or Evil to conceal the truth."
     },
     "reference": "Reference",
     "catalog": {
-      "title": "Role card overview",
+      "title": "Overview",
+      "details": "Details",
       "paired": "Paired roles"
     },
     "config": {
@@ -1624,7 +1630,13 @@
         "optional": "Optional",
         "discouraged": "Not advised at this player count"
       },
-      "lancelots": "Lancelot pair"
+      "lancelots": "Lancelot pair",
+      "collections": {
+        "original": "Original roles",
+        "lancelot": "Lancelot expansion",
+        "bigBox": "Additional Big Box roles"
+      },
+      "lancelotVariant": "Allegiance changes use this site's variant"
     },
     "rulebook": {
       "title": "How to play",
@@ -1633,7 +1645,7 @@
       "steps": {
         "night": {
           "title": "Confirm your role at night",
-          "detail": "Roles are dealt randomly. Privately view your role and any players you may know. Daybreak starts once everyone confirms."
+          "detail": "Everyone acknowledges the first Leader, then privately views their role and night information. Day begins once all confirm."
         },
         "discussion": {
           "title": "Round-by-round discussion",
@@ -1663,7 +1675,7 @@
       "sequenceHint": "Hover over or tap a quest card to see its team size and special rule.",
       "playerCount": "{n} players",
       "questTeam": "Send {n} players on this quest.",
-      "night": "Roles are assigned at random. At night, privately view your role and anyone you are allowed to know. Daybreak begins once everyone confirms.",
+      "night": "Everyone acknowledges the first Leader, then privately views their role and night information. Day begins once all confirm.",
       "discussion": "Each round begins with discussion. In a slow round, everyone can speak for 30 seconds per player. In a fast round, the leader has 15 seconds to invite one player, followed by a 60-second dialogue. Team selection begins when time runs out or the leader ends discussion early.",
       "team": "The leader selects a quest team of the size shown below. Submitting the team automatically records the leader's approval.",
       "vote": "Other players secretly approve or reject. The team proceeds only with more than half the votes; a tie rejects it. Five consecutive rejections give Evil the win.",
@@ -1697,7 +1709,7 @@
       "CHAT_ROLE": "Choose a role included in this game's configuration.",
       "CHAT_QUEST": "Only discuss the current quest or an earlier quest.",
       "TEAM_ONLY": "Only quest team members can play a card.",
-      "ASSASSIN_ONLY": "Only the Assassin can choose the target.",
+      "ASSASSIN_ONLY": "Only the player currently performing recruitment or assassination can choose the target.",
       "EVIL_ONLY": "Only Evil players other than Oberon may end this discussion early.",
       "GOOD_CANNOT_FAIL": "Good players must play success.",
       "TEAM": "Invalid team size or members.",
@@ -1709,7 +1721,14 @@
       "DISCUSSION_SPEAKER": "Only the leader and invited player may speak during pair dialogue. Please wait for your turn.",
       "ROLE_PAIR": "Both Lancelots must be enabled or disabled together.",
       "LUNATIC_MUST_FAIL": "The Lunatic must play Fail on every quest they join.",
-      "BRUTE_CANNOT_FAIL": "The Brute may only play Success on quests 4 and 5."
+      "BRUTE_CANNOT_FAIL": "The Brute may only play Success on quests 4 and 5.",
+      "LADY_ONLY": "Only the Lady holder may choose a target.",
+      "LADY_TARGET": "Choose someone other than yourself or a previous Lady user.",
+      "LOYALTY_TARGET_ONLY": "Only the examined player may submit the loyalty card.",
+      "LOYALTY_CARD": "Choose a valid loyalty card.",
+      "LOYALTY_TRUTH": "This role must report its current loyalty truthfully.",
+      "LOYALTY_PENDING": "Complete the loyalty check before confirming your role.",
+      "LOYALTY_CHANGED": "This loyalty check has changed. Confirm the current check again."
     },
     "discussionTimer": {
       "label": "Discussion countdown",
@@ -1747,7 +1766,8 @@
       "assassinate": "Choose one player as your assassination target.",
       "slowDiscussion": "Open discussion: everyone may speak.",
       "fastDiscussion": "Pair dialogue: only you and the other speaker may talk.",
-      "evilDiscussion": "Pre-assassination discussion: anyone may speak or claim a role."
+      "evilDiscussion": "Pre-assassination discussion: anyone may speak or claim a role.",
+      "recruit": "Choose the player you think is the Untrustworthy Servant. You have one chance; if correct, they become Evil and perform the assassination."
     },
     "promptActions": {
       "team": "Choose players",
@@ -1778,7 +1798,125 @@
       "evilVictory": "Evil has sabotaged three quests and wins the game."
     },
     "questHintLunatic": "You are on this quest. The Lunatic must submit Fail. Your card cannot be changed after submission.",
-    "questHintBrute": "You are on this quest. The Brute must submit Success on quests 4 and 5. Your card cannot be changed after submission."
+    "questHintBrute": "You are on this quest. The Brute must submit Success on quests 4 and 5. Your card cannot be changed after submission.",
+    "untrustworthy": {
+      "title": "Untrustworthy Servant · Recruitment",
+      "recruit": "Recruit the Untrustworthy Servant",
+      "hintSelf": "Choose the player you think is the Untrustworthy Servant. You have one chance; if correct, they become Evil and perform the assassination.",
+      "hintWait": "Waiting for the Assassin's recruitment attempt. Assassination follows recruitment.",
+      "confirm": "Recruit {name}? You have only one chance and cannot change your choice.",
+      "success": "{name} was recruited and is now Evil. They will choose the assassination target instead of the Assassin.",
+      "failure": "Recruiting {name} failed. This player is not the Untrustworthy Servant; the Assassin will choose the assassination target.",
+      "recruitedHint": "You have been recruited and now belong to Evil. Assassinate Merlin instead of the Assassin; finding Merlin wins for Evil.",
+      "endgameHint": "Three Quests have succeeded. After discussion, the Assassin attempts recruitment, then the designated player assassinates. If Merlin survives, players currently on Good win."
+    },
+    "opening": {
+      "title": "First Leader",
+      "hint": "Everyone must acknowledge the first Leader before the reveal begins.",
+      "confirm": "Understood",
+      "progress": "Acknowledged {n}/{total}",
+      "confirmed": "Acknowledged; waiting for others"
+    },
+    "lady": {
+      "title": "Lady of the Lake",
+      "cardHint": "After Quests 2, 3 and 4, privately check one player's allegiance, then pass this token to them. You cannot check yourself or anyone who has used it. The Trickster may lie.",
+      "skills": "Optional skill tokens",
+      "slotFree": "Uses no role slot",
+      "choose": "Choose another player to privately examine their loyalty.",
+      "wait": "Waiting for {name} to complete the Lady of the Lake check.",
+      "inspect": "Examine loyalty",
+      "confirm": "Privately examine {name}? The token then passes to them.",
+      "record": "{name} examines {target} with the Lady of the Lake; the token then passes to the target.",
+      "holder": "Lady of the Lake"
+    },
+    "loyalty": {
+      "cardTitle": "Loyalty card",
+      "truthful": "Report truthfully",
+      "mayDisguise": "You may disguise allegiance",
+      "privateCard": "Only the examiner sees this",
+      "chooseCard": "Select this card",
+      "finalCard": "Final after confirmation",
+      "title": "Submit a private loyalty card",
+      "reply": "Secretly submit a loyalty card. The Trickster may lie; other roles must tell the truth.",
+      "confirm": "Privately report “{side}” to the examiner? This cannot be changed.",
+      "wait": "Waiting for the first Leader to submit a loyalty card.",
+      "result": "{name} reported: {side}.",
+      "private": "Only you can see this.",
+      "lieWarning": "The Trickster is enabled in this game, so the reported allegiance may be disguised.",
+      "changeWarning": "Allegiances may change in this game. This result records allegiance at the time of the check and does not update later.",
+      "openingWarning": "Allegiances may change in this game. This records the first Leader’s starting allegiance.",
+      "visionValue": "{name} · {side}",
+      "reportedGood": "Reported Good",
+      "reportedEvil": "Reported Evil"
+    },
+    "specialRules": {
+      "title": "Special roles and variant rules",
+      "labels": {
+        "ability": "Ability",
+        "night": "Night",
+        "quest": "Quest",
+        "check": "Check",
+        "trigger": "When",
+        "outcome": "Outcome",
+        "limit": "Limit"
+      },
+      "pair": "Good and Evil Lancelot join together, using one Good and one Evil slot.",
+      "pairConfig": "The pair uses one Good and one Evil slot. Selecting or removing either also changes the other.",
+      "roles": {
+        "percival": {
+          "vision": "Sees Merlin and Morgana without knowing which is which. Without Morgana, identifies Merlin."
+        },
+        "morgana": {
+          "vision": "Appears alongside Merlin to Percival; still recognises Evil allies."
+        },
+        "mordred": {
+          "vision": "Hidden from Merlin; still recognises Evil allies."
+        },
+        "oberon": {
+          "vision": "Neither sees nor is seen by other Evil players, but Merlin sees them."
+        },
+        "cleric": {
+          "vision": "Privately checks the first Leader’s allegiance, without learning their role.",
+          "check": "Always checks the original Leader. The Trickster may report a false allegiance."
+        },
+        "lunatic": {
+          "quest": "Must play Fail on every Quest they join."
+        },
+        "brute": {
+          "quest": "May play Success or Fail on Quests 1–3; only Success on Quests 4–5.",
+          "limit": "Uses the Quest number, not the number of successes or failures."
+        },
+        "revealer": {
+          "reveal": "Revealed to everyone after the second failed Quest. Quest cards and victory rules stay unchanged."
+        },
+        "untrustworthy_servant": {
+          "vision": "Knows the Assassin. Merlin sees them among Evil, but Evil players do not see them as an ally.",
+          "quest": "Only Success cards. Loyalty checks use their current actual allegiance.",
+          "recruit": "After three successful Quests and Evil discussion, the Assassin gets one recruitment guess.",
+          "outcome": "Correct: revealed, becomes Evil and assassinates instead. Incorrect: stays Good and the Assassin proceeds. Final allegiance determines victory."
+        },
+        "trickster": {
+          "check": "May report Good or Evil when checked by the Cleric or Lady.",
+          "limit": "Lying changes neither actual allegiance nor Quest cards or victory. Recognises Evil allies and is seen by Merlin."
+        }
+      },
+      "lancelot": {
+        "fixed": "Recognise each other at the start; allegiances stay fixed.",
+        "night": "Do not recognise each other. Initial Evil Lancelot sees no Evil allies; other Evil players, except Oberon, see them.",
+        "vision": "Opening vision stays fixed after switches; no night information is gained or lost.",
+        "deck": "Shuffle 5 cards: 3 No Change, 2 Switch. At most two switches.",
+        "draw": "Draw once without replacement at the start of Quests 3, 4 and 5. Rejected teams cause no extra draw.",
+        "private": "Only the two Lancelots receive results. Switches are never announced publicly.",
+        "permissions": "Currently Good: Success only. Currently Evil: Success or Fail.",
+        "outcome": "A switch swaps current allegiances, never character identities. Final allegiance determines victory."
+      },
+      "lady": {
+        "holder": "Starts with the player to the first Leader’s right. Recommended for 7+ players.",
+        "timing": "Checks after Quests 2, 3 and 4; skipped when the endgame begins.",
+        "result": "Privately learns the target’s allegiance at that moment, then passes the token to them. The Trickster may lie.",
+        "targets": "Cannot check yourself or anyone who has used the token. Results do not update after later allegiance changes."
+      }
+    }
   },
   "games": {
     "audio": {
@@ -1904,7 +2042,7 @@
     "novelGate": "Sign in to read chapters and search the novel text.",
     "fallback": "Sign in through Giscus comments",
     "close": "Close",
-    "githubProfile": "Use GitHub name and avatar",
+    "githubProfile": "Use GitHub avatar",
     "customProfile": "Custom name and default avatar",
     "saveProfile": "Save player profile",
     "profileError": "GitHub profile is unavailable. Retry or use a custom name.",

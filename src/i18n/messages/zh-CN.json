@@ -1259,8 +1259,15 @@
       "wait": "守住你的秘密，等待其他玩家完成夜晚确认。",
       "progress": "已确认身份 {n}/{total}",
       "daybreak": "天亮了，圆桌上的每个人都有自己的秘密。",
-      "clericVision": "开局队长 {name} 属于{side}。",
-      "lancelotVision": "你认出了 {name}：{role}。对方也知道你的身份。"
+      "clericVision": "首任队长 {name} 的查验结果：{side}。",
+      "lancelotVision": "你认出了 {name}：{role}。对方也知道你的身份。",
+      "roleVision": "你认出了 {name}：{role}。",
+      "merlinSignalWarning": "其中可能包含不可信忠臣，不能认定全是坏人。",
+      "openingVisionWarning": "开局所见不会随后续阵营变化更新。",
+      "roleVisionLabel": "你认出的{role}",
+      "lancelotVisionWarning": "对方也知道你的身份。",
+      "merlinSignalLabel": "你在夜晚看到的玩家",
+      "merlinSignalVision": "梅林所见：{names}。其中可能包含不可信忠臣，不能据此认定他们全是坏人。"
     },
     "discussionHint": "本轮队长是 {name}。",
     "discussionHintSelf": "你是本轮的队长。",
@@ -1291,7 +1298,10 @@
       "questWait": "等待任务队员出牌",
       "assassinateSelf": "请选择刺杀目标",
       "assassinateConfirm": "请确认刺杀目标",
-      "assassinateWait": "等待刺客决定"
+      "assassinateWait": "等待刺杀决定",
+      "recruitSelf": "请选择招募目标",
+      "recruitConfirm": "请确认招募目标",
+      "recruitWait": "等待刺客招募"
     },
     "teamHint": "队长 {name} 需要选择 {n} 名玩家执行任务。",
     "teamHintSelf": "请你选择 {n} 名玩家执行本次任务。",
@@ -1336,17 +1346,17 @@
     "success": "成功",
     "failure": "失败",
     "waitQuest": "等待任务队员秘密出牌。",
-    "assassinateHint": "讨论已结束，刺客将锁定一名玩家。刺中梅林则邪恶阵营获胜，否则好人获胜。",
+    "assassinateHint": "讨论已结束，由负责刺杀的玩家锁定一名目标。刺中梅林则邪恶阵营获胜，否则好人获胜。",
     "assassinateHintSelf": "讨论已结束。请锁定一名玩家作为刺杀目标；刺中梅林，你的阵营才能获胜。",
     "evilDiscussion": {
       "hint": "第三次任务成功，进入 2 分钟邪恶阵营讨论。所有人的身份仍保密；任何人都能发言，也可以自行声明身份。",
-      "next": "讨论结束后才可选刺杀目标。除奥伯伦外的邪恶阵营玩家可以提前结束讨论。",
-      "confirmEnd": "确定提前结束讨论，让刺客开始选择目标吗？剩余讨论时间将被跳过。"
+      "next": "讨论结束后进入招募（本局启用不可信忠臣时）或刺杀。除奥伯伦外的邪恶阵营玩家可以提前结束讨论。",
+      "confirmEnd": "确定提前结束讨论，进入招募或刺杀吗？剩余讨论时间将被跳过。"
     },
     "target": "刺杀目标",
     "chooseTarget": "选择一名玩家",
     "assassinate": "确认刺杀",
-    "waitAssassin": "等待刺客决定。",
+    "waitAssassin": "等待负责刺杀的玩家决定。",
     "targetName": "刺杀目标：{name}",
     "targetNameSelf": "刺杀目标：你",
     "players": "圆桌玩家 · {n}/10",
@@ -1363,7 +1373,11 @@
       "ally": "邪恶同伴",
       "candidate": "梅林候选",
       "hint": "标注仅代表你已知的信息；未标注的玩家阵营未知。",
-      "good": "已知好人"
+      "good": "已知好人",
+      "openingGood": "开局好人",
+      "openingEvil": "开局坏人",
+      "merlinSignal": "梅林所见 · 阵营未确定",
+      "currentUnknown": "当前阵营未确定"
     },
     "leader": "队长",
     "onTeam": "任务队员",
@@ -1487,17 +1501,20 @@
       "waiting": "等待队长开始组队。",
       "empty": "本任务尚无公开操作记录。",
       "types": {
-        "lancelot_draw": "兰斯洛特转换牌",
         "begin_team": "开始组队",
         "begin_evil_discussion": "邪恶阵营开始讨论",
-        "begin_assassinate": "刺客开始选择目标",
+        "begin_assassinate": "开始选择刺杀目标",
         "team": "提交队伍",
         "vote": "队伍表决",
         "quest": "任务结算",
         "assassinate": "刺杀",
         "end": "终止本局",
         "dialogue": "快车对话",
-        "reveal_role": "身份公开"
+        "reveal_role": "身份公开",
+        "begin_recruit": "招募不可信忠臣",
+        "recruit": "招募不可信忠臣",
+        "begin_lady": "湖中仙女",
+        "lady": "查验阵营"
       },
       "roleRevealed": "两个任务已失败，{name} 的{role}身份公开。"
     },
@@ -1513,7 +1530,10 @@
       "vote": "全员表决",
       "quest": "执行任务",
       "assassinate": "刺杀梅林",
-      "finished": "对局结束"
+      "finished": "对局结束",
+      "recruit": "招募不可信忠臣",
+      "opening": "本局首任队长",
+      "lady": "湖中仙女"
     },
     "roles": {
       "merlin": "梅林",
@@ -1529,36 +1549,18 @@
       "brute": "暴徒",
       "revealer": "揭露者",
       "good_lancelot": "善良兰斯洛特",
-      "evil_lancelot": "邪恶兰斯洛特"
+      "evil_lancelot": "邪恶兰斯洛特",
+      "untrustworthy_servant": "不可信忠臣",
+      "trickster": "骗子"
     },
     "lancelot": {
-      "title": "兰斯洛特玩法",
+      "title": "兰斯洛特",
       "modes": {
         "fixed": "固定阵营",
         "switching": "阵营转换"
       },
-      "pair": "善良与邪恶兰斯洛特成组配置，选择或取消任意一方会同步另一方，各占一个善恶名额。",
-      "rules": {
-        "nightTitle": "夜晚信息",
-        "conversionTitle": "转换牌",
-        "outcomeTitle": "任务与胜负",
-        "mutual": "开局两位兰斯洛特互认身份。",
-        "unchanged": "整局阵营保持不变。",
-        "unrecognised": "两位兰斯洛特开局不互认。",
-        "evilVision": "邪恶兰斯洛特不知道其他坏人，其他坏人（奥伯伦除外）能看到他。",
-        "deck": "使用 6 张转换牌：4 张“不转换”、2 张“转换”，开局洗牌。",
-        "draw": "每个新任务开始时公开抽 1 张，不放回；组队被否决不会重复抽牌。",
-        "limit": "最多发生 2 次转换。",
-        "swap": "发生转换时，两位兰斯洛特交换当前阵营，角色身份不变。",
-        "permissions": "当前好人只能执行任务，当前坏人可以执行或阻挠。",
-        "settlement": "最终按照当前阵营判定胜负。",
-        "secret": "转换过程中不会公开两位兰斯洛特的身份。"
-      },
       "current": "当前阵营：{side}",
       "changed": "兰斯洛特阵营已转换。你现在属于{side}，出牌权限与胜负归属已同步更新。",
-      "publicSwitchTitle": "兰斯洛特转换",
-      "publicSwitchState": "阵营已交换",
-      "publicSwitchHint": "本轮抽到转换牌。两位兰斯洛特已交换当前阵营，身份仍然保密。",
       "opening": "开局阵营：{side}",
       "currentHints": {
         "good": "你当前属于善良阵营。现在只能执行任务。",
@@ -1575,14 +1577,15 @@
         "switched": "你已发生 {n} 次阵营转换，当前属于{side}。",
         "returned": "你已发生 {n} 次阵营转换，当前已回到{side}。"
       },
-      "switchRecord": "抽到转换牌：两位兰斯洛特交换当前阵营，身份仍保密。",
-      "stayRecord": "抽到不转换牌：两位兰斯洛特保持当前阵营。",
       "won": "你最终属于{side}，本局获胜。",
       "lost": "你最终属于{side}，本局落败。",
       "roleHints": {
         "good_lancelot": "你开局属于好人，本局可能发生阵营转换。阵营变化后，任务权限也随当前阵营改变。",
         "evil_lancelot": "你开局属于坏人，本局可能发生阵营转换。阵营变化后，任务权限也随当前阵营改变。"
-      }
+      },
+      "privateStay": "本次抽到不转换牌，你的当前阵营保持不变。",
+      "switchTitle": "兰斯洛特转换",
+      "enableSwitch": "启用阵营转换"
     },
     "roleHints": {
       "merlin": "你属于好人，能看到除莫德雷德外的坏人，包括奥伯伦，但不知道他们的具体角色。帮助任务成功，同时隐藏自己。",
@@ -1598,15 +1601,18 @@
       "brute": "你属于坏人，知道除奥伯伦外的坏人，但不知道他们的具体角色。前三个任务可阻挠，之后只能执行。",
       "revealer": "你属于坏人，知道除奥伯伦外的坏人，但不知道他们的具体角色。第二个失败任务后，你的身份会公开。",
       "good_lancelot": "你属于好人，夜晚与邪恶兰斯洛特互相确认身份。阵营固定，只能执行任务。",
-      "evil_lancelot": "你属于坏人，夜晚与善良兰斯洛特互相确认身份。阵营固定，可执行或阻挠任务。"
+      "evil_lancelot": "你属于坏人，夜晚与善良兰斯洛特互相确认身份。阵营固定，可执行或阻挠任务。",
+      "untrustworthy_servant": "你属于好人，夜晚知道刺客，但梅林会将你视为坏人。只能执行任务；被招募后转为坏人，代刺客刺杀梅林。",
+      "trickster": "你属于坏人，知道除奥伯伦外的坏人。阵营被查验时，可以选择善良或邪恶来隐瞒真相。"
     },
     "reference": "资料",
     "catalog": {
-      "title": "角色卡总览",
+      "title": "总览",
+      "details": "详情",
       "paired": "成组配置"
     },
     "config": {
-      "title": "本局角色配置",
+      "title": "本局配置",
       "viewRole": "查看{name}的详情",
       "toggleRole": "启用或停用{name}",
       "hint": "特殊角色同阵营替换 · 普通角色自动补齐",
@@ -1624,16 +1630,22 @@
         "optional": "可选",
         "discouraged": "不建议当前人数使用"
       },
-      "lancelots": "兰斯洛特组"
+      "lancelots": "兰斯洛特组",
+      "collections": {
+        "original": "原版角色",
+        "lancelot": "兰斯洛特扩展",
+        "bigBox": "Big Box 附加角色"
+      },
+      "lancelotVariant": "转换玩法采用本站变体"
     },
     "rulebook": {
-      "title": "玩法指南",
+      "title": "游戏流程",
       "previousStep": "上一流程",
       "nextStep": "下一流程",
       "steps": {
         "night": {
           "title": "夜晚确认身份",
-          "detail": "系统随机发牌。每人私下查看自己的身份与可获知的玩家；全员确认后天亮。"
+          "detail": "先全员确认首任队长，再私下查看身份和夜晚信息；确认完毕后天亮。"
         },
         "discussion": {
           "title": "轮流议事",
@@ -1663,7 +1675,7 @@
       "sequenceHint": "悬停或点按任务牌，查看出发人数与特殊任务规则。",
       "playerCount": "{n} 人",
       "questTeam": "本次任务由 {n} 名队员执行。",
-      "night": "开局随机分配身份。夜晚独自查看身份和可获知的玩家；全员确认后天亮。",
+      "night": "先全员确认首任队长，再私下查看身份和夜晚信息；确认完毕后天亮。",
       "discussion": "每轮先议事。慢车按每人 30 秒计时，全员可发言；快车由队长在 15 秒内邀约一人，再进行 60 秒双人对话。计时结束或队长提前结束后进入组队。",
       "team": "队长按下表人数选择任务队伍。队长提交队伍时自动投赞成票。",
       "vote": "其余玩家秘密投赞成或反对；超过半数赞成才执行任务，平票视为否决。连续五次否决使坏人获胜。",
@@ -1697,7 +1709,7 @@
       "CHAT_ROLE": "请选择本局配置中的角色作为身份声明。",
       "CHAT_QUEST": "只能谈论当前或已经进行的任务。",
       "TEAM_ONLY": "只有任务队员可以出牌。",
-      "ASSASSIN_ONLY": "只有刺客可以决定目标。",
+      "ASSASSIN_ONLY": "只有当前负责招募或刺杀的玩家可以决定目标。",
       "EVIL_ONLY": "只有除奥伯伦外的邪恶阵营玩家可以提前结束讨论。",
       "GOOD_CANNOT_FAIL": "好人只能出成功票。",
       "TEAM": "队伍人数或成员无效。",
@@ -1709,7 +1721,14 @@
       "DISCUSSION_SPEAKER": "快车讨论仅允许队长与受邀玩家发言，请等待你的发言时段。",
       "ROLE_PAIR": "两位兰斯洛特必须同时启用或同时停用。",
       "LUNATIC_MUST_FAIL": "疯子参加任务时必须出阻挠牌。",
-      "BRUTE_CANNOT_FAIL": "暴徒在任务四、五只能出执行牌。"
+      "BRUTE_CANNOT_FAIL": "暴徒在任务四、五只能出执行牌。",
+      "LADY_ONLY": "只有湖中仙女持有者可以选择查验目标。",
+      "LADY_TARGET": "请选择除自己和历任使用者以外的玩家。",
+      "LOYALTY_TARGET_ONLY": "只有被查验者可以秘密提交阵营牌。",
+      "LOYALTY_CARD": "请选择有效的阵营牌。",
+      "LOYALTY_TRUTH": "该角色必须如实提交当前阵营。",
+      "LOYALTY_PENDING": "请先完成阵营牌查验，再确认身份。",
+      "LOYALTY_CHANGED": "这次阵营查验已变化，请重新确认当前查验。"
     },
     "discussionTimer": {
       "label": "讨论倒计时",
@@ -1747,7 +1766,8 @@
       "assassinate": "请选择一名玩家作为刺杀目标。",
       "slowDiscussion": "慢车讨论：所有人都可以发言。",
       "fastDiscussion": "快车对话：本轮只有你与对话玩家可以发言。",
-      "evilDiscussion": "刺杀前讨论：所有人可发言或自行声明身份。"
+      "evilDiscussion": "刺杀前讨论：所有人可发言或自行声明身份。",
+      "recruit": "请选择你认为是不可信忠臣的玩家。只有一次机会；猜中后由对方转为坏人并执行刺杀。"
     },
     "promptActions": {
       "team": "选择队员",
@@ -1778,7 +1798,125 @@
       "evilVictory": "坏人已破坏三个任务，赢得本局。"
     },
     "questHintLunatic": "你是本次任务的队员。疯子必须提交阻挠牌，提交后不能修改。",
-    "questHintBrute": "你是本次任务的队员。暴徒在任务四、五只能提交执行牌，提交后不能修改。"
+    "questHintBrute": "你是本次任务的队员。暴徒在任务四、五只能提交执行牌，提交后不能修改。",
+    "untrustworthy": {
+      "title": "不可信忠臣 · 招募",
+      "recruit": "招募不可信忠臣",
+      "hintSelf": "请选择你认为是不可信忠臣的玩家。只有一次机会；猜中后由对方转为坏人并执行刺杀。",
+      "hintWait": "等待刺客尝试招募不可信忠臣。招募结束后继续刺杀梅林。",
+      "confirm": "确认招募 {name}？只有一次机会，确认后不能更改。",
+      "success": "{name} 被成功招募，转为邪恶阵营，接下来代刺客选择刺杀目标。",
+      "failure": "招募 {name} 未成功。该玩家不是不可信忠臣，由刺客继续选择刺杀目标。",
+      "recruitedHint": "你已被招募，当前属于坏人。由你代刺客刺杀梅林；刺中则邪恶阵营获胜。",
+      "endgameHint": "好人已完成三个任务。讨论后刺客先尝试招募，再由指定玩家刺杀；梅林幸存则当前好人阵营获胜。"
+    },
+    "opening": {
+      "title": "本局首任队长",
+      "hint": "全员确认后，一同进入身份辨认。",
+      "confirm": "已知晓",
+      "progress": "已知晓 {n}/{total}",
+      "confirmed": "已知晓，等待其他玩家"
+    },
+    "lady": {
+      "title": "湖中仙女",
+      "cardHint": "任务二、三、四结算后，持有者私下查验一名玩家的阵营，再将此牌传给对方。不能查验自己或曾使用过此牌的玩家；骗子可能撒谎。",
+      "skills": "可选技能牌",
+      "slotFree": "不占角色名额",
+      "choose": "请选择一位玩家，私下查验其阵营。",
+      "wait": "等待 {name} 完成湖中仙女查验。",
+      "inspect": "查验阵营",
+      "confirm": "秘密查验 {name} 的阵营？查验后将技能牌传给对方。",
+      "record": "{name} 使用湖中仙女查验 {target}，技能牌随后传给对方。",
+      "holder": "湖中仙女"
+    },
+    "loyalty": {
+      "cardTitle": "阵营牌",
+      "truthful": "如实提交",
+      "mayDisguise": "可伪装阵营",
+      "privateCard": "仅查验者可见",
+      "chooseCard": "点击选牌",
+      "finalCard": "确认后不可修改",
+      "title": "秘密提交阵营牌",
+      "reply": "请秘密提交一张阵营牌。骗子可以选择伪装；其他角色必须如实提交。",
+      "confirm": "向查验者秘密提交「{side}」？提交后不可修改。",
+      "wait": "等待首任队长提交阵营牌。",
+      "result": "{name} 的查验结果：{side}。",
+      "private": "仅你可见。",
+      "lieWarning": "本局启用了骗子，查验结果可能是伪装。",
+      "changeWarning": "本局阵营可能变化；结果仅代表查验时的阵营，不会随后续变化更新。",
+      "openingWarning": "本局阵营可能变化；此处记录首任队长开局时的阵营。",
+      "visionValue": "{name} · {side}",
+      "reportedGood": "查验显示善良",
+      "reportedEvil": "查验显示邪恶"
+    },
+    "specialRules": {
+      "title": "特殊角色与扩展玩法",
+      "labels": {
+        "ability": "能力",
+        "night": "夜晚",
+        "quest": "任务",
+        "check": "查验",
+        "trigger": "时机",
+        "outcome": "结算",
+        "limit": "限制"
+      },
+      "pair": "善良与邪恶兰斯洛特成组加入，各占一个善恶名额。",
+      "pairConfig": "两位兰斯洛特成组，各占一个善恶名额；勾选或取消任意一方会同步另一方。",
+      "roles": {
+        "percival": {
+          "vision": "看到梅林与莫甘娜，但无法区分；未启用莫甘娜时可确定梅林。"
+        },
+        "morgana": {
+          "vision": "在派西维尔眼中与梅林混淆；仍参与坏人互认。"
+        },
+        "mordred": {
+          "vision": "不被梅林看到；仍参与坏人互认。"
+        },
+        "oberon": {
+          "vision": "与其他坏人互不认识，但仍被梅林看到。"
+        },
+        "cleric": {
+          "vision": "私下查验首任队长的阵营，不知道具体角色。",
+          "check": "始终查验开局确定的队长；骗子可能提交假阵营。"
+        },
+        "lunatic": {
+          "quest": "参加任务时必须阻挠。"
+        },
+        "brute": {
+          "quest": "任务 1–3 可执行或阻挠；任务 4–5 只能执行。",
+          "limit": "按任务序号计算，与成功、失败次数无关。"
+        },
+        "revealer": {
+          "reveal": "累计两次任务失败后，向全员公开身份；任务与胜负规则不变。"
+        },
+        "untrustworthy_servant": {
+          "vision": "知道刺客；梅林将其看作坏人，坏人不会将其视为同伴。",
+          "quest": "只能执行；被查验时仍按当前实际阵营提交。",
+          "recruit": "三个任务成功、邪恶讨论结束后，刺客有一次招募猜测。",
+          "outcome": "猜中：公开身份、转为坏人并代刺客刺杀；猜错：保持好人，由刺客刺杀。按最终阵营判定胜负。"
+        },
+        "trickster": {
+          "check": "被牧师或湖中仙女查验时，可提交善良或邪恶阵营牌。",
+          "limit": "伪装不改变真实阵营、任务权限或胜负；仍参与坏人互认，也被梅林看到。"
+        }
+      },
+      "lancelot": {
+        "fixed": "两人开局互认，整局阵营不变。",
+        "night": "开局互不认识；初始邪恶兰斯洛特不知道其他坏人，其他坏人（奥伯伦除外）知道他。",
+        "vision": "转换后保留开局视野，不会新增或清除夜晚信息。",
+        "deck": "5 张牌：3 张不转换、2 张转换；开局洗牌，最多转换两次。",
+        "draw": "任务 3、4、5 开始时各抽一张，不放回；否决组队不重复抽牌。",
+        "private": "抽牌结果仅两位兰斯洛特本人可见，不公开是否转换。",
+        "permissions": "当前好人只能执行；当前坏人可执行或阻挠。",
+        "outcome": "转换时交换当前阵营，原始角色不变；以最终阵营判定胜负。"
+      },
+      "lady": {
+        "holder": "首任队长右侧玩家先持有；建议 7 人及以上启用。",
+        "timing": "任务 2、3、4 结算后查验；进入终局时跳过。",
+        "result": "私下查看目标当时的阵营，随后将技能牌交给目标；骗子可能撒谎。",
+        "targets": "不可选自己或任何曾使用过技能的玩家；结果不随之后的阵营变化更新。"
+      }
+    }
   },
   "games": {
     "audio": {
@@ -1904,7 +2042,7 @@
     "novelGate": "登录后可阅读章节和搜索小说正文。",
     "fallback": "在 Giscus 评论中登录",
     "close": "关闭",
-    "githubProfile": "使用 GitHub 昵称和头像",
+    "githubProfile": "使用 GitHub 头像",
     "customProfile": "自定义昵称和默认头像",
     "saveProfile": "保存玩家资料",
     "profileError": "GitHub 资料暂不可用，可重试或使用自定义昵称。",

@@ -3,8 +3,16 @@ export const FAST_INVITE_SECONDS = 15;
 export const FAST_DIALOGUE_SECONDS = 60;
 export const ASSASSINATION_DISCUSSION_SECONDS = 120;
 export function canDiscuss(state, playerId) {
-  if (state.phase !== 'discussion') return state.phase !== 'night';
+  if (state.phase !== "discussion")
+    return !["opening", "night"].includes(state.phase);
   const discussion = state.discussion;
-  return discussion?.mode === 'slow' || (discussion?.mode === 'fast' && !!discussion.partnerId &&
-    [state.leaderId ?? state.participants[state.leaderIndex]?.id, discussion.partnerId].includes(playerId));
+  return (
+    discussion?.mode === "slow" ||
+    (discussion?.mode === "fast" &&
+      !!discussion.partnerId &&
+      [
+        state.leaderId ?? state.participants[state.leaderIndex]?.id,
+        discussion.partnerId,
+      ].includes(playerId))
+  );
 }

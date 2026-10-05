@@ -12,7 +12,40 @@
     "
   >
     <div class="flex min-w-0 items-center gap-2 p-2">
+      <div v-if="paired" class="flex min-w-0 flex-1 items-center gap-2">
+        <i
+          class="ri-links-line shrink-0 text-xl text-base-content/70"
+          aria-hidden="true"
+        ></i>
+        <div class="min-w-0 flex-1">
+          <span class="block font-serif text-sm font-semibold leading-5">{{
+            t("avalon.config.lancelots")
+          }}</span>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <button
+              v-for="member in LANCELOTS"
+              :key="member"
+              type="button"
+              class="link link-hover text-xs"
+              :class="isEvil(member) ? 'link-error' : 'link-success'"
+              :aria-label="
+                t('avalon.config.viewRole', {
+                  name: t(`avalon.roles.${member}`),
+                })
+              "
+              :title="t(`avalon.roles.${member}`)"
+              @click="emit('details', member)"
+            >
+              {{
+                t(isEvil(member) ? "avalon.night.evil" : "avalon.night.good")
+              }}
+              <span class="font-mono">× 1</span>
+            </button>
+          </div>
+        </div>
+      </div>
       <button
+        v-else
         type="button"
         class="flex min-w-0 flex-1 items-center gap-2 rounded-field text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         :aria-label="
@@ -32,8 +65,12 @@
           <span class="text-xs text-base-content/50">{{
             t(isEvil(role) ? "avalon.night.evil" : "avalon.night.good")
           }}</span>
-          <span v-if="LANCELOTS.includes(role)" class="ml-1 inline-flex items-center gap-0.5 text-xs text-base-content/50">
-            <i class="ri-links-line" aria-hidden="true"></i>{{ t('avalon.config.lancelots') }}
+          <span
+            v-if="LANCELOTS.includes(role)"
+            class="ml-1 inline-flex items-center gap-0.5 text-xs text-base-content/50"
+          >
+            <i class="ri-links-line" aria-hidden="true"></i
+            >{{ t("avalon.config.lancelots") }}
           </span>
         </span>
         <span
@@ -49,7 +86,11 @@
         :checked="enabled"
         :disabled="disabled"
         :aria-label="
-          t('avalon.config.toggleRole', { name: t(`avalon.roles.${role}`) })
+          t('avalon.config.toggleRole', {
+            name: paired
+              ? t('avalon.config.lancelots')
+              : t(`avalon.roles.${role}`),
+          })
         "
         @change="change"
       />
@@ -63,10 +104,11 @@ import { isEvil, LANCELOTS } from "../../../../../shared/games/avalon/index.js";
 const props = defineProps({
   role: { type: String, required: true },
   selectable: Boolean,
+  paired: Boolean,
   enabled: Boolean,
   disabled: Boolean,
   count: { type: Number, default: 1 },
-  recommendation: { type: String, default: 'optional' },
+  recommendation: { type: String, default: "optional" },
 });
 const emit = defineEmits(["change", "details"]);
 const { t } = useLocale();

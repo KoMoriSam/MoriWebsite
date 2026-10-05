@@ -92,7 +92,9 @@ const groups = computed(() =>
       tone: "text-success",
       mark: options.value.includes("good") ? "good" : null,
       roles: options.value.filter(
-        (mark) => Object.hasOwn(ROLE_ICONS, mark) && currentRoleAlignment(props.room, mark) === 'good',
+        (mark) =>
+          Object.hasOwn(ROLE_ICONS, mark) &&
+          currentRoleAlignment(props.room, mark) === "good",
       ),
     },
     {
@@ -102,7 +104,21 @@ const groups = computed(() =>
       tone: "text-error",
       mark: options.value.includes("evil") ? "evil" : null,
       roles: options.value.filter(
-        (mark) => Object.hasOwn(ROLE_ICONS, mark) && currentRoleAlignment(props.room, mark) === 'evil',
+        (mark) =>
+          Object.hasOwn(ROLE_ICONS, mark) &&
+          currentRoleAlignment(props.room, mark) === "evil",
+      ),
+    },
+    {
+      id: "unknown",
+      label: "avalon.knowledge.currentUnknown",
+      icon: "ri-question-line",
+      tone: "text-base-content/70",
+      mark: null,
+      roles: options.value.filter(
+        (mark) =>
+          Object.hasOwn(ROLE_ICONS, mark) &&
+          currentRoleAlignment(props.room, mark) === null,
       ),
     },
   ].filter((group) => group.roles.length),

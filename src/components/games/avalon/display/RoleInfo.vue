@@ -31,6 +31,7 @@
       :self="self"
       :self-id="selfId"
       :player-name="playerName"
+      :game-config="gameConfig"
     />
   </div>
 </template>
@@ -44,6 +45,7 @@ import RolePreviewPopover from "../interaction/RolePreviewPopover.vue";
 
 defineProps({
   self: { type: Object, required: true },
+  gameConfig: { type: Object, default: () => ({}) },
   selfId: { type: String, required: true },
   playerName: { type: Function, required: true },
 });

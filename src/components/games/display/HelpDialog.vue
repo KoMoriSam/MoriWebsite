@@ -23,7 +23,10 @@
   >
     <div
       class="modal-box flex max-h-[calc(100dvh-2rem)] min-h-0 w-[calc(100vw-2rem)] flex-col gap-3 overflow-hidden p-4"
-      :class="wide ? 'max-w-4xl' : 'max-w-xl'"
+      :class="[
+        wide ? 'max-w-4xl' : 'max-w-xl',
+        fixedHeight ? 'h-[min(48rem,calc(100dvh-2rem))]' : '',
+      ]"
     >
       <div class="flex shrink-0 items-center justify-between gap-2">
         <h2 :id="`${dialogId}-title`" class="font-serif text-lg font-semibold">
@@ -57,6 +60,7 @@ defineProps({
   title: { type: String, required: true },
   mobileOnly: { type: Boolean, default: true },
   wide: Boolean,
+  fixedHeight: Boolean,
 });
 const { t } = useLocale();
 const dialog = ref(null),

@@ -1,5 +1,5 @@
 <template>
-  <HelpDialog :title="t('avalon.reference')">
+  <HelpDialog :title="t('avalon.reference')" fixed-height>
     <template #default="{ previewTarget }"
       ><ReferenceContent
         class="min-h-0 flex-1"

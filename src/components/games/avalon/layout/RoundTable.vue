@@ -2,64 +2,150 @@
   <div
     class="min-w-0"
     :class="
-      room.phase !== 'night'
+      !['opening', 'night'].includes(room.phase)
         ? 'flex h-full min-h-0 flex-col overflow-hidden pb-[calc(4rem+env(safe-area-inset-bottom))] lg:block lg:overflow-visible lg:pb-0'
         : 'space-y-5'
     "
   >
-    <section v-if="room.phase === 'night'" class="card">
+    <section
+      v-if="room.phase === 'opening'"
+      class="flex min-h-0 flex-1 flex-col overflow-y-auto text-center"
+    >
       <div
-        class="card-body items-center gap-6 px-0 py-4 text-center max-lg:gap-3 max-lg:py-2"
+        class="my-auto flex w-full shrink-0 flex-col items-center gap-4 py-6"
       >
-        <hgroup class="flex flex-col gap-4 items-center max-lg:gap-2">
+        <h2 class="text-sm text-base-content/60">
+          {{ t("avalon.opening.title") }}
+        </h2>
+        <Avatar
+          :src="openingLeader?.avatarUrl || ''"
+          :name="playerName(room.openingLeaderId)"
+          class="[&>div]:size-20 sm:[&>div]:size-24 [&_i]:text-4xl [&_span]:text-4xl"
+        />
+        <p
+          class="max-w-full break-words font-serif text-2xl font-semibold sm:text-3xl"
+        >
+          {{ playerName(room.openingLeaderId) }}
+          <span
+            v-if="room.openingLeaderId === room.selfId"
+            class="text-base font-normal text-base-content/50 sm:text-lg"
+            >{{ t("games.you") }}</span
+          >
+        </p>
+        <p class="text-sm text-base-content/60">
+          {{ t("avalon.opening.hint") }}
+        </p>
+        <button
+          type="button"
+          class="btn"
+          :disabled="!canAct || room.self.openingConfirmed"
+          @click="run('confirm_opening')"
+        >
+          {{
+            t(
+              room.self.openingConfirmed
+                ? "avalon.opening.confirmed"
+                : "avalon.opening.confirm",
+            )
+          }}
+        </button>
+        <p role="status" class="text-sm text-base-content/60">
+          {{
+            t("avalon.opening.progress", {
+              n: room.openingCount,
+              total: room.players.length,
+            })
+          }}
+        </p>
+      </div>
+    </section>
+    <section v-if="room.phase === 'night'" ref="nightSection" class="card">
+      <div
+        class="card-body items-center gap-3 px-0 py-2 text-center lg:gap-4 lg:py-4"
+      >
+        <hgroup class="flex shrink-0 flex-col gap-2 items-center lg:gap-4">
           <div class="flex flex-wrap items-center justify-center gap-2">
             <h2 class="card-title font-serif text-xl sm:text-2xl">
               <i class="ri-moon-clear-line font-normal" aria-hidden="true"></i>
               {{ t("avalon.phases.night") }}
             </h2>
+          </div>
+          <p class="max-w-lg text-sm text-base-content/70">
+            {{ t("avalon.night.invitation") }}
             <button
               type="button"
-              class="btn btn-ghost btn-xs"
+              class="link link-hover link-primary text-xs"
               @click="reviewConfiguration"
             >
               {{ t("avalon.config.title") }}
+              <i class="ri-external-link-line" aria-hidden="true"></i>
             </button>
-          </div>
-          <p class="max-w-lg text-pretty text-sm text-base-content/70">
-            {{ t("avalon.night.invitation") }}
           </p>
         </hgroup>
-        <IdentityCard
-          class="max-w-xs max-lg:w-[min(100%,44dvh)]"
-          :self="room.self"
-          :self-id="room.selfId"
-          :player-name="playerName"
-          :face-up="showRole"
-          :disabled="!room.self.roleRevealed && !canAct"
-          :back-title="
-            t(
-              room.self.nightConfirmed
-                ? 'avalon.night.confirmed'
-                : 'avalon.night.sealed',
-            )
-          "
-          :back-hint="
-            t(
-              room.self.nightConfirmed
-                ? 'avalon.night.wait'
-                : 'avalon.night.peek',
-            )
-          "
-          @flip="flipIdentity"
-        />
+        <div
+          ref="nightCards"
+          class="grid w-full min-w-0 grid-cols-[repeat(var(--night-card-count),minmax(0,1fr))] gap-3"
+          :class="nightCardCount === 3 ? 'max-sm:grid-cols-2' : ''"
+          :style="{
+            '--night-card-count': nightCardCount,
+            maxWidth: `${nightCardGridWidth}px`,
+          }"
+        >
+          <IdentityCard
+            :class="
+              nightCardCount === 3
+                ? 'col-start-1 col-span-2 row-start-1 justify-self-center sm:col-start-2 sm:col-span-1'
+                : ''
+            "
+            :self="room.self"
+            :game-config="room.gameConfig"
+            :self-id="room.selfId"
+            :player-name="playerName"
+            :face-up="showRole"
+            :disabled="!room.self.roleRevealed && !canAct"
+            :back-title="
+              t(
+                room.self.nightConfirmed
+                  ? 'avalon.night.confirmed'
+                  : 'avalon.night.sealed',
+              )
+            "
+            :back-hint="
+              t(
+                room.self.nightConfirmed
+                  ? 'avalon.night.wait'
+                  : 'avalon.night.peek',
+              )
+            "
+            @flip="flipIdentity"
+          />
+          <LoyaltyReply
+            inline
+            :request="room.self.loyaltyRequest"
+            :can-act="canAct"
+            :run="run"
+          />
+        </div>
+        <p
+          v-if="room.self.loyaltyPending && !room.self.loyaltyRequest"
+          role="status"
+          class="shrink-0 text-xs text-base-content/60"
+        >
+          {{ t("avalon.loyalty.wait") }}
+        </p>
         <button
           type="button"
-          class="btn"
+          class="btn shrink-0"
           :class="{
             invisible:
               !room.self.role || (!showRole && !room.self.nightConfirmed),
           }"
-          :disabled="!canAct || !showRole || room.self.nightConfirmed"
+          :disabled="
+            !canAct ||
+            !showRole ||
+            room.self.nightConfirmed ||
+            room.self.loyaltyPending
+          "
           @click="run('confirm_role')"
         >
           {{
@@ -73,7 +159,7 @@
         <p
           role="status"
           aria-live="polite"
-          class="text-sm text-base-content/60"
+          class="shrink-0 text-sm text-base-content/60"
         >
           {{
             t("avalon.night.progress", {
@@ -85,7 +171,7 @@
       </div>
     </section>
     <div
-      v-if="room.phase !== 'night'"
+      v-if="!['opening', 'night'].includes(room.phase)"
       class="min-w-0 lg:grid lg:h-full lg:min-h-0 lg:grid-cols-1 xl:grid-cols-[minmax(16rem,1fr)_auto_minmax(0,1.5fr)] lg:grid-rows-[minmax(0,1fr)] lg:items-start"
       :class="
         ['discussion', 'history'].includes(mobilePanel)
@@ -103,7 +189,7 @@
       >
         <div class="flex h-full min-h-0 min-w-0 flex-col lg:gap-5">
           <div
-            v-if="room.phase !== 'night'"
+            v-if="!['opening', 'night'].includes(room.phase)"
             :id="`${mobilePanelId}-agenda`"
             class="min-h-0 flex-1 flex-col gap-3 lg:pr-2"
             :class="mobilePanel === 'agenda' ? 'flex' : 'hidden lg:flex'"
@@ -199,18 +285,43 @@
                     {{ t("avalon.evilDiscussion.next") }}
                   </p>
                 </template>
-                <template v-else-if="room.phase === 'assassinate'">
+                <template v-else-if="room.phase === 'lady'">
+                  <p class="text-sm leading-6">
+                    {{
+                      t(
+                        selectionMode === "lady"
+                          ? "avalon.lady.choose"
+                          : room.self.loyaltyRequest
+                            ? "avalon.loyalty.title"
+                            : "avalon.lady.wait",
+                        { name: playerName(room.lady.holderId) },
+                      )
+                    }}
+                  </p>
+                </template>
+                <template v-else-if="room.phase === 'recruit'">
                   <p class="text-sm leading-6">
                     {{
                       t(
                         room.self.role === "assassin"
+                          ? "avalon.untrustworthy.hintSelf"
+                          : "avalon.untrustworthy.hintWait",
+                      )
+                    }}
+                  </p>
+                </template>
+                <template v-else-if="room.phase === 'assassinate'">
+                  <p class="text-sm leading-6">
+                    {{
+                      t(
+                        canAssassinate
                           ? "avalon.assassinateHintSelf"
                           : "avalon.assassinateHint",
                       )
                     }}
                   </p>
                   <p
-                    v-if="room.self.role !== 'assassin'"
+                    v-if="!canAssassinate"
                     class="text-sm text-base-content/60"
                   >
                     {{ t("avalon.waitAssassin") }}
@@ -251,7 +362,7 @@
             </div>
           </div>
           <div
-            v-if="room.phase !== 'night'"
+            v-if="!['opening', 'night'].includes(room.phase)"
             :id="`${mobilePanelId}-table`"
             class="min-h-0 space-y-5 max-lg:flex-1 max-lg:flex-col max-lg:gap-3 max-lg:space-y-0 max-lg:overflow-hidden lg:shrink-0"
             :class="mobilePanel === 'table' ? 'max-lg:flex' : 'hidden lg:block'"
@@ -266,7 +377,10 @@
               class="flex max-h-full min-h-0 shrink-0 flex-col gap-3 lg:gap-5"
             >
               <QuestList
-                v-if="room.game > 0 && !['lobby', 'night'].includes(room.phase)"
+                v-if="
+                  room.game > 0 &&
+                  !['lobby', 'opening', 'night'].includes(room.phase)
+                "
                 :room="room"
               />
 
@@ -292,7 +406,9 @@
               </div>
 
               <section
-                v-if="room.phase !== 'night' && room.self.role"
+                v-if="
+                  !['opening', 'night'].includes(room.phase) && room.self.role
+                "
                 class="min-h-0 min-w-0 overflow-y-auto overscroll-contain scrollbar-thin"
               >
                 <ResultCard
@@ -306,6 +422,7 @@
                 <BallotCards
                   v-else-if="isQuestMember"
                   :self="room.self"
+                  :game-config="room.gameConfig"
                   :self-id="room.selfId"
                   :player-name="playerName"
                   mode="quest"
@@ -320,6 +437,7 @@
                 <BallotCards
                   v-else
                   :self="room.self"
+                  :game-config="room.gameConfig"
                   :self-id="room.selfId"
                   :player-name="playerName"
                   :active="room.phase === 'vote'"
@@ -348,7 +466,7 @@
           :class="mobilePanel === 'players' ? 'max-lg:flex-1' : 'max-lg:hidden'"
         >
           <div
-            v-if="room.phase !== 'night'"
+            v-if="!['opening', 'night'].includes(room.phase)"
             :id="`${mobilePanelId}-players`"
             class="flex min-h-0 flex-1 flex-col"
             :class="
@@ -430,7 +548,9 @@
                   }}</span>
                 </div>
                 <div
-                  v-else-if="selectionMode === 'assassinate'"
+                  v-else-if="
+                    ['assassinate', 'recruit', 'lady'].includes(selectionMode)
+                  "
                   role="status"
                   class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80 lg:hidden"
                 >
@@ -439,9 +559,20 @@
                     aria-hidden="true"
                   ></i>
                   <span class="min-w-0">{{
-                    t("avalon.mobileHints.assassinate")
+                    t(
+                      selectionMode === "lady"
+                        ? "avalon.lady.choose"
+                        : `avalon.mobileHints.${selectionMode}`,
+                    )
                   }}</span>
                 </div>
+                <LoyaltyReply
+                  v-if="room.phase === 'lady'"
+                  popover
+                  :request="room.self.loyaltyRequest"
+                  :can-act="canAct"
+                  :run="run"
+                />
                 <ol
                   class="grid min-h-0 flex-1 content-start gap-2 overflow-y-auto overscroll-contain p-1 scrollbar-thin sm:grid-cols-2 lg:grid-cols-1"
                 >
@@ -528,13 +659,8 @@
                           :class="
                             portraits[player.id]?.guessed
                               ? 'border-base-content/30'
-                              : portraits[player.id]
-                                ? currentRoleAlignment(
-                                    room,
-                                    portraits[player.id].role,
-                                  ) === 'evil'
-                                  ? 'border-error/40'
-                                  : 'border-success/40'
+                              : knowledge[player.id]?.tone === 'evil'
+                                ? 'border-error/40'
                                 : 'border-base-300'
                           "
                         >
@@ -576,7 +702,7 @@
                         ></label
                       >
                       <div
-                        class="mt-1 flex flex-wrap gap-1 text-xs text-base-content/60"
+                        class="mt-1 flex flex-wrap items-center gap-1 text-xs text-base-content/60"
                       >
                         <span v-if="player.id === room.hostId">{{
                           t("games.host")
@@ -606,13 +732,22 @@
                           )
                         }}</span>
                         <span
-                          v-if="knowledge[player.id]"
+                          v-if="
+                            knowledge[player.id] &&
+                            !(
+                              loyaltyReports[player.id] &&
+                              [
+                                'avalon.loyalty.reportedGood',
+                                'avalon.loyalty.reportedEvil',
+                              ].includes(knowledge[player.id].label)
+                            )
+                          "
                           class="inline-flex items-center gap-1"
                           :class="
                             knowledge[player.id].tone === 'evil'
                               ? 'text-error'
                               : knowledge[player.id].tone === 'good'
-                                ? 'text-success'
+                                ? ''
                                 : 'text-warning'
                           "
                         >
@@ -622,10 +757,36 @@
                           ></i>
                           {{ t(knowledge[player.id].label) }}
                         </span>
-                        <span v-else class="inline-flex items-center gap-1">
+                        <span
+                          v-else-if="!knowledge[player.id]"
+                          class="inline-flex items-center gap-1"
+                        >
                           <i class="ri-question-line" aria-hidden="true"></i>
                           {{ t("avalon.knowledge.unknown") }}
                         </span>
+                        <button
+                          v-if="loyaltyReports[player.id]"
+                          type="button"
+                          class="badge badge-ghost badge-xs gap-1"
+                          :aria-label="
+                            t('avalon.loyalty.result', {
+                              name: player.nickname,
+                              side: t(
+                                `avalon.night.${loyaltyReports[player.id].alignment}`,
+                              ),
+                            })
+                          "
+                          @click="showLoyaltyResult(loyaltyReports[player.id])"
+                        >
+                          <i class="ri-eye-line" aria-hidden="true"></i>
+                          {{
+                            t(
+                              loyaltyReports[player.id].alignment === "good"
+                                ? "avalon.loyalty.reportedGood"
+                                : "avalon.loyalty.reportedEvil",
+                            )
+                          }}
+                        </button>
                         <button
                           v-if="player.id === room.selfId && lancelotStatus"
                           type="button"
@@ -641,6 +802,24 @@
                           {{
                             t(`avalon.lancelot.states.${lancelotStatus.label}`)
                           }}
+                        </button>
+                        <button
+                          v-if="room.lady?.holderId === player.id"
+                          type="button"
+                          class="badge badge-ghost badge-xs h-auto min-h-5 gap-1"
+                          :aria-label="
+                            t('avalon.config.viewRole', {
+                              name: t('avalon.lady.title'),
+                            })
+                          "
+                          @click="skillPopover?.open()"
+                        >
+                          <img
+                            :src="SKILL_CARDS.lady.image"
+                            alt=""
+                            class="size-4 shrink-0 rounded-full object-cover object-top"
+                          />
+                          {{ t("avalon.lady.holder") }}
                         </button>
                         <span
                           v-if="marks[player.id]"
@@ -666,13 +845,28 @@
                   {{ t("avalon.propose") }}
                 </button>
                 <button
-                  v-if="selectionMode === 'assassinate'"
+                  v-if="selectionMode === 'lady'"
+                  type="button"
+                  class="btn shrink-0"
+                  :disabled="!canAct || !target"
+                  @click="inspectLoyalty"
+                >
+                  {{ t("avalon.lady.inspect") }}
+                </button>
+                <button
+                  v-if="['assassinate', 'recruit'].includes(selectionMode)"
                   type="button"
                   class="btn shrink-0"
                   :disabled="!canAct || !target"
                   @click="assassinate"
                 >
-                  {{ t("avalon.assassinate") }}
+                  {{
+                    t(
+                      selectionMode === "recruit"
+                        ? "avalon.untrustworthy.recruit"
+                        : "avalon.assassinate",
+                    )
+                  }}
                 </button>
               </div>
             </section>
@@ -683,7 +877,7 @@
 
     <NotesMenu ref="notesMenu" :room="room" :marks="marks" @mark="markPlayer" />
     <div
-      v-if="room.phase !== 'night' && !desktop"
+      v-if="!['opening', 'night'].includes(room.phase) && !desktop"
       :id="`${mobilePanelId}-discussion`"
       class="min-h-0 flex-1 flex-col gap-3 px-1.5"
       :class="mobilePanel === 'discussion' ? 'flex' : 'hidden'"
@@ -740,7 +934,7 @@
     </div>
 
     <section
-      v-if="room.phase !== 'night' && !desktop"
+      v-if="!['opening', 'night'].includes(room.phase) && !desktop"
       :id="`${mobilePanelId}-history`"
       class="min-h-0 flex-1"
       :class="mobilePanel === 'history' ? 'flex' : 'hidden'"
@@ -769,6 +963,29 @@
         </ol>
       </div>
     </section>
+    <RolePreviewPopover ref="skillPopover" skill="lady" />
+    <RolePreviewPopover
+      ref="loyaltyPopover"
+      :dialog-label="
+        t(
+          loyaltyResult?.source === 'cleric'
+            ? 'avalon.opening.title'
+            : 'avalon.lady.title',
+        )
+      "
+      :close-on-card-click="false"
+      @closed="loyaltyResult = null"
+    >
+      <LoyaltyReply
+        v-if="loyaltyResult"
+        preview
+        :result="loyaltyResult"
+        :game-config="room.gameConfig"
+        :player-name="playerName"
+        :run="run"
+        @dismiss="loyaltyPopover?.close()"
+      />
+    </RolePreviewPopover>
     <RolePreviewPopover
       ref="switchPopover"
       allegiance-switch
@@ -778,7 +995,7 @@
       @closed="finishSwitchPresentation"
     />
     <MobileDock
-      v-if="room.phase !== 'night'"
+      v-if="!['opening', 'night'].includes(room.phase)"
       :items="dockItems"
       :panel="mobilePanel"
       :panel-id="mobilePanelId"
@@ -788,19 +1005,22 @@
   </div>
 </template>
 <script setup>
-import { computed, h, onBeforeUnmount, ref, useId, watch } from "vue";
+import { computed, h, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useLocale } from "@/i18n";
-import { useMediaQuery } from "@vueuse/core";
+import { useMediaQuery, useResizeObserver, useWindowSize } from "@vueuse/core";
 import { useModal } from "@/composables/useModal";
 import {
   selfAlignment,
   roleAlignment,
+  ladyTargetIds,
   LANCELOTS,
 } from "../../../../../shared/games/avalon/index.js";
 import { useToast } from "@/composables/useToast";
 import MobileDock from "../../layout/MobileDock.vue";
 import IdentityCard from "../display/IdentityCard.vue";
+import LoyaltyReply from "../interaction/LoyaltyReply.vue";
 import RolePreviewPopover from "../interaction/RolePreviewPopover.vue";
+import Avatar from "@/components/auth/Avatar.vue";
 import ConfigurationSummary from "../display/ConfigurationSummary.vue";
 import BallotCards from "../interaction/BallotCards.vue";
 import ResultCard from "../display/ResultCard.vue";
@@ -813,9 +1033,10 @@ import QuestList from "../display/QuestList.vue";
 import AgendaSummary from "../display/AgendaSummary.vue";
 import {
   knownPlayer,
+  possibleRoles,
   ROLE_ICONS,
+  SKILL_CARDS,
   roleImage,
-  currentRoleAlignment,
   playerAlignment,
 } from "@/games/avalon/presentation";
 import { possibleMarks } from "@/games/avalon/notes";
@@ -829,6 +1050,7 @@ const props = defineProps({
 const emit = defineEmits(["request-sidebar-panel"]);
 const { t } = useLocale();
 const modal = useModal();
+const skillPopover = ref(null);
 const toast = useToast();
 const room = computed(() => ({
   ...props.room,
@@ -841,13 +1063,68 @@ const room = computed(() => ({
       : {}),
   })),
 }));
+const openingLeader = computed(() =>
+  room.value.players.find((player) => player.id === room.value.openingLeaderId),
+);
+const nightCardCount = computed(
+  () => 1 + (room.value.self.loyaltyRequest?.choices.length ?? 0),
+);
+const nightSection = ref(null);
+const nightCards = ref(null);
+const nightCardSpace = ref(null);
+const nightCardGap = ref(12);
+const narrowNight = useMediaQuery("(max-width: 639px)");
+const { height: viewportHeight } = useWindowSize();
+const nightCardGridWidth = computed(() => {
+  const height =
+    nightCardSpace.value ?? Math.max(120, viewportHeight.value - 260);
+  if (narrowNight.value && nightCardCount.value === 3)
+    return Math.max(1, ((height - nightCardGap.value / 4) * 4) / 9);
+  return (
+    Math.min(320, (height * 2) / 3) * nightCardCount.value +
+    nightCardGap.value * (nightCardCount.value - 1)
+  );
+});
+function fitNightCards() {
+  const section = nightSection.value;
+  const cards = nightCards.value;
+  const main = section?.closest("main");
+  if (!section || !cards || !main) return;
+  const sectionBounds = section.getBoundingClientRect();
+  const cardBounds = cards.getBoundingClientRect();
+  const beforeCards = cardBounds.top - main.getBoundingClientRect().top;
+  const afterCards =
+    sectionBounds.bottom -
+    cardBounds.bottom +
+    (parseFloat(getComputedStyle(main).paddingBottom) || 0);
+  nightCardGap.value = parseFloat(getComputedStyle(cards).rowGap) || 0;
+  nightCardSpace.value = Math.max(
+    1,
+    Math.floor(viewportHeight.value - beforeCards - afterCards),
+  );
+}
+useResizeObserver(
+  [
+    nightSection,
+    nightCards,
+    computed(() => nightSection.value?.closest("main")),
+  ],
+  fitNightCards,
+);
+watch(
+  [viewportHeight, narrowNight, nightCardCount, () => room.value.phase],
+  () => {
+    void nextTick(fitNightCards);
+  },
+  { flush: "post" },
+);
 const run = (...args) => props.run(...args);
 const lancelotStatus = computed(() => {
   const self = room.value.self;
   if (self.lancelotMode !== "switching" || !LANCELOTS.includes(self.role))
     return null;
-  const count = room.value.history.filter(
-    (entry) => entry.type === "lancelot_draw" && entry.switched,
+  const count = (self.lancelotDraws ?? []).filter(
+    (entry) => entry.switched,
   ).length;
   const state =
     count === 0 ? "unchanged" : count === 1 ? "switched" : "returned";
@@ -1027,6 +1304,7 @@ const recordedQuests = computed(() =>
 );
 let questResultModal = null;
 let voteResultModal = null;
+let recruitmentModal = null;
 let voteModalPhase = null;
 const switchPopover = ref(null);
 const switchFaceUp = ref(false);
@@ -1038,6 +1316,14 @@ let switchFlipTimer = 0;
 let switchCloseTimer = 0;
 let switchResumeTimer = 0;
 let pendingQuestResult = null;
+let pendingLoyaltyResult = null;
+const loyaltyPopover = ref(null);
+const loyaltyResult = ref(null);
+
+async function showLoyaltyResult(entry) {
+  loyaltyResult.value = entry;
+  await loyaltyPopover.value?.open();
+}
 
 function clearSwitchTimers() {
   window.clearTimeout(switchFlipTimer);
@@ -1050,6 +1336,9 @@ function resetSwitchPresentation() {
   switchPresentation += 1;
   switchPresenting = false;
   pendingQuestResult = null;
+  pendingLoyaltyResult = null;
+  loyaltyPopover.value?.close();
+  loyaltyResult.value = null;
   switchPopover.value?.close();
 }
 
@@ -1063,10 +1352,14 @@ function finishSwitchPresentation() {
     const showResult = pendingQuestResult;
     pendingQuestResult = null;
     showResult?.();
+    const showLoyalty = pendingLoyaltyResult;
+    pendingLoyaltyResult = null;
+    showLoyalty?.();
   }, 300);
 }
 
 async function presentLancelotSwitch() {
+  if (!LANCELOTS.includes(room.value.self.role)) return;
   resetSwitchPresentation();
   const presentation = switchPresentation;
   switchFaceUp.value = false;
@@ -1089,18 +1382,12 @@ async function presentLancelotSwitch() {
   voteModalPhase = null;
   await switchPopover.value?.open();
   if (presentation !== switchPresentation || !switchPresenting) return;
-  switchFlipTimer = window.setTimeout(
-    () => {
-      switchFaceUp.value = true;
-    },
-    switchSelf.value ? 1000 : 400,
-  );
-  switchCloseTimer = window.setTimeout(
-    () => {
-      switchPopover.value?.close();
-    },
-    switchSelf.value ? 4400 : 3400,
-  );
+  switchFlipTimer = window.setTimeout(() => {
+    switchFaceUp.value = true;
+  }, 1000);
+  switchCloseTimer = window.setTimeout(() => {
+    switchPopover.value?.close();
+  }, 4400);
 }
 
 watch(
@@ -1108,7 +1395,7 @@ watch(
     () => room.value.code,
     () => room.value.game,
     () => room.value.selfId,
-    () => room.value.history,
+    () => room.value.self.lancelotDraws ?? [],
     () => room.value.phase,
   ],
   ([code, game, selfId, history, phase], previous) => {
@@ -1122,16 +1409,37 @@ watch(
       resetSwitchPresentation();
       return;
     }
-    // Public draw records contain no player identities; existing snapshots are not replayed.
-    if (
-      history
-        .slice(previous[3].length)
-        .some((entry) => entry.type === "lancelot_draw" && entry.switched)
-    ) {
+    // Private draw snapshots are never replayed on a reconnect.
+    if (history.slice(previous[3].length).some((entry) => entry.switched)) {
       void presentLancelotSwitch();
+    } else if (history.length > previous[3].length) {
+      toast.info(t("avalon.lancelot.privateStay"));
     }
   },
   { immediate: true },
+);
+watch(
+  [
+    () => room.value.code,
+    () => room.value.game,
+    () => room.value.self.loyaltyObservations ?? [],
+  ],
+  ([code, game, observations], previous) => {
+    if (
+      !previous ||
+      code !== previous[0] ||
+      game !== previous[1] ||
+      observations.length <= previous[2].length
+    )
+      return;
+    const entry = observations.at(-1);
+    if (!["lady", "cleric"].includes(entry.source)) return;
+    const showResult = () => {
+      void showLoyaltyResult(entry);
+    };
+    if (switchPresenting) pendingLoyaltyResult = showResult;
+    else showResult();
+  },
 );
 watch(
   [() => room.value.code, () => room.value.game, () => room.value.quests],
@@ -1150,7 +1458,15 @@ watch(
       failures === 3
         ? [t("avalon.questResult.evilVictory")]
         : successes === 3
-          ? [t("avalon.questResult.assassination")]
+          ? [
+              t(
+                room.value.gameConfig?.specialRoles?.includes(
+                  "untrustworthy_servant",
+                )
+                  ? "avalon.untrustworthy.endgameHint"
+                  : "avalon.questResult.assassination",
+              ),
+            ]
           : [
               t("avalon.questResult.goodRemaining", 3 - successes),
               t("avalon.questResult.evilRemaining", 3 - failures),
@@ -1309,11 +1625,38 @@ watch(
     voteModalPhase = null;
   },
 );
+watch(
+  [() => room.value.code, () => room.value.game, () => room.value.history],
+  ([code, game, history], previous) => {
+    if (!previous || code !== previous[0] || game !== previous[1]) {
+      recruitmentModal?.close();
+      recruitmentModal = null;
+      return;
+    }
+    const result = history
+      .slice(previous[2].length)
+      .find((entry) => entry.type === "recruit");
+    if (!result) return;
+    questResultModal?.close();
+    recruitmentModal?.close();
+    recruitmentModal = modal.info(
+      t("avalon.untrustworthy.recruit"),
+      t(
+        result.success
+          ? "avalon.untrustworthy.success"
+          : "avalon.untrustworthy.failure",
+        { name: playerName(result.targetId) },
+      ),
+    );
+  },
+  { immediate: true },
+);
 onBeforeUnmount(() => {
   resetSwitchPresentation();
   configurationModal?.close();
   questResultModal?.close();
   voteResultModal?.close();
+  recruitmentModal?.close();
 });
 
 const isLeader = computed(() => room.value.leaderId === room.value.selfId);
@@ -1387,6 +1730,19 @@ const knowledge = computed(() =>
     ]),
   ),
 );
+const loyaltyReports = computed(() =>
+  Object.fromEntries([
+    ...Object.entries(room.value.self.knownLoyalties ?? {}).map(
+      ([targetId, alignment]) => [
+        targetId,
+        { targetId, alignment, source: "cleric", quest: 0 },
+      ],
+    ),
+    ...(room.value.self.loyaltyObservations ?? [])
+      .filter((entry) => ["lady", "cleric"].includes(entry.source))
+      .map((entry) => [entry.targetId, entry]),
+  ]),
+);
 const portraits = computed(() =>
   Object.fromEntries(
     room.value.players.map((player) => {
@@ -1419,10 +1775,25 @@ const targets = computed(() =>
   room.value.players.filter(
     (p) =>
       p.id !== room.value.selfId &&
-      playerAlignment(room.value, p.id) !== "evil",
+      (room.value.phase === "recruit"
+        ? possibleRoles(room.value, p.id).includes("untrustworthy_servant")
+        : playerAlignment(room.value, p.id) !== "evil"),
   ),
 );
+const canAssassinate = computed(
+  () =>
+    room.value.phase === "assassinate" &&
+    (room.value.assassinationActorId
+      ? room.value.assassinationActorId === room.value.selfId
+      : room.value.self.role === "assassin"),
+);
 const selectionMode = computed(() => {
+  if (
+    room.value.phase === "lady" &&
+    room.value.lady?.holderId === room.value.selfId &&
+    !room.value.lady.targetId
+  )
+    return "lady";
   if (room.value.phase === "team" && isLeader.value) return "team";
   if (
     room.value.phase === "discussion" &&
@@ -1431,8 +1802,9 @@ const selectionMode = computed(() => {
     !room.value.discussion.partnerId
   )
     return "invite";
-  if (room.value.phase === "assassinate" && room.value.self.role === "assassin")
-    return "assassinate";
+  if (room.value.phase === "recruit" && room.value.self.role === "assassin")
+    return "recruit";
+  if (canAssassinate.value) return "assassinate";
   return "";
 });
 const agendaStatus = computed(() => {
@@ -1459,6 +1831,14 @@ const agendaStatus = computed(() => {
     return status("lastReject", "badge-error");
 
   switch (state.phase) {
+    case "lady":
+      return {
+        text: t("avalon.lady.title"),
+        tone:
+          selectionMode.value === "lady" || room.value.self.loyaltyRequest
+            ? "badge-info"
+            : "badge-ghost",
+      };
     case "discussion":
       if (!state.discussion)
         return {
@@ -1500,8 +1880,15 @@ const agendaStatus = computed(() => {
           ? "badge-primary"
           : "badge-ghost",
       );
-    case "assassinate":
+    case "recruit":
       return state.self.role === "assassin"
+        ? status(
+            target.value ? "recruitConfirm" : "recruitSelf",
+            "badge-primary",
+          )
+        : status("recruitWait");
+    case "assassinate":
+      return canAssassinate.value
         ? status(
             target.value ? "assassinateConfirm" : "assassinateSelf",
             "badge-primary",
@@ -1512,7 +1899,7 @@ const agendaStatus = computed(() => {
   }
 });
 const requiredPanel = computed(() => {
-  if (selectionMode.value) return "players";
+  if (selectionMode.value || room.value.self.loyaltyRequest) return "players";
   if (room.value.phase === "evil_discussion") return "discussion";
   if (room.value.phase === "discussion" && canSpeak.value) return "discussion";
   if (
@@ -1535,7 +1922,7 @@ watch(
     midDesktop,
   ],
   ([, , , phase, , panel, isDesktop, isMidDesktop]) => {
-    if (phase === "night") return;
+    if (["opening", "night"].includes(phase)) return;
     if (isDesktop) {
       emit(
         "request-sidebar-panel",
@@ -1548,10 +1935,14 @@ watch(
   { immediate: true },
 );
 function canSelectPlayer(player) {
+  if (selectionMode.value === "lady")
+    return ladyTargetIds(room.value.players, room.value.lady).includes(
+      player.id,
+    );
   return (
     selectionMode.value === "team" ||
     (selectionMode.value === "invite" && player.id !== room.value.selfId) ||
-    (selectionMode.value === "assassinate" &&
+    (["assassinate", "recruit"].includes(selectionMode.value) &&
       targets.value.some((target) => target.id === player.id))
   );
 }
@@ -1563,7 +1954,8 @@ async function choosePlayer(id) {
     )
   )
     return;
-  if (selectionMode.value === "assassinate") target.value = id;
+  if (["assassinate", "recruit", "lady"].includes(selectionMode.value))
+    target.value = id;
   else if (selectionMode.value === "invite") {
     discussionPartner.value = id;
     await run("discussion_partner", { targetId: id });
@@ -1615,18 +2007,16 @@ function flipIdentity() {
 function playerClasses(player) {
   const tone = knowledge.value[player.id]?.tone;
   const background =
-    { evil: "bg-error/5", good: "bg-success/5", candidate: "bg-warning/5" }[
-      tone
-    ] || "";
+    { evil: "bg-error/5", candidate: "bg-warning/5" }[tone] || "";
   const border =
     (selectionMode.value === "team" && selected.value.includes(player.id)) ||
     (selectionMode.value === "invite" &&
       discussionPartner.value === player.id) ||
-    (selectionMode.value === "assassinate" && target.value === player.id)
+    (["assassinate", "recruit", "lady"].includes(selectionMode.value) &&
+      target.value === player.id)
       ? "border-primary"
       : {
           evil: "border-error/30",
-          good: "border-success/30",
           candidate: "border-warning/30",
         }[tone] || "border-base-300";
   return [background, border];
@@ -1659,12 +2049,24 @@ function castVote(approve) {
     { approve },
   );
 }
+function inspectLoyalty() {
+  if (selectionMode.value !== "lady" || !target.value) return;
+  confirmGameAction(
+    t("avalon.lady.inspect"),
+    t("avalon.lady.confirm", { name: playerName(target.value) }),
+    "lady",
+    { targetId: target.value },
+  );
+}
 function assassinate() {
   const targetId = target.value;
+  const recruiting = room.value.phase === "recruit";
   confirmGameAction(
-    t("avalon.assassinate"),
-    t("avalon.confirmTarget", { name: playerName(targetId) }),
-    "assassinate",
+    t(recruiting ? "avalon.untrustworthy.recruit" : "avalon.assassinate"),
+    t(recruiting ? "avalon.untrustworthy.confirm" : "avalon.confirmTarget", {
+      name: playerName(targetId),
+    }),
+    recruiting ? "recruit" : "assassinate",
     { targetId },
   );
 }

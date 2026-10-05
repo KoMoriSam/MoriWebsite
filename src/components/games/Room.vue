@@ -6,7 +6,7 @@
       showSidebar
         ? 'drawer drawer-end max-lg:fixed max-lg:inset-x-0 max-lg:top-16 max-lg:bottom-0 max-lg:grid-rows-[minmax(0,1fr)] max-lg:overflow-hidden lg:drawer-open'
         : nightPhase
-          ? 'flex min-h-dvh flex-col lg:min-h-0'
+          ? 'flex min-h-dvh flex-col'
           : 'flex flex-col'
     "
   >
@@ -355,7 +355,44 @@
                     index + 1
                   }}</span>
                   <template v-if="player">
-                    <Avatar :src="player.avatarUrl" :name="player.nickname" />
+                    <component
+                      :is="player.id === room.selfId ? 'button' : 'div'"
+                      :type="player.id === room.selfId ? 'button' : undefined"
+                      class="shrink-0 rounded-full border-0 bg-transparent p-0"
+                      :class="
+                        player.id === room.selfId
+                          ? 'indicator cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                          : ''
+                      "
+                      :aria-label="
+                        player.id === room.selfId
+                          ? t('auth.editProfile')
+                          : undefined
+                      "
+                      :title="
+                        player.id === room.selfId
+                          ? t('auth.editProfile')
+                          : undefined
+                      "
+                      :disabled="
+                        player.id === room.selfId ? !canAct : undefined
+                      "
+                      @click="player.id === room.selfId && editProfile()"
+                    >
+                      <span
+                        v-if="player.id === room.selfId"
+                        class="indicator-item indicator-bottom indicator-end badge badge-xs z-10 size-4! rounded-full! p-0! text-[10px] ring-1 ring-base-100"
+                        style="
+                          --indicator-e: 0;
+                          --indicator-b: 0;
+                          --indicator-x: 0;
+                          --indicator-y: 0;
+                        "
+                        aria-hidden="true"
+                        ><i class="ri-pencil-line" aria-hidden="true"></i
+                      ></span>
+                      <Avatar :src="player.avatarUrl" :name="player.nickname" />
+                    </component>
                     <div class="min-w-0 flex-1">
                       <div class="flex min-w-0 items-center gap-1">
                         <p
@@ -369,17 +406,6 @@
                             >{{ t("games.you") }}</span
                           >
                         </p>
-                        <button
-                          v-if="player.id === room.selfId"
-                          type="button"
-                          class="btn btn-ghost btn-square btn-xs shrink-0"
-                          :aria-label="t('auth.editProfile')"
-                          :title="t('auth.editProfile')"
-                          :disabled="!canAct"
-                          @click="editProfile"
-                        >
-                          <i class="ri-pencil-line" aria-hidden="true"></i>
-                        </button>
                       </div>
                       <div
                         class="mt-1 flex min-w-0 gap-2 overflow-hidden whitespace-nowrap text-xs text-base-content/60"
@@ -645,7 +671,9 @@ watch(
   },
   { immediate: true },
 );
-const nightPhase = computed(() => room.value?.game?.phase === "night");
+const nightPhase = computed(() =>
+  ["opening", "night"].includes(room.value?.game?.phase),
+);
 const showSidebar = computed(
   () => !!slots.sidebar && !!room.value?.game && !nightPhase.value,
 );
@@ -665,10 +693,15 @@ watch(
   { flush: "post" },
 );
 watch(
-  [() => room.value?.status, () => room.value?.code, connection, nightPhase],
+  [
+    () => room.value?.status,
+    () => room.value?.code,
+    connection,
+    () => room.value?.game?.phase,
+  ],
   (
-    [status, roomCode, connectionState, isNight],
-    [previousStatus, previousCode, previousConnection, wasNight],
+    [status, roomCode, connectionState, phase],
+    [previousStatus, previousCode, previousConnection, previousPhase],
   ) => {
     if (!status) {
       pendingGameScroll = false;
@@ -679,7 +712,9 @@ watch(
     const changedRoom = roomCode !== previousCode;
     const reconnected =
       connectionState === "online" && previousConnection !== "online";
-    if (enteredGame || changedRoom || reconnected || (isNight && !wasNight)) {
+    const enteredReveal =
+      ["opening", "night"].includes(phase) && phase !== previousPhase;
+    if (enteredGame || changedRoom || reconnected || enteredReveal) {
       pendingGameScroll = true;
       scheduleScrollPastNavbar();
     }
@@ -719,18 +754,10 @@ const selectedProfile = computed(() => ({
     ? auth.profile.value?.avatarUrl || null
     : null,
 }));
-const entryNickname = computed({
-  get: () =>
-    useGithubProfile.value && auth.profile.value
-      ? auth.profile.value.name
-      : nickname.value,
-  set: (value) => {
-    if (!useGithubProfile.value) nickname.value = value;
-  },
-});
 function chooseProfile(value) {
   customChoice = !value;
   useGithubProfile.value = value;
+  if (value && !nickname.value) nickname.value = auth.profile.value?.name ?? "";
   try {
     localStorage.setItem(
       "mori:games:profile-source",
@@ -767,7 +794,7 @@ watch([() => room.value?.code, () => room.value?.status], () =>
 function editProfile() {
   if (room.value?.status !== "lobby" || !canAct.value || profileEditor) return;
   const roomCode = room.value.code;
-  const draftNickname = ref(nickname.value);
+  const draftNickname = ref(selfPlayer.value?.nickname ?? nickname.value);
   const draftGithub = ref(
     selfPlayer.value?.profileSource === "github" && !!auth.profile.value,
   );
@@ -826,7 +853,7 @@ function editProfile() {
         return false;
       checked.value = true;
       const githubProfile = draftGithub.value ? auth.profile.value : null;
-      const name = githubProfile ? githubProfile.name : draftNickname.value;
+      const name = draftNickname.value;
       if (
         !name.trim() ||
         name.length > (githubProfile ? 256 : 24) ||
@@ -880,9 +907,7 @@ async function syncProfile() {
     attempt < 3 && room.value?.status === "lobby" && canAct.value;
     attempt++
   ) {
-    const name = useGithubProfile.value
-      ? entryNickname.value
-      : fallbackNickname();
+    const name = useGithubProfile.value ? nickname.value : fallbackNickname();
     const profile = selectedProfile.value;
     if (
       selfPlayer.value?.nickname === name &&
@@ -901,6 +926,8 @@ watch(
   () => auth.profile.value,
   (profile, previous) => {
     useGithubProfile.value = !!profile && !customChoice;
+    if (profile && !customChoice && !nickname.value)
+      nickname.value = profile.name;
     if (profile || previous) {
       profileSyncPending = true;
       void syncProfile();
@@ -916,10 +943,12 @@ onMounted(() => {
       localStorage.getItem("mori:games:profile-source") === "guest";
     useGithubProfile.value = !!auth.profile.value && !customChoice;
     const saved = localStorage.getItem(nicknameStorageKey);
-    if (saved !== null && saved.length <= 24) nickname.value = saved;
+    if (saved !== null && saved.length <= 256) nickname.value = saved;
   } catch {
     storageAvailable.value = false;
   }
+  if (!nickname.value && useGithubProfile.value)
+    nickname.value = auth.profile.value?.name ?? "";
 });
 watch(nickname, (value) => {
   try {
@@ -934,9 +963,10 @@ const nicknameChecked = ref(false);
 const codeChecked = ref(false);
 const validNickname = computed(
   () =>
-    entryNickname.value.trim().length > 0 &&
-    entryNickname.value.length <= (useGithubProfile.value ? 256 : 24) &&
-    !/[\p{Cc}\p{Cf}]/u.test(entryNickname.value),
+    nickname.value.trim().length > 0 &&
+    nickname.value.length <=
+      (useGithubProfile.value && auth.profile.value ? 256 : 24) &&
+    !/[\p{Cc}\p{Cf}]/u.test(nickname.value),
 );
 const validCode = computed(() => /^[A-HJ-NP-Z2-9]{8}$/.test(code.value));
 function selectEntryMode(mode, event) {
@@ -972,7 +1002,7 @@ function enterRoom(join) {
     codeInput.value?.focus();
     return;
   }
-  void openRoom(join, entryNickname.value, selectedProfile.value);
+  void openRoom(join, nickname.value, selectedProfile.value);
 }
 const copied = ref(false);
 const showInvite = ref(false);
@@ -993,11 +1023,7 @@ const selfPlayer = computed(() =>
 watch(
   () => selfPlayer.value?.nickname,
   (value) => {
-    if (
-      typeof value === "string" &&
-      selfPlayer.value?.profileSource !== "github"
-    )
-      nickname.value = value;
+    if (typeof value === "string") nickname.value = value;
   },
 );
 const isHost = computed(() => room.value?.hostId === room.value?.selfId);
