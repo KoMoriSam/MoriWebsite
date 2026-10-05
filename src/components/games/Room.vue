@@ -1115,6 +1115,14 @@ const roomActions = computed(() => {
       !canAct.value,
     );
   }
+  if (isHost.value)
+    add(
+      "dissolve",
+      "ri-close-circle-line",
+      t("games.dissolve"),
+      dissolveRoom,
+      !canAct.value,
+    );
   add(
     "leave",
     "ri-logout-box-line",
@@ -1276,6 +1284,15 @@ function leaveRoom() {
           void leave();
       },
     },
+  );
+}
+function dissolveRoom() {
+  if (!room.value || !isHost.value || !canAct.value) return;
+  confirmRoomAction(
+    "dissolve",
+    "confirmDissolve",
+    "dissolve",
+    room.value.status,
   );
 }
 function confirmReconnect() {
