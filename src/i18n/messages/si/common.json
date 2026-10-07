@@ -1,0 +1,516 @@
+{
+  "pages": {
+    "app": {
+      "personalBlogIndependentDevelopment": "远方之森 {'|'} පෞද්ගලික බ්ලොග් සහ ස්වාධීන සංවර්ධනය",
+      "komoriSPersonalWebsiteTechnologyEssaysReadingNotesFictionAnd": "KoMoriගේ පෞද්ගලික වෙබ් අඩවිය: තාක්ෂණික ගවේෂණ, සටහන්, පොත් සටහන්, නවකතා සහ ප්‍රයෝජනවත් මෙවලම්.",
+      "personalBlogTechnologyIndependentDevelopmentOriginalFiction": "远方之森,පෞද්ගලික බ්ලොග්,තාක්ෂණය,ස්වාධීන සංවර්ධනය,නවකතා,向远方",
+      "licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons": "මුල් මෘදුකාංග, යැපීම්, අකුරු, නිරූපක සහ තෙවන පාර්ශ්ව අන්තර්ගතය සඳහා බලපත්‍ර හා හිමිකම් නිවේදන.",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotes": "KoMoriගේ තාක්ෂණික ගවේෂණ, ජීවිත සටහන් සහ පොත් සටහන් කියවන්න.",
+      "readKomoriSBlogArticles": "KoMoriගේ බ්ලොග් ලිපි කියවන්න.",
+      "featureUpdatesFixesAndReleasesForKomoriSWebsite": "KoMoriගේ වෙබ් අඩවියේ විශේෂාංග යාවත්කාලීන, නිවැරදි කිරීම් සහ අනුවාද සටහන්.",
+      "currentAndPastWebsiteAnnouncements": "වෙබ් අඩවියේ වත්මන් සහ පැරණි නිවේදන.",
+      "readKomoriSOriginalNovelOnline": "KoMoriගේ මුල් නවකතාව 《向远方》 අන්තර්ජාලයෙන් කියවන්න.",
+      "readKomoriSOriginalNovelOnline2": "KoMoriගේ මුල් නවකතාව 《向远方》 අන්තර්ජාලයෙන් කියවන්න.",
+      "onlineToolsAndServiceLookupsByKomori": "KoMoriගේ මාර්ගගත මෙවලම් සහ සේවා විමසුම්.",
+      "checkTheStatusAndDetailsOfJavaOrBedrockMinecraft": "Java හෝ Bedrock Minecraft සේවාදායක තත්ත්වය සහ තොරතුරු බලන්න.",
+      "convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings": "සම්මත Unicode සහ ASCII පැරණි අකුරු කේතන අතර දෙපසට පරිවර්තනය කරන්න.",
+      "tryKaimingChinesePunctuationWithSansSerifSerifAndVariable": "Kaiming චීන විරාම ලකුණු sans-serif, serif සහ 100–900 විචල්‍ය බර සමඟ අත්හදා බලන්න.",
+      "theRequestedPageWasNotFound": "ඉල්ලා සිටි පිටුව හමු නොවීය.",
+      "komorisamSAvatar": "KoMoriSamගේ පැතිකඩ රූපය",
+      "blogP": "බ්ලොග් {'|'} 远方之森 {'|'} පිටුව {p0}",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotesPage": "KoMoriගේ තාක්ෂණික ගවේෂණ, ජීවිත සටහන් සහ පොත් සටහන් කියවන්න. පිටුව {p0}."
+    },
+    "announcements": {
+      "reload": "නැවත පූරණය කරන්න",
+      "refreshFailedShowingPreviouslyLoadedAnnouncements": "යළි පූරණය අසාර්ථකයි. කලින් පූරණය කළ නිවේදන පෙන්වයි.",
+      "retry": "නැවත උත්සාහ කරන්න"
+    },
+    "changelog": {
+      "changelog": "යාවත්කාලීන සටහන්",
+      "other": "වෙනත්"
+    },
+    "home": {
+      "rssSubscription": "RSS දායකත්වය",
+      "readTheNovel": "නවකතාව කියවන්න",
+      "tools": "මෙවලම්",
+      "imageConverter": "රූප පරිවර්තකය",
+      "sinhalaFontEncodingConverter": "සිංහල අකුරු කේතන පරිවර්තකය"
+    },
+    "licenses": {
+      "licensesThirdPartyNotices": "බලපත්‍ර සහ තෙවන පාර්ශ්ව නිවේදන"
+    },
+    "tools": {
+      "minecraftServerStatus": "Minecraft සේවාදායක තත්ත්වය"
+    },
+    "articleList": {
+      "articles3": "ලිපි"
+    },
+    "articleReader": {
+      "toBottom": "පහළට",
+      "toTop": "ඉහළට",
+      "characters": "අක්ෂර {p0}",
+      "published2": "පළ කළේ {p0}",
+      "aboutCharacters": "අක්ෂර {p0} පමණ",
+      "reads": "කියවීම් {p0}",
+      "comments": "අදහස් {p0}"
+    }
+  },
+  "tools": {
+    "serverInfo": {
+      "pasteFromClipboard": "පසුරු පුවරුවෙන් අලවන්න"
+    },
+    "imageConverter": {
+      "toolInformation": "මෙවලම් තොරතුරු",
+      "processedInYourBrowser": "ඔබගේ බ්‍රවුසරය තුළ සකසයි",
+      "moreSettings": "තවත් සැකසුම්",
+      "text2": "පෙළ",
+      "documents": "ලේඛන",
+      "dropFilesHere": "ගොනු මෙහි අතහරින්න"
+    }
+  },
+  "common": {
+    "badges": {
+      "pinned": "ඉහළට අමුණා ඇත",
+      "important": "වැදගත්",
+      "ended": "අවසන්",
+      "revised": "සංශෝධිත"
+    },
+    "modal": {
+      "backToImportantAnnouncements": "වැදගත් නිවේදන ලැයිස්තුවට ආපසු",
+      "importantAnnouncements": "වැදගත් නිවේදන",
+      "pleaseTakeNoteOfTheFollowing": "පහත කරුණු සැලකිල්ලට ගන්න",
+      "published": "පළ කළේ",
+      "ends": "අවසන් වේ",
+      "to": "දක්වා",
+      "importantAnnouncementList": "වැදගත් නිවේදන ලැයිස්තුව",
+      "view": "බලන්න",
+      "markAllAsRead": "සියල්ල කියවූ ලෙස සලකුණු කරන්න",
+      "close": "වසන්න",
+      "gotIt": "තේරුණා",
+      "thisIsTheDefaultDescription": "මෙය පෙරනිමි විස්තරයයි.",
+      "cancel": "අවලංගු කරන්න",
+      "back": "ආපසු"
+    },
+    "noticeCenter": {
+      "notifications": "දැනුම්දීම්",
+      "loadingAnnouncements": "නිවේදන පූරණය වෙමින්",
+      "announcementsAreTemporarilyUnavailable": "නිවේදන තාවකාලිකව ලබාගත නොහැක",
+      "noActiveAnnouncements": "සක්‍රිය නිවේදන නොමැත",
+      "viewAllAndPastAnnouncements": "සියලු සහ පැරණි නිවේදන බලන්න",
+      "openAnnouncements": "නිවේදන විවෘත කරන්න",
+      "openAnnouncementsUnread": "නිවේදන විවෘත කරන්න, නොකියවූ {p0}"
+    },
+    "pagination": {
+      "previousPage": "පෙර පිටුව",
+      "page": "පිටුව",
+      "pages": "පිටු",
+      "of": "මුළු",
+      "nextPage": "ඊළඟ පිටුව",
+      "choosePage": "පිටුව තෝරන්න",
+      "page2": "පිටුව",
+      "of2": "මුළු",
+      "firstPage": "පළමු පිටුව",
+      "lastPage": "අවසන් පිටුව",
+      "previousItem": "පෙර අයිතමය",
+      "nextItem": "ඊළඟ අයිතමය",
+      "position": "පිටු {p1} න් {p0} වන පිටුව"
+    },
+    "toTop": {
+      "backToTop": "ඉහළට යන්න"
+    },
+    "contentPage": {
+      "breadcrumbNavigation": "පිටු මාර්ග සංචලනය",
+      "pageActions": "පිටු ක්‍රියා"
+    },
+    "footBar": {
+      "siteStatistics": "අඩවි සංඛ්‍යාලේඛන",
+      "visitsToday": "අද පැමිණීම්",
+      "totalVisits": "මුළු පැමිණීම්",
+      "totalReads": "මුළු කියවීම්",
+      "trackedSince": "ගණනය කළේ",
+      "statisticsUnavailable": "සංඛ්‍යාලේඛන ලබාගත නොහැක",
+      "socialAccounts": "සමාජ ගිණුම්",
+      "lookingForTheOldWebsite": "පැරණි වෙබ් අඩවිය සොයනවාද?",
+      "visitItHere": "මෙතැනින් යන්න"
+    },
+    "mobileNav": {
+      "mobileNavigation": "ජංගම සංචලනය",
+      "projects": "ව්‍යාපෘති",
+      "viewAllRepositories": "සියලු ගබඩා බලන්න",
+      "closeNavigationMenu": "සංචලන මෙනුව වසන්න",
+      "openNavigationMenu": "සංචලන මෙනුව විවෘත කරන්න"
+    },
+    "navBar": {
+      "openSiteSearch": "අඩවි සෙවුම විවෘත කරන්න",
+      "search": "සොයන්න"
+    },
+    "projectMenu": {
+      "projectNavigation": "ව්‍යාපෘති සංචලනය",
+      "myProjects": "මගේ ව්‍යාපෘති",
+      "allRepositories": "සියලු ගබඩා"
+    },
+    "search": {
+      "siteSearch": "අඩවි සෙවුම",
+      "searchContentUseForContentTypesForCategoriesAndFor": "අන්තර්ගතය සොයන්න. වර්ග සඳහා {'@'}, කාණ්ඩ සඳහා # සහ වසර සඳහා / භාවිත කරන්න.",
+      "searchThisSite": "මෙම අඩවිය සොයන්න",
+      "clearAllSearchFilters": "සියලු සෙවුම් පෙරහන් ඉවත් කරන්න",
+      "select": "තෝරන්න ·",
+      "confirm": "තහවුරු කරන්න ·",
+      "items": "අයිතම",
+      "enter": "ඇතුළත් කරන්න",
+      "toFilterTypes": "වර්ග පෙරීමට,",
+      "toFilterTagsNovelVolumesOrChangeTypes": "ටැග්, නවකතා වෙළුම් හෝ වෙනස්කම් වර්ග පෙරීමට,",
+      "toFilterYearsYouCanCombineFilters": "වසර පෙරීමට. පෙරහන් කිහිපයක් එක් කළ හැක.",
+      "searching": "සොයමින්",
+      "theSearchIndexIsTemporarilyUnavailable": "සෙවුම් දර්ශකය තාවකාලිකව ලබාගත නොහැක",
+      "siteSearchResults": "අඩවි සෙවුම් ප්‍රතිඵල",
+      "noMatchingContentFound": "ගැළපෙන අන්තර්ගතයක් හමු නොවීය",
+      "tryShorterKeywordsOrRemoveSomeFilters": "කෙටි සෙවුම් පද හෝ අඩු පෙරහන් භාවිත කරන්න",
+      "results": "ප්‍රතිඵල",
+      "select2": "තෝරන්න",
+      "open": "විවෘත කරන්න",
+      "blogTags": "බ්ලොග් ටැග්",
+      "novelVolumes": "නවකතා වෙළුම්",
+      "changeTypes": "වෙනස්කම් වර්ග",
+      "licenseTypes": "බලපත්‍ර වර්ග",
+      "untitledContent": "නම් නොකළ අන්තර්ගතය",
+      "noSearchIndexIsAvailable": "සෙවුම් දර්ශකයක් නොමැත",
+      "refreshThePageAndTryAgain": "පිටුව යළි පූරණය කර උත්සාහ කරන්න.",
+      "cannotReadSearchResultsPleaseTryAgainLater": "සෙවුම් ප්‍රතිඵල කියවිය නොහැක. පසුව උත්සාහ කරන්න.",
+      "removeType": "{p0} වර්ගය ඉවත් කරන්න",
+      "removeFilter": "{p0} පෙරහන ඉවත් කරන්න",
+      "removeYear": "{p0} වසර ඉවත් කරන්න",
+      "tagFilterSuggestions": "ටැග් පෙරහන් යෝජනා",
+      "yearFilterSuggestions": "වසර පෙරහන් යෝජනා",
+      "contentTypeFilterSuggestions": "අන්තර්ගත වර්ග පෙරහන් යෝජනා",
+      "chooseContentCategory": "අන්තර්ගත කාණ්ඩය තෝරන්න",
+      "choosePublicationYear": "පළ කළ වසර තෝරන්න",
+      "chooseContentType": "අන්තර්ගත වර්ගය තෝරන්න",
+      "year": "වසර {p0}",
+      "contentType": "අන්තර්ගත වර්ගය {p0}",
+      "noOptionsMatch": "“{p0}” සඳහා ගැළපෙන විකල්ප නැත",
+      "noMoreFiltersAvailable": "තවත් පෙරහන් නැත"
+    },
+    "sideBar": {
+      "closeSidebar": "පැති තීරුව වසන්න",
+      "openSidebar": "පැති තීරුව විවෘත කරන්න"
+    },
+    "fontSelect": {
+      "searchFonts": "අකුරු සොයන්න",
+      "defaultFallbackFont": "පෙරනිමි ආදේශක අකුරු",
+      "fallback": "ආදේශකය",
+      "customFonts": "අභිරුචි අකුරු",
+      "noMatchingFonts": "ගැළපෙන අකුරු හමු නොවීය",
+      "font": "අකුරු",
+      "processedLocally": "දේශීයව පමණක් සකසයි",
+      "uploadFont": "අකුරු උඩුගත කරන්න",
+      "siteFonts": "අඩවි අකුරු",
+      "deviceFonts": "උපාංග අකුරු",
+      "chooseFont": "අකුරු තෝරන්න",
+      "yourBrowserCannotReadDeviceFonts": "බ්‍රවුසරයට උපාංග අකුරු කියවිය නොහැක",
+      "readingDeviceFonts": "උපාංග අකුරු කියවමින්",
+      "readDeviceFonts": "උපාංග අකුරු කියවන්න",
+      "noDeviceFontsAvailable": "උපාංග අකුරු නොමැත",
+      "cannotLoadFont": "අකුරු පූරණය කළ නොහැක",
+      "unnamedFont": "නම් නොකළ අකුරු",
+      "noUsableDeviceFontsFound": "භාවිත කළ හැකි උපාංග අකුරු හමු නොවීය",
+      "deviceFontAccessWasNotGranted": "උපාංග අකුරු ප්‍රවේශයට අවසර ලැබුණේ නැත",
+      "cannotReadDeviceFonts": "උපාංග අකුරු කියවිය නොහැක",
+      "theCustomFontIsNoLongerAvailablePleaseSelectIt": "අභිරුචි අකුරු තවදුරටත් නොමැත. නැවත තෝරන්න.",
+      "loadedDeviceFonts": "උපාංග අකුරු {p0}/{p1} පූරණය කළා",
+      "readDeviceFonts2": "උපාංග අකුරු {p0} කියවුවා",
+      "setDefaultFallbackFont": "පෙරනිමි ආදේශක අකුරු ලෙස යොදන්න: {p0}",
+      "loadingFont": "අකුරු පූරණය වෙමින්",
+      "loading": "{p0} පූරණය වෙමින්",
+      "scrollDownToLoadMore": "තවත් පූරණයට පහළට අනුචලනය කරන්න"
+    },
+    "imagePreview": {
+      "loadingImage": "රූපය පූරණය වෙමින්",
+      "closeImagePreview": "රූප පෙරදසුන වසන්න",
+      "previousImage": "පෙර රූපය",
+      "previous": "පෙර",
+      "nextImage": "ඊළඟ රූපය",
+      "next": "ඊළඟ",
+      "imagePreviewControls": "රූප පෙරදසුන් පාලක",
+      "zoomOutOfImage": "රූපය කුඩා කරන්න",
+      "fitToScreen": "තිරයට ගළපන්න",
+      "zoomInOnImage": "රූපය විශාල කරන්න",
+      "imagePreview": "රූප පෙරදසුන",
+      "imagePreviewModuleFailedToLoad": "රූප පෙරදසුන් කොටස පූරණය අසාර්ථකයි",
+      "imagePreviewFailedToLoad": "රූප පෙරදසුන පූරණය අසාර්ථකයි",
+      "imageFailedToLoad": "රූපය පූරණය අසාර්ථකයි",
+      "imagePreviewFailedToOpen": "රූප පෙරදසුන විවෘත කිරීම අසාර්ථකයි",
+      "imageOf": "රූපය {p0}/{p1}",
+      "zoomClickToFitToScreen": "විශාලනය {p0}%. තිරයට ගැළපීමට ක්ලික් කරන්න."
+    },
+    "floatingActionButton": {
+      "actions": "ක්‍රියා"
+    },
+    "themeController": {
+      "chooseInterfaceTheme": "තේමාව තෝරන්න",
+      "theme": "තේමාව",
+      "themeSelection": "තේමා තේරීම",
+      "interfaceTheme": "තේමාව",
+      "followSystemTheme": "පද්ධතිය අනුව"
+    },
+    "navigation": {
+      "home": "මුල් පිටුව",
+      "blog": "බ්ලොග්",
+      "novel": "නවකතාව",
+      "tools": "මෙවලම්"
+    },
+    "projects": {
+      "fontProject": "අකුරු ව්‍යාපෘතිය",
+      "kaimingPunctuationForChineseTypographyWithSansSerifSerifAnd": "චීන මුද්‍රණ සැකැස්ම සඳහා Kaiming විරාම ලකුණු; sans-serif, serif සහ විචල්‍ය බර සමඟ.",
+      "websiteProject": "වෙබ් අඩවි ව්‍යාපෘතිය",
+      "sourceForThisWebsiteBuiltWithVueViteTailwindCss": "Vue, Vite, Tailwind CSS සහ daisyUI සමඟ සෑදූ මෙම වෙබ් අඩවියේ මූල කේතය."
+    },
+    "type-changelog": {
+      "features": "විශේෂාංග",
+      "fixes": "නිවැරදි කිරීම්",
+      "improvements": "වැඩිදියුණු කිරීම්",
+      "performance": "කාර්යසාධනය",
+      "refactoring": "ප්‍රතිසංවිධානය",
+      "maintenance": "නඩත්තුව"
+    },
+    "search-content": {
+      "openSourceLicenses": "විවෘත මූලාශ්‍ර බලපත්‍ර",
+      "aliases": "විකල්ප නම්",
+      "author": "කර්තෘ",
+      "category": "කාණ්ඩය",
+      "created": "නිර්මාණය කළේ",
+      "description": "විස්තරය",
+      "modified": "වෙනස් කළේ",
+      "status": "තත්ත්වය",
+      "yes": "ඔව්",
+      "no": "නැත",
+      "untitledArticle": "නම් නොකළ ලිපිය",
+      "untitledChapter": "නම් නොකළ පරිච්ඡේදය",
+      "licenseScopeAndRightsForThirdPartyLibrariesFontsIcons": "තෙවන පාර්ශ්ව පුස්තකාල, අකුරු, නිරූපක, රූප හා වෙනත් අන්තර්ගතයේ බලපත්‍ර සහ හිමිකම්.",
+      "projectMitLicense": "ව්‍යාපෘති MIT License",
+      "mitLicenseForTheOriginalSoftwareSourceInThisRepository": "මෙම ගබඩාවේ මුල් මෘදුකාංග කේතය සඳහා MIT License.",
+      "license": "බලපත්‍රය",
+      "additionalLicenseFilesForFontsIconsAndOtherThirdParty": "අකුරු, නිරූපක හා වෙනත් තෙවන පාර්ශ්ව අන්තර්ගතයට අතිරේක බලපත්‍ර ගොනු.",
+      "additionalLicenses": "අතිරේක බලපත්‍ර",
+      "noSearchableContentAvailable": "සෙවිය හැකි අන්තර්ගතයක් නොමැත"
+    },
+    "read-document": {
+      "theDocxDocumentHasNoBody": "DOCX ලේඛනයේ පෙළ නැත",
+      "cannotReadDocxContent": "DOCX අන්තර්ගතය කියවිය නොහැක",
+      "onlyDocxAndPdfFilesAreSupported": "DOCX සහ PDF ගොනු පමණක් සහාය දක්වයි"
+    },
+    "image-watermark": {
+      "watermark": "දියසලකුණ"
+    },
+    "announcements": {
+      "information": "තොරතුරු",
+      "reminder": "සිහිගැන්වීම",
+      "incident": "දෝෂය"
+    },
+    "language": "භාෂාව",
+    "languageLoadFailed": "භාෂාව පූරණය අසාර්ථකයි. නැවත උත්සාහ කරන්න.",
+    "additional": {
+      "confirm": "තහවුරු කරන්න",
+      "defaultDay": "පෙරනිමි දහවල",
+      "defaultNight": "පෙරනිමි රාත්‍රිය",
+      "businessLight": "ව්‍යාපාරික ආලෝකය",
+      "softDark": "මෘදු අඳුර",
+      "note": "සටහන",
+      "tip": "ඉඟිය",
+      "warning": "අනතුරු ඇඟවීම",
+      "success": "සාර්ථකයි",
+      "error": "දෝෂය",
+      "danger": "අවදානම",
+      "quote": "උපුටා දැක්වීම",
+      "summary": "සාරාංශය",
+      "replyTo": "පිළිතුරු:",
+      "thisIsTheFirstChapter": "මෙය පළමු පරිච්ඡේදයයි!",
+      "youAreAlreadyAtYourReadingPosition": "ඔබ දැනටමත් කියවීම් ස්ථානයේ සිටී!",
+      "thisIsTheCurrentChapter": "මෙය වත්මන් පරිච්ඡේදයයි!",
+      "thisIsTheLatestChapter": "මෙය නවතම පරිච්ඡේදයයි!",
+      "loadingChapterList": "පරිච්ඡේද ලැයිස්තුව පූරණය වෙමින්…",
+      "chapterListRefreshed": "පරිච්ඡේද ලැයිස්තුව යළි පූරණය කළා!",
+      "chapterListLoaded": "පරිච්ඡේද ලැයිස්තුව පූරණය කළා!",
+      "chapterListFailedToLoad": "පරිච්ඡේද ලැයිස්තුව පූරණය අසාර්ථකයි!",
+      "readingHistoryCleared": "කියවීම් ඉතිහාසය ඉවත් කළා!",
+      "loadingChapterContent": "පරිච්ඡේද අන්තර්ගතය පූරණය වෙමින්…",
+      "chapterContentRefreshed": "පරිච්ඡේද අන්තර්ගතය යළි පූරණය කළා!",
+      "chapterContentLoaded": "පරිච්ඡේද අන්තර්ගතය පූරණය කළා!",
+      "chapterContentFailedToLoad": "පරිච්ඡේද අන්තර්ගතය පූරණය අසාර්ථකයි!",
+      "contentRefreshFailed": "අන්තර්ගතය යළි පූරණය අසාර්ථකයි!",
+      "tooManyActionsPleaseWaitAndTryAgain": "ක්‍රියා ඉතා වැඩියි. මඳක් රැඳී නැවත උත්සාහ කරන්න!",
+      "decoding": "විකේතනය වෙමින්",
+      "encoding": "කේතනය වෙමින්",
+      "processingFrame": "රාමුව {p0}/{p1} සකසමින්",
+      "encodingFrame": "රාමුව {p0}/{p1} කේතනය වෙමින්",
+      "estimatedDecodingMemoryExceedsThisDeviceSSafeLimit": "ඇස්තමේන්තු විකේතන මතකය {p0} උපාංග ආරක්ෂිත සීමාව {p1} ඉක්මවයි",
+      "fileSignatureDoesNotMatchItsFormat": "ගොනු අත්සන ආකෘතියට නොගැළපේ",
+      "yourBrowserCannotDecodeThisFile": "බ්‍රවුසරයට මෙම {p0} ගොනුව විකේතනය කළ නොහැක: {p1}",
+      "unknownError": "නොදන්නා දෝෂය",
+      "cannotDecodeAnimatedWebp": "සජීවීකරණ WebP විකේතනය කළ නොහැක",
+      "theGifContainsNoUsableFrames": "GIF හි භාවිත කළ හැකි රාමු නැත",
+      "theEncoderReturnedAnInvalidFileSignature": "{p0} කේතකය වැරදි ගොනු අත්සනක් ලබා දුන්නා",
+      "unsupportedStaticOutputFormat": "සහාය නොදක්වන ස්ථිතික ප්‍රතිදාන ආකෘතිය",
+      "webpEncodingFailed": "WebP කේතනය අසාර්ථකයි",
+      "onlyTheFirstAnimationFrameWasExported": "සජීවීකරණයේ පළමු රාමුව පමණක් අපනයනය කළා",
+      "avifAnimationIsUnsupportedFramesWereExportedSeparately": "AVIF සජීවීකරණයට සහාය නැත; රාමු වෙන වෙනම අපනයනය කළා",
+      "avifAnimationIsUnsupportedTheFirstFrameWasExported": "AVIF සජීවීකරණයට සහාය නැත; පළමු රාමුව අපනයනය කළා",
+      "onlyTheFirstFrameOfAnimatedAvifIsCurrentlyProcessed": "සජීවීකරණ AVIF හි දැනට සකසන්නේ පළමු රාමුව පමණි",
+      "failedToFetchArticles": "ලිපි ලබාගැනීම අසාර්ථකයි: {p0}",
+      "failedToFetchArticleContent": "ලිපි අන්තර්ගතය ලබාගැනීම අසාර්ථකයි: {p0}",
+      "invalidIndexJsonFormat": "index.json ආකෘතිය වැරදියි",
+      "announcementRequestFailed": "නිවේදන ඉල්ලීම අසාර්ථකයි: {p0}",
+      "changelogRequestFailed": "යාවත්කාලීන සටහන් ඉල්ලීම අසාර්ථකයි: {p0}"
+    },
+    "sections": {
+      "siteAnnouncements": "අඩවි නිවේදන",
+      "releaseNotes": "නිකුතු සටහන් සහ නඩත්තුව",
+      "openSource": "විවෘත මූලාශ්‍ර සහ කර්තෘ සඳහන්",
+      "originalSource": "මුල් මෘදුකාංග මූලාශ්‍රය",
+      "attribution": "විෂය පථය සහ කර්තෘ සඳහන්",
+      "installedDependencies": "ස්ථාපිත නිෂ්පාදන පරායත්තතා",
+      "fontNotices": "අකුරු, නිරූපක සහ වෙනත් කර්තෘ සඳහන්",
+      "toolList": "මෙවලම් ලැයිස්තුව",
+      "posts": "ලිපි ලැයිස්තුව",
+      "projects": "ව්‍යාපෘති",
+      "contents": "පටුන",
+      "discussion": "සාකච්ඡාව",
+      "typographyFeatures": "අකුරු සැකසුම් විශේෂාංග",
+      "useOnWeb": "වෙබ් පිටුවල භාවිතය",
+      "unicodeText": "Unicode පෙළ",
+      "legacyText": "Legacy පෙළ",
+      "reducedForms": "අඩු කළ ව්‍යංජන ආකාර තබාගන්න",
+      "conjunctForms": "බැඳි අකුරු ආකාර තබාගන්න",
+      "unjoinedForms": "නොබැඳුණු සංයුක්ත අකුරු",
+      "ligatedForms": "බැඳුණු සංයුක්ත අකුරු",
+      "compactDa": "සංක්ෂිප්ත “ද” ආකාර",
+      "workingOn": "මම දැන් කරන්නේ කුමක්ද?",
+      "aboutMe": "මා ගැන",
+      "follow": "අනුගමනය සහ සම්බන්ධතා",
+      "default": "පෙරනිමිය",
+      "serverLogo": "සේවාදායක ලාංඡනය",
+      "welcome": "සාදරයෙන් පිළිගනිමු!",
+      "notFoundTitle": "අපොයි!",
+      "notFoundDescription": "404 පිටුව හමු නොවීය :(",
+      "viewEnglishSource": "ඉංග්‍රීසි මුල් පිටපත බලන්න"
+    },
+    "breadcrumb": {
+      "home": "මුල් පිටුව",
+      "blog": "බ්ලොග්",
+      "blog-article": "ලිපිය",
+      "page": "පිටුව",
+      "novel": "නවකතාව",
+      "novel-reader": "පරිච්ඡේදය",
+      "tools": "මෙවලම්",
+      "image-converter": "රූප පරිවර්තකය",
+      "server-status": "සේවාදායක තත්ත්වය",
+      "sinhala-font-converter": "සිංහල අකුරු පරිවර්තකය",
+      "changelog": "වෙනස්කම් සටහන",
+      "announcements": "නිවේදන",
+      "licenses": "බලපත්‍ර",
+      "kaiming": "Kaiming විරාම ලකුණු",
+      "NotFound": "පිටුව හමු නොවීය"
+    }
+  },
+  "markdown": {
+    "chat": {
+      "typeAMessage": "පණිවිඩයක් ලියන්න...",
+      "holdToSpeak": "කතා කිරීමට ඔබාගෙන සිටින්න",
+      "send": "යවන්න",
+      "user": "පරිශීලකයා",
+      "switchToKeyboardInput": "යතුරුපුවරු ආදානයට මාරු කරන්න",
+      "switchToVoiceInput": "හඬ ආදානයට මාරු කරන්න"
+    },
+    "markdown": {
+      "loadingFailedPleaseTryAgainLater": "පූරණය අසාර්ථකයි. පසුව නැවත උත්සාහ කරන්න.",
+      "previewImage": "රූපය පෙරදසුන් කරන්න",
+      "previewImage2": "රූප පෙරදසුන: {p0}"
+    },
+    "mermaid": {
+      "mermaidDiagramTools": "Mermaid රූපසටහන් මෙවලම්",
+      "switchMermaidView": "Mermaid දසුන මාරු කරන්න",
+      "viewMermaidSource": "Mermaid කේතය බලන්න",
+      "code": "කේතය",
+      "viewMermaidPreview": "Mermaid පෙරදසුන බලන්න",
+      "preview": "පෙරදසුන",
+      "loadingMermaidDiagram": "Mermaid රූපසටහන පූරණය වෙමින්…",
+      "invalidOrUnsupportedDiagram": "වලංගු නැති හෝ සහාය නොදක්වන රූපසටහනකි",
+      "mermaidDiagramPreview": "Mermaid රූපසටහන් පෙරදසුන",
+      "diagramZoom": "රූපසටහන් විශාලනය",
+      "zoomInOnDiagram": "රූපසටහන විශාල කරන්න",
+      "zoomIn": "විශාල කරන්න",
+      "zoomOutOfDiagram": "රූපසටහන කුඩා කරන්න",
+      "zoomOut": "කුඩා කරන්න",
+      "mermaidDidNotReturnAValidSvg": "Mermaid වලංගු SVG එකක් ලබා දුන්නේ නැත",
+      "exitFullscreen": "පූර්ණ තිරයෙන් ඉවත් වන්න",
+      "fullscreen": "පූර්ණ තිරය",
+      "copyCode": "කේතය පිටපත් කරන්න",
+      "viewDiagramFullscreen": "රූපසටහන පූර්ණ තිරයෙන් බලන්න",
+      "mermaidSourceCopied": "Mermaid කේතය පිටපත් කළා",
+      "copyMermaidSource": "Mermaid කේතය පිටපත් කරන්න"
+    },
+    "moment": {
+      "moreActions": "තවත් ක්‍රියා",
+      "comments": "අදහස්",
+      "me": "මම",
+      "like": "කැමතියි",
+      "share": "බෙදාගන්න",
+      "sPost": "{p0}ගේ සටහන",
+      "sAvatar": "{p0}ගේ පැතිකඩ රූපය"
+    },
+    "codeBlock": {
+      "copiedSuccessfully": "සාර්ථකව පිටපත් කළා",
+      "copyToClipboard": "පසුරු පුවරුවට පිටපත් කරන්න"
+    }
+  },
+  "reader": {
+    "contextMenu": {
+      "image": "රූපය"
+    },
+    "formatSetting": {
+      "systemDefault": "පද්ධතිය අනුව",
+      "matchYourSystemSLightOrDarkAppearance": "පද්ධතියේ ආලෝක හෝ අඳුරු පෙනුමට ගැළපේ"
+    }
+  },
+  "games": {
+    "title": "ක්‍රීඩා",
+    "description": "පුවරු ක්‍රීඩාවක් තෝරා කාමරයක් සාදා ඔබේ මිතුරන්ට ආරාධනා කරන්න."
+  },
+  "auth": {
+    "login": "GitHub සමඟ පිවිසෙන්න",
+    "logout": "ඉවත් වන්න",
+    "retry": "නැවත පරීක්ෂා කරන්න",
+    "guest": "අමුත්තා",
+    "loadingProfile": "GitHub පැතිකඩ ලබා ගනිමින්",
+    "checking": "GitHub පිවිසුම පරීක්ෂා කරමින්…",
+    "novelGate": "පරිච්ඡේද කියවීමට හා නවකතාවේ පෙළ සෙවීමට පිවිසෙන්න.",
+    "fallback": "Giscus අදහස් හරහා පිවිසෙන්න",
+    "close": "වසන්න",
+    "githubProfile": "GitHub රූපය භාවිත කරන්න",
+    "customProfile": "අභිරුචි නම සහ පෙරනිමි රූපය",
+    "saveProfile": "ක්‍රීඩක පැතිකඩ සුරකින්න",
+    "profileError": "GitHub පැතිකඩ ලබා ගත නොහැක. නැවත උත්සාහ කරන්න හෝ අභිරුචි නමක් භාවිත කරන්න.",
+    "nickname": "අභිරුචි නම",
+    "avatar": "ක්‍රීඩක රූපය",
+    "account": "ගිණුම සහ සැකසුම්",
+    "email": "ඊමේල්",
+    "emailPrivate": "ඊමේල් ප්‍රසිද්ධ නැත",
+    "loginTitle": "කියවීම දිගටම කරගෙන යාමට පිවිසෙන්න",
+    "editProfile": "ක්‍රීඩක තොරතුරු සංස්කරණය",
+    "errors": {
+      "profile": "GitHub පැතිකඩ දැනට ලබා ගත නොහැක. නැවත උත්සාහ කරන්න.",
+      "token-missing": "පිවිසුම් අක්තපත්‍ර හමු නොවීය. නැවත පිවිසෙන්න.",
+      "token-invalid": "GitHub අක්තපත්‍ර වලංගු නොවේ. නැවත පිවිසෙන්න.",
+      "token-expired": "Giscus සැසිය කල් ඉකුත් වී ඇත. නැවත පිවිසෙන්න.",
+      "session-invalid": "පිවිසුම් අක්තපත්‍ර කියවිය නොහැක. නැවත පිවිසෙන්න.",
+      "session-mismatch": "සැසිය සහ ලැබුණු පිවිසුම් තත්ත්වය නොගැළපේ. නැවත පරීක්ෂා කරන්න හෝ පිවිසෙන්න.",
+      "rate-limit": "GitHub ඉල්ලීම් සීමා කර ඇත. පසුව නැවත පරීක්ෂා කරන්න.",
+      "forbidden": "GitHub ඉල්ලීම ප්‍රතික්ෂේප කළේය (403). අවසර පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
+      "network": "ජාල ඉල්ලීම අසාර්ථක විය. පිවිසුම් තත්ත්වය නොදනී. නැවත පරීක්ෂා කරන්න.",
+      "discussion": "පිවිසුම තහවුරු කරන සාකච්ඡාව ලබා ගත නොහැක. නැවත උත්සාහ කරන්න.",
+      "api": "පිවිසුම් පරීක්ෂණ සේවාව දැනට ලබා ගත නොහැක. නැවත පරීක්ෂා කරන්න.",
+      "timeout": "පිවිසුම් පරීක්ෂණයේ කාලය ඉකුත් විය. තත්ත්වය නොදනී. නැවත පරීක්ෂා කරන්න.",
+      "storage": "පිවිසුම් දත්ත කියවීමට හෝ ඉවත් කිරීමට නොහැක. බ්‍රවුසර ගබඩාවට අවසර දී නැවත උත්සාහ කරන්න."
+    }
+  }
+}

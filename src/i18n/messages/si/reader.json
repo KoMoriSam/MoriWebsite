@@ -1,0 +1,183 @@
+{
+  "reader": {
+    "chapterController": {
+      "chapterNavigation": "පරිච්ඡේද සංචලනය",
+      "previousChapter": "පෙර පරිච්ඡේදය",
+      "nextChapter": "ඊළඟ පරිච්ඡේදය",
+      "bookProgressChapterPageOfTapForReadingControls": "පොතේ ප්‍රගතිය {p0}, පරිච්ඡේද පිටුව {p1}/{p2}. පාලක සඳහා තට්ටු කරන්න.",
+      "bookProgressScrollingModeTapForReadingControls": "පොතේ ප්‍රගතිය {p0}, අනුචලන ක්‍රමය. පාලක සඳහා තට්ටු කරන්න."
+    },
+    "chapterHeader": {
+      "chapterInformation": "පරිච්ඡේද තොරතුරු",
+      "navigation": "සංචලනය",
+      "backToCover": "කවරයට ආපසු",
+      "backToNovelCover": "නවකතා කවරයට ආපසු",
+      "chapterStatistics": "පරිච්ඡේද සංඛ්‍යාලේඛන"
+    },
+    "chapterList": {
+      "chapters": "පරිච්ඡේද ලැයිස්තුව",
+      "volumes": "වෙළුම් ·",
+      "chapters2": "පරිච්ඡේද",
+      "refreshChapters": "පරිච්ඡේද යළි පූරණය කරන්න",
+      "clearReadingHistory": "කියවීම් ඉතිහාසය ඉවත් කරන්න",
+      "loadingChapters": "පරිච්ඡේද පූරණය වෙමින්",
+      "characters": "අක්ෂර",
+      "reads": "කියවීම්",
+      "noChaptersAreAvailableYet": "තවම කියවීමට පරිච්ඡේද නොමැත",
+      "refreshTheChapterListAndTryAgain": "පරිච්ඡේද ලැයිස්තුව යළි පූරණය කර උත්සාහ කරන්න",
+      "read": "කියවූ",
+      "unread": "නොකියවූ",
+      "loadingReadsFor": "《{p0}》 කියවීම් පූරණය වෙමින්",
+      "loadingCommentsFor": "《{p0}》 අදහස් පූරණය වෙමින්"
+    },
+    "chapterStatusBadges": {
+      "thisChapterHasBeenRevised": "මෙම පරිච්ඡේදය සංශෝධනය කර ඇත",
+      "thisIsTheOriginalChapterVersion": "මෙය පරිච්ඡේදයේ මුල් අනුවාදයයි",
+      "original": "මුල් අනුවාදය"
+    },
+    "chapterToc": {
+      "readingProgress": "කියවීමේ ප්‍රගතිය",
+      "latestChapter": "නවතම පරිච්ඡේදය",
+      "chaptersRead": "පරිච්ඡේද · කියවූ",
+      "chaptersRead2": "පරිච්ඡේද {p0}, කියවූ {p1}"
+    },
+    "novelContentSearch": {
+      "searchTheNovel": "නවකතාව සොයන්න",
+      "searchChapterTitlesOrText": "පරිච්ඡේද මාතෘකා හෝ පෙළ සොයන්න",
+      "clearSearch": "සෙවුම ඉවත් කරන්න",
+      "loadingTheNovelIndex": "නවකතා දර්ශකය පූරණය වෙමින්…",
+      "enterKeywordsToSearchChapterTitlesAndText": "පරිච්ඡේද මාතෘකා සහ පෙළ සෙවීමට පද ඇතුළත් කරන්න",
+      "noMatchingNovelContentFound": "ගැළපෙන නවකතා අන්තර්ගතයක් හමු නොවීය",
+      "novelSearchResults": "නවකතා සෙවුම් ප්‍රතිඵල",
+      "novelContentIsUnavailablePleaseTryAgainLater": "නවකතා අන්තර්ගතය ලබාගත නොහැක. පසුව උත්සාහ කරන්න."
+    },
+    "commentTrigger": {
+      "openParagraphComments": "ඡේද අදහස් විවෘත කරන්න",
+      "paragraphCommentCount": "ඡේද අදහස් ගණන"
+    },
+    "contextMenu": {
+      "textActions": "පෙළ ක්‍රියා",
+      "copyLatex": "LaTeX පිටපත් කරන්න",
+      "copySvg": "SVG පිටපත් කරන්න",
+      "textCopied": "පෙළ පිටපත් කළා",
+      "copyFailedPleaseSelectTheTextManually": "පිටපත් කිරීම අසාර්ථකයි. පෙළ අතින් තෝරන්න.",
+      "imageSaved": "රූපය සුරැකුවා",
+      "originalImageOpenedUseYourBrowserToSaveIt": "මුල් රූපය විවෘත කළා. බ්‍රවුසරයෙන් සුරකින්න.",
+      "latexSourceCopied": "LaTeX කේතය පිටපත් කළා",
+      "copyFailedPleaseSelectTheFormulaManually": "පිටපත් කිරීම අසාර්ථකයි. සූත්‍රය අතින් තෝරන්න.",
+      "svgCopied": "SVG පිටපත් කළා",
+      "yourBrowserCannotCopySvg": "ඔබගේ බ්‍රවුසරයට SVG පිටපත් කළ නොහැක",
+      "cannotOpenTheShareCardRightNow": "දැනට බෙදාගැනීමේ කාඩ්පත විවෘත කළ නොහැක",
+      "copy": "පිටපත් කරන්න"
+    },
+    "formatSetting": {
+      "readingLayout": "කියවීමේ සැකැස්ම",
+      "previewChangesBelowAsYouAdjust": "වෙනස් කරන විට පහළ පෙරදසුන බලන්න",
+      "resetToDefaults": "පෙරනිමියට යළි සකසන්න",
+      "duskSettlesOverThePagesLeavingRoomToBreatheBetween": "සැඳෑ අඳුර පිටු මත පතිත වෙයි, පේළි අතර හුස්මකට ඉඩ තබමින්.",
+      "turnThePageTheStoryContinuesAhead": "පිටුව පෙරළන්න; කතාව තවදුරටත් දිගහැරේ.",
+      "textFont": "පෙළ අකුරු",
+      "customAndDeviceFontsApplyOnlyToThisSessionAnd": "අභිරුචි සහ උපාංග අකුරු මෙම සැසියට පමණක් අදාළ වන අතර සුරැකෙන්නේ නැත",
+      "onlySiteFontsCanBeSavedInSettings": "(සැකසුම්වල සුරැකිය හැක්කේ අඩවි අකුරු පමණි)",
+      "readingColors": "කියවීමේ වර්ණ",
+      "wantSomethingElseCustomizeIt": "වෙනසක් ඕනෑද? අභිරුචිකරණය කරන්න",
+      "readingBackgroundType": "කියවීමේ පසුබිම් වර්ගය",
+      "textColor": "පෙළ වර්ණය",
+      "backgroundColor": "පසුබිම් වර්ණය",
+      "siteTheme": "අඩවි තේමාව",
+      "builtInAndSavedLayoutPresets": "පද්ධති සහ සුරැකි සැකැස්ම් පෙරසැකසුම්",
+      "saveCurrentLayoutAsAPreset": "වත්මන් සැකැස්ම පෙරසැකසුමක් ලෙස සුරකින්න",
+      "layoutPresetName": "සැකැස්ම් පෙරසැකසුම් නම",
+      "save": "සුරකින්න",
+      "solidColor": "තනි වර්ණ පසුබිම",
+      "backgroundImage": "රූප පසුබිම",
+      "duskSettlesOverThePages": "සැඳෑ අඳුර පිටු මත පතිත වෙයි",
+      "preset": "පෙරසැකසුම {p0}",
+      "currentMobileLayoutPreview": "වත්මන් ජංගම සැකැස්ම් පෙරදසුන",
+      "currentDesktopLayoutPreview": "වත්මන් ඩෙස්ක්ටොප් සැකැස්ම් පෙරදසුන",
+      "chooseReadingBackground": "කියවීම් පසුබිම තෝරන්න: {p0}",
+      "switchSiteTheme": "අඩවි තේමාව මාරු කරන්න: {p0}, {p1}",
+      "applyBuiltInPreset": "පද්ධති පෙරසැකසුම යොදන්න {p0}: {p1}",
+      "applySavedPreset": "සුරැකි පෙරසැකසුම {p0} යොදන්න",
+      "deletePreset": "පෙරසැකසුම {p0} මකන්න"
+    },
+    "reader": {
+      "closeReadingLayoutSettings": "කියවීමේ සැකැස්ම් සැකසුම් වසන්න",
+      "heading": "ශීර්ෂය {p0}",
+      "horizontalPageTurning": "තිරස් පිටු පෙරළීම",
+      "followSite": "අඩවිය අනුව",
+      "softLight": "මෘදු ආලෝකය",
+      "naturalDark": "ස්වභාවික අඳුර",
+      "brightDay": "දීප්තිමත් දහවල",
+      "lowLightNight": "අඩු ආලෝක රාත්‍රිය",
+      "kraftPaper": "ක්‍රාෆ්ට් කඩදාසි",
+      "parchment": "පාච්මන්ට්",
+      "quietNight": "නිහඬ රාත්‍රිය",
+      "bambooShadows": "උණ සෙවණැලි",
+      "menu": "මෙනුව",
+      "default": "පෙරනිමි",
+      "balancedFontSizeAndSpacingForExtendedReading": "දිගු කියවීමට සමබර අකුරු ප්‍රමාණය සහ පරතරය",
+      "paper": "කඩදාසි",
+      "parchmentTextureForASofterBackground": "මෘදු පසුබිමක් සඳහා පාච්මන්ට් වයනය",
+      "dim": "අඳුරු ආලෝකය",
+      "aQuietNightInDimLight": "අඩු ආලෝකයේ නිහඬ රාත්‍රියක්",
+      "night": "රාත්‍රිය",
+      "moonlitBambooInNightMode": "රාත්‍රි ක්‍රමයේ සඳ එළියේ උණ සෙවණැලි",
+      "largeText": "විශාල පෙළ",
+      "focusedContentEasyOnTheEyes": "අවධානය යොමු කළ අන්තර්ගතය, ඇස්වලට පහසුයි",
+      "fontSize": "අකුරු ප්‍රමාණය",
+      "size": "ප්‍රමාණය",
+      "letterSpacing": "අක්ෂර පරතරය",
+      "letterGap": "අක්ෂර පරතරය",
+      "lineHeight": "පේළි උස",
+      "lineGap": "පේළි පරතරය",
+      "message": "×",
+      "paragraphSpacing": "ඡේද පරතරය",
+      "paragraphGap": "ඡේද පරතරය",
+      "lines": "පේළි"
+    },
+    "readerBody": {
+      "readingContents": "කියවීමේ පටුන",
+      "readingAids": "කියවීමේ සහාය"
+    },
+    "shareCard": {
+      "shareImage": "රූපය බෙදාගන්න",
+      "theSelectionIsLongSomeContentWasOmittedFromThe": "තෝරාගත් පෙළ දිගයි. රූපයෙන් සමහර අන්තර්ගතය ඉවත් කර ඇත.",
+      "closeShareCardPreview": "බෙදාගැනීමේ කාඩ්පත් පෙරදසුන වසන්න",
+      "layingOutTheShareCard": "බෙදාගැනීමේ කාඩ්පත සකසමින්…",
+      "cardGenerationFailed": "කාඩ්පත සෑදීම අසාර්ථකයි",
+      "generateAgain": "නැවත සාදන්න",
+      "downloadImage": "රූපය බාගන්න",
+      "cannotGenerateTheShareCardRightNow": "දැනට බෙදාගැනීමේ කාඩ්පත සෑදිය නොහැක",
+      "shareCardDownloaded": "බෙදාගැනීමේ කාඩ්පත බාගත්තා",
+      "yourBrowserDoesNotSupportImageSharingTheCardWas": "බ්‍රවුසරය රූප බෙදාගැනීමට සහාය නොදක්වයි. කාඩ්පත බාගත්තා.",
+      "cannotShareTheImageRightNow": "දැනට රූපය බෙදාගත නොහැක",
+      "textShareCardFor": "{p0} සඳහා පෙළ බෙදාගැනීමේ කාඩ්පත",
+      "saveImage": "රූපය සුරකින්න"
+    },
+    "styleMenu": {
+      "resetValue": "පෙරනිමි අගයට සකසන්න",
+      "defaultValue": "පෙරනිමි අගය"
+    },
+    "tocFrame": {
+      "expand": "දිගහරින්න",
+      "collapse": "හකුළන්න"
+    },
+    "create-reader-share-card": {
+      "yourBrowserCannotValidateContentImages": "බ්‍රවුසරයට අන්තර්ගත රූප තහවුරු කළ නොහැක",
+      "cannotLoadFont": "අකුරු පූරණය කළ නොහැක: {p0}",
+      "yourBrowserCannotValidateMermaidImages": "බ්‍රවුසරයට Mermaid රූප තහවුරු කළ නොහැක",
+      "yourBrowserBlockedMermaidImageExport": "බ්‍රවුසරය Mermaid රූප අපනයනය අවහිර කළා",
+      "cannotRenderTheMermaidDiagram": "Mermaid රූපසටහන ඇඳිය නොහැක",
+      "cannotGenerateTheShareCardImage": "බෙදාගැනීමේ කාඩ්පත් රූපය සෑදිය නොහැක",
+      "noTextToShare": "බෙදාගැනීමට පෙළ නැත",
+      "yourBrowserCannotGenerateShareCards": "බ්‍රවුසරයට බෙදාගැනීමේ කාඩ්පත් සෑදිය නොහැක"
+    },
+    "shareLabels": {
+      "mermaid": "Mermaid රූප සටහන",
+      "chat": "සංවාදය",
+      "moment": "පළ කිරීම",
+      "shareCard": "බෙදාගැනීමේ කාඩ්පත"
+    }
+  }
+}

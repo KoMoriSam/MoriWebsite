@@ -1,0 +1,87 @@
+{
+  "reader": {
+    "novelDetail": {
+      "coverOf": "Cover of 《向远方》",
+      "chaptersRead": "chapters read",
+      "chaptersIncluded": "chapters included",
+      "loadingTotalNovelReads": "Loading total novel reads",
+      "loadingTotalNovelComments": "Loading total novel comments",
+      "novelChapters": "Novel chapters",
+      "bookComments": "Book comments",
+      "continueReading": "Continue reading",
+      "startReading": "Start reading",
+      "loading": "Loading…"
+    },
+    "novelReader": {
+      "loadingChapter": "Loading chapter",
+      "loadingChapter2": "Loading chapter…",
+      "chapterComments": "Chapter comments",
+      "closeChapterComments": "Close chapter comments",
+      "refreshContent": "Refresh content",
+      "cover": "Cover",
+      "bookComments": "Book comments",
+      "switchToBookComments": "Switch to book comments",
+      "switchToChapterComments": "Switch to chapter comments"
+    },
+    "pagedReader": {
+      "pagedReader": "Paged reader",
+      "readerHelpTapAGridZoneForItsActionSwipe": "Reader help: tap a grid zone for its action, swipe horizontally to turn pages, and tap this hint to dismiss",
+      "readingControls": "Reading controls",
+      "tapThisHintToDismiss": "Tap this hint to dismiss",
+      "tapActionsCustomizable": "Tap actions (customizable)",
+      "tapTheCenterForTheMenu": "Tap the center for the menu",
+      "tapTheEdgesToTurnPages": "Tap the edges to turn pages",
+      "swipeToTurnPages": "Swipe to turn pages",
+      "textArea": "Text area",
+      "swipeLeftOrRight": "Swipe left or right",
+      "moreControls": "More controls",
+      "assignGridZonesToTheMenuPreviousOrNextChapter": "Assign grid zones to the menu, previous or next chapter, contents, search, help, and more"
+    },
+    "pageFootnotes": {
+      "footnotesOnThisPage": "Footnotes on this page"
+    },
+    "readerControls": {
+      "readingControlsAreOpenTapOutsideToClose": "Reading controls are open. Tap outside to close.",
+      "searchInBook": "Search in book",
+      "help": "Help",
+      "help2": "Help",
+      "refresh": "Refresh",
+      "mobileReadingControls": "Mobile reading controls",
+      "bookProgress": "· Book progress",
+      "adjustChapterReadingPosition": "Adjust chapter reading position",
+      "backToCover": "Back to cover",
+      "comments": "Comments",
+      "layout": "Layout",
+      "backToReadingControls": "Back to reading controls",
+      "chapterPage": "Chapter page {p0} / {p1}",
+      "chapterProgress": "Chapter progress {p0}"
+    },
+    "readerMoreSettings": {
+      "mouseWheelPageTurning": "Mouse wheel page turning",
+      "useTheMouseWheelToTurnPagesInPagedMode": "Use the mouse wheel to turn pages in paged mode",
+      "volumeKeyPageTurning": "Volume key page turning",
+      "tapZoneSettings": "Tap zone settings",
+      "showTapZonesTapEachZoneToCycleItsAction": "Show tap zones; tap each zone to cycle its action",
+      "externalKeyboardsAreSupportedNativeContainersCanUseTheReader": "External keyboards are supported; native containers can use the reader bridge",
+      "theSystemHandlesHardwareVolumeKeysInThisBrowserThe": "The system handles hardware volume keys in this browser; the page cannot listen for them"
+    },
+    "readerStatusBar": {
+      "readingInformation": "Reading information"
+    },
+    "scrollReader": {
+      "scrollingReader": "Scrolling reader",
+      "scrollingHelpTapAGridZoneForItsActionSwipe": "Scrolling help: tap a grid zone for its action, swipe vertically to scroll, and tap to dismiss",
+      "verticalScrolling": "Vertical scrolling",
+      "swipeVerticallyToRead": "Swipe vertically to read"
+    },
+    "tapZoneEditor": {
+      "nineZoneTapSettings": "Nine-zone tap settings",
+      "tapAZoneToChooseItsAction": "Tap a zone to choose its action",
+      "done": "Done",
+      "textTapZones": "Text tap zones",
+      "chooseTapZoneAction": "Choose tap zone action",
+      "noAction": "No action",
+      "currentActionTapToOpenTheActionMenu": "Current action: {p0}. Tap to open the action menu."
+    }
+  }
+}

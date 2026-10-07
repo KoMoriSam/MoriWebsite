@@ -25,11 +25,27 @@ export const createApp = ViteSSG(
     routes,
     base: import.meta.env.BASE_URL,
   },
-  ({ app }) => {
+  ({ app, router }) => {
     const pinia = createPinia();
 
     app.use(pinia);
-    createLocaleService().install(app);
+    const localeService = createLocaleService();
+    localeService.install(app);
+    let loadingRoute = null;
+    router.beforeResolve((to) => {
+      loadingRoute = to;
+      return localeService.loadRoute(to);
+    });
+    const restoreRoute = (to) => {
+      if (to === loadingRoute) {
+        loadingRoute = null;
+        void localeService.loadRoute(router.currentRoute.value).catch(() => {});
+      }
+    };
+    router.afterEach((to, from, failure) => {
+      if (failure) restoreRoute(to);
+    });
+    router.onError((error, to) => restoreRoute(to));
 
     app.use(lazyPlugin);
 

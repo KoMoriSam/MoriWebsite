@@ -1,0 +1,87 @@
+{
+  "reader": {
+    "novelDetail": {
+      "coverOf": "《向远方》小说封面",
+      "chaptersRead": "章已读",
+      "chaptersIncluded": "章收录",
+      "loadingTotalNovelReads": "正在读取小说总阅读量",
+      "loadingTotalNovelComments": "正在读取小说总评论量",
+      "novelChapters": "小说章节目录",
+      "bookComments": "本书评论",
+      "continueReading": "继续上次阅读",
+      "startReading": "开始阅读",
+      "loading": "加载中……"
+    },
+    "novelReader": {
+      "loadingChapter": "正在加载章节",
+      "loadingChapter2": "正在加载章节…",
+      "chapterComments": "本章说",
+      "closeChapterComments": "关闭本章说",
+      "refreshContent": "刷新内容",
+      "cover": "封面页",
+      "bookComments": "本书说",
+      "switchToBookComments": "切换本书说",
+      "switchToChapterComments": "切换本章说"
+    },
+    "pagedReader": {
+      "pagedReader": "分页阅读器",
+      "readerHelpTapAGridZoneForItsActionSwipe": "阅读操作提示：轻触九宫格区域执行对应操作，左右滑动翻页，点击提示关闭",
+      "readingControls": "阅读操作",
+      "tapThisHintToDismiss": "轻触提示可关闭",
+      "tapActionsCustomizable": "轻触操作（可自定义）",
+      "tapTheCenterForTheMenu": "中央展开菜单",
+      "tapTheEdgesToTurnPages": "四周翻页",
+      "swipeToTurnPages": "滑动翻页",
+      "textArea": "正文区域",
+      "swipeLeftOrRight": "可左右滑动",
+      "moreControls": "更多控制",
+      "assignGridZonesToTheMenuPreviousOrNextChapter": "九宫格区域可设为菜单、上一章、下一章、目录、搜索、帮助等操作"
+    },
+    "pageFootnotes": {
+      "footnotesOnThisPage": "本页脚注"
+    },
+    "readerControls": {
+      "readingControlsAreOpenTapOutsideToClose": "阅读控制已打开，点击控制区域以外收起",
+      "searchInBook": "书内搜索",
+      "help": "使用帮助",
+      "help2": "帮助",
+      "refresh": "刷新",
+      "mobileReadingControls": "移动阅读控制",
+      "bookProgress": "· 全书进度",
+      "adjustChapterReadingPosition": "调整本章阅读位置",
+      "backToCover": "返回封面",
+      "comments": "评论区",
+      "layout": "界面排版",
+      "backToReadingControls": "返回阅读控制",
+      "chapterPage": "本章已读 {p0} 页 / 共 {p1} 页",
+      "chapterProgress": "本章已读 {p0}"
+    },
+    "readerMoreSettings": {
+      "mouseWheelPageTurning": "鼠标滚轮翻页",
+      "useTheMouseWheelToTurnPagesInPagedMode": "分页模式下滚动滚轮切换页面",
+      "volumeKeyPageTurning": "音量键翻页",
+      "tapZoneSettings": "点击区域设置",
+      "showTapZonesTapEachZoneToCycleItsAction": "显示点击范围，轻触区域依次切换动作",
+      "externalKeyboardsAreSupportedNativeContainersCanUseTheReader": "支持外接键盘；原生容器可通过阅读器桥接控制",
+      "theSystemHandlesHardwareVolumeKeysInThisBrowserThe": "当前移动浏览器由系统接管实体音量键，网页无法监听"
+    },
+    "readerStatusBar": {
+      "readingInformation": "阅读信息"
+    },
+    "scrollReader": {
+      "scrollingReader": "上下滚动阅读器",
+      "scrollingHelpTapAGridZoneForItsActionSwipe": "上下滚动阅读提示：轻触九宫格区域执行对应操作，上下滑动滚动，点击关闭",
+      "verticalScrolling": "上下滚动",
+      "swipeVerticallyToRead": "上下滑动阅读"
+    },
+    "tapZoneEditor": {
+      "nineZoneTapSettings": "九宫格点击区域设置",
+      "tapAZoneToChooseItsAction": "点击区域选择对应操作",
+      "done": "完成",
+      "textTapZones": "正文九宫格区域",
+      "chooseTapZoneAction": "选择点击区域操作",
+      "noAction": "无操作",
+      "currentActionTapToOpenTheActionMenu": "当前操作为 {p0}，点击打开操作菜单"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "kaiming": {
+      "kaimingPunctuation": "Kaiming punctuation",
+      "punctuationFontsForChineseWebTypographyWithSansSerifAnd": "Punctuation fonts for Chinese web typography, with sans-serif and serif styles and variable weights from 100 to 900.",
+      "fontSpecifications": "Font specifications",
+      "viewSource": "View source",
+      "punctuationFontFamily": "Punctuation font family",
+      "chooseFontFamily": "Choose font family",
+      "variableWeight": "Variable weight",
+      "liveFontSpecimen": "Live font specimen",
+      "editableFontSpecimen": "Editable font specimen",
+      "clickTheSpecimenToEdit": "Click the specimen to edit",
+      "currentFont": "Current font:",
+      "refiningPunctuationRhythmInChineseText": "Refining punctuation rhythm in Chinese text",
+      "oneLineImportWithFontFallback": "One-line import with font fallback",
+      "preciseCssUnicodeRangeLoadsAndReplacesOnlyTheIncluded": "Precise CSS unicode-range loads and replaces only the included Chinese punctuation.",
+      "downloadsSource": "Downloads & source",
+      "useTheWebFontsDirectlyOrGetOtherFormatsAnd": "Use the web fonts directly, or get other formats and build source on GitHub.",
+      "sansSerif": "Sans-serif",
+      "serif": "Serif",
+      "halfWidthPunctuation": "Half-width punctuation",
+      "bracketsQuotesAndCommasUseHalfWidthSpacingForA": "Brackets, quotes, and commas use half-width spacing for a tighter text rhythm.",
+      "compactSentenceEndings": "Compact sentence endings",
+      "consecutiveEndingMarksAreCompactedPreservingEmphasisWithoutExcessSpacing": "Consecutive ending marks are compacted, preserving emphasis without excess spacing.",
+      "dashLigature": "Dash ligature",
+      "doubleDashesFormAContinuousTwoCharacterWideLigatureThat": "Double dashes form a continuous two-character-wide ligature that fits the text.",
+      "webImport": "Web import",
+      "releases": "Releases",
+      "sourceRepository": "Source repository",
+      "openSourceLicense": "Open-source license",
+      "weight": "Weight {p0}"
+    }
+  }
+}

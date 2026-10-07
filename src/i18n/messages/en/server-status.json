@@ -1,0 +1,37 @@
+{
+  "tools": {
+    "serverInfo": {
+      "checkServerStatus": "Check server status",
+      "enterAValidServerAddressEGMcExampleCom": "Enter a valid server address, e.g. mc.example.com:25565",
+      "enterAServerAddress": "Enter a server address",
+      "defaultPort25565": "Default port: 25565",
+      "pleaseEnterAValidServerAddress": "Please enter a valid server address!",
+      "exampleMcExampleCom25565": "Example: mc.example.com:25565",
+      "check": "Check",
+      "serverInformationCard": "Server information card",
+      "server": "Server",
+      "serverLogo": "Server logo",
+      "serverOffline": "Server offline",
+      "status": "Status",
+      "contactTheAdministratorOrCheckTheAddress": "Contact the administrator or check the address",
+      "playersOnline": "Players online",
+      "busy": "Busy",
+      "active": "Active",
+      "quiet": "Quiet",
+      "latency": "Latency",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "theClipboardIsEmpty": "The clipboard is empty",
+      "cannotReadTheClipboardPleaseEnterTextManually": "Cannot read the clipboard. Please enter text manually.",
+      "noServerDataWasReturned": "No server data was returned",
+      "lookupFailedPleaseCheckTheAddress": "Lookup failed. Please check the address.",
+      "offlineOrNotFound": "Offline or not found",
+      "online": "Online"
+    },
+    "serverStatus": {
+      "liveLookup": "Live lookup",
+      "statusPlayersLatency": "Status · Players · Latency"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "pages": {
+    "changelog": {
+      "currentVersion": "වත්මන් අනුවාදය",
+      "releaseRecords": "අනුවාද සටහන්",
+      "theLatestRemoteRecordsAreUnavailable": "නවතම දුරස්ථ සටහන් ලබාගත නොහැක",
+      "showingTheStaticVersionIncludedWithTheWebsite": "වෙබ් අඩවිය සමඟ නිකුත් කළ ස්ථිතික අනුවාදය පෙන්වයි.",
+      "theChangelogCouldNotBeLoaded": "යාවත්කාලීන සටහන් පූරණය කළ නොහැකි විය",
+      "noReleasesYet": "තවම අනුවාද සටහන් නොමැත",
+      "futureChangesWillAppearHere": "ඉදිරි වෙනස්කම් මෙහි පෙන්වනු ඇත.",
+      "versions": "අනුවාද",
+      "latest": "නවතම",
+      "changes": "වෙනස්කම්",
+      "pleaseTryAgainLater": "පසුව නැවත උත්සාහ කරන්න.",
+      "message": "{p0}/{p1}/{p2}",
+      "beforeUpgrading": "යාවත්කාලීන කිරීමට පෙර",
+      "releaseNotes": "අනුවාද විස්තර"
+    }
+  }
+}

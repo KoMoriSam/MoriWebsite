@@ -1,0 +1,37 @@
+{
+  "tools": {
+    "serverInfo": {
+      "checkServerStatus": "සේවාදායක තත්ත්වය බලන්න",
+      "enterAValidServerAddressEGMcExampleCom": "වලංගු සේවාදායක ලිපිනයක් ඇතුළත් කරන්න, උදා: mc.example.com:25565",
+      "enterAServerAddress": "සේවාදායක ලිපිනය ඇතුළත් කරන්න",
+      "defaultPort25565": "පෙරනිමි පෝට් අංකය: 25565",
+      "pleaseEnterAValidServerAddress": "වලංගු සේවාදායක ලිපිනයක් ඇතුළත් කරන්න!",
+      "exampleMcExampleCom25565": "උදාහරණය: mc.example.com:25565",
+      "check": "විමසන්න",
+      "serverInformationCard": "සේවාදායක තොරතුරු කාඩ්පත",
+      "server": "සේවාදායකය",
+      "serverLogo": "සේවාදායක ලාංඡනය",
+      "serverOffline": "සේවාදායකය නොබැඳියි",
+      "status": "වත්මන් තත්ත්වය",
+      "contactTheAdministratorOrCheckTheAddress": "පරිපාලකයා අමතන්න හෝ ලිපිනය පරීක්ෂා කරන්න",
+      "playersOnline": "සබැඳි ක්‍රීඩකයන්",
+      "busy": "කාර්යබහුල",
+      "active": "සක්‍රිය",
+      "quiet": "නිදහස්",
+      "latency": "ජාල ප්‍රමාදය",
+      "high": "ඉහළ",
+      "medium": "මධ්‍යම",
+      "low": "අඩු",
+      "theClipboardIsEmpty": "පසුරු පුවරුව හිස්ය",
+      "cannotReadTheClipboardPleaseEnterTextManually": "පසුරු පුවරුව කියවිය නොහැක. අතින් ඇතුළත් කරන්න.",
+      "noServerDataWasReturned": "සේවාදායක දත්ත ලැබුණේ නැත",
+      "lookupFailedPleaseCheckTheAddress": "විමසුම අසාර්ථකයි. ලිපිනය පරීක්ෂා කරන්න.",
+      "offlineOrNotFound": "නොබැඳි හෝ හමු නොවීය",
+      "online": "සබැඳි"
+    },
+    "serverStatus": {
+      "liveLookup": "සජීවී විමසුම",
+      "statusPlayersLatency": "තත්ත්වය · ක්‍රීඩකයන් · ප්‍රමාදය"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "pages": {
+    "announcements": {
+      "announcements": "අඩවි නිවේදන",
+      "updated": "යාවත්කාලීන කළේ",
+      "announcementsCouldNotBeLoaded": "නිවේදන පූරණය කළ නොහැකි විය",
+      "loading": "පූරණය වෙමින්",
+      "currentAnnouncements": "වත්මන් නිවේදන",
+      "thereAreNoActiveAnnouncements": "සක්‍රිය නිවේදන නොමැත.",
+      "pastAnnouncements": "පැරණි නිවේදන",
+      "thereAreNoPastAnnouncementsYet": "තවම පැරණි නිවේදන නොමැත."
+    }
+  }
+}

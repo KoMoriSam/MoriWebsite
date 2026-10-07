@@ -1,0 +1,87 @@
+{
+  "reader": {
+    "novelDetail": {
+      "coverOf": "《向远方》 නවකතා කවරය",
+      "chaptersRead": "කියවූ පරිච්ඡේද",
+      "chaptersIncluded": "ඇතුළත් පරිච්ඡේද",
+      "loadingTotalNovelReads": "මුළු නවකතා කියවීම් පූරණය වෙමින්",
+      "loadingTotalNovelComments": "මුළු නවකතා අදහස් පූරණය වෙමින්",
+      "novelChapters": "නවකතා පරිච්ඡේද",
+      "bookComments": "පොතේ අදහස්",
+      "continueReading": "දිගටම කියවන්න",
+      "startReading": "කියවීම අරඹන්න",
+      "loading": "පූරණය වෙමින්…"
+    },
+    "novelReader": {
+      "loadingChapter": "පරිච්ඡේදය පූරණය වෙමින්",
+      "loadingChapter2": "පරිච්ඡේදය පූරණය වෙමින්…",
+      "chapterComments": "පරිච්ඡේද අදහස්",
+      "closeChapterComments": "පරිච්ඡේද අදහස් වසන්න",
+      "refreshContent": "අන්තර්ගතය යළි පූරණය කරන්න",
+      "cover": "කවරය",
+      "bookComments": "පොතේ අදහස්",
+      "switchToBookComments": "පොතේ අදහස් වෙත මාරු කරන්න",
+      "switchToChapterComments": "පරිච්ඡේද අදහස් වෙත මාරු කරන්න"
+    },
+    "pagedReader": {
+      "pagedReader": "පිටු කියවනය",
+      "readerHelpTapAGridZoneForItsActionSwipe": "කියවීම් සහාය: ක්‍රියාවට කොටුවක් තට්ටු කරන්න, පිටු පෙරළීමට තිරස්ව ස්වයිප් කරන්න, වැසීමට ඉඟිය තට්ටු කරන්න",
+      "readingControls": "කියවීමේ පාලක",
+      "tapThisHintToDismiss": "වැසීමට මෙම ඉඟිය තට්ටු කරන්න",
+      "tapActionsCustomizable": "තට්ටු ක්‍රියා (අභිරුචිකරණය කළ හැක)",
+      "tapTheCenterForTheMenu": "මෙනුවට මැද තට්ටු කරන්න",
+      "tapTheEdgesToTurnPages": "පිටු පෙරළීමට දාර තට්ටු කරන්න",
+      "swipeToTurnPages": "පිටු පෙරළීමට ස්වයිප් කරන්න",
+      "textArea": "පෙළ ප්‍රදේශය",
+      "swipeLeftOrRight": "වමට හෝ දකුණට ස්වයිප් කරන්න",
+      "moreControls": "තවත් පාලක",
+      "assignGridZonesToTheMenuPreviousOrNextChapter": "කොටුවලට මෙනුව, පෙර හෝ ඊළඟ පරිච්ඡේදය, පටුන, සෙවුම හා සහාය වැනි ක්‍රියා පවරන්න"
+    },
+    "pageFootnotes": {
+      "footnotesOnThisPage": "මෙම පිටුවේ පාද සටහන්"
+    },
+    "readerControls": {
+      "readingControlsAreOpenTapOutsideToClose": "කියවීම් පාලක විවෘතයි. වැසීමට පිටත තට්ටු කරන්න.",
+      "searchInBook": "පොත තුළ සොයන්න",
+      "help": "භාවිත සහාය",
+      "help2": "සහාය",
+      "refresh": "යළි පූරණය කරන්න",
+      "mobileReadingControls": "ජංගම කියවීම් පාලක",
+      "bookProgress": "· පොතේ ප්‍රගතිය",
+      "adjustChapterReadingPosition": "පරිච්ඡේද කියවීම් ස්ථානය වෙනස් කරන්න",
+      "backToCover": "කවරයට ආපසු",
+      "comments": "අදහස්",
+      "layout": "සැකැස්ම",
+      "backToReadingControls": "කියවීම් පාලක වෙත ආපසු",
+      "chapterPage": "පරිච්ඡේද පිටුව {p0} / {p1}",
+      "chapterProgress": "පරිච්ඡේද ප්‍රගතිය {p0}"
+    },
+    "readerMoreSettings": {
+      "mouseWheelPageTurning": "මූසික රෝදයෙන් පිටු පෙරළීම",
+      "useTheMouseWheelToTurnPagesInPagedMode": "පිටු ක්‍රමයේදී මූසික රෝදයෙන් පිටු පෙරළන්න",
+      "volumeKeyPageTurning": "ශබ්ද යතුරෙන් පිටු පෙරළීම",
+      "tapZoneSettings": "තට්ටු ප්‍රදේශ සැකසුම්",
+      "showTapZonesTapEachZoneToCycleItsAction": "තට්ටු ප්‍රදේශ පෙන්වන්න; ක්‍රියාව මාරු කිරීමට ප්‍රදේශය තට්ටු කරන්න",
+      "externalKeyboardsAreSupportedNativeContainersCanUseTheReader": "බාහිර යතුරුපුවරුවලට සහාය ඇත; දේශීය යෙදුම්වලට කියවන සම්බන්ධකය භාවිත කළ හැක",
+      "theSystemHandlesHardwareVolumeKeysInThisBrowserThe": "මෙම බ්‍රවුසරයේ ශබ්ද යතුරු පද්ධතියෙන් හසුරුවන නිසා පිටුවට ඒවා හඳුනාගත නොහැක"
+    },
+    "readerStatusBar": {
+      "readingInformation": "කියවීම් තොරතුරු"
+    },
+    "scrollReader": {
+      "scrollingReader": "අනුචලන කියවනය",
+      "scrollingHelpTapAGridZoneForItsActionSwipe": "අනුචලන සහාය: ක්‍රියාවට කොටුව තට්ටු කරන්න, සිරස්ව ස්වයිප් කරන්න, වැසීමට තට්ටු කරන්න",
+      "verticalScrolling": "සිරස් අනුචලනය",
+      "swipeVerticallyToRead": "කියවීමට සිරස්ව ස්වයිප් කරන්න"
+    },
+    "tapZoneEditor": {
+      "nineZoneTapSettings": "කොටු නවයක තට්ටු සැකසුම්",
+      "tapAZoneToChooseItsAction": "ක්‍රියාව තේරීමට ප්‍රදේශය තට්ටු කරන්න",
+      "done": "අවසන්",
+      "textTapZones": "පෙළ තට්ටු ප්‍රදේශ",
+      "chooseTapZoneAction": "තට්ටු ප්‍රදේශ ක්‍රියාව තෝරන්න",
+      "noAction": "ක්‍රියාවක් නැත",
+      "currentActionTapToOpenTheActionMenu": "වත්මන් ක්‍රියාව: {p0}. මෙනුවට තට්ටු කරන්න."
+    }
+  }
+}

@@ -168,6 +168,13 @@ try {
     ['/src/views/tools/ImageConverter.vue', {}, 'Image converter', 'රූප පරිවර්තකය'],
   ];
   for (const [file, props, en, si] of cases) {
+    const localeGroups = file.includes('/games/fogport/') ? ['games', 'fogport']
+      : file.includes('/games/avalon/') || file.endsWith('/games/Avalon.vue') ? ['games', 'avalon']
+      : file.endsWith('/Games.vue') ? ['games']
+      : file.endsWith('/Tools.vue') ? ['tools']
+      : file.includes('/tools/sinhala/') || file.endsWith('/SinhalaFontConverter.vue') ? ['sinhala-font-converter']
+      : file.endsWith('/ImageConverter.vue') ? ['image-converter'] : [];
+    await a.loadRoute({ meta: { localeGroups } });
     const { default: component } = await server.ssrLoadModule(file);
     const renderProps = file.endsWith('/RoundTable.vue')
       ? { playersTargetId: 'i18n-test-players', ...props }

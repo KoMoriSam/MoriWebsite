@@ -30,5 +30,5 @@ export const gameRoutes = GAMES.map((game) => ({
   path: game.path,
   name: game.name,
   component: game.component,
-  meta: { navName: "games", gameType: game.id, hideToTop: true },
+  meta: { navName: "games", gameType: game.id, hideToTop: true, localeGroups: ["games", game.id] },
 }));

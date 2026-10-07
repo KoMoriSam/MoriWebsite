@@ -1,0 +1,37 @@
+{
+  "tools": {
+    "serverInfo": {
+      "checkServerStatus": "查询服务器状态",
+      "enterAValidServerAddressEGMcExampleCom": "请输入有效的服务器地址，如：mc.example.com:25565",
+      "enterAServerAddress": "请输入服务器地址",
+      "defaultPort25565": "默认端口为 25565",
+      "pleaseEnterAValidServerAddress": "请输入有效的服务器地址！",
+      "exampleMcExampleCom25565": "如：mc.example.com:25565",
+      "check": "查询",
+      "serverInformationCard": "服务器信息卡片",
+      "server": "服务器",
+      "serverLogo": "服务器 Logo",
+      "serverOffline": "服务器离线",
+      "status": "当前状态",
+      "contactTheAdministratorOrCheckTheAddress": "请联系管理员或检查地址是否正确",
+      "playersOnline": "在线人数",
+      "busy": "忙碌",
+      "active": "活跃",
+      "quiet": "空闲",
+      "latency": "网络延迟",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "theClipboardIsEmpty": "剪贴板为空",
+      "cannotReadTheClipboardPleaseEnterTextManually": "无法读取剪贴板，请手动输入",
+      "noServerDataWasReturned": "查询失败：未获取到服务器数据",
+      "lookupFailedPleaseCheckTheAddress": "查询失败，请检查地址是否正确",
+      "offlineOrNotFound": "离线或不存在",
+      "online": "在线"
+    },
+    "serverStatus": {
+      "liveLookup": "实时查询",
+      "statusPlayersLatency": "状态 · 人数 · 延迟"
+    }
+  }
+}

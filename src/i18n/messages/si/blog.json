@@ -1,0 +1,56 @@
+{
+  "pages": {
+    "blog": {
+      "articleNotFound": "ලිපිය හමු නොවීය",
+      "failedToLoadArticleContent": "ලිපි අන්තර්ගතය පූරණය අසාර්ථකයි"
+    },
+    "articleList": {
+      "articles": "ලිපි ලැයිස්තුව",
+      "articles2": "ලිපි",
+      "loadingTotalArticleReads": "මුළු ලිපි කියවීම් පූරණය වෙමින්",
+      "loadingTotalArticleComments": "මුළු ලිපි අදහස් පූරණය වෙමින්",
+      "articleSearch": "ලිපි සෙවුම",
+      "searchArticles": "ලිපි සොයන්න",
+      "toFilterTagsEnter": "ටැග් පෙරීමට; ඇතුළත් කරන්න",
+      "noArticlesFoundFor": "“",
+      "message": "” සඳහා ලිපි හමු නොවීය",
+      "found": "හමු වූ",
+      "viewing": "(දැනට බලන",
+      "keywords": "සෙවුම් පද:",
+      "loadingArticles": "ලිපි පූරණය වෙමින්",
+      "minutes": "මිනිත්තු",
+      "readMore": "සම්පූර්ණයෙන් කියවන්න",
+      "articlePagination": "ලිපි පිටු පාලනය",
+      "noMatchingArticles": "ගැළපෙන ලිපි හමු නොවීය",
+      "tryChangingKeywordsTagsOrYears": "සෙවුම් පද, ටැග් හෝ වසර වෙනස් කරන්න",
+      "clearAllFilters": "සියලු පෙරහන් ඉවත් කරන්න",
+      "noArticlesYet": "තවම ලිපි නොමැත",
+      "publishedArticlesWillAppearHere": "පළ කළ ලිපි මෙහි පෙන්වයි",
+      "noSummaryAvailable": "සාරාංශයක් නොමැත",
+      "article": "ලිපිය {p0}",
+      "articles4": "ලිපි {p0}–{p1}",
+      "removeTag": "ටැගය {p0} ඉවත් කරන්න",
+      "chooseTags": "ටැග් තෝරන්න",
+      "tag": "ටැගය {p0}"
+    },
+    "articleReader": {
+      "backToArticles": "ලිපි ලැයිස්තුවට ආපසු",
+      "about": "ආසන්න වශයෙන්",
+      "minRead": "මිනිත්තු කියවීමක්",
+      "loadingArticleReads": "ලිපි කියවීම් පූරණය වෙමින්",
+      "loadingArticleComments": "ලිපි අදහස් පූරණය වෙමින්",
+      "loadingArticleContent": "ලිපි අන්තර්ගතය පූරණය වෙමින්",
+      "articleNavigation": "ලිපි සංචලනය",
+      "previousArticle": "පෙර ලිපිය",
+      "published": "පළ කළේ",
+      "nextArticle": "ඊළඟ ලිපිය",
+      "articleFailedToLoad": "ලිපිය පූරණය අසාර්ථකයි",
+      "articleNotFoundOrFailedToLoad": "ලිපිය හමු නොවීය හෝ පූරණය අසාර්ථකයි",
+      "blog": "远方之森 · බ්ලොග්",
+      "refreshArticle": "ලිපිය යළි පූරණය කරන්න",
+      "minRead2": "මිනිත්තු {p0} කියවීමක්",
+      "previousArticle2": "පෙර ලිපිය: {p0}",
+      "nextArticle2": "ඊළඟ ලිපිය: {p0}"
+    }
+  }
+}

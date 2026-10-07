@@ -1,0 +1,22 @@
+{
+  "pages": {
+    "licenses": {
+      "theProjectSMitLicenseAppliesOnlyToOriginalSoftware": "The project's MIT license applies only to original software source code. Third-party components and other content retain their own terms.",
+      "dependencyVersions": "dependency versions",
+      "additionalLicenses": "additional licenses",
+      "packagesWithoutATopLevelLicenseFile": "packages without a top-level license file",
+      "projectMitLicense": "Project MIT license",
+      "downloadLicense": "Download LICENSE",
+      "thirdPartyNotices": "Third-party notices",
+      "noticeLanguage": "Notice language",
+      "chinese": "Chinese",
+      "productionDependencyLicenses": "Production dependency licenses",
+      "downloadAllNotices": "Download all notices",
+      "theseNoticesComeFromThePackagesInstalledAtBuildTime": "These notices come from the packages installed at build time. Packages without a top-level license file still list their declared license and upstream URL, with the missing file clearly marked.",
+      "upstream": "Upstream:",
+      "theInstalledVersionOfThisPackageDoesNotIncludeA": "The installed version of this package does not include a top-level license file.",
+      "additionalLicenseFiles": "Additional license files",
+      "viewChineseSource": "View Chinese source"
+    }
+  }
+}

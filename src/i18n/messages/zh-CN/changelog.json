@@ -1,0 +1,20 @@
+{
+  "pages": {
+    "changelog": {
+      "currentVersion": "当前版本",
+      "releaseRecords": "次版本记录",
+      "theLatestRemoteRecordsAreUnavailable": "暂时没有获取到远端最新记录",
+      "showingTheStaticVersionIncludedWithTheWebsite": "当前正在显示随站点发布的静态版本。",
+      "theChangelogCouldNotBeLoaded": "更新日志暂时没有加载成功",
+      "noReleasesYet": "暂时没有版本记录",
+      "futureChangesWillAppearHere": "新的变化会在这里留下痕迹。",
+      "versions": "个版本",
+      "latest": "最新",
+      "changes": "项变更",
+      "pleaseTryAgainLater": "请稍后重试。",
+      "message": "{p0} 年 {p1} 月 {p2} 日",
+      "beforeUpgrading": "升级前请注意",
+      "releaseNotes": "版本说明"
+    }
+  }
+}

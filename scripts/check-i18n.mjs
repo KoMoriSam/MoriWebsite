@@ -10,8 +10,29 @@ import { normalizeLocale, detectLocale, readLocalePreference, writeLocalePrefere
 const require = createRequire(import.meta.url);
 const { parse, compileScript, compileTemplate } = require('vue/compiler-sfc');
 const codes = ['zh-CN', 'en', 'si'];
-const messages = Object.fromEntries(codes.map(code => [code, JSON.parse(fs.readFileSync(`src/i18n/messages/${code}.json`, 'utf8'))]));
 const flatten = (tree, prefix = '') => Object.entries(tree).flatMap(([key, value]) => typeof value === 'string' ? [[prefix + key, value]] : flatten(value, prefix + key + '.'));
+const groups = fs.readdirSync('src/i18n/messages/zh-CN').filter(file => file.endsWith('.json')).sort();
+const messages = Object.fromEntries(codes.map(code => {
+  assert.deepEqual(fs.readdirSync(`src/i18n/messages/${code}`).sort(), groups, `${code}: message groups`);
+  const tree = {};
+  const seen = new Set();
+  for (const group of groups) {
+    const file = `src/i18n/messages/${code}/${group}`;
+    const entries = flatten(JSON.parse(fs.readFileSync(file, 'utf8')));
+    const sourceKeys = flatten(JSON.parse(fs.readFileSync(`src/i18n/messages/zh-CN/${group}`, 'utf8'))).map(([key]) => key).sort();
+    assert.deepEqual(entries.map(([key]) => key).sort(), sourceKeys, `${file}: message keys`);
+    for (const [key, value] of entries) {
+      assert.ok(!seen.has(key), `${file}: duplicate key ${key}`);
+      seen.add(key);
+      const parts = key.split('.');
+      const leaf = parts.pop();
+      let node = tree;
+      for (const part of parts) node = node[part] ||= {};
+      node[leaf] = value;
+    }
+  }
+  return [code, tree];
+}));
 const catalogs = Object.fromEntries(codes.map(code => [code, new Map(flatten(messages[code]))]));
 const params = text => [...text.matchAll(/\{(p\d+)\}/g)].map(match => match[1]).sort();
 const keys = [...catalogs['zh-CN'].keys()].sort();
@@ -32,6 +53,10 @@ try {
   }
 } finally { console.error = oldError; }
 assert.deepEqual(compilationErrors, [], 'Message compilation errors');
+if (process.argv.includes('--messages-only')) {
+  console.log(`i18n messages: ${keys.length} messages × ${codes.length} languages in ${groups.length} groups; keys, parameters, and compilation passed.`);
+  process.exit(0);
+}
 
 let components = 0;
 for (const file of fs.readdirSync('src', { recursive: true }).filter(file => file.endsWith('.vue') && !/^views[\\/]test[\\/]|^views[\\/]Test.vue/.test(file))) {
@@ -99,5 +124,5 @@ const md = new MarkdownIt().use(alertPlugin, { translateTitle: title => title ==
 const decodeAlert = text => JSON.parse(decodeURIComponent(md.render(text).match(/data-markdown-props="([^"]+)"/)[1]));
 assert.equal(decodeAlert('> [!TIP]\n> 正文').titleHtml, 'Tip');
 assert.equal(decodeAlert('> [!TIP] 提示\n> 正文').titleHtml, '提示');
-console.log(`i18n: ${keys.length} messages × 3 languages; ${components} Vue components; locale, storage, and loading checks passed.`);
+console.log(`i18n: ${keys.length} messages × 3 languages in ${groups.length} groups; ${components} Vue components; locale, storage, and loading checks passed.`);
 await import('./check-i18n-runtime.mjs');

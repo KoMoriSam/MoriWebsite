@@ -1,0 +1,13 @@
+{
+  "pages": {
+    "tools": {
+      "chooseAToolToOpenItsPageBookmarkOrShare": "选择一个工具进入独立页面，地址可以直接收藏或分享。",
+      "availableTools": "可用工具",
+      "openTool": "打开工具",
+      "batchConvertImagesInYourBrowserWithCompressionResizingAnimation": "在浏览器内批量转换图片，并支持压缩、尺寸调整、动画与水印。",
+      "imageProcessing": "图片处理",
+      "serverLookup": "服务器查询",
+      "textEncodingConversion": "文本编码转换"
+    }
+  }
+}

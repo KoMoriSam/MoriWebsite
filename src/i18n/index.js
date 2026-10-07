@@ -1,6 +1,7 @@
 import { inject, computed } from "vue";
 import { createI18n } from "vue-i18n";
-import zh from "./messages/zh-CN.json";
+import zh from "./messages/zh-CN/common.json";
+import { messageLoaders, getRouteMessageGroups } from "./message-groups.js";
 import {
   DEFAULT_LOCALE,
   detectLocale,
@@ -11,62 +12,105 @@ import {
 
 export { LOCALES } from "./locale.js";
 export const LOCALE_SERVICE = Symbol("mori-locale");
-const loaders = {
-  en: () => import("./messages/en.json"),
-  si: () => import("./messages/si.json"),
-};
-
-const sourceKeys = new Map();
-function indexSources(messages, prefix = "") {
+function indexSources(messages, sourceKeys, prefix = "") {
   for (const [key, value] of Object.entries(messages)) {
     const messageKey = prefix ? `${prefix}.${key}` : key;
     if (typeof value === "string")
       sourceKeys.set(value.replace(/\{'([@|])'\}/g, "$1"), messageKey);
-    else indexSources(value, messageKey);
+    else indexSources(value, sourceKeys, messageKey);
   }
 }
-indexSources(zh);
-const sourcePatterns = [...sourceKeys]
-  .filter(([source]) => /\{p\d+\}/.test(source))
-  .map(([source, key]) => {
-    const parameters = [...source.matchAll(/\{(p\d+)\}/g)].map(
-      (match) => match[1],
-    );
-    const pattern = source
-      .split(/\{p\d+\}/)
-      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-      .join("(.*?)");
-    return { key, parameters, pattern: new RegExp(`^${pattern}$`, "s") };
-  });
+function createSourcePatterns(sourceKeys) {
+  return [...sourceKeys]
+    .filter(([source]) => /\{p\d+\}/.test(source))
+    .map(([source, key]) => {
+      const parameters = [...source.matchAll(/\{(p\d+)\}/g)].map(
+        (match) => match[1],
+      );
+      const pattern = source
+        .split(/\{p\d+\}/)
+        .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .join("(.*?)");
+      return { key, parameters, pattern: new RegExp(`^${pattern}$`, "s") };
+    });
+}
 
-export function createLocaleService() {
+export function createLocaleService({ loaders = messageLoaders } = {}) {
   const i18n = createI18n({
     legacy: false,
     locale: DEFAULT_LOCALE,
     fallbackLocale: DEFAULT_LOCALE,
-    messages: { [DEFAULT_LOCALE]: zh },
+    messages: { [DEFAULT_LOCALE]: structuredClone(zh) },
   });
   const { t, locale } = i18n.global;
-  const loaded = new Set([DEFAULT_LOCALE]);
+  const loaded = new Set([`${DEFAULT_LOCALE}/common`]);
+  const sourceKeys = new Map();
+  const sourceMessages = new Map([["common", zh]]);
+  let sourcePatterns = [];
+  let activeGroups = ["common"];
+  const refreshSources = () => {
+    sourceKeys.clear();
+    // Shared labels stay available when previously visited pages are not loaded
+    // in the newly selected language.
+    for (const group of [...activeGroups.filter((group) => group !== "common"), "common"]) {
+      const messages = sourceMessages.get(group);
+      if (messages) indexSources(messages, sourceKeys);
+    }
+    sourcePatterns = createSourcePatterns(sourceKeys);
+  };
+  refreshSources();
+  let groupSequence = 0;
+  let requestedLocale = DEFAULT_LOCALE;
+  let localeLoadSequence = 0;
   let globalInfo = null;
   const pending = new Map();
-  const load = async (code) => {
-    if (loaded.has(code)) return;
-    if (!pending.has(code)) {
+  const loadGroup = async (code, group) => {
+    const id = `${code}/${group}`;
+    if (loaded.has(id)) return;
+    if (!pending.has(id)) {
+      const loader = loaders[`./messages/${id}.json`];
+      if (!loader) throw new Error(`Unknown locale message group: ${id}`);
       pending.set(
-        code,
-        loaders[code]()
-          .then(({ default: messages }) => {
-            i18n.global.setLocaleMessage(code, messages);
-            loaded.add(code);
+        id,
+        Promise.resolve()
+          .then(loader)
+          .then((messages) => {
+            i18n.global.mergeLocaleMessage(code, structuredClone(messages));
+            if (code === DEFAULT_LOCALE) {
+              sourceMessages.set(group, messages);
+              refreshSources();
+            }
+            loaded.add(id);
           })
-          .finally(() => pending.delete(code)),
+          .finally(() => pending.delete(id)),
       );
     }
-    await pending.get(code);
+    await pending.get(id);
+  };
+  const load = async (code) => {
+    // Navigation may change the required groups while a language is downloading.
+    let sequence;
+    do {
+      sequence = groupSequence;
+      const codes = [...new Set([DEFAULT_LOCALE, code])];
+      await Promise.all(
+        codes.flatMap((language) =>
+          activeGroups.map((group) => loadGroup(language, group)),
+        ),
+      );
+    } while (sequence !== groupSequence);
   };
   const switchLocale = createLocaleSwitcher({
-    load,
+    load: async (code) => {
+      requestedLocale = code;
+      const request = ++localeLoadSequence;
+      try {
+        await load(code);
+      } catch (error) {
+        if (request === localeLoadSequence) requestedLocale = locale.value;
+        throw error;
+      }
+    },
     apply: (code) => {
       locale.value = code;
     },
@@ -129,6 +173,12 @@ export function createLocaleService() {
     number,
     date,
     switchLocale,
+    async loadRoute(route) {
+      activeGroups = getRouteMessageGroups(route);
+      refreshSources();
+      groupSequence++;
+      await Promise.all([...new Set([locale.value, requestedLocale])].map(load));
+    },
     message: (key, params = {}) => ({ key, params }),
     commentLocale: computed(() =>
       locale.value === DEFAULT_LOCALE ? "zh-CN" : "en",

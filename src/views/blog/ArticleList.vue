@@ -1,9 +1,12 @@
 <template>
-  <ContentPage :eyebrow="translate('common.sections.posts')" :title="translate('pages.articleList.articles')">
+  <ContentPage
+    :eyebrow="translate('common.sections.posts')"
+    :title="translate('pages.articleList.articles')"
+  >
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
-        {{ articles.length }} {{ translate('pages.articleList.articles2') }}
+        {{ articles.length }} {{ translate("pages.articleList.articles2") }}
       </span>
       <client-only>
         <span
@@ -12,12 +15,15 @@
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
-            {{ formatReadCount(articleTotalReads) }} {{ translate('reader.chapterList.reads') }}
+            {{ formatReadCount(articleTotalReads) }}
+            {{ translate("reader.chapterList.reads") }}
           </template>
           <span
             v-else
             class="loading loading-dots loading-xs"
-            :aria-label="translate('pages.articleList.loadingTotalArticleReads')"
+            :aria-label="
+              translate('pages.articleList.loadingTotalArticleReads')
+            "
           ></span>
         </span>
       </client-only>
@@ -28,12 +34,15 @@
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
-            {{ formatReadCount(articleTotalComments) }} {{ translate('markdown.moment.comments') }}
+            {{ formatReadCount(articleTotalComments) }}
+            {{ translate("markdown.moment.comments") }}
           </template>
           <span
             v-else
             class="loading loading-dots loading-xs"
-            :aria-label="translate('pages.articleList.loadingTotalArticleComments')"
+            :aria-label="
+              translate('pages.articleList.loadingTotalArticleComments')
+            "
           ></span>
         </span>
       </client-only>
@@ -44,18 +53,23 @@
         type="application/rss+xml"
       >
         <i class="ri-rss-fill" aria-hidden="true"></i>
-        {{ translate('pages.home.rssSubscription') }}
+        {{ translate("pages.home.rssSubscription") }}
       </a>
     </template>
 
     <template v-if="loading || articles.length">
       <!-- 检索区域 -->
-      <section class="my-6" :aria-label="translate('pages.articleList.articleSearch')">
+      <section
+        class="my-6"
+        :aria-label="translate('pages.articleList.articleSearch')"
+      >
         <div ref="searchBox" class="relative min-w-0">
           <div
             class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
           >
-            <label for="article-search" class="sr-only">{{ translate('pages.articleList.searchArticles') }}</label>
+            <label for="article-search" class="sr-only">{{
+              translate("pages.articleList.searchArticles")
+            }}</label>
             <i
               class="ri-search-line shrink-0 text-base-content/45"
               aria-hidden="true"
@@ -70,7 +84,9 @@
                 :key="`tag-${tag}`"
                 type="button"
                 class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
-                :aria-label="translate('pages.articleList.removeTag', { p0: tag })"
+                :aria-label="
+                  translate('pages.articleList.removeTag', { p0: tag })
+                "
                 @click="removeTag(tag)"
               >
                 <span class="truncate">{{ formatTag(tag) }}</span>
@@ -82,7 +98,9 @@
                 :key="`year-${year}`"
                 type="button"
                 class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
-                :aria-label="translate('common.search.removeYear', { p0: year })"
+                :aria-label="
+                  translate('common.search.removeYear', { p0: year })
+                "
                 @click="removeYear(year)"
               >
                 {{ year }}
@@ -142,7 +160,9 @@
             class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xl"
             role="listbox"
             :aria-label="
-              activeFilterQuery.type === 'tag' ? translate('common.search.tagFilterSuggestions') : translate('common.search.yearFilterSuggestions')
+              activeFilterQuery.type === 'tag'
+                ? translate('common.search.tagFilterSuggestions')
+                : translate('common.search.yearFilterSuggestions')
             "
           >
             <div
@@ -158,14 +178,18 @@
                   aria-hidden="true"
                 ></i>
                 {{
-                  activeFilterQuery.type === "tag" ? translate('pages.articleList.chooseTags') : translate('common.search.choosePublicationYear')
+                  activeFilterQuery.type === "tag"
+                    ? translate("pages.articleList.chooseTags")
+                    : translate("common.search.choosePublicationYear")
                 }}
               </span>
               <span class="hidden sm:inline">
-                <kbd class="kbd kbd-xs">↑</kbd
-                ><kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select') }}
-                <kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.confirm') }}
-                <kbd class="kbd kbd-xs">Esc</kbd> {{ translate('common.modal.close') }}
+                <kbd class="kbd kbd-xs">↑</kbd><kbd class="kbd kbd-xs">↓</kbd>
+                {{ translate("common.search.select") }}
+                <kbd class="kbd kbd-xs">Enter</kbd>
+                {{ translate("common.search.confirm") }}
+                <kbd class="kbd kbd-xs">Esc</kbd>
+                {{ translate("common.modal.close") }}
               </span>
             </div>
 
@@ -187,7 +211,8 @@
                     {{ group.label }}
                   </span>
                   <span class="shrink-0 font-normal text-base-content/40">
-                    {{ group.count }} {{ translate('pages.articleList.articles3') }}
+                    {{ group.count }}
+                    {{ translate("pages.articleList.articles3") }}
                   </span>
                 </div>
 
@@ -207,8 +232,12 @@
                       role="option"
                       :aria-label="
                         option.type === 'tag'
-                          ? translate('pages.articleList.tag', { p0: option.fullLabel })
-                          : translate('common.search.year', { p0: option.label })
+                          ? translate('pages.articleList.tag', {
+                              p0: option.fullLabel,
+                            })
+                          : translate('common.search.year', {
+                              p0: option.label,
+                            })
                       "
                       :aria-selected="activeFilterIndex === option.index"
                       class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
@@ -240,7 +269,8 @@
                         {{ option.label }}
                       </span>
                       <span class="text-xs text-base-content/40">
-                        {{ option.count }} {{ translate('pages.articleList.articles3') }}
+                        {{ option.count }}
+                        {{ translate("pages.articleList.articles3") }}
                       </span>
                     </button>
                   </li>
@@ -254,16 +284,20 @@
             >
               {{
                 activeFilterQuery.query
-                  ? translate('common.search.noOptionsMatch', { p0: activeFilterQuery.query })
-                  : translate('common.search.noMoreFiltersAvailable')
+                  ? translate("common.search.noOptionsMatch", {
+                      p0: activeFilterQuery.query,
+                    })
+                  : translate("common.search.noMoreFiltersAvailable")
               }}
             </p>
           </div>
         </div>
 
         <p class="mt-2 px-1 text-xs text-base-content/45">
-          {{ translate('common.search.enter') }} <kbd class="kbd kbd-xs">#</kbd> {{ translate('pages.articleList.toFilterTagsEnter') }}
-          <kbd class="kbd kbd-xs">/</kbd> {{ translate('common.search.toFilterYearsYouCanCombineFilters') }}
+          {{ translate("common.search.enter") }} <kbd class="kbd kbd-xs">#</kbd>
+          {{ translate("pages.articleList.toFilterTagsEnter") }}
+          <kbd class="kbd kbd-xs">/</kbd>
+          {{ translate("common.search.toFilterYearsYouCanCombineFilters") }}
         </p>
       </section>
 
@@ -281,28 +315,37 @@
               v-if="keyword.trim()"
               class="font-medium text-base-content/75"
             >
-              {{ translate('pages.articleList.noArticlesFoundFor') }}{{ keyword.trim() }}{{ translate('pages.articleList.message') }}
+              {{ translate("pages.articleList.noArticlesFoundFor")
+              }}{{ keyword.trim() }}{{ translate("pages.articleList.message") }}
             </span>
           </template>
 
           <template v-else>
             <span>
-              <span v-if="!hasFilter">{{ translate('common.pagination.of') }} </span>
-              <span v-else>{{ translate('pages.articleList.found') }} </span>
-              <strong class="font-semibold text-base-content">
-                {{ filteredArticles.length }}
-              </strong>
-              {{ translate('pages.articleList.articles3') }}
+              <span v-if="!hasFilter">
+                {{ translate("common.pagination.of") }}
+                <strong class="font-semibold text-base-content">{{
+                  filteredArticles.length
+                }}</strong>
+              </span>
+              <span v-else>
+                {{ translate("pages.articleList.found") }}
+                <strong class="font-semibold text-base-content">{{
+                  filteredArticles.length
+                }}</strong>
+              </span>
+              {{ translate("pages.articleList.articles3") }}
               <span
                 v-if="filteredArticles.length > 1"
                 class="text-base-content/50"
               >
-                {{ translate('pages.articleList.viewing') }}{{ pageDisplayText }}）
+                {{ translate("pages.articleList.viewing")
+                }}{{ pageDisplayText }}）
               </span>
             </span>
 
             <span v-if="keyword.trim()" class="ml-2">
-              {{ translate('pages.articleList.keywords') }}
+              {{ translate("pages.articleList.keywords") }}
               <span class="badge badge-primary badge-soft badge-xs">
                 {{ keyword.trim() }}
               </span>
@@ -312,7 +355,8 @@
 
         <p class="text-xs text-base-content/50">
           <template v-if="filteredArticles.length">
-            {{ translate('common.pagination.page') }} {{ currentPage }} / {{ totalPages }} {{ translate('common.pagination.pages') }}
+            {{ translate("common.pagination.page") }} {{ currentPage }} /
+            {{ totalPages }} {{ translate("common.pagination.pages") }}
           </template>
         </p>
       </div>
@@ -327,7 +371,9 @@
           aria-busy="true"
           :aria-label="translate('pages.articleList.loadingArticles')"
         >
-          <span class="sr-only">{{ translate('pages.articleList.loadingArticles') }}</span>
+          <span class="sr-only">{{
+            translate("pages.articleList.loadingArticles")
+          }}</span>
 
           <div
             class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
@@ -522,12 +568,14 @@
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-time-line"></i>
-                    {{ estimateReadingTime(item.length) }} {{ translate('pages.articleList.minutes') }}
+                    {{ estimateReadingTime(item.length) }}
+                    {{ translate("pages.articleList.minutes") }}
                   </span>
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-file-text-line"></i>
-                    {{ item.length || 0 }} {{ translate('reader.chapterList.characters') }}
+                    {{ item.length || 0 }}
+                    {{ translate("reader.chapterList.characters") }}
                   </span>
 
                   <client-only>
@@ -540,12 +588,17 @@
                     >
                       <i class="ri-eye-line" aria-hidden="true"></i>
                       <template v-if="Number.isFinite(getArticleReads(item))">
-                        {{ formatReadCount(getArticleReads(item)) }} {{ translate('reader.chapterList.reads') }}
+                        {{ formatReadCount(getArticleReads(item)) }}
+                        {{ translate("reader.chapterList.reads") }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapterList.loadingReadsFor', { p0: item.title })"
+                        :aria-label="
+                          translate('reader.chapterList.loadingReadsFor', {
+                            p0: item.title,
+                          })
+                        "
                       ></span>
                     </span>
                   </client-only>
@@ -562,12 +615,17 @@
                       <template
                         v-if="Number.isFinite(getArticleComments(item))"
                       >
-                        {{ formatReadCount(getArticleComments(item)) }} {{ translate('markdown.moment.comments') }}
+                        {{ formatReadCount(getArticleComments(item)) }}
+                        {{ translate("markdown.moment.comments") }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapterList.loadingCommentsFor', { p0: item.title })"
+                        :aria-label="
+                          translate('reader.chapterList.loadingCommentsFor', {
+                            p0: item.title,
+                          })
+                        "
                       ></span>
                     </span>
                   </client-only>
@@ -586,7 +644,7 @@
                   <span
                     class="ml-auto flex items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5"
                   >
-                    {{ translate('pages.articleList.readMore') }}
+                    {{ translate("pages.articleList.readMore") }}
                     <i class="ri-arrow-right-line"></i>
                   </span>
                 </div>
@@ -613,10 +671,12 @@
             class="ri-search-eye-line mb-4 block text-5xl text-base-content/25"
           ></i>
 
-          <h2 class="text-lg font-semibold">{{ translate('pages.articleList.noMatchingArticles') }}</h2>
+          <h2 class="text-lg font-semibold">
+            {{ translate("pages.articleList.noMatchingArticles") }}
+          </h2>
 
           <p class="mt-2 text-sm text-base-content/50">
-            {{ translate('pages.articleList.tryChangingKeywordsTagsOrYears') }}
+            {{ translate("pages.articleList.tryChangingKeywordsTagsOrYears") }}
           </p>
 
           <button
@@ -625,7 +685,7 @@
             @click="resetFilter"
           >
             <i class="ri-refresh-line"></i>
-            {{ translate('pages.articleList.clearAllFilters') }}
+            {{ translate("pages.articleList.clearAllFilters") }}
           </button>
         </div>
       </div>
@@ -637,15 +697,23 @@
       class="my-24 rounded-box border border-dashed border-base-300 px-6 py-20 text-center"
     >
       <i class="ri-article-line mb-4 block text-5xl text-base-content/25"></i>
-      <h2 class="text-lg font-semibold">{{ translate('pages.articleList.noArticlesYet') }}</h2>
-      <p class="mt-2 text-sm text-base-content/50">{{ translate('pages.articleList.publishedArticlesWillAppearHere') }}</p>
+      <h2 class="text-lg font-semibold">
+        {{ translate("pages.articleList.noArticlesYet") }}
+      </h2>
+      <p class="mt-2 text-sm text-base-content/50">
+        {{ translate("pages.articleList.publishedArticlesWillAppearHere") }}
+      </p>
     </div>
   </ContentPage>
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
-const { t: translate, number: formatNumber, date: formatLocalizedDate } = useLocale();
+import { useLocale } from "@/i18n";
+const {
+  t: translate,
+  number: formatNumber,
+  date: formatLocalizedDate,
+} = useLocale();
 
 import {
   computed,
@@ -789,9 +857,12 @@ const pageEnd = computed(() => {
 
 const pageDisplayText = computed(() => {
   if (pageStart.value === pageEnd.value) {
-    return translate('pages.articleList.article', { p0: pageStart.value });
+    return translate("pages.articleList.article", { p0: pageStart.value });
   }
-  return translate('pages.articleList.articles4', { p0: pageStart.value, p1: pageEnd.value });
+  return translate("pages.articleList.articles4", {
+    p0: pageStart.value,
+    p1: pageEnd.value,
+  });
 });
 
 const handlePageChange = async (page) => {
@@ -826,7 +897,7 @@ const highlightParts = (value) => {
 const getResultSummary = (article) => {
   return (
     createSearchExcerpt(article?.content, keyword.value, article?.summary) ||
-    translate('pages.articleList.noSummaryAvailable')
+    translate("pages.articleList.noSummaryAvailable")
   );
 };
 const getAdditionalMetadata = (article) => {

@@ -1,0 +1,8 @@
+{
+  "pages": {
+    "notFound": {
+      "goHome": "Go home",
+      "readArticles": "Read articles"
+    }
+  }
+}

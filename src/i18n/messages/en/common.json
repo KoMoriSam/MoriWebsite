@@ -1,0 +1,516 @@
+{
+  "pages": {
+    "app": {
+      "personalBlogIndependentDevelopment": "远方之森 {'|'} Personal Blog & Independent Development",
+      "komoriSPersonalWebsiteTechnologyEssaysReadingNotesFictionAnd": "KoMori's personal website: technology, essays, reading notes, fiction, and useful browser tools.",
+      "personalBlogTechnologyIndependentDevelopmentOriginalFiction": "远方之森,personal blog,technology,independent development,original fiction,向远方",
+      "licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons": "Licenses and rights notices for original software, dependencies, fonts, icons, and third-party content.",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotes": "Read KoMori's technology explorations, essays, and reading notes.",
+      "readKomoriSBlogArticles": "Read KoMori's blog articles.",
+      "featureUpdatesFixesAndReleasesForKomoriSWebsite": "Feature updates, fixes, and releases for KoMori's website.",
+      "currentAndPastWebsiteAnnouncements": "Current and past website announcements.",
+      "readKomoriSOriginalNovelOnline": "Read KoMori's original novel 《向远方》 online.",
+      "readKomoriSOriginalNovelOnline2": "Read KoMori's original novel 《向远方》 online.",
+      "onlineToolsAndServiceLookupsByKomori": "Online tools and service lookups by KoMori.",
+      "checkTheStatusAndDetailsOfJavaOrBedrockMinecraft": "Check the status and details of Java or Bedrock Minecraft servers.",
+      "convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings": "Convert between standard Unicode and ASCII legacy font encodings.",
+      "tryKaimingChinesePunctuationWithSansSerifSerifAndVariable": "Try Kaiming Chinese punctuation with sans-serif, serif, and variable weights from 100 to 900.",
+      "theRequestedPageWasNotFound": "The requested page was not found.",
+      "komorisamSAvatar": "KoMoriSam's avatar",
+      "blogP": "Blog {'|'} 远方之森 {'|'} p.{p0} ",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotesPage": "Read KoMori's technology explorations, essays, and reading notes. Page {p0}."
+    },
+    "announcements": {
+      "reload": "Reload",
+      "refreshFailedShowingPreviouslyLoadedAnnouncements": "Refresh failed. Showing previously loaded announcements.",
+      "retry": "Retry"
+    },
+    "changelog": {
+      "changelog": "Changelog",
+      "other": "Other"
+    },
+    "home": {
+      "rssSubscription": "RSS subscription",
+      "readTheNovel": "Read the novel",
+      "tools": "Tools",
+      "imageConverter": "Image converter",
+      "sinhalaFontEncodingConverter": "Sinhala font encoding converter"
+    },
+    "licenses": {
+      "licensesThirdPartyNotices": "Licenses & third-party notices"
+    },
+    "tools": {
+      "minecraftServerStatus": "Minecraft server status"
+    },
+    "articleList": {
+      "articles3": "articles"
+    },
+    "articleReader": {
+      "toBottom": "To bottom",
+      "toTop": "To top",
+      "characters": "{p0} characters",
+      "published2": "Published {p0}",
+      "aboutCharacters": "About {p0} characters",
+      "reads": "{p0} reads",
+      "comments": "{p0} comments"
+    }
+  },
+  "tools": {
+    "serverInfo": {
+      "pasteFromClipboard": "Paste from clipboard"
+    },
+    "imageConverter": {
+      "toolInformation": "Tool information",
+      "processedInYourBrowser": "Processed in your browser",
+      "moreSettings": "More settings",
+      "text2": "Text",
+      "documents": "Documents",
+      "dropFilesHere": "Drop files here"
+    }
+  },
+  "common": {
+    "badges": {
+      "pinned": "Pinned",
+      "important": "Important",
+      "ended": "Ended",
+      "revised": "Revised"
+    },
+    "modal": {
+      "backToImportantAnnouncements": "Back to important announcements",
+      "importantAnnouncements": "Important announcements",
+      "pleaseTakeNoteOfTheFollowing": "Please take note of the following",
+      "published": "Published",
+      "ends": "Ends",
+      "to": "to",
+      "importantAnnouncementList": "Important announcement list",
+      "view": "View",
+      "markAllAsRead": "Mark all as read",
+      "close": "Close",
+      "gotIt": "Got it",
+      "thisIsTheDefaultDescription": "This is the default description.",
+      "cancel": "Cancel",
+      "back": "Back"
+    },
+    "noticeCenter": {
+      "notifications": "Notifications",
+      "loadingAnnouncements": "Loading announcements",
+      "announcementsAreTemporarilyUnavailable": "Announcements are temporarily unavailable",
+      "noActiveAnnouncements": "No active announcements",
+      "viewAllAndPastAnnouncements": "View all and past announcements",
+      "openAnnouncements": "Open announcements",
+      "openAnnouncementsUnread": "Open announcements, {p0} unread"
+    },
+    "pagination": {
+      "previousPage": "Previous page",
+      "page": "Page",
+      "pages": "pages",
+      "of": "of",
+      "nextPage": "Next page",
+      "choosePage": "Choose page",
+      "page2": "Page",
+      "of2": "of",
+      "firstPage": "First page",
+      "lastPage": "Last page",
+      "previousItem": "Previous item",
+      "nextItem": "Next item",
+      "position": "Page {p0} of {p1}"
+    },
+    "toTop": {
+      "backToTop": "Back to top"
+    },
+    "contentPage": {
+      "breadcrumbNavigation": "Breadcrumb navigation",
+      "pageActions": "Page actions"
+    },
+    "footBar": {
+      "siteStatistics": "Site statistics",
+      "visitsToday": "Visits today",
+      "totalVisits": "Total visits",
+      "totalReads": "Total reads",
+      "trackedSince": "Tracked since",
+      "statisticsUnavailable": "Statistics unavailable",
+      "socialAccounts": "Social accounts",
+      "lookingForTheOldWebsite": "Looking for the old website?",
+      "visitItHere": "Visit it here"
+    },
+    "mobileNav": {
+      "mobileNavigation": "Mobile navigation",
+      "projects": "Projects",
+      "viewAllRepositories": "View all repositories",
+      "closeNavigationMenu": "Close navigation menu",
+      "openNavigationMenu": "Open navigation menu"
+    },
+    "navBar": {
+      "openSiteSearch": "Open site search",
+      "search": "Search"
+    },
+    "projectMenu": {
+      "projectNavigation": "Project navigation",
+      "myProjects": "My projects",
+      "allRepositories": "All repositories"
+    },
+    "search": {
+      "siteSearch": "Site search",
+      "searchContentUseForContentTypesForCategoriesAndFor": "Search content. Use {'@'} for content types, # for categories, and / for years.",
+      "searchThisSite": "Search this site",
+      "clearAllSearchFilters": "Clear all search filters",
+      "select": "Select ·",
+      "confirm": "Confirm ·",
+      "items": "items",
+      "enter": "Enter",
+      "toFilterTypes": "to filter types,",
+      "toFilterTagsNovelVolumesOrChangeTypes": "to filter tags, novel volumes, or change types,",
+      "toFilterYearsYouCanCombineFilters": "to filter years. You can combine filters.",
+      "searching": "Searching",
+      "theSearchIndexIsTemporarilyUnavailable": "The search index is temporarily unavailable",
+      "siteSearchResults": "Site search results",
+      "noMatchingContentFound": "No matching content found",
+      "tryShorterKeywordsOrRemoveSomeFilters": "Try shorter keywords or remove some filters",
+      "results": "results",
+      "select2": "Select",
+      "open": "Open",
+      "blogTags": "Blog tags",
+      "novelVolumes": "Novel volumes",
+      "changeTypes": "Change types",
+      "licenseTypes": "License types",
+      "untitledContent": "Untitled content",
+      "noSearchIndexIsAvailable": "No search index is available",
+      "refreshThePageAndTryAgain": "Refresh the page and try again.",
+      "cannotReadSearchResultsPleaseTryAgainLater": "Cannot read search results. Please try again later.",
+      "removeType": "Remove type {p0}",
+      "removeFilter": "Remove filter {p0}",
+      "removeYear": "Remove year {p0}",
+      "tagFilterSuggestions": "Tag filter suggestions",
+      "yearFilterSuggestions": "Year filter suggestions",
+      "contentTypeFilterSuggestions": "Content type filter suggestions",
+      "chooseContentCategory": "Choose content category",
+      "choosePublicationYear": "Choose publication year",
+      "chooseContentType": "Choose content type",
+      "year": "Year {p0}",
+      "contentType": "Content type {p0}",
+      "noOptionsMatch": "No options match “{p0}”",
+      "noMoreFiltersAvailable": "No more filters available"
+    },
+    "sideBar": {
+      "closeSidebar": "Close sidebar",
+      "openSidebar": "Open sidebar"
+    },
+    "fontSelect": {
+      "searchFonts": "Search fonts",
+      "defaultFallbackFont": "Default fallback font",
+      "fallback": "Fallback",
+      "customFonts": "Custom fonts",
+      "noMatchingFonts": "No matching fonts",
+      "font": "Font",
+      "processedLocally": "Processed locally",
+      "uploadFont": "Upload font",
+      "siteFonts": "Site fonts",
+      "deviceFonts": "Device fonts",
+      "chooseFont": "Choose font",
+      "yourBrowserCannotReadDeviceFonts": "Your browser cannot read device fonts",
+      "readingDeviceFonts": "Reading device fonts",
+      "readDeviceFonts": "Read device fonts",
+      "noDeviceFontsAvailable": "No device fonts available",
+      "cannotLoadFont": "Cannot load font",
+      "unnamedFont": "Unnamed font",
+      "noUsableDeviceFontsFound": "No usable device fonts found",
+      "deviceFontAccessWasNotGranted": "Device font access was not granted",
+      "cannotReadDeviceFonts": "Cannot read device fonts",
+      "theCustomFontIsNoLongerAvailablePleaseSelectIt": "The custom font is no longer available. Please select it again.",
+      "loadedDeviceFonts": "Loaded {p0}/{p1} device fonts",
+      "readDeviceFonts2": "Read {p0} device fonts",
+      "setDefaultFallbackFont": "Set default fallback font: {p0}",
+      "loadingFont": "Loading font",
+      "loading": "Loading {p0}",
+      "scrollDownToLoadMore": "Scroll down to load more"
+    },
+    "imagePreview": {
+      "loadingImage": "Loading image",
+      "closeImagePreview": "Close image preview",
+      "previousImage": "Previous image",
+      "previous": "Previous",
+      "nextImage": "Next image",
+      "next": "Next",
+      "imagePreviewControls": "Image preview controls",
+      "zoomOutOfImage": "Zoom out of image",
+      "fitToScreen": "Fit to screen",
+      "zoomInOnImage": "Zoom in on image",
+      "imagePreview": "Image preview",
+      "imagePreviewModuleFailedToLoad": "Image preview module failed to load",
+      "imagePreviewFailedToLoad": "Image preview failed to load",
+      "imageFailedToLoad": "Image failed to load",
+      "imagePreviewFailedToOpen": "Image preview failed to open",
+      "imageOf": "Image {p0} of {p1}",
+      "zoomClickToFitToScreen": "Zoom {p0}%. Click to fit to screen."
+    },
+    "floatingActionButton": {
+      "actions": "Actions"
+    },
+    "themeController": {
+      "chooseInterfaceTheme": "Choose theme",
+      "theme": "Theme",
+      "themeSelection": "Theme selection",
+      "interfaceTheme": "Theme",
+      "followSystemTheme": "Follow system"
+    },
+    "navigation": {
+      "home": "Home",
+      "blog": "Blog",
+      "novel": "Novel",
+      "tools": "Tools"
+    },
+    "projects": {
+      "fontProject": "Font project",
+      "kaimingPunctuationForChineseTypographyWithSansSerifSerifAnd": "Kaiming punctuation for Chinese typography, with sans-serif, serif, and variable weights.",
+      "websiteProject": "Website project",
+      "sourceForThisWebsiteBuiltWithVueViteTailwindCss": "Source for this website, built with Vue, Vite, Tailwind CSS, and daisyUI."
+    },
+    "type-changelog": {
+      "features": "Features",
+      "fixes": "Fixes",
+      "improvements": "Improvements",
+      "performance": "Performance",
+      "refactoring": "Refactoring",
+      "maintenance": "Maintenance"
+    },
+    "search-content": {
+      "openSourceLicenses": "Open-source licenses",
+      "aliases": "Aliases",
+      "author": "Author",
+      "category": "Category",
+      "created": "Created",
+      "description": "Description",
+      "modified": "Modified",
+      "status": "Status",
+      "yes": "Yes",
+      "no": "No",
+      "untitledArticle": "Untitled article",
+      "untitledChapter": "Untitled chapter",
+      "licenseScopeAndRightsForThirdPartyLibrariesFontsIcons": "License scope and rights for third-party libraries, fonts, icons, images, and other content.",
+      "projectMitLicense": "Project MIT License",
+      "mitLicenseForTheOriginalSoftwareSourceInThisRepository": "MIT License for the original software source in this repository.",
+      "license": "License",
+      "additionalLicenseFilesForFontsIconsAndOtherThirdParty": "Additional license files for fonts, icons, and other third-party content.",
+      "additionalLicenses": "Additional licenses",
+      "noSearchableContentAvailable": "No searchable content available"
+    },
+    "read-document": {
+      "theDocxDocumentHasNoBody": "The DOCX document has no body",
+      "cannotReadDocxContent": "Cannot read DOCX content",
+      "onlyDocxAndPdfFilesAreSupported": "Only DOCX and PDF files are supported"
+    },
+    "image-watermark": {
+      "watermark": "Watermark"
+    },
+    "announcements": {
+      "information": "Information",
+      "reminder": "Reminder",
+      "incident": "Incident"
+    },
+    "language": "Language",
+    "languageLoadFailed": "Language failed to load. Please retry.",
+    "additional": {
+      "confirm": "Confirm",
+      "defaultDay": "Default day",
+      "defaultNight": "Default night",
+      "businessLight": "Business light",
+      "softDark": "Soft dark",
+      "note": "Note",
+      "tip": "Tip",
+      "warning": "Warning",
+      "success": "Success",
+      "error": "Error",
+      "danger": "Danger",
+      "quote": "Quote",
+      "summary": "Summary",
+      "replyTo": "Reply to",
+      "thisIsTheFirstChapter": "This is the first chapter!",
+      "youAreAlreadyAtYourReadingPosition": "You are already at your reading position!",
+      "thisIsTheCurrentChapter": "This is the current chapter!",
+      "thisIsTheLatestChapter": "This is the latest chapter!",
+      "loadingChapterList": "Loading chapter list…",
+      "chapterListRefreshed": "Chapter list refreshed!",
+      "chapterListLoaded": "Chapter list loaded!",
+      "chapterListFailedToLoad": "Chapter list failed to load!",
+      "readingHistoryCleared": "Reading history cleared!",
+      "loadingChapterContent": "Loading chapter content…",
+      "chapterContentRefreshed": "Chapter content refreshed!",
+      "chapterContentLoaded": "Chapter content loaded!",
+      "chapterContentFailedToLoad": "Chapter content failed to load!",
+      "contentRefreshFailed": "Content refresh failed!",
+      "tooManyActionsPleaseWaitAndTryAgain": "Too many actions. Please wait and try again!",
+      "decoding": "Decoding",
+      "encoding": "Encoding",
+      "processingFrame": "Processing frame {p0}/{p1}",
+      "encodingFrame": "Encoding frame {p0}/{p1}",
+      "estimatedDecodingMemoryExceedsThisDeviceSSafeLimit": "Estimated decoding memory {p0} exceeds this device's safe limit {p1}",
+      "fileSignatureDoesNotMatchItsFormat": "File signature does not match its format",
+      "yourBrowserCannotDecodeThisFile": "Your browser cannot decode this {p0} file: {p1}",
+      "unknownError": "Unknown error",
+      "cannotDecodeAnimatedWebp": "Cannot decode animated WebP",
+      "theGifContainsNoUsableFrames": "The GIF contains no usable frames",
+      "theEncoderReturnedAnInvalidFileSignature": "The {p0} encoder returned an invalid file signature",
+      "unsupportedStaticOutputFormat": "Unsupported static output format",
+      "webpEncodingFailed": "WebP encoding failed",
+      "onlyTheFirstAnimationFrameWasExported": "Only the first animation frame was exported",
+      "avifAnimationIsUnsupportedFramesWereExportedSeparately": "AVIF animation is unsupported; frames were exported separately",
+      "avifAnimationIsUnsupportedTheFirstFrameWasExported": "AVIF animation is unsupported; the first frame was exported",
+      "onlyTheFirstFrameOfAnimatedAvifIsCurrentlyProcessed": "Only the first frame of animated AVIF is currently processed",
+      "failedToFetchArticles": "Failed to fetch articles: {p0}",
+      "failedToFetchArticleContent": "Failed to fetch article content: {p0}",
+      "invalidIndexJsonFormat": "Invalid index.json format",
+      "announcementRequestFailed": "Announcement request failed: {p0}",
+      "changelogRequestFailed": "Changelog request failed: {p0}"
+    },
+    "sections": {
+      "siteAnnouncements": "Site Announcements",
+      "releaseNotes": "Release Notes & Maintenance",
+      "openSource": "Open Source & Attributions",
+      "originalSource": "Original software source",
+      "attribution": "Scope and attribution",
+      "installedDependencies": "Installed production dependency graph",
+      "fontNotices": "Fonts, icons, and manual attributions",
+      "toolList": "Tool List",
+      "posts": "Posts & Articles",
+      "projects": "Projects",
+      "contents": "Contents",
+      "discussion": "Discussion",
+      "typographyFeatures": "Typography Features",
+      "useOnWeb": "Use on the Web",
+      "unicodeText": "Unicode Text",
+      "legacyText": "Legacy Text",
+      "reducedForms": "Preserve reduced consonant forms",
+      "conjunctForms": "Preserve conjunct forms",
+      "unjoinedForms": "Unjoined conjunct forms",
+      "ligatedForms": "Ligated conjunct forms",
+      "compactDa": "Compact “ද” forms",
+      "workingOn": "What am I doing?",
+      "aboutMe": "About me",
+      "follow": "Follow & Contact Me",
+      "default": "Default",
+      "serverLogo": "Logo of Server",
+      "welcome": "welcome!",
+      "notFoundTitle": "Ah Oh!",
+      "notFoundDescription": "404 Not Found :(",
+      "viewEnglishSource": "View English source"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "blog": "Blog",
+      "blog-article": "Article",
+      "page": "Page",
+      "novel": "Novel",
+      "novel-reader": "Chapter",
+      "tools": "Tools",
+      "image-converter": "Image converter",
+      "server-status": "Server status",
+      "sinhala-font-converter": "Sinhala font converter",
+      "changelog": "Changelog",
+      "announcements": "Announcements",
+      "licenses": "Licenses",
+      "kaiming": "Kaiming Punctuation",
+      "NotFound": "Page not found"
+    }
+  },
+  "markdown": {
+    "chat": {
+      "typeAMessage": "Type a message...",
+      "holdToSpeak": "Hold to speak",
+      "send": "Send",
+      "user": "User",
+      "switchToKeyboardInput": "Switch to keyboard input",
+      "switchToVoiceInput": "Switch to voice input"
+    },
+    "markdown": {
+      "loadingFailedPleaseTryAgainLater": "Loading failed. Please try again later.",
+      "previewImage": "Preview image",
+      "previewImage2": "Preview image: {p0}"
+    },
+    "mermaid": {
+      "mermaidDiagramTools": "Mermaid diagram tools",
+      "switchMermaidView": "Switch Mermaid view",
+      "viewMermaidSource": "View Mermaid source",
+      "code": "Code",
+      "viewMermaidPreview": "View Mermaid preview",
+      "preview": "Preview",
+      "loadingMermaidDiagram": "Loading Mermaid diagram…",
+      "invalidOrUnsupportedDiagram": "Invalid or unsupported diagram",
+      "mermaidDiagramPreview": "Mermaid diagram preview",
+      "diagramZoom": "Diagram zoom",
+      "zoomInOnDiagram": "Zoom in on diagram",
+      "zoomIn": "Zoom in",
+      "zoomOutOfDiagram": "Zoom out of diagram",
+      "zoomOut": "Zoom out",
+      "mermaidDidNotReturnAValidSvg": "Mermaid did not return a valid SVG",
+      "exitFullscreen": "Exit fullscreen",
+      "fullscreen": "Fullscreen",
+      "copyCode": "Copy code",
+      "viewDiagramFullscreen": "View diagram fullscreen",
+      "mermaidSourceCopied": "Mermaid source copied",
+      "copyMermaidSource": "Copy Mermaid source"
+    },
+    "moment": {
+      "moreActions": "More actions",
+      "comments": "Comments",
+      "me": "Me",
+      "like": "Like",
+      "share": "Share",
+      "sPost": "{p0}'s post",
+      "sAvatar": "{p0}'s avatar"
+    },
+    "codeBlock": {
+      "copiedSuccessfully": "Copied successfully",
+      "copyToClipboard": "Copy to clipboard"
+    }
+  },
+  "reader": {
+    "contextMenu": {
+      "image": "Image"
+    },
+    "formatSetting": {
+      "systemDefault": "System default",
+      "matchYourSystemSLightOrDarkAppearance": "Match your system's light or dark appearance"
+    }
+  },
+  "games": {
+    "title": "Games",
+    "description": "Choose a board game, create a room and invite your friends."
+  },
+  "auth": {
+    "login": "Sign in with GitHub",
+    "logout": "Sign out",
+    "retry": "Recheck",
+    "guest": "Guest",
+    "loadingProfile": "Loading GitHub profile",
+    "checking": "Checking GitHub session…",
+    "novelGate": "Sign in to read chapters and search the novel text.",
+    "fallback": "Sign in through Giscus comments",
+    "close": "Close",
+    "githubProfile": "Use GitHub avatar",
+    "customProfile": "Custom name and default avatar",
+    "saveProfile": "Save player profile",
+    "profileError": "GitHub profile is unavailable. Retry or use a custom name.",
+    "nickname": "Custom name",
+    "avatar": "Player avatar",
+    "account": "Account and settings",
+    "email": "Email",
+    "emailPrivate": "Email not public",
+    "loginTitle": "Sign in to continue reading",
+    "editProfile": "Edit player profile",
+    "errors": {
+      "profile": "GitHub profile is unavailable. Please retry.",
+      "token-missing": "No sign-in credential was found. Please sign in again.",
+      "token-invalid": "The GitHub credential is invalid. Please sign in again.",
+      "token-expired": "The Giscus session has expired. Please sign in again.",
+      "session-invalid": "The sign-in credential could not be decoded. Please sign in again.",
+      "session-mismatch": "The session and returned sign-in state do not match. Recheck or sign in again.",
+      "rate-limit": "GitHub requests are rate limited. Recheck later.",
+      "forbidden": "GitHub denied the request (403). Check authorization and retry.",
+      "network": "The network request failed. Sign-in state is unknown. Please recheck.",
+      "discussion": "The discussion used to confirm sign-in is unavailable. Please retry.",
+      "api": "The sign-in check service is unavailable. Please recheck.",
+      "timeout": "The sign-in check timed out. State is unknown. Please recheck.",
+      "storage": "Sign-in storage could not be read or cleared. Allow browser storage and retry."
+    }
+  }
+}

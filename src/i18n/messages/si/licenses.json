@@ -1,0 +1,22 @@
+{
+  "pages": {
+    "licenses": {
+      "theProjectSMitLicenseAppliesOnlyToOriginalSoftware": "ව්‍යාපෘතියේ MIT බලපත්‍රය මුල් මෘදුකාංග මූල කේතයට පමණක් අදාළය. තෙවන පාර්ශ්ව කොටස් සහ වෙනත් අන්තර්ගතයට ඒවායේම නියම අදාළ වේ.",
+      "dependencyVersions": "යැපීම් අනුවාද",
+      "additionalLicenses": "අතිරේක බලපත්‍ර",
+      "packagesWithoutATopLevelLicenseFile": "ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ",
+      "projectMitLicense": "ව්‍යාපෘති MIT බලපත්‍රය",
+      "downloadLicense": "LICENSE බාගන්න",
+      "thirdPartyNotices": "තෙවන පාර්ශ්ව නිවේදන",
+      "noticeLanguage": "නිවේදන භාෂාව",
+      "chinese": "චීන",
+      "productionDependencyLicenses": "නිෂ්පාදන යැපීම් බලපත්‍ර",
+      "downloadAllNotices": "සම්පූර්ණ සාරාංශය බාගන්න",
+      "theseNoticesComeFromThePackagesInstalledAtBuildTime": "මෙම නිවේදන ගොඩනැගීමේදී ස්ථාපිත පැකේජවලින් ලැබේ. ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ සඳහාත් ප්‍රකාශිත බලපත්‍රය හා මුල් ලිපිනය පෙන්වා, ගොනුව නැති බව සලකුණු කර ඇත.",
+      "upstream": "මුල් මූලාශ්‍රය:",
+      "theInstalledVersionOfThisPackageDoesNotIncludeA": "මෙම පැකේජයේ ස්ථාපිත අනුවාදයට ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් ඇතුළත් නැත.",
+      "additionalLicenseFiles": "අතිරේක බලපත්‍ර ගොනු",
+      "viewChineseSource": "චීන මුල් පෙළ බලන්න"
+    }
+  }
+}

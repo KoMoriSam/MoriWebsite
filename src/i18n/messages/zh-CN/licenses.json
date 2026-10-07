@@ -1,0 +1,22 @@
+{
+  "pages": {
+    "licenses": {
+      "theProjectSMitLicenseAppliesOnlyToOriginalSoftware": "项目的 MIT 许可仅适用于原创软件源代码；第三方组件与非软件内容仍遵循各自条款。",
+      "dependencyVersions": "个依赖版本",
+      "additionalLicenses": "份补充许可",
+      "packagesWithoutATopLevelLicenseFile": "个包未附顶层许可文件",
+      "projectMitLicense": "项目 MIT 许可",
+      "downloadLicense": "下载 LICENSE",
+      "thirdPartyNotices": "第三方声明",
+      "noticeLanguage": "第三方声明语言",
+      "chinese": "中文",
+      "productionDependencyLicenses": "生产依赖许可",
+      "downloadAllNotices": "下载完整汇总",
+      "theseNoticesComeFromThePackagesInstalledAtBuildTime": "以下内容来自构建时实际安装的软件包。若软件包未携带顶层许可文件，条目仍会保留其声明的许可证和上游地址，并明确标记缺失情况。",
+      "upstream": "上游：",
+      "theInstalledVersionOfThisPackageDoesNotIncludeA": "此软件包未随已安装版本提供顶层许可证文件。",
+      "additionalLicenseFiles": "补充许可文件",
+      "viewChineseSource": "查看中文原始文本"
+    }
+  }
+}

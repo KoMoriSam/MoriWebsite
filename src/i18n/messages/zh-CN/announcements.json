@@ -1,0 +1,14 @@
+{
+  "pages": {
+    "announcements": {
+      "announcements": "站点公告",
+      "updated": "更新于",
+      "announcementsCouldNotBeLoaded": "公告暂时没有加载成功",
+      "loading": "正在加载",
+      "currentAnnouncements": "当前公告",
+      "thereAreNoActiveAnnouncements": "当前没有有效公告。",
+      "pastAnnouncements": "历史公告",
+      "thereAreNoPastAnnouncementsYet": "暂时没有历史公告。"
+    }
+  }
+}

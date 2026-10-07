@@ -1,0 +1,56 @@
+{
+  "pages": {
+    "blog": {
+      "articleNotFound": "文章不存在",
+      "failedToLoadArticleContent": "加载文章内容失败"
+    },
+    "articleList": {
+      "articles": "文章列表",
+      "articles2": "文章",
+      "loadingTotalArticleReads": "正在读取文章总阅读量",
+      "loadingTotalArticleComments": "正在读取文章总评论量",
+      "articleSearch": "文章检索",
+      "searchArticles": "搜索文章",
+      "toFilterTagsEnter": "筛选标签，输入",
+      "noArticlesFoundFor": "没有找到与“",
+      "message": "”相关的文章",
+      "found": "找到",
+      "viewing": "（当前查看",
+      "keywords": "关键词：",
+      "loadingArticles": "文章列表加载中",
+      "minutes": "分钟",
+      "readMore": "阅读全文",
+      "articlePagination": "文章列表分页",
+      "noMatchingArticles": "未找到匹配的文章",
+      "tryChangingKeywordsTagsOrYears": "尝试修改关键词、标签或年份",
+      "clearAllFilters": "清除全部条件",
+      "noArticlesYet": "暂无文章",
+      "publishedArticlesWillAppearHere": "文章发布后会显示在这里",
+      "noSummaryAvailable": "暂无文章摘要",
+      "article": "第 {p0} 篇",
+      "articles4": "第 {p0}-{p1} 篇",
+      "removeTag": "移除标签 {p0}",
+      "chooseTags": "选择标签",
+      "tag": "标签 {p0}"
+    },
+    "articleReader": {
+      "backToArticles": "返回文章列表",
+      "about": "约",
+      "minRead": "分钟阅读",
+      "loadingArticleReads": "正在读取文章阅读次数",
+      "loadingArticleComments": "正在读取文章评论量",
+      "loadingArticleContent": "文章正文加载中",
+      "articleNavigation": "文章翻页",
+      "previousArticle": "上一篇",
+      "published": "发布于",
+      "nextArticle": "下一篇",
+      "articleFailedToLoad": "文章加载失败",
+      "articleNotFoundOrFailedToLoad": "文章不存在或加载失败",
+      "blog": "远方之森 · 博客",
+      "refreshArticle": "刷新文章",
+      "minRead2": "{p0} 分钟阅读",
+      "previousArticle2": "上一篇：{p0}",
+      "nextArticle2": "下一篇：{p0}"
+    }
+  }
+}

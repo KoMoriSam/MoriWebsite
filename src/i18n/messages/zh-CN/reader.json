@@ -1,0 +1,183 @@
+{
+  "reader": {
+    "chapterController": {
+      "chapterNavigation": "章节导航",
+      "previousChapter": "上一章",
+      "nextChapter": "下一章",
+      "bookProgressChapterPageOfTapForReadingControls": "总阅读进度 {p0}，本章第 {p1} 页，共 {p2} 页，点击打开阅读控制",
+      "bookProgressScrollingModeTapForReadingControls": "总阅读进度 {p0}，当前为上下滚动阅读，点击打开阅读控制"
+    },
+    "chapterHeader": {
+      "chapterInformation": "章节信息",
+      "navigation": "导航",
+      "backToCover": "返回封面页",
+      "backToNovelCover": "返回小说封面",
+      "chapterStatistics": "章节统计"
+    },
+    "chapterList": {
+      "chapters": "章节目录",
+      "volumes": "卷 ·",
+      "chapters2": "章",
+      "refreshChapters": "刷新章节目录",
+      "clearReadingHistory": "清除阅读记录",
+      "loadingChapters": "章节目录加载中",
+      "characters": "字",
+      "reads": "阅读",
+      "noChaptersAreAvailableYet": "暂时没有可阅读的章节",
+      "refreshTheChapterListAndTryAgain": "刷新目录后再试一次",
+      "read": "已读",
+      "unread": "未读",
+      "loadingReadsFor": "正在读取《{p0}》的阅读量",
+      "loadingCommentsFor": "正在读取《{p0}》的评论量"
+    },
+    "chapterStatusBadges": {
+      "thisChapterHasBeenRevised": "该章节有过修订",
+      "thisIsTheOriginalChapterVersion": "该章节为首发版本",
+      "original": "首发"
+    },
+    "chapterToc": {
+      "readingProgress": "阅读进度",
+      "latestChapter": "最新章节",
+      "chaptersRead": "章 · 已读",
+      "chaptersRead2": "共 {p0} 章，已读 {p1} 章"
+    },
+    "novelContentSearch": {
+      "searchTheNovel": "搜索小说内容",
+      "searchChapterTitlesOrText": "搜索章节标题或正文",
+      "clearSearch": "清空搜索",
+      "loadingTheNovelIndex": "正在读取小说索引…",
+      "enterKeywordsToSearchChapterTitlesAndText": "输入关键词，搜索小说章节标题与正文内容",
+      "noMatchingNovelContentFound": "没有找到相关小说内容",
+      "novelSearchResults": "小说搜索结果",
+      "novelContentIsUnavailablePleaseTryAgainLater": "暂时无法读取小说内容，请稍后再试。"
+    },
+    "commentTrigger": {
+      "openParagraphComments": "打开段评",
+      "paragraphCommentCount": "当前段评评论数"
+    },
+    "contextMenu": {
+      "textActions": "正文操作",
+      "copyLatex": "复制 LaTeX",
+      "copySvg": "复制 SVG",
+      "textCopied": "已复制正文",
+      "copyFailedPleaseSelectTheTextManually": "复制失败，请手动选择文字",
+      "imageSaved": "图片已保存",
+      "originalImageOpenedUseYourBrowserToSaveIt": "已打开原图，请使用浏览器另存为",
+      "latexSourceCopied": "已复制 LaTeX 源码",
+      "copyFailedPleaseSelectTheFormulaManually": "复制失败，请手动选择公式",
+      "svgCopied": "已复制 SVG",
+      "yourBrowserCannotCopySvg": "当前浏览器无法复制 SVG",
+      "cannotOpenTheShareCardRightNow": "暂时无法打开分享卡片",
+      "copy": "复制"
+    },
+    "formatSetting": {
+      "readingLayout": "阅读排版",
+      "previewChangesBelowAsYouAdjust": "调整后可在下方即时预览",
+      "resetToDefaults": "恢复默认",
+      "duskSettlesOverThePagesLeavingRoomToBreatheBetween": "暮色沿着书页缓缓落下，字句之间留着呼吸。",
+      "turnThePageTheStoryContinuesAhead": "翻过书页，故事仍在前方延伸。",
+      "textFont": "正文字体",
+      "customAndDeviceFontsApplyOnlyToThisSessionAnd": "自定义字体和设备字体仅在本次生效，不会保存到设置中",
+      "onlySiteFontsCanBeSavedInSettings": "（仅网站预设字体可保存设定）",
+      "readingColors": "阅读配色",
+      "wantSomethingElseCustomizeIt": "不满意？试试自定义",
+      "readingBackgroundType": "阅读背景类型",
+      "textColor": "文字颜色",
+      "backgroundColor": "背景颜色",
+      "siteTheme": "站点主题",
+      "builtInAndSavedLayoutPresets": "系统推荐与用户保存的排版预设",
+      "saveCurrentLayoutAsAPreset": "保存当前排版为预设",
+      "layoutPresetName": "排版预设名称",
+      "save": "保存",
+      "solidColor": "纯色背景",
+      "backgroundImage": "图片背景",
+      "duskSettlesOverThePages": "暮色沿着书页缓缓落下",
+      "preset": "预设 {p0}",
+      "currentMobileLayoutPreview": "当前移动端排版预览",
+      "currentDesktopLayoutPreview": "当前桌面排版预览",
+      "chooseReadingBackground": "选择阅读背景图：{p0}",
+      "switchSiteTheme": "切换站点主题：{p0}，{p1}",
+      "applyBuiltInPreset": "应用系统推荐预设 {p0}：{p1}",
+      "applySavedPreset": "应用用户预设 {p0}",
+      "deletePreset": "删除预设 {p0}"
+    },
+    "reader": {
+      "closeReadingLayoutSettings": "关闭阅读排版设置",
+      "heading": "标题 {p0}",
+      "horizontalPageTurning": "左右翻页",
+      "followSite": "跟随站点",
+      "softLight": "护眼浅色",
+      "naturalDark": "自然深色",
+      "brightDay": "清爽日间",
+      "lowLightNight": "低光夜间",
+      "kraftPaper": "牛皮纸",
+      "parchment": "羊皮纸",
+      "quietNight": "静夜",
+      "bambooShadows": "竹影",
+      "menu": "菜单",
+      "default": "默认",
+      "balancedFontSizeAndSpacingForExtendedReading": "均衡的字号与行距，适合长时间阅读",
+      "paper": "纸张",
+      "parchmentTextureForASofterBackground": "羊皮纸纹理背景，减轻纯色白底刺激",
+      "dim": "暗光",
+      "aQuietNightInDimLight": "静谧之夜，暗光环境",
+      "night": "黑夜",
+      "moonlitBambooInNightMode": "月下竹影，黑夜模式",
+      "largeText": "大字",
+      "focusedContentEasyOnTheEyes": "内容集中，眼部友好",
+      "fontSize": "字体大小",
+      "size": "字号",
+      "letterSpacing": "字间距",
+      "letterGap": "字距",
+      "lineHeight": "行间距",
+      "lineGap": "行距",
+      "message": "倍",
+      "paragraphSpacing": "段间距",
+      "paragraphGap": "段距",
+      "lines": "行"
+    },
+    "readerBody": {
+      "readingContents": "阅读目录",
+      "readingAids": "阅读辅助内容"
+    },
+    "shareCard": {
+      "shareImage": "分享图片",
+      "theSelectionIsLongSomeContentWasOmittedFromThe": "选文较长，图片已省略未能完整收录的内容。",
+      "closeShareCardPreview": "关闭分享卡片预览",
+      "layingOutTheShareCard": "正在排版分享卡片…",
+      "cardGenerationFailed": "卡片生成失败",
+      "generateAgain": "重新生成",
+      "downloadImage": "下载图片",
+      "cannotGenerateTheShareCardRightNow": "暂时无法生成分享卡片",
+      "shareCardDownloaded": "分享卡片已下载",
+      "yourBrowserDoesNotSupportImageSharingTheCardWas": "浏览器不支持图片分享，已下载卡片",
+      "cannotShareTheImageRightNow": "暂时无法分享图片",
+      "textShareCardFor": "{p0}的正文分享卡片",
+      "saveImage": "保存图片"
+    },
+    "styleMenu": {
+      "resetValue": "恢复默认值",
+      "defaultValue": "默认值"
+    },
+    "tocFrame": {
+      "expand": "展开",
+      "collapse": "收起"
+    },
+    "create-reader-share-card": {
+      "yourBrowserCannotValidateContentImages": "当前浏览器无法验证正文图片",
+      "cannotLoadFont": "无法加载字体：{p0}",
+      "yourBrowserCannotValidateMermaidImages": "当前浏览器无法验证 Mermaid 图片",
+      "yourBrowserBlockedMermaidImageExport": "当前浏览器禁止导出 Mermaid 图片",
+      "cannotRenderTheMermaidDiagram": "无法渲染 Mermaid 图表",
+      "cannotGenerateTheShareCardImage": "无法生成分享卡片图片",
+      "noTextToShare": "没有可分享的正文",
+      "yourBrowserCannotGenerateShareCards": "当前浏览器无法生成分享卡片"
+    },
+    "shareLabels": {
+      "mermaid": "Mermaid 图表",
+      "chat": "对话",
+      "moment": "动态",
+      "shareCard": "分享卡片"
+    }
+  }
+}

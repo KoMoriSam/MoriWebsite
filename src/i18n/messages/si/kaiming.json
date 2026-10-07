@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "kaiming": {
+      "kaimingPunctuation": "Kaiming විරාම ලකුණු",
+      "punctuationFontsForChineseWebTypographyWithSansSerifAnd": "චීන වෙබ් මුද්‍රණ සැකැස්ම සඳහා විරාම ලකුණු අකුරු; sans-serif සහ serif රටා හා 100–900 විචල්‍ය බර සමඟ.",
+      "fontSpecifications": "අකුරු පිරිවිතර",
+      "viewSource": "මූල කේතය බලන්න",
+      "punctuationFontFamily": "විරාම ලකුණු අකුරු පවුල",
+      "chooseFontFamily": "අකුරු පවුල තෝරන්න",
+      "variableWeight": "විචල්‍ය බර",
+      "liveFontSpecimen": "සජීවී අකුරු නිදර්ශකය",
+      "editableFontSpecimen": "සංස්කරණය කළ හැකි අකුරු නිදර්ශකය",
+      "clickTheSpecimenToEdit": "සංස්කරණයට නිදර්ශකය ක්ලික් කරන්න",
+      "currentFont": "වත්මන් අකුරු:",
+      "refiningPunctuationRhythmInChineseText": "චීන පෙළේ විරාම ලකුණු රිද්මය සකසයි",
+      "oneLineImportWithFontFallback": "එක් පේළියකින් ආයාතය සහ අකුරු ආදේශනය",
+      "preciseCssUnicodeRangeLoadsAndReplacesOnlyTheIncluded": "නිශ්චිත CSS unicode-range මඟින් ඇතුළත් චීන විරාම ලකුණු පමණක් පූරණය හා ආදේශ කරයි.",
+      "downloadsSource": "බාගැනීම් සහ කේතය",
+      "useTheWebFontsDirectlyOrGetOtherFormatsAnd": "වෙබ් අකුරු සෘජුව භාවිත කරන්න, නැතහොත් GitHub වෙතින් වෙනත් ආකෘති සහ කේතය ලබාගන්න.",
+      "sansSerif": "Sans-serif",
+      "serif": "Serif",
+      "halfWidthPunctuation": "අර්ධ පළල විරාම ලකුණු",
+      "bracketsQuotesAndCommasUseHalfWidthSpacingForA": "වරහන්, උද්ධෘත හා කොමා අර්ධ පළලින් තබා පෙළ වඩා සංක්ෂිප්ත කරයි.",
+      "compactSentenceEndings": "සංක්ෂිප්ත වාක්‍ය අවසාන",
+      "consecutiveEndingMarksAreCompactedPreservingEmphasisWithoutExcessSpacing": "අඛණ්ඩ අවසාන ලකුණු සංක්ෂිප්තව තබා අවධාරණය රැක අනවශ්‍ය හිස් ඉඩ අඩු කරයි.",
+      "dashLigature": "ඉරි සංයුක්ත අක්ෂරය",
+      "doubleDashesFormAContinuousTwoCharacterWideLigatureThat": "ද්විත්ව ඉරි අක්ෂර දෙකක පළලින් අඛණ්ඩ ලකුණක් සාදා පෙළට ගළපයි.",
+      "webImport": "වෙබ් ආයාතය",
+      "releases": "නිකුතු",
+      "sourceRepository": "මූල කේත ගබඩාව",
+      "openSourceLicense": "විවෘත මූලාශ්‍ර බලපත්‍රය",
+      "weight": "බර {p0}"
+    }
+  }
+}

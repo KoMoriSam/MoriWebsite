@@ -43,6 +43,7 @@ export const articleRoutes = generatedArticles.map((entry) => ({
   meta: {
     title: `${entry.article?.title || "博客"} | 远方之森`,
     navName: "blog",
+    localeGroups: ["blog", "reader"],
     hideToTop: true,
     article: entry.article,
     content: entry.content,

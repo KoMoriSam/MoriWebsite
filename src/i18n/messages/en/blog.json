@@ -1,0 +1,56 @@
+{
+  "pages": {
+    "blog": {
+      "articleNotFound": "Article not found",
+      "failedToLoadArticleContent": "Failed to load article content"
+    },
+    "articleList": {
+      "articles": "Articles",
+      "articles2": "Articles",
+      "loadingTotalArticleReads": "Loading total article reads",
+      "loadingTotalArticleComments": "Loading total article comments",
+      "articleSearch": "Article search",
+      "searchArticles": "Search articles",
+      "toFilterTagsEnter": "to filter tags; enter",
+      "noArticlesFoundFor": "No articles found for “",
+      "message": "”",
+      "found": "Found",
+      "viewing": "(viewing",
+      "keywords": "Keywords:",
+      "loadingArticles": "Loading articles",
+      "minutes": "minutes",
+      "readMore": "Read more",
+      "articlePagination": "Article pagination",
+      "noMatchingArticles": "No matching articles",
+      "tryChangingKeywordsTagsOrYears": "Try changing keywords, tags, or years",
+      "clearAllFilters": "Clear all filters",
+      "noArticlesYet": "No articles yet",
+      "publishedArticlesWillAppearHere": "Published articles will appear here",
+      "noSummaryAvailable": "No summary available",
+      "article": "Article {p0}",
+      "articles4": "Articles {p0}–{p1}",
+      "removeTag": "Remove tag {p0}",
+      "chooseTags": "Choose tags",
+      "tag": "Tag {p0}"
+    },
+    "articleReader": {
+      "backToArticles": "Back to articles",
+      "about": "About",
+      "minRead": "min read",
+      "loadingArticleReads": "Loading article reads",
+      "loadingArticleComments": "Loading article comments",
+      "loadingArticleContent": "Loading article content",
+      "articleNavigation": "Article navigation",
+      "previousArticle": "Previous article",
+      "published": "Published",
+      "nextArticle": "Next article",
+      "articleFailedToLoad": "Article failed to load",
+      "articleNotFoundOrFailedToLoad": "Article not found or failed to load",
+      "blog": "远方之森 · Blog",
+      "refreshArticle": "Refresh article",
+      "minRead2": "{p0} min read",
+      "previousArticle2": "Previous article: {p0}",
+      "nextArticle2": "Next article: {p0}"
+    }
+  }
+}

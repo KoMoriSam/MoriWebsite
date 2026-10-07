@@ -1,0 +1,20 @@
+{
+  "pages": {
+    "changelog": {
+      "currentVersion": "Current version",
+      "releaseRecords": "release records",
+      "theLatestRemoteRecordsAreUnavailable": "The latest remote records are unavailable",
+      "showingTheStaticVersionIncludedWithTheWebsite": "Showing the static version included with the website.",
+      "theChangelogCouldNotBeLoaded": "The changelog could not be loaded",
+      "noReleasesYet": "No releases yet",
+      "futureChangesWillAppearHere": "Future changes will appear here.",
+      "versions": "versions",
+      "latest": "Latest",
+      "changes": "changes",
+      "pleaseTryAgainLater": "Please try again later.",
+      "message": "{p0}/{p1}/{p2}",
+      "beforeUpgrading": "Before upgrading",
+      "releaseNotes": "Release notes"
+    }
+  }
+}

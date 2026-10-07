@@ -1,0 +1,13 @@
+{
+  "pages": {
+    "tools": {
+      "chooseAToolToOpenItsPageBookmarkOrShare": "මෙවලමක පිටුව විවෘත කරන්න. ලිපිනය සුරකින්න හෝ බෙදාගන්න.",
+      "availableTools": "තිබෙන මෙවලම්",
+      "openTool": "මෙවලම විවෘත කරන්න",
+      "batchConvertImagesInYourBrowserWithCompressionResizingAnimation": "සම්පීඩනය, ප්‍රමාණ වෙනස් කිරීම, සජීවීකරණ හා දියසලකුණු සමඟ බ්‍රවුසරයේ රූප සමූහ පරිවර්තනය කරන්න.",
+      "imageProcessing": "රූප සැකසීම",
+      "serverLookup": "සේවාදායක විමසුම",
+      "textEncodingConversion": "පෙළ කේතන පරිවර්තනය"
+    }
+  }
+}

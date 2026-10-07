@@ -1,0 +1,13 @@
+{
+  "pages": {
+    "tools": {
+      "chooseAToolToOpenItsPageBookmarkOrShare": "Choose a tool to open its page. Bookmark or share its address.",
+      "availableTools": "Available tools",
+      "openTool": "Open tool",
+      "batchConvertImagesInYourBrowserWithCompressionResizingAnimation": "Batch-convert images in your browser with compression, resizing, animation, and watermarks.",
+      "imageProcessing": "Image processing",
+      "serverLookup": "Server lookup",
+      "textEncodingConversion": "Text encoding conversion"
+    }
+  }
+}

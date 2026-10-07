@@ -1,0 +1,516 @@
+{
+  "pages": {
+    "app": {
+      "personalBlogIndependentDevelopment": "远方之森 {'|'} 个人博客与独立开发",
+      "komoriSPersonalWebsiteTechnologyEssaysReadingNotesFictionAnd": "远方之森的个人网站，分享技术探索、随笔与读书笔记，平常也写点小说，提供一些实用小工具。",
+      "personalBlogTechnologyIndependentDevelopmentOriginalFiction": "远方之森,个人博客,技术博客,独立开发,原创小说,向远方",
+      "licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons": "查看远方之森网站原创软件、生产依赖、字体、图标及其他第三方内容的许可证与权利声明。",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotes": "阅读远方之森的技术探索、生活随笔与读书笔记。",
+      "readKomoriSBlogArticles": "阅读远方之森的博客文章。",
+      "featureUpdatesFixesAndReleasesForKomoriSWebsite": "查看远方之森个人网站的功能更新、修复与版本记录。",
+      "currentAndPastWebsiteAnnouncements": "查看远方之森当前有效的站点公告与历史通知。",
+      "readKomoriSOriginalNovelOnline": "在线阅读远方之森创作的原创小说《向远方》。",
+      "readKomoriSOriginalNovelOnline2": "在线阅读远方之森 创作的原创小说《向远方》。",
+      "onlineToolsAndServiceLookupsByKomori": "使用远方之森制作的在线小工具与服务查询功能。",
+      "checkTheStatusAndDetailsOfJavaOrBedrockMinecraft": "查询 Java 版或基岩版 Minecraft 服务器的在线状态与基础信息。",
+      "convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings": "在标准 Unicode 与 ASCII 传统字体编码之间双向转换。",
+      "tryKaimingChinesePunctuationWithSansSerifSerifAndVariable": "在线体验开明式中文标点字体，支持黑体、宋体与 100–900 连续可变字重。",
+      "theRequestedPageWasNotFound": "未找到请求的页面。",
+      "komorisamSAvatar": "KoMoriSam 的个人头像",
+      "blogP": "博客 {'|'} 远方之森 {'|'} p.{p0} ",
+      "readKomoriSTechnologyExplorationsEssaysAndReadingNotesPage": "阅读远方之森的技术探索、生活随笔与读书笔记。当前为第 {p0} 页。"
+    },
+    "announcements": {
+      "reload": "重新加载",
+      "refreshFailedShowingPreviouslyLoadedAnnouncements": "刷新失败，当前显示上次加载的公告。",
+      "retry": "重试"
+    },
+    "changelog": {
+      "changelog": "更新日志",
+      "other": "其他"
+    },
+    "home": {
+      "rssSubscription": "RSS 订阅",
+      "readTheNovel": "看看小说",
+      "tools": "工具集",
+      "imageConverter": "图片格式转换",
+      "sinhalaFontEncodingConverter": "僧伽罗字体编码转换器"
+    },
+    "licenses": {
+      "licensesThirdPartyNotices": "开源许可与第三方声明"
+    },
+    "tools": {
+      "minecraftServerStatus": "Minecraft 服务器状态"
+    },
+    "articleList": {
+      "articles3": "篇"
+    },
+    "articleReader": {
+      "toBottom": "至底部",
+      "toTop": "至顶部",
+      "characters": "{p0} 字",
+      "published2": "{p0} 发布",
+      "aboutCharacters": "约 {p0} 字",
+      "reads": "{p0} 阅读",
+      "comments": "{p0} 评论"
+    }
+  },
+  "tools": {
+    "serverInfo": {
+      "pasteFromClipboard": "从剪贴板粘贴"
+    },
+    "imageConverter": {
+      "toolInformation": "工具信息",
+      "processedInYourBrowser": "浏览器本地处理",
+      "moreSettings": "更多设置",
+      "text2": "文本",
+      "documents": "文档",
+      "dropFilesHere": "松开完成拖放"
+    }
+  },
+  "common": {
+    "badges": {
+      "pinned": "置顶",
+      "important": "重要",
+      "ended": "已结束",
+      "revised": "有修订"
+    },
+    "modal": {
+      "backToImportantAnnouncements": "返回重要公告列表",
+      "importantAnnouncements": "重要公告",
+      "pleaseTakeNoteOfTheFollowing": "以下内容需要你的留意",
+      "published": "发布时间",
+      "ends": "结束时间",
+      "to": "至",
+      "importantAnnouncementList": "重要公告列表",
+      "view": "查看",
+      "markAllAsRead": "全部已读",
+      "close": "关闭",
+      "gotIt": "我知道了",
+      "thisIsTheDefaultDescription": "这是一个默认的描述文本。",
+      "cancel": "取消",
+      "back": "返回"
+    },
+    "noticeCenter": {
+      "notifications": "通知中心",
+      "loadingAnnouncements": "正在加载公告",
+      "announcementsAreTemporarilyUnavailable": "公告暂时无法加载",
+      "noActiveAnnouncements": "当前没有有效公告",
+      "viewAllAndPastAnnouncements": "查看全部与历史公告",
+      "openAnnouncements": "打开站点公告",
+      "openAnnouncementsUnread": "打开站点公告，有 {p0} 条未读"
+    },
+    "pagination": {
+      "previousPage": "上一页",
+      "page": "第",
+      "pages": "页",
+      "of": "共",
+      "nextPage": "下一页",
+      "choosePage": "选择页码",
+      "page2": "当前第",
+      "of2": "页，共",
+      "firstPage": "第一页",
+      "lastPage": "最后一页",
+      "previousItem": "上一项",
+      "nextItem": "下一项",
+      "position": "第 {p0} 页，共 {p1} 页"
+    },
+    "toTop": {
+      "backToTop": "回到顶部"
+    },
+    "contentPage": {
+      "breadcrumbNavigation": "面包屑导航",
+      "pageActions": "页面操作"
+    },
+    "footBar": {
+      "siteStatistics": "站点统计",
+      "visitsToday": "今日访问",
+      "totalVisits": "总访问",
+      "totalReads": "总阅读",
+      "trackedSince": "统计自",
+      "statisticsUnavailable": "统计暂不可用",
+      "socialAccounts": "社交帐号",
+      "lookingForTheOldWebsite": "在找旧版网页？",
+      "visitItHere": "这里跳转"
+    },
+    "mobileNav": {
+      "mobileNavigation": "移动端导航",
+      "projects": "项目",
+      "viewAllRepositories": "查看全部仓库",
+      "closeNavigationMenu": "关闭导航菜单",
+      "openNavigationMenu": "打开导航菜单"
+    },
+    "navBar": {
+      "openSiteSearch": "打开全局内容搜索",
+      "search": "搜索"
+    },
+    "projectMenu": {
+      "projectNavigation": "项目导航",
+      "myProjects": "我的项目",
+      "allRepositories": "全部仓库"
+    },
+    "search": {
+      "siteSearch": "全局内容搜索",
+      "searchContentUseForContentTypesForCategoriesAndFor": "搜索正文，输入 {'@'} 符号筛选内容类型，输入 # 号筛选内容分类，输入 / 符号筛选年份",
+      "searchThisSite": "全站内容搜索",
+      "clearAllSearchFilters": "清除全部搜索条件",
+      "select": "选择 ·",
+      "confirm": "确认 ·",
+      "items": "项",
+      "enter": "输入",
+      "toFilterTypes": "筛选类型，",
+      "toFilterTagsNovelVolumesOrChangeTypes": "筛选标签、小说卷或更新类型，",
+      "toFilterYearsYouCanCombineFilters": "筛选年份，可组合多个条件。",
+      "searching": "正在搜索",
+      "theSearchIndexIsTemporarilyUnavailable": "搜索索引暂时不可用",
+      "siteSearchResults": "全局搜索结果",
+      "noMatchingContentFound": "没有找到匹配的内容",
+      "tryShorterKeywordsOrRemoveSomeFilters": "试试更短的关键词，或清除部分筛选条件",
+      "results": "项结果",
+      "select2": "选择",
+      "open": "打开",
+      "blogTags": "博客标签",
+      "novelVolumes": "小说卷",
+      "changeTypes": "更新类型",
+      "licenseTypes": "许可证类型",
+      "untitledContent": "未命名内容",
+      "noSearchIndexIsAvailable": "没有可用的搜索索引",
+      "refreshThePageAndTryAgain": "请刷新页面后再试。",
+      "cannotReadSearchResultsPleaseTryAgainLater": "无法读取搜索结果，请稍后重试。",
+      "removeType": "移除类型 {p0}",
+      "removeFilter": "移除筛选 {p0}",
+      "removeYear": "移除年份 {p0}",
+      "tagFilterSuggestions": "标签筛选建议",
+      "yearFilterSuggestions": "年份筛选建议",
+      "contentTypeFilterSuggestions": "内容类型筛选建议",
+      "chooseContentCategory": "选择内容分类",
+      "choosePublicationYear": "选择发布年份",
+      "chooseContentType": "选择内容类型",
+      "year": "年份 {p0}",
+      "contentType": "内容类型 {p0}",
+      "noOptionsMatch": "没有匹配“{p0}”的选项",
+      "noMoreFiltersAvailable": "没有更多可选条件"
+    },
+    "sideBar": {
+      "closeSidebar": "关闭侧边栏",
+      "openSidebar": "打开侧边栏"
+    },
+    "fontSelect": {
+      "searchFonts": "搜索字体",
+      "defaultFallbackFont": "默认回退字体",
+      "fallback": "回退",
+      "customFonts": "自定义字体",
+      "noMatchingFonts": "未找到匹配字体",
+      "font": "字体",
+      "processedLocally": "仅本地处理",
+      "uploadFont": "上传字体",
+      "siteFonts": "网站字体",
+      "deviceFonts": "设备字体",
+      "chooseFont": "选择字体",
+      "yourBrowserCannotReadDeviceFonts": "当前浏览器不支持读取设备字体",
+      "readingDeviceFonts": "正在读取设备字体",
+      "readDeviceFonts": "读取设备字体",
+      "noDeviceFontsAvailable": "没有可用的设备字体",
+      "cannotLoadFont": "无法加载字体",
+      "unnamedFont": "未命名字体",
+      "noUsableDeviceFontsFound": "没有读取到可用的设备字体",
+      "deviceFontAccessWasNotGranted": "未获得设备字体访问权限",
+      "cannotReadDeviceFonts": "无法读取设备字体",
+      "theCustomFontIsNoLongerAvailablePleaseSelectIt": "所选自定义字体已不可用，请重新选择",
+      "loadedDeviceFonts": "已加载 {p0}/{p1} 款设备字体",
+      "readDeviceFonts2": "已读取 {p0} 款设备字体",
+      "setDefaultFallbackFont": "设为默认回退字体：{p0}",
+      "loadingFont": "正在加载字体",
+      "loading": "正在加载{p0}",
+      "scrollDownToLoadMore": "继续下拉加载更多"
+    },
+    "imagePreview": {
+      "loadingImage": "图片加载中",
+      "closeImagePreview": "关闭图片预览",
+      "previousImage": "上一张图片",
+      "previous": "上一张",
+      "nextImage": "下一张图片",
+      "next": "下一张",
+      "imagePreviewControls": "图片预览控制",
+      "zoomOutOfImage": "缩小图片",
+      "fitToScreen": "适应屏幕",
+      "zoomInOnImage": "放大图片",
+      "imagePreview": "图片预览",
+      "imagePreviewModuleFailedToLoad": "图片预览模块加载失败",
+      "imagePreviewFailedToLoad": "图片预览加载失败",
+      "imageFailedToLoad": "图片加载失败",
+      "imagePreviewFailedToOpen": "图片预览打开失败",
+      "imageOf": "第 {p0} 张，共 {p1} 张",
+      "zoomClickToFitToScreen": "缩放 {p0}%，点击恢复适应屏幕"
+    },
+    "floatingActionButton": {
+      "actions": "操作"
+    },
+    "themeController": {
+      "chooseInterfaceTheme": "选择主题",
+      "theme": "主题",
+      "themeSelection": "主题选择",
+      "interfaceTheme": "主题",
+      "followSystemTheme": "跟随系统"
+    },
+    "navigation": {
+      "home": "主页",
+      "blog": "博客",
+      "novel": "小说",
+      "tools": "工具"
+    },
+    "projects": {
+      "fontProject": "字体项目",
+      "kaimingPunctuationForChineseTypographyWithSansSerifSerifAnd": "为中文排版提供开明式标点体验，支持黑体、宋体与连续可变字重。",
+      "websiteProject": "网站项目",
+      "sourceForThisWebsiteBuiltWithVueViteTailwindCss": "当前主站的源码，基于 Vue、Vite、Tailwind CSS 与 daisyUI 构建。"
+    },
+    "type-changelog": {
+      "features": "功能",
+      "fixes": "修复",
+      "improvements": "改进",
+      "performance": "优化",
+      "refactoring": "重构",
+      "maintenance": "维护"
+    },
+    "search-content": {
+      "openSourceLicenses": "开源许可",
+      "aliases": "别名",
+      "author": "作者",
+      "category": "分类",
+      "created": "创建时间",
+      "description": "描述",
+      "modified": "修改时间",
+      "status": "状态",
+      "yes": "是",
+      "no": "否",
+      "untitledArticle": "未命名文章",
+      "untitledChapter": "未命名章节",
+      "licenseScopeAndRightsForThirdPartyLibrariesFontsIcons": "第三方库、字体、图标、图片与其他内容的许可范围和权利声明。",
+      "projectMitLicense": "项目 MIT License",
+      "mitLicenseForTheOriginalSoftwareSourceInThisRepository": "本仓库原创软件源代码适用的 MIT License。",
+      "license": "许可证",
+      "additionalLicenseFilesForFontsIconsAndOtherThirdParty": "字体、图标或其他第三方内容的补充许可证文件。",
+      "additionalLicenses": "补充许可",
+      "noSearchableContentAvailable": "没有可用的检索内容"
+    },
+    "read-document": {
+      "theDocxDocumentHasNoBody": "DOCX 文档缺少正文",
+      "cannotReadDocxContent": "DOCX 正文无法读取",
+      "onlyDocxAndPdfFilesAreSupported": "仅支持 DOCX 或 PDF 文件"
+    },
+    "image-watermark": {
+      "watermark": "水印"
+    },
+    "announcements": {
+      "information": "信息",
+      "reminder": "提醒",
+      "incident": "故障"
+    },
+    "language": "语言",
+    "languageLoadFailed": "语言加载失败，请重试",
+    "additional": {
+      "confirm": "确认",
+      "defaultDay": "默认日间",
+      "defaultNight": "默认夜间",
+      "businessLight": "商务亮色",
+      "softDark": "柔和深色",
+      "note": "说明",
+      "tip": "提示",
+      "warning": "警告",
+      "success": "成功",
+      "error": "错误",
+      "danger": "危险",
+      "quote": "引用",
+      "summary": "摘要",
+      "replyTo": "回复",
+      "thisIsTheFirstChapter": "已经是第一章啦！",
+      "youAreAlreadyAtYourReadingPosition": "已经是当前阅读位置啦！",
+      "thisIsTheCurrentChapter": "已经是当前章啦！",
+      "thisIsTheLatestChapter": "已经是最新章啦！",
+      "loadingChapterList": "章节目录加载中……",
+      "chapterListRefreshed": "章节目录已刷新！",
+      "chapterListLoaded": "章节目录加载完成！",
+      "chapterListFailedToLoad": "章节目录加载失败！",
+      "readingHistoryCleared": "已清空阅读记录！",
+      "loadingChapterContent": "章节内容加载中……",
+      "chapterContentRefreshed": "章节内容已刷新！",
+      "chapterContentLoaded": "章节内容加载完成！",
+      "chapterContentFailedToLoad": "章节内容加载失败！",
+      "contentRefreshFailed": "刷新内容失败！",
+      "tooManyActionsPleaseWaitAndTryAgain": "操作过于频繁，请稍后再试！",
+      "decoding": "正在解码",
+      "encoding": "正在编码",
+      "processingFrame": "正在处理 {p0}/{p1} 帧",
+      "encodingFrame": "正在编码 {p0}/{p1} 帧",
+      "estimatedDecodingMemoryExceedsThisDeviceSSafeLimit": "预计解码占用 {p0}，超过当前设备 {p1} 的安全上限",
+      "fileSignatureDoesNotMatchItsFormat": "文件签名与识别格式不一致",
+      "yourBrowserCannotDecodeThisFile": "浏览器无法解码该 {p0} 文件：{p1}",
+      "unknownError": "未知错误",
+      "cannotDecodeAnimatedWebp": "无法解码动画 WebP",
+      "theGifContainsNoUsableFrames": "GIF 中没有可用帧",
+      "theEncoderReturnedAnInvalidFileSignature": "{p0} 编码器返回了错误的文件签名",
+      "unsupportedStaticOutputFormat": "不支持的静态输出格式",
+      "webpEncodingFailed": "WebP 编码失败",
+      "onlyTheFirstAnimationFrameWasExported": "动画来源仅输出第一帧",
+      "avifAnimationIsUnsupportedFramesWereExportedSeparately": "AVIF 不支持动画，已逐帧输出",
+      "avifAnimationIsUnsupportedTheFirstFrameWasExported": "AVIF 不支持动画，已输出第一帧",
+      "onlyTheFirstFrameOfAnimatedAvifIsCurrentlyProcessed": "动画 AVIF 当前仅处理第一帧",
+      "failedToFetchArticles": "获取文章列表失败: {p0}",
+      "failedToFetchArticleContent": "获取文章内容失败: {p0}",
+      "invalidIndexJsonFormat": "index.json 格式错误",
+      "announcementRequestFailed": "公告接口请求失败：{p0}",
+      "changelogRequestFailed": "更新日志请求失败：{p0}"
+    },
+    "sections": {
+      "siteAnnouncements": "站点公告",
+      "releaseNotes": "版本记录与维护",
+      "openSource": "开源与署名",
+      "originalSource": "原创软件源码",
+      "attribution": "范围与署名",
+      "installedDependencies": "已安装的生产依赖",
+      "fontNotices": "字体、图标及其他署名",
+      "toolList": "工具列表",
+      "posts": "文章列表",
+      "projects": "项目",
+      "contents": "目录",
+      "discussion": "讨论",
+      "typographyFeatures": "排版特性",
+      "useOnWeb": "网页使用",
+      "unicodeText": "Unicode 文本",
+      "legacyText": "Legacy 文本",
+      "reducedForms": "保留简化辅音形式",
+      "conjunctForms": "保留合字形式",
+      "unjoinedForms": "未连接的合字形式",
+      "ligatedForms": "连写合字形式",
+      "compactDa": "紧凑“ද”形式",
+      "workingOn": "最近在做什么？",
+      "aboutMe": "关于我",
+      "follow": "关注与联系",
+      "default": "默认",
+      "serverLogo": "服务器标志",
+      "welcome": "欢迎！",
+      "notFoundTitle": "哎呀！",
+      "notFoundDescription": "404 页面不存在 :(",
+      "viewEnglishSource": "查看英文原文"
+    },
+    "breadcrumb": {
+      "home": "主页",
+      "blog": "博客",
+      "blog-article": "文章",
+      "page": "分页",
+      "novel": "小说",
+      "novel-reader": "章节",
+      "tools": "工具",
+      "image-converter": "图片转换器",
+      "server-status": "服务器状态",
+      "sinhala-font-converter": "僧伽罗字体转换器",
+      "changelog": "更新日志",
+      "announcements": "公告",
+      "licenses": "许可",
+      "kaiming": "开明标点",
+      "NotFound": "页面不存在"
+    }
+  },
+  "markdown": {
+    "chat": {
+      "typeAMessage": "输入消息...",
+      "holdToSpeak": "按住 说话",
+      "send": "发送",
+      "user": "用户",
+      "switchToKeyboardInput": "切换到键盘输入",
+      "switchToVoiceInput": "切换到语音输入"
+    },
+    "markdown": {
+      "loadingFailedPleaseTryAgainLater": "加载失败，请稍后重试。",
+      "previewImage": "预览图片",
+      "previewImage2": "预览图片：{p0}"
+    },
+    "mermaid": {
+      "mermaidDiagramTools": "Mermaid 图表工具",
+      "switchMermaidView": "Mermaid 视图切换",
+      "viewMermaidSource": "查看 Mermaid 代码",
+      "code": "代码",
+      "viewMermaidPreview": "查看 Mermaid 预览",
+      "preview": "预览",
+      "loadingMermaidDiagram": "正在加载 Mermaid 图表……",
+      "invalidOrUnsupportedDiagram": "图表无效或不受支持",
+      "mermaidDiagramPreview": "Mermaid 图表预览",
+      "diagramZoom": "图表缩放",
+      "zoomInOnDiagram": "放大图表",
+      "zoomIn": "放大",
+      "zoomOutOfDiagram": "缩小图表",
+      "zoomOut": "缩小",
+      "mermaidDidNotReturnAValidSvg": "Mermaid 未返回有效 SVG",
+      "exitFullscreen": "退出全屏",
+      "fullscreen": "全屏",
+      "copyCode": "复制代码",
+      "viewDiagramFullscreen": "全屏查看图表",
+      "mermaidSourceCopied": "Mermaid 代码已复制",
+      "copyMermaidSource": "复制 Mermaid 代码"
+    },
+    "moment": {
+      "moreActions": "更多操作",
+      "comments": "评论",
+      "me": "我",
+      "like": "点赞",
+      "share": "分享",
+      "sPost": "{p0} 的动态",
+      "sAvatar": "{p0} 的头像"
+    },
+    "codeBlock": {
+      "copiedSuccessfully": "复制成功",
+      "copyToClipboard": "复制到剪贴板"
+    }
+  },
+  "reader": {
+    "contextMenu": {
+      "image": "图片"
+    },
+    "formatSetting": {
+      "systemDefault": "跟随系统",
+      "matchYourSystemSLightOrDarkAppearance": "自动匹配系统的浅色或深色外观"
+    }
+  },
+  "games": {
+    "title": "游戏",
+    "description": "选择一款桌游，创建房间，邀请朋友一起玩。"
+  },
+  "auth": {
+    "login": "使用 GitHub 登录",
+    "logout": "退出",
+    "retry": "重新确认",
+    "guest": "游客",
+    "loadingProfile": "正在读取 GitHub 资料",
+    "checking": "正在确认 GitHub 登录状态…",
+    "novelGate": "登录后可阅读章节和搜索小说正文。",
+    "fallback": "在 Giscus 评论中登录",
+    "close": "关闭",
+    "githubProfile": "使用 GitHub 头像",
+    "customProfile": "自定义昵称和默认头像",
+    "saveProfile": "保存玩家资料",
+    "profileError": "GitHub 资料暂不可用，可重试或使用自定义昵称。",
+    "nickname": "自定义昵称",
+    "avatar": "玩家头像",
+    "account": "账户与设置",
+    "email": "邮箱",
+    "emailPrivate": "未公开邮箱",
+    "loginTitle": "登录后继续阅读",
+    "editProfile": "编辑玩家资料",
+    "errors": {
+      "profile": "GitHub 资料暂不可用，请重试。",
+      "token-missing": "未找到登录凭证，请重新登录。",
+      "token-invalid": "GitHub 凭证已失效，请重新登录。",
+      "token-expired": "Giscus 会话已过期，请重新登录。",
+      "session-invalid": "登录凭证无法解析，请重新登录。",
+      "session-mismatch": "会话与返回的登录状态不一致，请重新确认或登录。",
+      "rate-limit": "GitHub 请求受到限流，请稍后重新确认。",
+      "forbidden": "GitHub 请求被拒绝（403），请检查授权后重试。",
+      "network": "网络连接失败，登录状态未知，请重新确认。",
+      "discussion": "登录确认所用的讨论不可用，请重试。",
+      "api": "登录确认接口暂不可用，请重新确认。",
+      "timeout": "登录确认超时，状态未知，请重新确认。",
+      "storage": "无法读取或清理登录缓存，请允许浏览器存储后重试。"
+    }
+  }
+}

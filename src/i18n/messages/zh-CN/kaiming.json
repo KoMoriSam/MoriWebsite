@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "kaiming": {
+      "kaimingPunctuation": "开明标点",
+      "punctuationFontsForChineseWebTypographyWithSansSerifAnd": "一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。",
+      "fontSpecifications": "字体规格",
+      "viewSource": "查看源码",
+      "punctuationFontFamily": "标点字体族",
+      "chooseFontFamily": "选择字体族",
+      "variableWeight": "可变字重",
+      "liveFontSpecimen": "在线字体样张",
+      "editableFontSpecimen": "可编辑字体样张",
+      "clickTheSpecimenToEdit": "点击样张即可编辑",
+      "currentFont": "当前字体：",
+      "refiningPunctuationRhythmInChineseText": "为中文正文重新整理标点节奏",
+      "oneLineImportWithFontFallback": "一行引入，按需回退",
+      "preciseCssUnicodeRangeLoadsAndReplacesOnlyTheIncluded": "CSS 内置精确的 unicode-range，只下载并替换所包含的中文标点。",
+      "downloadsSource": "下载与源码",
+      "useTheWebFontsDirectlyOrGetOtherFormatsAnd": "直接使用网页字体，或前往 GitHub 获取其他格式与构建源码。",
+      "sansSerif": "无衬线",
+      "serif": "衬线体",
+      "halfWidthPunctuation": "半宽标点",
+      "bracketsQuotesAndCommasUseHalfWidthSpacingForA": "括号、引号和顿逗类标点采用半字宽，让正文节奏更紧凑。",
+      "compactSentenceEndings": "句末压缩",
+      "consecutiveEndingMarksAreCompactedPreservingEmphasisWithoutExcessSpacing": "连续句末标点压缩排列，保留强调，也避免空白松散。",
+      "dashLigature": "破折号连字",
+      "doubleDashesFormAContinuousTwoCharacterWideLigatureThat": "双破折号形成连续的二字宽连字，与正文版心自然衔接。",
+      "webImport": "网页引用",
+      "releases": "发布版本",
+      "sourceRepository": "源码仓库",
+      "openSourceLicense": "开源许可证",
+      "weight": "字重 {p0}"
+    }
+  }
+}
