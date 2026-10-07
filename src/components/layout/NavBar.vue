@@ -17,7 +17,7 @@
         @click="router.push('/')"
         class="max-lg:hidden lg:btn lg:btn-ghost lg:text-xl"
       >
-        <img src="/assets/images/icons/logo.webp" alt="KoMoriSam" class="h-8" />
+        <img v-bind="getImageAttrs('/assets/images/icons/logo.webp', '128px')" alt="KoMoriSam" class="h-8" />
       </a>
       <MobileNav />
       <button
@@ -49,7 +49,7 @@
         class="lg:hidden btn btn-ghost min-w-0 max-w-full text-xl"
       >
         <img
-          src="/assets/images/icons/logo.webp"
+          v-bind="getImageAttrs('/assets/images/icons/logo.webp', '152px')"
           alt="KoMoriSam"
           class="h-10 min-w-0 object-contain"
         />
@@ -68,6 +68,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 import { githubSession } from "@/composables/auth/useGithubSession";
 const { t: translate } = useLocale();

@@ -5,7 +5,7 @@
     <figure class="relative m-0 p-0" @click="onHandleClick">
       <img
         v-fade-in
-        :src="imageSrc"
+        v-bind="getImageAttrs(imageSrc, '(min-width: 1024px) 192px, 104px')"
         :alt="imageAlt"
         class="w-26 h-48 lg:w-48 lg:h-72 lg:basis-3xs object-cover rounded-lg z-0"
         @load="handleImageLoad"
@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { ref } from "vue";
 
 import { useImageLoad } from "@/composables/useImageLoad";

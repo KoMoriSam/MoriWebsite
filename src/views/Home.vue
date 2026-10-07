@@ -1,9 +1,9 @@
 <template>
   <section
     class="hero min-h-[calc(100dvh-4rem)] lg:min-h-[calc(100dvh-5rem)] relative"
-    v-fade-in="hero.url || fallbackImage"
+    v-fade-in="getImageUrl(hero.url || fallbackImage, 1920)"
     :style="{
-      backgroundImage: `url('${hero.url || fallbackImage}')`,
+      backgroundImage: `url('${getImageUrl(hero.url || fallbackImage, 1920)}')`,
     }"
   >
     <section class="hero-overlay"></section>
@@ -11,7 +11,7 @@
       <figure class="max-w-md select-none">
         <img
           v-fade-in
-          src="/assets/images/animates/idle.gif"
+          v-bind="getImageAttrs('/assets/images/animates/idle.gif', '(min-width: 1024px) 224px, (min-width: 768px) 192px, 168px')"
           alt="idle"
           class="w-42 md:w-48 lg:w-56 mx-auto object-cover"
           @load="handleImageLoad"
@@ -119,7 +119,7 @@
         <figure class="p-0 mx-auto w-42 lg:w-56">
           <img
             v-fade-in
-            src="/assets/images/animates/mine.gif"
+            v-bind="getImageAttrs('/assets/images/animates/mine.gif', '(min-width: 1024px) 224px, 168px')"
             class="w-42 lg:w-56 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
@@ -209,7 +209,7 @@
         <figure class="p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            src="/assets/images/animates/turn.gif"
+            v-bind="getImageAttrs('/assets/images/animates/turn.gif', '(min-width: 1024px) 184px, 128px')"
             class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
@@ -249,7 +249,7 @@
         <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            src="/assets/images/animates/thanks.gif"
+            v-bind="getImageAttrs('/assets/images/animates/thanks.gif', '(min-width: 1024px) 184px, 128px')"
             class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
@@ -344,6 +344,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs, getImageUrl } from "@/utils/images/responsive-images";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
@@ -386,7 +387,7 @@ onMounted(() => {
 import { fetchRandomHero } from "@/services/api-pixabay";
 
 const fallbackImage =
-  "assets/images/backgrounds/florianhoellmueller-mountains-4950252_1920.webp";
+  "/assets/images/backgrounds/florianhoellmueller-mountains-4950252_1920.webp";
 
 const hero = reactive({
   url: "",

@@ -1,3 +1,4 @@
+import { getImageUrl } from "../utils/images/responsive-images.js";
 export const MOBILE_READER_NAVBAR_SHOW_EVENT = "mobile-reader:show-navbar";
 export const MOBILE_READER_NAVBAR_HIDE_EVENT = "mobile-reader:hide-navbar";
 export const MOBILE_READER_VOLUME_KEY_EVENT = "mobile-reader:volume-key";
@@ -63,7 +64,7 @@ export const getReaderBackgroundImage = (id) =>
   READER_BACKGROUND_IMAGES.find((image) => image.id === id);
 
 export const getReaderBackgroundImageUrl = (id) =>
-  getReaderBackgroundImage(id) ? `/assets/images/backgrounds/${id}.webp` : "";
+  getReaderBackgroundImage(id) ? getImageUrl(`/assets/images/backgrounds/${id}.webp`) : "";
 
 export const MOBILE_READER_ZONE_ACTIONS = Object.freeze([
   { value: "none", label: "无操作" },

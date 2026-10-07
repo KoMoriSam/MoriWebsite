@@ -8,10 +8,10 @@
     "node": "^24.15.0 || >=26.0.0"
   },
   "scripts": {
-    "predev": "node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "predev": "node scripts/generate-images.mjs && node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "dev": "vite --host 0.0.0.0",
     "dev:games-api": "wrangler dev --config wrangler.games-dev.jsonc --port 8787",
-    "prebuild": "node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "prebuild": "node scripts/generate-images.mjs --production && node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "build": "vite-ssg build && node scripts/generate-pagefind-index.mjs",
     "postbuild": "node scripts/generate-third-party-licenses.mjs --dist",
     "predeploy": "pnpm build",
@@ -31,7 +31,9 @@
     "check:games": "node scripts/check-games.mjs",
     "check:markdown-xss": "node scripts/check-markdown-xss.mjs",
     "check:rss": "node scripts/check-rss.mjs",
-    "check:fogport": "node scripts/check-fogport.mjs"
+    "check:fogport": "node scripts/check-fogport.mjs",
+    "generate:images": "node scripts/generate-images.mjs",
+    "check:images": "node scripts/check-responsive-images.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -100,6 +102,7 @@
     "daisyui": "^5.7.28",
     "dotenv": "^17.4.2",
     "pagefind": "1.5.2",
+    "sharp": "^0.35.5",
     "vite": "^6.2.5",
     "vite-plugin-vue-devtools": "^7.7.2",
     "wrangler": "^4.125.0"

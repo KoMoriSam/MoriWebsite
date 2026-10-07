@@ -10,7 +10,7 @@
         <div class="w-8 sm:w-10 rounded-full">
           <img
             class="m-0!"
-            :src="avatarFor(username)"
+            v-bind="getImageAttrs(avatarFor(username), '40px')"
             :alt="translate('markdown.moment.sAvatar', { p0: username })"
           />
         </div>
@@ -52,7 +52,7 @@
         <img
           v-for="({ url, alt }, index) in images"
           :key="`${url}-${index}`"
-          :src="url"
+          v-bind="getImageAttrs(url, '(max-width: 768px) calc((100vw - 4rem) / 3), 320px')"
           :alt="alt"
           loading="lazy"
         />
@@ -91,7 +91,7 @@
               <div class="w-8 rounded-full">
                 <img
                   class="m-0!"
-                  :src="avatarFor(comment.username)"
+                  v-bind="getImageAttrs(avatarFor(comment.username), '40px')"
                   :alt="translate('markdown.moment.sAvatar', { p0: comment.username })"
                 />
               </div>
@@ -112,7 +112,7 @@
                 <div class="w-8 rounded-full">
                   <img
                     class="m-0!"
-                    :src="avatarFor(reply.replier)"
+                    v-bind="getImageAttrs(avatarFor(reply.replier), '40px')"
                     :alt="translate('markdown.moment.sAvatar', { p0: reply.replier })"
                   />
                 </div>
@@ -154,6 +154,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 

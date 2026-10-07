@@ -362,7 +362,7 @@ function serializeInlineNode(
         fontSize;
       appendRun(runs, "\ufffc", {
         ...inherited,
-        inlineImageSrc: node.currentSrc || node.getAttribute("src") || "",
+        inlineImageSrc: node.getAttribute("data-original-src") || node.currentSrc || node.getAttribute("src") || "",
         inlineImageSvg: node.classList.contains("markdown-svg-image"),
         inlineImageAlt: normalizeLabel(node.getAttribute("alt")),
         inlineImageWidthEm: width / fontSize,
@@ -883,7 +883,7 @@ const serializeImageBlock = (figure, range) => {
   const dimensions = getImageDimensions(image);
   return {
     type: "image",
-    src: image.currentSrc || image.getAttribute("src") || "",
+    src: image.getAttribute("data-original-src") || image.currentSrc || image.getAttribute("src") || "",
     svgImage: image.classList.contains("markdown-svg-image"),
     alt: normalizeLabel(image.getAttribute("alt")),
     width: dimensions.width,

@@ -1,4 +1,5 @@
 import fm from "front-matter";
+import { loadImageManifest } from "@/utils/images/responsive-images";
 import {
   createArticleAssetResolver,
   extractArticleImageTarget,
@@ -33,6 +34,7 @@ export function useArticleApi() {
    * @returns {Promise<Array<{id, title, summary, date, tags, path, banner?}>>}
    */
   const fetchArticleList = async () => {
+    const images = loadImageManifest(CONTENT_BASE_URL);
     const res = await fetch(`${CONTENT_BASE_URL}/index.json`);
 
     if (!res.ok) {
@@ -40,6 +42,7 @@ export function useArticleApi() {
     }
 
     const raw = await res.json();
+    await images;
 
     // 新格式：数组
     if (Array.isArray(raw)) {
@@ -64,6 +67,7 @@ export function useArticleApi() {
   };
 
   const fetchArticleDocument = async (path) => {
+    const images = loadImageManifest(CONTENT_BASE_URL);
     const res = await fetch(`${CONTENT_BASE_URL}/${path}`);
 
     if (!res.ok) {
@@ -71,6 +75,7 @@ export function useArticleApi() {
     }
 
     const raw = await res.text();
+    await images;
 
     const parsed = fm(raw);
 

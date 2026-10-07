@@ -1,6 +1,7 @@
 import { h } from "vue";
 import { parseFragment } from "parse5";
 import { sanitizeMarkdownHtml } from "./sanitize-html.js";
+import { getImageAttrs, restoreOriginalImage } from "../images/responsive-images.js";
 
 export const MARKDOWN_COMPONENT_RESOLVER = Symbol(
   "markdown-component-resolver",
@@ -51,6 +52,19 @@ const getVNodeProps = (node) => {
     props[name] = BOOLEAN_ATTRIBUTES.has(name.toLowerCase())
       ? true
       : attribute.value;
+  }
+
+  if (node.tagName === "img" && props.src) {
+    const inline = /(?:^|\s)markdown-inline-image(?:\s|$)/u.test(props.class || "");
+    const fixedWidth = String(props.style || "").match(/(?:^|;)\s*width:\s*(\d+(?:\.\d+)?)px/iu)?.[1];
+    const sizes = fixedWidth ? `(max-width: ${Number(fixedWidth) + 32}px) calc(100vw - 2rem), ${fixedWidth}px` : inline ? "32px" : undefined;
+    Object.assign(props, getImageAttrs(props.src, sizes));
+    if (props["data-original-src"]) {
+      props.width ||= props["data-original-width"];
+      props.height ||= props["data-original-height"];
+      props.onError = restoreOriginalImage;
+    }
+    if (!inline) props.loading ||= "lazy";
   }
 
   return props;

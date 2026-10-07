@@ -12,7 +12,7 @@
         </client-only>
         <img
           v-fade-in
-          src="/assets/images/covers/theHorizon.webp"
+          v-bind="getImageAttrs(novelCoverUrl, '(min-width: 768px) 320px, 288px')"
           :alt="translate('reader.novelDetail.coverOf')"
           class="relative z-0 aspect-12/17 w-full rounded-lg object-cover shadow-2xl"
           @load="handleImageLoad"
@@ -193,6 +193,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 const { t: translate, commentLocale, number: formatNumber } = useLocale();
 
@@ -209,6 +210,7 @@ import {
 
 import CONFIG from "@/constants/config";
 const { GISCUS } = CONFIG;
+const novelCoverUrl = `${String(import.meta.env.VITE_NOVEL_RAW || CONFIG.BASE_URL).replace(/\/+$/, "")}/images/covers/theHorizon.webp`;
 
 import { storeToRefs } from "pinia";
 import { useNovelStore } from "@/stores/novel";

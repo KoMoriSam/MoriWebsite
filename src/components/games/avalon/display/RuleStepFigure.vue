@@ -12,12 +12,12 @@
           <div class="demo-flip night-flip flow-cycle">
             <img
               class="demo-face"
-              src="/assets/images/games/avalon/card.webp"
+              v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', '96px')"
               alt=""
             />
             <div class="demo-face demo-face-front overflow-hidden">
               <img
-                src="/assets/images/games/avalon/merlin.webp"
+                v-bind="getImageAttrs('/assets/images/games/avalon/merlin.webp', '96px')"
                 alt=""
                 class="h-full w-full object-cover object-[center_20%]"
               />
@@ -146,7 +146,7 @@
       </div>
       <div class="flex w-full min-w-0 items-center gap-3 px-4 pt-5">
         <img
-          src="/assets/images/games/avalon/assassin.webp"
+          v-bind="getImageAttrs('/assets/images/games/avalon/assassin.webp', '96px')"
           alt=""
           class="h-24 w-16 shrink-0 rounded-box object-cover object-[center_15%]"
         />
@@ -182,7 +182,7 @@
           class="relative aspect-[2/3] w-full max-w-20 justify-self-center overflow-hidden rounded-box"
         >
           <img
-            src="/assets/images/games/avalon/assassin.webp"
+            v-bind="getImageAttrs('/assets/images/games/avalon/assassin.webp', '96px')"
             alt=""
             class="h-full w-full object-cover object-[center_15%]"
           />
@@ -207,12 +207,12 @@
               <div class="demo-flip target-flip">
                 <img
                   class="demo-face"
-                  src="/assets/images/games/avalon/card.webp"
+                  v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', '96px')"
                   alt=""
                 />
                 <div class="demo-face demo-face-front overflow-hidden">
                   <img
-                    :src="`/assets/images/games/avalon/${outcome.role}.webp`"
+                    v-bind="getImageAttrs(`/assets/images/games/avalon/${outcome.role}.webp`, '96px')"
                     alt=""
                     class="h-full w-full object-cover object-[center_20%]"
                   />
@@ -254,6 +254,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 const props = defineProps({ step: { type: String, required: true } });
 const emit = defineEmits(["cycle-complete"]);

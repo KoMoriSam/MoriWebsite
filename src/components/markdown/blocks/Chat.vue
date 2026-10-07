@@ -46,7 +46,7 @@
           <div class="w-8 sm:w-10 rounded-full">
             <img
               :alt="message.username || translate('markdown.chat.user')"
-              :src="avatarFor(message.username || '用户')"
+              v-bind="getImageAttrs(avatarFor(message.username || '用户'), '40px')"
             />
           </div>
         </aside>
@@ -141,6 +141,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 

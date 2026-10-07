@@ -666,7 +666,7 @@
                         >
                           <img
                             v-if="portraits[player.id]"
-                            :src="roleImage(portraits[player.id].role)"
+                            v-bind="getImageAttrs(roleImage(portraits[player.id].role), '96px')"
                             @error="$event.currentTarget.style.opacity = '0'"
                             @load="$event.currentTarget.style.opacity = ''"
                             alt=""
@@ -679,7 +679,7 @@
                           />
                           <img
                             v-else
-                            src="/assets/images/games/avalon/card.webp"
+                            v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', '96px')"
                             alt=""
                             class="h-full w-full object-cover"
                           />
@@ -815,7 +815,7 @@
                           @click="skillPopover?.open()"
                         >
                           <img
-                            :src="SKILL_CARDS.lady.image"
+                            v-bind="getImageAttrs(SKILL_CARDS.lady.image, '96px')"
                             alt=""
                             class="size-4 shrink-0 rounded-full object-cover object-top"
                           />
@@ -1005,6 +1005,7 @@
   </div>
 </template>
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { computed, h, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useLocale } from "@/i18n";
 import { useMediaQuery, useResizeObserver, useWindowSize } from "@vueuse/core";

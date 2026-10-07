@@ -370,6 +370,7 @@ export const createReaderTextContext = ({
     image: pointedImage
       ? {
           src:
+            pointedImage.image.getAttribute("data-original-src") ||
             pointedImage.image.currentSrc ||
             pointedImage.image.getAttribute("src") ||
             "",

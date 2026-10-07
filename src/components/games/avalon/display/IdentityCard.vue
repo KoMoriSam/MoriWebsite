@@ -48,15 +48,16 @@
             class="relative h-full min-h-0 w-full overflow-hidden"
           >
             <img
-              :src="
+              v-bind="getImageAttrs(
                 roleImage(
                   privateSwitch
                     ? faceAlignment === 'evil'
                       ? 'evil_lancelot'
                       : 'good_lancelot'
                     : self.role,
-                )
-              "
+                ),
+                cardImageSizes,
+              )"
               alt=""
               class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
               @error="$event.currentTarget.style.opacity = '0'"
@@ -183,7 +184,7 @@
             class="relative h-full min-h-0 w-full overflow-hidden"
           >
             <img
-              src="/assets/images/games/avalon/card.webp"
+              v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', cardImageSizes)"
               alt=""
               class="absolute inset-0 h-full w-full object-cover"
             />
@@ -259,6 +260,7 @@
   </div>
 </template>
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import {
   computed,
   nextTick,
@@ -292,6 +294,11 @@ const props = defineProps({
 });
 const emit = defineEmits(["flip"]);
 const { t } = useLocale();
+const cardImageSizes = computed(() =>
+  props.preview
+    ? "min(85vw, 20rem, 56dvh)"
+    : "(min-width: 1024px) 320px, 192px",
+);
 const privateSwitch = computed(
   () => props.allegianceSwitch && LANCELOTS.includes(props.self.role),
 );

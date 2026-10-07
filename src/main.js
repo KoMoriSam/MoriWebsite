@@ -11,6 +11,10 @@ import { routes } from "./router";
 import { generatedBlogPagePaths } from "./router/ssg-data";
 import { lazyPlugin, fadeIn } from "./directive";
 import { createLocaleService } from "./i18n";
+import imageManifests from "./utils/images/image-manifests.generated.json";
+import { registerImageManifest } from "./utils/images/responsive-images";
+
+imageManifests.forEach(({ manifest, base }) => registerImageManifest(manifest, base));
 
 export const includedRoutes = (paths) => [
   ...new Set([

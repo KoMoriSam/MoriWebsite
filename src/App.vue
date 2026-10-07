@@ -18,6 +18,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, watch } from "vue";
+import { loadImageManifest } from "@/utils/images/responsive-images";
 import { useHead } from "@unhead/vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
@@ -297,6 +298,8 @@ const isPrerenderBot =
   /HeadlessChrome|Prerender/i.test(navigator.userAgent);
 
 onMounted(() => {
+  void loadImageManifest(import.meta.env.VITE_BLOG_RAW);
+  void loadImageManifest(import.meta.env.VITE_NOVEL_RAW);
   if (isPrerenderBot) {
     if (typeof localStorage !== "undefined") {
       localStorage.clear();

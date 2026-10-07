@@ -101,7 +101,10 @@ export const createArticleAssetResolver = (baseUrl = "") => {
     normalizeMarkdownImages(
       normalizeObsidianImages(markdown, { bannerName, output }),
       { bannerName },
-    );
+    ).replace(/(<img\b[^>]*\bsrc\s*=\s*)(["'])([^"']+)\2/giu, (match, prefix, quote, target) => {
+      const src = normalizeImageSrc(target, { bannerName });
+      return src ? `${prefix}${quote}${src}${quote}` : match;
+    });
 
   return {
     contentBaseUrl,

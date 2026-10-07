@@ -9,7 +9,7 @@
         class="card card-border relative h-full w-full overflow-hidden border-base-300 bg-base-200"
       >
         <img
-          :src="card.image"
+          v-bind="getImageAttrs(card.image, '192px')"
           alt=""
           class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
         />
@@ -52,6 +52,7 @@
   </div>
 </template>
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { computed } from "vue";
 import { useLocale } from "@/i18n";
 import { SKILL_CARDS } from "@/games/avalon/presentation";

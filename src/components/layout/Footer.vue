@@ -4,7 +4,7 @@
   >
     <aside>
       <img
-        src="/assets/images/titles/welcome.webp"
+        v-bind="getImageAttrs('/assets/images/titles/welcome.webp', '260px')"
         :alt="translate('common.sections.welcome')"
         class="h-6"
       />
@@ -98,6 +98,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from '@/i18n';
 const { t: translate, locale: uiLocale, number: formatNumber } = useLocale();
 

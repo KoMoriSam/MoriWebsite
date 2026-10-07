@@ -67,7 +67,7 @@
             :class="side === 'good' ? 'border-success/40' : 'border-error/40'"
           >
             <img
-              src="/assets/images/games/avalon/card.webp"
+              v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', '192px')"
               alt=""
               class="absolute inset-0 h-full w-full object-cover"
             />
@@ -171,6 +171,7 @@
   </section>
 </template>
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 import { useModal } from "@/composables/useModal";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";

@@ -30,7 +30,7 @@
               v-fade-in
               :key="bannerUrl"
               :ref="setBannerImageRef"
-              :src="bannerUrl"
+              v-bind="getImageAttrs(bannerUrl, '(min-width: 1024px) 960px, calc(100vw - 2rem)')"
               :alt="article.title"
               loading="eager"
               decoding="async"
@@ -427,6 +427,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 const {
   t: translate,

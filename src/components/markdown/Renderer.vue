@@ -296,6 +296,9 @@ const getPreviewCaption = (image) => {
 };
 
 const getPreviewDimensions = (image) => {
+  const originalWidth = Number(image.getAttribute("data-original-width"));
+  const originalHeight = Number(image.getAttribute("data-original-height"));
+  if (originalWidth > 0 && originalHeight > 0) return { width: originalWidth, height: originalHeight };
   if (image.naturalWidth && image.naturalHeight) {
     return { width: image.naturalWidth, height: image.naturalHeight };
   }
@@ -319,7 +322,7 @@ const getPreviewDimensions = (image) => {
 };
 
 const createPreviewSlide = (image, index) => {
-  const src = image.currentSrc || image.src;
+  const src = image.getAttribute("data-original-src") || image.currentSrc || image.src;
   const imageStyle = window.getComputedStyle(image);
   const inheritedFilter = imageStyle.filter;
   const isSvg =
@@ -336,7 +339,7 @@ const createPreviewSlide = (image, index) => {
   return {
     id: image.id || `${src}-${index}`,
     src,
-    msrc: src,
+    msrc: image.currentSrc || image.src,
     ...getPreviewDimensions(image),
     alt: image.getAttribute("alt") || "",
     caption: getPreviewCaption(image),

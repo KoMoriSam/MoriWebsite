@@ -47,7 +47,7 @@
               @click="showRoleDetails(role)"
             >
               <img
-                :src="roleImage(role)"
+                v-bind="getImageAttrs(roleImage(role), '(min-width: 640px) 168px, 120px')"
                 alt=""
                 class="absolute inset-0 h-full w-full object-cover object-[center_20%]"
                 @error="$event.currentTarget.style.opacity = '0'"
@@ -91,6 +91,7 @@
 </template>
 
 <script setup>
+import { getImageAttrs } from "@/utils/images/responsive-images";
 import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
 import { roleImage } from "@/games/avalon/presentation";
