@@ -41,7 +41,10 @@
       </label>
     </div>
 
-    <div v-else-if="!inline" class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2">
+    <div
+      v-else-if="!inline"
+      class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2"
+    >
       <h2 class="font-serif mt-0.5 text-lg font-semibold">
         {{ translate("common.themeController.interfaceTheme") }}
       </h2>
@@ -76,7 +79,9 @@
       />
     </label>
 
-    <div class="grid grid-cols-1 gap-2 py-1 min-[22rem]:grid-cols-2 max-lg:gap-1.5">
+    <div
+      class="grid grid-cols-1 gap-2 py-1 min-[22rem]:grid-cols-2 max-lg:gap-1.5"
+    >
       <label
         v-for="style in themeList"
         :key="style.value"
@@ -105,14 +110,12 @@
             {{ localizeText(style.description) }}
           </span>
         </span>
-        <i
-          class="text-primary absolute top-2 right-2 text-lg transition-opacity max-lg:static max-lg:shrink-0"
-          :class="
-            isThemeActive(style)
-              ? 'ri-checkbox-circle-fill opacity-100'
-              : 'ri-checkbox-blank-circle-line opacity-35'
-          "
-        ></i>
+        <input
+          type="checkbox"
+          class="checkbox checkbox-primary checkbox-xs pointer-events-none absolute right-2"
+          :checked="isThemeActive(style)"
+          tabindex="-1"
+        />
       </label>
     </div>
   </div>
