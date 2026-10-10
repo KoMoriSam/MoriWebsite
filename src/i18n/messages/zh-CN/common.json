@@ -498,7 +498,7 @@
     "loginTitle": "登录后继续阅读",
     "editProfile": "编辑玩家资料",
     "errors": {
-      "profile": "GitHub 资料暂不可用，请重试。",
+      "profile": "GitHub 资料暂不可用，当前使用已确认信息。",
       "token-missing": "未找到登录凭证，请重新登录。",
       "token-invalid": "GitHub 凭证已失效，请重新登录。",
       "token-expired": "Giscus 会话已过期，请重新登录。",

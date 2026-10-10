@@ -498,7 +498,7 @@
     "loginTitle": "Sign in to continue reading",
     "editProfile": "Edit player profile",
     "errors": {
-      "profile": "GitHub profile is unavailable. Please retry.",
+      "profile": "GitHub profile is unavailable. Using confirmed account details.",
       "token-missing": "No sign-in credential was found. Please sign in again.",
       "token-invalid": "The GitHub credential is invalid. Please sign in again.",
       "token-expired": "The Giscus session has expired. Please sign in again.",
