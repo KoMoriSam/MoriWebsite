@@ -72,11 +72,11 @@ globalThis.fetch = async () => {
 const tick = async () => {
   for (let i = 0; i < 5; i++) await Promise.resolve();
 };
-const emitViewer = (login) =>
+const emitViewer = (login, avatarUrl = "") =>
   listeners.get("message")({
     origin: "https://giscus.app",
     source: widget.iframeRef.contentWindow,
-    data: { giscus: { viewer: { login } } },
+    data: { giscus: { viewer: { login, avatarUrl } } },
   });
 savedReturn.setItem(
   "mori:github:return",
@@ -142,7 +142,7 @@ listeners.get("message")({
 });
 assert.equal(auth.state.authenticated, false);
 stop();
-// 取消授权也回到原段落；公开资料接口失败保持游客资料并允许重试。
+// 取消授权也回到原段落；公开资料接口失败保留已确认的身份并允许重试。
 window.location.href =
   "https://komori.cc/novel/volume/chapter#github-login-fallback";
 savedReturn.setItem(
@@ -161,11 +161,23 @@ const failing = createGithubSession();
 local.setItem("giscus-session", JSON.stringify("profile-failure"));
 widget.__session = "profile-failure";
 const stopFailing = failing.start({ replace() {} });
-globalThis.fetch = async () => ({ ok: false });
-emitViewer("unavailable");
+let failedProfileCalls = 0;
+globalThis.fetch = async () => {
+  failedProfileCalls++;
+  return { ok: false };
+};
+const viewerAvatar = "https://avatars.githubusercontent.com/u/42?v=4";
+emitViewer("unavailable", viewerAvatar);
+assert.equal(failing.state.profile.login, "unavailable");
+assert.equal(failing.state.profile.avatarUrl, viewerAvatar);
 await tick();
-assert.equal(failing.state.profile, null);
+assert.equal(failing.state.profile.name, "unavailable");
+assert.equal(failing.state.profile.avatarUrl, viewerAvatar);
 assert.equal(failing.state.error, "profile");
+emitViewer("unavailable", viewerAvatar);
+await tick();
+assert.equal(failedProfileCalls, 1, "metadata cannot repeat a failed request");
+assert.equal(failing.state.error, "profile", "metadata cannot hide profile errors");
 globalThis.fetch = async () => ({
   ok: true,
   json: async () => ({ name: "Recovered", avatar_url: "" }),
@@ -176,9 +188,10 @@ assert.equal(
   false,
   "retry must revalidate the session",
 );
-emitViewer("unavailable");
+emitViewer("unavailable", viewerAvatar);
 await tick();
 assert.equal(failing.state.profile.name, "Recovered");
+assert.equal(failing.state.profile.avatarUrl, viewerAvatar);
 failing.logout();
 stopFailing();
 
@@ -299,6 +312,53 @@ assert.equal(
 );
 assert.equal(recovering.state.errorInfo.status, 403);
 assert.equal(recovering.state.errorInfo.reason, "forbidden");
+assert.equal(recovering.state.profile.login, "recovered-reader");
+
+// 主限流的 403 与普通拒绝分开，重试和新 metadata 必须遵守 reset。
+let limitedCalls = 0;
+const rateReset = Math.ceil(Date.now() / 1000) + 3600;
+const forbiddenNow = Date.now;
+Date.now = () => forbiddenNow() + 61000;
+try {
+  globalThis.fetch = async () => {
+    limitedCalls++;
+    return {
+      ok: false,
+      status: 403,
+      headers: new Headers({
+        "x-ratelimit-remaining": "0",
+        "x-ratelimit-reset": String(rateReset),
+      }),
+      json: async () => ({ message: "API rate limit exceeded" }),
+    };
+  };
+  recovering.retry();
+  emitViewer("recovered-reader", viewerAvatar);
+  await tick();
+  assert.equal(recovering.state.errorInfo.reason, "rate-limit");
+  assert.equal(recovering.state.profile.avatarUrl, viewerAvatar);
+  emitViewer("recovered-reader", viewerAvatar);
+  recovering.retry();
+  emitViewer("recovered-reader", viewerAvatar);
+  await tick();
+  assert.equal(limitedCalls, 1, "retry cannot bypass the IP rate limit");
+  assert.equal(recovering.state.authenticated, true);
+  assert.equal(recovering.state.checking, false);
+  assert.equal(recovering.state.errorInfo.reason, "rate-limit");
+  Date.now = () => rateReset * 1000 + 1;
+  globalThis.fetch = async () => {
+    limitedCalls++;
+    return { ok: true, json: async () => ({ name: "After reset" }) };
+  };
+  recovering.retry();
+  emitViewer("recovered-reader", viewerAvatar);
+  await tick();
+  assert.equal(limitedCalls, 2);
+  assert.equal(recovering.state.profile.name, "After reset");
+  assert.equal(recovering.state.error, "");
+} finally {
+  Date.now = forbiddenNow;
+}
 for (const store of [local, savedReturn]) {
   store.setItem("mori:github:profile", '{"login":"old"}');
   store.setItem("mori:github:return", "old-return");
@@ -361,6 +421,11 @@ try {
   stopBlocked();
 } finally {
   Object.defineProperty(window, "localStorage", savedLocalDescriptor);
+}
+
+if (process.argv.includes("--session-only")) {
+  console.log("GitHub session: identity fallback, profile errors, retry cooldown and lifecycle checks passed.");
+  process.exit(0);
 }
 
 let canRead = false;

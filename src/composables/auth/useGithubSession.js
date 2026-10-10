@@ -36,6 +36,9 @@ export function createGithubSession() {
   let request = 0;
   let viewerLogin = "";
   let profileRequestLogin = "";
+  let profileAttemptLogin = "";
+  let profileRetryAt = 0;
+  let profileFailure = null;
   let profileController;
   let verifiedAt = 0;
   let stop = null;
@@ -53,15 +56,17 @@ export function createGithubSession() {
     state.error = "";
     state.errorInfo = null;
   };
-  const report = (code, phase = "session", status = null) => {
+  const report = (code, phase = "session", status = null, reason = null) => {
     state.error = code;
     state.errorInfo = { code, phase, status, at: Date.now() };
+    if (reason) state.errorInfo.reason = reason;
     // 不记录 session、token、回调 URL 或原始接口错误文本。
     console.warn("[github-auth]", {
       code,
       phase,
       status,
       revision: state.revision,
+      ...(reason ? { reason } : {}),
     });
   };
   const readSession = () => {
@@ -94,6 +99,7 @@ export function createGithubSession() {
     request++;
     viewerLogin = "";
     profileRequestLogin = "";
+    profileAttemptLogin = "";
     verifiedAt = 0;
     clearProfile();
     clearError();
@@ -109,6 +115,7 @@ export function createGithubSession() {
     request++;
     viewerLogin = "";
     profileRequestLogin = "";
+    profileAttemptLogin = "";
     verifiedAt = 0;
     state.authenticated = false;
     state.checking = false;
@@ -151,6 +158,12 @@ export function createGithubSession() {
     if (failed) report("storage", "logout");
   };
   const loadProfile = async (login) => {
+    profileAttemptLogin = login;
+    // 匿名 API 的限制按 IP 共享，重新确认/切换会话也不能绕过冷却。
+    if (Date.now() < profileRetryAt) {
+      report("profile", "profile", profileFailure.status, profileFailure.reason);
+      return;
+    }
     profileController?.abort();
     const controller = new AbortController();
     profileController = controller;
@@ -164,13 +177,39 @@ export function createGithubSession() {
         `https://api.github.com/users/${encodeURIComponent(login)}`,
         {
           headers: { Accept: "application/vnd.github+json" },
-          cache: "no-store",
           signal: controller.signal,
         },
       );
       if (!response.ok) {
         const error = new Error("profile");
         error.status = response.status;
+        const remaining = response.headers?.get("x-ratelimit-remaining");
+        const reset = Number(response.headers?.get("x-ratelimit-reset")) * 1000;
+        const retryAfter = response.headers?.get("retry-after");
+        let message = "";
+        try {
+          message = (await response.json()).message || "";
+        } catch {
+          /* Proxy errors may not contain JSON. */
+        }
+        error.reason =
+          remaining === "0" ||
+          response.status === 429 ||
+          /rate limit/i.test(message)
+            ? "rate-limit"
+            : classifyError(String(response.status));
+        if ([403, 429].includes(response.status)) {
+          const retryAt = retryAfter
+            ? /^\d+$/.test(retryAfter)
+              ? Date.now() + Number(retryAfter) * 1000
+              : Date.parse(retryAfter)
+            : 0;
+          error.retryAt = Math.max(
+            Date.now() + 60000,
+            Number.isFinite(retryAt) ? retryAt : 0,
+            remaining === "0" && Number.isFinite(reset) ? reset : 0,
+          );
+        }
         throw error;
       }
       const data = await response.json();
@@ -178,20 +217,22 @@ export function createGithubSession() {
       state.profile = {
         login,
         name: String(data.name || login).trim() || login,
-        avatarUrl: String(data.avatar_url || ""),
+        avatarUrl: String(data.avatar_url || state.profile?.avatarUrl || ""),
         email: String(data.email || "").trim(),
       };
+      profileFailure = null;
+      profileRetryAt = 0;
     } catch (error) {
       if (id === request) {
-        state.profile = null;
         // 公开资料 API 的 401/403 不证明 giscus 会话失效。
-        report("profile", "profile", error.status || null);
-        state.errorInfo.reason =
+        const reason =
           error.name === "AbortError"
             ? "timeout"
-            : error.status
-              ? classifyError(String(error.status))
-              : "network";
+            : error.reason ||
+              (error.status ? classifyError(String(error.status)) : "network");
+        profileFailure = { status: error.status || null, reason };
+        profileRetryAt = error.retryAt || 0;
+        report("profile", "profile", profileFailure.status, reason);
       }
     } finally {
       window.clearTimeout(timer);
@@ -247,12 +288,23 @@ export function createGithubSession() {
     verifiedAt = Date.now();
     state.authenticated = true;
     state.status = "authenticated";
-    clearError();
+    if (state.errorInfo?.phase !== "profile") clearError();
     state.checking = !!profileRequestLogin;
-    if (
-      (!state.profile || state.profile.login !== login) &&
-      profileRequestLogin !== login
-    )
+    if (!state.profile || state.profile.login !== login) {
+      // metadata 已确认身份，公开资料仅补充显示名和邮箱。
+      state.profile = {
+        login,
+        name: login,
+        avatarUrl: String(message.viewer.avatarUrl || ""),
+        email: "",
+      };
+    } else if (message.viewer.avatarUrl && !state.profile.avatarUrl) {
+      state.profile = {
+        ...state.profile,
+        avatarUrl: String(message.viewer.avatarUrl),
+      };
+    }
+    if (profileAttemptLogin !== login && profileRequestLogin !== login)
       void loadProfile(login);
   };
   const retry = () => {

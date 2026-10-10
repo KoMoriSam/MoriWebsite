@@ -77,9 +77,15 @@
               {{ t("auth.checking") }}
             </p>
           </div>
-          <LoginButton v-if="!panelState.authenticated" class="max-sm:btn-sm" />
+          <LoginButton
+            v-if="!panelState.authenticated && !panelState.checking"
+            class="max-sm:btn-sm"
+          />
           <button
-            v-if="panelState.hasSession || panelState.authenticated"
+            v-if="
+              (panelState.hasSession || panelState.authenticated) &&
+              !panelState.checking
+            "
             type="button"
             class="btn btn-ghost max-sm:btn-sm shrink-0"
             @click="signOut"
