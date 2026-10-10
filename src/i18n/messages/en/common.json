@@ -69,6 +69,12 @@
     }
   },
   "common": {
+    "navigationFeedback": {
+      "loading": "Loading page…",
+      "failed": "The page could not be opened. Check your connection and try again.",
+      "retry": "Retry",
+      "reload": "Reload"
+    },
     "badges": {
       "pinned": "Pinned",
       "important": "Important",

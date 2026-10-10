@@ -85,13 +85,14 @@ import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 
 import { computed } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink } from "vue-router";
+import { useNavigationTarget } from "@/composables/useNavigationFeedback";
 
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
 
-const route = useRoute();
+const navigationRoute = useNavigationTarget();
 
-const isKaimingActive = computed(() => route.name === "kaiming");
+const isKaimingActive = computed(() => navigationRoute.value.name === "kaiming");
 
 const projectLinkProps = (project) =>
   project.to

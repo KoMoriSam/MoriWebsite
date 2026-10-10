@@ -1,4 +1,5 @@
 <template>
+  <NavigationFeedback />
   <NavBar />
   <SessionProbe />
   <NoticeDialog
@@ -26,6 +27,7 @@ import { storeToRefs } from "pinia";
 import SessionProbe from '@/components/auth/SessionProbe.vue';
 import { useGithubSession } from '@/composables/auth/useGithubSession';
 import NavBar from "@/components/layout/NavBar.vue";
+import NavigationFeedback from "@/components/feedback/NavigationFeedback.vue";
 import NoticeDialog from "@/components/announcement/interaction/NoticeDialog.vue";
 import BackToTop from "./components/interaction/navigation/BackToTop.vue";
 import { useNovelStore } from "@/stores/novel";

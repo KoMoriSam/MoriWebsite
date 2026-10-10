@@ -29,7 +29,7 @@
               :to="link.to"
               class="btn h-fit flex-col sm:flex-row gap-0 sm:gap-2 py-2 w-full max-lg:min-h-11 max-lg:px-2 max-lg:py-1.5"
               :class="
-                isNavigationLinkActive(route, link)
+                isNavigationLinkActive(navigationRoute, link)
                   ? 'btn-primary'
                   : 'btn-ghost border border-base-300'
               "
@@ -38,7 +38,7 @@
               <i
                 class="text-lg"
                 :class="`${link.icon}-${
-                  isNavigationLinkActive(route, link) ? 'fill' : 'line'
+                  isNavigationLinkActive(navigationRoute, link) ? 'fill' : 'line'
                 }`"
               ></i>
               {{ localizeText(link.name) }}
@@ -115,18 +115,19 @@ import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 
 import { ref } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink } from "vue-router";
+import { useNavigationTarget } from "@/composables/useNavigationFeedback";
 
 import { NAV_LINKS, isNavigationLinkActive } from "@/constants/navigation.js";
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
 
-const route = useRoute();
+const navigationRoute = useNavigationTarget();
 const emit = defineEmits(["open-change"]);
 const mobilePopover = ref(null);
 const isOpen = ref(false);
 
 const isProjectActive = (project) =>
-  project.routeNames?.includes(route.name) ?? false;
+  project.routeNames?.includes(navigationRoute.value.name) ?? false;
 
 const projectLinkProps = (project) =>
   project.to

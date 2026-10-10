@@ -24,6 +24,6 @@ export const TOAST_ICONS = {
   success: "ri-checkbox-circle-line",
   error: "ri-close-circle-line",
   warning: "ri-alert-line",
-  loading: "ri-loader-4-line animate-spin",
+  loading: "loading loading-spinner loading-xs",
   star: "ri-star-smile-line",
 };

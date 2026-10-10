@@ -69,6 +69,12 @@
     }
   },
   "common": {
+    "navigationFeedback": {
+      "loading": "页面加载中…",
+      "failed": "页面未能打开，请检查网络后重试。",
+      "retry": "重试",
+      "reload": "重新加载"
+    },
     "badges": {
       "pinned": "置顶",
       "important": "重要",
