@@ -13,6 +13,7 @@ import { lazyPlugin, fadeIn } from "./directive";
 import { createLocaleService } from "./i18n";
 import imageManifests from "./utils/images/image-manifests.generated.json";
 import { registerImageManifest } from "./utils/images/responsive-images";
+import { installPageData } from "./utils/ssg/page-data";
 
 imageManifests.forEach(({ manifest, base }) => registerImageManifest(manifest, base));
 
@@ -29,7 +30,11 @@ export const createApp = ViteSSG(
     routes,
     base: import.meta.env.BASE_URL,
   },
-  ({ app, router }) => {
+  async ({ app, router, initialState }) => {
+    const snapshot = import.meta.env.SSR
+      ? (await import("./router/ssg-snapshot")).default
+      : null;
+    installPageData(router, initialState, { snapshot, isServer: import.meta.env.SSR });
     const pinia = createPinia();
 
     app.use(pinia);

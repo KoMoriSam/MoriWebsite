@@ -4,31 +4,27 @@ import {
 } from "@/constants/blog-pagination";
 
 /**
- * 构建期生成的统一 SSG 数据。
- *
- * 开发环境继续使用原有 API 请求；生产构建则让服务端渲染和客户端
- * hydration 读取同一份静态快照。
+ * 客户端路由只包含文章元数据。正文通过每页 initialState 恢复，
+ * 完整快照仅供 SSR 和搜索索引生成使用。
  */
-const generatedDataModules = import.meta.glob("./ssg-data.generated.js", {
+const generatedDataModules = import.meta.glob("./article-metadata.generated.js", {
   eager: true,
   import: "default",
 });
 
-const ssgData = import.meta.env.DEV
-  ? {}
-  : generatedDataModules["./ssg-data.generated.js"] || {};
+const articleMetadata = import.meta.env.DEV
+  ? []
+  : generatedDataModules["./article-metadata.generated.js"] || [];
 
-export const generatedArticles = Array.isArray(ssgData.articles)
-  ? ssgData.articles
+export const generatedArticles = Array.isArray(articleMetadata)
+  ? articleMetadata
   : [];
 
 export const generatedArticleList = generatedArticles.map((entry) => ({
   ...entry.article,
   routePath: entry.path,
-  content: entry.content,
   frontmatter: entry.article,
 }));
-
 export const generatedBlogTotalPages = getBlogTotalPages(
   generatedArticleList.length,
 );
@@ -46,10 +42,7 @@ export const articleRoutes = generatedArticles.map((entry) => ({
     localeGroups: ["blog", "reader"],
     hideToTop: true,
     article: entry.article,
-    content: entry.content,
     // 文章列表用于计算上下篇导航，SSR 预渲染阶段即可生成完整翻页按钮
     articles: generatedArticleList,
   },
 }));
-
-export default ssgData;

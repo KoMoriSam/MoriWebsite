@@ -8,12 +8,12 @@
     "node": "^24.15.0 || >=26.0.0"
   },
   "scripts": {
-    "predev": "node scripts/generate-images.mjs && node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "predev": "node scripts/generate-static-assets.mjs && node scripts/generate-images.mjs && node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "dev": "vite --host 0.0.0.0",
     "dev:games-api": "wrangler dev --config wrangler.games-dev.jsonc --port 8787",
-    "prebuild": "node scripts/generate-images.mjs --production && node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "prebuild": "node scripts/generate-static-assets.mjs && node scripts/generate-images.mjs --production && node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
     "build": "vite-ssg build && node scripts/generate-pagefind-index.mjs",
-    "postbuild": "node scripts/generate-third-party-licenses.mjs --dist",
+    "postbuild": "node scripts/generate-third-party-licenses.mjs --dist && node scripts/prune-build-assets.mjs",
     "predeploy": "pnpm build",
     "deploy": "wrangler deploy --config wrangler.jsonc",
     "preview": "vite preview --host 0.0.0.0",
@@ -33,7 +33,9 @@
     "check:rss": "node scripts/check-rss.mjs",
     "check:fogport": "node scripts/check-fogport.mjs",
     "generate:images": "node scripts/generate-images.mjs",
-    "check:images": "node scripts/check-responsive-images.mjs"
+    "check:images": "node scripts/check-responsive-images.mjs",
+    "check:site-perf": "node scripts/generate-static-assets.mjs && node scripts/check-site-perf.mjs",
+    "check:build-assets": "node scripts/check-build-assets.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

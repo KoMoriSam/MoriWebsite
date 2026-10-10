@@ -138,6 +138,7 @@
           :key="`${dependency.name}@${dependency.version}`"
           :id="dependencyAnchor(dependency)"
           class="collapse collapse-arrow scroll-mt-24 border border-base-300 bg-base-100"
+          @toggle="loadLicenseOnOpen($event, dependencyAnchor(dependency))"
         >
           <summary class="collapse-title pr-12">
             <span
@@ -152,7 +153,7 @@
             </span>
           </summary>
 
-          <div class="collapse-content">
+          <div v-if="loadedLicenses.has(dependencyAnchor(dependency))" class="collapse-content">
             <p class="mb-4 text-sm text-base-content/70">
               {{ translate('pages.licenses.upstream') }}
               <a
@@ -208,11 +209,12 @@
           :key="license.name"
           :id="supplementalAnchor(license)"
           class="collapse collapse-arrow scroll-mt-24 border border-base-300 bg-base-100"
+          @toggle="loadLicenseOnOpen($event, supplementalAnchor(license))"
         >
           <summary class="collapse-title font-mono text-sm font-semibold">
             {{ license.name }}
           </summary>
-          <div class="collapse-content">
+          <div v-if="loadedLicenses.has(supplementalAnchor(license))" class="collapse-content">
             <pre
               class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
             ><code>{{ license.text }}</code></pre>
@@ -227,7 +229,7 @@
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import MarkdownIt from "markdown-it";
 import { useRoute } from "vue-router";
 
@@ -284,16 +286,26 @@ const dependencyAnchor = (dependency) =>
 const supplementalAnchor = (license) =>
   createLicenseAnchor("supplemental", license.name);
 
+const loadedLicenses = ref(new Set());
+const loadLicenseOnOpen = (event, anchor) => {
+  if (event.target.open) loadedLicenses.value.add(anchor);
+};
+
+const revealHashLicense = async (hash) => {
+  if (!hash || typeof document === "undefined") return;
+  let anchor = hash.slice(1);
+  try { anchor = decodeURIComponent(anchor); } catch { /* Preserve malformed hashes. */ }
+  loadedLicenses.value.add(anchor);
+  await nextTick();
+  const target = document.getElementById(anchor);
+  if (target instanceof HTMLDetailsElement) target.open = true;
+};
+
+onMounted(() => revealHashLicense(route.hash));
 watch(
   () => route.hash,
-  async (hash) => {
-    if (!hash || typeof document === "undefined") return;
-
-    await nextTick();
-    const target = document.getElementById(hash.slice(1));
-    if (target instanceof HTMLDetailsElement) target.open = true;
-  },
-  { immediate: true, flush: "post" },
+  revealHashLicense,
+  { flush: "sync" },
 );
 
 const sourceUrl = (source) => {

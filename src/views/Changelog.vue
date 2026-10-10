@@ -319,7 +319,6 @@ import { useRoute } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
-import ssgData from "@/router/ssg-data";
 import { useChangelogStore } from "@/stores/changelogStore";
 import { typeText } from "@/utils/type-changelog";
 
@@ -328,8 +327,8 @@ const store = useChangelogStore();
 const openYears = ref(new Set());
 const latestOpenedYear = ref("");
 
-if (!store.items.length && ssgData.changelog) {
-  store.hydrateChangelog(ssgData.changelog);
+if (!store.items.length && route.meta.pageData?.changelog) {
+  store.hydrateChangelog(route.meta.pageData.changelog);
 }
 
 const releases = computed(() => store.items);

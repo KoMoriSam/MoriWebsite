@@ -51,10 +51,10 @@ const router = useRouter();
 const { scrollToTop } = useScrollTo();
 const { fetchArticleContent } = useArticleApi();
 
-// 静态文章路由在构建时把文章数据放进 route.meta。
-// 服务端渲染和浏览器 hydration 使用完全相同的初始数据，避免 mismatch。
+// 路由保留文章元数据，当前文章正文来自该页的 SSG initialState。
+// SSR 与浏览器 hydration 使用同一份正文，不加载其他文章快照。
 const initialArticle = route.meta.article || null;
-const initialContent = route.meta.content || "";
+const initialContent = route.meta.pageData?.article?.content || "";
 const initialArticleId = String(
   route.params.articleId || initialArticle?.id || "",
 ).trim();

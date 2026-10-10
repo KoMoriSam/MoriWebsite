@@ -3,6 +3,7 @@ import fm from "front-matter";
 import fs from "fs";
 import path from "path";
 import { createArticleAssetResolver } from "../src/utils/resolve-article-assets.js";
+import { createArticleMetadata } from "../src/utils/ssg/page-data.js";
 
 dotenv.config({
   path: ".env.production",
@@ -118,6 +119,12 @@ export default ${JSON.stringify(
 fs.writeFileSync(
   path.resolve("src/router/ssg-data.generated.js"),
   ssgDataFile,
+  "utf-8",
+);
+
+fs.writeFileSync(
+  path.resolve("src/router/article-metadata.generated.js"),
+  `// AUTO GENERATED - DO NOT EDIT\nexport default ${JSON.stringify(createArticleMetadata(generatedArticles), null, 2)};\n`,
   "utf-8",
 );
 

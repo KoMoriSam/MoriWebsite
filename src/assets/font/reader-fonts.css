@@ -12,4 +12,4 @@
 /* Zhuque Fangsong */
 @import url("https://fontsapi.zeoseven.com/7/main/result.css");
 
-@import "@fontsource/zhi-mang-xing";
+@import "./zhi-mang-xing.generated.css";

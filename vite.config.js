@@ -7,6 +7,30 @@ import tailwindcss from "@tailwindcss/vite";
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { singleThreadCodecs } from "./scripts/vite-single-thread-codecs.mjs";
+
+const outputPaths = {
+  entryFileNames: "js/[name]-[hash].js",
+  chunkFileNames: "js/[name]-[hash].js",
+  assetFileNames(assetInfo) {
+    if (assetInfo.name.endsWith(".wasm")) {
+      return "js/wasm/[name]-[hash].[ext]";
+    }
+    if (/\.(?:js|mjs|cjs)$/.test(assetInfo.name)) {
+      return "js/[name]-[hash].[ext]";
+    }
+    if (assetInfo.name.endsWith(".css")) {
+      return "css/[name]-[hash].css";
+    }
+    if (/\.(?:png|jpg|jpeg|webp|gif|svg)$/.test(assetInfo.name)) {
+      return "assets/images/[name]-[hash].[ext]";
+    }
+    if (/\.(?:ttf|otf|woff|woff2|eot)$/.test(assetInfo.name)) {
+      return "assets/fonts/[name]-[hash].[ext]";
+    }
+    return "assets/[name]-[hash].[ext]";
+  },
+};
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -40,8 +64,11 @@ export default defineConfig({
   },
   worker: {
     format: "es",
+    plugins: () => [singleThreadCodecs()],
+    rollupOptions: { output: { ...outputPaths } },
   },
   plugins: [
+    singleThreadCodecs(),
     vue(),
     vueDevTools(),
     tailwindcss(),
@@ -85,30 +112,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      output: {
-        entryFileNames: "js/[name]-[hash].js",
-        chunkFileNames: "js/[name]-[hash].js",
-        assetFileNames(assetInfo) {
-          if (assetInfo.name.endsWith(".css")) {
-            return "css/[name]-[hash].css";
-          }
-          if (
-            [".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"].some((ext) =>
-              assetInfo.name.endsWith(ext),
-            )
-          ) {
-            return "assets/images/[name]-[hash].[ext]";
-          }
-          if (
-            [".ttf", ".otf", ".woff", ".woff2", ".eot"].some((ext) =>
-              assetInfo.name.endsWith(ext),
-            )
-          ) {
-            return "assets/fonts/[name]-[hash].[ext]";
-          }
-          return "assets/[name]-[hash].[ext]";
-        },
-      },
+      output: { ...outputPaths },
     },
   },
 });

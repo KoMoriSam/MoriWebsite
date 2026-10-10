@@ -16,6 +16,7 @@ mock
 
 # ViteSSG build output
 src/router/ssg-data.generated.js
+src/router/article-metadata.generated.js
 src/router/license-data.generated.js
 
 .agents
@@ -30,3 +31,8 @@ PLAN.md
 # Generated responsive image assets
 public/assets/images/_optimized/
 src/utils/images/image-manifests.generated.json
+
+# Generated static asset paths and icon styles
+src/games/fogport/art-manifest.generated.json
+src/assets/font/remixicon.generated.css
+src/assets/font/zhi-mang-xing.generated.css

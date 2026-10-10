@@ -112,8 +112,18 @@
         </ul>
       </section>
 
+      <div
+        v-else-if="showsAnnouncementDetail && rendererFailed"
+        role="alert"
+        class="flex flex-col items-center gap-3 py-6"
+      >
+        <p>{{ translate('markdown.markdown.loadingFailedPleaseTryAgainLater') }}</p>
+        <button type="button" class="btn btn-sm" @click="retryRenderer">
+          {{ translate('pages.announcements.retry') }}
+        </button>
+      </div>
       <Renderer
-        v-else-if="mode === 'detail' && selectedAnnouncement"
+        v-else-if="showsAnnouncementDetail"
         lang="zh-CN"
         :content="selectedAnnouncement.body"
         :content-id="`announcement-${selectedAnnouncement.id}-${selectedAnnouncement.revision}`"
@@ -130,14 +140,31 @@
 import { useLocale } from '@/i18n';
 const { t: translate, locale: uiLocale } = useLocale();
 
-import { computed } from "vue";
+import { computed, defineAsyncComponent, ref, watch } from "vue";
 
 import NoticeBadges from "@/components/announcement/display/NoticeBadges.vue";
 import NoticeTitle from "@/components/announcement/display/NoticeTitle.vue";
 import Modal from "@/components/interaction/overlay/Modal.vue";
-import Renderer from "@/components/markdown/Renderer.vue";
+import LoadingIndicator from "@/components/feedback/LoadingIndicator.vue";
 import { useAnnouncementStore } from "@/stores/announcementStore";
 import { formatAnnouncementDate } from "@/utils/announcement/format";
+
+const rendererFailed = ref(false);
+let retryLoad = null;
+const Renderer = defineAsyncComponent({
+  loader: () => import("@/components/markdown/Renderer.vue"),
+  loadingComponent: LoadingIndicator,
+  delay: 0,
+  onError(error, retry) {
+    retryLoad = retry;
+    rendererFailed.value = true;
+  },
+});
+const retryRenderer = () => {
+  rendererFailed.value = false;
+  retryLoad?.();
+  retryLoad = null;
+};
 
 const props = defineProps({
   mode: {
@@ -172,6 +199,9 @@ const emit = defineEmits([
 const showsAnnouncementDetail = computed(
   () => props.mode === "detail" && Boolean(props.selectedAnnouncement),
 );
+watch(() => [props.mode, props.selectedAnnouncement?.id], () => {
+  if (showsAnnouncementDetail.value && rendererFailed.value) retryRenderer();
+});
 const buttonMode = computed(() =>
   props.mode === "summary" || showsAnnouncementDetail.value ? "footer" : "none",
 );

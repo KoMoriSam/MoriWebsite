@@ -183,17 +183,6 @@ const writeDistributionFiles = async ({
     );
   }
 
-  const flatPrerenderedPage = resolve(ROOT, "dist", "licenses.html");
-  try {
-    await access(flatPrerenderedPage);
-    await mkdir(resolve(ROOT, "dist", "licenses"), { recursive: true });
-    await copyFile(
-      flatPrerenderedPage,
-      resolve(ROOT, "dist", "licenses", "index.html"),
-    );
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
 };
 
 const main = async () => {

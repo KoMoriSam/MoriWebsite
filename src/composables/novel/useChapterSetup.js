@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 
 import { useNovelStore } from "@/stores/novel";
 import { githubSession } from '@/composables/auth/useGithubSession';
-import ssgData from "@/router/ssg-data";
 
 import { useToast } from "@/composables/useToast";
 
@@ -17,10 +16,10 @@ export function useChapterSetup() {
   const novelStore = useNovelStore();
 
   if (
-    ssgData.novelChapters &&
-    typeof ssgData.novelChapters === "object"
+    route.meta.pageData?.novelChapters &&
+    typeof route.meta.pageData.novelChapters === "object"
   ) {
-    novelStore.hydrateChapters(ssgData.novelChapters);
+    novelStore.hydrateChapters(route.meta.pageData.novelChapters);
   }
 
   const { currentChapter, currentChapterUuid } = storeToRefs(novelStore);

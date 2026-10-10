@@ -1,3 +1,5 @@
+import artFiles from "./art-manifest.generated.json" with { type: "json" };
+
 const numbered = (prefix, count) =>
   Array.from(
     { length: count },
@@ -76,19 +78,14 @@ export const ART_ASSETS = [
   },
 ].map((asset) => ({ ...asset, count: asset.files.length }));
 
-const images = import.meta.glob(
-  "/public/assets/images/games/fogport/*.{svg,webp,avif,png,jpg,jpeg}",
-  { eager: true, query: "?url", import: "default" },
-);
+const images = new Set(artFiles);
 const names = new Set(ART_ASSETS.flatMap((asset) => asset.files));
 export function artCandidates(name) {
   if (!names.has(name)) return [];
   return ["svg", "webp", "avif", "png", "jpg", "jpeg"]
-    .map(
-      (extension) =>
-        images[`/public/assets/images/games/fogport/${name}.${extension}`],
-    )
-    .filter(Boolean);
+    .map((extension) => `${name}.${extension}`)
+    .filter((file) => images.has(file))
+    .map((file) => `/assets/images/games/fogport/${file}`);
 }
 export const companyArtName = (seat) =>
   ART_ASSETS.find((asset) => asset.id === "mark").files[seat];
