@@ -6,6 +6,7 @@ export const GAMES = [
     path: "/games/fogport",
     name: "fogport",
     icon: "ri-building-2-line",
+    cover: "/assets/images/games/fogport/cover.webp",
     titleKey: "fogport.title",
     descriptionKey: "fogport.description",
     minPlayers: 2,
@@ -18,6 +19,7 @@ export const GAMES = [
     path: "/games/avalon",
     name: "avalon",
     icon: "ri-sword-line",
+    cover: "/assets/images/games/avalon/cover.webp",
     titleKey: "avalon.title",
     descriptionKey: "avalon.description",
     playerProgress: getPlayerProgress,
@@ -33,5 +35,10 @@ export const gameRoutes = GAMES.map((game) => ({
   path: game.path,
   name: game.name,
   component: game.component,
-  meta: { navName: "games", gameType: game.id, hideToTop: true, localeGroups: ["games", game.id] },
+  meta: {
+    navName: "games",
+    gameType: game.id,
+    hideToTop: true,
+    localeGroups: ["games", game.id],
+  },
 }));
