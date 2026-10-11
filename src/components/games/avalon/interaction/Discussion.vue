@@ -1,14 +1,17 @@
 <template>
   <section class="card" :class="compact || fillHeight ? 'h-full min-h-0' : ''">
     <div
-      class="card-body gap-4 p-0"
-      :class="compact || fillHeight ? 'h-full min-h-0' : ''"
+      class="card-body p-0"
+      :class="[
+        compact || fillHeight ? 'h-full min-h-0' : '',
+        fillHeight ? 'gap-3' : 'gap-4',
+      ]"
     >
       <div
         v-if="!compact"
         class="flex shrink-0 flex-wrap items-center justify-between gap-2"
       >
-        <h2 class="card-title font-serif">
+        <h2 class="card-title font-serif max-lg:text-lg max-lg:leading-7">
           <i class="ri-user-voice-line font-normal" aria-hidden="true"></i>
           {{ t("avalon.phrases.title") }}
         </h2>
@@ -50,7 +53,16 @@
             >
               {{ t("avalon.phrases.empty") }}
             </div>
-            <TransitionGroup tag="div" name="chat-message" appear class="relative min-w-0 overflow-x-clip">
+            <TransitionGroup
+              tag="div"
+              name="chat-message"
+              :duration="{ leave: 220 }"
+              appear
+              class="relative min-w-0 overflow-x-clip"
+              @before-enter="prepareMessageEnter"
+              @enter="animateMessageEnter"
+              @enter-cancelled="cancelMessageEnter"
+            >
               <div
                 v-for="message in messages"
                 :key="message.id"
@@ -59,6 +71,11 @@
                   message.playerId === room.selfId ? 'chat-end' : 'chat-start'
                 "
               >
+                <Avatar
+                  class="chat-image [&>div]:size-10"
+                  :src="messageProfiles.get(message.playerId)?.avatarUrl"
+                  :name="message.nickname"
+                />
                 <div class="chat-header text-xs text-base-content/60">
                   {{ message.nickname
                   }}<time class="ml-2 opacity-60">{{
@@ -68,7 +85,9 @@
                 <div
                   class="chat-bubble min-h-0 wrap-break-word text-sm"
                   :class="
-                    message.playerId === room.selfId ? 'chat-bubble-primary' : ''
+                    message.playerId === room.selfId
+                      ? 'chat-bubble-primary'
+                      : ''
                   "
                 >
                   {{ messageText(message) }}
@@ -92,10 +111,10 @@
           >
         </div>
         <div
-          class="min-w-0 space-y-4"
+          class="min-w-0 space-y-4 p-1"
           :class="
             fillHeight
-              ? '-mx-1 max-h-[55%] shrink-0 overflow-y-auto overscroll-contain px-1 py-1 scrollbar-thin'
+              ? 'max-h-[55%] shrink-0 overflow-y-auto overscroll-contain scrollbar-thin'
               : compact
                 ? 'shrink-0'
                 : ''
@@ -212,7 +231,9 @@
 
               <fieldset
                 class="fieldset min-w-0 flex-1"
-                :class="parameterCount === 1 ? 'basis-40 flex-[2]' : 'basis-full'"
+                :class="
+                  parameterCount === 1 ? 'basis-40 flex-[2]' : 'basis-full'
+                "
               >
                 <legend class="fieldset-legend pb-0">
                   {{ t("avalon.phrases.preview") }}
@@ -254,6 +275,7 @@ import {
   watch,
 } from "vue";
 import { useLocale } from "@/i18n";
+import Avatar from "@/components/auth/Avatar.vue";
 import {
   DEFAULT_SPECIAL_ROLES,
   roleRoster,
@@ -300,6 +322,34 @@ const unread = ref(0);
 const atBottom = ref(true);
 const cooling = ref(false);
 let cooldownTimer = null;
+let nextMessageEnterAt = 0;
+const messageEnterTimers = new Map();
+function prepareMessageEnter(element) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const now = Date.now();
+  const start = Math.max(now, nextMessageEnterAt);
+  nextMessageEnterAt = start + 160;
+  element.style.setProperty("--message-delay", `${start - now}ms`);
+}
+function animateMessageEnter(element, done) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    done();
+    return;
+  }
+  const delay =
+    parseFloat(element.style.getPropertyValue("--message-delay")) || 0;
+  const timer = setTimeout(() => {
+    messageEnterTimers.delete(element);
+    done();
+    element.style.removeProperty("--message-delay");
+  }, delay + 320);
+  messageEnterTimers.set(element, timer);
+}
+function cancelMessageEnter(element) {
+  clearTimeout(messageEnterTimers.get(element));
+  messageEnterTimers.delete(element);
+  element.style.removeProperty("--message-delay");
+}
 const currentGroup = computed(() =>
   PHRASE_GROUPS.find((group) => group.id === category.value),
 );
@@ -323,6 +373,14 @@ const roles = computed(() => [
 ]);
 const messages = computed(() =>
   (props.room.messages ?? []).filter((message) => findPhrase(message.phraseId)),
+);
+const messageProfiles = computed(
+  () =>
+    new Map(
+      [...(props.room.participants ?? []), ...props.room.players].map(
+        (player) => [player.id, player],
+      ),
+    ),
 );
 function preview(phrase) {
   return t(`avalon.phrases.items.${phrase.id}`, {
@@ -439,37 +497,64 @@ watch(
 );
 onBeforeUnmount(() => {
   clearTimeout(cooldownTimer);
+  for (const timer of messageEnterTimers.values()) clearTimeout(timer);
+  messageEnterTimers.clear();
 });
 </script>
 
 <style scoped>
 @media (prefers-reduced-motion: no-preference) {
-  .chat-message-enter-active {
-    transition: opacity 360ms ease, transform 360ms ease;
+  .chat-message-enter-active > .chat-bubble,
+  .chat-message-enter-active > .chat-image,
+  .chat-message-enter-active > .chat-header {
+    transition:
+      opacity 360ms ease,
+      transform 360ms ease;
+    transition-delay: var(--message-delay, 0ms);
+  }
+
+  .chat-message-enter-active > .chat-bubble,
+  .chat-message-enter-active > .chat-header {
+    transition-delay: calc(var(--message-delay, 0ms) + 160ms);
   }
 
   .chat-message-leave-active {
     position: absolute;
     width: 100%;
-    transition: opacity 220ms ease, transform 220ms ease;
+  }
+
+  .chat-message-leave-active > .chat-bubble,
+  .chat-message-leave-active > .chat-image,
+  .chat-message-leave-active > .chat-header {
+    transition:
+      opacity 220ms ease,
+      transform 220ms ease;
   }
 
   .chat-message-move {
     transition: transform 300ms ease;
   }
 
-  .chat-message-enter-from,
-  .chat-message-leave-to {
+  .chat-message-enter-from > .chat-bubble,
+  .chat-message-enter-from > .chat-image,
+  .chat-message-enter-from > .chat-header,
+  .chat-message-leave-to > .chat-bubble,
+  .chat-message-leave-to > .chat-image,
+  .chat-message-leave-to > .chat-header {
     opacity: 0;
+  }
+
+  .chat-message-enter-from > .chat-bubble {
+    transform: translateX(1rem);
+  }
+
+  .chat-message-leave-to > .chat-bubble {
     transform: translateX(-1rem);
   }
 
-  .chat-message-enter-from.chat-end {
-    transform: translateX(1rem);
-  }
-
-  .chat-message-leave-to.chat-start {
-    transform: translateX(1rem);
+  .chat-message-enter-from > .chat-image,
+  .chat-message-leave-to > .chat-image {
+    transform: translateY(1rem);
   }
 }
 </style>

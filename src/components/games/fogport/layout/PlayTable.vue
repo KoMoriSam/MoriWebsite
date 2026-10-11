@@ -10,9 +10,15 @@
       <div class="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         <Avatar
           v-if="acting"
+          ring
           class="[&>div]:size-7 lg:[&>div]:size-9"
           :src="room.players.find((p) => p.id === acting.id)?.avatarUrl"
           :name="acting.nickname"
+          :class="
+            room.players.find((p) => p.id === acting.id)?.online
+              ? 'avatar-online'
+              : 'avatar-offline'
+          "
         />
         <div class="min-w-0">
           <div
@@ -165,7 +171,7 @@
         >
           <button
             v-if="mode.adding"
-            class="btn btn-square btn-ghost btn-xs"
+            class="btn btn-square btn-xs"
             :aria-label="t('fogport.mode.back')"
             @click="backMode"
           >
@@ -192,7 +198,7 @@
           ></span
           ><button
             v-else-if="activeKind !== 'liquidate'"
-            class="btn btn-square btn-ghost btn-xs"
+            class="btn btn-square btn-xs"
             :aria-label="t('fogport.cancel')"
             @click="clearMode"
           >

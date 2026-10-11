@@ -4,7 +4,7 @@
     class="min-w-0 flex-1"
     :class="
       showSidebar
-        ? 'drawer drawer-end max-lg:fixed max-lg:inset-x-0 max-lg:top-16 max-lg:bottom-0 max-lg:grid-rows-[minmax(0,1fr)] max-lg:overflow-hidden lg:drawer-open'
+        ? 'drawer drawer-end max-lg:fixed max-lg:inset-0 max-lg:grid-rows-[minmax(0,1fr)] max-lg:overflow-hidden lg:drawer-open'
         : nightPhase
           ? 'flex min-h-dvh flex-col'
           : 'flex flex-col'
@@ -29,6 +29,7 @@
         :show-footer="!viewportFrame"
         :fill-height="viewportFrame"
         :compact-header="!!room && room.status !== 'lobby'"
+        :actions-end="!!room"
         hide-mobile-footer
       >
         <template v-if="$slots['page-notice']" #header-notice>
@@ -55,35 +56,59 @@
             </span>
           </template>
           <template v-else>
-            <span class="inline-flex items-center gap-1.5">
-              <i class="ri-door-open-line" aria-hidden="true"></i>
-              <span class="hidden sm:block">{{ t("games.roomCode") }}</span>
-              <span class="font-mono tracking-widest">{{ room.code }}</span>
-            </span>
-            <span
-              v-if="room.status === 'lobby'"
-              class="inline-flex items-center gap-1.5"
-            >
-              <i class="ri-group-line" aria-hidden="true"></i>
-              {{ t("games.onlinePlayers", { n: onlinePlayerCount }) }}
-            </span>
-            <span
-              class="inline-flex min-w-0 items-center gap-1.5"
-              role="status"
-              aria-live="polite"
-            >
+            <div class="inline-flex shrink-0 items-center gap-3">
+              <span class="inline-flex items-center gap-1.5">
+                <i class="ri-door-open-line" aria-hidden="true"></i>
+                <span class="hidden sm:block">{{ t("games.roomCode") }}</span>
+                <span class="font-mono tracking-widest">{{ room.code }}</span>
+              </span>
               <span
-                v-if="connectionLoading"
-                class="loading loading-spinner loading-xs"
-                aria-hidden="true"
-              ></span>
-              <i v-else :class="connectionIcon" aria-hidden="true"></i>
-              <span
-                class="truncate"
-                :title="t(`games.connections.${connection}`)"
-                >{{ t(`games.connections.${connection}`) }}</span
+                class="inline-flex items-center gap-1.5 whitespace-nowrap"
+                role="status"
+                aria-live="polite"
               >
-            </span>
+                <span
+                  v-if="connectionLoading"
+                  class="loading loading-spinner loading-xs"
+                  aria-hidden="true"
+                ></span>
+                <i v-else :class="connectionIcon" aria-hidden="true"></i>
+                {{ t(`games.connections.${connection}`) }}
+              </span>
+            </div>
+            <div
+              v-if="room.status !== 'lobby'"
+              class="inline-flex min-w-min max-w-full flex-1 items-center gap-2 sm:basis-0 max-sm:min-w-0 max-sm:w-full max-sm:basis-full"
+              :title="avatarSummary.label"
+            >
+              <PlayerAvatars
+                :room="room"
+                :active-ids="roomProgress?.playerIds"
+                :submissions="roomProgress?.submissions"
+                :label="avatarSummary.label"
+                compact
+              />
+              <span
+                class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap"
+                role="status"
+                aria-live="polite"
+              >
+                <i
+                  v-if="roomProgress"
+                  :class="roomProgress.icon"
+                  aria-hidden="true"
+                ></i>
+                <span aria-hidden="true">{{
+                  roomProgress
+                    ? t(roomProgress.textKey)
+                    : t("games.progress.online")
+                }}</span>
+                <span class="font-mono tabular-nums" aria-hidden="true"
+                  >{{ avatarSummary.count }}/{{ avatarSummary.total }}</span
+                >
+                <span class="sr-only">{{ avatarSummary.label }}</span>
+              </span>
+            </div>
           </template>
         </template>
         <template #actions>
@@ -99,7 +124,7 @@
               :aria-selected="entryMode === mode"
               aria-controls="game-entry-panel"
               :tabindex="entryMode === mode ? 0 : -1"
-              :disabled="busy"
+              :disabled="entryDisabled"
               @click="selectEntryMode(mode)"
               @keydown.left.prevent="
                 selectEntryMode(mode === 'create' ? 'join' : 'create', $event)
@@ -111,26 +136,33 @@
               {{ t(`games.${mode}`) }}
             </button>
           </div>
-          <div v-else class="flex items-center gap-1">
-            <button
-              type="button"
-              class="btn btn-square btn-ghost btn-xs"
-              :aria-label="
+          <div
+            v-else
+            class="flex items-center justify-end gap-1 max-sm:has-[>:nth-child(5_of_:not(dialog))]:w-20 max-sm:has-[>:nth-child(5_of_:not(dialog))]:flex-wrap max-sm:has-[>:nth-child(7_of_:not(dialog))]:w-27"
+          >
+            <div
+              class="tooltip tooltip-bottom"
+              :data-tip="
                 t(audioEnabled ? 'games.audio.disable' : 'games.audio.enable')
               "
-              :title="
-                t(audioEnabled ? 'games.audio.disable' : 'games.audio.enable')
-              "
-              :aria-pressed="audioEnabled"
-              @click="toggleAudio"
             >
-              <i
-                :class="
-                  audioEnabled ? 'ri-volume-up-line' : 'ri-volume-mute-line'
+              <button
+                type="button"
+                class="btn btn-square btn-xs"
+                :aria-label="
+                  t(audioEnabled ? 'games.audio.disable' : 'games.audio.enable')
                 "
-                aria-hidden="true"
-              ></i>
-            </button>
+                :aria-pressed="audioEnabled"
+                @click="toggleAudio"
+              >
+                <i
+                  :class="
+                    audioEnabled ? 'ri-volume-up-line' : 'ri-volume-mute-line'
+                  "
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </div>
             <slot name="page-actions" :room="room"></slot>
             <div
               v-for="action in roomActions"
@@ -140,7 +172,7 @@
             >
               <button
                 type="button"
-                class="btn btn-square btn-ghost btn-xs"
+                class="btn btn-square btn-xs"
                 :aria-label="action.label"
                 :disabled="action.disabled"
                 @click="action.onClick()"
@@ -180,6 +212,7 @@
               role="tabpanel"
               :aria-labelledby="`game-entry-${entryMode}`"
               class="card-body gap-3 p-0"
+              :aria-busy="auth.state.checking"
               novalidate
               @submit.prevent="enterRoom(entryMode === 'join')"
             >
@@ -187,7 +220,7 @@
                 ref="nicknameInput"
                 v-model:nickname="nickname"
                 :github="useGithubProfile"
-                :disabled="busy"
+                :disabled="entryDisabled"
                 :checked="nicknameChecked"
                 @update:github="chooseProfile"
                 @blur="nicknameChecked = true"
@@ -198,7 +231,7 @@
                     v-if="entryMode === 'create'"
                     type="submit"
                     class="btn shrink-0"
-                    :disabled="busy"
+                    :disabled="entryDisabled"
                   >
                     {{ t("games.create") }}
                   </button>
@@ -211,7 +244,7 @@
                     <div class="min-w-0">
                       <label
                         class="otp validator"
-                        :class="{ 'opacity-50': busy }"
+                        :class="{ 'opacity-50': entryDisabled }"
                       >
                         <span
                           v-for="digit in 8"
@@ -235,7 +268,7 @@
                           aria-describedby="room-code-hint"
                           :aria-invalid="codeChecked && !validCode"
                           @blur="codeChecked = true"
-                          :disabled="busy"
+                          :disabled="entryDisabled"
                         />
                       </label>
                       <p
@@ -249,7 +282,7 @@
                     <button
                       type="submit"
                       class="btn btn-primary shrink-0 self-start"
-                      :disabled="busy"
+                      :disabled="entryDisabled"
                     >
                       {{ t("games.join") }}
                     </button>
@@ -257,7 +290,7 @@
                       v-if="canReconnect && connection !== 'online'"
                       type="button"
                       class="btn shrink-0 self-start"
-                      :disabled="busy"
+                      :disabled="entryDisabled"
                       @click="confirmReconnect"
                     >
                       <i class="ri-cloud-line" aria-hidden="true"></i>
@@ -306,16 +339,21 @@
           </label>
           <section v-if="room.status === 'lobby'" class="card">
             <div class="card-body gap-3 p-0">
-              <h2
-                class="card-title font-serif"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {{ lobbySummary.title }}
-              </h2>
-              <p class="text-sm text-base-content/70">
-                {{ lobbySummary.description }}
-              </p>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <PlayerAvatars :room="room" />
+                <div class="min-w-0 flex-1 basis-56">
+                  <h2
+                    class="card-title font-serif"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {{ lobbySummary.title }}
+                  </h2>
+                  <p class="mt-1 text-sm text-base-content/70">
+                    {{ lobbySummary.description }}
+                  </p>
+                </div>
+              </div>
               <p
                 v-if="room.lobbyStartsAt"
                 role="timer"
@@ -391,7 +429,15 @@
                         aria-hidden="true"
                         ><i class="ri-pencil-line" aria-hidden="true"></i
                       ></span>
-                      <Avatar :src="player.avatarUrl" :name="player.nickname" />
+                      <Avatar
+                        ring
+                        :ring-dashed="!player.ready"
+                        :src="player.avatarUrl"
+                        :name="player.nickname"
+                        :class="
+                          player.online ? 'avatar-online' : 'avatar-offline'
+                        "
+                      />
                     </component>
                     <div class="min-w-0 flex-1">
                       <div class="flex min-w-0 items-center gap-1">
@@ -443,11 +489,6 @@
                     >
                       {{ t("games.kickPlayer") }}
                     </button>
-                    <span
-                      class="size-2 shrink-0 rounded-full"
-                      :class="player.online ? 'bg-success' : 'bg-base-300'"
-                      aria-hidden="true"
-                    ></span>
                   </template>
                   <button
                     v-else
@@ -565,9 +606,12 @@ import Footer from "@/components/layout/Footer.vue";
 import { useLocale } from "@/i18n";
 import { findGame } from "@/games/catalog";
 import Avatar from "@/components/auth/Avatar.vue";
+import PlayerAvatars from "@/components/games/display/PlayerAvatars.vue";
 import ProfileForm from "@/components/games/interaction/ProfileForm.vue";
 import { useGithubSession } from "@/composables/auth/useGithubSession";
 import { useGameRoom } from "@/composables/games/useGameRoom";
+import { usePlayerAvatarColors } from "@/composables/games/usePlayerAvatarColors";
+import { gameNavbarMode } from "@/composables/useMobileNavbar";
 import { useGameAudio } from "@/composables/games/useGameAudio";
 import { useGameRoomActivity } from "@/composables/games/useGameRoomActivity";
 import { useModal } from "@/composables/useModal";
@@ -634,6 +678,7 @@ onBeforeUnmount(() => {
   sidebarMedia?.removeEventListener("change", updateSidebarViewport);
   cancelAnimationFrame(scrollFrame);
   setMobileGameViewport(false);
+  gameNavbarMode.value = false;
 });
 const definition = findGame(props.gameType);
 const { t, i18n } = useLocale();
@@ -652,6 +697,15 @@ const {
   leave,
   reconnect,
 } = useGameRoom(props.gameType);
+usePlayerAvatarColors(room, code);
+watch(
+  () => room.value?.status,
+  (status) => {
+    if (!import.meta.env.SSR)
+      gameNavbarMode.value = ["playing", "finished"].includes(status);
+  },
+  { immediate: true },
+);
 const {
   enabled: audioEnabled,
   observe: observeAudio,
@@ -741,6 +795,7 @@ const connectionIcon = computed(
     })[connection.value] || "ri-wifi-off-line",
 );
 const auth = useGithubSession();
+const entryDisabled = computed(() => busy.value || auth.state.checking);
 const nickname = ref("");
 const useGithubProfile = ref(!!auth.profile.value);
 let customChoice = false;
@@ -970,7 +1025,7 @@ const validNickname = computed(
 );
 const validCode = computed(() => /^[A-HJ-NP-Z2-9]{8}$/.test(code.value));
 function selectEntryMode(mode, event) {
-  if (busy.value) return;
+  if (entryDisabled.value) return;
   entryMode.value = mode;
   nicknameChecked.value = false;
   codeChecked.value = false;
@@ -982,6 +1037,7 @@ function selectEntryMode(mode, event) {
   }
 }
 function updateRoomCode(event) {
+  if (entryDisabled.value) return;
   code.value = event.target.value.toUpperCase().replace(/\s/g, "");
   if (code.value.length === 8) codeChecked.value = true;
   joinCompletedRoom();
@@ -991,7 +1047,7 @@ function joinCompletedRoom() {
     enterRoom(true);
 }
 function enterRoom(join) {
-  if (busy.value) return;
+  if (entryDisabled.value) return;
   nicknameChecked.value = true;
   if (join) codeChecked.value = true;
   if (!validNickname.value) {
@@ -1030,6 +1086,26 @@ const isHost = computed(() => room.value?.hostId === room.value?.selfId);
 const onlinePlayerCount = computed(
   () => room.value?.players.filter((player) => player.online).length ?? 0,
 );
+const roomProgress = computed(
+  () => definition.playerProgress?.(room.value) ?? null,
+);
+const avatarSummary = computed(() => {
+  const progress = roomProgress.value;
+  return progress
+    ? {
+        count: progress.count,
+        total: progress.total,
+        label: t(progress.labelKey, {
+          n: progress.count,
+          total: progress.total,
+        }),
+      }
+    : {
+        count: onlinePlayerCount.value,
+        total: room.value?.players.length ?? 0,
+        label: t("games.onlinePlayers", { n: onlinePlayerCount.value }),
+      };
+});
 const lobbySeats = computed(() => {
   const seats = Array(
     room.value?.limits.maxPlayers ?? definition.maxPlayers,
@@ -1206,10 +1282,9 @@ const lobbySummary = computed(() => {
       : t("games.lobbyStatus.full");
   return {
     title,
-    description: [
-      ...(!canStart.value ? [t("games.lobbyHint", { min, max })] : []),
-      canStart.value ? t("games.lobbyStatus.countdownHint") : capacity,
-    ].join(" "),
+    description: canStart.value
+      ? t("games.lobbyStatus.countdownHint")
+      : capacity,
   };
 });
 const inviteUrl = computed(() =>
@@ -1296,10 +1371,12 @@ function dissolveRoom() {
   );
 }
 function confirmReconnect() {
+  if (!room.value && entryDisabled.value) return;
   const roomCode = room.value?.code || code.value;
   modal.confirm(t("games.reconnect"), t("games.confirmReconnect"), {
     buttonText: t("games.reconnect"),
     onSubmit: () => {
+      if (!room.value && entryDisabled.value) return;
       if (
         code.value === roomCode &&
         canReconnect.value &&

@@ -647,8 +647,26 @@ function view(state, _players, playerId) {
     : {};
   if (state.recruitedId)
     publicRoles[state.recruitedId] = "untrustworthy_servant";
+  const phaseSubmissions = {
+    opening: state.openingConfirmed,
+    night: state.nightConfirmed,
+    vote: state.ballots,
+    quest: state.questCards,
+  };
+  const submissionStatus = Object.hasOwn(phaseSubmissions, state.phase)
+    ? Object.fromEntries(
+        (state.phase === "quest"
+          ? state.team
+          : state.participants.map((player) => player.id)
+        ).map((id) => [
+          id,
+          Object.hasOwn(phaseSubmissions[state.phase] ?? {}, id),
+        ]),
+      )
+    : null;
   return {
     phase: state.phase,
+    submissionStatus,
     participants: state.participants,
     self: {
       openingConfirmed: Object.hasOwn(state.openingConfirmed ?? {}, playerId),

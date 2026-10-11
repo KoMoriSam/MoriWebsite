@@ -8,6 +8,7 @@
         >
           <div class="flex items-center gap-3">
             <Avatar
+              ring
               :src="profile(id)?.avatarUrl"
               :name="player(id).nickname"
               :class="profile(id)?.online ? 'avatar-online' : 'avatar-offline'"

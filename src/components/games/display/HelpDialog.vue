@@ -6,7 +6,7 @@
   >
     <button
       type="button"
-      class="btn btn-square btn-ghost btn-xs"
+      class="btn btn-square btn-xs"
       :aria-label="title"
       @click="open"
     >

@@ -1,5 +1,11 @@
 {
   "avalon": {
+    "progressLabels": {
+      "opening": "Seen",
+      "night": "Confirmed",
+      "vote": "Voted",
+      "quest": "Played"
+    },
     "howTo": "How to play",
     "audio": {
       "enable": "Turn on sound",

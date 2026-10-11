@@ -18,8 +18,10 @@
           {{ t("avalon.opening.title") }}
         </h2>
         <Avatar
+          ring
           :src="openingLeader?.avatarUrl || ''"
           :name="playerName(room.openingLeaderId)"
+          :class="openingLeader?.online ? 'avatar-online' : 'avatar-offline'"
           class="[&>div]:size-20 sm:[&>div]:size-24 [&_i]:text-4xl [&_span]:text-4xl"
         />
         <p
@@ -49,14 +51,12 @@
             )
           }}
         </button>
-        <p role="status" class="text-sm text-base-content/60">
-          {{
-            t("avalon.opening.progress", {
-              n: room.openingCount,
-              total: room.players.length,
-            })
-          }}
-        </p>
+        <section class="mt-2 w-full max-w-xl space-y-4 text-left">
+          <h3 class="font-serif text-lg font-semibold">
+            {{ t("avalon.config.title") }}
+          </h3>
+          <ConfigurationSummary :room="room" />
+        </section>
       </div>
     </section>
     <section v-if="room.phase === 'night'" ref="nightSection" class="card">
@@ -156,18 +156,6 @@
             )
           }}
         </button>
-        <p
-          role="status"
-          aria-live="polite"
-          class="shrink-0 text-sm text-base-content/60"
-        >
-          {{
-            t("avalon.night.progress", {
-              n: room.nightCount,
-              total: room.players.length,
-            })
-          }}
-        </p>
       </div>
     </section>
     <div
@@ -197,7 +185,9 @@
             <section class="card shrink-0">
               <div class="card-body gap-3 p-0">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                  <h2 class="card-title font-serif">
+                  <h2
+                    class="card-title font-serif max-lg:text-lg max-lg:leading-7"
+                  >
                     <i
                       class="ri-question-answer-line font-normal"
                       aria-hidden="true"
@@ -206,7 +196,7 @@
                   </h2>
                   <span
                     v-if="agendaStatus"
-                    class="badge badge-soft ml-auto h-auto max-w-full shrink-0 py-1 text-right whitespace-normal"
+                    class="badge badge-soft max-md:badge-sm ml-auto h-auto max-w-full shrink-0 py-1 text-right whitespace-normal"
                     :class="agendaStatus.tone"
                     >{{ agendaStatus.text }}</span
                   >
@@ -474,12 +464,14 @@
             "
           >
             <section class="card min-h-0 flex-1">
-              <div class="card-body min-h-0 flex-1 gap-4 p-0">
+              <div class="card-body min-h-0 flex-1 gap-3 p-0 lg:gap-4">
                 <div
                   v-if="!midDesktop"
                   class="flex shrink-0 items-center justify-between gap-3"
                 >
-                  <h2 class="card-title font-serif">
+                  <h2
+                    class="card-title font-serif max-lg:text-lg max-lg:leading-7"
+                  >
                     <i class="ri-group-line font-normal" aria-hidden="true"></i>
                     {{ t("avalon.players", { n: room.players.length }) }}
                   </h2>
@@ -655,18 +647,25 @@
                         "
                       >
                         <div
-                          class="relative size-12 overflow-hidden rounded-full border bg-base-200"
+                          class="relative size-12 overflow-hidden rounded-full bg-base-200 ring-2 ring-offset-2 ring-offset-base-100"
                           :class="
                             portraits[player.id]?.guessed
-                              ? 'border-base-content/30'
+                              ? 'ring-base-content/30'
                               : knowledge[player.id]?.tone === 'evil'
-                                ? 'border-error/40'
-                                : 'border-base-300'
+                                ? 'ring-error'
+                                : knowledge[player.id]?.tone === 'good'
+                                  ? 'ring-success'
+                                  : 'ring-base-300'
                           "
                         >
                           <img
                             v-if="portraits[player.id]"
-                            v-bind="getImageAttrs(roleImage(portraits[player.id].role), '96px')"
+                            v-bind="
+                              getImageAttrs(
+                                roleImage(portraits[player.id].role),
+                                '96px',
+                              )
+                            "
                             @error="$event.currentTarget.style.opacity = '0'"
                             @load="$event.currentTarget.style.opacity = ''"
                             alt=""
@@ -679,7 +678,12 @@
                           />
                           <img
                             v-else
-                            v-bind="getImageAttrs('/assets/images/games/avalon/card.webp', '96px')"
+                            v-bind="
+                              getImageAttrs(
+                                '/assets/images/games/avalon/card.webp',
+                                '96px',
+                              )
+                            "
                             alt=""
                             class="h-full w-full object-cover"
                           />
@@ -815,7 +819,9 @@
                           @click="skillPopover?.open()"
                         >
                           <img
-                            v-bind="getImageAttrs(SKILL_CARDS.lady.image, '96px')"
+                            v-bind="
+                              getImageAttrs(SKILL_CARDS.lady.image, '96px')
+                            "
                             alt=""
                             class="size-4 shrink-0 rounded-full object-cover object-top"
                           />
@@ -879,22 +885,9 @@
     <div
       v-if="!['opening', 'night'].includes(room.phase) && !desktop"
       :id="`${mobilePanelId}-discussion`"
-      class="min-h-0 flex-1 flex-col gap-3 px-1.5"
+      class="min-h-0 flex-1 flex-col gap-3"
       :class="mobilePanel === 'discussion' ? 'flex' : 'hidden'"
     >
-      <div
-        v-if="
-          ['discussion', 'evil_discussion'].includes(room.phase) && canSpeak
-        "
-        role="status"
-        class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80"
-      >
-        <i
-          class="ri-information-line shrink-0 text-info"
-          aria-hidden="true"
-        ></i>
-        <span class="min-w-0">{{ mobileDiscussionHint }}</span>
-      </div>
       <Discussion
         class="min-h-0 flex-1"
         :room="room"
@@ -904,6 +897,19 @@
         :run="run"
       >
         <template #discussion-timer>
+          <div
+            v-if="
+              ['discussion', 'evil_discussion'].includes(room.phase) && canSpeak
+            "
+            role="status"
+            class="flex shrink-0 items-start gap-1.5 border-l-2 border-info pl-2 text-xs leading-5 text-base-content/80"
+          >
+            <i
+              class="ri-information-line shrink-0 text-info"
+              aria-hidden="true"
+            ></i>
+            <span class="min-w-0">{{ mobileDiscussionHint }}</span>
+          </div>
           <div
             v-if="['discussion', 'evil_discussion'].includes(room.phase)"
             class="flex shrink-0 items-center gap-2 lg:hidden"
@@ -939,19 +945,19 @@
       class="min-h-0 flex-1"
       :class="mobilePanel === 'history' ? 'flex' : 'hidden'"
     >
-      <div class="flex min-h-0 min-w-0 flex-1 flex-col">
-        <h2 class="shrink-0 font-serif text-xl font-semibold">
+      <div class="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
+        <h2 class="card-title shrink-0 font-serif text-lg leading-7">
           <i class="ri-history-line font-normal" aria-hidden="true"></i>
           {{ t("avalon.history") }}
         </h2>
         <p
           v-if="!room.history.length"
-          class="py-5 text-sm text-base-content/50"
+          class="pb-5 text-sm text-base-content/50"
         >
           {{ t("avalon.mobile.historyEmpty") }}
         </p>
         <ol
-          class="mt-2 min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain scrollbar-thin"
+          class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain scrollbar-thin"
         >
           <li
             v-for="quest in recordedQuests"
@@ -1288,12 +1294,6 @@ watch(
       configurationModal?.close();
       configurationModal = null;
     }
-    if (
-      phase === "night" &&
-      (changed || previous[3] !== "night") &&
-      !room.value.self.roleRevealed
-    )
-      reviewConfiguration();
   },
   { immediate: true, flush: "post" },
 );

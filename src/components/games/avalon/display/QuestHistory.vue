@@ -62,7 +62,7 @@
         }}
       </p>
     </div>
-    <div v-if="room" class="border-t border-base-300 pt-2">
+    <div v-if="room">
       <p v-if="!entries.length" class="text-xs text-base-content/60">
         {{ t(current ? "avalon.records.waiting" : "avalon.records.empty") }}
       </p>

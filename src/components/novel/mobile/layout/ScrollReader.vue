@@ -58,14 +58,20 @@
         <button
           type="button"
           class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
-          :aria-label="translate('reader.scrollReader.scrollingHelpTapAGridZoneForItsActionSwipe')"
+          :aria-label="
+            translate(
+              'reader.scrollReader.scrollingHelpTapAGridZoneForItsActionSwipe',
+            )
+          "
           @click="dismissReaderHint"
         >
           <span class="block w-full">
             <span class="flex items-baseline justify-between gap-3">
-              <span class="text-sm font-semibold">{{ translate('reader.pagedReader.readingControls') }}</span>
+              <span class="text-sm font-semibold">{{
+                translate("reader.pagedReader.readingControls")
+              }}</span>
               <span class="text-[0.6875rem] text-base-content/45">
-                {{ translate('reader.pagedReader.tapThisHintToDismiss') }}
+                {{ translate("reader.pagedReader.tapThisHintToDismiss") }}
               </span>
             </span>
 
@@ -76,12 +82,14 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  {{ translate('reader.scrollReader.verticalScrolling') }}
+                  {{ translate("reader.scrollReader.verticalScrolling") }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  {{ translate('reader.pagedReader.textArea') }}<br />{{ translate('reader.scrollReader.swipeVerticallyToRead') }}
+                  {{ translate("reader.pagedReader.textArea") }}<br />{{
+                    translate("reader.scrollReader.swipeVerticallyToRead")
+                  }}
                 </span>
               </span>
 
@@ -91,13 +99,14 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  {{ translate('reader.pagedReader.tapActionsCustomizable') }}
+                  {{ translate("reader.pagedReader.tapActionsCustomizable") }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  {{ translate('reader.pagedReader.tapTheCenterForTheMenu') }}<br />
-                  {{ translate('reader.pagedReader.tapTheEdgesToTurnPages') }}
+                  {{ translate("reader.pagedReader.tapTheCenterForTheMenu")
+                  }}<br />
+                  {{ translate("reader.pagedReader.tapTheEdgesToTurnPages") }}
                 </span>
               </span>
             </span>
@@ -105,9 +114,15 @@
             <span
               class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
             >
-              <span class="shrink-0 font-semibold">{{ translate('reader.pagedReader.moreControls') }}</span>
+              <span class="shrink-0 font-semibold">{{
+                translate("reader.pagedReader.moreControls")
+              }}</span>
               <span class="text-base-content/60">
-                {{ translate('reader.pagedReader.assignGridZonesToTheMenuPreviousOrNextChapter') }}
+                {{
+                  translate(
+                    "reader.pagedReader.assignGridZonesToTheMenuPreviousOrNextChapter",
+                  )
+                }}
               </span>
             </span>
           </span>
@@ -118,7 +133,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";

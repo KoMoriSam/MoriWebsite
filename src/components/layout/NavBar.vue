@@ -1,16 +1,18 @@
 <template>
   <header
+    ref="navbar"
     class="navbar bg-base-100 shadow-sm"
     :class="
-      isNovelReaderRoute
+      overlayNavbar
         ? [
             'max-lg:fixed max-lg:inset-x-0 max-lg:top-0 max-lg:z-70 max-lg:bg-base-100/95 max-lg:backdrop-blur-md max-lg:transition-transform max-lg:duration-200 motion-reduce:transition-none',
-            readerNavbarVisible
+            overlayNavbarVisible
               ? 'max-lg:translate-y-0'
               : 'max-lg:pointer-events-none max-lg:-translate-y-full',
           ]
         : ''
     "
+    :inert="mobileViewport && overlayNavbar && !overlayNavbarVisible"
   >
     <nav class="navbar-start">
       <a
@@ -70,6 +72,7 @@
 <script setup>
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
+import { gameNavbarMode, useMobileNavbar } from "@/composables/useMobileNavbar";
 import { githubSession } from "@/composables/auth/useGithubSession";
 const { t: translate } = useLocale();
 
@@ -96,25 +99,34 @@ import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
 
+const navbar = ref(null);
 const readerNavbarVisible = ref(false);
+const isNovelReaderRoute = computed(
+  () => route.name === "novel-reader" && githubSession.authenticated,
+);
+const overlayNavbar = computed(
+  () => gameNavbarMode.value || isNovelReaderRoute.value,
+);
+const {
+  mobile: mobileViewport,
+  visible: mobileNavbarVisible,
+  show: showMobileNavbar,
+  hide: hideMobileNavbar,
+} = useMobileNavbar(navbar, gameNavbarMode);
+const overlayNavbarVisible = computed(() =>
+  isNovelReaderRoute.value ? readerNavbarVisible.value : mobileNavbarVisible.value,
+);
+const hideReaderNavbar = () => {
+  readerNavbarVisible.value = false;
+};
+const showReaderNavbar = () => {
+  if (isNovelReaderRoute.value) readerNavbarVisible.value = true;
+};
 const searchTriggerButton = ref(null);
 const searchRef = ref(null);
 const searchComponent = shallowRef(null);
 const searchShortcutLabel = ref("Ctrl");
 let searchPromise;
-
-const isNovelReaderRoute = computed(
-  () => route.name === "novel-reader" && githubSession.authenticated,
-);
-
-const hideReaderNavbar = () => {
-  readerNavbarVisible.value = false;
-};
-
-const showReaderNavbar = () => {
-  if (!isNovelReaderRoute.value) return;
-  readerNavbarVisible.value = true;
-};
 
 const ensureSearch = async () => {
   if (!searchPromise) {
@@ -133,11 +145,13 @@ const ensureSearch = async () => {
 };
 
 const activateSearch = async () => {
+  showMobileNavbar();
   await ensureSearch();
   await searchRef.value?.activate();
 };
 
 const restoreSearchTriggerFocus = () => {
+  showMobileNavbar();
   nextTick(() => searchTriggerButton.value?.focus());
 };
 
@@ -151,9 +165,10 @@ const handleSearchShortcut = (event) => {
 };
 
 watch(
-  () => route.name,
+  () => route.path,
   () => {
-    readerNavbarVisible.value = false;
+    hideMobileNavbar();
+    hideReaderNavbar();
   },
 );
 

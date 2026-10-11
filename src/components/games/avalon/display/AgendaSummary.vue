@@ -4,11 +4,13 @@
     class="min-w-0 space-y-3 text-left text-sm"
     :aria-label="t('avalon.agendaSummary.title')"
   >
-    <header class="space-y-1">
+    <header class="space-y-1 max-lg:space-y-3">
       <div
         class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1"
       >
-        <h3 class="font-serif text-base font-semibold">
+        <h3
+          class="font-serif text-base font-semibold max-lg:text-lg max-lg:leading-7"
+        >
           {{ t("avalon.agendaSummary.title") }} ·
           {{ t("avalon.questNumber", { n: room.questIndex + 1 }) }}
         </h3>
@@ -43,27 +45,6 @@
         t("avalon.teamNames", { names: room.team.map(playerName).join(", ") })
       }}
     </p>
-    <p
-      v-if="room.phase === 'vote' || room.phase === 'quest'"
-      role="status"
-      class="text-xs text-base-content/60"
-    >
-      {{
-        t(
-          room.phase === "vote"
-            ? "avalon.voteProgress"
-            : "avalon.questProgress",
-          {
-            n: room.phase === "vote" ? room.voteCount : room.questCount,
-            total:
-              room.phase === "vote"
-                ? room.participants.length
-                : room.team.length,
-          },
-        )
-      }}
-    </p>
-
     <div class="border-t border-base-300 pt-2">
       <h4 class="mb-2 text-xs font-semibold text-base-content/60">
         {{ t("avalon.agendaSummary.latest") }}

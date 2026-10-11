@@ -44,12 +44,13 @@
                 : 'border-error'
               : '',
             drag?.approve === approve
-              ? 'relative z-20 cursor-grabbing shadow-xl'
+              ? drag.moved
+                ? 'cursor-grabbing opacity-0'
+                : 'cursor-grabbing'
               : canPlay
                 ? 'cursor-grab hover:border-base-content/50'
                 : 'opacity-50',
           ]"
-          :style="cardStyle(approve)"
           :disabled="!canPlay"
           :aria-pressed="
             selected === approve || (autoApproved && submitted && approve)
@@ -108,6 +109,34 @@
         }}</span>
       </button>
     </div>
+    <Teleport to="body">
+      <div
+        v-if="drag?.moved"
+        class="pointer-events-none fixed inset-0 z-[1000] overflow-clip"
+        aria-hidden="true"
+      >
+        <div
+          class="card card-border absolute select-none bg-base-100 text-center shadow-xl"
+          :class="drag.approve ? 'border-success' : 'border-error'"
+          :style="dragStyle"
+        >
+          <span
+            class="flex w-full flex-col items-center justify-center gap-1 px-2 py-3 sm:gap-2 sm:p-4"
+          >
+            <i
+              :class="[
+                choiceIcon(drag.approve),
+                drag.approve ? 'text-success' : 'text-error',
+              ]"
+              class="text-xl sm:text-3xl"
+            ></i>
+            <span class="font-serif text-xs font-semibold sm:text-lg">{{
+              t(choiceLabel(drag.approve))
+            }}</span>
+          </span>
+        </div>
+      </div>
+    </Teleport>
   </details>
 </template>
 <script setup>
@@ -204,12 +233,17 @@ function beginDrag(approve, event) {
     drag.value
   )
     return;
+  const bounds = event.currentTarget.getBoundingClientRect();
   selected.value = approve;
   drag.value = {
     approve,
     pointerId: event.pointerId,
     startX: event.clientX,
     startY: event.clientY,
+    left: bounds.left,
+    top: bounds.top,
+    width: bounds.width,
+    height: bounds.height,
     x: 0,
     y: 0,
     moved: false,
@@ -267,14 +301,18 @@ function selectCard(approve) {
   )
     selected.value = approve;
 }
-function cardStyle(approve) {
+const dragStyle = computed(() => {
   const state = drag.value;
-  return state?.approve === approve
+  return state
     ? {
+        left: `${state.left}px`,
+        top: `${state.top}px`,
+        width: `${state.width}px`,
+        height: `${state.height}px`,
         transform: `translate(${state.x}px, ${state.y}px) rotate(${state.x / 20}deg)`,
       }
     : {};
-}
+});
 function submitSelected() {
   if (canPlay.value && choices.value.includes(selected.value))
     emit(questMode.value ? "quest" : "vote", selected.value);

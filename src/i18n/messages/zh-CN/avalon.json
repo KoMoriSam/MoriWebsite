@@ -1,5 +1,11 @@
 {
   "avalon": {
+    "progressLabels": {
+      "opening": "已知晓",
+      "night": "已确认",
+      "vote": "已表决",
+      "quest": "已出牌"
+    },
     "howTo": "如何开始",
     "audio": {
       "enable": "开启音效",

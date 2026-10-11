@@ -6,7 +6,7 @@
     <div class="mb-2 flex items-center justify-between gap-2">
       <h2 class="truncate text-sm font-bold">{{ title }}</h2>
       <button
-        class="btn btn-square btn-ghost btn-xs"
+        class="btn btn-square btn-xs"
         :aria-label="t('fogport.cancel')"
         @click="emit('close')"
       >

@@ -40,13 +40,13 @@
         >
         <div v-if="!compact" class="flex shrink-0 gap-1">
           <button
-            class="btn btn-square btn-ghost btn-xs"
+            class="btn btn-square btn-xs"
             :aria-label="t('fogport.visual.scrollPrevious')"
             @click="scroll(-1)"
           >
             <i class="ri-arrow-up-s-line" aria-hidden="true"></i></button
           ><button
-            class="btn btn-square btn-ghost btn-xs"
+            class="btn btn-square btn-xs"
             :aria-label="t('fogport.visual.scrollNext')"
             @click="scroll(1)"
           >

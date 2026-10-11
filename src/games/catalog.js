@@ -1,3 +1,5 @@
+import { getPlayerProgress } from "./avalon/player-progress.js";
+
 export const GAMES = [
   {
     id: "fogport",
@@ -18,6 +20,7 @@ export const GAMES = [
     icon: "ri-sword-line",
     titleKey: "avalon.title",
     descriptionKey: "avalon.description",
+    playerProgress: getPlayerProgress,
     minPlayers: 5,
     maxPlayers: 10,
     metadata: [{ icon: "ri-spy-line", labelKey: "avalon.genre" }],
