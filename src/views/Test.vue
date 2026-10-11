@@ -16,38 +16,33 @@
     </template>
 
     <section
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
       aria-label="测试项目"
     >
-      <router-link
+      <CatalogCard
         v-for="item in TEST_SECTIONS"
         :key="item.id"
         :to="{ name: item.id }"
-        class="card card-border group min-w-0 bg-base-100 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-base-content/25 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content motion-reduce:transform-none motion-reduce:transition-none"
+        :title="item.title"
+        :description="item.description"
+        :cover="item.cover"
+        icon="ri-test-tube-line"
+        action="打开测试"
       >
-        <div class="card-body gap-3 p-5">
-          <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0">
-              <p class="text-xs font-semibold text-base-content/50">
-                {{ item.label }}
-              </p>
-              <h2 class="card-title mt-1 font-serif text-lg">
-                {{ item.title }}
-              </h2>
-            </div>
-            <i
-              class="ri-arrow-right-up-line mt-0.5 shrink-0 text-lg text-base-content/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
-              aria-hidden="true"
-            ></i>
-          </div>
-          <p class="text-pretty text-sm leading-relaxed text-base-content/65">
-            {{ item.description }}
-          </p>
-          <code class="mt-auto text-xs text-base-content/40">
+        <template #tags="{ coverLoaded }">
+          <span
+            class="badge badge-sm h-auto min-h-5 max-w-full py-0.5 transition-colors duration-300 motion-reduce:transition-none"
+            :class="coverLoaded ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm' : 'badge-primary badge-soft'"
+          >
+            <span class="min-w-0 break-words">{{ item.label }}</span>
+          </span>
+        </template>
+        <template #meta>
+          <code class="min-w-0 max-w-full break-all text-xs text-base-content/40">
             /test/{{ item.id }}
           </code>
-        </div>
-      </router-link>
+        </template>
+      </CatalogCard>
     </section>
   </ContentPage>
 </template>
@@ -55,4 +50,5 @@
 <script setup>
 import { TEST_SECTIONS } from "@/constants/test-sections";
 import ContentPage from "@/components/layout/ContentPage.vue";
+import CatalogCard from "@/components/interaction/navigation/CatalogCard.vue";
 </script>
