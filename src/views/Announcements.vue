@@ -1,5 +1,5 @@
 <template>
-  <ContentPage :eyebrow="translate('common.sections.siteAnnouncements')" :title="translate('pages.announcements.announcements')">
+  <ContentPage eyebrow="Site Updates" :title="translate('pages.announcements.announcements')">
     <template #meta>
       <span v-if="updatedAt" class="inline-flex items-center gap-1">
         <i class="ri-refresh-line" aria-hidden="true"></i>

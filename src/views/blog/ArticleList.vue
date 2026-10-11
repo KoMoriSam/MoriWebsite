@@ -1,6 +1,6 @@
 <template>
   <ContentPage
-    :eyebrow="translate('common.sections.posts')"
+    eyebrow="Writing & Notes"
     :title="translate('pages.articleList.articles')"
   >
     <template #meta>

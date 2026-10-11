@@ -23,7 +23,7 @@
           <div>
             <p
               class="text-primary mb-1 text-xs font-bold tracking-[0.16em] uppercase"
-            >{{ translate('common.sections.projects') }}</p>
+            >Projects</p>
             <h2 class="font-serif text-2xl font-semibold">{{ translate('common.projectMenu.myProjects') }}</h2>
           </div>
           <a

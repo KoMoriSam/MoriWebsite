@@ -1,6 +1,6 @@
 <template>
   <ContentPage
-    eyebrow="Kaiming Punctuation"
+    eyebrow="Chinese Typography"
     :title="translate('pages.kaiming.kaimingPunctuation')"
     :description="translate('pages.kaiming.punctuationFontsForChineseWebTypographyWithSansSerifAnd')"
     :metasLabel="translate('pages.kaiming.fontSpecifications')"
@@ -116,7 +116,7 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >{{ translate('common.sections.typographyFeatures') }}</p>
+        >Typography Features</p>
         <h2
           id="features-title"
           class="font-serif text-2xl font-bold md:text-3xl"
@@ -155,7 +155,7 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >{{ translate('common.sections.useOnWeb') }}</p>
+        >Use on the Web</p>
         <h2 id="usage-title" class="font-serif text-2xl font-bold md:text-3xl">
           {{ translate('pages.kaiming.oneLineImportWithFontFallback') }}
         </h2>

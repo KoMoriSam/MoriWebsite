@@ -1,6 +1,6 @@
 <template>
   <ContentPage
-    :eyebrow="translate('common.sections.openSource')"
+    eyebrow="Open Source & Attributions"
     :title="translate('pages.licenses.licensesThirdPartyNotices')"
     :description="translate('pages.licenses.theProjectSMitLicenseAppliesOnlyToOriginalSoftware')"
   >
@@ -27,7 +27,7 @@
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">{{ translate('common.sections.originalSource') }}</p>
+          <p class="text-sm text-base-content/60">Original software source</p>
           <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.projectMitLicense') }}</h2>
         </div>
         <a
@@ -61,7 +61,7 @@
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">{{ translate('common.sections.attribution') }}</p>
+          <p class="text-sm text-base-content/60">Scope and attribution</p>
           <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.thirdPartyNotices') }}</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -116,7 +116,7 @@
         class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">{{ translate('common.sections.installedDependencies') }}</p>
+          <p class="text-sm text-base-content/60">Installed production dependency graph</p>
           <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.productionDependencyLicenses') }}</h2>
         </div>
         <a
@@ -203,7 +203,7 @@
       data-pagefind-ignore="all"
     >
       <div class="mb-4">
-        <p class="text-sm text-base-content/60">{{ translate('common.sections.fontNotices') }}</p>
+        <p class="text-sm text-base-content/60">Fonts, icons, and manual attributions</p>
         <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.additionalLicenseFiles') }}</h2>
       </div>
 

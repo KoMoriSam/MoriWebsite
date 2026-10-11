@@ -162,7 +162,7 @@
         <header class="mb-6">
           <hgroup>
             <p class="text-sm text-base-content/55">
-              {{ translate("common.sections.discussion") }}
+              Discussion
             </p>
             <h2 class="font-serif text-2xl font-semibold text-balance">
               {{ translate("reader.novelDetail.bookComments") }}

@@ -1,6 +1,6 @@
 <template>
   <ContentPage
-    :eyebrow="translate('common.sections.toolList')"
+    eyebrow="Tool List"
     :title="translate('pages.home.tools')"
     :description="translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')"
   >

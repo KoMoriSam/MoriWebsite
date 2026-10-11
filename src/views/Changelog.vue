@@ -1,5 +1,5 @@
 <template>
-  <ContentPage :eyebrow="translate('common.sections.releaseNotes')" :title="translate('pages.changelog.changelog')">
+  <ContentPage eyebrow="Release Notes & Maintenance" :title="translate('pages.changelog.changelog')">
     <template #meta>
       <template v-if="totalVersions">
         <span class="inline-flex items-center gap-1">

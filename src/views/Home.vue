@@ -112,7 +112,7 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >{{ translate('common.sections.workingOn') }}</span
+            >In Progress</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.whatIMWorkingOn') }}</h2>
         </hgroup>
@@ -202,7 +202,7 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >{{ translate('common.sections.aboutMe') }}</span
+            >Behind the Site</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.aboutMe') }}</h2>
         </hgroup>
@@ -242,7 +242,7 @@
         <hgroup>
           <span
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >{{ translate('common.sections.follow') }}</span
+            >Stay Connected</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.followContactMe') }}</h2>
         </hgroup>

@@ -4,7 +4,7 @@
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
     >
       <hgroup class="min-w-0">
-        <p class="text-sm text-base-content/55">{{ translate('common.sections.contents') }}</p>
+        <p class="text-sm text-base-content/55">Contents</p>
         <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <h2
             id="chapter-directory-title"
