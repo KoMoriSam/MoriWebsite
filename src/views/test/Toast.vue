@@ -1,7 +1,13 @@
 <template>
   <PageShell section-id="toast">
     <section title="Toast 通知">
-      <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+      <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-7">
+        <button
+          class="btn btn-sm"
+          @click="toast.card('卡片样式通知', { closable: true, duration: 0 })"
+        >
+          Card
+        </button>
         <button
           class="btn btn-sm btn-success"
           @click="toast.success('操作成功！')"
@@ -85,7 +91,7 @@ function showCustomToast() {
 }
 
 function testToastPos(position) {
-  useToast({ position, duration: 1500, closable: false }).info(position);
+  toast.info(position, { position, duration: 1500, closable: false });
 }
 
 onBeforeUnmount(() => {

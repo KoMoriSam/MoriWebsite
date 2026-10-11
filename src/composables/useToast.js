@@ -31,7 +31,7 @@ export function useToast(defaultOptions = {}) {
       const container = document.createElement("div");
       // 添加基础类名和位置类名
       document.body.appendChild(container);
-      container.className = `toast z-20 mx-0 my-18 ${
+      container.className = `toast items-end [&.toast-start]:items-start [&.toast-center]:items-center z-20 mx-0 my-18 ${
         TOAST_POSITIONS[position] || position
       }`;
 
@@ -127,6 +127,7 @@ export function useToast(defaultOptions = {}) {
   return {
     add: addToast,
     remove: removeToast,
+    card: (message, options) => addToast(message, { type: "card", ...options }),
     info: (message, options) => addToast(message, { type: "info", ...options }),
     success: (message, options) =>
       addToast(message, { type: "success", ...options }),
@@ -136,9 +137,9 @@ export function useToast(defaultOptions = {}) {
       addToast(message, { type: "warning", ...options }),
     loading: (message, options) =>
       addToast(message, {
-        type: "info",
+        type: "loading",
         icon: TOAST_ICONS.loading,
-        closable: false, // 无独立关闭键，沿用 Toast 本体点击关闭
+        closable: false, // 显式启用关闭按钮后才允许手动关闭
         duration: 0,
         ...options, // 仍然允许覆盖其他选项
       }),
