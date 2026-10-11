@@ -44,45 +44,45 @@
           </button>
         </header>
 
-        <div
-          class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 scrollbar-thin p-4"
-        >
+        <ScrollableContainer class="flex-1">
           <div
-            v-if="loading"
-            class="flex min-h-72 flex-col items-center justify-center gap-3 text-center text-base-content/60"
-            role="status"
+            class="min-h-0 flex-1 overflow-y-auto bg-base-200/55 scrollbar-thin p-4"
           >
-            <span class="loading loading-spinner loading-lg"></span>
-            <p>{{ translate('reader.shareCard.layingOutTheShareCard') }}</p>
-          </div>
-
-          <div
-            v-else-if="errorMessage"
-            class="flex min-h-72 flex-col items-center justify-center gap-4 text-center"
-            role="alert"
-          >
-            <i
-              class="ri-image-close-line text-5xl text-error"
-              aria-hidden="true"
-            ></i>
-            <div>
-              <p class="font-semibold">{{ translate('reader.shareCard.cardGenerationFailed') }}</p>
-              <p class="mt-1 max-w-md text-sm text-base-content/60">
-                {{ localizeText(errorMessage) }}
-              </p>
+            <div
+              v-if="loading"
+              class="flex min-h-72 flex-col items-center justify-center gap-3 text-center text-base-content/60"
+              role="status"
+            >
+              <span class="loading loading-spinner loading-lg"></span>
+              <p>{{ translate('reader.shareCard.layingOutTheShareCard') }}</p>
             </div>
-            <button type="button" class="btn btn-sm" @click="generate">
-              {{ translate('reader.shareCard.generateAgain') }}
-            </button>
+            <div
+              v-else-if="errorMessage"
+              class="flex min-h-72 flex-col items-center justify-center gap-4 text-center"
+              role="alert"
+            >
+              <i
+                class="ri-image-close-line text-5xl text-error"
+                aria-hidden="true"
+              ></i>
+              <div>
+                <p class="font-semibold">{{ translate('reader.shareCard.cardGenerationFailed') }}</p>
+                <p class="mt-1 max-w-md text-sm text-base-content/60">
+                  {{ localizeText(errorMessage) }}
+                </p>
+              </div>
+              <button type="button" class="btn btn-sm" @click="generate">
+                {{ translate('reader.shareCard.generateAgain') }}
+              </button>
+            </div>
+            <img
+              v-else-if="previewUrl"
+              :src="previewUrl"
+              :alt="previewAlt"
+              class="aspect-4/5 w-full rounded-box bg-base-100 object-contain shadow-md mx-auto max-w-md"
+            />
           </div>
-
-          <img
-            v-else-if="previewUrl"
-            :src="previewUrl"
-            :alt="previewAlt"
-            class="aspect-4/5 w-full rounded-box bg-base-100 object-contain shadow-md mx-auto max-w-md"
-          />
-        </div>
+        </ScrollableContainer>
 
         <footer
           class="modal-action m-0 flex shrink-0 flex-col-reverse gap-2 border-t border-base-300 px-4 py-3 sm:flex-row sm:justify-end sm:px-5"
@@ -116,6 +116,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText, locale: uiLocale, message: localeMessage } = useLocale();
 

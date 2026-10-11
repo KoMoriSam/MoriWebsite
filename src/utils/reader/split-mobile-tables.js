@@ -1,5 +1,18 @@
+import { mountScrollFade } from "../scroll-fade.js";
+
 const originalTableMarkup = new WeakMap();
+const fragmentFades = new WeakMap();
 let tableSequence = 0;
+
+const getTableFlowElement = (wrapper) =>
+  wrapper.parentElement?.classList.contains("markdown-table-scroll")
+    ? wrapper.parentElement
+    : wrapper;
+const getTopLevelTableWrappers = (article) => Array.from(
+  article?.querySelectorAll(
+    ":scope > .markdown-table-wrapper:not([aria-hidden='true']), :scope > .markdown-table-scroll > .markdown-table-wrapper:not([aria-hidden='true'])",
+  ) || [],
+);
 
 const getRect = (element) => element?.getBoundingClientRect();
 const getFirstRect = (element) =>
@@ -149,6 +162,11 @@ const groupRowsByAvailableHeight = ({
 
 export const restoreMobileTables = (article) => {
   if (!article) return;
+  fragmentFades.get(article)?.forEach((fade, fragment) => {
+    fade.dispose();
+    fragment.remove();
+  });
+  fragmentFades.delete(article);
   article.querySelectorAll(".mobile-table-flow-marker").forEach((marker) => {
     marker.remove();
   });
@@ -161,7 +179,9 @@ export const restoreMobileTables = (article) => {
           `.mobile-table-fragment[data-mobile-table-fragment="${sourceToken}"]`,
         )
         .forEach((fragment) => {
-          if (fragment !== source) fragment.remove();
+          if (fragment !== source) {
+            fragment.remove();
+          }
         });
       const originalMarkup = originalTableMarkup.get(source);
       if (originalMarkup != null) source.innerHTML = originalMarkup;
@@ -171,6 +191,7 @@ export const restoreMobileTables = (article) => {
         "mobile-table-force-next-page",
         "mobile-table-measuring",
       );
+      getTableFlowElement(source).classList.remove("mobile-table-force-next-page");
       source.style.removeProperty("--reader-table-grid-adjust");
       delete source.dataset.mobileTableSource;
       delete source.dataset.mobileTableFragment;
@@ -180,17 +201,13 @@ export const restoreMobileTables = (article) => {
 
 export const prepareMobileTables = (article) => {
   restoreMobileTables(article);
-  article
-    ?.querySelectorAll(
-      ":scope > .markdown-table-wrapper:not([aria-hidden='true'])",
-    )
-    .forEach((wrapper) => {
-      const marker = document.createElement("span");
-      marker.className = "mobile-table-flow-marker";
-      marker.setAttribute("aria-hidden", "true");
-      wrapper.before(marker);
-      wrapper.classList.add("mobile-table-measuring");
-    });
+  getTopLevelTableWrappers(article).forEach((wrapper) => {
+    const marker = document.createElement("span");
+    marker.className = "mobile-table-flow-marker";
+    marker.setAttribute("aria-hidden", "true");
+    getTableFlowElement(wrapper).before(marker);
+    wrapper.classList.add("mobile-table-measuring");
+  });
 };
 
 export const splitMobileTables = ({
@@ -201,11 +218,7 @@ export const splitMobileTables = ({
   lineHeight,
   isCurrent,
 }) => {
-  const wrappers = Array.from(
-    article.querySelectorAll(
-      ":scope > .markdown-table-wrapper:not([aria-hidden='true'])",
-    ),
-  );
+  const wrappers = getTopLevelTableWrappers(article);
   if (!wrappers.length) return true;
   if (!isCurrent()) return false;
 
@@ -244,12 +257,13 @@ export const splitMobileTables = ({
         (Number.parseFloat(tableStyle.borderBlockEndWidth) || 0),
     );
     const footerHeight = getVisibleFragmentHeight(sourceTable.tFoot);
-    const flowMarker = sourceWrapper.previousElementSibling?.classList.contains(
+    const flowElement = getTableFlowElement(sourceWrapper);
+    const flowMarker = flowElement.previousElementSibling?.classList.contains(
       "mobile-table-flow-marker",
     )
-      ? sourceWrapper.previousElementSibling
+      ? flowElement.previousElementSibling
       : null;
-    const wrapperTop = getFirstRect(flowMarker || sourceWrapper).top;
+    const wrapperTop = getFirstRect(flowMarker || flowElement).top;
     const firstAvailableHeight = Math.max(
       0,
       viewportTop +
@@ -365,14 +379,21 @@ export const splitMobileTables = ({
       sourceWrapper.style.cssText = firstFragment.style.cssText;
       sourceWrapper.dataset.mobileTableSource = sourceToken;
       sourceWrapper.dataset.mobileTableFragment = sourceToken;
-      sourceWrapper.classList.toggle(
+      const sourceFlowElement = getTableFlowElement(sourceWrapper);
+      sourceFlowElement.classList.toggle(
         "mobile-table-force-next-page",
         forceNextPage,
       );
-      let insertionPoint = sourceWrapper;
+      let insertionPoint = sourceFlowElement;
       fragments.forEach((fragment) => {
         insertionPoint.after(fragment);
-        insertionPoint = fragment;
+        const fade = mountScrollFade(fragment, {
+          className: "markdown-table-scroll mobile-table-continuation",
+        });
+        fragment.classList.remove("mobile-table-continuation");
+        if (!fragmentFades.has(article)) fragmentFades.set(article, new Map());
+        fragmentFades.get(article).set(fragment, fade);
+        insertionPoint = fade.host;
       });
     },
   );

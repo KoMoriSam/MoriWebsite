@@ -14,112 +14,114 @@
         <i class="ri-close-line" aria-hidden="true"></i>
       </button>
     </div>
-    <div class="min-h-0 overflow-y-auto overscroll-contain">
-      <div class="flex flex-wrap items-center gap-3 py-2 text-sm" role="status">
-        <span
-          ><i class="ri-coins-line text-warning" aria-hidden="true"></i>
-          {{ signed(preview.delta?.money ?? 0) }}</span
-        ><span :title="t('fogport.incomeSpaces')"
-          ><i
-            class="ri-arrow-up-circle-line text-success"
+    <ScrollableContainer>
+      <div class="min-h-0 overflow-y-auto overscroll-contain">
+        <div class="flex flex-wrap items-center gap-3 py-2 text-sm" role="status">
+          <span
+            ><i class="ri-coins-line text-warning" aria-hidden="true"></i>
+            {{ signed(preview.delta?.money ?? 0) }}</span
+          ><span :title="t('fogport.incomeSpaces')"
+            ><i
+              class="ri-arrow-up-circle-line text-success"
+              aria-hidden="true"
+            ></i>
+            {{ signed(preview.delta?.income ?? 0) }}</span
+          ><span :title="t('fogport.vp')"
+            ><i class="ri-star-line text-primary" aria-hidden="true"></i>
+            {{ signed(preview.delta?.vp ?? 0) }}</span
+          ><span class="text-xs text-base-content/60"
+            >{{ t("fogport.mode.payCard") }}:
+            {{
+              cardName(
+                self.hand.find((c) => c.id === command.card),
+                t,
+              )
+            }}</span
+          >
+        </div>
+        <div
+          v-for="tile in changedBuildings"
+          :key="tile.id"
+          class="flex flex-wrap items-center gap-2 pb-1 text-xs"
+        >
+          <i
+            :class="INDUSTRY_ICONS[TILE_BY_ID[tile.tileId].type]"
             aria-hidden="true"
-          ></i>
-          {{ signed(preview.delta?.income ?? 0) }}</span
-        ><span :title="t('fogport.vp')"
-          ><i class="ri-star-line text-primary" aria-hidden="true"></i>
-          {{ signed(preview.delta?.vp ?? 0) }}</span
-        ><span class="text-xs text-base-content/60"
-          >{{ t("fogport.mode.payCard") }}:
-          {{
-            cardName(
-              self.hand.find((c) => c.id === command.card),
-              t,
-            )
-          }}</span
-        >
-      </div>
-      <div
-        v-for="tile in changedBuildings"
-        :key="tile.id"
-        class="flex flex-wrap items-center gap-2 pb-1 text-xs"
-      >
-        <i
-          :class="INDUSTRY_ICONS[TILE_BY_ID[tile.tileId].type]"
-          aria-hidden="true"
-        ></i
-        ><span
-          >{{ placeName(tile.location, t) }} ·
-          {{ tileName(tile.tileId, t) }}</span
-        ><span>{{ t("fogport.output") }} {{ tile.resources }}</span
-        ><span
-          class="badge badge-xs"
-          :class="tile.flipped ? 'badge-success' : 'badge-ghost'"
-          >{{ t(tile.flipped ? "fogport.flipped" : "fogport.unflipped") }}</span
-        >
-      </div>
-      <fieldset v-for="step in resources" :key="step.index" class="fieldset">
-        <legend class="fieldset-legend py-1">
-          {{
-            t("fogport.chooseResource", {
-              resource: t("fogport.resources." + step.resource),
-            })
-          }}
-        </legend>
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="source in step.choices"
-            :key="source.id"
-            class="btn btn-xs h-auto min-h-8 whitespace-normal"
-            :class="step.source === source.id ? 'btn-active' : ''"
-            :disabled="submitted"
-            @click="
-              change({ ...command, resources: [...step.prefix, source.id] })
-            "
+          ></i
+          ><span
+            >{{ placeName(tile.location, t) }} ·
+            {{ tileName(tile.tileId, t) }}</span
+          ><span>{{ t("fogport.output") }} {{ tile.resources }}</span
+          ><span
+            class="badge badge-xs"
+            :class="tile.flipped ? 'badge-success' : 'badge-ghost'"
+            >{{ t(tile.flipped ? "fogport.flipped" : "fogport.unflipped") }}</span
           >
-            {{ sourceName(source.id, step.state)
-            }}<span v-if="source.price"> · £{{ source.price }}</span>
-          </button>
         </div>
-      </fieldset>
-      <fieldset
-        v-for="(sale, i) in command.sales ?? []"
-        :key="sale.building"
-        class="fieldset"
-      >
-        <legend class="fieldset-legend py-1">{{ saleName(sale) }}</legend>
-        <div class="flex flex-wrap gap-1">
-          <button
-            v-for="type in bonusChoices(game, game.selfId, command, i)"
-            :key="type"
-            class="btn btn-xs"
-            :class="sale.bonus === type ? 'btn-active' : ''"
-            :disabled="submitted"
-            @click="bonus(i, type)"
-          >
-            <i :class="INDUSTRY_ICONS[type]" aria-hidden="true"></i
-            >{{ t("fogport.industries." + type) }}</button
-          ><button
-            v-if="command.sales.length > 1"
-            class="btn btn-ghost btn-xs"
-            :disabled="submitted"
-            @click="
-              change({
-                ...command,
-                sales: command.sales.filter((_, index) => index !== i),
-                resources: [],
+        <fieldset v-for="step in resources" :key="step.index" class="fieldset">
+          <legend class="fieldset-legend py-1">
+            {{
+              t("fogport.chooseResource", {
+                resource: t("fogport.resources." + step.resource),
               })
-            "
-          >
-            <i class="ri-close-line" aria-hidden="true"></i
-            >{{ t("fogport.remove") }}
-          </button>
-        </div>
-      </fieldset>
-      <p v-if="!preview.valid" class="text-xs text-error">
-        {{ t("fogport.errors." + preview.error) }}
-      </p>
-      <p v-if="error" class="text-xs text-error" role="alert">{{ error }}</p>
-    </div>
+            }}
+          </legend>
+          <div class="flex flex-wrap gap-1">
+            <button
+              v-for="source in step.choices"
+              :key="source.id"
+              class="btn btn-xs h-auto min-h-8 whitespace-normal"
+              :class="step.source === source.id ? 'btn-active' : ''"
+              :disabled="submitted"
+              @click="
+                change({ ...command, resources: [...step.prefix, source.id] })
+              "
+            >
+              {{ sourceName(source.id, step.state)
+              }}<span v-if="source.price"> · £{{ source.price }}</span>
+            </button>
+          </div>
+        </fieldset>
+        <fieldset
+          v-for="(sale, i) in command.sales ?? []"
+          :key="sale.building"
+          class="fieldset"
+        >
+          <legend class="fieldset-legend py-1">{{ saleName(sale) }}</legend>
+          <div class="flex flex-wrap gap-1">
+            <button
+              v-for="type in bonusChoices(game, game.selfId, command, i)"
+              :key="type"
+              class="btn btn-xs"
+              :class="sale.bonus === type ? 'btn-active' : ''"
+              :disabled="submitted"
+              @click="bonus(i, type)"
+            >
+              <i :class="INDUSTRY_ICONS[type]" aria-hidden="true"></i
+              >{{ t("fogport.industries." + type) }}</button
+            ><button
+              v-if="command.sales.length > 1"
+              class="btn btn-ghost btn-xs"
+              :disabled="submitted"
+              @click="
+                change({
+                  ...command,
+                  sales: command.sales.filter((_, index) => index !== i),
+                  resources: [],
+                })
+              "
+            >
+              <i class="ri-close-line" aria-hidden="true"></i
+              >{{ t("fogport.remove") }}
+            </button>
+          </div>
+        </fieldset>
+        <p v-if="!preview.valid" class="text-xs text-error">
+          {{ t("fogport.errors." + preview.error) }}
+        </p>
+        <p v-if="error" class="text-xs text-error" role="alert">{{ error }}</p>
+      </div>
+    </ScrollableContainer>
     <div class="flex flex-wrap justify-end gap-2 pt-2">
       <button
         v-if="canAdd"
@@ -148,6 +150,7 @@
   </section>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { computed, ref } from "vue";
 import { previewAction } from "../../../../../shared/games/fogport/engine.js";
 import {

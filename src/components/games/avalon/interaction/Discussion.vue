@@ -32,69 +32,71 @@
           class="flex min-w-0 flex-col gap-3"
           :class="compact || fillHeight ? 'min-h-0 flex-1' : ''"
         >
-          <div
-            ref="log"
-            class="min-w-0 overflow-x-hidden"
-            role="log"
-            :tabindex="compact || fillHeight ? 0 : undefined"
-            aria-live="polite"
-            aria-relevant="additions"
-            :aria-label="t('avalon.phrases.title')"
-            :class="
-              compact || fillHeight
-                ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin'
-                : 'max-h-60 overflow-y-auto overscroll-contain scrollbar-thin sm:max-h-80 lg:max-h-128'
-            "
-            @scroll="trackScroll"
-          >
+          <ScrollableContainer :class="compact || fillHeight ? 'flex-1' : ''">
             <div
-              v-if="!messages.length"
-              class="py-5 text-center text-sm text-base-content/50"
-            >
-              {{ t("avalon.phrases.empty") }}
-            </div>
-            <TransitionGroup
-              tag="div"
-              name="chat-message"
-              :duration="{ leave: 220 }"
-              appear
-              class="relative min-w-0 overflow-x-clip"
-              @before-enter="prepareMessageEnter"
-              @enter="animateMessageEnter"
-              @enter-cancelled="cancelMessageEnter"
+              ref="log"
+              class="min-w-0 overflow-x-hidden"
+              role="log"
+              :tabindex="compact || fillHeight ? 0 : undefined"
+              aria-live="polite"
+              aria-relevant="additions"
+              :aria-label="t('avalon.phrases.title')"
+              :class="
+                compact || fillHeight
+                  ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin'
+                  : 'max-h-60 overflow-y-auto overscroll-contain scrollbar-thin sm:max-h-80 lg:max-h-128'
+              "
+              @scroll="trackScroll"
             >
               <div
-                v-for="message in messages"
-                :key="message.id"
-                class="chat"
-                :class="
-                  message.playerId === room.selfId ? 'chat-end' : 'chat-start'
-                "
+                v-if="!messages.length"
+                class="py-5 text-center text-sm text-base-content/50"
               >
-                <Avatar
-                  class="chat-image [&>div]:size-10"
-                  :src="messageProfiles.get(message.playerId)?.avatarUrl"
-                  :name="message.nickname"
-                />
-                <div class="chat-header text-xs text-base-content/60">
-                  {{ message.nickname
-                  }}<time class="ml-2 opacity-60">{{
-                    messageTime(message.at)
-                  }}</time>
-                </div>
+                {{ t("avalon.phrases.empty") }}
+              </div>
+              <TransitionGroup
+                tag="div"
+                name="chat-message"
+                :duration="{ leave: 220 }"
+                appear
+                class="relative min-w-0 overflow-x-clip"
+                @before-enter="prepareMessageEnter"
+                @enter="animateMessageEnter"
+                @enter-cancelled="cancelMessageEnter"
+              >
                 <div
-                  class="chat-bubble min-h-0 wrap-break-word text-sm"
+                  v-for="message in messages"
+                  :key="message.id"
+                  class="chat"
                   :class="
-                    message.playerId === room.selfId
-                      ? 'chat-bubble-primary'
-                      : ''
+                    message.playerId === room.selfId ? 'chat-end' : 'chat-start'
                   "
                 >
-                  {{ messageText(message) }}
+                  <Avatar
+                    class="chat-image [&>div]:size-10"
+                    :src="messageProfiles.get(message.playerId)?.avatarUrl"
+                    :name="message.nickname"
+                  />
+                  <div class="chat-header text-xs text-base-content/60">
+                    {{ message.nickname
+                    }}<time class="ml-2 opacity-60">{{
+                      messageTime(message.at)
+                    }}</time>
+                  </div>
+                  <div
+                    class="chat-bubble min-h-0 wrap-break-word text-sm"
+                    :class="
+                      message.playerId === room.selfId
+                        ? 'chat-bubble-primary'
+                        : ''
+                    "
+                  >
+                    {{ messageText(message) }}
+                  </div>
                 </div>
-              </div>
-            </TransitionGroup>
-          </div>
+              </TransitionGroup>
+            </div>
+          </ScrollableContainer>
           <button
             v-if="unread"
             type="button"
@@ -110,160 +112,156 @@
             >{{ t("avalon.phrases.limit", { n: MESSAGE_LIMIT }) }}</span
           >
         </div>
-        <div
-          class="min-w-0 space-y-4 p-1"
-          :class="
-            fillHeight
-              ? 'max-h-[55%] shrink-0 overflow-y-auto overscroll-contain scrollbar-thin'
-              : compact
-                ? 'shrink-0'
-                : ''
-          "
-        >
-          <div>
-            <div class="flex min-w-0 flex-wrap items-end gap-2">
-              <div
-                class="grid min-w-0 basis-full grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2"
-              >
-                <fieldset class="fieldset min-w-0">
+        <ScrollableContainer :class="fillHeight ? 'max-h-[55%] shrink-0' : compact ? 'shrink-0' : ''">
+          <div
+            class="min-w-0 space-y-4 p-1"
+            :class="
+              fillHeight
+                ? 'min-h-0 overflow-y-auto overscroll-contain scrollbar-thin'
+                : compact
+                  ? 'shrink-0'
+                  : ''
+            "
+          >
+            <div>
+              <div class="flex min-w-0 flex-wrap items-end gap-2">
+                <div
+                  class="grid min-w-0 basis-full grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2"
+                >
+                  <fieldset class="fieldset min-w-0">
+                    <legend class="fieldset-legend pb-0">
+                      {{ t("avalon.phrases.categoriesLabel") }}
+                    </legend>
+                    <select
+                      :value="category"
+                      class="select max-sm:select-sm min-w-0 w-full"
+                      @change="selectCategory($event.target.value)"
+                    >
+                      <SelectLabel
+                        :text="t(`avalon.phrases.categories.${category}`)"
+                      />
+                      <option
+                        v-for="group in PHRASE_GROUPS"
+                        :key="group.id"
+                        :value="group.id"
+                      >
+                        {{ t(`avalon.phrases.categories.${group.id}`) }}
+                      </option>
+                    </select>
+                  </fieldset>
+                  <fieldset class="fieldset min-w-0">
+                    <legend class="fieldset-legend pb-0">
+                      {{ t("avalon.phrases.compose") }}
+                    </legend>
+                    <select
+                      v-model="selectedId"
+                      class="select max-sm:select-sm min-w-0 w-full"
+                    >
+                      <SelectLabel :text="preview(selected)" />
+                      <option
+                        v-for="phrase in currentGroup.phrases"
+                        :key="phrase.id"
+                        :value="phrase.id"
+                      >
+                        {{ preview(phrase) }}
+                      </option>
+                    </select>
+                  </fieldset>
+                </div>
+                <fieldset
+                  v-if="selected.player"
+                  class="fieldset min-w-0 w-26 shrink-0"
+                >
                   <legend class="fieldset-legend pb-0">
-                    {{ t("avalon.phrases.categoriesLabel") }}
+                    {{ t("avalon.phrases.target") }}
                   </legend>
                   <select
-                    :value="category"
+                    v-model="targetId"
                     class="select max-sm:select-sm min-w-0 w-full"
-                    @change="selectCategory($event.target.value)"
                   >
-                    <SelectLabel
-                      :text="t(`avalon.phrases.categories.${category}`)"
-                    />
+                    <SelectLabel :text="targetName" />
                     <option
-                      v-for="group in PHRASE_GROUPS"
-                      :key="group.id"
-                      :value="group.id"
+                      v-for="player in room.players"
+                      :key="player.id"
+                      :value="player.id"
                     >
-                      {{ t(`avalon.phrases.categories.${group.id}`) }}
+                      {{ player.nickname }}
                     </option>
                   </select>
                 </fieldset>
-
-                <fieldset class="fieldset min-w-0">
+                <fieldset
+                  v-if="selected.role"
+                  class="fieldset min-w-0 w-26 shrink-0"
+                >
                   <legend class="fieldset-legend pb-0">
-                    {{ t("avalon.phrases.compose") }}
+                    {{ t("avalon.phrases.role") }}
                   </legend>
                   <select
-                    v-model="selectedId"
+                    v-model="role"
                     class="select max-sm:select-sm min-w-0 w-full"
                   >
-                    <SelectLabel :text="preview(selected)" />
-                    <option
-                      v-for="phrase in currentGroup.phrases"
-                      :key="phrase.id"
-                      :value="phrase.id"
-                    >
-                      {{ preview(phrase) }}
+                    <SelectLabel :text="t(`avalon.roles.${role}`)" />
+                    <option v-for="option in roles" :key="option" :value="option">
+                      {{ t(`avalon.roles.${option}`) }}
                     </option>
                   </select>
+                </fieldset>
+                <fieldset
+                  v-if="selected.quest"
+                  class="fieldset min-w-0 w-26 shrink-0"
+                >
+                  <legend class="fieldset-legend pb-0">
+                    {{ t("avalon.phrases.quest") }}
+                  </legend>
+                  <select
+                    v-model.number="quest"
+                    class="select max-sm:select-sm min-w-0 w-full"
+                  >
+                    <SelectLabel :text="t('avalon.questNumber', { n: quest })" />
+                    <option
+                      v-for="number in room.questIndex + 1"
+                      :key="number"
+                      :value="number"
+                    >
+                      {{ t("avalon.questNumber", { n: number }) }}
+                    </option>
+                  </select>
+                </fieldset>
+                <fieldset
+                  class="fieldset min-w-0 flex-1"
+                  :class="
+                    parameterCount === 1 ? 'basis-40 flex-2' : 'basis-full'
+                  "
+                >
+                  <legend class="fieldset-legend pb-0">
+                    {{ t("avalon.phrases.preview") }}
+                  </legend>
+                  <div class="flex min-w-0 gap-2">
+                    <div class="input max-sm:input-sm min-w-0 flex-1">
+                      <span class="block min-w-0 truncate">
+                        {{ preview(selected) }}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-square shrink-0 max-sm:btn-sm"
+                      :disabled="!canAct || cooling"
+                      @click="send"
+                    >
+                      <i class="ri-send-ins-line" aria-hidden="true"></i>
+                    </button>
+                  </div>
                 </fieldset>
               </div>
-
-              <fieldset
-                v-if="selected.player"
-                class="fieldset min-w-0 w-26 shrink-0"
-              >
-                <legend class="fieldset-legend pb-0">
-                  {{ t("avalon.phrases.target") }}
-                </legend>
-                <select
-                  v-model="targetId"
-                  class="select max-sm:select-sm min-w-0 w-full"
-                >
-                  <SelectLabel :text="targetName" />
-                  <option
-                    v-for="player in room.players"
-                    :key="player.id"
-                    :value="player.id"
-                  >
-                    {{ player.nickname }}
-                  </option>
-                </select>
-              </fieldset>
-
-              <fieldset
-                v-if="selected.role"
-                class="fieldset min-w-0 w-26 shrink-0"
-              >
-                <legend class="fieldset-legend pb-0">
-                  {{ t("avalon.phrases.role") }}
-                </legend>
-                <select
-                  v-model="role"
-                  class="select max-sm:select-sm min-w-0 w-full"
-                >
-                  <SelectLabel :text="t(`avalon.roles.${role}`)" />
-                  <option v-for="option in roles" :key="option" :value="option">
-                    {{ t(`avalon.roles.${option}`) }}
-                  </option>
-                </select>
-              </fieldset>
-
-              <fieldset
-                v-if="selected.quest"
-                class="fieldset min-w-0 w-26 shrink-0"
-              >
-                <legend class="fieldset-legend pb-0">
-                  {{ t("avalon.phrases.quest") }}
-                </legend>
-                <select
-                  v-model.number="quest"
-                  class="select max-sm:select-sm min-w-0 w-full"
-                >
-                  <SelectLabel :text="t('avalon.questNumber', { n: quest })" />
-                  <option
-                    v-for="number in room.questIndex + 1"
-                    :key="number"
-                    :value="number"
-                  >
-                    {{ t("avalon.questNumber", { n: number }) }}
-                  </option>
-                </select>
-              </fieldset>
-
-              <fieldset
-                class="fieldset min-w-0 flex-1"
-                :class="
-                  parameterCount === 1 ? 'basis-40 flex-2' : 'basis-full'
-                "
-              >
-                <legend class="fieldset-legend pb-0">
-                  {{ t("avalon.phrases.preview") }}
-                </legend>
-
-                <div class="flex min-w-0 gap-2">
-                  <div class="input max-sm:input-sm min-w-0 flex-1">
-                    <span class="block min-w-0 truncate">
-                      {{ preview(selected) }}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    class="btn btn-square shrink-0 max-sm:btn-sm"
-                    :disabled="!canAct || cooling"
-                    @click="send"
-                  >
-                    <i class="ri-send-ins-line" aria-hidden="true"></i>
-                  </button>
-                </div>
-              </fieldset>
             </div>
           </div>
-        </div>
+        </ScrollableContainer>
       </div>
     </div>
   </section>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
   computed,
   defineComponent,

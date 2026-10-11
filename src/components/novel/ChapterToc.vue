@@ -54,101 +54,93 @@
       <span class="loading loading-spinner loading-sm text-primary"></span>
     </div>
 
-    <ol
-      v-else-if="chapterVolumes.length"
-      ref="listElement"
-      :class="[
-        'space-y-2 overflow-y-auto overscroll-contain pr-1 scrollbar-none',
-        embedded
-          ? 'max-h-[min(62dvh,34rem)] min-h-0'
-          : mobile
-            ? 'max-h-[min(55vh,32rem)]'
-            : 'min-h-0 flex-1',
-      ]"
-      :style="
-        mobile
-          ? undefined
-          : {
-              maskImage: listMaskImage,
-              WebkitMaskImage: listMaskImage,
-            }
-      "
-    >
-      <li
-        v-for="volume in chapterVolumes"
-        :key="volume.volumeInfo.uuid"
-        class="min-w-0"
+    <ScrollableContainer v-else-if="chapterVolumes.length" :class="embedded || mobile ? '' : 'flex-1'">
+      <ol
+        ref="listElement"
+        :class="[
+          'space-y-2 overflow-y-auto overscroll-contain pr-1 scrollbar-none',
+          embedded
+            ? 'max-h-[min(62dvh,34rem)] min-h-0'
+            : mobile
+              ? 'max-h-[min(55vh,32rem)]'
+              : 'min-h-0 flex-1',
+        ]"
       >
-        <button
-          type="button"
-          class="group/volume my-1 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold text-base-content/45 transition-colors hover:bg-base-200/70 hover:text-base-content/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          :aria-expanded="isVolumeExpanded(volume)"
-          :aria-controls="getVolumeListId(volume)"
-          @click="toggleVolume(volume)"
+        <li
+          v-for="volume in chapterVolumes"
+          :key="volume.volumeInfo.uuid"
+          class="min-w-0"
         >
-          <i
-            class="ri-arrow-down-s-line shrink-0 text-sm transition-transform duration-150"
-            :class="{ '-rotate-90': !isVolumeExpanded(volume) }"
-            aria-hidden="true"
-          ></i>
-          <span class="truncate" :title="volume.volumeInfo.title">
-            {{ volume.volumeInfo.title }}
-          </span>
-          <small
-            class="ml-auto shrink-0 whitespace-nowrap tabular-nums text-base-content/35"
-            :title="translate('reader.chapterToc.chaptersRead2', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
+          <button
+            type="button"
+            class="group/volume my-1 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-bold text-base-content/45 transition-colors hover:bg-base-200/70 hover:text-base-content/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            :aria-expanded="isVolumeExpanded(volume)"
+            :aria-controls="getVolumeListId(volume)"
+            @click="toggleVolume(volume)"
           >
-            {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterToc.chaptersRead') }}
-            {{ getVolumeReadCount(volume) }} {{ translate('reader.chapterList.chapters2') }}
-          </small>
-        </button>
-
-        <ol
-          v-show="isVolumeExpanded(volume)"
-          :id="getVolumeListId(volume)"
-          class="space-y-0.5"
-        >
-          <li
-            v-for="chapter in volume.chapters || []"
-            :key="chapter.uuid"
-            class="min-w-0"
-          >
-            <button
-              type="button"
-              class="flex w-full min-w-0 items-center gap-1.5 rounded-lg py-1.5 pr-2 pl-4 text-left text-sm leading-snug transition-[background-color,color,opacity] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              :class="[
-                chapter.uuid === currentChapterUuid
-                  ? 'bg-primary/10 font-black text-primary'
-                  : 'text-base-content/80 hover:bg-base-200 hover:text-base-content',
-                {
-                  'opacity-50 hover:opacity-80':
-                    isRead(chapter.uuid) && chapter.uuid !== currentChapterUuid,
-                },
-              ]"
-              :title="chapter.title"
-              :aria-current="
-                chapter.uuid === currentChapterUuid ? 'page' : undefined
-              "
-              :data-current="
-                chapter.uuid === currentChapterUuid ? 'true' : undefined
-              "
-              :disabled="isDisabled"
-              @click="onChapterSelect(chapter.uuid)"
+            <i
+              class="ri-arrow-down-s-line shrink-0 text-sm transition-transform duration-150"
+              :class="{ '-rotate-90': !isVolumeExpanded(volume) }"
+              aria-hidden="true"
+            ></i>
+            <span class="truncate" :title="volume.volumeInfo.title">
+              {{ volume.volumeInfo.title }}
+            </span>
+            <small
+              class="ml-auto shrink-0 whitespace-nowrap tabular-nums text-base-content/35"
+              :title="translate('reader.chapterToc.chaptersRead2', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
             >
-              <span class="min-w-0 flex-1 truncate">
-                {{ chapter.title }}
-              </span>
-              <ChapterStatusBadges
-                :chapter="chapter"
-                :latest-chapter-uuid="latestChapter?.uuid"
-                :read="isRead(chapter.uuid)"
-                latest-label="NEW!"
-              />
-            </button>
-          </li>
-        </ol>
-      </li>
-    </ol>
+              {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterToc.chaptersRead') }}
+              {{ getVolumeReadCount(volume) }} {{ translate('reader.chapterList.chapters2') }}
+            </small>
+          </button>
+          <ol
+            v-show="isVolumeExpanded(volume)"
+            :id="getVolumeListId(volume)"
+            class="space-y-0.5"
+          >
+            <li
+              v-for="chapter in volume.chapters || []"
+              :key="chapter.uuid"
+              class="min-w-0"
+            >
+              <button
+                type="button"
+                class="flex w-full min-w-0 items-center gap-1.5 rounded-lg py-1.5 pr-2 pl-4 text-left text-sm leading-snug transition-[background-color,color,opacity] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                :class="[
+                  chapter.uuid === currentChapterUuid
+                    ? 'bg-primary/10 font-black text-primary'
+                    : 'text-base-content/80 hover:bg-base-200 hover:text-base-content',
+                  {
+                    'opacity-50 hover:opacity-80':
+                      isRead(chapter.uuid) && chapter.uuid !== currentChapterUuid,
+                  },
+                ]"
+                :title="chapter.title"
+                :aria-current="
+                  chapter.uuid === currentChapterUuid ? 'page' : undefined
+                "
+                :data-current="
+                  chapter.uuid === currentChapterUuid ? 'true' : undefined
+                "
+                :disabled="isDisabled"
+                @click="onChapterSelect(chapter.uuid)"
+              >
+                <span class="min-w-0 flex-1 truncate">
+                  {{ chapter.title }}
+                </span>
+                <ChapterStatusBadges
+                  :chapter="chapter"
+                  :latest-chapter-uuid="latestChapter?.uuid"
+                  :read="isRead(chapter.uuid)"
+                  latest-label="NEW!"
+                />
+              </button>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </ScrollableContainer>
 
     <p
       v-else
@@ -163,6 +155,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
@@ -174,7 +167,6 @@ import TocFrame from "@/components/reader/navigation/TocFrame.vue";
 import { useChapters } from "@/composables/novel/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
 import { useRevealCurrentItem } from "@/composables/useRevealCurrentItem";
-import { useScrollMask } from "@/composables/useScrollMask";
 import { useNovelStore } from "@/stores/novel";
 import { getChapterDisplayTitle } from "@/utils/novel/format-label";
 
@@ -231,7 +223,6 @@ const tocFrame = ref(null);
 const collapsedVolumeUuids = ref(new Set());
 const listElement = ref(null);
 const listId = useId();
-const { maskImage: listMaskImage } = useScrollMask(listElement);
 const tocVisible = ref(!props.mobile);
 
 const emit = defineEmits([

@@ -1,65 +1,71 @@
 <template>
   <Teleport to="body">
-    <ul
+    <div
       ref="menu"
       popover="auto"
-      class="dropdown menu menu-sm fixed right-auto bottom-auto m-0 w-56 max-w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100! p-2 text-base-content shadow-xl [position-area:none]"
+      class="dropdown fixed right-auto bottom-auto m-0 w-56 max-w-[calc(100vw-1rem)] overflow-hidden rounded-box border border-base-300 bg-base-100! text-base-content shadow-xl [position-area:none]"
       :style="position"
       :aria-label="t('avalon.notes.player', { name: player?.nickname || '' })"
       @keydown="navigate"
     >
-      <li class="menu-title break-words">
-        {{ t("avalon.notes.title", { name: player?.nickname || "" }) }}
-      </li>
-      <li>
-        <button
-          type="button"
-          :class="!marks[player?.id] ? 'menu-active' : ''"
-          :aria-pressed="!marks[player?.id]"
-          @click="choose('')"
-        >
-          <i class="ri-eraser-line" aria-hidden="true"></i
-          >{{ t("avalon.notes.none") }}
-        </button>
-      </li>
-      <li v-for="group in groups" :key="group.id">
-        <button
-          v-if="group.mark"
-          type="button"
-          :class="[
-            group.tone,
-            marks[player?.id] === group.mark ? 'menu-active' : '',
-          ]"
-          :aria-pressed="marks[player?.id] === group.mark"
-          @click="choose(group.mark)"
-        >
-          <i :class="group.icon" aria-hidden="true"></i>{{ t(group.label) }}
-        </button>
-        <span
-          v-else
-          class="menu-title flex items-center gap-2"
-          :class="group.tone"
-        >
-          <i :class="group.icon" aria-hidden="true"></i>{{ t(group.label) }}
-        </span>
-        <ul>
-          <li v-for="mark in group.roles" :key="mark">
+      <ScrollableContainer>
+        <ul class="menu menu-sm min-h-0 w-full overflow-y-auto overscroll-contain p-2" :style="{ maxHeight: position.maxHeight }">
+          <li class="menu-title break-words">
+            {{ t("avalon.notes.title", { name: player?.nickname || "" }) }}
+          </li>
+          <li>
             <button
               type="button"
-              :class="marks[player?.id] === mark ? 'menu-active' : ''"
-              :aria-pressed="marks[player?.id] === mark"
-              @click="choose(mark)"
+              :class="!marks[player?.id] ? 'menu-active' : ''"
+              :aria-pressed="!marks[player?.id]"
+              @click="choose('')"
             >
-              <i :class="markIcon(mark)" aria-hidden="true"></i
-              >{{ t(markLabel(mark)) }}
+              <i class="ri-eraser-line" aria-hidden="true"></i
+              >{{ t("avalon.notes.none") }}
             </button>
           </li>
+          <li v-for="group in groups" :key="group.id">
+            <button
+              v-if="group.mark"
+              type="button"
+              :class="[
+                group.tone,
+                marks[player?.id] === group.mark ? 'menu-active' : '',
+              ]"
+              :aria-pressed="marks[player?.id] === group.mark"
+              @click="choose(group.mark)"
+            >
+              <i :class="group.icon" aria-hidden="true"></i>{{ t(group.label) }}
+            </button>
+            <span
+              v-else
+              class="menu-title flex items-center gap-2"
+              :class="group.tone"
+            >
+              <i :class="group.icon" aria-hidden="true"></i>{{ t(group.label) }}
+            </span>
+            <ul>
+              <li v-for="mark in group.roles" :key="mark">
+                <button
+                  type="button"
+                  :class="marks[player?.id] === mark ? 'menu-active' : ''"
+                  :aria-pressed="marks[player?.id] === mark"
+                  @click="choose(mark)"
+                >
+                  <i :class="markIcon(mark)" aria-hidden="true"></i
+                  >{{ t(markLabel(mark)) }}
+                </button>
+              </li>
+            </ul>
+          </li>
+
         </ul>
-      </li>
-    </ul>
+      </ScrollableContainer>
+</div>
   </Teleport>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
   computed,
   nextTick,

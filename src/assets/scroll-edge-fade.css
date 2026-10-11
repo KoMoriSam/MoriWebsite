@@ -1,0 +1,59 @@
+.scroll-edge-fade-overlay {
+  pointer-events: none;
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.scroll-edge-fade {
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 300ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-edge-fade { transition: none; }
+}
+
+.scrollable-container > :first-child:not([data-scroll-fade-overlay]) {
+  flex-shrink: 1;
+}
+
+.scroll-edge-fade {
+  background-image: var(--scroll-fade-background);
+}
+
+.scroll-edge-fade-top,
+.scroll-edge-fade-bottom {
+  left: 0;
+  right: 0;
+  height: min(var(--scroll-fade-size, 2rem), 50%);
+}
+
+.scroll-edge-fade-left,
+.scroll-edge-fade-right {
+  top: 0;
+  bottom: 0;
+  width: min(var(--scroll-fade-size, 2rem), 50%);
+}
+
+.scroll-edge-fade-top {
+  top: 0;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+.scroll-edge-fade-bottom {
+  bottom: 0;
+  mask-image: linear-gradient(to top, black, transparent);
+}
+
+.scroll-edge-fade-left {
+  left: 0;
+  mask-image: linear-gradient(to right, black, transparent);
+}
+
+.scroll-edge-fade-right {
+  right: 0;
+  mask-image: linear-gradient(to left, black, transparent);
+}

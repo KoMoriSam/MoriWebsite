@@ -217,7 +217,7 @@
 import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
-import { computed, nextTick, ref, toRef, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, toRef, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
@@ -321,6 +321,7 @@ const { hasPrevious, hasNext, handlePrev, handleNext } = useChapters();
 
 const sectionRef = ref(null);
 const viewportRef = ref(null);
+onBeforeUnmount(() => restoreMobileTables(viewportRef.value?.querySelector(".mobile-page-article")));
 const endMarkerRef = ref(null);
 const chapterSnapshotRef = ref(null);
 const footnoteMeasureRef = ref(null);

@@ -26,246 +26,245 @@
         v-if="!controlsOnly"
         class="shrink-0 border-b border-base-300 px-3 py-2.5"
       >
-        <div
-          class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
-          :class="styleConfigs.fontClass"
-          :data-theme="mobile ? previewTheme || undefined : undefined"
-          :style="[
-            previewStyle,
-            {
-              fontFamily: styleConfigs.fontFamily || undefined,
-              '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
-            },
-          ]"
-          :aria-label="mobile ? translate('reader.formatSetting.currentMobileLayoutPreview') : translate('reader.formatSetting.currentDesktopLayoutPreview')"
-        >
-          <p class="m-0 indent-(--para-text-indent) text-justify text-pretty">
-            {{ translate('reader.formatSetting.duskSettlesOverThePagesLeavingRoomToBreatheBetween') }}
-          </p>
-          <p
-            class="mb-0 indent-(--para-text-indent) text-justify text-pretty"
-            :style="{ marginBlockStart: previewParagraphGap }"
+        <ScrollableContainer>
+          <div
+            class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
+            :class="styleConfigs.fontClass"
+            :data-theme="mobile ? previewTheme || undefined : undefined"
+            :style="[
+              previewStyle,
+              {
+                fontFamily: styleConfigs.fontFamily || undefined,
+                '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
+              },
+            ]"
+            :aria-label="mobile ? translate('reader.formatSetting.currentMobileLayoutPreview') : translate('reader.formatSetting.currentDesktopLayoutPreview')"
           >
-            {{ translate('reader.formatSetting.turnThePageTheStoryContinuesAhead') }}
-          </p>
-        </div>
+            <p class="m-0 indent-(--para-text-indent) text-justify text-pretty">
+              {{ translate('reader.formatSetting.duskSettlesOverThePagesLeavingRoomToBreatheBetween') }}
+            </p>
+            <p
+              class="mb-0 indent-(--para-text-indent) text-justify text-pretty"
+              :style="{ marginBlockStart: previewParagraphGap }"
+            >
+              {{ translate('reader.formatSetting.turnThePageTheStoryContinuesAhead') }}
+            </p>
+          </div>
+        </ScrollableContainer>
       </div>
 
-      <div
-        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin p-3"
-      >
+      <ScrollableContainer class="flex-1">
         <div
-          v-if="mobile"
-          role="tablist"
-          class="tabs tabs-sm tabs-box mb-3 w-full"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin p-3"
         >
-          <button
-            v-for="mode in MOBILE_READING_MODE_OPTIONS"
-            :key="mode.value"
-            type="button"
-            role="tab"
-            class="tab min-w-0 flex-1 gap-1"
-            :class="{ 'tab-active': mobileReadingMode === mode.value }"
-            :aria-selected="mobileReadingMode === mode.value"
-            @click="store.setMobileReadingMode(mode.value)"
-          >
-            <i :class="mode.icon" aria-hidden="true"></i>{{ localizeText(mode.label) }}
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-x-4 gap-y-2">
           <div
-            class="min-w-0"
-            :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
+            v-if="mobile"
+            role="tablist"
+            class="tabs tabs-sm tabs-box mb-3 w-full"
           >
-            <span class="label block text-xs md:text-sm">
-              {{ translate('reader.formatSetting.textFont') }}
-              <small :title="translate('reader.formatSetting.customAndDeviceFontsApplyOnlyToThisSessionAnd')">
-                {{ translate('reader.formatSetting.onlySiteFontsCanBeSavedInSettings') }}
-              </small>
-            </span>
-            <FontSelect
-              ref="readerFontSelect"
-              :model-value="styleConfigs.fontStyle"
-              :fallback-font-id="readerFallbackFontId"
-              :website-fonts="readerWebsiteFonts"
-              :aria-label="translate('reader.formatSetting.textFont')"
-              @update:model-value="selectReaderFont"
-              @update:fallback-font-id="selectReaderFallbackFont"
-            />
+            <button
+              v-for="mode in MOBILE_READING_MODE_OPTIONS"
+              :key="mode.value"
+              type="button"
+              role="tab"
+              class="tab min-w-0 flex-1 gap-1"
+              :class="{ 'tab-active': mobileReadingMode === mode.value }"
+              :aria-selected="mobileReadingMode === mode.value"
+              @click="store.setMobileReadingMode(mode.value)"
+            >
+              <i :class="mode.icon" aria-hidden="true"></i>{{ localizeText(mode.label) }}
+            </button>
           </div>
-
-          <button
-            v-if="controlsOnly"
-            type="button"
-            class="btn btn-ghost btn-sm xl:btn-md shrink-0 col-span-1 mb-0 mt-auto"
-            :disabled="isLayoutDefault"
-            @click="resetLayout"
-          >
-            <i class="ri-reset-left-line" aria-hidden="true"></i>
-            {{ translate('reader.formatSetting.resetToDefaults') }}
-          </button>
-
-          <label
-            v-for="control in READER_TYPOGRAPHY_CONTROLS"
-            :key="control.key"
-            class="col-span-1 xl:col-span-2 md:my-1 min-w-0"
-          >
-            <span class="label block text-xs md:text-sm">
-              {{ localizeText(control.shortLabel) }} {{ formatNumericValue(control) }}
-            </span>
-            <input
-              type="range"
-              :min="control.min"
-              :max="control.max"
-              :step="control.step"
-              class="range range-xs xl:range-sm mt-1 w-full"
-              :value="styleConfigs[control.key]"
-              @input="store.setStyle(control.key, Number($event.target.value))"
-            />
-          </label>
-        </div>
-
-        <template v-if="mobile">
-          <fieldset class="mt-4">
-            <legend class="label text-xs">{{ translate('reader.formatSetting.readingColors') }}</legend>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div
+              class="min-w-0"
+              :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
+            >
+              <span class="label block text-xs md:text-sm">
+                {{ translate('reader.formatSetting.textFont') }}
+                <small :title="translate('reader.formatSetting.customAndDeviceFontsApplyOnlyToThisSessionAnd')">
+                  {{ translate('reader.formatSetting.onlySiteFontsCanBeSavedInSettings') }}
+                </small>
+              </span>
+              <FontSelect
+                ref="readerFontSelect"
+                :model-value="styleConfigs.fontStyle"
+                :fallback-font-id="readerFallbackFontId"
+                :website-fonts="readerWebsiteFonts"
+                :aria-label="translate('reader.formatSetting.textFont')"
+                @update:model-value="selectReaderFont"
+                @update:fallback-font-id="selectReaderFallbackFont"
+              />
+            </div>
+            <button
+              v-if="controlsOnly"
+              type="button"
+              class="btn btn-ghost btn-sm xl:btn-md shrink-0 col-span-1 mb-0 mt-auto"
+              :disabled="isLayoutDefault"
+              @click="resetLayout"
+            >
+              <i class="ri-reset-left-line" aria-hidden="true"></i>
+              {{ translate('reader.formatSetting.resetToDefaults') }}
+            </button>
+            <label
+              v-for="control in READER_TYPOGRAPHY_CONTROLS"
+              :key="control.key"
+              class="col-span-1 xl:col-span-2 md:my-1 min-w-0"
+            >
+              <span class="label block text-xs md:text-sm">
+                {{ localizeText(control.shortLabel) }} {{ formatNumericValue(control) }}
+              </span>
+              <input
+                type="range"
+                :min="control.min"
+                :max="control.max"
+                :step="control.step"
+                class="range range-xs xl:range-sm mt-1 w-full"
+                :value="styleConfigs[control.key]"
+                @input="store.setStyle(control.key, Number($event.target.value))"
+              />
+            </label>
+          </div>
+          <template v-if="mobile">
+            <fieldset class="mt-4">
+              <legend class="label text-xs">{{ translate('reader.formatSetting.readingColors') }}</legend>
+              <div class="mt-2 grid grid-cols-5 gap-2">
+                <button
+                  v-for="theme in MOBILE_READER_COLOR_THEMES"
+                  :key="theme.value"
+                  type="button"
+                  class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
+                  :class="{
+                    'outline-2 outline-primary':
+                      selectedColorTheme === theme.value,
+                  }"
+                  :data-theme="theme.value === 'site' ? undefined : theme.value"
+                  @click="selectColorTheme(theme.value)"
+                >
+                  <i :class="theme.icon" aria-hidden="true"></i>
+                  <span class="text-[0.625rem]">{{ localizeText(theme.label) }}</span>
+                </button>
+              </div>
+            </fieldset>
+            <fieldset class="mt-4">
+              <legend
+                class="label text-xs w-full flex items-center justify-between"
+              >
+                <span>{{ translate('reader.formatSetting.wantSomethingElseCustomizeIt') }}</span>
+                <div
+                  role="tablist"
+                  class="tabs tabs-box tabs-xs"
+                  :aria-label="translate('reader.formatSetting.readingBackgroundType')"
+                >
+                  <button
+                    v-for="option in backgroundTypeOptions"
+                    :key="option.value"
+                    type="button"
+                    role="tab"
+                    class="tab gap-1"
+                    :class="{
+                      'tab-active': selectedBackgroundType === option.value,
+                    }"
+                    :aria-selected="selectedBackgroundType === option.value"
+                    @click="setBackgroundType(option.value)"
+                  >
+                    <i :class="option.icon" aria-hidden="true"></i>
+                    {{ localizeText(option.label) }}
+                  </button>
+                </div>
+              </legend>
+              <div class="mt-2 w-full space-y-2">
+                <div
+                  v-if="selectedBackgroundType === 'color'"
+                  class="mt-2 grid grid-cols-2 gap-2"
+                >
+                  <label
+                    class="input input-sm flex w-full items-center justify-between gap-2"
+                  >
+                    <span class="text-xs">{{ translate('reader.formatSetting.textColor') }}</span>
+                    <input
+                      type="color"
+                      class="size-7 cursor-pointer border-0 bg-transparent p-0"
+                      :value="styleConfigs.textColor || '#1f2937'"
+                      @input="setCustomColor('textColor', $event.target.value)"
+                    />
+                  </label>
+                  <label
+                    class="input input-sm flex w-full items-center justify-between gap-2"
+                  >
+                    <span class="text-xs">{{ translate('reader.formatSetting.backgroundColor') }}</span>
+                    <input
+                      type="color"
+                      class="size-7 cursor-pointer border-0 bg-transparent p-0"
+                      :value="styleConfigs.backgroundColor || '#ffffff'"
+                      @input="
+                        setCustomColor('backgroundColor', $event.target.value)
+                      "
+                    />
+                  </label>
+                </div>
+                <div
+                  v-if="selectedBackgroundType === 'image'"
+                  class="grid grid-cols-4 gap-2"
+                >
+                  <button
+                    v-for="image in READER_BACKGROUND_IMAGES"
+                    :key="image.id"
+                    type="button"
+                    class="btn btn-sm relative overflow-hidden border-base-300 bg-cover bg-center p-1"
+                    :class="{
+                      'outline-2 outline-primary outline-offset-2':
+                        styleConfigs.backgroundImage === image.id,
+                    }"
+                    :style="{
+                      backgroundImage: cssBackgroundImage(
+                        getReaderBackgroundImageUrl(image.id),
+                      ),
+                    }"
+                    :aria-label="translate('reader.formatSetting.chooseReadingBackground', { p0: localizeText(image.label) })"
+                    :aria-pressed="styleConfigs.backgroundImage === image.id"
+                    @click="selectBackgroundImage(image)"
+                  >
+                    <span
+                      class="bg-transparent"
+                      :data-theme="image?.colorTheme"
+                      :style="image.textColor ? { color: image.textColor } : {}"
+                    >
+                      {{ localizeText(image.label) }}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+          </template>
+          <fieldset v-else class="mt-4">
+            <legend class="label block text-xs md:text-sm">{{ translate('reader.formatSetting.siteTheme') }}</legend>
             <div class="mt-2 grid grid-cols-5 gap-2">
               <button
-                v-for="theme in MOBILE_READER_COLOR_THEMES"
+                v-for="theme in siteThemeOptions"
                 :key="theme.value"
                 type="button"
                 class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
                 :class="{
-                  'outline-2 outline-primary':
-                    selectedColorTheme === theme.value,
+                  'outline-2 outline-primary': selectedSiteTheme === theme.value,
                 }"
-                :data-theme="theme.value === 'site' ? undefined : theme.value"
-                @click="selectColorTheme(theme.value)"
+                :data-theme="
+                  theme.value === 'default' ? systemTheme : theme.value
+                "
+                :title="localizeText(theme.description)"
+                :aria-label="translate('reader.formatSetting.switchSiteTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
+                :aria-pressed="selectedSiteTheme === theme.value"
+                @click="themeStore.setTheme(theme.value)"
               >
                 <i :class="theme.icon" aria-hidden="true"></i>
-                <span class="text-[0.625rem]">{{ localizeText(theme.label) }}</span>
+                <span class="max-w-full truncate text-[0.625rem]">
+                  {{ localizeText(theme.label) }}
+                </span>
               </button>
             </div>
           </fieldset>
-          <fieldset class="mt-4">
-            <legend
-              class="label text-xs w-full flex items-center justify-between"
-            >
-              <span>{{ translate('reader.formatSetting.wantSomethingElseCustomizeIt') }}</span>
-              <div
-                role="tablist"
-                class="tabs tabs-box tabs-xs"
-                :aria-label="translate('reader.formatSetting.readingBackgroundType')"
-              >
-                <button
-                  v-for="option in backgroundTypeOptions"
-                  :key="option.value"
-                  type="button"
-                  role="tab"
-                  class="tab gap-1"
-                  :class="{
-                    'tab-active': selectedBackgroundType === option.value,
-                  }"
-                  :aria-selected="selectedBackgroundType === option.value"
-                  @click="setBackgroundType(option.value)"
-                >
-                  <i :class="option.icon" aria-hidden="true"></i>
-                  {{ localizeText(option.label) }}
-                </button>
-              </div>
-            </legend>
-            <div class="mt-2 w-full space-y-2">
-              <div
-                v-if="selectedBackgroundType === 'color'"
-                class="mt-2 grid grid-cols-2 gap-2"
-              >
-                <label
-                  class="input input-sm flex w-full items-center justify-between gap-2"
-                >
-                  <span class="text-xs">{{ translate('reader.formatSetting.textColor') }}</span>
-                  <input
-                    type="color"
-                    class="size-7 cursor-pointer border-0 bg-transparent p-0"
-                    :value="styleConfigs.textColor || '#1f2937'"
-                    @input="setCustomColor('textColor', $event.target.value)"
-                  />
-                </label>
-                <label
-                  class="input input-sm flex w-full items-center justify-between gap-2"
-                >
-                  <span class="text-xs">{{ translate('reader.formatSetting.backgroundColor') }}</span>
-                  <input
-                    type="color"
-                    class="size-7 cursor-pointer border-0 bg-transparent p-0"
-                    :value="styleConfigs.backgroundColor || '#ffffff'"
-                    @input="
-                      setCustomColor('backgroundColor', $event.target.value)
-                    "
-                  />
-                </label>
-              </div>
-              <div
-                v-if="selectedBackgroundType === 'image'"
-                class="grid grid-cols-4 gap-2"
-              >
-                <button
-                  v-for="image in READER_BACKGROUND_IMAGES"
-                  :key="image.id"
-                  type="button"
-                  class="btn btn-sm relative overflow-hidden border-base-300 bg-cover bg-center p-1"
-                  :class="{
-                    'outline-2 outline-primary outline-offset-2':
-                      styleConfigs.backgroundImage === image.id,
-                  }"
-                  :style="{
-                    backgroundImage: cssBackgroundImage(
-                      getReaderBackgroundImageUrl(image.id),
-                    ),
-                  }"
-                  :aria-label="translate('reader.formatSetting.chooseReadingBackground', { p0: localizeText(image.label) })"
-                  :aria-pressed="styleConfigs.backgroundImage === image.id"
-                  @click="selectBackgroundImage(image)"
-                >
-                  <span
-                    class="bg-transparent"
-                    :data-theme="image?.colorTheme"
-                    :style="image.textColor ? { color: image.textColor } : {}"
-                  >
-                    {{ localizeText(image.label) }}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </fieldset>
-        </template>
-
-        <fieldset v-else class="mt-4">
-          <legend class="label block text-xs md:text-sm">{{ translate('reader.formatSetting.siteTheme') }}</legend>
-          <div class="mt-2 grid grid-cols-5 gap-2">
-            <button
-              v-for="theme in siteThemeOptions"
-              :key="theme.value"
-              type="button"
-              class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
-              :class="{
-                'outline-2 outline-primary': selectedSiteTheme === theme.value,
-              }"
-              :data-theme="
-                theme.value === 'default' ? systemTheme : theme.value
-              "
-              :title="localizeText(theme.description)"
-              :aria-label="translate('reader.formatSetting.switchSiteTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
-              :aria-pressed="selectedSiteTheme === theme.value"
-              @click="themeStore.setTheme(theme.value)"
-            >
-              <i :class="theme.icon" aria-hidden="true"></i>
-              <span class="max-w-full truncate text-[0.625rem]">
-                {{ localizeText(theme.label) }}
-              </span>
-            </button>
-          </div>
-        </fieldset>
-      </div>
+        </div>
+      </ScrollableContainer>
 
       <footer
         class="shrink-0 border-t border-base-300 px-3 pt-2"
@@ -273,47 +272,16 @@
           mobile ? 'pb-[max(0.75rem,env(safe-area-inset-bottom))]' : 'pb-3'
         "
       >
-        <div
-          class="flex gap-3 overflow-x-auto px-1 py-1.5 scrollbar-thin"
-          :aria-label="translate('reader.formatSetting.builtInAndSavedLayoutPresets')"
-        >
-          <button
-            v-for="{ preset, label } in systemPresets"
-            :key="preset.id"
-            type="button"
-            class="btn btn-circle shrink-0 flex-col gap-1 border-base-300 size-12 p-1 leading-tight shadow-sm"
-            :class="[
-              preset.styles.fontStyle,
-              mobile ? '' : presetSiteTheme(preset) ? 'bg-base-100' : '',
-              {
-                'btn-active outline-2 outline-primary outline-offset-2':
-                  isPresetActive(preset),
-              },
-            ]"
-            :data-theme="
-              (mobile ? presetTheme(preset) : presetDisplayTheme(preset)) ||
-              undefined
-            "
-            :style="presetSampleStyle(preset)"
-            :title="localizeText(preset.description)"
-            :aria-label="translate('reader.formatSetting.applyBuiltInPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
-            :aria-pressed="isPresetActive(preset)"
-            @click="applyPreset(preset)"
-          >
-            <span class="font-sans text-[0.5rem]">{{ label }}</span>
-            <span class="max-w-11 truncate text-[0.75rem]">
-              {{ localizeText(preset.name) }}
-            </span>
-          </button>
-
+        <ScrollableContainer>
           <div
-            v-for="preset in readerLayoutPresets"
-            :key="preset.id"
-            class="relative shrink-0"
+            class="flex gap-3 overflow-x-auto px-1 py-1.5 scrollbar-thin"
+            :aria-label="translate('reader.formatSetting.builtInAndSavedLayoutPresets')"
           >
             <button
+              v-for="{ preset, label } in systemPresets"
+              :key="preset.id"
               type="button"
-              class="btn btn-circle size-12 border-base-300 p-1 text-[0.625rem] leading-tight shadow-sm"
+              class="btn btn-circle shrink-0 flex-col gap-1 border-base-300 size-12 p-1 leading-tight shadow-sm"
               :class="[
                 preset.styles.fontStyle,
                 mobile ? '' : presetSiteTheme(preset) ? 'bg-base-100' : '',
@@ -327,25 +295,57 @@
                 undefined
               "
               :style="presetSampleStyle(preset)"
-              :title="localizeText(preset.name)"
-              :aria-label="translate('reader.formatSetting.applySavedPreset', { p0: localizeText(preset.name) })"
+              :title="localizeText(preset.description)"
+              :aria-label="translate('reader.formatSetting.applyBuiltInPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
               :aria-pressed="isPresetActive(preset)"
               @click="applyPreset(preset)"
             >
-              <span class="line-clamp-2 max-w-11 whitespace-normal break-all">
+              <span class="font-sans text-[0.5rem]">{{ label }}</span>
+              <span class="max-w-11 truncate text-[0.75rem]">
                 {{ localizeText(preset.name) }}
               </span>
             </button>
-            <button
-              type="button"
-              class="btn btn-circle btn-xs absolute -right-1 -top-1 size-5 min-h-0 border-base-300 bg-base-100 p-0 shadow-sm"
-              :aria-label="translate('reader.formatSetting.deletePreset', { p0: localizeText(preset.name) })"
-              @click="store.removeReaderLayoutPreset(preset.id)"
+            <div
+              v-for="preset in readerLayoutPresets"
+              :key="preset.id"
+              class="relative shrink-0"
             >
-              <i class="ri-close-line" aria-hidden="true"></i>
-            </button>
+              <button
+                type="button"
+                class="btn btn-circle size-12 border-base-300 p-1 text-[0.625rem] leading-tight shadow-sm"
+                :class="[
+                  preset.styles.fontStyle,
+                  mobile ? '' : presetSiteTheme(preset) ? 'bg-base-100' : '',
+                  {
+                    'btn-active outline-2 outline-primary outline-offset-2':
+                      isPresetActive(preset),
+                  },
+                ]"
+                :data-theme="
+                  (mobile ? presetTheme(preset) : presetDisplayTheme(preset)) ||
+                  undefined
+                "
+                :style="presetSampleStyle(preset)"
+                :title="localizeText(preset.name)"
+                :aria-label="translate('reader.formatSetting.applySavedPreset', { p0: localizeText(preset.name) })"
+                :aria-pressed="isPresetActive(preset)"
+                @click="applyPreset(preset)"
+              >
+                <span class="line-clamp-2 max-w-11 whitespace-normal break-all">
+                  {{ localizeText(preset.name) }}
+                </span>
+              </button>
+              <button
+                type="button"
+                class="btn btn-circle btn-xs absolute -right-1 -top-1 size-5 min-h-0 border-base-300 bg-base-100 p-0 shadow-sm"
+                :aria-label="translate('reader.formatSetting.deletePreset', { p0: localizeText(preset.name) })"
+                @click="store.removeReaderLayoutPreset(preset.id)"
+              >
+                <i class="ri-close-line" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
-        </div>
+        </ScrollableContainer>
 
         <form class="join mt-1 flex" @submit.prevent="savePreset">
           <input
@@ -363,6 +363,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 

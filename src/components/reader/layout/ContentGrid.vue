@@ -105,35 +105,34 @@
         <slot />
       </div>
 
-      <aside
+      <ScrollableContainer
         v-if="showAside"
-        ref="asideElement"
         :class="[
           'min-w-0 w-full max-w-full lg:sticky lg:self-start',
           'max-lg:mb-12',
-          'max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto',
-          'scrollbar-none',
           asideClass,
         ]"
         :style="{
           top: stickyTop,
-          maskImage: asideMaskImage,
-          WebkitMaskImage: asideMaskImage,
         }"
-        :aria-label="translate('reader.readerBody.readingAids')"
       >
-        <slot name="aside" />
-      </aside>
+        <aside
+          class="max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto scrollbar-none"
+          :aria-label="translate('reader.readerBody.readingAids')"
+        >
+          <slot name="aside" />
+        </aside>
+      </ScrollableContainer>
     </div>
   </section>
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { useScrollMask } from "@/composables/useScrollMask";
 
 defineProps({
   containerClass: { type: [String, Array, Object], default: "" },
@@ -149,10 +148,7 @@ defineProps({
 const emit = defineEmits(["content-ready"]);
 
 const contentElement = ref(null);
-const asideElement = ref(null);
 const mobileTocBoundaryElement = ref(null);
-
-const { maskImage: asideMaskImage } = useScrollMask(asideElement);
 
 const mobileTocCompact = ref(false);
 const mobileTocMenuOpen = ref(false);

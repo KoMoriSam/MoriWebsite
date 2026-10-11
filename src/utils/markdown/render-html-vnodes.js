@@ -73,20 +73,21 @@ const getVNodeProps = (node) => {
 export const parseHtmlFragment = (html = "") =>
   parseFragment(sanitizeMarkdownHtml(html));
 
-const renderNode = (node, resolver, key) => {
+const renderNode = (node, resolver, key, parent) => {
   if (node.nodeName === "#text") return node.value || "";
   if (node.nodeName === "#comment") return null;
   if (!node.tagName) return null;
 
   const props = getVNodeProps(node);
   const children = getChildNodes(node)
-    .map((child, index) => renderNode(child, resolver, `${key}-${index}`))
+    .map((child, index) => renderNode(child, resolver, `${key}-${index}`, node))
     .filter((child) => child !== null);
   const resolved = resolver?.({
     tagName: node.tagName,
     props,
     children,
     key,
+    parentClass: parent?.attrs?.find((attribute) => attribute.name === "class")?.value || "",
   });
 
   if (resolved === false) return null;

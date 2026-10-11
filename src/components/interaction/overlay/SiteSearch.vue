@@ -166,87 +166,87 @@
                   </span>
                 </div>
 
-                <ul
-                  v-if="filteredFilterOptions.length"
-                  class="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-1.5"
-                >
-                  <li
-                    v-for="group in filterOptionGroups"
-                    :key="group.key"
-                    role="presentation"
+                <ScrollableContainer class="flex-1" v-if="filteredFilterOptions.length">
+                  <ul
+                    class="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-1.5"
                   >
-                    <div
-                      v-if="group.label"
-                      class="flex items-center gap-2 px-3 pb-1 pt-2 text-xs font-semibold text-base-content/45"
+                    <li
+                      v-for="group in filterOptionGroups"
+                      :key="group.key"
+                      role="presentation"
                     >
-                      <i class="ri-folder-3-line" aria-hidden="true"></i>
-                      <span class="min-w-0 flex-1 truncate">
-                        {{ group.label }}
-                      </span>
-                      <span class="shrink-0 font-normal text-base-content/40">
-                        {{ group.count }} {{ translate('common.search.items') }}
-                      </span>
-                    </div>
-
-                    <ul
-                      class="space-y-0.5"
-                      :role="group.label ? 'group' : 'presentation'"
-                      :aria-label="group.label || null"
-                    >
-                      <li
-                        v-for="option in group.options"
-                        :key="`${option.type}-${option.value}`"
-                        role="presentation"
+                      <div
+                        v-if="group.label"
+                        class="flex items-center gap-2 px-3 pb-1 pt-2 text-xs font-semibold text-base-content/45"
                       >
-                        <button
-                          :id="`global-filter-option-${option.index}`"
-                          type="button"
-                          role="option"
-                          :aria-label="
-                            option.type === 'tag'
-                              ? `${option.typeLabel} ${option.fullLabel}`
-                              : option.type === 'year'
-                                ? translate('common.search.year', { p0: option.label })
-                                : translate('common.search.contentType', { p0: option.label })
-                          "
-                          :aria-selected="activeFilterIndex === option.index"
-                          class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
-                          :class="[
-                            activeFilterIndex === option.index
-                              ? 'bg-primary/10 text-primary'
-                              : 'hover:bg-base-200',
-                            group.label ? 'pl-5' : '',
-                          ]"
-                          @mouseenter="activeFilterIndex = option.index"
-                          @mousedown.prevent="selectFilterOption(option)"
+                        <i class="ri-folder-3-line" aria-hidden="true"></i>
+                        <span class="min-w-0 flex-1 truncate">
+                          {{ group.label }}
+                        </span>
+                        <span class="shrink-0 font-normal text-base-content/40">
+                          {{ group.count }} {{ translate('common.search.items') }}
+                        </span>
+                      </div>
+                      <ul
+                        class="space-y-0.5"
+                        :role="group.label ? 'group' : 'presentation'"
+                        :aria-label="group.label || null"
+                      >
+                        <li
+                          v-for="option in group.options"
+                          :key="`${option.type}-${option.value}`"
+                          role="presentation"
                         >
-                          <span
-                            class="flex size-7 shrink-0 items-center justify-center text-sm text-base-content/40"
-                            :class="
-                              group.label
-                                ? ''
-                                : 'rounded-md bg-base-200 font-mono text-base-content/55'
+                          <button
+                            :id="`global-filter-option-${option.index}`"
+                            type="button"
+                            role="option"
+                            :aria-label="
+                              option.type === 'tag'
+                                ? `${option.typeLabel} ${option.fullLabel}`
+                                : option.type === 'year'
+                                  ? translate('common.search.year', { p0: option.label })
+                                  : translate('common.search.contentType', { p0: option.label })
                             "
-                            aria-hidden="true"
+                            :aria-selected="activeFilterIndex === option.index"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                            :class="[
+                              activeFilterIndex === option.index
+                                ? 'bg-primary/10 text-primary'
+                                : 'hover:bg-base-200',
+                              group.label ? 'pl-5' : '',
+                            ]"
+                            @mouseenter="activeFilterIndex = option.index"
+                            @mousedown.prevent="selectFilterOption(option)"
                           >
-                            <i
-                              v-if="group.label"
-                              class="ri-corner-down-right-line"
-                            ></i>
-                            <template v-else>{{ option.prefix }}</template>
-                          </span>
-                          <span class="min-w-0 flex-1 truncate font-medium">
-                            {{ localizeText(option.label) }}
-                          </span>
-                          <span class="text-xs text-base-content/40">
-                            {{ option.count }}
-                            {{ option.type === "type" ? translate('common.search.items') : translate('pages.articleList.articles3') }}
-                          </span>
-                        </button>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
+                            <span
+                              class="flex size-7 shrink-0 items-center justify-center text-sm text-base-content/40"
+                              :class="
+                                group.label
+                                  ? ''
+                                  : 'rounded-md bg-base-200 font-mono text-base-content/55'
+                              "
+                              aria-hidden="true"
+                            >
+                              <i
+                                v-if="group.label"
+                                class="ri-corner-down-right-line"
+                              ></i>
+                              <template v-else>{{ option.prefix }}</template>
+                            </span>
+                            <span class="min-w-0 flex-1 truncate font-medium">
+                              {{ localizeText(option.label) }}
+                            </span>
+                            <span class="text-xs text-base-content/40">
+                              {{ option.count }}
+                              {{ option.type === "type" ? translate('common.search.items') : translate('pages.articleList.articles3') }}
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </ScrollableContainer>
 
                 <p
                   v-else
@@ -268,136 +268,100 @@
             </p>
           </div>
 
-          <div
-            id="global-search-results"
-            class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-          >
-            <template v-if="hasSearchCriteria">
-              <div
-                v-if="isLoading"
-                class="space-y-3 p-4 sm:p-5"
-                :aria-label="translate('common.search.searching')"
-              >
+          <ScrollableContainer class="flex-1">
+            <div
+              id="global-search-results"
+              class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+            >
+              <template v-if="hasSearchCriteria">
                 <div
-                  v-for="index in 4"
-                  :key="index"
-                  class="flex gap-3 rounded-box border border-base-300 p-4"
+                  v-if="isLoading"
+                  class="space-y-3 p-4 sm:p-5"
+                  :aria-label="translate('common.search.searching')"
                 >
-                  <div class="skeleton mt-1 size-8 shrink-0 rounded-full"></div>
-                  <div class="min-w-0 flex-1 space-y-2">
-                    <div class="skeleton h-5 w-2/5"></div>
-                    <div class="skeleton h-4 w-full"></div>
+                  <div
+                    v-for="index in 4"
+                    :key="index"
+                    class="flex gap-3 rounded-box border border-base-300 p-4"
+                  >
+                    <div class="skeleton mt-1 size-8 shrink-0 rounded-full"></div>
+                    <div class="min-w-0 flex-1 space-y-2">
+                      <div class="skeleton h-5 w-2/5"></div>
+                      <div class="skeleton h-4 w-full"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div
-                v-else-if="errorMessage"
-                class="px-6 py-14 text-center"
-                role="alert"
-              >
-                <i
-                  class="ri-error-warning-line mb-3 block text-4xl text-error/65"
-                  aria-hidden="true"
-                ></i>
-                <p class="font-medium">{{ translate('common.search.theSearchIndexIsTemporarilyUnavailable') }}</p>
-                <p class="mt-1 text-sm text-base-content/50">
-                  {{ localizeText(errorMessage) }}
-                </p>
-                <button
-                  type="button"
-                  class="btn btn-outline btn-sm mt-5"
-                  @click="initializeSearch(true)"
+                <div
+                  v-else-if="errorMessage"
+                  class="px-6 py-14 text-center"
+                  role="alert"
                 >
-                  {{ translate('pages.announcements.retry') }}
-                </button>
-              </div>
-
-              <ul
-                v-else-if="results.length"
-                class="menu w-full gap-1 p-2 sm:p-3"
-                role="listbox"
-                :aria-label="translate('common.search.siteSearchResults')"
-              >
-                <li v-for="(result, index) in results" :key="result.url">
+                  <i
+                    class="ri-error-warning-line mb-3 block text-4xl text-error/65"
+                    aria-hidden="true"
+                  ></i>
+                  <p class="font-medium">{{ translate('common.search.theSearchIndexIsTemporarilyUnavailable') }}</p>
+                  <p class="mt-1 text-sm text-base-content/50">
+                    {{ localizeText(errorMessage) }}
+                  </p>
                   <button
-                    :id="`global-search-result-${index}`"
                     type="button"
-                    role="option"
-                    :aria-selected="activeIndex === index"
-                    class="group block w-full rounded-box px-3 py-3 text-left sm:px-4"
-                    :class="{ 'bg-primary/10': activeIndex === index }"
-                    @mouseenter="activeIndex = index"
-                    @focus="activeIndex = index"
-                    @click="openResult(result)"
+                    class="btn btn-outline btn-sm mt-5"
+                    @click="initializeSearch(true)"
                   >
-                    <span class="flex min-w-0 items-start gap-3">
-                      <span
-                        class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-                      >
-                        <i :class="result.typeIcon" aria-hidden="true"></i>
-                      </span>
-
-                      <span class="min-w-0 flex-1">
+                    {{ translate('pages.announcements.retry') }}
+                  </button>
+                </div>
+                <ul
+                  v-else-if="results.length"
+                  class="menu w-full gap-1 p-2 sm:p-3"
+                  role="listbox"
+                  :aria-label="translate('common.search.siteSearchResults')"
+                >
+                  <li v-for="(result, index) in results" :key="result.url">
+                    <button
+                      :id="`global-search-result-${index}`"
+                      type="button"
+                      role="option"
+                      :aria-selected="activeIndex === index"
+                      class="group block w-full rounded-box px-3 py-3 text-left sm:px-4"
+                      :class="{ 'bg-primary/10': activeIndex === index }"
+                      @mouseenter="activeIndex = index"
+                      @focus="activeIndex = index"
+                      @click="openResult(result)"
+                    >
+                      <span class="flex min-w-0 items-start gap-3">
                         <span
-                          class="block text-balance font-serif text-base font-bold leading-snug sm:text-lg"
+                          class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
                         >
-                          <template
-                            v-for="(part, partIndex) in highlightParts(
-                              result.type === 'licenses' ? localizeText(result.title) : result.title,
-                            )"
-                            :key="`${part.text}-${partIndex}`"
-                          >
-                            <mark
-                              v-if="part.match"
-                              class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
-                            >
-                              {{ part.text }}
-                            </mark>
-                            <template v-else>{{ part.text }}</template>
-                          </template>
+                          <i :class="result.typeIcon" aria-hidden="true"></i>
                         </span>
-
-                        <span
-                          v-if="shouldShowResultSummary(result)"
-                          class="mt-1 line-clamp-2 text-pretty text-sm leading-relaxed text-base-content/60"
-                        >
-                          <template
-                            v-for="(part, partIndex) in highlightParts(
-                              getResultSummary(result),
-                            )"
-                            :key="`${part.text}-${partIndex}`"
-                          >
-                            <mark
-                              v-if="part.match"
-                              class="rounded-sm bg-primary/60 px-0.5 text-primary-content"
-                            >
-                              {{ part.text }}
-                            </mark>
-                            <template v-else>{{ part.text }}</template>
-                          </template>
-                        </span>
-
-                        <span
-                          class="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/45"
-                        >
-                          <time
-                            v-if="
-                              result.date &&
-                              !result.metadata?.length &&
-                              !shouldMoveChangelogDateToSummary(result)
-                            "
-                          >
-                            {{ formatLocalizedDate(result.date) }}
-                          </time>
+                        <span class="min-w-0 flex-1">
                           <span
-                            v-for="tag in result.tags"
-                            :key="`${result.url}-${tag}`"
-                            class="badge badge-ghost badge-xs truncate"
+                            class="block text-balance font-serif text-base font-bold leading-snug sm:text-lg"
                           >
-                            #<template
+                            <template
                               v-for="(part, partIndex) in highlightParts(
-                                formatTag(tag),
+                                result.type === 'licenses' ? localizeText(result.title) : result.title,
+                              )"
+                              :key="`${part.text}-${partIndex}`"
+                            >
+                              <mark
+                                v-if="part.match"
+                                class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
+                              >
+                                {{ part.text }}
+                              </mark>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </span>
+                          <span
+                            v-if="shouldShowResultSummary(result)"
+                            class="mt-1 line-clamp-2 text-pretty text-sm leading-relaxed text-base-content/60"
+                          >
+                            <template
+                              v-for="(part, partIndex) in highlightParts(
+                                getResultSummary(result),
                               )"
                               :key="`${part.text}-${partIndex}`"
                             >
@@ -411,45 +375,76 @@
                             </template>
                           </span>
                           <span
-                            v-for="meta in result.metadata"
-                            :key="`${result.url}-${meta.key}`"
-                            class="inline-flex min-w-0 max-w-full items-center gap-1"
-                            :title="`${localizeText(meta.label)}: ${metadataValue(meta)}`"
+                            class="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/45"
                           >
-                            <i
-                              class="shrink-0"
-                              :class="meta.icon"
-                              aria-hidden="true"
-                            ></i>
-                            <span class="shrink-0">{{ localizeText(meta.label) }}</span>
-                            <span class="max-w-48 truncate">
-                              {{ metadataValue(meta) }}
+                            <time
+                              v-if="
+                                result.date &&
+                                !result.metadata?.length &&
+                                !shouldMoveChangelogDateToSummary(result)
+                              "
+                            >
+                              {{ formatLocalizedDate(result.date) }}
+                            </time>
+                            <span
+                              v-for="tag in result.tags"
+                              :key="`${result.url}-${tag}`"
+                              class="badge badge-ghost badge-xs truncate"
+                            >
+                              #<template
+                                v-for="(part, partIndex) in highlightParts(
+                                  formatTag(tag),
+                                )"
+                                :key="`${part.text}-${partIndex}`"
+                              >
+                                <mark
+                                  v-if="part.match"
+                                  class="rounded-sm bg-primary/60 px-0.5 text-primary-content"
+                                >
+                                  {{ part.text }}
+                                </mark>
+                                <template v-else>{{ part.text }}</template>
+                              </template>
+                            </span>
+                            <span
+                              v-for="meta in result.metadata"
+                              :key="`${result.url}-${meta.key}`"
+                              class="inline-flex min-w-0 max-w-full items-center gap-1"
+                              :title="`${localizeText(meta.label)}: ${metadataValue(meta)}`"
+                            >
+                              <i
+                                class="shrink-0"
+                                :class="meta.icon"
+                                aria-hidden="true"
+                              ></i>
+                              <span class="shrink-0">{{ localizeText(meta.label) }}</span>
+                              <span class="max-w-48 truncate">
+                                {{ metadataValue(meta) }}
+                              </span>
                             </span>
                           </span>
                         </span>
+                        <i
+                          class="ri-arrow-right-line mt-2 shrink-0 text-base-content/25 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
+                          aria-hidden="true"
+                        ></i>
                       </span>
-
-                      <i
-                        class="ri-arrow-right-line mt-2 shrink-0 text-base-content/25 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transition-none"
-                        aria-hidden="true"
-                      ></i>
-                    </span>
-                  </button>
-                </li>
-              </ul>
-
-              <div v-else class="px-6 py-16 text-center" role="status">
-                <i
-                  class="ri-search-eye-line mb-3 block text-4xl text-base-content/20"
-                  aria-hidden="true"
-                ></i>
-                <p class="font-medium">{{ translate('common.search.noMatchingContentFound') }}</p>
-                <p class="mt-1 text-sm text-base-content/45">
-                  {{ translate('common.search.tryShorterKeywordsOrRemoveSomeFilters') }}
-                </p>
-              </div>
-            </template>
-          </div>
+                    </button>
+                  </li>
+                </ul>
+                <div v-else class="px-6 py-16 text-center" role="status">
+                  <i
+                    class="ri-search-eye-line mb-3 block text-4xl text-base-content/20"
+                    aria-hidden="true"
+                  ></i>
+                  <p class="font-medium">{{ translate('common.search.noMatchingContentFound') }}</p>
+                  <p class="mt-1 text-sm text-base-content/45">
+                    {{ translate('common.search.tryShorterKeywordsOrRemoveSomeFilters') }}
+                  </p>
+                </div>
+              </template>
+            </div>
+          </ScrollableContainer>
 
           <footer
             v-if="hasSearchCriteria"
@@ -471,6 +466,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText, message: localeMessage, date: formatLocalizedDate, number: formatNumber } = useLocale();
 

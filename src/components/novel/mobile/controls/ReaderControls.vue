@@ -225,9 +225,13 @@
       class="modal modal-bottom z-[90]"
       @cancel.prevent="requestPlatformCloseDialog"
     >
-      <div class="modal-box max-h-[78dvh] overflow-y-auto rounded-t-box p-0">
-        <ReaderDialogHeader :title="translate('tools.imageConverter.moreSettings')" @back="requestCloseDialog" />
-        <ReaderMoreSettings @edit-tap-zones="openTapZoneEditor" />
+      <div class="modal-box flex max-h-[78dvh] flex-col overflow-hidden rounded-t-box p-0">
+        <ReaderDialogHeader class="shrink-0" :title="translate('tools.imageConverter.moreSettings')" @back="requestCloseDialog" />
+        <ScrollableContainer class="flex-1">
+          <div class="min-h-0 overflow-y-auto overscroll-contain scrollbar-thin">
+            <ReaderMoreSettings @edit-tap-zones="openTapZoneEditor" />
+          </div>
+        </ScrollableContainer>
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
@@ -254,24 +258,26 @@
             </button>
           </template>
         </ReaderDialogHeader>
-        <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
-          <Giscus
-            :key="giscusKey"
-            :repo="GISCUS.novelRepo.name"
-            :repo-id="GISCUS.novelRepo.id"
-            :category="GISCUS.categories.general.name"
-            :category-id="GISCUS.categories.general.id"
-            :mapping="giscusMapping"
-            :term="giscusTerm"
-            strict="0"
-            reactions-enabled="1"
-            emit-metadata="0"
-            input-position="bottom"
-            :theme="giscusTheme"
-            :lang="commentLocale"
-            loading="lazy"
-          />
-        </section>
+        <ScrollableContainer class="flex-1">
+          <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
+            <Giscus
+              :key="giscusKey"
+              :repo="GISCUS.novelRepo.name"
+              :repo-id="GISCUS.novelRepo.id"
+              :category="GISCUS.categories.general.name"
+              :category-id="GISCUS.categories.general.id"
+              :mapping="giscusMapping"
+              :term="giscusTerm"
+              strict="0"
+              reactions-enabled="1"
+              emit-metadata="0"
+              input-position="bottom"
+              :theme="giscusTheme"
+              :lang="commentLocale"
+              loading="lazy"
+            />
+          </section>
+        </ScrollableContainer>
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
@@ -286,6 +292,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, commentLocale } = useLocale();
 

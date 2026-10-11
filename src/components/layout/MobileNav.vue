@@ -12,105 +12,108 @@
         :class="isOpen ? 'ri-close-line rotate-90' : 'ri-menu-line'"
       ></i>
     </button>
-
     <div
       id="mobile-navigation"
       ref="mobilePopover"
       popover="auto"
-      class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-box border p-3 shadow-xl sm:w-96"
+      class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-hidden overscroll-contain rounded-box border p-3 shadow-xl sm:w-96"
       style="position-anchor: --mobile-navigation-anchor"
       :aria-label="translate('common.mobileNav.mobileNavigation')"
       @toggle="handleToggle"
     >
-      <section aria-labelledby="mobile-primary-navigation">
-        <ul class="grid grid-cols-4 gap-2 sm:grid-cols-2 max-lg:gap-1.5">
-          <li v-for="link in NAV_LINKS" :key="link.to.name">
-            <RouterLink
-              :to="link.to"
-              class="btn h-fit flex-col sm:flex-row gap-0 sm:gap-2 py-2 w-full max-lg:min-h-11 max-lg:px-2 max-lg:py-1.5"
-              :class="
-                isNavigationLinkActive(navigationRoute, link)
-                  ? 'btn-primary'
-                  : 'btn-ghost border border-base-300'
-              "
-              @click="closeMenu"
-            >
-              <i
-                class="text-lg"
-                :class="`${link.icon}-${
-                  isNavigationLinkActive(navigationRoute, link) ? 'fill' : 'line'
-                }`"
-              ></i>
-              {{ localizeText(link.name) }}
-            </RouterLink>
-          </li>
-        </ul>
-      </section>
+      <ScrollableContainer>
+        <div class="min-h-0 overflow-y-auto overscroll-contain" style="max-height: min(calc(78dvh - 1.5rem),40.5rem)">
+          <section aria-labelledby="mobile-primary-navigation">
+            <ul class="grid grid-cols-4 gap-2 sm:grid-cols-2 max-lg:gap-1.5">
+              <li v-for="link in NAV_LINKS" :key="link.to.name">
+                <RouterLink
+                  :to="link.to"
+                  class="btn h-fit flex-col sm:flex-row gap-0 sm:gap-2 py-2 w-full max-lg:min-h-11 max-lg:px-2 max-lg:py-1.5"
+                  :class="
+                    isNavigationLinkActive(navigationRoute, link)
+                      ? 'btn-primary'
+                      : 'btn-ghost border border-base-300'
+                  "
+                  @click="closeMenu"
+                >
+                  <i
+                    class="text-lg"
+                    :class="`${link.icon}-${
+                      isNavigationLinkActive(navigationRoute, link) ? 'fill' : 'line'
+                    }`"
+                  ></i>
+                  {{ localizeText(link.name) }}
+                </RouterLink>
+              </li>
+            </ul>
+          </section>
+          <section aria-labelledby="mobile-project-navigation">
+            <div class="divider my-3 justify-between max-lg:my-2">
+              <h2 class="text-base-content/55 text-xs font-bold">
+                {{ translate('common.mobileNav.projects') }}
+                <span class="badge badge-ghost badge-xs mb-0.75">
+                  {{ PROJECTS.length }}
+                </span>
+              </h2>
+              <a
+                :href="PROJECTS_GITHUB_URL"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-ghost btn-sm mb-0.75"
+                @click="closeMenu"
+              >
+                <i class="ri-github-fill text-base"></i>
+                <span>{{ translate('common.mobileNav.viewAllRepositories') }}</span>
+                <i class="ri-arrow-right-up-line"></i>
+              </a>
+            </div>
+            <div class="grid gap-2 max-lg:gap-1.5">
+              <component
+                :is="project.to ? RouterLink : 'a'"
+                v-for="project in PROJECTS"
+                :key="project.name"
+                v-bind="projectLinkProps(project)"
+                class="border-base-300 hover:bg-base-200 focus-visible:outline-primary group flex min-h-16 items-center gap-3 rounded-box border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 max-lg:min-h-12 max-lg:gap-2 max-lg:p-2"
+                :class="
+                  isProjectActive(project) ? 'border-primary/50 bg-primary/10' : ''
+                "
+                @click="closeMenu"
+              >
+                <span
+                  class="bg-base-200 group-hover:bg-primary group-hover:text-primary-content grid size-10 shrink-0 place-items-center rounded-field transition-colors max-lg:size-8"
+                  :class="
+                    isProjectActive(project)
+                      ? 'bg-primary text-primary-content'
+                      : ''
+                  "
+                >
+                  <i :class="project.icon" class="text-xl"></i>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center gap-2 font-semibold">
+                    <span class="truncate">{{ localizeText(project.name) }}</span>
+                    <i
+                      v-if="project.href"
+                      class="ri-arrow-right-up-line text-base-content/45 ml-auto shrink-0"
+                    ></i>
+                  </span>
+                  <span class="text-base-content/60 mt-0.5 block text-xs">
+                    {{ localizeText(project.category) }} · {{ project.meta }}
+                  </span>
+                </span>
+              </component>
+            </div>
+          </section>
 
-      <section aria-labelledby="mobile-project-navigation">
-        <div class="divider my-3 justify-between max-lg:my-2">
-          <h2 class="text-base-content/55 text-xs font-bold">
-            {{ translate('common.mobileNav.projects') }}
-            <span class="badge badge-ghost badge-xs mb-0.75">
-              {{ PROJECTS.length }}
-            </span>
-          </h2>
-          <a
-            :href="PROJECTS_GITHUB_URL"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-ghost btn-sm mb-0.75"
-            @click="closeMenu"
-          >
-            <i class="ri-github-fill text-base"></i>
-            <span>{{ translate('common.mobileNav.viewAllRepositories') }}</span>
-            <i class="ri-arrow-right-up-line"></i>
-          </a>
+
         </div>
-
-        <div class="grid gap-2 max-lg:gap-1.5">
-          <component
-            :is="project.to ? RouterLink : 'a'"
-            v-for="project in PROJECTS"
-            :key="project.name"
-            v-bind="projectLinkProps(project)"
-            class="border-base-300 hover:bg-base-200 focus-visible:outline-primary group flex min-h-16 items-center gap-3 rounded-box border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 max-lg:min-h-12 max-lg:gap-2 max-lg:p-2"
-            :class="
-              isProjectActive(project) ? 'border-primary/50 bg-primary/10' : ''
-            "
-            @click="closeMenu"
-          >
-            <span
-              class="bg-base-200 group-hover:bg-primary group-hover:text-primary-content grid size-10 shrink-0 place-items-center rounded-field transition-colors max-lg:size-8"
-              :class="
-                isProjectActive(project)
-                  ? 'bg-primary text-primary-content'
-                  : ''
-              "
-            >
-              <i :class="project.icon" class="text-xl"></i>
-            </span>
-            <span class="min-w-0 flex-1">
-              <span class="flex items-center gap-2 font-semibold">
-                <span class="truncate">{{ localizeText(project.name) }}</span>
-                <i
-                  v-if="project.href"
-                  class="ri-arrow-right-up-line text-base-content/45 ml-auto shrink-0"
-                ></i>
-              </span>
-              <span class="text-base-content/60 mt-0.5 block text-xs">
-                {{ localizeText(project.category) }} · {{ project.meta }}
-              </span>
-            </span>
-          </component>
-        </div>
-      </section>
-
-    </div>
+      </ScrollableContainer>
+</div>
   </div>
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 

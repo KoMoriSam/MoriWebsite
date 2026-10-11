@@ -146,19 +146,35 @@
 
       <template #description>
         <!-- 页码列表 -->
-        <div
-          ref="pageListRef"
-          class="grid max-h-[min(24rem,calc(100dvh-15rem))] grid-cols-4 gap-2.5 overflow-y-auto overscroll-contain pr-1 scrollbar-thin min-[390px]:grid-cols-5 sm:grid-cols-6 sm:gap-3"
-        >
-          <template v-for="page in totalPages" :key="page">
-            <RouterLink
-              v-if="getPageRoute"
-              :to="resolvePageRoute(page)"
-              custom
-              v-slot="{ href }"
-            >
-              <a
-                :href="href"
+        <ScrollableContainer>
+          <div
+            ref="pageListRef"
+            class="grid max-h-[min(24rem,calc(100dvh-15rem))] grid-cols-4 gap-2.5 overflow-y-auto overscroll-contain pr-1 scrollbar-thin min-[390px]:grid-cols-5 sm:grid-cols-6 sm:gap-3"
+          >
+            <template v-for="page in totalPages" :key="page">
+              <RouterLink
+                v-if="getPageRoute"
+                :to="resolvePageRoute(page)"
+                custom
+                v-slot="{ href }"
+              >
+                <a
+                  :href="href"
+                  class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
+                  :class="
+                    page === currentPage
+                      ? 'btn-primary'
+                      : 'btn-ghost bg-base-200/70 hover:bg-base-300'
+                  "
+                  :aria-current="page === currentPage ? 'page' : undefined"
+                  @click="selectLinkedPage(page, $event)"
+                >
+                  {{ page }}
+                </a>
+              </RouterLink>
+              <button
+                v-else
+                type="button"
                 class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
                 :class="
                   page === currentPage
@@ -166,28 +182,13 @@
                     : 'btn-ghost bg-base-200/70 hover:bg-base-300'
                 "
                 :aria-current="page === currentPage ? 'page' : undefined"
-                @click="selectLinkedPage(page, $event)"
+                @click="selectPage(page)"
               >
                 {{ page }}
-              </a>
-            </RouterLink>
-
-            <button
-              v-else
-              type="button"
-              class="btn h-11 min-h-11 min-w-0 px-2 text-sm"
-              :class="
-                page === currentPage
-                  ? 'btn-primary'
-                  : 'btn-ghost bg-base-200/70 hover:bg-base-300'
-              "
-              :aria-current="page === currentPage ? 'page' : undefined"
-              @click="selectPage(page)"
-            >
-              {{ page }}
-            </button>
-          </template>
-        </div>
+              </button>
+            </template>
+          </div>
+        </ScrollableContainer>
 
         <!-- 底部快捷操作 -->
         <footer
@@ -253,6 +254,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText, number: formatNumber } = useLocale();
 

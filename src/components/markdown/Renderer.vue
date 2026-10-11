@@ -62,6 +62,7 @@ import Mermaid from "@/components/markdown/blocks/Mermaid.vue";
 import Moment from "@/components/markdown/blocks/Moment.vue";
 import ImagePreview from "@/components/interaction/overlay/ImagePreview.vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
   MARKDOWN_MODES,
   MARKDOWN_MODE_READER,
@@ -431,7 +432,37 @@ const resolveMarkdownComponent = ({
   props: nodeProps,
   children,
   key,
+  parentClass,
 }) => {
+  // Raw HTML tables bypass Markdown's table-wrapper plugin.
+  if (tagName === "table" && !String(parentClass || "").split(/\s+/).includes("markdown-table-wrapper")) {
+    return h(
+      ScrollableContainer,
+      { key, class: "markdown-table-scroll w-full max-w-full", layout: "block" },
+      { default: () => h("section", { class: "markdown-table-wrapper" }, [h(tagName, nodeProps, children)]) },
+    );
+  }
+  if (
+    tagName === "section" &&
+    String(nodeProps.class || "").split(/\s+/).includes("markdown-table-wrapper")
+  ) {
+    return h(
+      ScrollableContainer,
+      { key, class: "markdown-table-scroll w-full max-w-full", layout: "block" },
+      { default: () => h("section", nodeProps, children) },
+    );
+  }
+  if (
+    tagName === "mjx-container" &&
+    nodeProps.display === "true" &&
+    nodeProps["data-reader-latex-source"] != null
+  ) {
+    return h(
+      ScrollableContainer,
+      { key, tag: "span", class: "w-full max-w-full" },
+      { default: () => h(tagName, nodeProps, children) },
+    );
+  }
   if (!tagName.startsWith("markdown-")) return undefined;
 
   const componentProps = projectMarkdownComponentProps(

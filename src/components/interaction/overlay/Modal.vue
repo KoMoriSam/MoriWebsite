@@ -49,16 +49,18 @@
 
         <slot name="header-details"></slot>
       </header>
-      <section
-        :class="{
-          'scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5': scrollContent,
-        }"
-      >
-        <slot name="description">
-          {{ localizeText(description) || translate('common.modal.thisIsTheDefaultDescription') }}
-          <!-- fallback -->
-        </slot>
-      </section>
+      <ScrollableContainer :class="{ 'flex-1': scrollContent }">
+        <section
+          :class="{
+            'scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5': scrollContent,
+          }"
+        >
+          <slot name="description">
+            {{ localizeText(description) || translate('common.modal.thisIsTheDefaultDescription') }}
+            <!-- fallback -->
+          </slot>
+        </section>
+      </ScrollableContainer>
       <form
         v-if="isConfirm"
         method="dialog"
@@ -98,6 +100,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 

@@ -1,37 +1,39 @@
 <template>
   <nav class="mb-4 shrink-0 lg:is-drawer-open:pr-10" :aria-label="label">
-    <div
-      role="tablist"
-      class="tabs tabs-border tabs-sm hidden w-full flex-nowrap overflow-x-auto scrollbar-thin lg:is-drawer-open:flex"
-    >
-      <button
-        v-for="item in items"
-        :id="`${panelId}-menu-${item.id}`"
-        :key="item.id"
-        type="button"
-        role="tab"
-        class="tab min-w-0 shrink-0 gap-2 whitespace-nowrap"
-        :class="panel === item.id ? 'tab-active' : ''"
-        :aria-selected="panel === item.id"
-        :aria-controls="`${panelId}-${item.id}`"
-        @click="emit('select-panel', item.id)"
+    <ScrollableContainer class="hidden w-full lg:is-drawer-open:flex">
+      <div
+        role="tablist"
+        class="tabs tabs-border tabs-sm w-full flex-nowrap overflow-x-auto scrollbar-thin"
       >
-        <span class="indicator"
-          ><span
-            v-if="item.badge"
-            class="indicator-item badge badge-error badge-xs min-w-5 px-1 font-semibold tabular-nums"
-            aria-hidden="true"
-            >{{ item.badge }}</span
-          ><i
-            :class="item.icon"
-            class="text-lg leading-none"
-            aria-hidden="true"
-          ></i
-        ></span>
-        {{ t(item.label)
-        }}<span v-if="item.badge" class="sr-only">{{ item.badgeLabel }}</span>
-      </button>
-    </div>
+        <button
+          v-for="item in items"
+          :id="`${panelId}-menu-${item.id}`"
+          :key="item.id"
+          type="button"
+          role="tab"
+          class="tab min-w-0 shrink-0 gap-2 whitespace-nowrap"
+          :class="panel === item.id ? 'tab-active' : ''"
+          :aria-selected="panel === item.id"
+          :aria-controls="`${panelId}-${item.id}`"
+          @click="emit('select-panel', item.id)"
+        >
+          <span class="indicator"
+            ><span
+              v-if="item.badge"
+              class="indicator-item badge badge-error badge-xs min-w-5 px-1 font-semibold tabular-nums"
+              aria-hidden="true"
+              >{{ item.badge }}</span
+            ><i
+              :class="item.icon"
+              class="text-lg leading-none"
+              aria-hidden="true"
+            ></i
+          ></span>
+          {{ t(item.label)
+          }}<span v-if="item.badge" class="sr-only">{{ item.badgeLabel }}</span>
+        </button>
+      </div>
+    </ScrollableContainer>
     <ul class="menu w-full gap-1 p-0 lg:is-drawer-open:hidden">
       <li
         v-for="item in items"
@@ -69,6 +71,7 @@
   </nav>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from "@/i18n";
 defineProps({
   items: { type: Array, required: true },

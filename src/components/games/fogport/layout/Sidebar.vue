@@ -7,24 +7,26 @@
       :label="t('fogport.visual.views')"
       @select-panel="emit('select-panel', $event)"
     />
-    <section
-      v-show="panel === 'players'"
-      :id="`${panelId}-players`"
-      role="region"
-      :aria-labelledby="`${panelId}-menu-players`"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
-    >
-      <PlayerList :game="room.game" :players="room.players" />
-    </section>
-    <section
-      v-show="panel === 'market'"
-      :id="`${panelId}-market`"
-      role="region"
-      :aria-labelledby="`${panelId}-menu-market`"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
-    >
-      <Market :game="room.game" />
-    </section>
+    <ScrollableContainer class="flex-1 lg:is-drawer-close:hidden" v-show="panel === 'players'">
+      <section
+        :id="`${panelId}-players`"
+        role="region"
+        :aria-labelledby="`${panelId}-menu-players`"
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
+      >
+        <PlayerList :game="room.game" :players="room.players" />
+      </section>
+    </ScrollableContainer>
+    <ScrollableContainer class="flex-1 lg:is-drawer-close:hidden" v-show="panel === 'market'">
+      <section
+        :id="`${panelId}-market`"
+        role="region"
+        :aria-labelledby="`${panelId}-menu-market`"
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
+      >
+        <Market :game="room.game" />
+      </section>
+    </ScrollableContainer>
     <section
       v-show="midDesktop && panel === 'hand'"
       :id="`${panelId}-hand`"
@@ -33,15 +35,16 @@
     >
       <div :id="inventoryTargetId" class="flex h-full min-h-0 flex-col"></div>
     </section>
-    <section
-      v-show="panel === 'history'"
-      :id="`${panelId}-history`"
-      role="region"
-      :aria-labelledby="`${panelId}-menu-history`"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
-    >
-      <History in-context :game="room.game" />
-    </section>
+    <ScrollableContainer class="flex-1 lg:is-drawer-close:hidden" v-show="panel === 'history'">
+      <section
+        :id="`${panelId}-history`"
+        role="region"
+        :aria-labelledby="`${panelId}-menu-history`"
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin lg:is-drawer-close:hidden"
+      >
+        <History in-context :game="room.game" />
+      </section>
+    </ScrollableContainer>
     <section
       v-show="panel === 'reference'"
       :id="`${panelId}-reference`"
@@ -54,6 +57,7 @@
   </div>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { computed, useId, watch } from "vue";
 import SidebarNavigation from "../../layout/SidebarNavigation.vue";
 import PlayerList from "../display/PlayerList.vue";

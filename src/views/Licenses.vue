@@ -47,9 +47,11 @@
       >
         <summary class="collapse-title font-semibold">MIT License</summary>
         <div class="collapse-content">
-          <pre lang="en"
-            class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
-          ><code>{{ licenseData.projectLicense }}</code></pre>
+          <ScrollableContainer>
+            <pre lang="en"
+              class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
+            ><code>{{ licenseData.projectLicense }}</code></pre>
+          </ScrollableContainer>
         </div>
       </details>
     </section>
@@ -183,9 +185,11 @@
                 <h3 class="mb-2 font-mono text-sm font-semibold">
                   {{ license.name }}
                 </h3>
-                <pre
-                  class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
-                ><code>{{ license.text }}</code></pre>
+                <ScrollableContainer>
+                  <pre
+                    class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
+                  ><code>{{ license.text }}</code></pre>
+                </ScrollableContainer>
               </section>
             </div>
           </div>
@@ -215,9 +219,11 @@
             {{ license.name }}
           </summary>
           <div v-if="loadedLicenses.has(supplementalAnchor(license))" class="collapse-content">
-            <pre
-              class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
-            ><code>{{ license.text }}</code></pre>
+            <ScrollableContainer>
+              <pre
+                class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
+              ><code>{{ license.text }}</code></pre>
+            </ScrollableContainer>
           </div>
         </details>
       </div>
@@ -226,6 +232,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 

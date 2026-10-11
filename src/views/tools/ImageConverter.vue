@@ -166,179 +166,181 @@
               class="relative my-2"
               :class="isLoadingFiles ? 'min-h-24' : ''"
             >
-              <ul
-                class="list max-h-[min(32rem,60dvh)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 scrollbar-thin"
-                :class="
-                  dragging
-                    ? 'border-dashed border-base-content bg-base-200/60'
-                    : ''
-                "
-                :aria-busy="isLoadingFiles"
-                :aria-label="translate('tools.imageConverter.imagesToConvert')"
-              >
-                <li
-                  v-for="item in queue"
-                  :key="item.id"
-                  class="list-row relative items-center gap-3 rounded-none border-b border-base-300 transition-colors last:border-b-0 motion-reduce:transition-none"
-                  :class="[
-                    selectedId === item.id
-                      ? 'bg-base-200'
-                      : 'hover:bg-base-200/60',
-                    queueViewMode === 'compact' ? 'gap-1.5 p-1.5' : '',
-                  ]"
-                  @click="selectedId = item.id"
+              <ScrollableContainer>
+                <ul
+                  class="list max-h-[min(32rem,60dvh)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 scrollbar-thin"
+                  :class="
+                    dragging
+                      ? 'border-dashed border-base-content bg-base-200/60'
+                      : ''
+                  "
+                  :aria-busy="isLoadingFiles"
+                  :aria-label="translate('tools.imageConverter.imagesToConvert')"
                 >
-                  <img
-                    :src="item.previewUrl"
-                    alt=""
-                    class="shrink-0 rounded-field object-cover image-checker"
-                    :class="queueViewMode === 'compact' ? 'size-8' : 'size-14'"
-                  />
-                  <button
-                    class="min-w-0 text-left focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
-                    type="button"
-                    :aria-label="translate('tools.imageConverter.preview2', { p0: item.file.name })"
-                    :aria-current="selectedId === item.id ? 'true' : undefined"
+                  <li
+                    v-for="item in queue"
+                    :key="item.id"
+                    class="list-row relative items-center gap-3 rounded-none border-b border-base-300 transition-colors last:border-b-0 motion-reduce:transition-none"
+                    :class="[
+                      selectedId === item.id
+                        ? 'bg-base-200'
+                        : 'hover:bg-base-200/60',
+                      queueViewMode === 'compact' ? 'gap-1.5 p-1.5' : '',
+                    ]"
                     @click="selectedId = item.id"
                   >
-                    <span
-                      class="block truncate font-medium"
-                      :class="
-                        queueViewMode === 'compact'
-                          ? 'text-sm leading-tight'
-                          : ''
-                      "
-                      >{{ item.file.name }}</span
+                    <img
+                      :src="item.previewUrl"
+                      alt=""
+                      class="shrink-0 rounded-field object-cover image-checker"
+                      :class="queueViewMode === 'compact' ? 'size-8' : 'size-14'"
+                    />
+                    <button
+                      class="min-w-0 text-left focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
+                      type="button"
+                      :aria-label="translate('tools.imageConverter.preview2', { p0: item.file.name })"
+                      :aria-current="selectedId === item.id ? 'true' : undefined"
+                      @click="selectedId = item.id"
                     >
-                    <p
-                      v-if="queueViewMode === 'detailed'"
-                      class="mt-1 truncate text-xs text-base-content/55"
-                    >
-                      {{
-                        item.width
-                          ? `${item.width} × ${item.height}`
-                          : translate('tools.imageConverter.readingDimensions')
-                      }}
-                      <template v-if="item.frameCount > 1">
-                        · {{ item.frameCount }} {{ translate('tools.imageConverter.frames') }}</template
+                      <span
+                        class="block truncate font-medium"
+                        :class="
+                          queueViewMode === 'compact'
+                            ? 'text-sm leading-tight'
+                            : ''
+                        "
+                        >{{ item.file.name }}</span
                       >
-                      · {{ formatBytes(item.file.size) }}
-                      <template v-if="item.resultSize">
-                        → {{ formatBytes(item.resultSize) }} ·
-                        {{ savingsLabel(item) }}</template
+                      <p
+                        v-if="queueViewMode === 'detailed'"
+                        class="mt-1 truncate text-xs text-base-content/55"
                       >
-                    </p>
-                    <div
-                      v-if="
-                        queueViewMode === 'detailed' &&
-                        item.status === 'processing'
-                      "
-                      class="mt-2 flex items-center gap-2"
-                    >
-                      <progress
-                        class="progress progress-primary w-full"
-                        :value="item.progress"
-                        max="100"
-                      ></progress>
-                      <span class="w-9 text-right text-xs tabular-nums"
-                        >{{ item.progress }}%</span
+                        {{
+                          item.width
+                            ? `${item.width} × ${item.height}`
+                            : translate('tools.imageConverter.readingDimensions')
+                        }}
+                        <template v-if="item.frameCount > 1">
+                          · {{ item.frameCount }} {{ translate('tools.imageConverter.frames') }}</template
+                        >
+                        · {{ formatBytes(item.file.size) }}
+                        <template v-if="item.resultSize">
+                          → {{ formatBytes(item.resultSize) }} ·
+                          {{ savingsLabel(item) }}</template
+                        >
+                      </p>
+                      <div
+                        v-if="
+                          queueViewMode === 'detailed' &&
+                          item.status === 'processing'
+                        "
+                        class="mt-2 flex items-center gap-2"
                       >
-                    </div>
-                    <p
-                      v-else-if="queueViewMode === 'detailed' && item.message"
-                      class="mt-1 text-xs"
-                      :class="
-                        item.status === 'error'
-                          ? 'text-error'
-                          : 'text-base-content/55'
-                      "
-                    >
-                      {{ queueMessage(item) }}
-                    </p>
-                  </button>
-                  <span
-                    class="flex shrink-0 items-center self-center"
-                    :class="queueViewMode === 'compact' ? 'gap-0.5' : 'gap-1'"
-                    :aria-label="translate('tools.imageConverter.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
-                  >
-                    <span class="badge badge-outline badge-xs">{{
-                      formatLabel(item.format)
-                    }}</span>
-                    <i
-                      class="ri-arrow-right-line text-base-content/40"
-                      aria-hidden="true"
-                    ></i>
+                        <progress
+                          class="progress progress-primary w-full"
+                          :value="item.progress"
+                          max="100"
+                        ></progress>
+                        <span class="w-9 text-right text-xs tabular-nums"
+                          >{{ item.progress }}%</span
+                        >
+                      </div>
+                      <p
+                        v-else-if="queueViewMode === 'detailed' && item.message"
+                        class="mt-1 text-xs"
+                        :class="
+                          item.status === 'error'
+                            ? 'text-error'
+                            : 'text-base-content/55'
+                        "
+                      >
+                        {{ queueMessage(item) }}
+                      </p>
+                    </button>
                     <span
-                      class="badge badge-xs"
-                      :class="targetFormatBadgeClass(item)"
+                      class="flex shrink-0 items-center self-center"
+                      :class="queueViewMode === 'compact' ? 'gap-0.5' : 'gap-1'"
+                      :aria-label="translate('tools.imageConverter.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
                     >
-                      {{ formatLabel(queueTargetFormat(item)) }}
-                    </span>
-                  </span>
-                  <div
-                    class="flex shrink-0 items-center"
-                    :class="queueViewMode === 'compact' ? 'gap-0' : 'gap-1'"
-                  >
-                    <span
-                      class="tooltip tooltip-left"
-                      :class="
-                        queueViewMode === 'compact'
-                          ? 'inline-flex size-6 items-center justify-center'
-                          : 'm-2'
-                      "
-                      :data-tip="statusLabel(item.status)"
-                      :aria-label="statusLabel(item.status)"
-                      role="img"
-                    >
+                      <span class="badge badge-outline badge-xs">{{
+                        formatLabel(item.format)
+                      }}</span>
                       <i
-                        :class="statusIcon(item.status)"
+                        class="ri-arrow-right-line text-base-content/40"
                         aria-hidden="true"
                       ></i>
+                      <span
+                        class="badge badge-xs"
+                        :class="targetFormatBadgeClass(item)"
+                      >
+                        {{ formatLabel(queueTargetFormat(item)) }}
+                      </span>
                     </span>
-                    <button
-                      v-if="item.status === 'done'"
-                      class="btn btn-square btn-ghost"
-                      :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
-                      type="button"
-                      :aria-label="translate('tools.imageConverter.downloadResult')"
-                      @click.stop="downloadItem(item)"
+                    <div
+                      class="flex shrink-0 items-center"
+                      :class="queueViewMode === 'compact' ? 'gap-0' : 'gap-1'"
                     >
-                      <i class="ri-download-2-line" aria-hidden="true"></i>
-                    </button>
-                    <button
+                      <span
+                        class="tooltip tooltip-left"
+                        :class="
+                          queueViewMode === 'compact'
+                            ? 'inline-flex size-6 items-center justify-center'
+                            : 'm-2'
+                        "
+                        :data-tip="statusLabel(item.status)"
+                        :aria-label="statusLabel(item.status)"
+                        role="img"
+                      >
+                        <i
+                          :class="statusIcon(item.status)"
+                          aria-hidden="true"
+                        ></i>
+                      </span>
+                      <button
+                        v-if="item.status === 'done'"
+                        class="btn btn-square btn-ghost"
+                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        type="button"
+                        :aria-label="translate('tools.imageConverter.downloadResult')"
+                        @click.stop="downloadItem(item)"
+                      >
+                        <i class="ri-download-2-line" aria-hidden="true"></i>
+                      </button>
+                      <button
+                        v-if="
+                          item.status === 'error' || item.status === 'cancelled'
+                        "
+                        class="btn btn-square btn-ghost"
+                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        type="button"
+                        :aria-label="translate('tools.imageConverter.convertAgain')"
+                        @click.stop="retryItem(item)"
+                      >
+                        <i class="ri-restart-line" aria-hidden="true"></i>
+                      </button>
+                      <button
+                        class="btn btn-square btn-ghost"
+                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        type="button"
+                        :disabled="item.status === 'processing'"
+                        :aria-label="translate('tools.imageConverter.removeFile')"
+                        @click.stop="removeItem(item.id)"
+                      >
+                        <i class="ri-close-line" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                    <progress
                       v-if="
-                        item.status === 'error' || item.status === 'cancelled'
+                        queueViewMode === 'compact' &&
+                        item.status === 'processing'
                       "
-                      class="btn btn-square btn-ghost"
-                      :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
-                      type="button"
-                      :aria-label="translate('tools.imageConverter.convertAgain')"
-                      @click.stop="retryItem(item)"
-                    >
-                      <i class="ri-restart-line" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      class="btn btn-square btn-ghost"
-                      :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
-                      type="button"
-                      :disabled="item.status === 'processing'"
-                      :aria-label="translate('tools.imageConverter.removeFile')"
-                      @click.stop="removeItem(item.id)"
-                    >
-                      <i class="ri-close-line" aria-hidden="true"></i>
-                    </button>
-                  </div>
-                  <progress
-                    v-if="
-                      queueViewMode === 'compact' &&
-                      item.status === 'processing'
-                    "
-                    class="progress progress-primary absolute inset-x-0 bottom-0 h-1 w-full rounded-none"
-                    :value="item.progress"
-                    max="100"
-                  ></progress>
-                </li>
-              </ul>
+                      class="progress progress-primary absolute inset-x-0 bottom-0 h-1 w-full rounded-none"
+                      :value="item.progress"
+                      max="100"
+                    ></progress>
+                  </li>
+                </ul>
+              </ScrollableContainer>
               <div
                 v-if="isLoadingFiles"
                 class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-box bg-black/50 text-sm text-white text-shadow-xs"
@@ -703,541 +705,536 @@
             </div>
           </div>
 
-          <div
-            class="-m-1 grid min-h-0 flex-1 content-start gap-2 p-1 md:overflow-x-hidden md:overflow-y-auto md:overscroll-contain md:scrollbar-thin [&>*+.label]:mt-2"
-          >
-            <section
-              v-if="settings.resize.enabled"
-              class="grid gap-1"
-              aria-labelledby="resize-settings"
+          <ScrollableContainer class="flex-1">
+            <div
+              class="-m-1 grid min-h-0 flex-1 content-start gap-2 p-1 md:overflow-x-hidden md:overflow-y-auto md:overscroll-contain md:scrollbar-thin [&>*+.label]:mt-2"
             >
-              <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.sizeSettings') }}</div>
-              <div
-                class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2"
+              <section
+                v-if="settings.resize.enabled"
+                class="grid gap-1"
+                aria-labelledby="resize-settings"
               >
-                <div class="min-w-0">
-                  <label class="label" for="resize-width">{{ translate('tools.imageConverter.width') }}</label>
-                  <label class="input max-sm:input-sm w-full">
-                    <input
-                      id="resize-width"
-                      class="min-w-0 grow"
-                      type="number"
-                      min="1"
-                      max="32768"
-                      :value="settings.resize.width"
-                      :disabled="isRunning"
-                      @input="
-                        updateResizeDimension('width', $event.target.value)
-                      "
-                    />
-                    <span class="text-xs text-base-content/50">px</span>
-                  </label>
-                </div>
-                <label
-                  class="tooltip tooltip-top"
-                  for="resize-lock-aspect-ratio"
-                  :data-tip="
-                    settings.resize.lockAspectRatio
-                      ? translate('tools.imageConverter.aspectRatioLocked')
-                      : translate('tools.imageConverter.aspectRatioUnlocked')
-                  "
+                <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.sizeSettings') }}</div>
+                <div
+                  class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2"
                 >
-                  <button
-                    class="btn btn-square btn-xs sm:btn-sm mb-1 sm:mb-1.25"
-                    :class="
-                      settings.resize.lockAspectRatio
-                        ? 'btn-active'
-                        : 'btn-ghost'
-                    "
-                    type="button"
-                    :aria-label="
-                      settings.resize.lockAspectRatio
-                        ? translate('tools.imageConverter.unlockAspectRatio')
-                        : translate('tools.imageConverter.lockOriginalAspectRatio')
-                    "
-                    :aria-pressed="settings.resize.lockAspectRatio"
-                    :title="
+                  <div class="min-w-0">
+                    <label class="label" for="resize-width">{{ translate('tools.imageConverter.width') }}</label>
+                    <label class="input max-sm:input-sm w-full">
+                      <input
+                        id="resize-width"
+                        class="min-w-0 grow"
+                        type="number"
+                        min="1"
+                        max="32768"
+                        :value="settings.resize.width"
+                        :disabled="isRunning"
+                        @input="
+                          updateResizeDimension('width', $event.target.value)
+                        "
+                      />
+                      <span class="text-xs text-base-content/50">px</span>
+                    </label>
+                  </div>
+                  <label
+                    class="tooltip tooltip-top"
+                    for="resize-lock-aspect-ratio"
+                    :data-tip="
                       settings.resize.lockAspectRatio
                         ? translate('tools.imageConverter.aspectRatioLocked')
                         : translate('tools.imageConverter.aspectRatioUnlocked')
                     "
-                    :disabled="isRunning"
-                    @click="toggleResizeAspectRatio"
                   >
-                    <i
+                    <button
+                      class="btn btn-square btn-xs sm:btn-sm mb-1 sm:mb-1.25"
                       :class="
                         settings.resize.lockAspectRatio
-                          ? 'ri-link-m'
-                          : 'ri-link-unlink-m'
+                          ? 'btn-active'
+                          : 'btn-ghost'
                       "
-                      aria-hidden="true"
-                    ></i>
-                  </button>
-                </label>
-                <div class="min-w-0">
-                  <label class="label" for="resize-height">{{ translate('tools.imageConverter.height') }}</label>
-                  <label class="input max-sm:input-sm w-full">
-                    <input
-                      id="resize-height"
-                      class="min-w-0 grow"
-                      type="number"
-                      min="1"
-                      max="32768"
-                      :value="settings.resize.height"
+                      type="button"
+                      :aria-label="
+                        settings.resize.lockAspectRatio
+                          ? translate('tools.imageConverter.unlockAspectRatio')
+                          : translate('tools.imageConverter.lockOriginalAspectRatio')
+                      "
+                      :aria-pressed="settings.resize.lockAspectRatio"
+                      :title="
+                        settings.resize.lockAspectRatio
+                          ? translate('tools.imageConverter.aspectRatioLocked')
+                          : translate('tools.imageConverter.aspectRatioUnlocked')
+                      "
                       :disabled="isRunning"
-                      @input="
-                        updateResizeDimension('height', $event.target.value)
-                      "
-                    />
-                    <span class="text-xs text-base-content/50">px</span>
-                  </label>
-                </div>
-              </div>
-              <label class="label">
-                <input
-                  v-model="settings.resize.preventUpscale"
-                  class="toggle toggle-sm"
-                  type="checkbox"
-                  :disabled="isRunning"
-                />
-                {{ translate('tools.imageConverter.doNotEnlargeBeyondTheOriginalSize') }}
-              </label>
-            </section>
-
-            <div v-show="watermark.enabled" class="grid gap-1">
-              <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.watermarkSettings') }}</div>
-              <section class="grid gap-y-2">
-                <div
-                  class="grid grid-cols-[minmax(0,1fr)_auto] justify-between gap-x-3 gap-y-2"
-                >
-                  <div
-                    class="min-w-0"
-                    :class="watermark.mode === 'single' ? '' : 'col-span-2'"
-                  >
-                    <label for="watermark-content" class="label"
-                      >{{ translate('tools.imageConverter.watermarkContent') }}</label
+                      @click="toggleResizeAspectRatio"
                     >
-                    <div
-                      id="watermark-content"
-                      class="flex mt-1 mb-3 sm:mt-1.5 sm:mb-3.5"
-                      :class="
-                        watermark.mode === 'single'
-                          ? 'justify-between'
-                          : 'gap-4'
-                      "
-                      role="group"
-                    >
-                      <label class="label" for="watermark-text-toggle">
-                        <input
-                          id="watermark-text-toggle"
-                          class="checkbox max-sm:checkbox-sm"
-                          type="checkbox"
-                          :checked="watermarkContainsText()"
-                          :disabled="isRunning"
-                          @change="setWatermarkTextEnabled($event)"
-                        />
-                        {{ translate('tools.imageConverter.text') }}
-                      </label>
-                      <label class="label" for="watermark-image-toggle">
-                        <input
-                          id="watermark-image-toggle"
-                          class="checkbox max-sm:checkbox-sm"
-                          type="checkbox"
-                          :checked="watermarkUsesGraphicKind('image')"
-                          :disabled="isRunning"
-                          @change="setWatermarkGraphicEnabled('image', $event)"
-                        />
-                        {{ translate('reader.contextMenu.image') }}
-                      </label>
-                      <label class="label" for="watermark-icon-toggle">
-                        <input
-                          id="watermark-icon-toggle"
-                          class="checkbox max-sm:checkbox-sm"
-                          type="checkbox"
-                          :checked="watermarkUsesGraphicKind('icon')"
-                          :disabled="isRunning"
-                          @change="setWatermarkGraphicEnabled('icon', $event)"
-                        />
-                        {{ translate('tools.imageConverter.icon') }}
-                      </label>
-                    </div>
-                  </div>
-
-                  <div
-                    v-if="watermark.mode === 'single'"
-                    class="row-span-2 min-w-0 border-l border-base-300 pl-3"
-                  >
-                    <span class="label">{{ translate('tools.imageConverter.position') }}</span>
-                    <div
-                      class="grid w-fit grid-cols-3 gap-1"
-                      role="radiogroup"
-                      :aria-label="translate('tools.imageConverter.watermarkPosition')"
-                    >
-                      <input
-                        v-for="position in watermarkPositions"
-                        :key="position"
-                        class="radio radio-lg sm:radio-xl"
+                      <i
                         :class="
-                          watermark.position === position ? 'radio-primary' : ''
+                          settings.resize.lockAspectRatio
+                            ? 'ri-link-m'
+                            : 'ri-link-unlink-m'
                         "
-                        type="radio"
-                        role="radio"
-                        name="watermark-position"
-                        :checked="watermark.position === position"
-                        :aria-checked="watermark.position === position"
-                        :aria-label="positionLabel(position)"
-                        :disabled="isRunning"
-                        @click="watermark.position = position"
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    class="min-w-0"
-                    :class="
-                      watermark.mode === 'single' ? 'col-start-1' : 'col-span-2'
-                    "
-                  >
-                    <label class="label" for="watermark-mode">{{ translate('tools.imageConverter.arrangement') }}</label>
-                    <select
-                      id="watermark-mode"
-                      v-model="watermark.mode"
-                      class="select max-sm:select-sm w-full"
-                      :disabled="isRunning"
-                    >
-                      <option value="single">{{ translate('tools.imageConverter.single') }}</option>
-                      <option value="tile">{{ translate('tools.imageConverter.tile') }}</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div
-                  v-if="watermarkContainsText()"
-                  class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
-                >
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  </label>
                   <div class="min-w-0">
-                    <label class="label" for="watermark-text">{{ translate('tools.imageConverter.text2') }}</label>
-                    <input
-                      id="watermark-text"
-                      v-model="watermark.text"
-                      class="input max-sm:input-sm w-full"
-                      type="text"
-                      maxlength="80"
-                      :placeholder="translate('tools.imageConverter.enterWatermarkText')"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div>
-                    <label class="label" for="watermark-text-color">{{ translate('tools.imageConverter.color') }}</label>
-                    <input
-                      id="watermark-text-color"
-                      v-model="watermark.color"
-                      class="block input size-10 max-sm:size-8 p-0"
-                      type="color"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                </div>
-
-                <div v-if="watermarkContainsText()" class="min-w-0">
-                  <span class="label">{{ translate('common.fontSelect.font') }}</span>
-                  <FontSelect
-                    ref="watermarkFontSelect"
-                    v-model="watermark.fontId"
-                    v-model:fallback-font-id="watermark.fallbackFontId"
-                    :website-fonts="websiteWatermarkFonts"
-                    :disabled="isRunning"
-                    :aria-label="translate('tools.imageConverter.watermarkFont')"
-                  />
-                </div>
-
-                <div v-if="watermarkNeedsGraphic()" class="min-w-0">
-                  <div v-if="usesWatermarkImageFile()">
-                    <label class="label" for="watermark-graphic-image">
-                      {{ translate('tools.imageConverter.imageSiteIconByDefault') }}
-                    </label>
-                    <input
-                      id="watermark-graphic-image"
-                      class="file-input max-sm:file-input-sm w-full"
-                      type="file"
-                      accept="image/*,.svg,image/svg+xml"
-                      :aria-describedby="
-                        usesDefaultWatermark
-                          ? 'watermark-source-hint'
-                          : undefined
-                      "
-                      :disabled="isRunning"
-                      @change="onWatermarkFile"
-                    />
-                  </div>
-
-                  <div v-else>
-                    <div
-                      class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
-                    >
-                      <div class="min-w-0">
-                        <span class="label">{{ translate('tools.imageConverter.iconPicker') }}</span>
-                        <button
-                          class="select max-sm:select-sm w-full justify-start font-normal"
-                          popovertarget="watermark-icon-picker"
-                          style="anchor-name: --watermark-icon-picker"
-                          type="button"
-                          :disabled="isRunning"
-                        >
-                          <i
-                            :class="watermark.icon"
-                            class="text-lg"
-                            aria-hidden="true"
-                          ></i>
-                          <span class="truncate">{{ watermark.icon }}</span>
-                        </button>
-                      </div>
-                      <div v-if="!watermarkContainsText()">
-                        <label class="label" for="watermark-graphic-color">
-                          {{ translate('tools.imageConverter.color') }}
-                        </label>
-                        <input
-                          id="watermark-graphic-color"
-                          v-model="watermark.color"
-                          class="block input size-10 max-sm:size-8 p-0"
-                          type="color"
-                          :disabled="isRunning"
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      id="watermark-icon-picker"
-                      ref="iconPicker"
-                      popover
-                      class="dropdown dropdown-end z-40 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
-                      style="position-anchor: --watermark-icon-picker"
-                      @keydown.esc="closeIconPicker"
-                      @toggle="
-                        !$event.currentTarget.matches(':popover-open') &&
-                        hideIconTooltip(true)
-                      "
-                      @pointerleave="hideIconTooltip()"
-                    >
-                      <div
-                        class="mb-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2"
-                      >
-                        <input
-                          v-model.trim="iconSearch"
-                          class="input input-sm w-full"
-                          type="search"
-                          :placeholder="translate('tools.imageConverter.searchNamesOrKeywords')"
-                          :aria-label="translate('tools.imageConverter.searchRemixIconNamesOrKeywords')"
-                        />
-                        <select
-                          v-model="remixIconCategory"
-                          class="select select-sm w-full"
-                          :aria-label="translate('tools.imageConverter.remixIconCategories')"
-                        >
-                          <option value="all">{{ translate('tools.imageConverter.allCategories') }}</option>
-                          <option
-                            v-for="category in remixIconCategories"
-                            :key="category.value"
-                            :value="category.value"
-                          >
-                            {{ category.label }}
-                          </option>
-                        </select>
-                      </div>
-                      <div
-                        v-if="filteredRemixIcons.length"
-                        class="grid max-h-52 grid-cols-6 gap-1 overflow-x-hidden overflow-y-auto overscroll-contain"
-                        role="listbox"
-                        :aria-label="translate('tools.imageConverter.remixIconIcons')"
-                        @scroll.passive="hideIconTooltip(true)"
-                      >
-                        <button
-                          v-for="icon in filteredRemixIcons"
-                          :key="icon"
-                          class="btn btn-ghost btn-square btn-sm"
-                          :class="watermark.icon === icon ? 'btn-active' : ''"
-                          type="button"
-                          role="option"
-                          :aria-selected="watermark.icon === icon"
-                          :aria-label="icon"
-                          @focus="showIconTooltip(icon, $event)"
-                          @blur="hideIconTooltip()"
-                          @pointerenter="showIconTooltip(icon, $event)"
-                          @click="selectRemixIcon(icon)"
-                        >
-                          <i
-                            :class="icon"
-                            class="text-lg"
-                            aria-hidden="true"
-                          ></i>
-                        </button>
-                      </div>
-                      <p
-                        v-else
-                        class="py-4 text-center text-sm text-base-content/55"
-                      >
-                        {{ translate('tools.imageConverter.noMatchingIcons') }}
-                      </p>
-                    </div>
-                    <div
-                      ref="iconTooltip"
-                      popover="manual"
-                      class="watermark-icon-tooltip tooltip tooltip-top pointer-events-none z-50 size-0"
-                      style="
-                        position: fixed;
-                        inset: auto;
-                        margin: 0;
-                        overflow: visible;
-                        border: 0;
-                        padding: 0;
-                        background: transparent;
-                      "
-                      data-tip=""
-                      role="tooltip"
-                      aria-hidden="true"
-                    ></div>
-                  </div>
-                </div>
-              </section>
-              <section aria-labelledby="watermark-appearance" class="mt-2">
-                <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1">
-                  <div class="min-w-0">
-                    <label class="label" for="watermark-opacity">
-                      <span>{{ translate('tools.imageConverter.opacity') }}</span>
-                      <span class="tabular-nums">
-                        {{ Math.round(watermark.opacity * 100) }}%
-                      </span>
-                    </label>
-                    <input
-                      id="watermark-opacity"
-                      v-model.number="watermark.opacity"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="0.05"
-                      max="1"
-                      step="0.05"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div class="min-w-0">
-                    <label class="label" for="watermark-scale">
-                      <span>{{ translate('tools.imageConverter.scale') }}</span>
-                      <span class="tabular-nums">
-                        {{ Math.round(watermark.scale * 100) }}%
-                      </span>
-                    </label>
-                    <input
-                      id="watermark-scale"
-                      v-model.number="watermark.scale"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="0.02"
-                      max="0.5"
-                      step="0.01"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div v-if="watermark.mode === 'single'" class="min-w-0">
-                    <label class="label" for="watermark-margin">
-                      <span>{{ translate('tools.imageConverter.margin') }}</span>
-                      <span class="tabular-nums"
-                        >{{ watermark.margin }} px</span
-                      >
-                    </label>
-                    <input
-                      id="watermark-margin"
-                      v-model.number="watermark.margin"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="0"
-                      max="160"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div class="min-w-0">
-                    <label class="label" for="watermark-offset-x">
-                      <span>{{ translate('tools.imageConverter.xOffset') }}</span>
-                      <span class="tabular-nums"
-                        >{{ watermark.offsetX }} px</span
-                      >
-                    </label>
-                    <input
-                      id="watermark-offset-x"
-                      v-model.number="watermark.offsetX"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="-1000"
-                      max="1000"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div class="min-w-0">
-                    <label class="label" for="watermark-offset-y">
-                      <span>{{ translate('tools.imageConverter.yOffset') }}</span>
-                      <span class="tabular-nums"
-                        >{{ watermark.offsetY }} px</span
-                      >
-                    </label>
-                    <input
-                      id="watermark-offset-y"
-                      v-model.number="watermark.offsetY"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="-1000"
-                      max="1000"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div v-if="watermark.mode === 'tile'" class="min-w-0">
-                    <label class="label" for="watermark-gap">
-                      <span>{{ translate('tools.imageConverter.spacing') }}</span>
-                      <span class="tabular-nums">{{ watermark.gap }} px</span>
-                    </label>
-                    <input
-                      id="watermark-gap"
-                      v-model.number="watermark.gap"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="8"
-                      max="320"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <div class="min-w-0">
-                    <label class="label" for="watermark-rotation">
-                      <span>{{ translate('tools.imageConverter.rotation') }}</span>
-                      <span class="tabular-nums"
-                        >{{ watermark.rotation }}°</span
-                      >
-                    </label>
-                    <input
-                      id="watermark-rotation"
-                      v-model.number="watermark.rotation"
-                      class="range max-sm:range-sm"
-                      type="range"
-                      min="-90"
-                      max="90"
-                      step="5"
-                      :disabled="isRunning"
-                    />
-                  </div>
-                  <label class="label" for="watermark-other">{{ translate('tools.imageConverter.otherSettings') }}</label>
-                  <div class="min-w-0" id="watermark-other">
-                    <label class="label" for="watermark-shadow">
+                    <label class="label" for="resize-height">{{ translate('tools.imageConverter.height') }}</label>
+                    <label class="input max-sm:input-sm w-full">
                       <input
-                        id="watermark-shadow"
-                        v-model="watermark.shadow"
-                        class="toggle toggle-sm"
-                        type="checkbox"
+                        id="resize-height"
+                        class="min-w-0 grow"
+                        type="number"
+                        min="1"
+                        max="32768"
+                        :value="settings.resize.height"
                         :disabled="isRunning"
+                        @input="
+                          updateResizeDimension('height', $event.target.value)
+                        "
                       />
-                      {{ translate('tools.imageConverter.watermarkShadow') }}
+                      <span class="text-xs text-base-content/50">px</span>
                     </label>
                   </div>
                 </div>
+                <label class="label">
+                  <input
+                    v-model="settings.resize.preventUpscale"
+                    class="toggle toggle-sm"
+                    type="checkbox"
+                    :disabled="isRunning"
+                  />
+                  {{ translate('tools.imageConverter.doNotEnlargeBeyondTheOriginalSize') }}
+                </label>
               </section>
+              <div v-show="watermark.enabled" class="grid gap-1">
+                <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.watermarkSettings') }}</div>
+                <section class="grid gap-y-2">
+                  <div
+                    class="grid grid-cols-[minmax(0,1fr)_auto] justify-between gap-x-3 gap-y-2"
+                  >
+                    <div
+                      class="min-w-0"
+                      :class="watermark.mode === 'single' ? '' : 'col-span-2'"
+                    >
+                      <label for="watermark-content" class="label"
+                        >{{ translate('tools.imageConverter.watermarkContent') }}</label
+                      >
+                      <div
+                        id="watermark-content"
+                        class="flex mt-1 mb-3 sm:mt-1.5 sm:mb-3.5"
+                        :class="
+                          watermark.mode === 'single'
+                            ? 'justify-between'
+                            : 'gap-4'
+                        "
+                        role="group"
+                      >
+                        <label class="label" for="watermark-text-toggle">
+                          <input
+                            id="watermark-text-toggle"
+                            class="checkbox max-sm:checkbox-sm"
+                            type="checkbox"
+                            :checked="watermarkContainsText()"
+                            :disabled="isRunning"
+                            @change="setWatermarkTextEnabled($event)"
+                          />
+                          {{ translate('tools.imageConverter.text') }}
+                        </label>
+                        <label class="label" for="watermark-image-toggle">
+                          <input
+                            id="watermark-image-toggle"
+                            class="checkbox max-sm:checkbox-sm"
+                            type="checkbox"
+                            :checked="watermarkUsesGraphicKind('image')"
+                            :disabled="isRunning"
+                            @change="setWatermarkGraphicEnabled('image', $event)"
+                          />
+                          {{ translate('reader.contextMenu.image') }}
+                        </label>
+                        <label class="label" for="watermark-icon-toggle">
+                          <input
+                            id="watermark-icon-toggle"
+                            class="checkbox max-sm:checkbox-sm"
+                            type="checkbox"
+                            :checked="watermarkUsesGraphicKind('icon')"
+                            :disabled="isRunning"
+                            @change="setWatermarkGraphicEnabled('icon', $event)"
+                          />
+                          {{ translate('tools.imageConverter.icon') }}
+                        </label>
+                      </div>
+                    </div>
+                    <div
+                      v-if="watermark.mode === 'single'"
+                      class="row-span-2 min-w-0 border-l border-base-300 pl-3"
+                    >
+                      <span class="label">{{ translate('tools.imageConverter.position') }}</span>
+                      <div
+                        class="grid w-fit grid-cols-3 gap-1"
+                        role="radiogroup"
+                        :aria-label="translate('tools.imageConverter.watermarkPosition')"
+                      >
+                        <input
+                          v-for="position in watermarkPositions"
+                          :key="position"
+                          class="radio radio-lg sm:radio-xl"
+                          :class="
+                            watermark.position === position ? 'radio-primary' : ''
+                          "
+                          type="radio"
+                          role="radio"
+                          name="watermark-position"
+                          :checked="watermark.position === position"
+                          :aria-checked="watermark.position === position"
+                          :aria-label="positionLabel(position)"
+                          :disabled="isRunning"
+                          @click="watermark.position = position"
+                        />
+                      </div>
+                    </div>
+                    <div
+                      class="min-w-0"
+                      :class="
+                        watermark.mode === 'single' ? 'col-start-1' : 'col-span-2'
+                      "
+                    >
+                      <label class="label" for="watermark-mode">{{ translate('tools.imageConverter.arrangement') }}</label>
+                      <select
+                        id="watermark-mode"
+                        v-model="watermark.mode"
+                        class="select max-sm:select-sm w-full"
+                        :disabled="isRunning"
+                      >
+                        <option value="single">{{ translate('tools.imageConverter.single') }}</option>
+                        <option value="tile">{{ translate('tools.imageConverter.tile') }}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div
+                    v-if="watermarkContainsText()"
+                    class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
+                  >
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-text">{{ translate('tools.imageConverter.text2') }}</label>
+                      <input
+                        id="watermark-text"
+                        v-model="watermark.text"
+                        class="input max-sm:input-sm w-full"
+                        type="text"
+                        maxlength="80"
+                        :placeholder="translate('tools.imageConverter.enterWatermarkText')"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div>
+                      <label class="label" for="watermark-text-color">{{ translate('tools.imageConverter.color') }}</label>
+                      <input
+                        id="watermark-text-color"
+                        v-model="watermark.color"
+                        class="block input size-10 max-sm:size-8 p-0"
+                        type="color"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                  </div>
+                  <div v-if="watermarkContainsText()" class="min-w-0">
+                    <span class="label">{{ translate('common.fontSelect.font') }}</span>
+                    <FontSelect
+                      ref="watermarkFontSelect"
+                      v-model="watermark.fontId"
+                      v-model:fallback-font-id="watermark.fallbackFontId"
+                      :website-fonts="websiteWatermarkFonts"
+                      :disabled="isRunning"
+                      :aria-label="translate('tools.imageConverter.watermarkFont')"
+                    />
+                  </div>
+                  <div v-if="watermarkNeedsGraphic()" class="min-w-0">
+                    <div v-if="usesWatermarkImageFile()">
+                      <label class="label" for="watermark-graphic-image">
+                        {{ translate('tools.imageConverter.imageSiteIconByDefault') }}
+                      </label>
+                      <input
+                        id="watermark-graphic-image"
+                        class="file-input max-sm:file-input-sm w-full"
+                        type="file"
+                        accept="image/*,.svg,image/svg+xml"
+                        :aria-describedby="
+                          usesDefaultWatermark
+                            ? 'watermark-source-hint'
+                            : undefined
+                        "
+                        :disabled="isRunning"
+                        @change="onWatermarkFile"
+                      />
+                    </div>
+                    <div v-else>
+                      <div
+                        class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
+                      >
+                        <div class="min-w-0">
+                          <span class="label">{{ translate('tools.imageConverter.iconPicker') }}</span>
+                          <button
+                            class="select max-sm:select-sm w-full justify-start font-normal"
+                            popovertarget="watermark-icon-picker"
+                            style="anchor-name: --watermark-icon-picker"
+                            type="button"
+                            :disabled="isRunning"
+                          >
+                            <i
+                              :class="watermark.icon"
+                              class="text-lg"
+                              aria-hidden="true"
+                            ></i>
+                            <span class="truncate">{{ watermark.icon }}</span>
+                          </button>
+                        </div>
+                        <div v-if="!watermarkContainsText()">
+                          <label class="label" for="watermark-graphic-color">
+                            {{ translate('tools.imageConverter.color') }}
+                          </label>
+                          <input
+                            id="watermark-graphic-color"
+                            v-model="watermark.color"
+                            class="block input size-10 max-sm:size-8 p-0"
+                            type="color"
+                            :disabled="isRunning"
+                          />
+                        </div>
+                      </div>
+                      <div
+                        id="watermark-icon-picker"
+                        ref="iconPicker"
+                        popover
+                        class="dropdown dropdown-end z-40 mt-1 w-72 max-w-[calc(100vw-2rem)] rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+                        style="position-anchor: --watermark-icon-picker"
+                        @keydown.esc="closeIconPicker"
+                        @toggle="
+                          !$event.currentTarget.matches(':popover-open') &&
+                          hideIconTooltip(true)
+                        "
+                        @pointerleave="hideIconTooltip()"
+                      >
+                        <div
+                          class="mb-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2"
+                        >
+                          <input
+                            v-model.trim="iconSearch"
+                            class="input input-sm w-full"
+                            type="search"
+                            :placeholder="translate('tools.imageConverter.searchNamesOrKeywords')"
+                            :aria-label="translate('tools.imageConverter.searchRemixIconNamesOrKeywords')"
+                          />
+                          <select
+                            v-model="remixIconCategory"
+                            class="select select-sm w-full"
+                            :aria-label="translate('tools.imageConverter.remixIconCategories')"
+                          >
+                            <option value="all">{{ translate('tools.imageConverter.allCategories') }}</option>
+                            <option
+                              v-for="category in remixIconCategories"
+                              :key="category.value"
+                              :value="category.value"
+                            >
+                              {{ category.label }}
+                            </option>
+                          </select>
+                        </div>
+                        <ScrollableContainer v-if="filteredRemixIcons.length">
+                          <div
+                            class="grid max-h-52 grid-cols-6 gap-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+                            role="listbox"
+                            :aria-label="translate('tools.imageConverter.remixIconIcons')"
+                            @scroll.passive="hideIconTooltip(true)"
+                          >
+                            <button
+                              v-for="icon in filteredRemixIcons"
+                              :key="icon"
+                              class="btn btn-ghost btn-square btn-sm"
+                              :class="watermark.icon === icon ? 'btn-active' : ''"
+                              type="button"
+                              role="option"
+                              :aria-selected="watermark.icon === icon"
+                              :aria-label="icon"
+                              @focus="showIconTooltip(icon, $event)"
+                              @blur="hideIconTooltip()"
+                              @pointerenter="showIconTooltip(icon, $event)"
+                              @click="selectRemixIcon(icon)"
+                            >
+                              <i
+                                :class="icon"
+                                class="text-lg"
+                                aria-hidden="true"
+                              ></i>
+                            </button>
+                          </div>
+                        </ScrollableContainer>
+                        <p
+                          v-else
+                          class="py-4 text-center text-sm text-base-content/55"
+                        >
+                          {{ translate('tools.imageConverter.noMatchingIcons') }}
+                        </p>
+                      </div>
+                      <div
+                        ref="iconTooltip"
+                        popover="manual"
+                        class="watermark-icon-tooltip tooltip tooltip-top pointer-events-none z-50 size-0"
+                        style="
+                          position: fixed;
+                          inset: auto;
+                          margin: 0;
+                          overflow: visible;
+                          border: 0;
+                          padding: 0;
+                          background: transparent;
+                        "
+                        data-tip=""
+                        role="tooltip"
+                        aria-hidden="true"
+                      ></div>
+                    </div>
+                  </div>
+                </section>
+                <section aria-labelledby="watermark-appearance" class="mt-2">
+                  <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1">
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-opacity">
+                        <span>{{ translate('tools.imageConverter.opacity') }}</span>
+                        <span class="tabular-nums">
+                          {{ Math.round(watermark.opacity * 100) }}%
+                        </span>
+                      </label>
+                      <input
+                        id="watermark-opacity"
+                        v-model.number="watermark.opacity"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="0.05"
+                        max="1"
+                        step="0.05"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-scale">
+                        <span>{{ translate('tools.imageConverter.scale') }}</span>
+                        <span class="tabular-nums">
+                          {{ Math.round(watermark.scale * 100) }}%
+                        </span>
+                      </label>
+                      <input
+                        id="watermark-scale"
+                        v-model.number="watermark.scale"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="0.02"
+                        max="0.5"
+                        step="0.01"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div v-if="watermark.mode === 'single'" class="min-w-0">
+                      <label class="label" for="watermark-margin">
+                        <span>{{ translate('tools.imageConverter.margin') }}</span>
+                        <span class="tabular-nums"
+                          >{{ watermark.margin }} px</span
+                        >
+                      </label>
+                      <input
+                        id="watermark-margin"
+                        v-model.number="watermark.margin"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="0"
+                        max="160"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-offset-x">
+                        <span>{{ translate('tools.imageConverter.xOffset') }}</span>
+                        <span class="tabular-nums"
+                          >{{ watermark.offsetX }} px</span
+                        >
+                      </label>
+                      <input
+                        id="watermark-offset-x"
+                        v-model.number="watermark.offsetX"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="-1000"
+                        max="1000"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-offset-y">
+                        <span>{{ translate('tools.imageConverter.yOffset') }}</span>
+                        <span class="tabular-nums"
+                          >{{ watermark.offsetY }} px</span
+                        >
+                      </label>
+                      <input
+                        id="watermark-offset-y"
+                        v-model.number="watermark.offsetY"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="-1000"
+                        max="1000"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div v-if="watermark.mode === 'tile'" class="min-w-0">
+                      <label class="label" for="watermark-gap">
+                        <span>{{ translate('tools.imageConverter.spacing') }}</span>
+                        <span class="tabular-nums">{{ watermark.gap }} px</span>
+                      </label>
+                      <input
+                        id="watermark-gap"
+                        v-model.number="watermark.gap"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="8"
+                        max="320"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <label class="label" for="watermark-rotation">
+                        <span>{{ translate('tools.imageConverter.rotation') }}</span>
+                        <span class="tabular-nums"
+                          >{{ watermark.rotation }}°</span
+                        >
+                      </label>
+                      <input
+                        id="watermark-rotation"
+                        v-model.number="watermark.rotation"
+                        class="range max-sm:range-sm"
+                        type="range"
+                        min="-90"
+                        max="90"
+                        step="5"
+                        :disabled="isRunning"
+                      />
+                    </div>
+                    <label class="label" for="watermark-other">{{ translate('tools.imageConverter.otherSettings') }}</label>
+                    <div class="min-w-0" id="watermark-other">
+                      <label class="label" for="watermark-shadow">
+                        <input
+                          id="watermark-shadow"
+                          v-model="watermark.shadow"
+                          class="toggle toggle-sm"
+                          type="checkbox"
+                          :disabled="isRunning"
+                        />
+                        {{ translate('tools.imageConverter.watermarkShadow') }}
+                      </label>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
-          </div>
+          </ScrollableContainer>
 
           <div class="mt-2 grid shrink-0 grid-cols-1 gap-2">
             <button
@@ -1265,6 +1262,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 

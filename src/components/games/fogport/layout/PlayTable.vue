@@ -205,21 +205,22 @@
             <i class="ri-close-line" aria-hidden="true"></i>
           </button>
         </div>
-        <section
-          v-if="!desktop && ['players', 'market', 'history'].includes(panel)"
-          :id="`${panelId}-${panel}`"
-          class="h-full overflow-y-auto overscroll-contain scrollbar-thin"
-        >
-          <PlayerList
-            v-if="panel === 'players'"
-            :game="game"
-            :players="room.players"
-          /><Market v-else-if="panel === 'market'" :game="game" /><History
-            in-context
-            v-else
-            :game="game"
-          />
-        </section>
+        <ScrollableContainer v-if="!desktop && ['players', 'market', 'history'].includes(panel)" class="h-full">
+          <section
+            :id="`${panelId}-${panel}`"
+            class="h-full overflow-y-auto overscroll-contain scrollbar-thin"
+          >
+            <PlayerList
+              v-if="panel === 'players'"
+              :game="game"
+              :players="room.players"
+            /><Market v-else-if="panel === 'market'" :game="game" /><History
+              in-context
+              v-else
+              :game="game"
+            />
+          </section>
+        </ScrollableContainer>
         <InventoryTray
           v-if="!desktop"
           v-show="panel === 'hand'"
@@ -334,6 +335,7 @@
   </div>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { computed, ref, watch, useId, onMounted, onBeforeUnmount } from "vue";
 import { useMediaQuery, useElementSize } from "@vueuse/core";
 import Avatar from "@/components/auth/Avatar.vue";

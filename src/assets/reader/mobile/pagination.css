@@ -264,6 +264,12 @@
 }
 
 .mobile-page-viewport
+  :deep(.mobile-page-article .markdown-table-scroll:has(> .mobile-table-fragment)) {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+}
+
+.mobile-page-viewport
   :deep(
     .mobile-page-article .markdown-table-wrapper.mobile-table-fragment table
   ) {

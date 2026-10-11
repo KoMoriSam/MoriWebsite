@@ -230,24 +230,26 @@
           <i class="ri-close-line text-xl" aria-hidden="true"></i>
         </button>
       </header>
-      <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
-        <Giscus
-          :key="`chapter-comments-dialog-${giscusKey}`"
-          :repo="GISCUS.novelRepo.name"
-          :repo-id="GISCUS.novelRepo.id"
-          :category="GISCUS.categories.general.name"
-          :category-id="GISCUS.categories.general.id"
-          :mapping="giscusMapping"
-          :term="getChapterContextTitle(currentChapter)"
-          strict="0"
-          reactions-enabled="1"
-          emit-metadata="0"
-          input-position="bottom"
-          :theme="giscusTheme"
-          :lang="commentLocale"
-          loading="lazy"
-        />
-      </section>
+      <ScrollableContainer class="flex-1">
+        <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
+          <Giscus
+            :key="`chapter-comments-dialog-${giscusKey}`"
+            :repo="GISCUS.novelRepo.name"
+            :repo-id="GISCUS.novelRepo.id"
+            :category="GISCUS.categories.general.name"
+            :category-id="GISCUS.categories.general.id"
+            :mapping="giscusMapping"
+            :term="getChapterContextTitle(currentChapter)"
+            strict="0"
+            reactions-enabled="1"
+            emit-metadata="0"
+            input-position="bottom"
+            :theme="giscusTheme"
+            :lang="commentLocale"
+            loading="lazy"
+          />
+        </section>
+      </ScrollableContainer>
     </section>
     <form method="dialog" class="modal-backdrop">
       <button @click.prevent="requestCloseChapterComments">{{ translate('reader.novelReader.closeChapterComments') }}</button>
@@ -256,6 +258,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, commentLocale, number: formatNumber, date: formatLocalizedDate } = useLocale();
 

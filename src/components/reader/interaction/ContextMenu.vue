@@ -7,70 +7,75 @@
       leave-active-class="transition duration-100 ease-in"
       leave-to-class="scale-95 opacity-0"
     >
-      <ul
+      <div
         v-if="modelValue"
         ref="menuRef"
-        class="menu menu-horizontal fixed z-[100] max-w-[calc(100dvw-1rem)] flex-nowrap overflow-x-auto overscroll-x-contain rounded-box border border-base-300 bg-base-100 p-1 text-base-content shadow-xl scrollbar-thin"
+        class="fixed z-[100] w-fit max-w-[calc(100dvw-1rem)] rounded-box border border-base-300 bg-base-100 text-base-content shadow-xl"
         :style="menuPosition"
         data-reader-interactive
         :aria-label="translate('reader.contextMenu.textActions')"
         @pointerdown.stop
         @contextmenu.prevent
       >
-        <li v-if="context.latex?.pure">
-          <button type="button" @click="copyLatexSource">
-            <i class="ri-braces-line" aria-hidden="true"></i>
-            <span>{{ translate('reader.contextMenu.copyLatex') }}</span>
-          </button>
-        </li>
-        <li v-if="context.latex?.pure">
-          <button type="button" @click="copyLatexAsSvg">
-            <i class="ri-shapes-line" aria-hidden="true"></i>
-            <span>{{ translate('reader.contextMenu.copySvg') }}</span>
-          </button>
-        </li>
-        <li v-else>
-          <button
-            type="button"
-            :disabled="context.image ? !context.image.src : !context.text"
-            @click="handlePrimaryAction"
-          >
-            <i
-              :class="
-                context.image ? 'ri-download-2-line' : 'ri-file-copy-line'
-              "
-              aria-hidden="true"
-            ></i>
-            <span>{{ context.image ? translate('reader.formatSetting.save') : translate('reader.contextMenu.copy') }}</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" :disabled="!context.text" @click="searchText">
-            <i class="ri-search-line" aria-hidden="true"></i>
-            <span>{{ translate('common.navBar.search') }}</span>
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            :disabled="!context.text && !context.shareContent?.blocks?.length"
-            @click="shareText"
-          >
-            <i class="ri-share-forward-line" aria-hidden="true"></i>
-            <span>{{ translate('markdown.moment.share') }}</span>
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            :disabled="!context.paragraphId"
-            @click="openComment"
-          >
-            <i class="ri-chat-quote-line" aria-hidden="true"></i>
-            <span>{{ translate('markdown.moment.comments') }}</span>
-          </button>
-        </li>
-      </ul>
+        <ScrollableContainer>
+          <ul class="menu menu-horizontal min-h-0 max-w-full flex-nowrap overflow-x-auto overscroll-x-contain p-1 scrollbar-thin">
+            <li v-if="context.latex?.pure">
+              <button type="button" @click="copyLatexSource">
+                <i class="ri-braces-line" aria-hidden="true"></i>
+                <span>{{ translate('reader.contextMenu.copyLatex') }}</span>
+              </button>
+            </li>
+            <li v-if="context.latex?.pure">
+              <button type="button" @click="copyLatexAsSvg">
+                <i class="ri-shapes-line" aria-hidden="true"></i>
+                <span>{{ translate('reader.contextMenu.copySvg') }}</span>
+              </button>
+            </li>
+            <li v-else>
+              <button
+                type="button"
+                :disabled="context.image ? !context.image.src : !context.text"
+                @click="handlePrimaryAction"
+              >
+                <i
+                  :class="
+                    context.image ? 'ri-download-2-line' : 'ri-file-copy-line'
+                  "
+                  aria-hidden="true"
+                ></i>
+                <span>{{ context.image ? translate('reader.formatSetting.save') : translate('reader.contextMenu.copy') }}</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" :disabled="!context.text" @click="searchText">
+                <i class="ri-search-line" aria-hidden="true"></i>
+                <span>{{ translate('common.navBar.search') }}</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                :disabled="!context.text && !context.shareContent?.blocks?.length"
+                @click="shareText"
+              >
+                <i class="ri-share-forward-line" aria-hidden="true"></i>
+                <span>{{ translate('markdown.moment.share') }}</span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                :disabled="!context.paragraphId"
+                @click="openComment"
+              >
+                <i class="ri-chat-quote-line" aria-hidden="true"></i>
+                <span>{{ translate('markdown.moment.comments') }}</span>
+              </button>
+            </li>
+
+          </ul>
+        </ScrollableContainer>
+</div>
     </Transition>
   </Teleport>
   <component
@@ -81,6 +86,7 @@
 </template>
 
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 

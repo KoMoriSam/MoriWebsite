@@ -7,58 +7,59 @@
         : 'space-y-5'
     "
   >
-    <section
-      v-if="room.phase === 'opening'"
-      class="flex min-h-0 flex-1 flex-col overflow-y-auto text-center"
-    >
-      <div
-        class="my-auto flex w-full shrink-0 flex-col items-center gap-4 py-6"
+    <ScrollableContainer v-if="room.phase === 'opening'" class="flex-1">
+      <section
+        class="flex min-h-0 flex-1 flex-col overflow-y-auto text-center"
       >
-        <h2 class="text-sm text-base-content/60">
-          {{ t("avalon.opening.title") }}
-        </h2>
-        <Avatar
-          ring
-          :src="openingLeader?.avatarUrl || ''"
-          :name="playerName(room.openingLeaderId)"
-          :class="openingLeader?.online ? 'avatar-online' : 'avatar-offline'"
-          class="[&>div]:size-20 sm:[&>div]:size-24 [&_i]:text-4xl [&_span]:text-4xl"
-        />
-        <p
-          class="max-w-full wrap-break-word font-serif text-2xl font-semibold sm:text-3xl"
+        <div
+          class="my-auto flex w-full shrink-0 flex-col items-center gap-4 py-6"
         >
-          {{ playerName(room.openingLeaderId) }}
-          <span
-            v-if="room.openingLeaderId === room.selfId"
-            class="text-base font-normal text-base-content/50 sm:text-lg"
-            >{{ t("games.you") }}</span
+          <h2 class="text-sm text-base-content/60">
+            {{ t("avalon.opening.title") }}
+          </h2>
+          <Avatar
+            ring
+            :src="openingLeader?.avatarUrl || ''"
+            :name="playerName(room.openingLeaderId)"
+            :class="openingLeader?.online ? 'avatar-online' : 'avatar-offline'"
+            class="[&>div]:size-20 sm:[&>div]:size-24 [&_i]:text-4xl [&_span]:text-4xl"
+          />
+          <p
+            class="max-w-full wrap-break-word font-serif text-2xl font-semibold sm:text-3xl"
           >
-        </p>
-        <p class="text-sm text-base-content/60">
-          {{ t("avalon.opening.hint") }}
-        </p>
-        <button
-          type="button"
-          class="btn"
-          :disabled="!canAct || room.self.openingConfirmed"
-          @click="run('confirm_opening')"
-        >
-          {{
-            t(
-              room.self.openingConfirmed
-                ? "avalon.opening.confirmed"
-                : "avalon.opening.confirm",
-            )
-          }}
-        </button>
-        <section class="mt-2 w-full max-w-xl space-y-4 text-left">
-          <h3 class="font-serif text-lg font-semibold">
-            {{ t("avalon.config.title") }}
-          </h3>
-          <ConfigurationSummary :room="room" />
-        </section>
-      </div>
-    </section>
+            {{ playerName(room.openingLeaderId) }}
+            <span
+              v-if="room.openingLeaderId === room.selfId"
+              class="text-base font-normal text-base-content/50 sm:text-lg"
+              >{{ t("games.you") }}</span
+            >
+          </p>
+          <p class="text-sm text-base-content/60">
+            {{ t("avalon.opening.hint") }}
+          </p>
+          <button
+            type="button"
+            class="btn"
+            :disabled="!canAct || room.self.openingConfirmed"
+            @click="run('confirm_opening')"
+          >
+            {{
+              t(
+                room.self.openingConfirmed
+                  ? "avalon.opening.confirmed"
+                  : "avalon.opening.confirm",
+              )
+            }}
+          </button>
+          <section class="mt-2 w-full max-w-xl space-y-4 text-left">
+            <h3 class="font-serif text-lg font-semibold">
+              {{ t("avalon.config.title") }}
+            </h3>
+            <ConfigurationSummary :room="room" />
+          </section>
+        </div>
+      </section>
+    </ScrollableContainer>
     <section v-if="room.phase === 'night'" ref="nightSection" class="card">
       <div
         class="card-body items-center gap-3 px-0 py-2 text-center lg:gap-4 lg:py-4"
@@ -319,12 +320,14 @@
                 </template>
               </div>
             </section>
-            <div
-              data-avalon-summary-scroll
-              class="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 scrollbar-thin"
-            >
-              <AgendaSummary :room="room" :player-name="playerName" />
-            </div>
+            <ScrollableContainer class="flex-1">
+              <div
+                data-avalon-summary-scroll
+                class="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 scrollbar-thin"
+              >
+                <AgendaSummary :room="room" :player-name="playerName" />
+              </div>
+            </ScrollableContainer>
             <div
               v-if="['discussion', 'evil_discussion'].includes(room.phase)"
               class="flex shrink-0 items-center gap-2 lg:hidden"
@@ -357,12 +360,14 @@
             class="min-h-0 space-y-5 max-lg:flex-1 max-lg:flex-col max-lg:gap-3 max-lg:space-y-0 max-lg:overflow-hidden lg:shrink-0"
             :class="mobilePanel === 'table' ? 'max-lg:flex' : 'hidden lg:block'"
           >
-            <div
-              data-avalon-summary-scroll
-              class="min-h-0 max-lg:flex-1 max-lg:overflow-x-hidden max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:scrollbar-thin lg:hidden"
-            >
-              <AgendaSummary :room="room" :player-name="playerName" />
-            </div>
+            <ScrollableContainer class="max-lg:flex-1 lg:hidden">
+              <div
+                data-avalon-summary-scroll
+                class="min-h-0 max-lg:flex-1 max-lg:overflow-x-hidden max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:scrollbar-thin lg:hidden"
+              >
+                <AgendaSummary :room="room" :player-name="playerName" />
+              </div>
+            </ScrollableContainer>
             <div
               class="flex max-h-full min-h-0 shrink-0 flex-col gap-3 lg:gap-5"
             >
@@ -395,53 +400,56 @@
                 </span>
               </div>
 
-              <section
+              <ScrollableContainer
                 v-if="
                   !['opening', 'night'].includes(room.phase) && room.self.role
                 "
-                class="min-h-0 min-w-0 overflow-y-auto overscroll-contain scrollbar-thin"
               >
-                <ResultCard
-                  v-if="room.phase === 'finished'"
-                  :result="room.result"
-                  :won="room.self.won"
-                  :alignment="room.self.alignment"
-                  :self-id="room.selfId"
-                  :player-name="playerName"
-                />
-                <BallotCards
-                  v-else-if="isQuestMember"
-                  :self="room.self"
-                  :game-config="room.gameConfig"
-                  :self-id="room.selfId"
-                  :player-name="playerName"
-                  mode="quest"
-                  active
-                  :allow-fail="allowedQuestCards.includes(false)"
-                  :allowed-choices="allowedQuestCards"
-                  :can-submit="!room.self.questSubmitted && canAct"
-                  :submitted="room.self.questSubmitted"
-                  :context="`${room.code}:${room.game}:${room.stage}`"
-                  @quest="playQuest"
-                />
-                <BallotCards
-                  v-else
-                  :self="room.self"
-                  :game-config="room.gameConfig"
-                  :self-id="room.selfId"
-                  :player-name="playerName"
-                  :active="room.phase === 'vote'"
-                  :can-submit="
-                    room.phase === 'vote' && !room.self.voted && canAct
-                  "
-                  :submitted="room.phase === 'vote' && room.self.voted"
-                  :auto-approved="
-                    room.phase === 'vote' && room.self.autoApproved
-                  "
-                  :context="`${room.code}:${room.game}:${room.stage}`"
-                  @vote="castVote"
-                />
-              </section>
+                <section
+                  class="min-h-0 min-w-0 overflow-y-auto overscroll-contain scrollbar-thin"
+                >
+                  <ResultCard
+                    v-if="room.phase === 'finished'"
+                    :result="room.result"
+                    :won="room.self.won"
+                    :alignment="room.self.alignment"
+                    :self-id="room.selfId"
+                    :player-name="playerName"
+                  />
+                  <BallotCards
+                    v-else-if="isQuestMember"
+                    :self="room.self"
+                    :game-config="room.gameConfig"
+                    :self-id="room.selfId"
+                    :player-name="playerName"
+                    mode="quest"
+                    active
+                    :allow-fail="allowedQuestCards.includes(false)"
+                    :allowed-choices="allowedQuestCards"
+                    :can-submit="!room.self.questSubmitted && canAct"
+                    :submitted="room.self.questSubmitted"
+                    :context="`${room.code}:${room.game}:${room.stage}`"
+                    @quest="playQuest"
+                  />
+                  <BallotCards
+                    v-else
+                    :self="room.self"
+                    :game-config="room.gameConfig"
+                    :self-id="room.selfId"
+                    :player-name="playerName"
+                    :active="room.phase === 'vote'"
+                    :can-submit="
+                      room.phase === 'vote' && !room.self.voted && canAct
+                    "
+                    :submitted="room.phase === 'vote' && room.self.voted"
+                    :auto-approved="
+                      room.phase === 'vote' && room.self.autoApproved
+                    "
+                    :context="`${room.code}:${room.game}:${room.stage}`"
+                    @vote="castVote"
+                  />
+                </section>
+              </ScrollableContainer>
             </div>
           </div>
         </div>
@@ -565,283 +573,285 @@
                   :can-act="canAct"
                   :run="run"
                 />
-                <ol
-                  class="grid min-h-0 flex-1 content-start gap-2 overflow-y-auto overscroll-contain p-1 scrollbar-thin sm:grid-cols-2 lg:grid-cols-1"
-                >
-                  <li
-                    v-for="(player, index) in room.players"
-                    :key="player.id"
-                    class="flex items-center gap-3 rounded-box border p-3"
-                    :class="playerClasses(player)"
+                <ScrollableContainer class="flex-1">
+                  <ol
+                    class="grid min-h-0 flex-1 content-start gap-2 overflow-y-auto overscroll-contain p-1 scrollbar-thin sm:grid-cols-2 lg:grid-cols-1"
                   >
-                    <input
-                      v-if="room.phase === 'team' && isLeader"
-                      :id="`seat-${player.id}`"
-                      type="checkbox"
-                      class="checkbox checkbox-sm shrink-0"
-                      :checked="selected.includes(player.id)"
-                      :disabled="
-                        !canAct ||
-                        (!selected.includes(player.id) &&
-                          selected.length >= teamSize)
-                      "
-                      @change="togglePlayer(player.id)"
-                    />
-                    <input
-                      v-else-if="canSelectPlayer(player)"
-                      :id="`seat-${player.id}`"
-                      type="radio"
-                      class="radio radio-sm shrink-0"
-                      :name="`${mobilePanelId}-${selectionMode}`"
-                      :value="player.id"
-                      :checked="
-                        selectionMode === 'invite'
-                          ? discussionPartner === player.id
-                          : target === player.id
-                      "
-                      :disabled="!canAct"
-                      @change="choosePlayer(player.id)"
-                    />
-                    <span
-                      v-else
-                      class="w-5 shrink-0 text-center font-mono text-sm text-base-content/50"
-                      >{{ index + 1 }}</span
+                    <li
+                      v-for="(player, index) in room.players"
+                      :key="player.id"
+                      class="flex items-center gap-3 rounded-box border p-3"
+                      :class="playerClasses(player)"
                     >
-                    <component
-                      :is="guessable[player.id] ? 'button' : 'div'"
-                      :type="guessable[player.id] ? 'button' : undefined"
-                      class="shrink-0 border-0 bg-transparent p-0"
-                      :class="
-                        guessable[player.id]
-                          ? 'indicator cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                          : ''
-                      "
-                      :role="guessable[player.id] ? undefined : 'img'"
-                      :aria-label="
-                        guessable[player.id]
-                          ? t('avalon.notes.player', { name: player.nickname })
-                          : portraits[player.id]
-                            ? t(`avalon.roles.${portraits[player.id].role}`)
-                            : t('avalon.knowledge.unknown')
-                      "
-                      @click="
-                        guessable[player.id] && notesMenu.open(player, $event)
-                      "
-                    >
-                      <span
-                        v-if="guessable[player.id]"
-                        class="indicator-item indicator-bottom indicator-end badge badge-xs z-10 size-4! rounded-full! p-0! text-[10px] ring-1 ring-base-100"
-                        style="
-                          --indicator-e: 0;
-                          --indicator-b: 0;
-                          --indicator-x: 0;
-                          --indicator-y: 0;
+                      <input
+                        v-if="room.phase === 'team' && isLeader"
+                        :id="`seat-${player.id}`"
+                        type="checkbox"
+                        class="checkbox checkbox-sm shrink-0"
+                        :checked="selected.includes(player.id)"
+                        :disabled="
+                          !canAct ||
+                          (!selected.includes(player.id) &&
+                            selected.length >= teamSize)
                         "
-                        aria-hidden="true"
-                        ><i class="ri-pencil-line" aria-hidden="true"></i
-                      ></span>
-                      <div
-                        class="avatar"
+                        @change="togglePlayer(player.id)"
+                      />
+                      <input
+                        v-else-if="canSelectPlayer(player)"
+                        :id="`seat-${player.id}`"
+                        type="radio"
+                        class="radio radio-sm shrink-0"
+                        :name="`${mobilePanelId}-${selectionMode}`"
+                        :value="player.id"
+                        :checked="
+                          selectionMode === 'invite'
+                            ? discussionPartner === player.id
+                            : target === player.id
+                        "
+                        :disabled="!canAct"
+                        @change="choosePlayer(player.id)"
+                      />
+                      <span
+                        v-else
+                        class="w-5 shrink-0 text-center font-mono text-sm text-base-content/50"
+                        >{{ index + 1 }}</span
+                      >
+                      <component
+                        :is="guessable[player.id] ? 'button' : 'div'"
+                        :type="guessable[player.id] ? 'button' : undefined"
+                        class="shrink-0 border-0 bg-transparent p-0"
                         :class="
-                          player.online ? 'avatar-online' : 'avatar-offline'
+                          guessable[player.id]
+                            ? 'indicator cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+                            : ''
+                        "
+                        :role="guessable[player.id] ? undefined : 'img'"
+                        :aria-label="
+                          guessable[player.id]
+                            ? t('avalon.notes.player', { name: player.nickname })
+                            : portraits[player.id]
+                              ? t(`avalon.roles.${portraits[player.id].role}`)
+                              : t('avalon.knowledge.unknown')
+                        "
+                        @click="
+                          guessable[player.id] && notesMenu.open(player, $event)
                         "
                       >
+                        <span
+                          v-if="guessable[player.id]"
+                          class="indicator-item indicator-bottom indicator-end badge badge-xs z-10 size-4! rounded-full! p-0! text-[10px] ring-1 ring-base-100"
+                          style="
+                            --indicator-e: 0;
+                            --indicator-b: 0;
+                            --indicator-x: 0;
+                            --indicator-y: 0;
+                          "
+                          aria-hidden="true"
+                          ><i class="ri-pencil-line" aria-hidden="true"></i
+                        ></span>
                         <div
-                          class="relative size-12 overflow-hidden rounded-full bg-base-200 ring-2 ring-offset-2 ring-offset-base-100"
+                          class="avatar"
                           :class="
-                            portraits[player.id]?.guessed
-                              ? 'ring-base-content/30'
-                              : knowledge[player.id]?.tone === 'evil'
-                                ? 'ring-error'
-                                : knowledge[player.id]?.tone === 'good'
-                                  ? 'ring-success'
-                                  : 'ring-base-300'
+                            player.online ? 'avatar-online' : 'avatar-offline'
                           "
                         >
-                          <img
-                            v-if="portraits[player.id]"
-                            v-bind="
-                              getImageAttrs(
-                                roleImage(portraits[player.id].role),
-                                '96px',
-                              )
-                            "
-                            @error="$event.currentTarget.style.opacity = '0'"
-                            @load="$event.currentTarget.style.opacity = ''"
-                            alt=""
-                            class="absolute inset-0 h-full w-full origin-top scale-150 object-cover object-top"
+                          <div
+                            class="relative size-12 overflow-hidden rounded-full bg-base-200 ring-2 ring-offset-2 ring-offset-base-100"
                             :class="
-                              portraits[player.id].guessed
-                                ? 'grayscale opacity-70'
-                                : ''
+                              portraits[player.id]?.guessed
+                                ? 'ring-base-content/30'
+                                : knowledge[player.id]?.tone === 'evil'
+                                  ? 'ring-error'
+                                  : knowledge[player.id]?.tone === 'good'
+                                    ? 'ring-success'
+                                    : 'ring-base-300'
                             "
-                          />
-                          <img
-                            v-else
-                            v-bind="
-                              getImageAttrs(
-                                '/assets/images/games/avalon/card.webp',
-                                '96px',
+                          >
+                            <img
+                              v-if="portraits[player.id]"
+                              v-bind="
+                                getImageAttrs(
+                                  roleImage(portraits[player.id].role),
+                                  '96px',
+                                )
+                              "
+                              @error="$event.currentTarget.style.opacity = '0'"
+                              @load="$event.currentTarget.style.opacity = ''"
+                              alt=""
+                              class="absolute inset-0 h-full w-full origin-top scale-150 object-cover object-top"
+                              :class="
+                                portraits[player.id].guessed
+                                  ? 'grayscale opacity-70'
+                                  : ''
+                              "
+                            />
+                            <img
+                              v-else
+                              v-bind="
+                                getImageAttrs(
+                                  '/assets/images/games/avalon/card.webp',
+                                  '96px',
+                                )
+                              "
+                              alt=""
+                              class="h-full w-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      </component>
+                      <div class="min-w-0 flex-1">
+                        <label
+                          :for="
+                            canSelectPlayer(player)
+                              ? `seat-${player.id}`
+                              : undefined
+                          "
+                          class="block wrap-break-word text-sm font-medium"
+                          >{{ player.nickname }}
+                          <span
+                            v-if="player.id === room.selfId"
+                            class="text-base-content/50"
+                            >{{ t("games.you") }}</span
+                          ></label
+                        >
+                        <div
+                          class="mt-1 flex flex-wrap items-center gap-1 text-xs text-base-content/60"
+                        >
+                          <span v-if="player.id === room.hostId">{{
+                            t("games.host")
+                          }}</span>
+                          <span
+                            v-if="
+                              player.id === room.leaderId &&
+                              !['lobby', 'finished'].includes(room.phase)
+                            "
+                            >{{ t("avalon.leader") }}</span
+                          >
+                          <span
+                            v-if="
+                              room.team.includes(player.id) &&
+                              !['lobby', 'team'].includes(room.phase)
+                            "
+                            >{{ t("avalon.onTeam") }}</span
+                          >
+                          <span v-if="room.phase === 'lobby' && player.ready">{{
+                            t("games.ready")
+                          }}</span>
+                          <span v-if="!player.online">{{
+                            t(
+                              player.departed
+                                ? "games.departed"
+                                : "games.disconnected",
+                            )
+                          }}</span>
+                          <span
+                            v-if="
+                              knowledge[player.id] &&
+                              !(
+                                loyaltyReports[player.id] &&
+                                [
+                                  'avalon.loyalty.reportedGood',
+                                  'avalon.loyalty.reportedEvil',
+                                ].includes(knowledge[player.id].label)
                               )
                             "
-                            alt=""
-                            class="h-full w-full object-cover"
-                          />
+                            class="inline-flex items-center gap-1"
+                            :class="
+                              knowledge[player.id].tone === 'evil'
+                                ? 'text-error'
+                                : knowledge[player.id].tone === 'good'
+                                  ? ''
+                                  : 'text-warning'
+                            "
+                          >
+                            <i
+                              :class="knowledge[player.id].icon"
+                              aria-hidden="true"
+                            ></i>
+                            {{ t(knowledge[player.id].label) }}
+                          </span>
+                          <span
+                            v-else-if="!knowledge[player.id]"
+                            class="inline-flex items-center gap-1"
+                          >
+                            <i class="ri-question-line" aria-hidden="true"></i>
+                            {{ t("avalon.knowledge.unknown") }}
+                          </span>
+                          <button
+                            v-if="loyaltyReports[player.id]"
+                            type="button"
+                            class="badge badge-ghost badge-xs gap-1"
+                            :aria-label="
+                              t('avalon.loyalty.result', {
+                                name: player.nickname,
+                                side: t(
+                                  `avalon.night.${loyaltyReports[player.id].alignment}`,
+                                ),
+                              })
+                            "
+                            @click="showLoyaltyResult(loyaltyReports[player.id])"
+                          >
+                            <i class="ri-eye-line" aria-hidden="true"></i>
+                            {{
+                              t(
+                                loyaltyReports[player.id].alignment === "good"
+                                  ? "avalon.loyalty.reportedGood"
+                                  : "avalon.loyalty.reportedEvil",
+                              )
+                            }}
+                          </button>
+                          <button
+                            v-if="player.id === room.selfId && lancelotStatus"
+                            type="button"
+                            class="badge badge-xs gap-1"
+                            :class="lancelotStatus.tone"
+                            :aria-label="lancelotStatus.description"
+                            @click="reviewLancelotStatus"
+                          >
+                            <i
+                              :class="lancelotStatus.icon"
+                              aria-hidden="true"
+                            ></i>
+                            {{
+                              t(`avalon.lancelot.states.${lancelotStatus.label}`)
+                            }}
+                          </button>
+                          <button
+                            v-if="room.lady?.holderId === player.id"
+                            type="button"
+                            class="badge badge-ghost badge-xs h-auto min-h-5 gap-1"
+                            :aria-label="
+                              t('avalon.config.viewRole', {
+                                name: t('avalon.lady.title'),
+                              })
+                            "
+                            @click="skillPopover?.open()"
+                          >
+                            <img
+                              v-bind="
+                                getImageAttrs(SKILL_CARDS.lady.image, '96px')
+                              "
+                              alt=""
+                              class="size-4 shrink-0 rounded-full object-cover object-top"
+                            />
+                            {{ t("avalon.lady.holder") }}
+                          </button>
+                          <span
+                            v-if="marks[player.id]"
+                            class="inline-flex items-center gap-1"
+                          >
+                            <i class="ri-pencil-line" aria-hidden="true"></i>
+                            {{
+                              t("avalon.notes.guess", {
+                                role: t(markLabel(marks[player.id])),
+                              })
+                            }}
+                          </span>
                         </div>
                       </div>
-                    </component>
-                    <div class="min-w-0 flex-1">
-                      <label
-                        :for="
-                          canSelectPlayer(player)
-                            ? `seat-${player.id}`
-                            : undefined
-                        "
-                        class="block wrap-break-word text-sm font-medium"
-                        >{{ player.nickname }}
-                        <span
-                          v-if="player.id === room.selfId"
-                          class="text-base-content/50"
-                          >{{ t("games.you") }}</span
-                        ></label
-                      >
-                      <div
-                        class="mt-1 flex flex-wrap items-center gap-1 text-xs text-base-content/60"
-                      >
-                        <span v-if="player.id === room.hostId">{{
-                          t("games.host")
-                        }}</span>
-                        <span
-                          v-if="
-                            player.id === room.leaderId &&
-                            !['lobby', 'finished'].includes(room.phase)
-                          "
-                          >{{ t("avalon.leader") }}</span
-                        >
-                        <span
-                          v-if="
-                            room.team.includes(player.id) &&
-                            !['lobby', 'team'].includes(room.phase)
-                          "
-                          >{{ t("avalon.onTeam") }}</span
-                        >
-                        <span v-if="room.phase === 'lobby' && player.ready">{{
-                          t("games.ready")
-                        }}</span>
-                        <span v-if="!player.online">{{
-                          t(
-                            player.departed
-                              ? "games.departed"
-                              : "games.disconnected",
-                          )
-                        }}</span>
-                        <span
-                          v-if="
-                            knowledge[player.id] &&
-                            !(
-                              loyaltyReports[player.id] &&
-                              [
-                                'avalon.loyalty.reportedGood',
-                                'avalon.loyalty.reportedEvil',
-                              ].includes(knowledge[player.id].label)
-                            )
-                          "
-                          class="inline-flex items-center gap-1"
-                          :class="
-                            knowledge[player.id].tone === 'evil'
-                              ? 'text-error'
-                              : knowledge[player.id].tone === 'good'
-                                ? ''
-                                : 'text-warning'
-                          "
-                        >
-                          <i
-                            :class="knowledge[player.id].icon"
-                            aria-hidden="true"
-                          ></i>
-                          {{ t(knowledge[player.id].label) }}
-                        </span>
-                        <span
-                          v-else-if="!knowledge[player.id]"
-                          class="inline-flex items-center gap-1"
-                        >
-                          <i class="ri-question-line" aria-hidden="true"></i>
-                          {{ t("avalon.knowledge.unknown") }}
-                        </span>
-                        <button
-                          v-if="loyaltyReports[player.id]"
-                          type="button"
-                          class="badge badge-ghost badge-xs gap-1"
-                          :aria-label="
-                            t('avalon.loyalty.result', {
-                              name: player.nickname,
-                              side: t(
-                                `avalon.night.${loyaltyReports[player.id].alignment}`,
-                              ),
-                            })
-                          "
-                          @click="showLoyaltyResult(loyaltyReports[player.id])"
-                        >
-                          <i class="ri-eye-line" aria-hidden="true"></i>
-                          {{
-                            t(
-                              loyaltyReports[player.id].alignment === "good"
-                                ? "avalon.loyalty.reportedGood"
-                                : "avalon.loyalty.reportedEvil",
-                            )
-                          }}
-                        </button>
-                        <button
-                          v-if="player.id === room.selfId && lancelotStatus"
-                          type="button"
-                          class="badge badge-xs gap-1"
-                          :class="lancelotStatus.tone"
-                          :aria-label="lancelotStatus.description"
-                          @click="reviewLancelotStatus"
-                        >
-                          <i
-                            :class="lancelotStatus.icon"
-                            aria-hidden="true"
-                          ></i>
-                          {{
-                            t(`avalon.lancelot.states.${lancelotStatus.label}`)
-                          }}
-                        </button>
-                        <button
-                          v-if="room.lady?.holderId === player.id"
-                          type="button"
-                          class="badge badge-ghost badge-xs h-auto min-h-5 gap-1"
-                          :aria-label="
-                            t('avalon.config.viewRole', {
-                              name: t('avalon.lady.title'),
-                            })
-                          "
-                          @click="skillPopover?.open()"
-                        >
-                          <img
-                            v-bind="
-                              getImageAttrs(SKILL_CARDS.lady.image, '96px')
-                            "
-                            alt=""
-                            class="size-4 shrink-0 rounded-full object-cover object-top"
-                          />
-                          {{ t("avalon.lady.holder") }}
-                        </button>
-                        <span
-                          v-if="marks[player.id]"
-                          class="inline-flex items-center gap-1"
-                        >
-                          <i class="ri-pencil-line" aria-hidden="true"></i>
-                          {{
-                            t("avalon.notes.guess", {
-                              role: t(markLabel(marks[player.id])),
-                            })
-                          }}
-                        </span>
-                      </div>
-                    </div>
-                  </li>
-                </ol>
+                    </li>
+                  </ol>
+                </ScrollableContainer>
                 <button
                   v-if="isLeader && room.phase === 'team'"
                   class="btn shrink-0"
@@ -956,17 +966,19 @@
         >
           {{ t("avalon.mobile.historyEmpty") }}
         </p>
-        <ol
-          class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain scrollbar-thin"
-        >
-          <li
-            v-for="quest in recordedQuests"
-            :key="quest"
-            class="min-w-0 border-t border-base-300 pt-4 first:border-t-0 first:pt-0"
+        <ScrollableContainer class="flex-1">
+          <ol
+            class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain scrollbar-thin"
           >
-            <QuestHistory :room="room" :quest="quest" />
-          </li>
-        </ol>
+            <li
+              v-for="quest in recordedQuests"
+              :key="quest"
+              class="min-w-0 border-t border-base-300 pt-4 first:border-t-0 first:pt-0"
+            >
+              <QuestHistory :room="room" :quest="quest" />
+            </li>
+          </ol>
+        </ScrollableContainer>
       </div>
     </section>
     <RolePreviewPopover ref="skillPopover" skill="lady" />
@@ -1011,6 +1023,7 @@
   </div>
 </template>
 <script setup>
+import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { computed, h, nextTick, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useLocale } from "@/i18n";
