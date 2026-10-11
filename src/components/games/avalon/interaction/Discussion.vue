@@ -232,7 +232,7 @@
               <fieldset
                 class="fieldset min-w-0 flex-1"
                 :class="
-                  parameterCount === 1 ? 'basis-40 flex-[2]' : 'basis-full'
+                  parameterCount === 1 ? 'basis-40 flex-2' : 'basis-full'
                 "
               >
                 <legend class="fieldset-legend pb-0">

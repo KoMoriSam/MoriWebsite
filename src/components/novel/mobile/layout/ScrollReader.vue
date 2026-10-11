@@ -57,7 +57,7 @@
       >
         <button
           type="button"
-          class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
+          class="alert alert-soft pointer-events-auto block w-[calc(100%-1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
           :aria-label="
             translate(
               'reader.scrollReader.scrollingHelpTapAGridZoneForItsActionSwipe',

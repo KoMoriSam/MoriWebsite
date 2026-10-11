@@ -3,7 +3,7 @@
     class="avatar-group overflow-visible p-1 [&_.avatar]:overflow-visible"
     :class="
       compact
-        ? 'grid min-w-0 grid-cols-[var(--avatar-columns)] [--avatar-size:2rem] [&>.indicator]:justify-self-start sm:w-[var(--avatar-expanded-width)] sm:min-w-[var(--avatar-collapsed-width)] sm:shrink max-sm:flex-1 max-sm:[--avatar-size:1.75rem]'
+        ? 'grid min-w-0 grid-cols-(--avatar-columns) [--avatar-size:2rem] [&>.indicator]:justify-self-start sm:w-[var(--avatar-expanded-width)] sm:min-w-[var(--avatar-collapsed-width)] sm:shrink max-sm:flex-1 max-sm:[--avatar-size:1.75rem]'
         : '-space-x-3'
     "
     :style="

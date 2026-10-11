@@ -82,7 +82,7 @@
       <div
         v-show="chapterSnapshotVisible"
         ref="chapterSnapshotRef"
-        class="pointer-events-none absolute inset-0 z-30 overflow-hidden bg-base-100 transition-[transform,opacity] duration-[220ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
+        class="pointer-events-none absolute inset-0 z-30 overflow-hidden bg-base-100 transition-[transform,opacity] duration-220ms ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
         :class="{
           'opacity-0':
             chapterSnapshotLeaving && chapterTransitionDirection === 0,
@@ -118,7 +118,7 @@
                 'reader.pagedReader.readerHelpTapAGridZoneForItsActionSwipe',
               )
             "
-            class="alert alert-soft pointer-events-auto block w-[calc(100%_-_1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
+            class="alert alert-soft pointer-events-auto block w-[calc(100%-1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
             @pointerdown.stop
             @click.stop="dismissReaderHint"
           >
@@ -202,7 +202,7 @@
 
     <div
       ref="footnoteMeasureRef"
-      class="pointer-events-none invisible fixed top-0 -left-[10000px]"
+      class="pointer-events-none invisible fixed top-0 left-[-10000px]"
       :style="{
         width: `${pageWidth}px`,
       }"

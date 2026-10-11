@@ -33,7 +33,7 @@
       id="account-controls"
       ref="panel"
       popover="auto"
-      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,42rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
+      class="dropdown dropdown-end mt-2 max-h-[min(78dvh,42rem)] w-96 overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:inset-[3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!"
       style="position-anchor: --account-controls-anchor"
       :aria-label="t('auth.account')"
       @beforetoggle="handleBeforeToggle"

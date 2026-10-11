@@ -25,7 +25,7 @@
           class="[&>div]:size-20 sm:[&>div]:size-24 [&_i]:text-4xl [&_span]:text-4xl"
         />
         <p
-          class="max-w-full break-words font-serif text-2xl font-semibold sm:text-3xl"
+          class="max-w-full wrap-break-word font-serif text-2xl font-semibold sm:text-3xl"
         >
           {{ playerName(room.openingLeaderId) }}
           <span
