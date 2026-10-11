@@ -31,10 +31,10 @@
       @toggle="handleToggle"
     >
       <header
-        :class="inline ? 'mb-2 flex shrink-0 justify-end' : 'flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 max-lg:gap-2 max-lg:px-0 max-lg:pt-0 max-lg:pb-1.5'"
+        v-if="!inline"
+        class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3 max-lg:gap-2 max-lg:px-0 max-lg:pt-0 max-lg:pb-1.5"
       >
         <h2
-          v-if="!inline"
           id="notification-center-title"
           class="font-serif text-lg font-semibold"
         >

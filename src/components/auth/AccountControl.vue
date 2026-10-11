@@ -109,6 +109,7 @@
             name="account-settings"
             class="collapse collapse-arrow rounded-box"
             @toggle="refreshNotices"
+            open
           >
             <summary
               class="collapse-title flex min-h-11 items-center gap-2 py-3 pl-3 pr-9 text-sm font-medium"
@@ -118,6 +119,15 @@
               <span v-if="unreadCount" class="badge badge-error badge-xs">{{
                 unreadCount
               }}</span>
+              <button
+                v-if="unreadCount"
+                type="button"
+                class="btn btn-xs ml-auto shrink-0"
+                @click.stop.prevent="announcements.markAllRead()"
+                @keydown.stop
+              >
+                {{ t("common.modal.markAllAsRead") }}
+              </button>
             </summary>
             <div class="collapse-content px-2 pb-2">
               <NoticeCenter
