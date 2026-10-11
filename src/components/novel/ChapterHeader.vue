@@ -4,12 +4,15 @@
     class="flex w-full min-w-0 max-w-full flex-col gap-3 font-sans lg:flex-row lg:items-end"
   >
     <!-- 标题区域 -->
-    <section class="group min-w-0 max-w-full lg:flex-1" :aria-label="translate('reader.chapterHeader.chapterInformation')">
+    <section
+      class="group min-w-0 max-w-full lg:flex-1"
+      :aria-label="translate('reader.chapterHeader.chapterInformation')"
+    >
       <hgroup class="min-w-0">
         <!-- 卷标（桌面端显示） -->
         <section
           v-if="chapter?.volumeTitle"
-          class="hidden min-w-0 items-center gap-2 lg:flex"
+          class="hidden min-w-0 items-center gap-2 lg:flex mb-1"
         >
           <!-- 返回封面 -->
           <nav
@@ -19,7 +22,7 @@
           >
             <RouterLink
               to="/novel"
-              class="btn btn-outline btn-primary btn-xs btn-circle"
+              class="btn btn-soft btn-primary btn-xs btn-circle"
               :aria-label="translate('reader.chapterHeader.backToNovelCover')"
             >
               <i class="ri-arrow-left-line" aria-hidden="true"></i>
@@ -28,12 +31,8 @@
 
           <!-- 卷标 -->
           <p
-            class="badge badge-outline badge-primary m-0! min-w-0 max-w-full truncate"
+            class="badge badge-soft badge-primary m-0! min-w-0 max-w-full truncate"
           >
-            <i
-              class="ri-bookmark-line shrink-0 font-normal"
-              aria-hidden="true"
-            ></i>
             {{ chapter.volumeTitle }}
           </p>
         </section>
@@ -88,7 +87,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import { computed } from "vue";
