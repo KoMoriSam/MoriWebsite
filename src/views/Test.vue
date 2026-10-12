@@ -32,13 +32,19 @@
         <template #tags="{ coverLoaded }">
           <span
             class="badge badge-sm h-auto min-h-5 max-w-full py-0.5 transition-colors duration-300 motion-reduce:transition-none"
-            :class="coverLoaded ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm' : 'badge-primary badge-soft'"
+            :class="
+              coverLoaded
+                ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
+                : 'badge-primary badge-soft'
+            "
           >
-            <span class="min-w-0 break-words">{{ item.label }}</span>
+            <span class="min-w-0 wrap-break-word">{{ item.label }}</span>
           </span>
         </template>
         <template #meta>
-          <code class="min-w-0 max-w-full break-all text-xs text-base-content/40">
+          <code
+            class="min-w-0 max-w-full break-all text-xs text-base-content/40"
+          >
             /test/{{ item.id }}
           </code>
         </template>

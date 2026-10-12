@@ -8,7 +8,10 @@
       :aria-busy="hasCover && !isCoverLoaded"
     >
       <template v-if="hasCover">
-        <div class="skeleton absolute inset-0 rounded-none" aria-hidden="true"></div>
+        <div
+          class="skeleton absolute inset-0 rounded-none"
+          aria-hidden="true"
+        ></div>
         <img
           v-fade-in
           :key="cover"
@@ -24,7 +27,7 @@
           @error="handleCoverError"
         />
         <div
-          class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500 motion-reduce:transition-none"
+          class="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500 motion-reduce:transition-none"
           :class="isCoverLoaded ? 'opacity-100' : 'opacity-0'"
           aria-hidden="true"
         ></div>
@@ -43,7 +46,10 @@
           class="absolute right-5 top-4 text-7xl text-base-content/5 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transform-none motion-reduce:transition-none"
           aria-hidden="true"
         ></i>
-        <div class="catalog-cover-pattern absolute inset-0 opacity-[0.04]" aria-hidden="true"></div>
+        <div
+          class="catalog-cover-pattern absolute inset-0 opacity-[0.04]"
+          aria-hidden="true"
+        ></div>
       </template>
 
       <div
@@ -54,7 +60,7 @@
           <slot name="tags" :cover-loaded="hasCover && isCoverLoaded"></slot>
         </div>
         <h2
-          class="mt-3 break-words text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
+          class="mt-3 wrap-break-word text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
           :class="hasCover && isCoverLoaded ? 'drop-shadow-sm' : ''"
         >
           {{ title }}
@@ -63,13 +69,19 @@
     </div>
 
     <div class="card-body min-w-0 gap-0 p-5 sm:p-6">
-      <p class="break-words text-pretty leading-relaxed text-base-content/65">
+      <p
+        class="wrap-break-word text-pretty leading-relaxed text-base-content/65"
+      >
         {{ description }}
       </p>
-      <div class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5 text-sm text-base-content/50">
+      <div
+        class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5 text-sm text-base-content/50"
+      >
         <slot name="meta"></slot>
-        <span class="ml-auto flex max-w-full items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none">
-          <span class="min-w-0 break-words">{{ action }}</span>
+        <span
+          class="ml-auto flex max-w-full items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+        >
+          <span class="min-w-0 wrap-break-word">{{ action }}</span>
           <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
         </span>
       </div>
@@ -80,7 +92,10 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { RouterLink } from "vue-router";
-import { getImageAttrs, restoreOriginalImage } from "@/utils/images/responsive-images";
+import {
+  getImageAttrs,
+  restoreOriginalImage,
+} from "@/utils/images/responsive-images";
 
 const props = defineProps({
   to: { type: [String, Object], required: true },
@@ -104,13 +119,18 @@ const coverAttrs = computed(() => {
   return attrs;
 });
 
-watch(() => props.cover, () => {
-  coverLoaded.value = false;
-  coverFailed.value = false;
-}, { flush: "sync" });
+watch(
+  () => props.cover,
+  () => {
+    coverLoaded.value = false;
+    coverFailed.value = false;
+  },
+  { flush: "sync" },
+);
 
 function handleCoverLoad(event) {
-  if (event.currentTarget.getAttribute("data-cover-src") !== props.cover) return;
+  if (event.currentTarget.getAttribute("data-cover-src") !== props.cover)
+    return;
   coverLoaded.value = true;
   coverFailed.value = false;
 }
