@@ -10,7 +10,7 @@
         <div class="w-8 sm:w-10 rounded-full">
           <img
             class="m-0!"
-            v-bind="getImageAttrs(avatarFor(username), '40px')"
+            v-bind="avatarAttrs(username)"
             :alt="translate('markdown.moment.sAvatar', { p0: username })"
           />
         </div>
@@ -91,7 +91,7 @@
               <div class="w-8 rounded-full">
                 <img
                   class="m-0!"
-                  v-bind="getImageAttrs(avatarFor(comment.username), '40px')"
+                  v-bind="avatarAttrs(comment.username)"
                   :alt="translate('markdown.moment.sAvatar', { p0: comment.username })"
                 />
               </div>
@@ -112,7 +112,7 @@
                 <div class="w-8 rounded-full">
                   <img
                     class="m-0!"
-                    v-bind="getImageAttrs(avatarFor(reply.replier), '40px')"
+                    v-bind="avatarAttrs(reply.replier)"
                     :alt="translate('markdown.moment.sAvatar', { p0: reply.replier })"
                   />
                 </div>
@@ -155,6 +155,7 @@
 
 <script setup>
 import { getImageAttrs } from "@/utils/images/responsive-images";
+import { useMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
 import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText } = useLocale();
 
@@ -162,7 +163,7 @@ import { computed } from "vue";
 
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
-import { SELF_NAMES, DEFAULT_AVATAR, AVATAR_MAP } from "@/constants/markdown";
+import { SELF_NAMES } from "@/constants/markdown";
 
 const props = defineProps({
   username: { type: String, default: "用户" },
@@ -174,8 +175,7 @@ const props = defineProps({
   comments: { type: Array, default: () => [] },
 });
 
-const avatarFor = (username = "") =>
-  AVATAR_MAP[String(username).trim()] || DEFAULT_AVATAR;
+const { avatarFor, avatarAttrs } = useMarkdownAvatars();
 
 const isSelf = (username = "") => SELF_NAMES.has(String(username).trim());
 

@@ -258,6 +258,8 @@
 </template>
 
 <script setup>
+import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
+provideMarkdownAvatars(import.meta.env.VITE_NOVEL_RAW);
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate, commentLocale, number: formatNumber, date: formatLocalizedDate } = useLocale();

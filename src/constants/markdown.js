@@ -1,6 +1,4 @@
-const avatar = (name) => `/assets/images/avatar/${name}.webp`;
-
-export const DEFAULT_AVATAR = avatar("default");
+export const DEFAULT_AVATAR = "/assets/images/avatar/default.webp";
 
 export const SELF_NAMES = new Set([
   "我",
@@ -10,30 +8,6 @@ export const SELF_NAMES = new Set([
   "Smile Again",
   "LBT",
 ]);
-
-export const AVATAR_MAP = {
-  "🈚️内👻，LG": avatar("lg"),
-
-  小群主: avatar("ayanami"),
-  Mori: avatar("ayanami"),
-  KoMoriSam: avatar("ayanami"),
-  "Smile Again": avatar("kagami-ren"),
-  LBT: avatar("kagami-ren"),
-
-  真正群主: avatar("talloran"),
-  牛子: avatar("niuzi"),
-  欢乐豆人: avatar("joybean"),
-  天天: avatar("smellycat7"),
-  量子: avatar("quantum"),
-  泡泡冰: avatar("paopao"),
-  李焰老师: avatar("liyan"),
-  赵天明老师: avatar("zhaotianming"),
-  爸: avatar("dad"),
-  妈: avatar("mom"),
-
-  OpenAI: avatar("openai"),
-  "GPT-5.6": avatar("openai"),
-};
 
 export const FOOTER_MAP = [
   ["已送达", "badge-info"],

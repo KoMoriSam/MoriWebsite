@@ -427,6 +427,8 @@
 </template>
 
 <script setup>
+import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
+provideMarkdownAvatars(import.meta.env.VITE_BLOG_RAW);
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 const {

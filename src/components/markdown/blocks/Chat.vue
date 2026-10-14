@@ -46,7 +46,7 @@
           <div class="w-8 sm:w-10 rounded-full">
             <img
               :alt="message.username || translate('markdown.chat.user')"
-              v-bind="getImageAttrs(avatarFor(message.username || '用户'), '40px')"
+              v-bind="avatarAttrs(message.username || '用户')"
             />
           </div>
         </aside>
@@ -141,7 +141,7 @@
 </template>
 
 <script setup>
-import { getImageAttrs } from "@/utils/images/responsive-images";
+import { useMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
@@ -151,8 +151,6 @@ import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
 import {
   SELF_NAMES,
-  DEFAULT_AVATAR,
-  AVATAR_MAP,
   FOOTER_MAP,
 } from "@/constants/markdown";
 
@@ -170,8 +168,7 @@ const props = defineProps({
 const inputText = ref("");
 const voiceMode = ref(false);
 
-const avatarFor = (username = "") =>
-  AVATAR_MAP[String(username).trim()] || DEFAULT_AVATAR;
+const { avatarFor, avatarAttrs } = useMarkdownAvatars();
 
 const footerClass = (footer = "") =>
   FOOTER_MAP.find(([keyword]) => footer.includes(keyword))?.[1] || "";
