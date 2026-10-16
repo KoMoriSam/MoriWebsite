@@ -11,7 +11,7 @@
             {{ translate('tools.notes.legacyFontsUsuallyDoNotSupportStraightQuotesConversionReplaces') }}
           </li>
           <li>
-            {{ translate('tools.notes.legacyFontsLackDedicatedAndConjunctsTheseAreExpandedTo') }}
+            {{ translate('tools.notes.rakarVowelFormsShareLegacyCodes') }}
           </li>
           <li>
             {{ translate('tools.notes.legacyFontsLackDedicatedAndGlyphsSoTheseCannotBe') }}

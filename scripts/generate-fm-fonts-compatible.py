@@ -3,12 +3,11 @@
 Builds legacy-encoding display fonts whose outlines come from open Google
 Fonts Sinhala families but whose character map follows the legacy FM encoding
 used by the Sinhala converter:
-  * Abhaya Legacy (Regular and Bold, instantiated from the Abhaya Libre
-    variable font committed under scripts/font-sources/abhaya-libre)
-  * Gemunu Legacy (Regular and Bold, instantiated from the Gemunu Libre
-    variable font committed under scripts/font-sources/gemunu-libre)
+  * Abhaya Legacy (one variable font, weights 400–800)
+  * Gemunu Legacy (one variable font, weights 200–800)
+  * STIX Two Text (native variable webfont, weights 400–700)
 
-Every imported outline comes from the hash-pinned OFL sources above or XITS.
+Every imported outline comes from the hash-pinned OFL sources above or STIX Two Text.
 Where a Libre source already contains a suitable alternate, the required
 component contours are extracted directly from that open source glyph.  A
 small remaining set of legacy-only forms is stored as hand-authored path data
@@ -28,26 +27,30 @@ import io
 import json
 import subprocess
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 
 import uharfbuzz as hb
+from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
+from fontTools.otlLib.builder import buildStatTable
 from fontTools.pens.boundsPen import BoundsPen
-from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen, RecordingPen
 from fontTools.pens.transformPen import TransformPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.subset import Options, Subsetter
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
+from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+from fontTools.varLib import build as build_variable_font
 from fontTools.varLib.instancer import instantiateVariableFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Google Fonts variable builds committed locally and hash-pinned.  Each output
-# face is instantiated at its requested weight before legacy remapping begins.
+# Google Fonts variable builds committed locally and hash-pinned. Intermediate
+# masters preserve source outlines before legacy remapping and variable assembly.
 ABHAYA_SOURCE_BASENAME = "AbhayaLibre[wght].ttf"
 ABHAYA_SOURCE_SHA256 = {
     "Regular": "9bf82638d8fcc6f832a8e8f7d703f8b7e2d81decd32306a8d785b05a46888384",
@@ -60,11 +63,9 @@ GEMUNU_SOURCE_SHA256 = {
     "Bold": "0cf4e302dfec35dfa42b7429215f136adde45e25a57f81be2cf88106507e0bed",
 }
 
-XITS_SOURCE_BASENAME = "XITS-{weight}.otf"
-XITS_SOURCE_SHA256 = {
-    "Regular": "9cd5e6b9bac7647cc714c17d7c9e2e5087f8551cf1bec48a8e753172dbc641b8",
-    "Bold": "6076d16614af00f81163b6a5886811bbb2db6dee8ee81827212c8029042693de",
-}
+# STIX upstream c4afdf3fa5390159ef24aca1db5e957487c23897, version 2.13 b171.
+STIX_SOURCE_BASENAME = "STIXTwoText[wght].ttf"
+STIX_SOURCE_SHA256 = "7962b8b7811e6a896c9a91a0bccbb5241047770eb24d4997c5cb5fe21d5c0df2"
 
 FM_ABHAYA_X_ZERO_ADVANCE = 454
 FM_ABHAYA_X_W_SLOT_ADVANCE = 651
@@ -76,14 +77,13 @@ FM_GEMUNU_ISPILLA_X_BOUNDS = {
     "s": (-524, -30),
     "S": (-525, -30),
 }
-XITS_SYMBOL_FALLBACKS = {
-    # XITS Bold omits STAR OPERATOR but carries the equivalent bold
-    # ASTERISK OPERATOR outline.
-    0x22C6: 0x2217,
+STIX_SYMBOL_FALLBACKS = {
+    # STIX Two Text has no mathematical STAR OPERATOR; keep the slot in-family.
+    0x22C6: 0x002A,
 }
 GEMUNU_SYMBOL_FALLBACKS = {
     # Gemunu Libre has no STAR OPERATOR, so keep the slot in-family by using
-    # its own asterisk outline rather than importing an XITS symbol.
+    # its own asterisk outline rather than importing a STIX symbol.
     0x22C6: 0x002A,
 }
 
@@ -96,9 +96,9 @@ SHARED_LEGACY_GLYPH_SLOTS = {
 }
 
 # FM Abhaya x stores several ordinary symbols and Roman numerals in unrelated
-# Windows-1252 slots.  Abhaya Legacy uses compatible Times-style XITS outlines;
+# Windows-1252 slots. Abhaya Legacy uses STIX Two Text outlines;
 # Gemunu Legacy instead reuses its own Latin letter outlines for Roman numerals.
-XITS_LEGACY_GLYPH_SOURCES = {
+STIX_LEGACY_GLYPH_SOURCES = {
     "Ÿ": 0x00B0,  # °
     "»": 0x0049,  # Ⅰ
     "¼": 0x0056,  # Ⅴ
@@ -115,7 +115,7 @@ ROMAN_LEGACY_LATIN_SOURCES = {
     "¹": 0x0076,  # ⅴ -> v
     "º": 0x0078,  # ⅹ -> x
 }
-XITS_LEGACY_ADVANCES = {
+STIX_LEGACY_ADVANCES = {
     "Ÿ": 263,
     "»": 301,
     "¼": 654,
@@ -145,26 +145,28 @@ ABHAYA_LEGACY_TARGET_METRICS = {
     },
 }
 
-# FM Abhaya x has no GSUB/GPOS tables: ordinary vowel signs and contextual
-# pieces are laid out directly from their legacy slots.  Keep rlig narrowly
-# scoped to structural cores that the Unicode source fonts cannot reproduce as
-# independent legacy glyphs with compatible advances.  Longer vowel-bearing
-# sequences are intentionally left as these cores plus ordinary slot glyphs.
+# Reusable first-consonant pieces are separate contours in both Libre sources.
+# Give C/F/J the remaining cluster advance after the second consonant, allowing
+# them to join ordinary legacy letters without contextual GSUB substitutions.
+CONJUNCT_PREFIX_SOURCES = {
+    "Abhaya Legacy": {
+        "C": ("sinKSsa", frozenset({0, 1}), "sinSsa"),
+        "F": ("sinTVa", frozenset({0, 1}), "sinVa"),
+        "J": ("sinNDa", frozenset({0, 1}), "sinDa"),
+    },
+    "Gemunu Legacy": {
+        "C": ("sinKSsa", frozenset({0, 1}), "sinSsa"),
+        "F": ("sinTVa", frozenset({0, 2}), "sinVa"),
+        "J": ("sinNDa", frozenset({0, 1, 2}), "sinDa"),
+    },
+}
+
+# Only dedicated jha forms still need substitution; ordinary consonant joins
+# and their vowel-bearing forms use the extracted C/F/J slots directly.
 REQUIRED_LEGACY_LIGATURES = frozenset(
     {
-        "Cj",  # ක්‍ව
-        "CI",  # ක්‍ෂ
         "CO",  # ඣ
         "Cè",  # ඣ්
-        "F:",  # ත්‍ථ
-        "Fj",  # ත්‍ව
-        "J:",  # න්‍ථ
-        "Jo",  # න්‍ද
-        "JO",  # න්‍ධ
-        "Jj",  # න්‍ව
-        "Jú",  # න්‍වි
-        "Jÿ",  # න්‍දු
-        "J¥",  # න්‍දූ
     }
 )
 
@@ -178,15 +180,14 @@ class FontSpec:
     source_filename: str
     digit_source_sha256: str | None
     digit_source_filename: str | None
-    use_xits_digits: bool
-    output: Path
+    use_stix_digits: bool
     license_source: Path
     license_output: Path
     glyph_overrides: dict[str, str]
     glyph_offsets: dict[str, tuple[int, int]]
     glyph_advance_sources: dict[str, str]
     alternate_shape_legacy: frozenset[str]
-    # Legacy weight of the generated face; used for font naming only.
+    # Regular/Bold identify the hand-authored compatibility-path anchor designs.
     weight: str = "Regular"
     weight_class: int = 400
 
@@ -200,16 +201,9 @@ ABHAYA_SPECS: dict[str, FontSpec] = {
         family="Abhaya Legacy",
         source_sha256=ABHAYA_SOURCE_SHA256[weight],
         source_filename=ABHAYA_SOURCE_BASENAME,
-        digit_source_sha256=XITS_SOURCE_SHA256[weight],
-        digit_source_filename=XITS_SOURCE_BASENAME.format(weight=weight),
-        use_xits_digits=True,
-        output=ROOT
-        / "src/assets/font/abhaya-libre"
-        / (
-            "abhaya-legacy.woff2"
-            if weight == "Regular"
-            else f"abhaya-legacy-{weight.lower()}.woff2"
-        ),
+        digit_source_sha256=STIX_SOURCE_SHA256,
+        digit_source_filename=STIX_SOURCE_BASENAME,
+        use_stix_digits=True,
         license_source=ROOT / "node_modules/@fontsource/abhaya-libre/LICENSE",
         license_output=ROOT / "src/assets/font/abhaya-libre/OFL.txt",
         glyph_overrides={
@@ -250,14 +244,7 @@ GEMUNU_SPECS: dict[str, FontSpec] = {
         source_filename=GEMUNU_SOURCE_BASENAME,
         digit_source_sha256=None,
         digit_source_filename=None,
-        use_xits_digits=False,
-        output=ROOT
-        / "src/assets/font/gemunu-libre"
-        / (
-            "gemunu-legacy.woff2"
-            if weight == "Regular"
-            else f"gemunu-legacy-{weight.lower()}.woff2"
-        ),
+        use_stix_digits=False,
         license_source=ROOT / "node_modules/@fontsource/gemunu-libre/LICENSE",
         license_output=ROOT / "src/assets/font/gemunu-libre/OFL.txt",
         glyph_overrides={
@@ -316,10 +303,10 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--xits-source-dir",
+        "--stix-source-dir",
         type=Path,
-        default=ROOT / "scripts" / "font-sources" / "xits",
-        help="Directory containing XITS-Regular.otf and XITS-Bold.otf.",
+        default=ROOT / "scripts" / "font-sources" / "stix-two-text",
+        help="Directory containing the native STIXTwoText[wght].ttf variable font.",
     )
     parser.add_argument(
         "--output",
@@ -346,14 +333,14 @@ def ensure_source_font(spec: FontSpec, source_font: Path) -> Path:
 
 def ensure_digit_source(spec: FontSpec, source_font: Path) -> Path:
     if spec.digit_source_sha256 is None:
-        raise RuntimeError(f"{spec.family} does not use an XITS source")
+        raise RuntimeError(f"{spec.family} does not use a STIX Two Text source")
     path = source_font.resolve()
     if not path.exists():
-        raise RuntimeError(f"Missing XITS digit source: {path}")
+        raise RuntimeError(f"Missing STIX digit source: {path}")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     if digest != spec.digit_source_sha256:
         raise RuntimeError(
-            f"Unexpected XITS digit source hash: {digest}; "
+            f"Unexpected STIX digit source hash: {digest}; "
             f"expected {spec.digit_source_sha256}"
         )
     return path
@@ -371,6 +358,7 @@ def load_weighted_source(source: Path, weight_class: int) -> TTFont:
     )
 
 
+@lru_cache(maxsize=1)
 def load_legacy_mapping() -> list[dict[str, str]]:
     output = subprocess.check_output(
         ["node", str(ROOT / "scripts/get-fm-abhaya-map.mjs")],
@@ -384,8 +372,8 @@ def load_legacy_mapping() -> list[dict[str, str]]:
 def set_font_name(font: TTFont, spec: FontSpec) -> None:
     name_table = font["name"]
     source_description = (
-        "Abhaya Libre and XITS"
-        if spec.use_xits_digits
+        "Abhaya Libre and STIX Two Text"
+        if spec.use_stix_digits
         else "Gemunu Libre"
     )
     values = {
@@ -972,9 +960,9 @@ def add_legacy_symbol_glyph(
     return glyph_name
 
 
-def add_xits_glyph(
+def add_stix_glyph(
     font: TTFont,
-    xits_font: TTFont,
+    stix_font: TTFont,
     source_codepoint: int,
     glyph_name: str,
     scale: float,
@@ -982,15 +970,15 @@ def add_xits_glyph(
     target_advance: int | None = None,
     target_bounds: tuple[int, int, int, int] | None = None,
 ) -> str:
-    """Copy one XITS character, optionally fitting legacy slot geometry."""
-    source_name = xits_font.getBestCmap()[source_codepoint]
+    """Copy one STIX Two Text character, optionally fitting legacy geometry."""
+    source_name = stix_font.getBestCmap()[source_codepoint]
     transform = (scale, 0, 0, scale, 0, 0)
     left_side_bearing: int
     if target_bounds is not None:
-        bounds_pen = BoundsPen(xits_font.getGlyphSet())
-        xits_font.getGlyphSet()[source_name].draw(bounds_pen)
+        bounds_pen = BoundsPen(stix_font.getGlyphSet())
+        stix_font.getGlyphSet()[source_name].draw(bounds_pen)
         if bounds_pen.bounds is None:
-            raise ValueError(f"XITS glyph {source_name} has no bounds")
+            raise ValueError(f"STIX glyph {source_name} has no bounds")
         source_x_min, source_y_min, source_x_max, source_y_max = (
             bounds_pen.bounds
         )
@@ -1013,21 +1001,18 @@ def add_xits_glyph(
         )
         left_side_bearing = target_x_min
     else:
-        _, source_lsb = xits_font["hmtx"].metrics[source_name]
+        _, source_lsb = stix_font["hmtx"].metrics[source_name]
         left_side_bearing = round(source_lsb * scale)
 
     pen = TTGlyphPen(None)
-    quadratic_pen = Cu2QuPen(
-        pen,
-        max_err=1.0,
-        reverse_direction=True,
-    )
-    output_pen = TransformPen(quadratic_pen, transform)
-    xits_font.getGlyphSet()[source_name].draw(output_pen)
+    output_pen = TransformPen(pen, transform)
+    source_pen = DecomposingRecordingPen(stix_font.getGlyphSet())
+    stix_font.getGlyphSet()[source_name].draw(source_pen)
+    source_pen.replay(output_pen)
 
-    font["glyf"].glyphs[glyph_name] = pen.glyph()
+    font["glyf"].glyphs[glyph_name] = pen.glyph(dropImpliedOnCurves=False)
     font.setGlyphOrder([*font.getGlyphOrder(), glyph_name])
-    source_advance, _ = xits_font["hmtx"].metrics[source_name]
+    source_advance, _ = stix_font["hmtx"].metrics[source_name]
     font["hmtx"].metrics[glyph_name] = (
         target_advance
         if target_advance is not None
@@ -1144,6 +1129,40 @@ def add_extracted_overlay_glyph(
         4,
         round(min(selected_x) - reference_advance),
     )
+    return glyph_name
+
+
+def add_conjunct_prefix_glyph(
+    font: TTFont,
+    glyph_name: str,
+    source_name: str,
+    selected_contours: frozenset[int],
+    second_name: str,
+) -> str:
+    """Reuse the independently drawn first consonant of a Libre conjunct."""
+    source_pen = DecomposingRecordingPen(font.getGlyphSet())
+    font.getGlyphSet()[source_name].draw(source_pen)
+    contours = []
+    contour = []
+    for operator, operands in source_pen.value:
+        contour.append((operator, operands))
+        if operator in {"closePath", "endPath"}:
+            contours.append(contour)
+            contour = []
+    if contour or max(selected_contours) >= len(contours):
+        raise ValueError(f"Unexpected conjunct contours in {source_name}")
+    pen = TTGlyphPen(None)
+    for index in sorted(selected_contours):
+        for operator, operands in contours[index]:
+            getattr(pen, operator)(*operands)
+    glyph = pen.glyph()
+    glyph.recalcBounds(font["glyf"])
+    advance = font["hmtx"][source_name][0] - font["hmtx"][second_name][0]
+    if advance <= 0:
+        raise ValueError(f"Invalid conjunct prefix advance in {source_name}")
+    font["glyf"].glyphs[glyph_name] = glyph
+    font.setGlyphOrder([*font.getGlyphOrder(), glyph_name])
+    font["hmtx"][glyph_name] = (advance, glyph.xMin)
     return glyph_name
 
 
@@ -1267,12 +1286,11 @@ def build_font(
     source: Path,
     digit_source: Path | None,
     author_source: Path,
-    output: Path,
-) -> tuple[int, int, int]:
+) -> tuple[TTFont, int, int, int]:
     font = load_weighted_source(source, spec.weight_class)
     author_font = load_weighted_source(author_source, 400)
-    xits_font = (
-        TTFont(digit_source, recalcBBoxes=True, recalcTimestamp=False)
+    stix_font = (
+        load_weighted_source(digit_source, min(700, max(400, spec.weight_class)))
         if digit_source is not None
         else None
     )
@@ -1290,8 +1308,8 @@ def build_font(
     author_hb_font = hb.Font(author_hb_face)
     author_hb_font.scale = (author_hb_face.upem, author_hb_face.upem)
     author_glyph_order = author_font.getGlyphOrder()
-    xits_scale = None
-    if xits_font is not None:
+    stix_scale = None
+    if stix_font is not None:
         simulated_w_advance = sum(
             item[1]
             for item in shape_target(
@@ -1305,9 +1323,9 @@ def build_font(
             * simulated_w_advance
             / FM_ABHAYA_X_W_SLOT_ADVANCE
         )
-        xits_zero_name = xits_font.getBestCmap()[ord("0")]
-        xits_zero_advance, _ = xits_font["hmtx"].metrics[xits_zero_name]
-        xits_scale = target_digit_advance / xits_zero_advance
+        stix_zero_name = stix_font.getBestCmap()[ord("0")]
+        stix_zero_advance, _ = stix_font["hmtx"].metrics[stix_zero_name]
+        stix_scale = target_digit_advance / stix_zero_advance
     cmap: dict[int, str] = {}
     composites = 0
 
@@ -1391,6 +1409,14 @@ def build_font(
     # glyphs as their inputs.
     for index, (legacy, target) in enumerate(single_targets.items()):
         codepoint = ord(legacy)
+        prefix_source = CONJUNCT_PREFIX_SOURCES[spec.family].get(legacy)
+        if prefix_source is not None:
+            cmap[codepoint] = add_conjunct_prefix_glyph(
+                font,
+                f"fmlegacy.conjunct-prefix.{codepoint:04X}.{index}",
+                *prefix_source,
+            )
+            continue
         if spec.family == "Abhaya Legacy" and legacy in {"=", "+"}:
             cmap[codepoint] = add_abhaya_u_tail_glyph(
                 font,
@@ -1471,13 +1497,13 @@ def build_font(
                 continue
 
         source_codepoint = (
-            XITS_LEGACY_GLYPH_SOURCES.get(legacy)
-            if spec.use_xits_digits
+            STIX_LEGACY_GLYPH_SOURCES.get(legacy)
+            if spec.use_stix_digits
             else None
         )
         if (
             source_codepoint is None
-            and spec.use_xits_digits
+            and spec.use_stix_digits
             and len(target) == 1
         ):
             target_codepoint = ord(target)
@@ -1485,40 +1511,55 @@ def build_font(
                 target.isdigit()
                 or unicodedata.category(target)[0] in {"P", "S"}
             ):
-                xits_cmap = xits_font.getBestCmap()
-                if target_codepoint in xits_cmap:
+                stix_cmap = stix_font.getBestCmap()
+                if target_codepoint in stix_cmap:
                     source_codepoint = target_codepoint
                 else:
-                    fallback = XITS_SYMBOL_FALLBACKS.get(target_codepoint)
-                    if fallback in xits_cmap:
+                    fallback = STIX_SYMBOL_FALLBACKS.get(target_codepoint)
+                    if fallback in stix_cmap:
                         source_codepoint = fallback
         if source_codepoint is not None:
-            if xits_font is None:
+            if stix_font is None:
                 raise RuntimeError(
-                    f"Missing XITS source for {spec.family} {spec.weight}"
+                    f"Missing STIX source for {spec.family} {spec.weight}"
                 )
-            source_name = xits_font.getBestCmap()[source_codepoint]
-            source_advance, _ = xits_font["hmtx"].metrics[source_name]
+            source_name = stix_font.getBestCmap()[source_codepoint]
+            source_advance, _ = stix_font["hmtx"].metrics[source_name]
             target_metrics = ABHAYA_LEGACY_TARGET_METRICS.get(
                 spec.weight,
                 {},
             ).get(legacy)
+            if target_metrics is not None:
+                first_advance, first_bounds = (
+                    ABHAYA_LEGACY_TARGET_METRICS["Regular"][legacy]
+                )
+                last_advance, last_bounds = (
+                    ABHAYA_LEGACY_TARGET_METRICS["Bold"][legacy]
+                )
+                factor = min(1, max(0, (spec.weight_class - 400) / 300))
+                target_metrics = (
+                    round(first_advance + (last_advance - first_advance) * factor),
+                    tuple(
+                        round(a + (b - a) * factor)
+                        for a, b in zip(first_bounds, last_bounds)
+                    ),
+                )
             legacy_advance = (
                 target_metrics[0]
                 if target_metrics is not None
-                else XITS_LEGACY_ADVANCES.get(legacy)
+                else STIX_LEGACY_ADVANCES.get(legacy)
             )
             glyph_scale = (
                 legacy_advance / source_advance
                 if legacy_advance is not None
-                else xits_scale
+                else stix_scale
             )
-            cmap[codepoint] = add_xits_glyph(
+            cmap[codepoint] = add_stix_glyph(
                 font,
-                xits_font,
+                stix_font,
                 source_codepoint,
                 (
-                    f"fmlegacy.xits.{source_codepoint:04X}."
+                    f"fmlegacy.stix.{source_codepoint:04X}."
                     f"{codepoint:04X}.{index}"
                 ),
                 glyph_scale,
@@ -1659,10 +1700,125 @@ def build_font(
     subsetter.populate(unicodes=cmap.keys(), glyphs=output_glyphs)
     subsetter.subset(font)
 
+    return font, len(cmap), composites, len(sequence_rules)
+
+
+def glyph_signature(font, name):
+    _, ends, flags = font["glyf"][name].getCoordinates(font["glyf"])
+    return tuple(ends), tuple(flags)
+
+
+def make_variable_family(specs, source_dir, stix_source, author_source, output):
+    regular = specs["Regular"]
+    source = ensure_source_font(regular, source_dir / regular.source_filename)
+    with TTFont(source) as original:
+        axis = next(axis for axis in original["fvar"].axes if axis.axisTag == "wght")
+        minimum, maximum = int(axis.minValue), int(axis.maxValue)
+    # Retain the native STIX avar breakpoints at Medium/SemiBold as masters.
+    weights = sorted(
+        {minimum, 400, 700, maximum}
+        | ({500, 600} if regular.use_stix_digits else set())
+    )
+    masters = []
+    companion_codes = set()
+    for weight in weights:
+        spec = replace(
+            specs["Bold" if weight >= 700 else "Regular"], weight_class=weight,
+        )
+        digit_source = stix_source if spec.use_stix_digits else None
+        font, mappings, composites, sequences = build_font(
+            spec, source, digit_source, author_source,
+        )
+        if not masters:
+            companion_codes = {
+                code for code, name in font.getBestCmap().items()
+                if name.startswith("fmlegacy.symbol.")
+            }
+        # Subsetting removes PostScript glyph names. Round-trip the uncompressed
+        # SFNT in memory so fallback source names cannot change master identity.
+        saved = io.BytesIO()
+        font.save(saved)
+        masters.append(TTFont(io.BytesIO(saved.getvalue()), recalcTimestamp=False))
+        print(f"{spec.family}: prepared weight {weight}", flush=True)
+    order = masters[0].getGlyphOrder()
+    if any(
+        font.getGlyphOrder() != order
+        or font.getBestCmap() != masters[0].getBestCmap()
+        for font in masters
+    ):
+        raise ValueError(f"Inconsistent variable master glyph sets: {regular.family}")
+    for name in order:
+        if len({glyph_signature(font, name) for font in masters}) > 1:
+            raise ValueError(f"Non-interpolatable source glyph: {name}")
+
+    regular_font, bold_font = [
+        masters[weights.index(weight)] for weight in (400, 700)
+    ]
+    companion_names = {masters[0].getBestCmap()[code] for code in companion_codes}
+    for weight, font in zip(weights, masters):
+        if weight in (400, 700):
+            continue
+        for name in order:
+            if name not in companion_names:
+                continue
+            factor = (weight - 400) / 300
+            first, last = [
+                anchor["glyf"][name].coordinates for anchor in (regular_font, bold_font)
+            ]
+            font["glyf"][name].coordinates = GlyphCoordinates([
+                (round(x0 + (x1 - x0) * factor), round(y0 + (y1 - y0) * factor))
+                for (x0, y0), (x1, y1) in zip(first, last)
+            ])
+            font["glyf"][name].recalcBounds(font["glyf"])
+            font["hmtx"].metrics[name] = tuple(
+                round(a + (b - a) * factor)
+                for a, b in zip(
+                    regular_font["hmtx"].metrics[name], bold_font["hmtx"].metrics[name],
+                )
+            )
+
+    designspace = DesignSpaceDocument()
+    designspace.addAxisDescriptor(
+        name="Weight", tag="wght", minimum=minimum, default=400, maximum=maximum,
+    )
+    for weight, font in zip(weights, masters):
+        designspace.addSourceDescriptor(
+            name=f"master-{weight}", font=font, location={"Weight": weight},
+        )
+    styles = {
+        200: "ExtraLight", 300: "Light", 400: "Regular", 500: "Medium",
+        600: "SemiBold", 700: "Bold", 800: "ExtraBold",
+    }
+    for weight, style in styles.items():
+        if minimum <= weight <= maximum:
+            designspace.addInstanceDescriptor(
+                familyName=regular.family,
+                styleName=style,
+                location={"Weight": weight},
+                postScriptFontName=f"{regular.family.replace(' ', '')}-{style}",
+            )
+    variable, _, _ = build_variable_font(designspace)
+    set_font_name(variable, regular)
+    variable["name"].setName(regular.family, 16, 3, 1, 0x409)
+    variable["name"].setName("Regular", 17, 3, 1, 0x409)
+    variable["OS/2"].usWeightClass = 400
+    variable["OS/2"].fsSelection = (variable["OS/2"].fsSelection & ~0x21) | 0x40
+    variable["head"].macStyle &= ~3
+    buildStatTable(variable, [{"tag": "wght", "name": "Weight", "values": [
+        {
+            "value": weight, "name": style,
+            **({"flags": 2, "linkedValue": 700} if weight == 400 else {}),
+        }
+        for weight, style in styles.items() if minimum <= weight <= maximum
+    ]}])
     output.parent.mkdir(parents=True, exist_ok=True)
-    font.flavor = "woff2"
-    font.save(output)
-    return len(cmap), composites, len(sequence_rules)
+    variable.flavor = "woff2"
+    variable.save(output)
+    print(
+        f"{regular.family}: {minimum}–{maximum} → {output}",
+        flush=True,
+    )
+    return mappings, composites, sequences
 
 
 def main() -> None:
@@ -1672,50 +1828,40 @@ def main() -> None:
         "abhaya": args.abhaya_source_dir.resolve(),
         "gemunu": args.gemunu_source_dir.resolve(),
     }
-    xits_source_dir = args.xits_source_dir.resolve()
+    stix_source_dir = args.stix_source_dir.resolve()
     output_dir = args.output
+    stix_source = ensure_digit_source(
+        ABHAYA_SPECS["Regular"], stix_source_dir / STIX_SOURCE_BASENAME,
+    )
+    stix_font = TTFont(stix_source, recalcTimestamp=False)
+    stix_font.flavor = "woff2"
+    stix_output = ROOT / "src/assets/font/stix-two-text"
+    stix_output.mkdir(parents=True, exist_ok=True)
+    stix_font.save(stix_output / "STIXTwoText[wght].woff2")
+    stix_license = (stix_source_dir / "OFL.txt").read_text(encoding="utf-8")
+    (stix_output / "OFL.txt").write_text(stix_license, encoding="utf-8")
     author_spec = GEMUNU_SPECS["Regular"]
     author_source = ensure_source_font(
         author_spec,
         source_dirs["gemunu"] / author_spec.source_filename,
     )
 
-    jobs: list[tuple[FontSpec, Path, Path | None, Path]] = []
     for family in ("abhaya", "gemunu"):
         specs = ABHAYA_SPECS if family == "abhaya" else GEMUNU_SPECS
-        for spec in specs.values():
-            output = spec.output if output_dir is None else output_dir / spec.output.name
-            jobs.append(
-                (
-                    spec,
-                    source_dirs[family] / spec.source_filename,
-                    (
-                        xits_source_dir / spec.digit_source_filename
-                        if spec.use_xits_digits
-                        else None
-                    ),
-                    output,
-                )
-            )
-
-    for spec, source_font, digit_source_font, output in jobs:
-        source = ensure_source_font(spec, source_font)
-        digit_source = (
-            ensure_digit_source(spec, digit_source_font)
-            if digit_source_font is not None
-            else None
-        )
-        mapping_count, composite_count, sequence_count = build_font(
-            spec,
-            source,
-            digit_source,
+        spec = specs["Regular"]
+        destination = output_dir or ROOT / "src/assets/font" / f"{family}-libre"
+        output = destination / f"{family}-legacy[wght].woff2"
+        mapping_count, composite_count, sequence_count = make_variable_family(
+            specs,
+            source_dirs[family],
+            stix_source,
             author_source,
             output.resolve(),
         )
         base_license = spec.license_source.read_text(encoding="utf-8")
         imported_sources = (
-            "Abhaya Libre, Gemunu Libre Regular, and XITS"
-            if spec.use_xits_digits
+            "Abhaya Libre, Gemunu Libre Regular, and STIX Two Text"
+            if spec.use_stix_digits
             else "Gemunu Libre"
         )
         reconstruction_notice = (
@@ -1727,17 +1873,17 @@ def main() -> None:
             "or bundled by the generator.\n\n"
         )
         output_license = f"{reconstruction_notice}{base_license.rstrip()}\n"
-        if spec.use_xits_digits:
-            xits_license = (xits_source_dir / "OFL.txt").read_text(
+        if spec.use_stix_digits:
+            stix_license = (stix_source_dir / "OFL.txt").read_text(
                 encoding="utf-8"
             )
-            xits_notice = xits_license.split(
+            stix_notice = stix_license.split(
                 "\n\nThis Font Software is licensed",
                 maxsplit=1,
             )[0]
             output_license += (
-                f"\nXITS numeral and symbol outline notices:\n"
-                f"{xits_notice}\n"
+                f"\nSTIX Two Text numeral and symbol outline notices:\n"
+                f"{stix_notice}\n"
             )
             gemunu_license = (
                 source_dirs["gemunu"] / "OFL.txt"

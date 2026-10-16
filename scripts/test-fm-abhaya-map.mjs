@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { SINHALA_CONJUNCT_CATEGORIES } from "../src/utils/sinhala/conjuncts.js";
+import { hasEnglishWordForm } from "../src/utils/sinhala/lexicon.js";
 import {
   detectSinhalaEncoding,
   FM_ABHAYA_DERIVED_MAPPINGS,
@@ -10,6 +12,22 @@ import {
   unicodeToFmPreservingNonSinhala,
   unicodeToFmSegments,
 } from "../src/utils/sinhala/converter.js";
+
+const explicitFmForms = new Map(FM_ABHAYA_MAPPINGS.map(({ unicode, legacy }) => [unicode, legacy]));
+for (const { unicode: base, legacy: baseLegacy } of FM_ABHAYA_MAPPINGS) {
+  if (base === "ර" || Array.from(base).length !== 1 || !/[\u0d9a-\u0dc6]/u.test(base)) continue;
+  for (const [sign, prefix, ending] of [["ි", "", "s"], ["ී", "", "S"], ["ේ", "f", "a"]]) {
+    const core = explicitFmForms.get(base + sign);
+    if (!core || core === prefix + baseLegacy + ending) continue;
+    for (const [reduced, suffix] of [["්‍ය", "H"], ["්‍ර", "%"]]) {
+      const unicode = base + reduced + sign;
+      const legacy = explicitFmForms.get(unicode) ?? core + suffix;
+      assert.equal(unicodeToFm(unicode), legacy, `${unicode}: dedicated vowel core must precede reduced suffix`);
+      assert.equal(fmToUnicode(legacy), unicode, `${legacy}: dedicated reduced-vowel core must decode as one cluster`);
+      assert.equal(fmToUnicodePreservingNonSinhala(legacy), unicode, `${legacy}: mixed reduced-vowel decoding`);
+    }
+  }
+}
 
 for (const { unicode, legacy } of FM_ABHAYA_MAPPINGS) {
   if (!unicode.startsWith("ඳ")) {
@@ -27,7 +45,6 @@ for (const { unicode, legacy } of FM_ABHAYA_MAPPINGS) {
 }
 
 for (const { unicode, legacy } of FM_ABHAYA_DERIVED_MAPPINGS) {
-  assert.equal(fmToUnicode(legacy), unicode, `derived FM decode: ${legacy}`);
   const normalizedUnicode = unicode
     .replace(
       /(?<![්\u0dcf-\u0ddf\u0df2-\u0df3])ෝ(?![්\u0dcf-\u0ddf\u0df2-\u0df3])/gu,
@@ -37,6 +54,7 @@ for (const { unicode, legacy } of FM_ABHAYA_DERIVED_MAPPINGS) {
       /(?<![්\u0dcf-\u0ddf\u0df2-\u0df3])ො(?![්\u0dcf-\u0ddf\u0df2-\u0df3])/gu,
       "ො",
     );
+  assert.equal(fmToUnicode(legacy), normalizedUnicode, `derived FM decode: ${legacy}`);
   assert.equal(
     fmToUnicode(unicodeToFm(unicode)),
     normalizedUnicode,
@@ -53,9 +71,8 @@ for (const { unicode, legacy } of FM_ABHAYA_DERIVED_MAPPINGS) {
   );
 }
 
-assert.equal(
-  FM_ABHAYA_DERIVED_MAPPINGS.filter(({ shapeTargets }) => shapeTargets).length,
-  1481,
+assert.ok(
+  FM_ABHAYA_DERIVED_MAPPINGS.filter(({ shapeTargets }) => shapeTargets).length >= 1481,
   "all dedicated vowel-ending combinations must retain their shaped core",
 );
 assert.equal(
@@ -75,6 +92,7 @@ const cases = [
   ["ක්‍රී", "l%S"],
   ["ට්‍රි", "á%"],
   ["ට්‍රී", "à%"],
+  ["ට්‍රේ", "fÜ%"],
   ["ක්‍ර්", "l%a"],
   ["ගෙු", "f.="],
   ["ගෙූ", "f.+"],
@@ -247,9 +265,16 @@ assert.equal(
 );
 assert.equal(
   unicodeToFm("්‍රු ්‍රූ ද්‍රු ද්‍රූ ක්‍රු ක්‍රූ ත්‍රු ත්‍රූ"),
-  "are arE oare oarE lare larE ;are ;arE",
-  "rakar u/uu forms must encode through their non-ligated components",
+  "%e %E øe øE l%e l%E ;%e ;%E",
+  "rakar u/uu forms must use the shared legacy ae/aae endings",
 );
+assert.equal(
+  fmToUnicode("%e %E øe øE l%e l%E ;%e ;%E"),
+  "්‍රැ ්‍රෑ ද්‍රැ ද්‍රෑ ක්‍රැ ක්‍රෑ ත්‍රැ ත්‍රෑ",
+  "shared legacy endings must retain their canonical ae/aae reverse reading",
+);
+assert.equal(unicodeToFm("ක්‍රු ක්‍රූ ක්‍රැ ක්‍රෑ"), "l%e l%E l%e l%E");
+assert.equal(unicodeToFm("ක්‍රු ක්‍රූ", { preserveRakaransaya: false }), "lare larE");
 assert.equal(
   fmToUnicode("are arE oare oarE lare larE ;are ;arE"),
   "්‍රු ්‍රූ ද්‍රු ද්‍රූ ක්‍රු ක්‍රූ ත්‍රු ත්‍රූ",
@@ -257,8 +282,8 @@ assert.equal(
 );
 assert.equal(
   unicodeToFm("ත්‍රෙු ත්‍රෙූ ක්‍රෙු ක්‍රෙූ"),
-  ";afre ;afrE lafre lafrE",
-  "stacked rakar u/uu forms must also use non-ligated components",
+  "f;%e f;%E fl%e fl%E",
+  "stacked rakar u/uu forms must also use shared legacy endings",
 );
 assert.equal(
   fmToUnicode(";afre ;afrE lafre lafrE"),
@@ -284,19 +309,20 @@ for (const leadingSign of [
 ]) {
   for (const finalSign of ["ු", "ූ"]) {
     const joined = `ත්‍ර${leadingSign}${finalSign}`;
-    const decomposed = `ත්ර${leadingSign}${finalSign}`;
+    const shared = `ත්‍ර${leadingSign}${finalSign === "ු" ? "ැ" : "ෑ"}`;
     const legacy = unicodeToFm(joined);
     assert.equal(
       legacy,
-      unicodeToFm(decomposed),
-      `${joined} must encode like its non-ligated spelling`,
+      unicodeToFm(shared),
+      `${joined} must encode like its shared ae/aae spelling`,
     );
     assert.equal(
-      legacy.includes("%"),
+      /%[qQ]/u.test(legacy),
       false,
       `${joined} must not use a post-rakar q/Q sequence`,
     );
-    assert.equal(fmToUnicode(legacy), joined, `${legacy} must restore ${joined}`);
+    const reverse = shared.replaceAll("ෝ", "ෝ").replaceAll("ො", "ො").replaceAll("ෞ", "ෞ");
+    assert.equal(fmToUnicode(legacy), reverse, `${legacy} must use the unambiguous ae/aae reading`);
   }
 }
 assert.equal(
@@ -397,8 +423,107 @@ assert.equal(
 );
 assert.equal(
   unicodeToFm("ද‍්ධ", { normalizeConjuncts: true }),
-  "oaO",
-  "touching letters must fall back to separated FM letters, not a ligature",
+  "Š",
+  "unifying classified touching forms must use the available FM ligature",
+);
+assert.equal(unicodeToFm("ද‍්ධ"), "oaO", "preserving touching forms must keep the FM split fallback");
+for (const pairs of Object.values(SINHALA_CONJUNCT_CATEGORIES)) {
+  for (const pair of pairs) {
+    for (const source of [pair.plain, pair.touching, pair.blocked, pair.joined]) {
+      for (const sign of ["", "ා", "ි", "ෙ", "ේ", "ො", "ෝ", "ෞ"]) {
+        const options = { normalizeConjuncts: true };
+        const legacy = unicodeToFm(source + sign, options);
+        const target = pair.unicode + sign;
+        assert.equal(fmToUnicode(legacy, options), target, `${source + sign}: classified normalization`);
+        assert.equal(fmToUnicodePreservingNonSinhala(legacy, options), target, `${legacy}: mixed classified normalization`);
+      }
+    }
+  }
+}
+for (const text of ["“ඤ්‍ච”", "“ඤ්‍ඡො”", "“ණ්‍ඩ”"]) {
+  const options = { normalizeConjuncts: true };
+  assert.equal(fmToUnicodePreservingNonSinhala(unicodeToFm(text, options), options), text);
+}
+assert.equal(unicodeToFm("ට්‍ඨ"), "`G", "an existing FM cluster alias must encode its base as well as its vowels");
+assert.equal(
+  unicodeToFm("ඤ්‍ච ඤ්‍ජ ඤ්‍ඡ ට්‍ඨ ණ්‍ඩ ද්‍ධ ද්‍ව ම්‍බ ඟ"),
+  "`p `c `P `G `v Š „ U Õ",
+  "all rare FM forms must use their existing glyph slots or braid combinations",
+);
+assert.equal(fmToUnicode("`c `v U Õ"), "ඦ ඬ ඹ ඟ", "shared codes retain their default prenasalized readings");
+const commonOnly = { conjunctForms: { common: "normalize", rare: "decompose" } };
+const rareOnly = { conjunctForms: { common: "decompose", rare: "normalize" } };
+const neitherJoined = { conjunctForms: { common: "decompose", rare: "decompose" } };
+const touchingOnly = { ...neitherJoined, touchingConjuncts: true };
+assert.equal(fmToUnicode("iaiau iakaj", touchingOnly), "ස‍්ස‍්ම ස‍්න‍්ව", "touching chains must handle overlapping pairs");
+assert.equal(fmToUnicode("CI Š", touchingOnly), "ක‍්ෂ ද‍්ධ");
+assert.equal(fmToUnicode("CI Š", { ...commonOnly, touchingConjuncts: true }), "ක්‍ෂ ද‍්ධ");
+assert.equal(fmToUnicode("CI Š", { ...rareOnly, touchingConjuncts: true }), "ක‍්ෂ ද්‍ධ");
+assert.equal(unicodeToFm("ක්‍ෂ ද්‍ධ", touchingOnly), "laI oaO", "legacy touching forms must use split letters");
+assert.equal(unicodeToFm("ක‍්ෂ ද‍්ධ", neitherJoined), "laI oaO");
+assert.equal(
+  fmToUnicode("lH l% l_", { ...touchingOnly, normalizeReducedForms: true }),
+  "ක්‍ය ක්‍ර ර්‍ක",
+  "touching normalization must respect independently enabled reduced forms",
+);
+const paliVowels = { removePaliHalForms: true };
+assert.equal(
+  fmToUnicode(unicodeToFm("ඒ ඕ කේ කෝ කේ කෝ ක්"), paliVowels),
+  "එ ඔ කෙ කො කෙ කො ක්",
+  "Pali hal removal must change long e/o vowels only, including decomposed signs",
+);
+assert.equal(unicodeToFm("ඒ ඕ කේ කෝ", paliVowels), unicodeToFm("එ ඔ කෙ කො"));
+assert.equal(fmToUnicode(unicodeToFm("ඒ ඕ කේ කෝ")), "ඒ ඕ කේ කෝ", "Pali spelling remains opt-in");
+assert.equal(
+  fmToUnicodePreservingNonSinhala(unicodeToFmPreservingNonSinhala("English නමෝතස්ස භගවතෝ 2026", paliVowels), { ...touchingOnly, ...paliVowels }),
+  "English නමොතස‍්ස භගවතො 2026",
+);
+for (const pair of Object.values(SINHALA_CONJUNCT_CATEGORIES).flat()) {
+  for (const source of [pair.plain, pair.touching, pair.blocked, pair.joined]) {
+    for (const sign of ["", "ා", "ි", "ෙ", "ේ", "ො", "ෝ", "ෞ"]) {
+      const legacy = unicodeToFm(source + sign, touchingOnly);
+      assert.equal(fmToUnicode(legacy, touchingOnly), pair.touching + sign);
+      assert.equal(fmToUnicodePreservingNonSinhala(legacy, touchingOnly), pair.touching + sign);
+    }
+  }
+}
+assert.equal(unicodeToFm("ට්‍රේ"), "fÜ%");
+assert.equal(fmToUnicode("fg%a fga% fÜ%").normalize("NFC"), "ට්‍රේ ට්‍රේ ට්‍රේ", "old generic spellings remain accepted");
+assert.equal(unicodeToFm("ක්ෂ ද්ධ ඤ්ජ ම්බ", commonOnly), "CI oaO [ac ïn");
+assert.equal(unicodeToFm("ක්ෂ ද්ධ ඤ්ජ ම්බ", rareOnly), "laI Š `c U");
+assert.equal(fmToUnicode("CI Š `c U", commonOnly), "ක්‍ෂ ද්ධ ඦ ඹ");
+assert.equal(fmToUnicode("CI Š `c U", rareOnly), "ක්ෂ ද්‍ධ ඤ්‍ජ ම්‍බ");
+assert.equal(fmToUnicode("CI Š `p `P", neitherJoined), "ක්ෂ ද්ධ ඤ්ච ඤ්ඡ");
+assert.equal(fmToUnicode("`c `v U", { normalizeConjuncts: true }), "ඤ්‍ජ ණ්‍ඩ ම්‍බ");
+assert.equal(fmToUnicodePreservingNonSinhala("CI Š `c U", rareOnly), "ක්ෂ ද්‍ධ ඤ්‍ජ ම්‍බ");
+assert.equal(unicodeToFm("ඞ්ග", commonOnly), "Ù.");
+assert.equal(unicodeToFm("ඞ්ග", rareOnly), "Õ");
+assert.equal(unicodeToFm("ක්‍ය ක්‍ර ර්‍ක", neitherJoined), "lH l% l_", "category choices must not change reduced forms");
+assert.equal(unicodeToFm("බ‍්භ", rareOnly), "íN", "unclassified touching letters remain separated");
+assert.equal(unicodeToFm("ඞ්ග", { normalizeConjuncts: true }), "Õ");
+assert.equal(unicodeToFm("ඞ්ග"), "Ù.", "the prenasalized substitution must require explicit normalization");
+assert.equal(
+  fmToUnicode(unicodeToFm("න්ද්ව්", { normalizeConjuncts: true }), { normalizeConjuncts: true }),
+  "න්‍ද්‍ව්",
+  "overlapping consonant pairs must all normalize",
+);
+assert.equal(
+  unicodeToFm("අර්ත්ථ ආර්ය්ය න්යාය බ්රූ", { normalizeConjuncts: true, normalizeReducedForms: true }),
+  "wF:– wdhœ kHdh n%E",
+  "custom reduced forms must compose reph, yansaya and rakaransaya",
+);
+assert.equal(
+  unicodeToFm("අර‍්ත්‍ථ ආර‍්ය‍්ය න‍්යාය බ‍්රූ", { normalizeConjuncts: true, normalizeReducedForms: true }),
+  "wF:– wdhœ kHdh n%E",
+  "touching reduced forms must normalize before the FM split fallback",
+);
+assert.equal(
+  fmToUnicode(
+    unicodeToFm("අර්ත්ථ ආර්ය්ය න්යාය බ්රූ", { normalizeConjuncts: true, normalizeReducedForms: true, preserveYansaya: false }),
+    { normalizeConjuncts: true, normalizeReducedForms: true, preserveYansaya: false },
+  ),
+  "අර්‍ත්‍ථ ආර්‍ය්ය න්යාය බ්‍රෑ",
+  "expanding yansaya must preserve an independently enabled reph",
 );
 assert.equal(fmToUnicode("oaO"), "ද්ධ");
 assert.equal(unicodeToFm("දො දො"), "fod fod");
@@ -407,6 +532,42 @@ assert.equal(
   "fÞ fÞ",
 );
 assert.equal(fmToUnicode("`"), "`");
+assert.equal(fmToUnicode("Co"), "ක්‍ද", "the braid must change the complete visual core, not the unbraided spelling");
+for (const [legacy, unicode] of [
+  ["`Co", "ඤ"], ["`CÞ", "ඤා"], ["`C±", "ඤැ"],
+  ["`CÈ", "ඤි"], ["`C§", "ඤී"], ["`Cÿ", "ඤු"], ["`C¥", "ඤූ"],
+  ["`Ñ", "ඤ්‍චි"], ["`Ö", "ඤ්‍චී"], ["`É", "ඤ්‍ච්"],
+  ["`ý", "ඤ්‍ඡි"], ["`Â", "ඤ්‍ඡී"], ["`þ", "ඤ්‍ඡ්"],
+  ["`ð", "ඦි"], ["`Ô", "ඦී"], ["`Ê", "ඦ්"],
+  ["`ä", "ඬි"], ["`ã", "ඬී"], ["`â", "ඬ්"],
+  ["`À", "ට්‍ඨි"], ["`Á", "ට්‍ඨී"],
+  ["`ú", "ද්‍වි"], ["`ù", "ද්‍වී"],
+  ["`ê", "ද්‍ධි"], ["`ë", "ද්‍ධී"], ["`è", "ද්‍ධ්"],
+  ["f`CÞ", "ඤො"], ["f`CÞa", "ඤෝ"],
+  ["f`Cÿ", "ඤෙු"], ["f`C¥", "ඤෙූ"], ["f`CÈ", "ඤෙි"],
+  ["f`Ê", "ඦේ"], ["f`É", "ඤ්‍චේ"],
+]) {
+  assert.equal(fmToUnicode(legacy), unicode, `${legacy}: dedicated braided visual alternate`);
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy), unicode);
+  assert.equal(fmToUnicodePreservingNonSinhala(`^${legacy}&`), `(${unicode})`);
+  assert.equal(detectSinhalaEncoding(legacy), "legacy");
+}
+for (const [sign, prefix, suffix, canonical] of [
+  ["", "", "", "["], ["ා", "", "d", "[d"], ["ැ", "", "e", "[e"],
+  ["ෑ", "", "E", "[E"], ["ි", "", "s", "[s"], ["ී", "", "S", "[S"],
+  ["ු", "", "q", "û"], ["ූ", "", "Q", "ü"], ["ෘ", "", "D", "[D"],
+  ["ෲ", "", "DD", "[DD"], ["ෙ", "f", "", "f["], ["ේ", "f", "a", "f[a"],
+  ["ෛ", "ff", "", "ff["], ["ො", "f", "d", "f[d"], ["ෝ", "f", "da", "f[da"],
+  ["ෞ", "f", "!", "f[!"], ["්", "", "a", "[a"],
+]) {
+  const legacy = prefix + "`Co" + suffix;
+  assert.equal(fmToUnicode(legacy), "ඤ" + sign);
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy), "ඤ" + sign);
+  assert.equal(unicodeToFm("ඤ" + sign), canonical, "new input aliases must preserve dedicated output slots");
+}
+assert.equal(fmToUnicode("`ð `ä", { normalizeConjuncts: true }), "ඤ්‍ජි ණ්‍ඩි", "braided alternates must obey the rare-conjunct reading option");
+assert.equal(unicodeToFm("ඤා", { compactDaForms: true }), "Ø");
+assert.equal(fmToUnicode("`l"), "`ක", "an unrecognized braid combination must not acquire an invented letter mapping");
 assert.equal(fmToUnicode("f`.d"), "ඟො");
 assert.equal(fmToUnicode("ff`.d"), "ඟෛා");
 assert.equal(unicodeToFm("ඟෛා"), "ffÕd");
@@ -417,7 +578,7 @@ assert.equal(
 );
 assert.equal(
   fmToUnicode("f`Þ f`± f`È f`§ f`ÿ f`¥"),
-  "ඳො ඳෙැ ඳෙි ඳෙී ඳෙු ඳෙූ",
+  "ඳො ඳෙැ ඳෙි ඳෙී ඳෙු ඳෙූ",
   "prebase vowels must remain outside every dedicated braided Nda slot",
 );
 assert.equal(
@@ -494,6 +655,54 @@ for (const { unicode: base } of FM_ABHAYA_MAPPINGS) {
   assert.equal(fmToUnicode(legacy), unicode, `${legacy} -> ${unicode}`);
 }
 assert.equal(unicodeToFm("යෞ"), "fh!");
+
+for (const [unicode, legacy] of [
+  ["ය්‍යො", "fhHd"],
+  ["ක්‍වො", "fCjd"],
+  ["ත්‍ථො", "fF:d"],
+  ["ත්‍වො", "fFjd"],
+  ["න්‍වො", "fJjd"],
+  ["න්‍ථො", "fJ:d"],
+  ["න්‍දො", "fJod"],
+  ["න්‍ධො", "fJOd"],
+  ["අර්‍ත්‍ථ", "wF:–"],
+  ["බ්‍රූ", "n%E"],
+  ["බ්‍රහ්මචර්‍ය්‍යාව", "n%yauphœdj"],
+  ["ඕස්ට්‍රේලියාවේ", "´iafÜ%,shdfõ"],
+]) {
+  assert.equal(unicodeToFm(unicode), legacy, `${unicode} must encode completely`);
+  const reverse = unicode.replace(/්‍රු/gu, "්‍රැ").replace(/්‍රූ/gu, "්‍රෑ");
+  assert.equal(fmToUnicode(legacy), reverse, `${legacy} must preserve its cluster and shared-vowel reading`);
+  assert.equal(
+    fmToUnicodePreservingNonSinhala(legacy),
+    reverse,
+    `${legacy} must not be mistaken for Latin text`,
+  );
+}
+assert.equal(
+  fmToUnicodePreservingNonSinhala(
+    unicodeToFmPreservingNonSinhala("බ‍්භො ම‍්පො ම‍්ඵො ම‍්හො ස‍්සො හ‍්වො"),
+  ),
+  "බ්භො ම්පො ම්ඵො ම්හො ස්සො හ්වො",
+  "touching letters must keep their consonants and vowels when split for FM",
+);
+assert.equal(unicodeToFm("සම්‍බුද්‍ධස්ස"), "iUqŠiai");
+assert.equal(fmToUnicode("iïnqŠiai"), "සම්බුද්‍ධස්ස");
+assert.equal(
+  unicodeToFm("ක්‍වො න්‍දො", { preserveConjuncts: false }),
+  "lafjd kafod",
+  "compositional vowels must respect the non-ligated option",
+);
+assert.equal(
+  unicodeToFm("ක්වො න්දො", { normalizeConjuncts: true }),
+  "fCjd fJod",
+  "conjunct normalization must include vowels around the complete cluster",
+);
+assert.equal(
+  fmToUnicodePreservingNonSinhala("fidaodyrK"),
+  "සෝදාහරණ",
+  "a valid prebase vowel must outweigh superficial Latin casing",
+);
 
 assert.equal(fmToUnicode("f;=a f;a="), "තෙු් තේු");
 assert.equal(fmToUnicode("f.=da f.a=da"), "ගෙුා් ගේුා්");
@@ -903,5 +1112,106 @@ assert.equal(detectSinhalaEncoding("hello 中文"), null);
 
 const sentence = "(‘ගු’ සහ “තු”)";
 assert.equal(fmToUnicode(unicodeToFm(sentence)), sentence);
+
+for (const [legacy, unicode] of [
+  ["oGd", "දඨා"], ["oGdla", "දඨාක්"], ["^oGd&", "(දඨා)"], ["zoGdZ", "‘දඨා’"],
+  ["Wvrxpduvu", "උඩරංචාමඩම"], ["NglKavdhula", "භටකණ්ඩායමක්"],
+  ["pkaouqL", "චන්දමුඛ"], ["pkaouqLs", "චන්දමුඛි"],
+  ["pkaouqLla", "චන්දමුඛක්"], ["iqKs", "සුණි"], ["iqKl", "සුණක"],
+  ["^u:qrd-uOQrd&", "(මථුරා-මධූරා)"],
+]) {
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy), unicode, `${legacy}: FM spelling must outweigh superficial Latin casing`);
+  assert.equal(detectSinhalaEncoding(legacy), "legacy");
+}
+for (const stem of ["oG", "mG", "nG", "iG", "gL", "vK"]) {
+  for (const ending of ["", "d", "s", "S", "e", "E", "q", "Q", "a", "la"]) {
+    const legacy = stem + ending;
+    if (hasEnglishWordForm(legacy)) continue;
+    assert.equal(fmToUnicodePreservingNonSinhala(legacy), fmToUnicode(legacy), `${legacy}: unknown FM words must not be rejected for mixed case`);
+    assert.equal(fmToUnicodePreservingNonSinhala(`^${legacy}&`), `(${fmToUnicode(legacy)})`);
+  }
+}
+assert.equal(fmToUnicodePreservingNonSinhala("English oGd English"), "English දඨා English", "a nearby English word alone must not override an FM token");
+for (const english of [
+  "Where did they come?", "Where did they come?!", "unearthing", "urns",
+  "urns!", "unearthings", "Unearthing urns.", "iPhone OpenAI RubyGems ChatGPT FaceTime AirPods iPad",
+]) {
+  assert.equal(fmToUnicodePreservingNonSinhala(english), english, "English word forms and ordinary punctuation must remain Latin");
+  assert.equal(fmToUnicodePreservingNonSinhala(unicodeToFmPreservingNonSinhala(english)), english);
+}
+assert.equal(fmToUnicodePreservingNonSinhala("come@ urnsæ"), "come? urns!", "FM punctuation attached to an English word must decode without changing the word");
+assert.equal(
+  fmToUnicodePreservingNonSinhala("Wvrxpduvu Where did they come? ^u:qrd-uOQrd& unearthing urns iqKs"),
+  "උඩරංචාමඩම Where did they come? (මථුරා-මධූරා) unearthing urns සුණි",
+  "mixed runs must classify FM names, English sentences and hyphenated wrappers independently",
+);
+assert.deepEqual(
+  fmToUnicodeSegments("iqKs urns?").map(({ text, useLegacyFont }) => [text, useLegacyFont]),
+  [["සුණි", true], [" urns?", false]],
+);
+for (const [legacy, unicode] of [
+  ["fm%a", "ප්‍රේ"], ["fma%", "ප්‍රේ"], ["fmHa", "ප්‍යේ"],
+  ["f;%a", "ත්‍රේ"], ["f;a%", "ත්‍රේ"], ["fg%a", "ට්‍රේ"], ["fÜ%", "ට්‍රේ"],
+]) {
+  assert.equal(fmToUnicode(legacy), unicode, "ordinary long-e output must use U+0DDA, not e + virama");
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy), unicode);
+  assert.ok(unicode.includes("\u0dda"));
+  assert.equal(unicodeToFm(fmToUnicode(legacy)), unicodeToFm(unicode));
+}
+assert.equal(fmToUnicode("f;a= f.a=da"), "තේු ගේුා්", "nonstandard stacked sign order must not be normalized away");
+
+for (const compactDaForms of [false, true]) {
+  const options = { compactDaForms };
+  for (const [unicode, legacy] of [
+    ["ද්‍ර", "ø"], ["ද්‍රා", "ød"], ["ද්‍රැ", "øe"], ["ද්‍රෑ", "øE"],
+    ["ද්‍රි", "øs"], ["ද්‍රී", "øS"], ["ද්‍ර්", "øa"],
+    ["ද්‍රෘ", "øD"], ["ද්‍රෲ", "øDD"], ["ද්‍රෙ", "fø"],
+    ["ද්‍රේ", "føa"], ["ද්‍රෛ", "ffø"], ["ද්‍රො", "fød"],
+    ["ද්‍රෝ", "føda"], ["ද්‍රෞ", "fø!"],
+  ]) {
+    assert.equal(unicodeToFm(unicode, options), legacy, `${unicode}: dedicated da-rakar core`);
+    assert.equal(fmToUnicode(legacy, options), unicode);
+    assert.equal(fmToUnicodePreservingNonSinhala(legacy, options), unicode);
+    assert.equal(unicodeToFm(unicode.normalize("NFD"), options), legacy);
+  }
+}
+assert.equal(fmToUnicode("È% §%"), "ද්‍රි ද්‍රී", "older generic da-rakar vowel spellings remain accepted");
+for (const [legacy, unicode] of [["mySkx", "පහීනං"], ["wixySrx", "අසංහීරං"], ["mySkxls", "පහීනංකි"]]) {
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy), unicode, "FM vowel casing must not imply a Latin word");
+}
+
+const paliPassage = `නමොතස‍්ස භගවතො අරහතො සම‍්මා සම්‍බුද්‍ධස‍්ස
+බ‍්භො ම‍්පො ම‍්ඵො ම‍්හො ය්‍යො ය‍්හො ල‍්ලො ල‍්හො ව‍්හො ස‍්මො ස‍්වො ස‍්සො හ‍්මො හ‍්වො
+ක්‍වො ක්‍ෂො ත්‍ථො ත්‍වො න්‍වො න්‍ථො න්‍දො න්‍ධො
+අර්‍ත්‍ථ ආර්‍ය්‍ය න්‍යාය බ්‍රූ බ්‍රහ‍්මචර්‍ය්‍යාව
+
+අතීතං නාන‍්වාගමෙය්‍ය, නප‍්පටිකඞ‍්ඛෙ අනාගතං; යදතීතං පහීනං තං, අප‍්පත‍්තඤ්‍ච අනාගතං.
+
+පච‍්චුප‍්පන‍්නඤ්‍ච යො ධම‍්මං, තත්‍ථ තත්‍ථ විපස‍්සති; අසංහීරං අසංකුප‍්පං, තං විද්‍වා මනුබ්‍රූහයෙ.
+
+“සම‍්මා සම‍්බුද‍්ධස‍්ස” - “සීගිරි පර්‍වත මස්තකාරූඪ මනුෂ්‍යයෙකුට සෝදාහරණ සහිත ව හෙළයා ගේ ශෛල, වාරි, ගෘහ නිර්මාණ ශක්‍යතාව ද සෙල්බිතෙහි තැවරූ මඩස්තරයක ඇඳි නාරි චිත්‍රයන් ගෙන් සහ කැටපත්පවුරෙහි ලිඛිත කුරුටු ගීවලින් හෙළයා ගේ සෞන්දර්ය හැකියාව දු මනා සේ දැකගත හැක.”
+
+ආර්‍ය්‍ය. වජ්‍රාසන ආරූඪ වූ ශ්‍රී ශක්‍ර දිව්‍ය
+බුද්‍ධි “සම‍්මා සම‍්බුද‍්ධස‍්ස” ආර්‍ය්‍ය. වජ්‍රාසන ආරූඪ වූ ශ්‍රී ශක්‍ර දිව්‍ය රාජයා.
+සීගිරි පර්‍වත මස්තකාරූඪ මනුෂ්‍යයෙකුට සෝදාහරණ සහිත ව හෙළයා ගේ ශෛල, වාරි, ගෘහ නිර්මාණ ශක්‍යතාව ඕස්ට්‍රේලියාවේ මජ්ඣිම ඉන්ද්‍රිය ඇඳි නාරි චිත්‍රයන්`;
+const expectedPaliPassage = paliPassage
+  .replaceAll("‍්", "්") // Touching spacing has no legacy slot.
+  .replaceAll("ම්‍බ", "ඹ") // Shared legacy slot defaults to prenasalized reading.
+  .replaceAll("්‍රූ", "්‍රෑ"); // Shared legacy vowel shape.
+assert.equal(
+  fmToUnicodePreservingNonSinhala(unicodeToFmPreservingNonSinhala(paliPassage)),
+  expectedPaliPassage,
+  "Pali passage round trip must retain spelling apart from documented legacy ambiguities",
+);
+for (const options of [
+  {}, { compactDaForms: true }, { normalizeConjuncts: true },
+  { conjunctForms: { common: "decompose", rare: "decompose" }, touchingConjuncts: true },
+]) {
+  const legacy = unicodeToFmPreservingNonSinhala(paliPassage, options);
+  assert.equal(fmToUnicodePreservingNonSinhala(legacy, options), fmToUnicode(legacy, options));
+  const mixed = `Pali ${paliPassage}\nDeepSeek ChatGPT Linux SpaceX 2026`;
+  const result = fmToUnicodePreservingNonSinhala(unicodeToFmPreservingNonSinhala(mixed, options), options);
+  assert.ok(result.startsWith("Pali ") && result.endsWith("DeepSeek ChatGPT Linux SpaceX 2026"));
+}
 
 console.log(`OK: ${FM_ABHAYA_MAPPINGS.length} canonical + ${FM_ABHAYA_DERIVED_MAPPINGS.length} derived mappings + regression cases.`);

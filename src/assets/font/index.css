@@ -38,12 +38,23 @@
 
   --font-script: "Zhi Mang Xing";
 
-  --font-xits: "XITS", var(--font-song);
+  --font-stix: "STIX Two Text", var(--font-song);
 
-  --font-abhaya: "XITS for Abhaya", "Abhaya Libre", var(--font-song);
+  --font-abhaya: "STIX Two Text for Abhaya", "Abhaya Libre", var(--font-song);
 
   --font-abhaya-legacy:
-    "Abhaya Legacy", "Abhaya Libre", "XITS for Abhaya", var(--font-song);
+    "Abhaya Legacy", "Abhaya Libre", "STIX Two Text for Abhaya",
+    var(--font-song);
+
+  --font-gemunu: "Gemunu Libre", sans-serif;
+
+  --font-gemunu-legacy: "Gemunu Legacy", var(--font-abhaya-legacy), sans-serif;
+
+  --font-maname: "Maname", serif;
+
+  --font-noto-sans-sinhala: "Noto Sans Sinhala Variable", sans-serif;
+
+  --font-noto-serif-sinhala: "Noto Serif Sinhala Variable", serif;
 
   --font-sinhala-sans:
     "Nirmala UI", "Sinhala Sangam MN", "Noto Sans Sinhala Variable",
@@ -56,11 +67,6 @@
 
 @layer base {
   :root {
-    --font-gemunu: "Gemunu Libre", "Noto Sans Sinhala Variable", sans-serif;
-    --font-noto-sans-sinhala: "Noto Sans Sinhala Variable", sans-serif;
-    --font-noto-serif-sinhala: "Noto Serif Sinhala Variable", serif;
-    --font-maname: "Maname", "Noto Serif Sinhala Variable", serif;
-    --font-gemunu-legacy: "Gemunu Legacy", var(--font-abhaya-legacy);
     /* Kaiming punctuation: strict CJK kinsoku plus progressive line-edge trim. */
     line-break: strict;
     text-spacing-trim: trim-both;

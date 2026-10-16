@@ -52,7 +52,7 @@ export const legacyWebsiteFonts = [
     id: "abhaya-legacy",
     label: "Abhaya Legacy",
     cssVariable: "--font-abhaya-legacy",
-    previewFontFamily: '"XITS for Abhaya", serif',
+    previewFontFamily: '"STIX Two Text for Abhaya", serif',
   },
   {
     id: "gemunu-legacy",

@@ -798,16 +798,10 @@
               class="toggle toggle-primary toggle-sm"
               @change="handleConversionOptionsChange"
             />
-            <span class="min-w-0">
-              <span class="block text-sm font-medium">{{
-                translate(
-                  "tools.sinhalaFontConverter.preserveAbbreviatedConsonants",
-                )
-              }}</span>
-              <span class="block text-xs text-base-content/55">{{
-                translate("common.sections.reducedForms")
-              }}</span>
-            </span>
+            <OptionLabel
+              message-key="tools.sinhalaFontConverter.preserveAbbreviatedConsonants"
+              sinhala="ව්‍යඤ්ජන නියෝජක සංකේත"
+            />
           </label>
 
           <div
@@ -823,22 +817,17 @@
                 class="toggle toggle-primary toggle-sm"
                 @change="handleConversionOptionsChange"
               />
-              <span class="min-w-0">
-                <span class="block text-sm font-medium">
+              <OptionLabel
+                message-key="tools.sinhalaFontConverter.yansaya"
+                sinhala="යංශය"
+              >
+                <template #glyph>
                   <code
                     class="font-[Noto_Sans_Sinhala] text-xs bg-base-200/50 border border-base-300 rounded-md px-1 py-0.25"
                     >්‍ය</code
                   >
-                  (යංශය)
-                </span>
-                <span class="block text-xs text-base-content/55">
-                  {{
-                    translate(
-                      "tools.sinhalaFontConverter.whenOffExpandToVisible",
-                    )
-                  }}
-                </span>
-              </span>
+                </template>
+              </OptionLabel>
             </label>
 
             <label
@@ -850,22 +839,17 @@
                 class="toggle toggle-primary toggle-sm"
                 @change="handleConversionOptionsChange"
               />
-              <span class="min-w-0">
-                <span class="block text-sm font-medium">
+              <OptionLabel
+                message-key="tools.sinhalaFontConverter.rakaransaya"
+                sinhala="රකාරාංශය"
+              >
+                <template #glyph>
                   <code
                     class="font-[Noto_Sans_Sinhala] text-xs bg-base-200/50 border border-base-300 rounded-md px-1 py-0.25"
                     >්‍ර</code
                   >
-                  (රකාරාංශය)
-                </span>
-                <span class="block text-xs text-base-content/55">
-                  {{
-                    translate(
-                      "tools.sinhalaFontConverter.whenOffExpandToVisible2",
-                    )
-                  }}
-                </span>
-              </span>
+                </template>
+              </OptionLabel>
             </label>
 
             <label
@@ -877,25 +861,36 @@
                 class="toggle toggle-primary toggle-sm"
                 @change="handleConversionOptionsChange"
               />
-              <span class="min-w-0">
-                <span class="block text-sm font-medium">
+              <OptionLabel
+                message-key="tools.sinhalaFontConverter.repaya"
+                sinhala="රේඵය"
+              >
+                <template #glyph>
                   <code
                     class="font-[Noto_Sans_Sinhala] text-xs bg-base-200/50 border border-base-300 rounded-md px-1 py-0.25"
                     >◌ර්‍</code
                   >
-                  (රේඵය)
-                </span>
-                <span class="block text-xs text-base-content/55">
-                  {{
-                    translate(
-                      "tools.sinhalaFontConverter.whenOffExpandToVisible3",
-                    )
-                  }}
-                </span>
-              </span>
+                </template>
+              </OptionLabel>
             </label>
           </div>
         </div>
+
+        <label
+          v-if="!isDirectionReversed"
+          class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+        >
+          <input
+            v-model="compactDaForms"
+            type="checkbox"
+            class="toggle toggle-primary toggle-sm"
+            @change="handleConversionOptionsChange"
+          />
+          <OptionLabel
+            message-key="tools.sinhalaFontConverter.compactConjunctGlyphsFor"
+            sinhala="සංක්ෂිප්ත “ද” රූප"
+          />
+        </label>
 
         <div class="flex min-w-0 max-w-full flex-col gap-3">
           <label
@@ -907,89 +902,65 @@
               class="toggle toggle-primary toggle-sm"
               @change="handleConversionOptionsChange"
             />
-            <span class="min-w-0">
-              <span class="block text-sm font-medium">{{
-                translate(
-                  "tools.sinhalaFontConverter.preserveConsonantConjuncts",
-                )
-              }}</span>
-              <span class="block text-xs text-base-content/55">{{
-                translate("common.sections.conjunctForms")
-              }}</span>
-            </span>
+            <OptionLabel
+              message-key="tools.sinhalaFontConverter.preserveConsonantConjuncts"
+              sinhala="බැඳි අකුරු"
+            />
           </label>
 
           <div
             v-if="!preserveCurrentConjuncts"
-            class="ms-4 min-w-0 border-s border-base-300 ps-6"
+            class="ms-4 flex min-w-0 flex-col gap-3 border-s border-base-300 ps-6"
           >
-            <fieldset class="flex min-w-0 flex-col gap-x-6 gap-y-3">
-              <legend class="sr-only">
-                {{ translate("tools.sinhalaFontConverter.unifiedForm") }}
-              </legend>
-              <label
-                class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
-              >
-                <input
-                  v-model="unifiedConjunctForm"
-                  type="radio"
-                  name="sinhala-unified-conjunct-form"
-                  value="decompose"
-                  class="radio radio-primary radio-sm"
-                  @change="handleConversionOptionsChange"
-                />
-                <span class="min-w-0">
-                  <span class="block text-sm font-medium">{{
-                    translate("tools.sinhalaFontConverter.unjoinedForm")
-                  }}</span>
-                  <span class="block text-xs text-base-content/55">{{
-                    translate("common.sections.unjoinedForms")
-                  }}</span>
-                </span>
-              </label>
-
-              <label
-                class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
-              >
-                <input
-                  v-model="unifiedConjunctForm"
-                  type="radio"
-                  name="sinhala-unified-conjunct-form"
-                  value="normalize"
-                  class="radio radio-primary radio-sm"
-                  @change="handleConversionOptionsChange"
-                />
-                <span class="min-w-0">
-                  <span class="block text-sm font-medium">{{
-                    translate("tools.sinhalaFontConverter.joinedForm")
-                  }}</span>
-                  <span class="block text-xs text-base-content/55">{{
-                    translate("common.sections.ligatedForms")
-                  }}</span>
-                </span>
-              </label>
-            </fieldset>
+            <label
+              v-for="category in ['common', 'rare']"
+              :key="category"
+              class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+            >
+              <input
+                v-model="unifiedConjuncts[category]"
+                type="checkbox"
+                class="toggle toggle-primary toggle-sm"
+                @change="handleConversionOptionsChange"
+              />
+              <OptionLabel
+                :message-key="`tools.sinhalaFontConverter.${category}Conjuncts`"
+                :sinhala="
+                  category === 'common' ? 'සුලබ බැඳි අකුරු' : 'දුලබ බැඳි අකුරු'
+                "
+              />
+            </label>
+            <label
+              v-if="isDirectionReversed"
+              class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
+            >
+              <input
+                v-model="useTouchingConjuncts"
+                type="checkbox"
+                class="toggle toggle-primary toggle-sm"
+                @change="handleConversionOptionsChange"
+              />
+              <OptionLabel
+                message-key="tools.sinhalaFontConverter.touchingConjuncts"
+                sinhala="ස්පර්ශ රූප"
+              />
+            </label>
           </div>
         </div>
 
         <label
-          v-if="!isDirectionReversed"
-          class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0 md:col-span-2"
+          class="label min-w-0 max-w-full whitespace-normal cursor-pointer justify-start gap-3 p-0"
         >
           <input
-            v-model="compactDaForms"
+            v-model="removePaliHalForms"
             type="checkbox"
             class="toggle toggle-primary toggle-sm"
             @change="handleConversionOptionsChange"
           />
-          <span class="min-w-0">
-            <span class="block text-sm font-medium">{{
-              translate("tools.sinhalaFontConverter.compactConjunctGlyphsFor")
-            }}</span>
-            <span class="block text-xs text-base-content/55">{{
-              translate("common.sections.compactDa")
-            }}</span>
-          </span>
+          <OptionLabel
+            message-key="tools.sinhalaFontConverter.removePaliHalForms"
+            sinhala="හල් කිරීම් ඉවත් කිරීම"
+          />
         </label>
       </div>
     </section>
@@ -1023,6 +994,7 @@ import { useRoute, useRouter } from "vue-router";
 import ContentPage from "@/components/layout/ContentPage.vue";
 import FontSelect from "@/components/interaction/controls/FontSelect.vue";
 import Info from "@/components/tools/sinhala/Info.vue";
+import OptionLabel from "@/components/tools/sinhala/OptionLabel.vue";
 import Notes from "@/components/tools/sinhala/Notes.vue";
 import { createSinhalaDocx } from "@/utils/sinhala/create-docx";
 import { readSinhalaDocument } from "@/utils/sinhala/read-document";
@@ -1062,7 +1034,7 @@ const showLegacySource = ref(false);
 const legacyFontId = ref("abhaya-legacy");
 const legacyFallbackFontId = ref("abhaya-legacy");
 const legacyFontFamily = ref("var(--font-abhaya-legacy)");
-const legacyNonSinhalaFontFamily = ref('"XITS for Abhaya", serif');
+const legacyNonSinhalaFontFamily = ref('"STIX Two Text for Abhaya", serif');
 const legacyNonSinhalaBold = ref(false);
 const legacyPreviewSize = ref("100%");
 const legacyBold = ref(false);
@@ -1126,7 +1098,9 @@ const preserveRepaya = ref(true);
 const preserveYansaya = ref(true);
 const preserveRakaransaya = ref(true);
 const preserveCurrentConjuncts = ref(true);
-const unifiedConjunctForm = ref("decompose");
+const unifiedConjuncts = ref({ common: false, rare: false });
+const useTouchingConjuncts = ref(false);
+const removePaliHalForms = ref(false);
 const compactDaForms = ref(false);
 const isFmPreviewEditing = ref(false);
 const isFmPreviewComposing = ref(false);
@@ -1514,7 +1488,7 @@ watch(
       legacyNonSinhalaFontFamily.value =
         fontId === "abhaya-legacy" ||
         /^fm[\s_-]*(?:abhaya|abbaya|aba)/iu.test(selectedFontName)
-          ? '"XITS for Abhaya", serif'
+          ? '"STIX Two Text for Abhaya", serif'
           : fontId === "gemunu-legacy" ||
               /^fm[\s_-]*gemunu/iu.test(selectedFontName)
             ? '"Gemunu Libre", sans-serif'
@@ -1617,16 +1591,25 @@ function conjunctConversionOptions() {
   if (preserveCurrentConjuncts.value) {
     return {
       ...reducedForms,
+      normalizeReducedForms: !preserveCurrentReducedForms.value,
+      removePaliHalForms: removePaliHalForms.value,
       preserveConjuncts: true,
       normalizeConjuncts: false,
     };
   }
 
-  const normalizeConjuncts = unifiedConjunctForm.value === "normalize";
   return {
     ...reducedForms,
-    preserveConjuncts: normalizeConjuncts,
-    normalizeConjuncts,
+    normalizeReducedForms: !preserveCurrentReducedForms.value,
+    preserveConjuncts: false,
+    touchingConjuncts: useTouchingConjuncts.value,
+    removePaliHalForms: removePaliHalForms.value,
+    conjunctForms: Object.fromEntries(
+      Object.entries(unifiedConjuncts.value).map(([category, joined]) => [
+        category,
+        joined ? "normalize" : "decompose",
+      ]),
+    ),
   };
 }
 

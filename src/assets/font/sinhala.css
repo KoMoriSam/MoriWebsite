@@ -67,38 +67,28 @@
 }
 
 @font-face {
-  font-family: "XITS for Abhaya";
+  font-family: "STIX Two Text";
   font-style: normal;
   font-display: swap;
-  font-weight: 400;
-  src: url("./xits/XITS-Regular.woff2") format("woff2");
-  size-adjust: 115.18%;
+  font-weight: 400 700;
+  src: url("./stix-two-text/STIXTwoText[wght].woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "XITS for Abhaya";
+  font-family: "STIX Two Text for Abhaya";
   font-style: normal;
   font-display: swap;
-  font-weight: 700;
-  src: url("./xits/XITS-Bold.woff2") format("woff2");
-  size-adjust: 115.18%;
-}
-
-@font-face {
-  font-family: "Abhaya Legacy";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("./abhaya-libre/abhaya-legacy.woff2") format("woff2");
-  size-adjust: 130%;
+  font-weight: 400 700;
+  src: url("./stix-two-text/STIXTwoText[wght].woff2") format("woff2");
+  size-adjust: 116.34%;
 }
 
 @font-face {
   font-family: "Abhaya Legacy";
   font-style: normal;
   font-display: swap;
-  font-weight: 700;
-  src: url("./abhaya-libre/abhaya-legacy-bold.woff2") format("woff2");
+  font-weight: 400 800;
+  src: url("./abhaya-libre/abhaya-legacy[wght].woff2") format("woff2");
   size-adjust: 130%;
 }
 
@@ -106,17 +96,8 @@
   font-family: "Gemunu Legacy";
   font-style: normal;
   font-display: swap;
-  font-weight: 400;
-  src: url("./gemunu-libre/gemunu-legacy.woff2") format("woff2");
-  size-adjust: 145%;
-}
-
-@font-face {
-  font-family: "Gemunu Legacy";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 700;
-  src: url("./gemunu-libre/gemunu-legacy-bold.woff2") format("woff2");
+  font-weight: 200 800;
+  src: url("./gemunu-libre/gemunu-legacy[wght].woff2") format("woff2");
   size-adjust: 145%;
 }
 

@@ -4,9 +4,10 @@ import {
   FM_ABHAYA_UNICODE_ALIASES,
 } from "./fm-map.js";
 import {
-  hasEnglishLexeme,
+  hasEnglishWordForm as hasEnglishLexeme,
   hasSinhalaLexeme,
 } from "./lexicon.js";
+import { SINHALA_CONJUNCT_CATEGORIES } from "./conjuncts.js";
 
 // Conversion is performed with longest-match tries.  It is a single pass: text
 // emitted by one mapping can never be consumed by a later mapping.
@@ -186,8 +187,8 @@ function deriveSemanticMappings(seedMappings) {
           continue;
         }
 
-        // FM Abhaya has no usable post-base rakar + u/uu sequence. Let these
-        // Unicode forms pass through instead of inventing broken %q/%Q forms.
+        // Rakar u/uu use the shared ae/aae slots at text-encoding time.
+        // Do not derive the unusable generic %q/%Q glyph sequences.
         if (
           baseTarget.endsWith("ර") &&
           (modifierTarget === "ු" || modifierTarget === "ූ")
@@ -237,6 +238,33 @@ function deriveVisualVowelMappings(baseMappings, seedMappings) {
   }
 
   return derived;
+}
+
+function deriveBraidedGlyphAliases(baseMappings, glyphMappings) {
+  const singleGlyphTargets = new Map(FM_ABHAYA_MAPPINGS
+    .filter(({ legacy }) => Array.from(legacy).length === 1)
+    .map(({ legacy, unicode }) => [legacy, unicode]));
+  const vowelForms = new Map(FM_STACKED_VOWEL_FORMS.map((form) => [form[0], form]));
+  const aliases = [];
+  for (const { legacy: braidedCore, unicode: braidedTarget } of baseMappings) {
+    const endingSlot = Array.from(braidedCore).at(-1);
+    const plainTarget = singleGlyphTargets.get(endingSlot);
+    if (!plainTarget || !isSinhalaConsonant(plainTarget)) continue;
+    // A multi-piece base such as `Co keeps C and substitutes only the final
+    // Da piece. The braid changes the complete base, not just its last letter.
+    const leadingPieces = braidedCore.slice(0, -endingSlot.length);
+    for (const { legacy, unicode } of glyphMappings) {
+      if (legacy.includes("`") || !unicode.startsWith(plainTarget)) continue;
+      const sign = unicode.slice(plainTarget.length).normalize("NFC");
+      if (sign !== SINHALA_VIRAMA && !SINHALA_DEPENDENT_SIGNS.has(sign)) continue;
+      const [, prefix = "", suffix = "a"] = vowelForms.get(sign) ?? [];
+      // Ordinary letters + marks already follow the generic composition rule.
+      // Only dedicated alternates (e.g. Ñ/Ê/ä/ÿ/Þ) need another glyph alias.
+      if (legacy === prefix + endingSlot + suffix || !legacy.startsWith(prefix)) continue;
+      aliases.push([prefix + leadingPieces + legacy.slice(prefix.length), braidedTarget + sign]);
+    }
+  }
+  return aliases;
 }
 
 function deriveSpecialVowelCombinations(seedMappings, legacyAliases) {
@@ -418,7 +446,7 @@ function buildTrie(entries) {
   return root;
 }
 
-function convertLongest(input, trie) {
+function convertLongest(input, trie, omitUnmappedSinhalaJoiners = false) {
   const characters = Array.from(String(input ?? ""));
   let output = "";
 
@@ -442,7 +470,14 @@ function convertLongest(input, trie) {
       output += matchedValue;
       index = matchedEnd;
     } else {
-      output += characters[index];
+      if (
+        !omitUnmappedSinhalaJoiners ||
+        characters[index] !== ZERO_WIDTH_JOINER ||
+        characters[index - 1] !== SINHALA_VIRAMA ||
+        !isSinhalaConsonant(characters[index + 1])
+      ) {
+        output += characters[index];
+      }
       index += 1;
     }
   }
@@ -483,37 +518,68 @@ function decomposeSinhalaTouchingLetters(input) {
   );
 }
 
-function applyReducedFormOptions(input, options) {
+function applyPaliSpellingOptions(input, options) {
   let output = String(input ?? "");
-  if (options.preserveRepaya === false) {
-    output = output.replaceAll(SINHALA_REPAYA, "ර්");
+  if (options.touchingConjuncts) {
+    // A lookahead keeps the next consonant available for overlapping chains.
+    // Already joined/reduced forms contain ZWJ after virama and are untouched.
+    output = output.replace(/([\u0d9a-\u0dc6])[\u200c\u200d]?්\u200c?(?=[\u0d9a-\u0dc6])/gu, "$1‍්");
   }
-  if (options.preserveYansaya === false) {
-    output = output.replaceAll("්‍ය", "්ය");
-  }
-  if (options.preserveRakaransaya === false) {
-    output = output.replaceAll(SINHALA_RAKAR, "්ර");
+  if (options.removePaliHalForms) {
+    const vowels = { "ඒ": "එ", "ඕ": "ඔ", "ේ": "ෙ", "ෝ": "ො", "ෝ": "ො", "ේ": "ෙ" };
+    output = output.replace(/ඒ|ඕ|ේ|ෝ|ෝ|ේ/gu, (sign) => vowels[sign]);
   }
   return output;
 }
 
-function decomposeRakarUForms(input) {
+function applyReducedFormOptions(input, options) {
+  let output = String(input ?? "");
+  if (options.normalizeReducedForms) {
+    if (options.preserveRepaya !== false) {
+      output = output.replace(/ර[\u200c\u200d]?්[\u200c\u200d]?(?=[ක-ෆ])/gu, SINHALA_REPAYA);
+    }
+    if (options.preserveYansaya !== false) {
+      output = output.replace(/(?<=[ක-ෆ])[\u200c\u200d]?්[\u200c\u200d]?(?=ය)/gu, "්‍");
+    }
+    if (options.preserveRakaransaya !== false) {
+      output = output.replace(/(?<=[ක-ෆ])[\u200c\u200d]?්[\u200c\u200d]?(?=ර)/gu, "්‍");
+    }
+  }
+  if (options.preserveRepaya === false) {
+    output = output.replaceAll(SINHALA_REPAYA, "ර්");
+  }
+  if (options.preserveYansaya === false) {
+    const yansaya = options.preserveRepaya === false ? /්‍ය/gu : /(?<!ර)්‍ය/gu;
+    output = output.replace(yansaya, "්ය");
+  }
+  if (options.preserveRakaransaya === false) {
+    const rakaransaya = options.preserveRepaya === false ? /්‍ර/gu : /(?<!ර)්‍ර/gu;
+    output = output.replace(rakaransaya, "්ර");
+  }
+  return output;
+}
+
+function encodeRakarUVowels(input) {
+  // FM reuses rakar + ae/aae for rakar + u/uu. The reverse reading stays
+  // ae/aae because legacy bytes cannot preserve this vowel distinction.
   const characters = Array.from(String(input ?? ""));
-  return characters
-    .filter((character, index) => {
-      if (
-        character !== ZERO_WIDTH_JOINER ||
-        characters[index - 1] !== SINHALA_VIRAMA ||
-        characters[index + 1] !== "ර"
-      ) {
-        return true;
-      }
-      return !hasRakarUFormTail(characters, index + 2);
-    })
-    .join("");
+  let inRakarSigns = false;
+  return characters.map((character, index) => {
+    if (character === "ර" && characters[index - 1] === ZERO_WIDTH_JOINER &&
+        characters[index - 2] === SINHALA_VIRAMA) {
+      inRakarSigns = true;
+    } else if (!isSinhalaStackedSign(character)) {
+      inRakarSigns = false;
+    }
+    if (inRakarSigns && character === "ු") return "ැ";
+    if (inRakarSigns && character === "ූ") return "ෑ";
+    return character;
+  }).join("");
 }
 
 function composeRakarUForms(input) {
+  // Still accept separated sequences from older documents, even though new
+  // Unicode input now uses the shared %e/%E convention.
   const characters = Array.from(String(input ?? ""));
   return characters
     .map((character, index) => {
@@ -606,6 +672,20 @@ const backtickBaseMappings = [...FM_ABHAYA_LEGACY_ALIASES]
   )
   .map(([legacy, unicode]) => ({ legacy, unicode }));
 
+const braidedGlyphAliases = deriveBraidedGlyphAliases(backtickBaseMappings, [
+  ...FM_ABHAYA_MAPPINGS,
+  ...[...FM_ABHAYA_LEGACY_ALIASES].map(([legacy, unicode]) => ({ legacy, unicode })),
+]);
+const legacyAliases = new Map(FM_ABHAYA_LEGACY_ALIASES);
+for (const [legacy, unicode] of braidedGlyphAliases) {
+  const existing = legacyAliases.get(legacy);
+  if (existing !== undefined && existing !== unicode) {
+    throw new Error(`Conflicting braided FM glyph alias: ${JSON.stringify(legacy)}`);
+  }
+  legacyAliases.set(legacy, unicode);
+}
+const braidedVowelMappings = braidedGlyphAliases.map(([legacy, unicode]) => ({ legacy, unicode }));
+
 const contextualBaseMappings = [
   ...FM_ABHAYA_MAPPINGS.filter(({ unicode }) =>
     ["ඟ", "ඳ"].includes(unicode),
@@ -615,12 +695,13 @@ const contextualBaseMappings = [
 
 const visualVowelMappings = deriveVisualVowelMappings(
   contextualBaseMappings,
-  [...FM_ABHAYA_MAPPINGS, ...backtickBaseMappings],
+  [...FM_ABHAYA_MAPPINGS, ...backtickBaseMappings, ...braidedVowelMappings],
 );
 
 const semanticMappings = deriveSemanticMappings([
   ...FM_ABHAYA_MAPPINGS,
   ...backtickBaseMappings,
+  ...braidedVowelMappings,
   ...visualVowelMappings,
 ]);
 
@@ -633,7 +714,7 @@ export const FM_ABHAYA_DERIVED_MAPPINGS = [
       ...visualVowelMappings,
       ...semanticMappings,
     ],
-    FM_ABHAYA_LEGACY_ALIASES,
+    legacyAliases,
   ),
 ].map((entry) => ({
   ...entry,
@@ -646,7 +727,7 @@ const legacyToUnicodeMap = new Map(
 for (const { legacy, unicode } of FM_ABHAYA_DERIVED_MAPPINGS) {
   if (!legacyToUnicodeMap.has(legacy)) legacyToUnicodeMap.set(legacy, unicode);
 }
-for (const [legacy, unicode] of FM_ABHAYA_LEGACY_ALIASES) {
+for (const [legacy, unicode] of legacyAliases) {
   const existing = legacyToUnicodeMap.get(legacy);
   if (existing !== undefined && existing !== unicode) {
     throw new Error(
@@ -655,6 +736,11 @@ for (const [legacy, unicode] of FM_ABHAYA_LEGACY_ALIASES) {
     );
   }
   legacyToUnicodeMap.set(legacy, unicode);
+}
+for (const pair of SINHALA_CONJUNCT_CATEGORIES.rare) {
+  if (!legacyToUnicodeMap.has(pair.legacy)) {
+    legacyToUnicodeMap.set(pair.legacy, pair.unicode);
+  }
 }
 addNoncanonicalRakarMappings(legacyToUnicodeMap);
 
@@ -666,22 +752,94 @@ const explicitUnicodeToLegacyMap = new Map(unicodeToLegacyMap);
 // Explicit mappings keep priority, preserving special glyph sequences such as
 // .= for ගු instead of the generic .q decomposition.
 for (const { legacy, unicode } of FM_ABHAYA_DERIVED_MAPPINGS) {
-  if (!unicodeToLegacyMap.has(unicode)) unicodeToLegacyMap.set(unicode, legacy);
+  const dedicatedBase = explicitUnicodeToLegacyMap.get(Array.from(unicode)[0]);
+  if (legacy.includes("`") && dedicatedBase && !dedicatedBase.includes("`")) {
+    // Input-only visual aliases must not outrank the original base slot and
+    // its compositional vowels, including forms absent from the explicit map.
+    continue;
+  }
+  const existing = unicodeToLegacyMap.get(unicode);
+  if (existing === undefined ||
+      (!explicitUnicodeToLegacyMap.has(unicode) && existing.includes("`") && !legacy.includes("`"))) {
+    // Braided spelling is accepted input, not a reason to replace an existing
+    // dedicated base slot (e.g. [d must remain preferred over `Cod).
+    unicodeToLegacyMap.set(unicode, legacy);
+  }
 }
 for (const [unicode, legacy] of FM_ABHAYA_UNICODE_ALIASES) {
   unicodeToLegacyMap.set(unicode, legacy);
 }
-// Compose au from existing FM vowel slots only when no dedicated spelling is
-// mapped. These text-only fallbacks do not become generated font ligatures.
-const compositionalAuMappings = [];
+for (const [legacy, unicode] of legacyAliases) {
+  if (isSinhalaBaseCluster(unicode) && !unicodeToLegacyMap.has(unicode)) {
+    unicodeToLegacyMap.set(unicode, legacy);
+  }
+}
+for (const pair of SINHALA_CONJUNCT_CATEGORIES.rare) {
+  unicodeToLegacyMap.set(pair.unicode, pair.legacy);
+}
+// Compose missing vowels around a complete mapped consonant cluster, keeping
+// dedicated spellings first. These text-only fallbacks add no font ligatures.
+const compositionalVowelMappings = new Map();
+// Reuse each consonant's dedicated i/ii/ee core before H/% instead of
+// putting a generic vowel on its ordinary form. These are text mappings,
+// not new font ligatures; explicit cluster spellings keep their priority.
+for (const { unicode: base, legacy: baseLegacy } of FM_ABHAYA_MAPPINGS) {
+  // Initial ra belongs to the independent reph-ordering rules, not this
+  // post-base yansaya/rakar vowel placement rule.
+  if (base === "ර" || Array.from(base).length !== 1 || !isSinhalaConsonant(base)) continue;
+  for (const [sign, prefix, suffix, shapePrefix, shapeSuffix] of FM_STACKED_VOWEL_FORMS) {
+    if (!["ි", "ී", "ේ"].includes(sign)) continue;
+    const core = explicitUnicodeToLegacyMap.get(base + sign);
+    if (!core || core === prefix + baseLegacy + suffix) continue;
+    for (const [reduced, ending] of [["්‍ය", "H"], [SINHALA_RAKAR, "%"]]) {
+      const target = base + reduced + sign;
+      const legacy = core + ending;
+      if (explicitUnicodeToLegacyMap.has(target)) {
+        // Dedicated cluster cores govern new output; keep the previous
+        // vowel-core + reduced suffix spelling readable in older documents.
+        if (!legacyToUnicodeMap.has(legacy)) {
+          compositionalVowelMappings.set(legacy, target);
+        }
+        continue;
+      }
+      const existing = legacyToUnicodeMap.get(legacy);
+      if (existing !== undefined && existing.normalize("NFC") !== target) continue;
+      unicodeToLegacyMap.set(target, legacy);
+      unicodeToLegacyMap.set(base + reduced + shapePrefix + shapeSuffix, legacy);
+      compositionalVowelMappings.set(legacy, target);
+      for (const alias of [prefix + baseLegacy + suffix + ending, prefix + baseLegacy + ending + suffix]) {
+        if (!legacyToUnicodeMap.has(alias) && !compositionalVowelMappings.has(alias)) {
+          compositionalVowelMappings.set(alias, target);
+        }
+      }
+    }
+  }
+}
 for (const { unicode: base, legacy: baseLegacy } of FM_ABHAYA_MAPPINGS) {
   if (Array.from(base).length !== 1 || !isSinhalaConsonant(base)) continue;
-  const target = base + "ෞ";
-  if (unicodeToLegacyMap.has(target)) continue;
-  const legacy = `f${baseLegacy}!`;
-  if (legacyToUnicodeMap.has(legacy)) continue;
-  unicodeToLegacyMap.set(target, legacy);
-  compositionalAuMappings.push([legacy, target]);
+  for (const [reduced, suffix] of [["්‍ය", "H"], [SINHALA_RAKAR, "%"]]) {
+    const target = base + reduced;
+    const legacy = baseLegacy + suffix;
+    if (unicodeToLegacyMap.has(target) || legacyToUnicodeMap.has(legacy)) continue;
+    unicodeToLegacyMap.set(target, legacy);
+    compositionalVowelMappings.set(legacy, target);
+  }
+}
+for (const [base, baseLegacy] of [...unicodeToLegacyMap]) {
+  if (!isSinhalaBaseCluster(base)) continue;
+  for (const [sign, prefix, suffix] of FM_STACKED_VOWEL_FORMS) {
+    const target = base + sign;
+    if (unicodeToLegacyMap.has(target)) continue;
+    if (base.endsWith(SINHALA_RAKAR) && ["ු", "ූ"].includes(sign)) continue;
+    const legacy = combineStackedVowel(baseLegacy, base, sign, prefix, suffix);
+    const existing = legacyToUnicodeMap.get(legacy) ?? compositionalVowelMappings.get(legacy);
+    const sharedGlyph = SINHALA_CONJUNCT_CATEGORIES.rare.some(
+      (pair) => pair.sharedUnicode && pair.unicode === base,
+    );
+    if (existing !== undefined && existing.normalize("NFC") !== target && !sharedGlyph) continue;
+    unicodeToLegacyMap.set(target, legacy);
+    if (existing === undefined) compositionalVowelMappings.set(legacy, target);
+  }
 }
 
 const shapeTargetsByLegacy = new Map(
@@ -783,7 +941,7 @@ const legacyDecodeMap = new Map(legacyToUnicodeMap);
 legacyDecodeMap.set("_", LEGACY_REPAYA_MARKER);
 legacyDecodeMap.set("–", LEGACY_REPAYA_MARKER);
 legacyDecodeMap.set("œ", "්‍ය" + LEGACY_REPAYA_MARKER);
-for (const [legacy, target] of compositionalAuMappings) {
+for (const [legacy, target] of compositionalVowelMappings) {
   legacyDecodeMap.set(legacy, target);
 }
 let legacyTrie = buildTrie([...legacyDecodeMap]);
@@ -821,16 +979,18 @@ addSeparatedSpecialUEndingAliases(compactDaUnicodeToLegacyMap);
 
 function addRepayaVowelMappings(unicodeMap) {
   const baseLegacyByUnicode = new Map(
-    FM_ABHAYA_MAPPINGS.filter(({ unicode }) =>
-      Array.from(unicode).length === 1 && isSinhalaConsonant(unicode),
-    ).map(({ unicode, legacy }) => [unicode, legacy]),
+    [...unicodeMap].filter(([unicode]) =>
+      isSinhalaBaseCluster(unicode) && !unicode.startsWith(SINHALA_REPAYA),
+    ),
   );
 
   for (const [base, baseLegacy] of baseLegacyByUnicode) {
-    const dedicatedLegacy = DEDICATED_REPAYA_BASES.has(base)
+    const dedicatedLegacy = DEDICATED_REPAYA_BASES.has(base) || base.length > 1
       ? unicodeMap.get(SINHALA_REPAYA + base)
       : undefined;
-    const mark = TALL_REPAYA_BASES.has(base) ? "–" : "_";
+    const mark = Array.from(base).some((letter) => TALL_REPAYA_BASES.has(letter))
+      ? "–"
+      : "_";
 
     for (const [sign, prefix, suffix] of [["", "", ""], ...FM_STACKED_VOWEL_FORMS]) {
       const target = SINHALA_REPAYA + base + sign;
@@ -849,14 +1009,14 @@ function addRepayaVowelMappings(unicodeMap) {
   }
 }
 
-addRepayaVowelMappings(nonCompactDaUnicodeToLegacyMap);
-addRepayaVowelMappings(compactDaUnicodeToLegacyMap);
 for (const { unicode: base, legacy } of FM_ABHAYA_MAPPINGS) {
   if (Array.from(base).length !== 1 || !isSinhalaConsonant(base)) continue;
   const target = SINHALA_REPAYA + base + "්‍ය";
   nonCompactDaUnicodeToLegacyMap.set(target, legacy + "œ");
   compactDaUnicodeToLegacyMap.set(target, legacy + "œ");
 }
+addRepayaVowelMappings(nonCompactDaUnicodeToLegacyMap);
+addRepayaVowelMappings(compactDaUnicodeToLegacyMap);
 legacyTrie = buildTrie([...legacyDecodeMap]);
 const unicodeTrie = buildTrie([...nonCompactDaUnicodeToLegacyMap]);
 const compactDaUnicodeTrie = buildTrie([...compactDaUnicodeToLegacyMap]);
@@ -864,7 +1024,7 @@ const conjunctNormalizationMap = new Map();
 const conjunctCandidates = [
   ...FM_ABHAYA_MAPPINGS.map(({ unicode }) => unicode),
   ...FM_ABHAYA_DERIVED_MAPPINGS.map(({ unicode }) => unicode),
-  ...[...FM_ABHAYA_LEGACY_ALIASES].map(([, unicode]) => unicode),
+  ...[...legacyAliases].map(([, unicode]) => unicode),
 ];
 for (const unicode of conjunctCandidates) {
   if (!isSinhalaBaseCluster(unicode)) continue;
@@ -875,39 +1035,96 @@ for (const unicode of conjunctCandidates) {
   }
   conjunctNormalizationMap.set(decomposed, unicode);
 }
+for (const pairs of Object.values(SINHALA_CONJUNCT_CATEGORIES)) {
+  for (const pair of pairs) {
+    for (const source of [pair.plain, pair.touching, pair.blocked, pair.joined]) {
+      if (source !== pair.unicode) conjunctNormalizationMap.set(source, pair.unicode);
+    }
+  }
+}
 const conjunctNormalizationTrie = buildTrie([...conjunctNormalizationMap]);
+const classifiedConjunctTries = Object.fromEntries(
+  Object.entries(SINHALA_CONJUNCT_CATEGORIES).map(([category, pairs]) => [
+    category,
+    buildTrie(pairs.flatMap((pair) =>
+      [pair.plain, pair.touching, pair.blocked, pair.joined]
+        .filter((source) => source !== pair.unicode)
+        .map((source) => [source, pair.unicode]),
+    )),
+  ]),
+);
+const sharedRareReadings = new Map(
+  SINHALA_CONJUNCT_CATEGORIES.rare
+    .filter((pair) => pair.sharedUnicode)
+    .map((pair) => [pair.sharedUnicode, pair.unicode]),
+);
+const rareLegacyTrie = buildTrie([...legacyDecodeMap].map(([legacy, unicode]) => [
+  legacy,
+  Array.from(unicode).map((letter) => sharedRareReadings.get(letter) ?? letter).join(""),
+]));
 
-function normalizeSinhalaConjuncts(input) {
-  return convertLongest(input, conjunctNormalizationTrie);
+function normalizesConjunctCategory(options, category) {
+  return options.conjunctForms
+    ? options.conjunctForms[category] === "normalize"
+    : Boolean(options.normalizeConjuncts);
+}
+
+function hasConjunctNormalization(options) {
+  return Object.keys(SINHALA_CONJUNCT_CATEGORIES)
+    .some((category) => normalizesConjunctCategory(options, category));
+}
+
+function normalizeSinhalaConjuncts(input, options) {
+  const tries = options.conjunctForms
+    ? Object.entries(classifiedConjunctTries)
+        .filter(([category]) => normalizesConjunctCategory(options, category))
+        .map(([, trie]) => trie)
+    : [conjunctNormalizationTrie];
+  let output = String(input ?? "");
+  for (;;) {
+    const normalized = tries.reduce((text, trie) => convertLongest(text, trie), output);
+    if (normalized === output) return output;
+    output = normalized;
+  }
 }
 
 export function unicodeToFm(input = "", options = {}) {
   let source =
-    options.preserveConjuncts === false
-      ? decomposeSinhalaConjuncts(input)
+    options.preserveConjuncts === false || options.conjunctForms
+      ? decomposeSinhalaTouchingLetters(decomposeSinhalaConjuncts(input))
       : input;
-  if (options.normalizeConjuncts) {
-    source = normalizeSinhalaConjuncts(source);
+  if (hasConjunctNormalization(options)) {
+    source = normalizeSinhalaConjuncts(source, options);
   }
-  source = decomposeSinhalaTouchingLetters(source);
+  source = applyPaliSpellingOptions(source, options);
   source = applyReducedFormOptions(source, options);
-  source = decomposeRakarUForms(source);
+  source = decomposeSinhalaTouchingLetters(source);
+  source = encodeRakarUVowels(source);
   const trie = options.compactDaForms ? compactDaUnicodeTrie : unicodeTrie;
-  return convertLongest(source, trie);
+  return convertLongest(source, trie, true);
+}
+
+function composeSimpleSinhalaVowels(input) {
+  return input.replace(
+    /(?<=[\u0d9a-\u0dc6])(?:ෝ?|ේ)(?![්\u0dcf-\u0ddf\u0df2-\u0df3])/gu,
+    (signs) => signs.normalize("NFC"),
+  );
 }
 
 export function fmToUnicode(input = "", options = {}) {
+  const trie = normalizesConjunctCategory(options, "rare") ? rareLegacyTrie : legacyTrie;
   let output = decomposeStackedSinhalaVowelSigns(
-    convertLongest(input, legacyTrie),
+    composeSimpleSinhalaVowels(convertLongest(input, trie)),
   );
   output = composeRakarUForms(output);
   output = restoreLogicalRepayaFromLegacy(output);
-  if (options.preserveConjuncts === false) {
-    output = decomposeSinhalaConjuncts(output);
+  if (options.preserveConjuncts === false || options.conjunctForms) {
+    output = decomposeSinhalaTouchingLetters(decomposeSinhalaConjuncts(output));
   }
-  output = options.normalizeConjuncts
-    ? normalizeSinhalaConjuncts(output)
+  output = hasConjunctNormalization(options)
+    ? normalizeSinhalaConjuncts(output, options)
     : output;
+  output = applyPaliSpellingOptions(output, options);
   return applyReducedFormOptions(output, options);
 }
 
@@ -1025,12 +1242,31 @@ function hasLegacyTerminalPunctuation(input) {
   );
 }
 
-function hasLatinCaseSignal(word) {
-  return (
-    /^\p{Lu}{2,}$/u.test(word) ||
-    /^\p{Lu}\p{Ll}{2,}$/u.test(word) ||
-    /\p{Ll}\p{Lu}/u.test(word)
-  );
+function hasLatinWordEvidence(word) {
+  if (hasEnglishLexeme(word)) return true;
+  if (!/^\p{Script=Latin}+$/u.test(word)) return false;
+  // Casing may locate compound boundaries, but each component still needs
+  // dictionary evidence. An arbitrary FM capital is not an English word.
+  const parts = word
+    .replace(/(\p{Lu}+)(\p{Lu}\p{Ll})/gu, "$1 $2")
+    .replace(/(\p{Ll})(\p{Lu})/gu, "$1 $2")
+    .split(" ");
+  const isWordPart = (part) => hasEnglishLexeme(part) &&
+    (part.length >= 3 || COMMON_SHORT_LATIN_WORDS.has(part.toLocaleLowerCase("en")) ||
+      /^\p{Lu}{2,}$/u.test(part));
+  const hasWordPrefix = (parts[0].length > 2 ||
+    COMMON_SHORT_LATIN_WORDS.has(parts[0].toLocaleLowerCase("en"))) &&
+    parts.slice(0, -1).every(isWordPart);
+  if (parts.length > 1 && hasWordPrefix && parts.every((part, index) =>
+    isWordPart(part) ||
+    (index === parts.length - 1 && /^\p{Lu}+$/u.test(part) &&
+      parts.slice(0, -1).some((prefix) => prefix.length >= 3)),
+  )) return true;
+  // A title-case name that cannot form a valid FM word is another independent
+  // signal. Valid unknown FM words remain legacy regardless of their casing.
+  return /^\p{Lu}\p{Ll}{2,}$/u.test(word) &&
+    !hasDistinctiveLegacyCharacter(word) &&
+    !isWellFormedSinhalaToken(fmToUnicode(word));
 }
 
 function isSinhalaTerminalInflection(input) {
@@ -1059,6 +1295,15 @@ function countSinhalaBaseLetters(input) {
   ).length;
 }
 
+function hasFmPrebaseOrReducedForm(legacy, decoded) {
+  return (
+    (legacy.includes("f") && /[ෙේෛොෝෞ]/u.test(decoded)) ||
+    decoded.includes(SINHALA_RAKAR) ||
+    decoded.includes("්‍ය") ||
+    decoded.includes(SINHALA_REPAYA)
+  );
+}
+
 function hasStrongDecodedSinhalaStructure(input, isKnownLatin) {
   let core = input;
   while (hasLegacyTerminalPunctuation(core)) core = core.slice(0, -1);
@@ -1076,17 +1321,41 @@ function hasStrongDecodedSinhalaStructure(input, isKnownLatin) {
   ).length;
   const baseLetterCount = countSinhalaBaseLetters(decoded);
   const hasDistinctiveCharacter = hasDistinctiveLegacyCharacter(core);
+  // FM uppercase vowel slots are not Latin camel casing. In a valid word
+  // containing anusvara they provide spelling evidence even without a lexicon
+  // entry (for example Pali long-vowel forms); known Latin still wins above.
+  const uppercaseSlots = Array.from(core).filter((character) => /\p{Lu}/u.test(character));
+  const hasCaseEncodedVowel =
+    decoded.includes("ං") &&
+    uppercaseSlots.length > 0 &&
+    uppercaseSlots.every((character) =>
+      SINHALA_DEPENDENT_VOWEL_RE.test(legacyToUnicodeMap.get(character) ?? ""),
+    );
+  const characters = Array.from(core);
+  const hasCaseEncodedConsonant = characters.some((character, index) => {
+    const target = legacyToUnicodeMap.get(character);
+    return /\p{Lu}/u.test(character) && isSinhalaConsonant(target) &&
+      SINHALA_DEPENDENT_VOWEL_RE.test(legacyToUnicodeMap.get(characters[index - 1]) ?? "");
+  });
   const hasShortFmStructure =
+    hasCaseEncodedConsonant ||
     mappedConsonantPunctuationCount >= 2 ||
     (mappedConsonantPunctuationCount > 0 && dependentVowelCount >= 2) ||
+    (decoded.includes("්‍") && dependentVowelCount > 0) ||
+    (core.includes("f") && decoded.includes("්") && dependentVowelCount > 0) ||
     (hasDistinctiveCharacter &&
       (dependentVowelCount >= 2 ||
-        (decoded.endsWith("්") && dependentVowelCount > 0)));
+        (decoded.includes("්") && dependentVowelCount > 0)));
   return (
     isWellFormedSinhalaToken(decoded) &&
     (baseLetterCount >= 3 || (baseLetterCount >= 2 && hasShortFmStructure)) &&
     (hasDistinctiveCharacter ||
       mappedConsonantPunctuationCount > 0 ||
+      (!isKnownLatin && decoded.includes("්‍")) ||
+      (!isKnownLatin && hasFmPrebaseOrReducedForm(core, decoded)) ||
+      (!isKnownLatin && hasCaseEncodedVowel) ||
+      (!isKnownLatin && hasCaseEncodedConsonant) ||
+      (!isKnownLatin && dependentVowelCount > 0 && /[්ං]/u.test(decoded)) ||
       (!isKnownLatin &&
         !/\p{Ll}\p{Lu}/u.test(core) &&
         dependentVowelCount >= 2))
@@ -1112,8 +1381,8 @@ function classifySinhalaLexeme(lexeme) {
   return null;
 }
 
-function classifyDecodedSinhalaToken(token) {
-  const sinhalaLexemes = fmToUnicode(token).match(SINHALA_LEXEME_RE) ?? [];
+function classifyDecodedSinhalaToken(token, decoded = fmToUnicode(token)) {
+  const sinhalaLexemes = decoded.match(SINHALA_LEXEME_RE) ?? [];
   if (!sinhalaLexemes.length) return null;
 
   let confidence = "exact";
@@ -1139,6 +1408,11 @@ function isLikelyLatinPhrase(input) {
   const words = source.match(LATIN_WORD_RE) ?? [];
   if (!words.length || hasDistinctiveLegacyCharacter(source)) return false;
   if (FM_STRUCTURAL_SIGNAL_RE.test(source)) return false;
+  // Hyphens separate both English compounds and FM names. A capitalized
+  // fragment alone must not turn a structurally Sinhala wrapper into Latin.
+  if (source.split(/[\s-]+/u).some((part) =>
+    hasStrongDecodedSinhalaStructure(part, hasEnglishLexeme(part)),
+  )) return false;
 
   const decodedSinhalaLexemes =
     fmToUnicode(source).match(SINHALA_LEXEME_RE) ?? [];
@@ -1159,7 +1433,7 @@ function isLikelyLatinPhrase(input) {
   if (words.every(isKnownDecodedSinhalaToken)) return false;
 
   return words.some(
-    (word) => hasEnglishLexeme(word) || hasLatinCaseSignal(word),
+    hasLatinWordEvidence,
   );
 }
 
@@ -1197,6 +1471,19 @@ function isWellFormedSinhalaToken(input) {
 }
 
 function classifyLexiconToken(token) {
+  // Ordinary punctuation attached to a recognized English word belongs to
+  // that word, not to Sinhala letters stored in the same punctuation slots.
+  const punctuatedLatin = token.match(/^(\p{Script=Latin}+(?:['’.-]\p{Script=Latin}+)*)([?!.,:;]+)$/u);
+  const mappedTarget = legacyDecodeMap.get(token);
+  if (
+    mappedTarget &&
+    (mappedTarget.includes(ZERO_WIDTH_JOINER) ||
+      (hasDistinctiveLegacyCharacter(token) &&
+        hasFmPrebaseOrReducedForm(token, mappedTarget))) &&
+    isWellFormedSinhalaToken(fmToUnicode(token))
+  ) {
+    return "legacy";
+  }
   const latinLexemes = token.match(LATIN_LEXEME_RE) ?? [];
   const isSingleLatinLexeme =
     latinLexemes.length === 1 && latinLexemes[0] === token;
@@ -1209,7 +1496,9 @@ function classifyLexiconToken(token) {
     return "latin";
   }
 
-  const decodedSinhalaClassification = classifyDecodedSinhalaToken(token);
+  const decodedToken = fmToUnicode(token);
+  const decodedSinhalaClassification = classifyDecodedSinhalaToken(token, decodedToken);
+  const legacyWrappedLatin = splitLegacyWrappedLatin(token);
   const isKnownSinhala = decodedSinhalaClassification !== null;
   const normalizedLatin = token.toLocaleLowerCase("en");
   const isAmbiguousShortLatin =
@@ -1229,18 +1518,20 @@ function classifyLexiconToken(token) {
     isSingleLatinLexeme &&
     !hasLegacyTerminalPunctuation(token) &&
     !(hasDistinctiveLegacyCharacter(token) &&
-      fmToUnicode(token).endsWith("්")) &&
+      (decodedToken.endsWith("්") ||
+        hasFmPrebaseOrReducedForm(token, decodedToken))) &&
     Array.from(token).some((character) => character.codePointAt(0) > 0x7f)
   ) {
     return "latin";
   }
-  if (isKnownSinhala) return "legacy";
+  if (isKnownSinhala && (!legacyWrappedLatin || decodedSinhalaClassification === "exact")) return "legacy";
+  if (legacyWrappedLatin) return "latin-wrapped";
+  if (punctuatedLatin && hasEnglishLexeme(punctuatedLatin[1])) return "latin";
   if (isAmbiguousShortLatin) return "legacy";
   if (isKnownLatin) return "latin";
+  if (isSingleLatinLexeme && hasLatinWordEvidence(token)) return "latin";
   if (hasStrongDecodedSinhalaStructure(token, isKnownLatin)) return "legacy";
 
-  const legacyWrappedLatin = splitLegacyWrappedLatin(token);
-  if (legacyWrappedLatin) return "latin-wrapped";
   if (token.startsWith("z")) return null;
 
   const wrappedLatinWords = token.match(LATIN_WORD_RE) ?? [];
@@ -1250,7 +1541,7 @@ function classifyLexiconToken(token) {
     !FM_POSITIONAL_PUNCTUATION_LETTER_RE.test(token) &&
     !FM_STRUCTURAL_SIGNAL_RE.test(token) &&
     wrappedLatinWords.every(
-      (word) => hasEnglishLexeme(word) || hasLatinCaseSignal(word),
+      hasLatinWordEvidence,
     )
   ) {
     if (/^["']|["']$/u.test(token)) return "latin-wrapped";
@@ -1276,6 +1567,15 @@ function splitLegacyWrappedLatin(token) {
     const content = token.slice(opening.length, -closing.length);
     if (content && hasEnglishLexeme(content)) {
       return { opening, content, closing };
+    }
+  }
+  let end = token.length;
+  while (end > 0 && hasLegacyTerminalPunctuation(token.slice(0, end))) end -= 1;
+  if (end > 0 && end < token.length) {
+    const content = token.slice(0, end);
+    if (/^\p{Script=Latin}+(?:['’.-]\p{Script=Latin}+)*$/u.test(content) &&
+        hasEnglishLexeme(content)) {
+      return { opening: "", content, closing: token.slice(end) };
     }
   }
   return null;
@@ -1535,6 +1835,21 @@ function findNextLegacyWrapper(source, offset) {
   return null;
 }
 
+function isClassifiedConjunctFallback(source, options) {
+  const decoded = fmToUnicode(source, options);
+  const lexemes = decoded.match(SINHALA_LEXEME_RE) ?? [];
+  if (lexemes.length !== 1 ||
+      !isWellFormedSinhalaToken(decomposeSinhalaTouchingLetters(lexemes[0]))) return false;
+  if (!/^[\p{P}\p{S}\s]*$/u.test(decoded.replace(SINHALA_LEXEME_RE, ""))) return false;
+  const base = decomposeSinhalaTouchingLetters(decomposeSinhalaConjuncts(
+    lexemes[0].replace(/[\u0dcf-\u0ddf\u0df2-\u0df3]+$/u, ""),
+  ));
+  return Object.entries(SINHALA_CONJUNCT_CATEGORIES).some(([category, pairs]) =>
+    (options.touchingConjuncts || normalizesConjunctCategory(options, category)) &&
+      pairs.some((pair) => pair.plain === base),
+  );
+}
+
 function convertUnwrappedLegacyText(input, options) {
   const parts = String(input ?? "").match(/\s+|[^\s]+/gu) ?? [];
   return parts.flatMap((source, index) => {
@@ -1548,16 +1863,22 @@ function convertUnwrappedLegacyText(input, options) {
       return { source, text: source, useLegacyFont: false };
     }
     const classification = classifyLexiconToken(source);
-    if (classification === "latin-wrapped") {
+    const classifiedFallback = (options.touchingConjuncts || hasConjunctNormalization(options)) &&
+      isClassifiedConjunctFallback(source, options);
+    if (classification === "latin-wrapped" && !classifiedFallback) {
       return convertWrappedLatinToken(source, options);
     }
-    let useLegacyFont = isLikelyFmSinhalaToken(source);
-    if (
-      useLegacyFont &&
-      /^\p{Lu}\p{Ll}{1,2}$/u.test(source) &&
-      /^\p{Lu}\p{Ll}{2,}$/u.test(nextToken ?? "") &&
-      !isLikelyFmSinhalaToken(nextToken)
-    ) {
+    let useLegacyFont = Boolean(classifiedFallback) || isLikelyFmSinhalaToken(source);
+    if (useLegacyFont && /^\p{Lu}\p{Ll}+$/u.test(source) &&
+        !hasStrongDecodedSinhalaStructure(source, false) &&
+        [previousToken, nextToken].some((neighbor) =>
+          /^\p{Lu}\p{Ll}+$/u.test(neighbor ?? "") &&
+          !hasStrongDecodedSinhalaStructure(neighbor, false) &&
+          ((hasEnglishLexeme(neighbor) && !isKnownDecodedSinhalaToken(source)) ||
+            hasEnglishLexeme(source)),
+        )) {
+      // Preserve an unknown name next to a dictionary-confirmed Latin name,
+      // not merely because one FM token happens to start with a capital.
       useLegacyFont = false;
     }
     if (
@@ -1604,6 +1925,9 @@ export function fmToUnicodeSegments(input = "", options = {}) {
   let wrapper = findNextLegacyWrapper(source, offset);
 
   while (wrapper) {
+    const preserveContent = wrapper.preserveContent &&
+      !((options.touchingConjuncts || hasConjunctNormalization(options)) &&
+        (wrapper.content.match(/\S+/gu) ?? []).some((token) => isClassifiedConjunctFallback(token, options)));
     segments.push(
       ...convertUnwrappedLegacyText(source.slice(offset, wrapper.index), options),
       {
@@ -1611,7 +1935,7 @@ export function fmToUnicodeSegments(input = "", options = {}) {
         text: fmToUnicode(wrapper.opening, options),
         useLegacyFont: true,
       },
-      ...(wrapper.preserveContent
+      ...(preserveContent
         ? [{
             source: wrapper.content,
             text: decodeLegacySlashesInLatinContent(wrapper.content),
