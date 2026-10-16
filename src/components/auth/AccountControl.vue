@@ -129,12 +129,8 @@
                 {{ t("common.modal.markAllAsRead") }}
               </button>
             </summary>
-            <div class="collapse-content px-2 pb-2">
-              <NoticeCenter
-                class="flex min-h-0 flex-1 flex-col"
-                inline
-                @navigate="close"
-              />
+            <div class="collapse-content">
+              <NoticeCenter @navigate="close" />
             </div>
           </details>
           <details
@@ -150,8 +146,8 @@
                 currentLanguageName
               }}</span>
             </summary>
-            <div class="collapse-content px-2 pb-2">
-              <LanguageController inline />
+            <div class="collapse-content">
+              <LanguageController />
             </div>
           </details>
           <details
@@ -187,8 +183,8 @@
                 />
               </label>
             </summary>
-            <div class="collapse-content px-2 pb-2">
-              <ThemeController inline hide-header />
+            <div class="collapse-content pb-2">
+              <ThemeController />
             </div>
           </details>
         </div>

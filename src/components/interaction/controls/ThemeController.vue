@@ -1,83 +1,7 @@
 <template>
-  <button
-    v-if="!inline"
-    class="btn btn-ghost btn-square m-1"
-    type="button"
-    popovertarget="theme-controller"
-    style="anchor-name: --theme-controller-anchor"
-    :aria-label="translate('common.themeController.chooseInterfaceTheme')"
-  >
-    <i :class="currentTheme.icon" class="text-xl"></i>
-  </button>
-  <div
-    :id="inline ? undefined : 'theme-controller'"
-    :popover="inline ? undefined : 'auto'"
-    :class="
-      inline
-        ? ''
-        : 'dropdown dropdown-end mt-2 max-h-[min(78dvh,32rem)] w-96 overflow-hidden overscroll-contain rounded-box border border-base-300 bg-base-100 p-3 shadow-xl max-sm:mt-0! max-sm:w-[calc(100vw-1rem)]! max-sm:[inset:3.75rem_0.5rem_auto_auto]! max-sm:[position-area:none]!'
-    "
-    :style="inline ? undefined : 'position-anchor: --theme-controller-anchor'"
-    :aria-label="translate('common.themeController.themeSelection')"
-  >
-    <ScrollableContainer>
-      <div class="min-h-0 overflow-y-auto overscroll-contain" :style="inline ? undefined : { maxHeight: 'min(calc(78dvh - 1.5rem),30.5rem)' }">
-        <div
-          v-if="inline && !hideHeader"
-          class="divider my-3 h-auto min-h-6 justify-between gap-2 before:min-w-0 before:basis-0 after:min-w-0 after:basis-0 max-lg:my-2 max-lg:gap-1.5"
-        >
-          <h2 class="text-base-content/55 shrink-0 text-xs font-bold">
-            {{ translate("common.themeController.interfaceTheme") }}
-          </h2>
-          <label class="flex shrink-0 cursor-pointer items-center gap-2">
-            <span class="whitespace-nowrap text-xs font-semibold">{{
-              translate("reader.formatSetting.systemDefault")
-            }}</span>
-            <input
-              v-model="followSystem"
-              type="checkbox"
-              class="toggle toggle-xs shrink-0"
-              :aria-label="translate('common.themeController.followSystemTheme')"
-            />
-          </label>
-        </div>
-        <div
-          v-else-if="!inline"
-          class="mb-2 flex items-center justify-between gap-3 lg:px-1 max-lg:mb-1.5 max-lg:gap-2"
-        >
-          <h2 class="font-serif mt-0.5 text-lg font-semibold">
-            {{ translate("common.themeController.interfaceTheme") }}
-          </h2>
-          <span class="badge badge-primary badge-sm">{{
-            currentTheme.name === "System"
-              ? translate("reader.formatSetting.systemDefault")
-              : currentTheme.name
-          }}</span>
-        </div>
-
-        <label
-          v-if="!inline"
-          class="border-base-300 bg-base-200/55 mb-3 flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-box border px-3 py-2 max-lg:mb-2 max-lg:min-h-12 max-lg:gap-2 max-lg:px-2"
-        >
-          <span class="min-w-0 flex-1">
-            <span class="block text-sm font-semibold">{{
-              translate("reader.formatSetting.systemDefault")
-            }}</span>
-            <span class="text-base-content/60 block text-xs">
-              {{
-                translate(
-                  "reader.formatSetting.matchYourSystemSLightOrDarkAppearance",
-                )
-              }}
-            </span>
-          </span>
-          <input
-            v-model="followSystem"
-            type="checkbox"
-            class="toggle toggle-sm mr-1 shrink-0"
-            :aria-label="translate('common.themeController.followSystemTheme')"
-          />
-        </label>
+  <section :aria-label="translate('common.themeController.themeSelection')">
+    <ScrollableContainer class="-mx-1">
+      <div class="min-h-0 overflow-y-auto overscroll-contain px-1">
         <div
           class="grid grid-cols-1 gap-2 py-1 min-[22rem]:grid-cols-2 max-lg:gap-1.5"
         >
@@ -90,7 +14,7 @@
             <input
               v-model="themeStore.theme"
               type="radio"
-              :name="inline ? 'theme-navigation-mobile' : 'theme-navigation'"
+              name="theme-navigation"
               class="theme-controller absolute inset-0 cursor-pointer appearance-none rounded-box opacity-0"
               :aria-label="`${style.name}：${localizeText(style.description)}`"
               :value="style.value"
@@ -117,10 +41,9 @@
             />
           </label>
         </div>
-
       </div>
     </ScrollableContainer>
-</div>
+  </section>
 </template>
 
 <script setup>
@@ -132,13 +55,8 @@ import { storeToRefs } from "pinia";
 
 import { useThemeStore } from "@/stores/themeStore";
 
-defineProps({
-  inline: Boolean,
-  hideHeader: Boolean,
-});
-
 const themeStore = useThemeStore();
-const { themeList, currentTheme, followSystem } = storeToRefs(themeStore);
+const { themeList } = storeToRefs(themeStore);
 
 const isThemeActive = (style) => style.value === themeStore.theme;
 
