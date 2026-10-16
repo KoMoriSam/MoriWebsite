@@ -36,7 +36,7 @@
       />
 
       <h1 v-if="isReaderMode && !renderedPages.length">
-        {{ translate('markdown.markdown.loadingFailedPleaseTryAgainLater') }}
+        {{ translate("markdown.markdown.loadingFailedPleaseTryAgainLater") }}
       </h1>
     </template>
 
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 
 import { computed, h, nextTick, onMounted, ref, watch } from "vue";
@@ -204,6 +204,7 @@ const FALLBACK_IMAGE_HEIGHT = 800;
 // 引入常用插件
 import MarkdownItAbbr from "markdown-it-abbr";
 import MarkdownItAttrs from "markdown-it-attrs";
+import MarkdownItBracketedSpans from "markdown-it-bracketed-spans";
 import { full as emojiPlugin } from "markdown-it-emoji";
 import MarkdownItRuby from "markdown-it-ruby";
 import MarkdownItSub from "markdown-it-sub";
@@ -277,7 +278,12 @@ const syncPreviewImages = (root = articleRef.value) => {
 
     if (!image.hasAttribute("aria-label")) {
       const alt = image.getAttribute("alt")?.trim();
-      image.setAttribute("aria-label", alt ? translate('markdown.markdown.previewImage2', { p0: alt }) : translate('markdown.markdown.previewImage'));
+      image.setAttribute(
+        "aria-label",
+        alt
+          ? translate("markdown.markdown.previewImage2", { p0: alt })
+          : translate("markdown.markdown.previewImage"),
+      );
     }
   });
 };
@@ -299,7 +305,8 @@ const getPreviewCaption = (image) => {
 const getPreviewDimensions = (image) => {
   const originalWidth = Number(image.getAttribute("data-original-width"));
   const originalHeight = Number(image.getAttribute("data-original-height"));
-  if (originalWidth > 0 && originalHeight > 0) return { width: originalWidth, height: originalHeight };
+  if (originalWidth > 0 && originalHeight > 0)
+    return { width: originalWidth, height: originalHeight };
   if (image.naturalWidth && image.naturalHeight) {
     return { width: image.naturalWidth, height: image.naturalHeight };
   }
@@ -323,7 +330,8 @@ const getPreviewDimensions = (image) => {
 };
 
 const createPreviewSlide = (image, index) => {
-  const src = image.getAttribute("data-original-src") || image.currentSrc || image.src;
+  const src =
+    image.getAttribute("data-original-src") || image.currentSrc || image.src;
   const imageStyle = window.getComputedStyle(image);
   const inheritedFilter = imageStyle.filter;
   const isSvg =
@@ -435,20 +443,40 @@ const resolveMarkdownComponent = ({
   parentClass,
 }) => {
   // Raw HTML tables bypass Markdown's table-wrapper plugin.
-  if (tagName === "table" && !String(parentClass || "").split(/\s+/).includes("markdown-table-wrapper")) {
+  if (
+    tagName === "table" &&
+    !String(parentClass || "")
+      .split(/\s+/)
+      .includes("markdown-table-wrapper")
+  ) {
     return h(
       ScrollableContainer,
-      { key, class: "markdown-table-scroll w-full max-w-full", layout: "block" },
-      { default: () => h("section", { class: "markdown-table-wrapper" }, [h(tagName, nodeProps, children)]) },
+      {
+        key,
+        class: "markdown-table-scroll w-full max-w-full",
+        layout: "block",
+      },
+      {
+        default: () =>
+          h("section", { class: "markdown-table-wrapper" }, [
+            h(tagName, nodeProps, children),
+          ]),
+      },
     );
   }
   if (
     tagName === "section" &&
-    String(nodeProps.class || "").split(/\s+/).includes("markdown-table-wrapper")
+    String(nodeProps.class || "")
+      .split(/\s+/)
+      .includes("markdown-table-wrapper")
   ) {
     return h(
       ScrollableContainer,
-      { key, class: "markdown-table-scroll w-full max-w-full", layout: "block" },
+      {
+        key,
+        class: "markdown-table-scroll w-full max-w-full",
+        layout: "block",
+      },
       { default: () => h("section", nodeProps, children) },
     );
   }
@@ -720,7 +748,8 @@ const rubyPlugin = (md) => {
 
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
-  [MarkdownItAttrs, { allowedAttributes: ["id", "class"] }],
+  MarkdownItBracketedSpans,
+  [MarkdownItAttrs, { allowedAttributes: ["id", "class", "data-tip"] }],
   highlightLazyPlugin,
   anchorPlugin,
   [alertPlugin, { translateTitle: localizeText }],

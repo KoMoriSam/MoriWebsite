@@ -283,14 +283,14 @@
   }
 
   .markdown-content.prose :deep(.markdown-table-wrapper) {
-    @apply w-full max-w-full min-w-0 overflow-x-auto;
+    @apply w-full max-w-full min-w-0 overflow-x-auto scrollbar-thin my-[calc(var(--para-margin-inline)+var(--para-font-size)*var(--para-line-height)*0.5)];
   }
 
   .markdown-content.prose :deep(.markdown-table-wrapper table) {
     @apply text-[calc(var(--para-font-size)*0.875)]
     tracking-[calc(var(--para-letter-spacing)*0.875)]
     leading-[calc(var(--para-line-height)*0.875)]
-    w-max min-w-full max-w-none;
+    w-max min-w-full max-w-none my-0;
   }
 
   .markdown-content.prose

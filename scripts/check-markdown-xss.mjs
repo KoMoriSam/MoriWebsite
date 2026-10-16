@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { renderToString } from "@vue/server-renderer";
 import MarkdownIt from "markdown-it";
 import MarkdownItAttrs from "markdown-it-attrs";
+import MarkdownItBracketedSpans from "markdown-it-bracketed-spans";
+import MarkdownItRuby from "markdown-it-ruby";
 import { createSSRApp, h } from "vue";
 
 import { projectMarkdownComponentProps } from "../src/utils/markdown/markdown-component-props.js";
@@ -318,9 +320,11 @@ assert.deepEqual(
 assert.equal(projectMarkdownComponentProps("markdown-code", "%E0%A4%A"), null);
 assert.equal(projectMarkdownComponentProps("markdown-unknown", encodeProps({})), null);
 
-const attrsMarkdown = new MarkdownIt({ html: true }).use(MarkdownItAttrs, {
-  allowedAttributes: ["id", "class"],
-});
+const attrsMarkdown = new MarkdownIt({ html: true })
+  .use(MarkdownItBracketedSpans)
+  .use(MarkdownItAttrs, { allowedAttributes: ["id", "class", "data-tip"] })
+  .use(footnotePlugin)
+  .use(MarkdownItRuby);
 const attrsHtml = sanitizeMarkdownHtml(
   attrsMarkdown.render(
     '![image](/safe.png){#safe .wide onerror="alert(1)" style="color:red" src="javascript:alert(1)"}\n\n[text](/safe){#link .safe onclick="alert(1)" href="javascript:alert(1)"}',
@@ -334,7 +338,52 @@ assert.doesNotMatch(attrsHtml, blockedAttributes);
 assert.doesNotMatch(attrsHtml, /style=/iu);
 assert.doesNotMatch(attrsHtml, /javascript:/iu);
 
-const renderInput = `${safeHtml}${mathJaxHtml}`;
+const inlineContainerHtml = sanitizeMarkdownHtml(attrsMarkdown.render(
+  '- [[ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි.]{.font-abhaya}\n  [标准 Unicode 文本 `Abhaya Libre`]{.tooltip-content}]{.tooltip}\n\nBefore [**bold** and *italic*]{#inline .one .two data-tip="Tooltip text with spaces" onclick="alert(1)" style="color:red" href="javascript:alert(1)" data-unknown="blocked"} after.',
+));
+assert.match(inlineContainerHtml, /<li><span class="tooltip"><span class="font-abhaya">ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි\.<\/span>\n<span class="tooltip-content">标准 Unicode 文本 <code>Abhaya Libre<\/code><\/span><\/span><\/li>/u);
+assert.match(inlineContainerHtml, /Before <span id="inline" class="one two" data-tip="Tooltip text with spaces"><strong>bold<\/strong> and <em>italic<\/em><\/span> after\./u);
+assert.doesNotMatch(inlineContainerHtml, blockedAttributes);
+assert.doesNotMatch(inlineContainerHtml, /style=|href=|data-unknown=|javascript:/iu);
+
+const inlineCompatibilityHtml = attrsMarkdown.render(
+  '[link](/safe){.link} ![image](/safe.png){.image} [reference]{.reference} [named][reference]{.named} [reference][]{.collapsed} [^note]{.note}\n\n[reference]: /reference\n\n[^note]: footnote\n\n`[code]{.literal}` \\[escaped]{.escaped} [plain]\n\n[{漢字|かんじ}]{.ruby-wrapper}\n\n[adjacent]{.first}[containers]{.second}',
+);
+assert.match(inlineCompatibilityHtml, /<a href="\/safe" class="link">link<\/a>/u);
+assert.match(inlineCompatibilityHtml, /<img src="\/safe.png" alt="image" class="image">/u);
+for (const [name, label] of [["reference", "reference"], ["named", "named"], ["collapsed", "reference"]]) {
+  assert.match(inlineCompatibilityHtml, new RegExp(`<a href="/reference" class="${name}">${label}</a>`, "u"));
+}
+assert.match(inlineCompatibilityHtml, /<sup class="footnote-ref"><a href="#fn1"/u);
+assert.doesNotMatch(inlineCompatibilityHtml, /<span[^>]*class="note"/u);
+assert.match(inlineCompatibilityHtml, /<code>\[code\]\{\.literal\}<\/code>/u);
+assert.doesNotMatch(inlineCompatibilityHtml, /<span[^>]*class="(?:literal|escaped)"/u);
+assert.match(inlineCompatibilityHtml, /\[plain\]/u);
+assert.match(inlineCompatibilityHtml, /<span class="ruby-wrapper"><ruby>/u);
+assert.match(inlineCompatibilityHtml, /<span class="first">adjacent<\/span><span class="second">containers<\/span>/u);
+
+const tooltipHtml = sanitizeMarkdownHtml(
+  attrsMarkdown.render(
+    '**Hover**{.tooltip .tooltip-bottom .tooltip-info data-tip="Tooltip text" onclick="alert(1)" data-unknown="blocked"}\n\n<span class="tooltip" data-tip="&lt;img src=x&gt;">Safe text</span>',
+  ),
+);
+assert.match(tooltipHtml, /<strong class="tooltip tooltip-bottom tooltip-info" data-tip="Tooltip text">Hover<\/strong>/u);
+const tooltipNodes = [];
+const collectTooltipNodes = (node) => {
+  if (node.tagName) tooltipNodes.push(node);
+  for (const child of node.childNodes || []) collectTooltipNodes(child);
+};
+collectTooltipNodes(parseHtmlFragment(tooltipHtml));
+assert.ok(tooltipNodes.some((node) => node.attrs.some(
+  ({ name, value }) => name === "data-tip" && value === "<img src=x>",
+)));
+assert.ok(tooltipNodes.every((node) =>
+  node.tagName !== "img" && node.attrs.every(
+    ({ name }) => !name.startsWith("on") && name !== "data-unknown",
+  ),
+));
+
+const renderInput = `${safeHtml}${mathJaxHtml}${tooltipHtml}${inlineContainerHtml}`;
 assert.equal(sanitizeMarkdownHtml(renderInput), renderInput);
 
 const ssrApp = createSSRApp({
@@ -350,5 +399,7 @@ assert.doesNotMatch(ssrHtml, blockedTags);
 assert.doesNotMatch(ssrHtml, blockedAttributes);
 assert.match(ssrHtml, /<mjx-container/u);
 assert.match(ssrHtml, /<details open/u);
+assert.match(ssrHtml, /data-tip="Tooltip text"/u);
+assert.match(ssrHtml, /<span class="tooltip-content">标准 Unicode 文本 <code>Abhaya Libre<\/code><\/span>/u);
 
 console.log("Markdown XSS checks passed: 15 payloads, variants, real markers, SSR and compatibility.");

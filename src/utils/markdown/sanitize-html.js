@@ -128,6 +128,7 @@ const DATA_ATTRIBUTES = [
   "data-source-type",
   "data-task-status",
   "data-task-tone",
+  "data-tip",
   "data-mml-node",
   "data-c",
   "data-latex",
