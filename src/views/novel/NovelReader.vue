@@ -34,6 +34,8 @@
           : undefined
       "
     >
+      <LoadingPlaceholder v-if="!currentChapter" kind="novel" :page="false" />
+
       <PagedReader
         v-if="currentChapter && isMobileReader && isPagedMobileReader"
         ref="activeMobileReaderRef"
@@ -128,7 +130,9 @@
         >
           <div class="flex flex-col items-center gap-3">
             <span class="loading loading-spinner loading-lg"></span>
-            <span class="text-sm font-medium">{{ translate('reader.novelReader.loadingChapter2') }}</span>
+            <span class="text-sm font-medium">{{
+              translate("reader.novelReader.loadingChapter2")
+            }}</span>
           </div>
         </div>
       </Transition>
@@ -169,7 +173,11 @@
         class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
       >
         <h2 class="min-w-0 text-2xl font-serif font-bold break-words">
-          {{ currentMapping === "title" ? translate('reader.novelReader.chapterComments') : translate('reader.novelReader.bookComments') }}
+          {{
+            currentMapping === "title"
+              ? translate("reader.novelReader.chapterComments")
+              : translate("reader.novelReader.bookComments")
+          }}
         </h2>
 
         <button
@@ -177,7 +185,11 @@
           class="btn btn-info btn-soft btn-xs shrink-0"
           @click="commentToggle"
         >
-          {{ currentMapping === "title" ? translate('reader.novelReader.switchToBookComments') : translate('reader.novelReader.switchToChapterComments') }}
+          {{
+            currentMapping === "title"
+              ? translate("reader.novelReader.switchToBookComments")
+              : translate("reader.novelReader.switchToChapterComments")
+          }}
         </button>
       </section>
 
@@ -220,7 +232,9 @@
       <header
         class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
       >
-        <h2 class="text-xl font-serif font-bold">{{ translate('reader.novelReader.chapterComments') }}</h2>
+        <h2 class="text-xl font-serif font-bold">
+          {{ translate("reader.novelReader.chapterComments") }}
+        </h2>
         <button
           type="button"
           class="btn btn-ghost btn-sm btn-circle"
@@ -252,7 +266,9 @@
       </ScrollableContainer>
     </section>
     <form method="dialog" class="modal-backdrop">
-      <button @click.prevent="requestCloseChapterComments">{{ translate('reader.novelReader.closeChapterComments') }}</button>
+      <button @click.prevent="requestCloseChapterComments">
+        {{ translate("reader.novelReader.closeChapterComments") }}
+      </button>
     </form>
   </dialog>
 </template>
@@ -261,8 +277,13 @@
 import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
 provideMarkdownAvatars(import.meta.env.VITE_NOVEL_RAW);
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { useLocale } from '@/i18n';
-const { t: translate, commentLocale, number: formatNumber, date: formatLocalizedDate } = useLocale();
+import { useLocale } from "@/i18n";
+const {
+  t: translate,
+  commentLocale,
+  number: formatNumber,
+  date: formatLocalizedDate,
+} = useLocale();
 
 import { storeToRefs } from "pinia";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
@@ -272,6 +293,11 @@ import { useThemeStore } from "@/stores/themeStore";
 
 import Giscus from "@giscus/vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
+import LoadingPlaceholder from "@/components/reader/feedback/LoadingPlaceholder.vue";
+import {
+  READER_PAGE_CLASS, READER_GRID_CLASS, MOBILE_READER_PAGE_CLASS,
+  MOBILE_READER_CONTAINER_CLASS, MOBILE_READER_GRID_CLASS, MOBILE_READER_CONTENT_CLASS,
+} from '@/constants/reader-layout';
 import ChapterToc from "@/components/novel/ChapterToc.vue";
 import ChapterController from "@/components/novel/ChapterController.vue";
 import ChapterHeader from "@/components/novel/ChapterHeader.vue";
@@ -655,20 +681,20 @@ const readerPageStyle = computed(() => {
 });
 const readerPageClass = computed(() =>
   isMobileReader.value
-    ? "fixed inset-0 z-40 mx-auto h-dvh w-full max-w-7xl overflow-hidden bg-base-100 px-6 py-2 text-base-content sm:px-8"
-    : "mx-auto max-w-7xl px-6 sm:px-8 lg:px-10",
+    ? MOBILE_READER_PAGE_CLASS
+    : READER_PAGE_CLASS,
 );
 const readerContainerClass = computed(() =>
-  isMobileReader.value ? "flex h-full min-h-0 flex-col" : "py-6",
+  isMobileReader.value ? MOBILE_READER_CONTAINER_CLASS : "py-6",
 );
 const readerGridClass = computed(() =>
   isMobileReader.value
-    ? "h-full min-h-0 flex-1 items-stretch! overflow-hidden"
-    : "gap-y-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] xl:gap-x-8 2xl:grid-cols-[17rem_minmax(0,1fr)_22rem]",
+    ? MOBILE_READER_GRID_CLASS
+    : READER_GRID_CLASS,
 );
 const readerContentClass = computed(() =>
   isMobileReader.value
-    ? "flex h-full min-h-0 self-stretch overflow-hidden border-0! p-0!"
+    ? MOBILE_READER_CONTENT_CLASS
     : "",
 );
 
@@ -798,29 +824,45 @@ const chapterStats = computed(() => {
     {
       icon: "ri-time-line",
       text: currentChapter.value?.uploadDate
-        ? translate('pages.articleReader.published2', { p0: formatLocalizedDate(currentChapter.value.uploadDate, {
-            year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit',
-          }) })
-        : '',
+        ? translate("pages.articleReader.published2", {
+            p0: formatLocalizedDate(currentChapter.value.uploadDate, {
+              year: "numeric",
+              month: "numeric",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          })
+        : "",
     },
   ];
 
   if (currentChapter.value?.modifiedDate) {
     stats.push({
       icon: "ri-file-edit-line",
-      get text() { return translate('common.badges.revised'); },
+      get text() {
+        return translate("common.badges.revised");
+      },
     });
   }
 
   stats.push({
     icon: "ri-file-text-line",
-    get text() { return translate('pages.articleReader.aboutCharacters', { p0: currentChapter.value?.length || 0 }); },
+    get text() {
+      return translate("pages.articleReader.aboutCharacters", {
+        p0: currentChapter.value?.length || 0,
+      });
+    },
   });
 
   if (analyticsAvailable.value && Number.isFinite(chapterReads.value)) {
     stats.push({
       icon: "ri-eye-line",
-      get text() { return translate('pages.articleReader.reads', { p0: chapterReadCountFormatter.format(chapterReads.value) }); },
+      get text() {
+        return translate("pages.articleReader.reads", {
+          p0: chapterReadCountFormatter.format(chapterReads.value),
+        });
+      },
     });
   }
 
@@ -839,10 +881,14 @@ const textShareMeta = computed(() => {
   const contentInfo = contentItems.join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(chapterReads.value)
-      ? translate('pages.articleReader.reads', { p0: chapterReadCountFormatter.format(chapterReads.value) })
+      ? translate("pages.articleReader.reads", {
+          p0: chapterReadCountFormatter.format(chapterReads.value),
+        })
       : "",
     commentCountsAvailable.value && Number.isFinite(chapterComments.value)
-      ? translate('pages.articleReader.comments', { p0: chapterReadCountFormatter.format(chapterComments.value) })
+      ? translate("pages.articleReader.comments", {
+          p0: chapterReadCountFormatter.format(chapterComments.value),
+        })
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");
@@ -881,28 +927,36 @@ const handleRefreshContent = async () => {
 const fabActions = computed(() => [
   {
     key: "bottom",
-    get label() { return translate('pages.articleReader.toBottom'); },
+    get label() {
+      return translate("pages.articleReader.toBottom");
+    },
     icon: "ri-skip-down-line",
     buttonClass: "btn-info btn-soft",
     onClick: () => scrollToBottom(),
   },
   {
     key: "top",
-    get label() { return translate('pages.articleReader.toTop'); },
+    get label() {
+      return translate("pages.articleReader.toTop");
+    },
     icon: "ri-skip-up-line",
     buttonClass: "btn-info btn-soft",
     onClick: () => scrollToTop(),
   },
   {
     key: "settings",
-    get label() { return translate('reader.formatSetting.readingLayout'); },
+    get label() {
+      return translate("reader.formatSetting.readingLayout");
+    },
     icon: "ri-settings-3-line",
     buttonClass: "btn-primary btn-soft",
     onClick: () => readerRef.value?.openFormatSetting(),
   },
   {
     key: "refresh",
-    get label() { return translate('reader.novelReader.refreshContent'); },
+    get label() {
+      return translate("reader.novelReader.refreshContent");
+    },
     icon: isLoadingContent.value
       ? "ri-loader-4-line animate-spin"
       : "ri-refresh-line",
@@ -911,7 +965,9 @@ const fabActions = computed(() => [
   },
   {
     key: "cover",
-    get label() { return translate('reader.novelReader.cover'); },
+    get label() {
+      return translate("reader.novelReader.cover");
+    },
     icon: "ri-arrow-go-back-line",
     buttonClass: "btn-secondary btn-soft",
     onClick: () => {

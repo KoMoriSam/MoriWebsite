@@ -42,7 +42,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
 
   // const READ_POS_KEY = "READ_POS";
   // const readPos = useStorage(READ_POS_KEY, "");
-  const { getState, setState } = useReadingStateStorage();
+  const { getState, setState } = options.storage || useReadingStateStorage();
   const readPosKey = options.readPosKey || "READ_POS";
   const readContextKey = options.readContextKey || "READ_CH_ID";
   const readViewportKey =
@@ -51,8 +51,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     typeof options.getContextId === "function"
       ? options.getContextId
       : () => getState(readContextKey, "");
-  const isTrackingActive =
-    typeof options.isActive === "function" ? options.isActive : () => true;
+  let stopped = false;
+  let pendingStoredRestore = false;
+  const isTrackingActive = () =>
+    !stopped && (typeof options.isActive !== "function" || options.isActive());
 
   const readPos = computed({
     get: () => getState(readPosKey, ""),
@@ -303,17 +305,16 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
       return "";
     }
 
+    const routeHashToken = normalizeAnchorToken(window.location.hash);
+    if (routeHashToken) return routeHashToken;
+    if (options.restoreStoredPosition === false) return "";
+
     const breakpointPosition = getStoredViewportPosition();
     if (
       breakpointPosition?.anchorToken &&
       isStoredViewportContextActive(breakpointPosition)
     ) {
       return normalizeLegacyParagraphId(breakpointPosition.anchorToken);
-    }
-
-    const routeHashToken = normalizeAnchorToken(router.currentRoute.value.hash);
-    if (routeHashToken) {
-      return routeHashToken;
     }
 
     const storedToken = normalizeLegacyParagraphId(readPos.value);
@@ -442,7 +443,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   }
 
   function stabilizePreciseRestore(anchorToken, viewportTop) {
-    if (!Number.isFinite(Number(viewportTop))) return;
+    if (viewportTop == null || !Number.isFinite(Number(viewportTop))) return;
 
     cancelPreciseRestore();
     [80, 240, 600].forEach((delay) => {
@@ -498,9 +499,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     const token = getShortId(anchorToken);
 
     const currentRawHash = window.location.hash || "";
-    const currentToken = normalizeAnchorToken(
-      router.currentRoute.value.hash || currentRawHash,
-    );
+    const currentToken = normalizeAnchorToken(currentRawHash);
 
     if (!token) {
       if (!currentRawHash) return;
@@ -525,6 +524,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   }
 
   function scrollToAnchorWithRetry(anchorToken, viewportTop = null) {
+    if (!isTrackingActive()) return false;
     const token = normalizeAnchorToken(anchorToken);
     if (!token) return false;
 
@@ -538,6 +538,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     let retries = 0;
     const maxRetries = 8;
     const tryScroll = () => {
+      if (!isTrackingActive()) return;
       const result = findAnchorElement(token);
       if (result.element) {
         performScroll(result.resolvedId, result.element, viewportTop);
@@ -589,7 +590,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     syncReadContext();
     readPos.value = persistedPosToken;
     syncRouteHash(shortToken, 2);
-    const resolvedViewportTop = Number(viewportTop);
+    const resolvedViewportTop = viewportTop == null ? NaN : Number(viewportTop);
     const targetTop = Math.max(
       0,
       window.scrollY +
@@ -602,6 +603,10 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     if (scrollingElement) scrollingElement.scrollTop = targetTop;
     else window.scrollTo(0, targetTop);
     persistViewportPosition(persistedPosToken, el);
+    if (pendingStoredRestore) {
+      pendingStoredRestore = false;
+      options.onStoredRestore?.();
+    }
     setTimeout(() => onRestoreTitle?.(), 1000);
   }
 
@@ -808,6 +813,8 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     }),
   );
 
+  pendingStoredRestore = !normalizeAnchorToken(window.location.hash) &&
+    Boolean(resolveInitialAnchorToken());
   scrollToLastReadPos();
   trackListener(useEventListener(window, "scroll", handleScroll));
   trackListener(useEventListener(window, "resize", handleResize));
@@ -819,6 +826,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   });
 
   return () => {
+    stopped = true;
     activePositionTrackers.delete(positionTracker);
     cancelPreciseRestore();
     window.clearTimeout(settledScrollTimer);

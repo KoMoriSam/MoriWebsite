@@ -2,7 +2,8 @@
   "pages": {
     "blog": {
       "articleNotFound": "Article not found",
-      "failedToLoadArticleContent": "Failed to load article content"
+      "failedToLoadArticleContent": "Failed to load article content",
+      "restoredReadingProgress": "Restored your last reading position"
     },
     "articleList": {
       "articles": "Articles",

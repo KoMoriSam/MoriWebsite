@@ -9,6 +9,7 @@
       :show-loading="false"
       :header-data="headerData"
       :style-configs="styleConfigs"
+      @render-ready="emit('ready', articleId)"
       @pointerdown.capture="handleArticlePointerDown"
       @pointermove.capture="handleArticlePointerMove"
       @pointerup.capture="handleArticlePointerUp"
@@ -30,7 +31,12 @@
               v-fade-in
               :key="bannerUrl"
               :ref="setBannerImageRef"
-              v-bind="getImageAttrs(bannerUrl, '(min-width: 1024px) 960px, calc(100vw - 2rem)')"
+              v-bind="
+                getImageAttrs(
+                  bannerUrl,
+                  '(min-width: 1024px) 960px, calc(100vw - 2rem)',
+                )
+              "
               :alt="article.title"
               loading="eager"
               decoding="async"
@@ -116,6 +122,7 @@
             </div>
 
             <h1
+              :id="`article-title-${articleId}`"
               data-pagefind-body
               data-pagefind-meta="localizeText(title)"
               data-pagefind-weight="10"
@@ -257,31 +264,7 @@
       </template>
 
       <template #loading>
-        <section
-          class="min-w-0 w-full max-w-full"
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
-          :aria-label="translate('pages.articleReader.loadingArticleContent')"
-        >
-          <span class="sr-only">{{
-            translate("pages.articleReader.loadingArticleContent")
-          }}</span>
-
-          <div class="mx-auto max-w-4xl space-y-7" aria-hidden="true">
-            <div class="skeleton h-8 w-2/5"></div>
-
-            <div v-for="index in 4" :key="index" class="space-y-3">
-              <div class="skeleton h-5 w-full"></div>
-              <div class="skeleton h-5 w-11/12"></div>
-
-              <div
-                class="skeleton h-5"
-                :class="index % 2 === 0 ? 'w-3/4' : 'w-4/5'"
-              ></div>
-            </div>
-          </div>
-        </section>
+        <LoadingPlaceholder :page="false" :show-header="false" />
       </template>
 
       <template #after>
@@ -367,6 +350,8 @@
       </template>
     </Renderer>
 
+    <LoadingPlaceholder v-else-if="loading" :page="false" :article="article" />
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="alert alert-error my-16">
       <i class="ri-error-warning-line text-3xl"></i>
@@ -405,8 +390,10 @@
       <FormatSetting />
     </template>
 
-    <template #aside v-if="content && article?.id != null">
+    <template #aside v-if="loading || (content && article?.id != null)">
+      <CommentsPlaceholder v-if="loading" />
       <Giscus
+        v-else
         :key="`article-comments-${article.id}-${githubSession.revision}`"
         :repo="GISCUS.blogRepo.name"
         :repo-id="GISCUS.blogRepo.id"
@@ -459,6 +446,8 @@ import CONFIG from "@/constants/config";
 
 import FloatingActionButton from "@/components/interaction/controls/FloatingActionButton.vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
+import LoadingPlaceholder from "@/components/reader/feedback/LoadingPlaceholder.vue";
+import CommentsPlaceholder from "@/components/reader/feedback/CommentsPlaceholder.vue";
 import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
 
@@ -495,7 +484,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["back", "refresh", "navigate"]);
+const emit = defineEmits(["back", "refresh", "navigate", "ready"]);
 
 const articleId = computed(() => String(props.article?.id || "").trim());
 const commentCountsStore = useCommentCountsStore();
@@ -586,6 +575,7 @@ const openArticleContextSearch = (keyword) => {
 const showReaderAside = computed(
   () =>
     typeof window === "undefined" || // 预渲染阶段保留右栏空位
+    props.loading ||
     (Boolean(props.content) && props.article?.id != null),
 );
 

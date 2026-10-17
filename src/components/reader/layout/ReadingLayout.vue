@@ -101,6 +101,7 @@ import {
   watch,
 } from "vue";
 import ContentGrid from "@/components/reader/layout/ContentGrid.vue";
+import { READER_PAGE_CLASS, READER_GRID_CLASS } from '@/constants/reader-layout';
 import Toc from "@/components/reader/navigation/Toc.vue";
 import Footer from "@/components/layout/Footer.vue";
 import { useModalClose } from "@/composables/useModal";
@@ -142,7 +143,7 @@ const props = defineProps({
   },
   pageClass: {
     type: [String, Array, Object],
-    default: "mx-auto max-w-7xl px-6 [--reader-page-gutter:1.5rem] sm:px-8 sm:[--reader-page-gutter:2rem] lg:px-10 lg:[--reader-page-gutter:2.5rem]",
+    default: READER_PAGE_CLASS,
   },
   pageStyle: {
     type: [String, Array, Object],
@@ -215,7 +216,7 @@ const resolvedGridClass = computed(() => {
   if (props.gridClass) return props.gridClass;
 
   if (showToc.value && showAside.value) {
-    return "gap-y-8 xl:grid-cols-[15rem_minmax(0,1fr)_20rem] xl:gap-x-8 2xl:grid-cols-[17rem_minmax(0,1fr)_22rem]";
+    return READER_GRID_CLASS;
   }
 
   if (showToc.value) {
@@ -377,7 +378,7 @@ const scrollToHeading = (id) => {
   }
 
   element.scrollIntoView({ behavior: "smooth", block: "start" });
-  window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+  window.history.replaceState(window.history.state, "", `#${id}`);
 };
 
 const handleScrollEnd = () => {

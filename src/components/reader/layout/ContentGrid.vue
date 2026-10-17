@@ -251,8 +251,6 @@ const handleMobileTocPointerDown = (event) => {
   mobileTocPointerStart.x = event.clientX;
   mobileTocPointerStart.y = event.clientY;
   mobileTocPointerStart.active = true;
-
-  event.currentTarget?.setPointerCapture?.(event.pointerId);
 };
 
 const handleMobileTocPointerMove = (event) => {
@@ -267,8 +265,9 @@ const handleMobileTocPointerMove = (event) => {
   const deltaY = event.clientY - mobileTocPointerStart.y;
   const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;
 
-  if (isVerticalSwipe && event.cancelable) {
-    event.preventDefault();
+  if (isVerticalSwipe && Math.abs(deltaY) >= 36) {
+    event.currentTarget?.setPointerCapture?.(event.pointerId);
+    if (event.cancelable) event.preventDefault();
   }
 };
 
@@ -283,7 +282,9 @@ const handleMobileTocPointerEnd = (event) => {
   const deltaX = event.clientX - mobileTocPointerStart.x;
   const deltaY = event.clientY - mobileTocPointerStart.y;
 
-  event.currentTarget?.releasePointerCapture?.(event.pointerId);
+  if (event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }
   resetMobileTocPointer();
 
   const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) * 1.2;

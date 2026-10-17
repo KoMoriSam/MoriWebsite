@@ -10,6 +10,7 @@ import {
   createMemoryHistory,
 } from "vue-router";
 import { gameRoutes } from '@/games/catalog';
+import { getBlogListScroll } from '@/utils/blog/list-scroll';
 
 const testRoutes = import.meta.env.DEV
   ? (await import("./test-routes")).testRoutes
@@ -175,6 +176,10 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (globalThis.__moriModalFallbackRestoring) return false;
     if (savedPosition) return savedPosition;
+    if (to.meta.blogList && !to.hash && (from.params.articleId || from.meta.article)) {
+      const position = getBlogListScroll(to);
+      if (position) return position;
+    }
     if (to.hash && typeof document !== "undefined") {
       const rawHash = to.hash.slice(1);
       let anchorId = rawHash;
@@ -185,7 +190,7 @@ const router = createRouter({
         // 非法转义交给原始 ID 尝试匹配。
       }
 
-      const target = document.getElementById(anchorId);
+      const target = document.getElementById(anchorId) || document.getElementById(rawHash);
       if (target) return { el: target, top: 96 };
     }
     if (to.path !== from.path) return { top: 0 };
@@ -194,6 +199,7 @@ const router = createRouter({
 });
 
 export default router;
+export const scrollBehavior = router.options.scrollBehavior;
 
 router.beforeEach((to, from, next) => {
   // 兼容旧的 .html 地址

@@ -2,7 +2,8 @@
   "pages": {
     "blog": {
       "articleNotFound": "文章不存在",
-      "failedToLoadArticleContent": "加载文章内容失败"
+      "failedToLoadArticleContent": "加载文章内容失败",
+      "restoredReadingProgress": "已恢复上次阅读进度"
     },
     "articleList": {
       "articles": "文章列表",

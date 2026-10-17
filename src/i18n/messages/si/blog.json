@@ -2,7 +2,8 @@
   "pages": {
     "blog": {
       "articleNotFound": "ලිපිය හමු නොවීය",
-      "failedToLoadArticleContent": "ලිපි අන්තර්ගතය පූරණය අසාර්ථකයි"
+      "failedToLoadArticleContent": "ලිපි අන්තර්ගතය පූරණය අසාර්ථකයි",
+      "restoredReadingProgress": "අවසන් වරට කියවූ ස්ථානයට නැවත ගෙන ගියා"
     },
     "articleList": {
       "articles": "ලිපි ලැයිස්තුව",
