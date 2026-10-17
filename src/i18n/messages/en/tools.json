@@ -1,6 +1,7 @@
 {
   "pages": {
     "tools": {
+      "toolCount": "Tools: {count}",
       "chooseAToolToOpenItsPageBookmarkOrShare": "Choose a tool to open its page. Bookmark or share its address.",
       "availableTools": "Available tools",
       "openTool": "Open tool",

@@ -1,5 +1,11 @@
 <template>
-  <ContentPage :title="t('games.title')" :description="t('games.description')">
+  <ContentPage :title="t('games.title')" :description="t('games.description')" :metas-label="t('games.gameInformation')">
+    <template #meta>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-gamepad-line" aria-hidden="true"></i>
+        {{ t('games.gameCount', { count: GAMES.length }) }}
+      </span>
+    </template>
     <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6" :aria-label="t('games.available')">
       <CatalogCard
         v-for="game in GAMES"

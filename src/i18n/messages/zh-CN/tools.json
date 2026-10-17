@@ -1,6 +1,7 @@
 {
   "pages": {
     "tools": {
+      "toolCount": "共 {count} 个工具",
       "chooseAToolToOpenItsPageBookmarkOrShare": "选择一个工具进入独立页面，地址可以直接收藏或分享。",
       "availableTools": "可用工具",
       "openTool": "打开工具",

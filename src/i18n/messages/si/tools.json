@@ -1,6 +1,7 @@
 {
   "pages": {
     "tools": {
+      "toolCount": "මෙවලම් ගණන: {count}",
       "chooseAToolToOpenItsPageBookmarkOrShare": "මෙවලමක පිටුව විවෘත කරන්න. ලිපිනය සුරකින්න හෝ බෙදාගන්න.",
       "availableTools": "තිබෙන මෙවලම්",
       "openTool": "මෙවලම විවෘත කරන්න",

@@ -5,7 +5,14 @@
     :description="
       translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')
     "
+    :metas-label="translate('tools.imageConverter.toolInformation')"
   >
+    <template #meta>
+      <span class="inline-flex items-center gap-1.5">
+        <i class="ri-tools-line" aria-hidden="true"></i>
+        {{ translate('pages.tools.toolCount', { count: tools.length }) }}
+      </span>
+    </template>
     <section
       class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
       :aria-label="translate('pages.tools.availableTools')"
