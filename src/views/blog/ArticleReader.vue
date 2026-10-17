@@ -572,7 +572,7 @@ const missingTranslation = computed(
     props.article &&
     !articleLocales.value.includes(uiLocale.value),
 );
-const languageNames = { "zh-CN": "简体中文", en: "English", si: "සිංහල" };
+const languageNames = { "zh-CN": "中文（简体）", en: "English", si: "සිංහල" };
 const localizedLanguageNames = computed(() => ({
   "zh-CN": translate("pages.articleReader.languageNames.zh-CN"),
   en: translate("pages.articleReader.languageNames.en"),
