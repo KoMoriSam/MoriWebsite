@@ -168,6 +168,16 @@
     @apply indent-0;
   }
 
+  /* tooltip 为 inline-block，换行后避免末行基线将列表标记下拉。 */
+  .markdown-content.prose
+    :deep(
+      :where(li .tooltip):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ) {
+    @apply align-top;
+  }
+
   .markdown-content.prose
     :deep(
       :where(table):not(:where([class~="not-prose"], [class~="not-prose"] *))
