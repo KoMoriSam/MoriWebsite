@@ -64,7 +64,7 @@
                 </p>
                 <p class="mt-2 text-xs text-base-content/55">
                   {{ translate("tools.info.touchingGlyph") }}（{{
-                    translate("tools.info.plainForm")
+                    translate("tools.info.expandedForm")
                   }}）
                 </p>
                 <div
@@ -278,7 +278,16 @@ const cards = [
     termKey: "tools.info.terms.reducedConsonantForms",
     descriptionKey:
       "tools.info.recognizeFormsSuchAsTrailingLowerAndUpperBuiltWith",
-    groups: [groupFor("trailingLowerUpper", ["ක්‍ය", "ක්‍ර", "ර්‍ක"])],
+    groups: [
+      {
+        titleKey: "tools.info.trailingLowerUpper",
+        compareForms: true,
+        rows: ["ක්‍ය", "ක්‍ර", "ර්‍ක"].map((unicode) => ({
+          ...rowFor(unicode),
+          plain: unicode.replaceAll("\u200d", ""),
+        })),
+      },
+    ],
   },
   {
     id: "order",

@@ -145,10 +145,10 @@
       "paliSpelling": "පාලි අක්ෂර වින්‍යාසය",
       "conversionDirection": "පරිවර්තන දිශාව",
       "encodingAlternative": "හෝ",
-      "plainForm": "සාමාන්‍ය ලිවීම",
+      "expandedForm": "විහිදූ රූපය",
       "conjunctGlyph": "බැඳි අක්ෂර රූපය",
       "touchingGlyph": "ස්පර්ශ අක්ෂර රූපය",
-      "conjunctComparisonNote": "සාමාන්‍ය ව්‍යංජන සංයෝග සහ ඒවාට අනුරූප අක්ෂර රූප.",
+      "conjunctComparisonNote": "විහිදූ රූප සහ ඒවාට අනුරූප බැඳි අක්ෂර රූප.",
       "compactFormsOptionNote": "අදාළ විකල්පය සක්‍රිය කළ යුතුය. පෙරනිමියෙන් අක්‍රියයි",
       "touchingSequenceDescription": "ස්පර්ශ අකුරු සඳහා ව්‍යංජනය + ZWJ + හල් ලකුණ + ව්‍යංජනය යෙදේ. බැඳි අකුරු සඳහා ව්‍යංජනය + හල් ලකුණ + ZWJ + ව්‍යංජනය යෙදේ.",
       "terms": {

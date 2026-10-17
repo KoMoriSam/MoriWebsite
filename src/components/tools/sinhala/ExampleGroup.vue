@@ -75,7 +75,7 @@
             >
               {{ translate("tools.info.conjunctGlyph")
               }}<span class="text-base-content/55"
-                >（{{ translate("tools.info.plainForm") }}）</span
+                >（{{ translate("tools.info.expandedForm") }}）</span
               >
             </p>
           </th>
@@ -150,7 +150,7 @@
           <td
             v-if="compareForms"
             class="px-2 py-1 font-abhaya text-base-content/55"
-            :aria-label="translate('tools.info.plainForm')"
+            :aria-label="translate('tools.info.expandedForm')"
             lang="si"
           >
             <span v-if="row.plain" class="whitespace-nowrap"

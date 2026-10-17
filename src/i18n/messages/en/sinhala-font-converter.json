@@ -145,10 +145,10 @@
       "paliSpelling": "Pali spelling",
       "conversionDirection": "Conversion direction",
       "encodingAlternative": "or",
-      "plainForm": "Plain spelling",
+      "expandedForm": "Expanded form",
       "conjunctGlyph": "Conjunct glyph",
       "touchingGlyph": "Touching glyph",
-      "conjunctComparisonNote": "Plain consonant combinations and their corresponding glyphs.",
+      "conjunctComparisonNote": "Expanded forms and their corresponding conjunct glyphs.",
       "compactFormsOptionNote": "Requires the corresponding option; off by default",
       "touchingSequenceDescription": "Touching forms use consonant + ZWJ + virama + consonant; ligated conjuncts use consonant + virama + ZWJ + consonant.",
       "terms": {

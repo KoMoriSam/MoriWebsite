@@ -145,10 +145,10 @@
       "paliSpelling": "巴利语书写",
       "conversionDirection": "转换方向",
       "encodingAlternative": "或",
-      "plainForm": "普通写法",
+      "expandedForm": "展开形式",
       "conjunctGlyph": "合写字形",
       "touchingGlyph": "相接字形",
-      "conjunctComparisonNote": "普通辅音组合与对应字形对照。",
+      "conjunctComparisonNote": "展开形式与对应合写字形对照。",
       "compactFormsOptionNote": "需启用对应选项，默认关闭",
       "touchingSequenceDescription": "相接写法使用“辅音＋ZWJ＋消音符＋辅音”，传统合写使用“辅音＋消音符＋ZWJ＋辅音”。",
       "terms": {
