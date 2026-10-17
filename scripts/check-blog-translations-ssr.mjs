@@ -69,7 +69,7 @@ try {
     const router = createRouter({history:createMemoryHistory(), routes});
     await router.push('/blog/sample/zh-CN');
     const names = {
-      'zh-CN': {'zh-CN':'简体中文', en:'英语', si:'僧伽罗语'},
+      'zh-CN': {'zh-CN':'中文（简体）', en:'英语', si:'僧伽罗语'},
       en: {'zh-CN':'Chinese (Simplified)', en:'English', si:'Sinhala'},
       si: {'zh-CN':'චීන භාෂාව (සරල)', en:'ඉංග්‍රීසි භාෂාව', si:'සිංහල භාෂාව'},
     };
