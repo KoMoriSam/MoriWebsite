@@ -108,7 +108,7 @@
       "paliHalFormsDescription": "For Pali written in Sinhala script, changes ඒ, ඕ and their vowel signs to the written forms එ, ඔ while retaining consonant viramas. Off by default; not suitable for ordinary Sinhala text.",
       "commonConjuncts": "Common conjuncts",
       "rareConjuncts": "Rare conjuncts",
-      "touchingConjuncts": "Other touching forms",
+      "touchingConjuncts": "Touching forms",
       "conjunctAvailability": "ඤ්‍ජ, ණ්‍ඩ, ම්‍බ and ඞ්ග share legacy codes with prenasalized consonants, so information about their original conjunct forms is lost when converting back to Unicode.",
       "classificationReference": "Classification and spelling rules:",
       "specialGlyphs": "Prenasalized consonants and dedicated glyphs",
@@ -149,7 +149,7 @@
       "conjunctGlyph": "Conjunct glyph",
       "touchingGlyph": "Touching glyph",
       "conjunctComparisonNote": "Plain consonant combinations and their corresponding glyphs.",
-      "compactFormsOptionNote": "Requires the corresponding option; off by default.",
+      "compactFormsOptionNote": "Requires the corresponding option; off by default",
       "touchingSequenceDescription": "Touching forms use consonant + ZWJ + virama + consonant; ligated conjuncts use consonant + virama + ZWJ + consonant.",
       "terms": {
         "reducedConsonantForms": "ව්‍යඤ්ජන නියෝජක සංකේත",

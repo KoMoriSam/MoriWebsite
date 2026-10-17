@@ -1,27 +1,28 @@
 <template>
   <div class="min-w-0">
     <table class="table w-full table-fixed">
-      <caption class="mb-2 text-left text-sm font-medium text-base-content">
+      <caption class="mb-1 text-left text-sm font-medium text-base-content">
         <ExampleTitle :title-key="titleKey" :term-key="termKey" />
         <span
           v-if="noteKey"
-          class="mt-1 block text-xs font-normal leading-6 text-base-content/60"
+          class="mt-1 block text-xs font-normal leading-5 text-base-content/60"
           >{{ translate(noteKey) }}</span
         >
       </caption>
       <colgroup>
-        <col class="w-[46%]" />
-        <col class="w-[8%]" />
-        <col class="w-[46%]" />
+        <col :class="compareForms ? 'w-[30%]' : 'w-[46%]'" />
+        <col :class="compareForms ? 'w-[6%]' : 'w-[8%]'" />
+        <col :class="compareForms ? 'w-[28%]' : 'w-[46%]'" />
+        <col v-if="compareForms" class="w-[36%]" />
       </colgroup>
       <thead class="text-xs text-base-content/55">
         <tr class="border-base-300">
-          <th scope="col" class="px-2 py-2 text-left font-medium">
+          <th scope="col" class="px-2 py-1 text-left font-medium">
             <div class="flex flex-wrap items-center justify-between gap-1">
               <span class="min-w-0">FM Abhaya</span>
               <button
                 type="button"
-                class="btn btn-ghost btn-xs ms-auto max-lg:tooltip max-lg:tooltip-left"
+                class="btn btn-ghost btn-xs btn-square ms-auto tooltip tooltip-left"
                 :class="{ 'btn-active': showEncodings }"
                 :aria-pressed="showEncodings"
                 aria-controls="sinhala-converter-example-grid"
@@ -54,15 +55,6 @@
                   aria-hidden="true"
                 ></i>
                 <i v-else class="ri-code-line text-sm" aria-hidden="true"></i>
-                <span class="hidden lg:block">
-                  {{
-                    translate(
-                      showEncodings
-                        ? "tools.info.showGlyphs"
-                        : "tools.info.showEncoding",
-                    )
-                  }}
-                </span>
               </button>
             </div>
           </th>
@@ -71,7 +63,11 @@
               translate("tools.info.conversionDirection")
             }}</span>
           </th>
-          <th scope="col" class="px-2 py-2 text-left font-medium">
+          <th
+            :scope="compareForms ? 'colgroup' : 'col'"
+            :colspan="compareForms ? 2 : 1"
+            class="px-2 py-1 text-left font-medium"
+          >
             Abhaya Libre
             <p
               v-if="compareForms"
@@ -85,13 +81,13 @@
           </th>
         </tr>
       </thead>
-      <tbody class="text-2xl leading-loose text-base-content">
+      <tbody class="text-2xl leading-normal text-base-content">
         <tr
           v-for="(row, index) in rows"
           :key="index"
           class="border-base-300 align-middle"
         >
-          <td class="min-w-0 px-2 py-1.5">
+          <td class="min-w-0 px-2 py-1">
             <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span
                 v-for="(legacy, legacyIndex) in visibleLegacyInputs(row)"
@@ -139,32 +135,37 @@
             →
           </td>
           <td
-            class="min-w-0 px-2 py-1.5 font-abhaya whitespace-pre-wrap wrap-anywhere"
+            class="min-w-0 px-2 py-1 font-abhaya whitespace-pre-wrap wrap-anywhere"
             :class="targetClass"
             lang="si"
           >
-            <div
-              v-if="compareForms && row.plain"
-              class="flex flex-wrap items-center gap-x-3 gap-y-1"
+            <span
+              v-if="compareForms"
+              class="whitespace-nowrap"
+              :aria-label="translate('tools.info.conjunctGlyph')"
+              >{{ row.unicode }}</span
             >
-              <span class="min-w-0">
-                <span
-                  class="whitespace-nowrap"
-                  :aria-label="translate('tools.info.conjunctGlyph')"
-                  >{{ row.unicode }}</span
-                >
-              </span>
-              <span
-                class="whitespace-nowrap text-base-content/55"
-                :aria-label="translate('tools.info.plainForm')"
-                >({{ row.plain }})</span
-              >
-            </div>
             <template v-else>{{ row.unicode }}</template>
+          </td>
+          <td
+            v-if="compareForms"
+            class="px-2 py-1 font-abhaya text-base-content/55"
+            :aria-label="translate('tools.info.plainForm')"
+            lang="si"
+          >
+            <span v-if="row.plain" class="whitespace-nowrap"
+              >({{ row.plain }})</span
+            >
           </td>
         </tr>
       </tbody>
     </table>
+    <p
+      v-if="footerNoteKey"
+      class="mt-2 border-t border-base-300 pt-2 text-xs leading-5 text-base-content/60"
+    >
+      {{ translate(footerNoteKey) }}
+    </p>
   </div>
 </template>
 
@@ -176,6 +177,7 @@ const props = defineProps({
   titleKey: { type: String, required: true },
   termKey: { type: String, default: "" },
   noteKey: { type: String, default: "" },
+  footerNoteKey: { type: String, default: "" },
   compareForms: { type: Boolean, default: false },
   rows: { type: Array, required: true },
   showEncodings: { type: Boolean, default: false },

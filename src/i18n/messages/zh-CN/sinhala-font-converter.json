@@ -108,7 +108,7 @@
       "paliHalFormsDescription": "用于以僧伽罗文书写的巴利语，将 ඒ、ඕ 及其元音附标统一为 එ、ඔ 的书写形式，保留辅音消音符。默认关闭，不适用于普通僧伽罗语文本。",
       "commonConjuncts": "常见合写",
       "rareConjuncts": "罕见合写",
-      "touchingConjuncts": "其他相接写法",
+      "touchingConjuncts": "相接写法",
       "conjunctAvailability": "ඤ්‍ජ、ණ්‍ඩ、ම්‍බ、ඞ්ග 与鼻音前置辅音共用旧编码，转回 Unicode 时会丢失原有合写形式的信息。",
       "classificationReference": "分类与书写规则参考：",
       "specialGlyphs": "鼻音前置辅音与专用字形",
@@ -149,7 +149,7 @@
       "conjunctGlyph": "合写字形",
       "touchingGlyph": "相接字形",
       "conjunctComparisonNote": "普通辅音组合与对应字形对照。",
-      "compactFormsOptionNote": "需启用对应选项，默认关闭。",
+      "compactFormsOptionNote": "需启用对应选项，默认关闭",
       "touchingSequenceDescription": "相接写法使用“辅音＋ZWJ＋消音符＋辅音”，传统合写使用“辅音＋消音符＋ZWJ＋辅音”。",
       "terms": {
         "reducedConsonantForms": "ව්‍යඤ්ජන නියෝජක සංකේත",

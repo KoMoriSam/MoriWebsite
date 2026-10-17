@@ -2,34 +2,38 @@
   <section id="sinhala-converter-examples" class="not-prose min-w-0">
     <div
       id="sinhala-converter-example-grid"
-      class="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-5"
+      class="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch"
     >
       <article
         v-for="card in cards"
         :key="card.id"
-        class="card card-border min-w-0 bg-base-100"
-        :class="{ 'md:col-span-2': card.wide }"
+        class="card card-border min-w-0 w-full bg-base-100 sm:w-auto sm:flex-[1_1_18rem]"
+        :class="{ 'sm:basis-full': card.wide }"
         :aria-labelledby="`sinhala-example-${card.id}`"
       >
-        <div class="card-body min-w-0 gap-4 p-4 sm:p-5">
+        <div class="card-body @container min-w-0 gap-3 p-3 sm:p-4">
           <header>
             <h3
               :id="`sinhala-example-${card.id}`"
-              class="card-title font-serif text-lg"
+              class="card-title font-serif text-base"
             >
               <ExampleTitle
                 :title-key="card.titleKey"
                 :term-key="card.termKey"
               />
             </h3>
-            <p class="mt-2 text-sm leading-7 text-pretty text-base-content/70">
+            <p class="mt-1 text-sm leading-6 text-pretty text-base-content/70">
               {{ translate(card.descriptionKey) }}
             </p>
           </header>
 
           <div
-            class="grid min-w-0 grid-cols-1 gap-5"
-            :class="{ 'md:grid-cols-2': card.id === 'conjuncts' }"
+            class="grid min-w-0 grid-cols-1 gap-3"
+            :class="
+              card.id === 'conjuncts'
+                ? '@xl:grid-cols-2 @4xl:grid-cols-3'
+                : 'sm:grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))]'
+            "
           >
             <ExampleGroup
               v-for="group in card.groups"
@@ -37,120 +41,117 @@
               :title-key="group.titleKey"
               :term-key="group.termKey"
               :note-key="group.noteKey"
+              :footer-note-key="group.footerNoteKey"
               :compare-forms="group.compareForms"
               :rows="group.rows"
               :show-encodings="showExampleEncodings"
               :target-class="group.targetClass"
               @toggle-encoding="toggleExampleEncodings"
             />
-          </div>
-
-          <p
-            v-if="card.id === 'vowels'"
-            class="border-t border-base-300 pt-3 text-xs leading-6 text-base-content/60"
-          >
-            {{ translate("tools.notes.rakarVowelFormsShareLegacyCodes") }}
-          </p>
-
-          <template v-if="card.id === 'conjuncts'">
-            <section class="min-w-0 border-t border-base-300 pt-4">
-              <h4 class="text-sm font-medium">
-                <ExampleTitle
-                  title-key="tools.info.touchingConjuncts"
-                  term-key="tools.info.terms.touchingLetters"
-                />
-              </h4>
-              <p class="mt-2 text-xs leading-6 text-base-content/60">
-                {{ translate("tools.info.touchingSequenceDescription") }}
-              </p>
-              <p class="mt-2 text-xs text-base-content/55">
-                {{ translate("tools.info.touchingGlyph") }}（{{
-                  translate("tools.info.plainForm")
-                }}）
-              </p>
-              <div
-                class="mt-2 flex flex-wrap gap-x-8 gap-y-2 font-abhaya text-2xl leading-loose"
-                lang="si"
-              >
-                <span
-                  v-for="pair in touchingExamples"
-                  :key="pair.plain"
-                  class="inline-flex flex-wrap items-center gap-x-3"
-                >
-                  <span class="whitespace-nowrap">{{ pair.touching }}</span>
-                  <span class="whitespace-nowrap text-base-content/55"
-                    >({{ pair.plain }})</span
-                  >
-                </span>
-              </div>
-              <p class="mt-2 text-xs leading-6 text-base-content/60">
-                {{
-                  translate(
-                    "tools.notes.touchingLettersHaveNoDedicatedLegacyCodesConversionExpandsThem",
-                  )
-                }}
-              </p>
-            </section>
-
-            <section class="min-w-0 border-t border-base-300 pt-4">
-              <h4 class="text-sm font-medium">
-                <ExampleTitle
-                  title-key="tools.info.paliVowelSpelling"
-                  term-key="tools.info.terms.paliVowelSpelling"
-                />
-              </h4>
-              <p
-                class="mt-2 text-sm leading-7 text-pretty text-base-content/70"
-              >
-                {{ translate("tools.info.paliHalFormsDescription") }}
-              </p>
-              <p class="mt-3 text-xs text-base-content/55">
-                {{ translate("tools.info.unicodeSpelling") }} →
-                {{ translate("tools.info.paliSpelling") }}
-              </p>
-              <div
-                class="mt-2 grid min-w-0 grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4"
-              >
+            <div
+              v-if="card.id === 'conjuncts'"
+              class="grid min-w-0 grid-cols-1 content-start gap-3 @xl:col-span-2 @xl:grid-cols-2 @4xl:col-span-1 @4xl:grid-cols-1"
+            >
+              <section class="min-w-0">
+                <h4 class="text-sm font-medium">
+                  <ExampleTitle
+                    title-key="tools.info.touchingConjuncts"
+                    term-key="tools.info.terms.touchingLetters"
+                  />
+                </h4>
+                <p class="mt-1 text-xs leading-5 text-base-content/60">
+                  {{ translate("tools.info.touchingSequenceDescription") }}
+                </p>
+                <p class="mt-2 text-xs text-base-content/55">
+                  {{ translate("tools.info.touchingGlyph") }}（{{
+                    translate("tools.info.plainForm")
+                  }}）
+                </p>
                 <div
-                  v-for="pair in paliVowelExamples"
-                  :key="pair.from"
-                  class="flex min-w-0 flex-wrap items-center gap-2 font-abhaya text-xl leading-loose"
+                  class="mt-1 flex flex-wrap gap-x-5 gap-y-1 font-abhaya text-2xl leading-normal"
                   lang="si"
                 >
-                  <span>{{ pair.from }}</span>
-                  <span class="text-sm text-base-content/40" aria-hidden="true"
-                    >→</span
+                  <span
+                    v-for="pair in touchingExamples"
+                    :key="pair.plain"
+                    class="inline-flex flex-wrap items-center gap-x-3"
                   >
-                  <span>{{ pair.to }}</span>
+                    <span class="whitespace-nowrap">{{ pair.touching }}</span>
+                    <span class="whitespace-nowrap text-base-content/55"
+                      >({{ pair.plain }})</span
+                    >
+                  </span>
                 </div>
-              </div>
-            </section>
+                <p class="mt-1 text-xs leading-5 text-base-content/60">
+                  {{
+                    translate(
+                      "tools.notes.touchingLettersHaveNoDedicatedLegacyCodesConversionExpandsThem",
+                    )
+                  }}
+                </p>
+              </section>
 
-            <details class="collapse collapse-arrow">
-              <summary
-                class="collapse-title font-semibold after:start-0 after:inset-e-auto pe-0 ps-5"
-              >
-                {{ translate("tools.info.conjunctRules") }}
-              </summary>
-              <div
-                class="space-y-3 text-sm leading-7 text-pretty text-base-content/70"
-              >
-                <p>{{ translate("tools.info.conjunctOptionsDescription") }}</p>
-                <p>{{ translate("tools.info.conjunctAvailability") }}</p>
-              </div>
-            </details>
+              <section class="min-w-0">
+                <h4 class="text-sm font-medium">
+                  <ExampleTitle
+                    title-key="tools.info.paliVowelSpelling"
+                    term-key="tools.info.terms.paliVowelSpelling"
+                  />
+                </h4>
+                <p
+                  class="mt-1 text-sm leading-6 text-pretty text-base-content/70"
+                >
+                  {{ translate("tools.info.paliHalFormsDescription") }}
+                </p>
+                <p class="mt-2 text-xs text-base-content/55">
+                  {{ translate("tools.info.unicodeSpelling") }} →
+                  {{ translate("tools.info.paliSpelling") }}
+                </p>
+                <div class="mt-1 flex min-w-0 flex-wrap gap-x-5 gap-y-1">
+                  <div
+                    v-for="pair in paliVowelExamples"
+                    :key="pair.from"
+                    class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap font-abhaya text-xl leading-normal"
+                    lang="si"
+                  >
+                    <span>{{ pair.from }}</span>
+                    <span
+                      class="text-sm text-base-content/40"
+                      aria-hidden="true"
+                      >→</span
+                    >
+                    <span>{{ pair.to }}</span>
+                  </div>
+                </div>
+              </section>
+              <details class="collapse collapse-arrow">
+                <summary
+                  class="collapse-title min-h-0 py-2 text-sm font-semibold after:start-0 after:inset-e-auto pe-0 ps-5"
+                >
+                  {{ translate("tools.info.conjunctRules") }}
+                </summary>
+                <div
+                  class="space-y-2 text-sm leading-6 text-pretty text-base-content/70"
+                >
+                  <p>
+                    {{ translate("tools.info.conjunctOptionsDescription") }}
+                  </p>
+                  <p>{{ translate("tools.info.conjunctAvailability") }}</p>
+                </div>
+              </details>
 
-            <p class="text-xs leading-6 text-base-content/60">
-              {{ translate("tools.info.classificationReference") }}
-              <a
-                href="https://pitaka.lk/tools/unicode/pali_bandi.htm"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link link-hover"
-                >Pali bandi Akuru Generator</a
-              >
-            </p>
-          </template>
+              <p class="text-xs leading-5 text-base-content/60">
+                {{ translate("tools.info.classificationReference") }}
+                <a
+                  href="https://pitaka.lk/tools/unicode/pali_bandi.htm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="link link-hover"
+                  >Pali bandi Akuru Generator</a
+                >
+              </p>
+            </div>
+          </div>
         </div>
       </article>
     </div>
@@ -221,8 +222,11 @@ const cards = [
     descriptionKey:
       "tools.info.reorderLegacyVowelSignsIntoUnicodeCharacterOrder",
     groups: [
-      groupFor("commonVowels", ["කෙ", "කෝ", "කූ"]),
-      groupFor("variantsAndCombinations", ["ළූ", "ත්‍රු", "ද්‍රූ"]),
+      groupFor("commonVowels", ["කා", "කැ", "කෙ", "කෝ", "කූ"]),
+      {
+        ...groupFor("variantsAndCombinations", ["ළූ", "දි", "ද්‍රු", "බ්‍රූ"]),
+        footerNoteKey: "tools.notes.rakarVowelFormsShareLegacyCodes",
+      },
     ],
   },
   {
@@ -231,17 +235,17 @@ const cards = [
     descriptionKey: "tools.info.dedicatedGlyphsDescription",
     groups: [
       {
-        ...groupFor("prenasalizedConsonants", ["ඟ", "ඦ", "ඬ", "ඳ"]),
+        ...groupFor("prenasalizedConsonants", ["ඟ", "ඦ", "ඬ", "ඳ", "ඹ"]),
         termKey: "tools.info.terms.prenasalizedConsonants",
       },
       {
         ...groupFor(
           "compactFormsEnableTheOption",
-          ["දා", "දැ", "ඳා", "න්‍දා", "ද්‍ය"],
+          ["දා", "දැ", "ඳා", "ඳැ", "න්‍දා"],
           { compactDaForms: true },
         ),
         targetClass: "font-features-['ss01']",
-        noteKey: "tools.info.compactFormsOptionNote",
+        termKey: "tools.info.compactFormsOptionNote",
       },
     ],
   },
@@ -294,7 +298,6 @@ const cards = [
   },
   {
     id: "mixed",
-    wide: true,
     titleKey: "tools.info.mixedSinhalaAndNonSinhalaLegacyText",
     descriptionKey:
       "tools.info.convertOnlySinhalaSegmentsPreservingEnglishNumbersAndOtherText",
