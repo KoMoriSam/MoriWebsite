@@ -11,7 +11,7 @@
           translate("tools.info.howDoLegacyEncodingsDifferFromStandardUnicode")
         }}
         <RouterLink
-          to="/blog/2026-09-25"
+          :to="articlePath"
           target="_blank"
           class="link link-primary link-hover"
         >
@@ -239,7 +239,7 @@
       <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
         {{ translate("tools.info.whatDoesThisConverterDo") }}
         <RouterLink
-          to="/blog/2026-09-25#四、僧伽罗字体编码转换器可以做什么？"
+          :to="`${articlePath}#四、僧伽罗字体编码转换器可以做什么？`"
           target="_blank"
           class="link link-primary link-hover"
         >
@@ -345,7 +345,13 @@
 
 <script setup>
 import { useLocale } from "@/i18n";
-const { t: translate } = useLocale();
+import { computed } from "vue";
+import { generatedArticleList } from "@/router/ssg-data";
+import { resolveArticleVersion } from "@/utils/blog/article-versions";
+const { t: translate, locale } = useLocale();
+const articlePath = computed(() => resolveArticleVersion(
+  generatedArticleList.find((article) => article.id === "2026-09-25") || { id: "2026-09-25" }, locale.value,
+).routePath);
 
 import ConversionExamples from "./ConversionExamples.vue";
 

@@ -84,7 +84,8 @@ const getArticleSearchFields = (article) => {
     normalizedTags: tags.map(normalizeArticleText),
     summary: normalizeArticleText(article?.summary),
     content: normalizeArticleText(article?.content),
-    metadata: normalizeArticleText(article?.metadataText),
+    metadata: normalizeArticleText([article?.metadataText,
+      ...(Array.isArray(article?.aliases) ? article.aliases : [article?.aliases])].filter(Boolean).join(" ")),
   };
 };
 

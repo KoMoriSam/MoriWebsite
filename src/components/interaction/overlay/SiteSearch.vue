@@ -468,7 +468,7 @@
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
-const { t: translate, text: localizeText, message: localeMessage, date: formatLocalizedDate, number: formatNumber } = useLocale();
+const { t: translate, text: localizeText, message: localeMessage, date: formatLocalizedDate, number: formatNumber, locale: uiLocale } = useLocale();
 
 const metadataValue = (meta) => {
   if (meta.rawValue != null && /^(date|created|updated|modified|modifiedDate|uploadDate)$/.test(meta.key)) {
@@ -897,7 +897,8 @@ const loadPagefindEngine = async (novel = false) => {
     /* @vite-ignore */ `${baseUrl}${novel ? "pagefind-novel" : "pagefind"}/pagefind.js?isolation=2`
   );
 
-  const engine = module.createInstance({ basePath: `${baseUrl}${novel ? 'pagefind-novel' : 'pagefind'}/`, excerptLength: 42 });
+  const engine = module.createInstance({ basePath: `${baseUrl}${novel ? 'pagefind-novel' : 'pagefind'}/`, excerptLength: 42,
+    language: novel || uiLocale.value === 'zh-CN' ? 'zh' : uiLocale.value });
   try { await engine.init(); return engine; }
   catch (error) { await engine.destroy(); throw error; }
 };
@@ -972,16 +973,22 @@ const searchPagefindIndex = async () => {
   ]);
   const mappedResults = await Promise.all(responses.flat().map(mapPagefindResult));
   // 某一个 bundle 不可用时，仅该内容类型使用本地回退。
-  const local = searchIndex().filter(entry => entry.type === 'novel' ? searchNovel && !novelPagefindEngine : searchPublic && !pagefindEngine);
+  const local = searchIndex().filter(entry => entry.type === 'novel' ? searchNovel && !novelPagefindEngine :
+    searchPublic && (!pagefindEngine || (uiLocale.value !== 'zh-CN' && (entry.type !== 'blog' || entry.lang !== uiLocale.value))));
   mappedResults.push(...local);
   const seenReaderPages = new Set();
+  const seenUrls = new Set();
 
   return mappedResults.filter((result) => {
     if (result.type === "novel" && !canReadNovel()) return false;
-    if (!["blog", "novel"].includes(result.type)) return true;
+    if (!["blog", "novel"].includes(result.type)) {
+      if (seenUrls.has(result.url)) return false;
+      seenUrls.add(result.url);
+      return true;
+    }
 
     const resolved = router.resolve(result.url || "/");
-    const readerKey = `${result.type}:${resolved.path}`;
+    const readerKey = result.type === 'blog' ? `blog:${resolved.path.split('/')[2]}` : `${result.type}:${resolved.path}`;
     if (seenReaderPages.has(readerKey)) return false;
 
     seenReaderPages.add(readerKey);
@@ -994,7 +1001,7 @@ const loadSearchEngine = async () => {
   const revision = auth.state.revision;
   const includeNovel = auth.state.authenticated;
   const [entriesResult, pagefindResult, novelEntriesResult, novelPagefindResult] = await Promise.allSettled([
-    fetchGlobalSearchIndex(),
+    fetchGlobalSearchIndex(uiLocale.value),
     loadPagefindEngine(),
     includeNovel ? fetchNovelSearchCatalog() : [],
     includeNovel ? loadPagefindEngine(true) : null,
@@ -1616,6 +1623,14 @@ watch(filteredFilterOptions, (options) => {
   ) {
     activeFilterIndex.value = 0;
   }
+});
+
+watch(uiLocale, () => {
+  engineType = '';
+  initializationId++;
+  searchRequestId++;
+  results.value = [];
+  if (isOpen.value) void initializeSearch(true);
 });
 
 watch(

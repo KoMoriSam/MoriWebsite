@@ -1,4 +1,4 @@
-import { inject, computed } from "vue";
+import { inject, computed, ref } from "vue";
 import { createI18n } from "vue-i18n";
 import zh from "./messages/zh-CN/common.json";
 import { messageLoaders, getRouteMessageGroups } from "./message-groups.js";
@@ -43,6 +43,7 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     messages: { [DEFAULT_LOCALE]: structuredClone(zh) },
   });
   const { t, locale } = i18n.global;
+  const localeRestored = ref(false);
   const loaded = new Set([`${DEFAULT_LOCALE}/common`]);
   const sourceKeys = new Map();
   const sourceMessages = new Map([["common", zh]]);
@@ -170,6 +171,7 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     t,
     text,
     locale,
+    localeRestored,
     number,
     date,
     switchLocale,
@@ -196,7 +198,11 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
           ? navigator.languages
           : [navigator.language],
       );
-      await switchLocale(saved || detected, { save: false });
+      try {
+        await switchLocale(saved || detected, { save: false });
+      } finally {
+        localeRestored.value = true;
+      }
     },
     install(app) {
       app.use(i18n);

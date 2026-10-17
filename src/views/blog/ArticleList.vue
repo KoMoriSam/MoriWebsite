@@ -1338,6 +1338,6 @@ const getArticleRoute = (article) => {
   if (generatedPath) return generatedPath;
 
   const articleId = String(article?.id || "").trim();
-  return articleId ? `/blog/${encodeURIComponent(articleId)}` : "/blog";
+  return articleId ? `/blog/${encodeURIComponent(articleId)}/${article.lang || article.sourceLocale || 'zh-CN'}` : "/blog";
 };
 </script>

@@ -35,6 +35,15 @@
       "tag": "ටැගය {p0}"
     },
     "articleReader": {
+      "articleLanguage": "ලිපියේ භාෂාව",
+      "languageNames": {
+        "zh-CN": "චීන භාෂාව (සරල)",
+        "en": "ඉංග්‍රීසි භාෂාව",
+        "si": "සිංහල භාෂාව"
+      },
+      "translationUnavailable": "මෙම ලිපිය {requestedLanguage} භාෂාවෙන් නොමැත. ඒ වෙනුවට {currentLanguage} අනුවාදය පෙන්වයි.",
+      "machineTranslationNotice": "මෙම ලිපිය යන්ත්‍රයකින් පරිවර්තනය කර ඇති බැවින් දෝෂ තිබිය හැක. සැකයක් ඇත්නම් {original} බලන්න.",
+      "originalArticle": "මුල් ලිපිය",
       "backToArticles": "ලිපි ලැයිස්තුවට ආපසු",
       "about": "ආසන්න වශයෙන්",
       "minRead": "මිනිත්තු කියවීමක්",

@@ -1,7 +1,7 @@
 export function createArticleMetadata(entries = []) {
   return entries.map((entry) => {
     const { content, body, markdown, ...article } = entry.article || {};
-    return { id: entry.id, path: entry.path, article };
+    return { id: entry.id, path: entry.path, legacy: entry.legacy === true, article };
   });
 }
 
@@ -16,7 +16,9 @@ export function restorePageData(data, route) {
     if (route.meta.article.id == null) return null;
     const id = String(route.meta.article.id);
     if (String(data.article?.id) !== id || typeof data.article?.content !== "string") return null;
-    payload = { article: { id, content: data.article.content } };
+    const lang = route.meta.article.lang || route.meta.article.sourceLocale || "zh-CN";
+    if ((data.article.lang || "zh-CN") !== lang) return null;
+    payload = { article: { id, lang, content: data.article.content } };
   } else if (route.name === "changelog" && Array.isArray(data.changelog?.items)) {
     payload = { changelog: data.changelog };
   } else if (["novel", "novel-reader"].includes(route.name) && data.novelChapters && typeof data.novelChapters === "object") {
@@ -32,7 +34,7 @@ export function createPageData(snapshot, route) {
   if (route.meta?.article) {
     const entry = snapshot.articles?.find((entry) => pagePath(entry.path) === pagePath(route.path) && String(entry.article?.id) === String(route.meta.article.id));
     if (!entry || typeof entry.content !== "string") throw new Error(`Missing SSG article content: ${route.path}`);
-    payload = { article: { id: entry.article.id, content: entry.content } };
+    payload = { article: { id: entry.article.id, lang: entry.article.lang || "zh-CN", content: entry.content } };
   } else if (route.name === "changelog") {
     payload = { changelog: snapshot.changelog };
   } else if (["novel", "novel-reader"].includes(route.name)) {

@@ -8,11 +8,12 @@
     "node": "^24.15.0 || >=26.0.0"
   },
   "scripts": {
-    "predev": "node scripts/generate-static-assets.mjs && node scripts/generate-images.mjs && node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "predev": "node scripts/generate-mock-articles.mjs && node scripts/generate-static-assets.mjs && node scripts/generate-images.mjs && node scripts/generate-changelog.mjs && node scripts/generate-third-party-licenses.mjs --source",
+    "generate:mock-articles": "node scripts/generate-mock-articles.mjs",
     "dev": "vite --host 0.0.0.0",
     "dev:games-api": "wrangler dev --config wrangler.games-dev.jsonc --port 8787",
     "prebuild": "node scripts/generate-static-assets.mjs && node scripts/generate-images.mjs --production && node scripts/generate-changelog.mjs && node scripts/generate-routes.mjs && node scripts/generate-rss.mjs && node scripts/generate-third-party-licenses.mjs --source",
-    "build": "vite-ssg build && node scripts/generate-pagefind-index.mjs",
+    "build": "vite-ssg build && node scripts/generate-pagefind-index.mjs && node scripts/generate-sitemap.mjs",
     "postbuild": "node scripts/generate-third-party-licenses.mjs --dist && node scripts/prune-build-assets.mjs",
     "predeploy": "pnpm build",
     "deploy": "wrangler deploy --config wrangler.jsonc",
@@ -32,6 +33,8 @@
     "check:markdown-xss": "node scripts/check-markdown-xss.mjs",
     "check:markdown-styles": "node scripts/check-markdown-styles.mjs",
     "check:rss": "node scripts/check-rss.mjs",
+    "check:blog-translations": "node scripts/check-blog-translations.mjs && node scripts/check-blog-translations-runtime.mjs && node scripts/check-blog-translations-ssr.mjs",
+    "check:blog-build": "node scripts/check-blog-build.mjs",
     "check:fogport": "node scripts/check-fogport.mjs",
     "generate:images": "node scripts/generate-images.mjs",
     "check:images": "node scripts/check-responsive-images.mjs",

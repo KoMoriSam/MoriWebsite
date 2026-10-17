@@ -2,13 +2,13 @@
   <KeepAlive>
     <ArticleList
       v-if="currentComponent === 'ArticleList'"
-      :articles="articles"
+      :articles="localizedArticles"
       :loading="loadingList"
     />
     <ArticleDetail
       v-else
       :article="currentArticle"
-      :articles="articles"
+      :articles="localizedArticles"
       :content="articleContent"
       :list-route="lastListRoute"
       :loading="loadingContent"
@@ -17,6 +17,7 @@
       @ready="handleArticleReady"
       @refresh="refreshCurrentArticle"
       @back="goToList"
+      @language="switchArticleLanguage"
     />
   </KeepAlive>
 </template>
@@ -27,10 +28,13 @@ const {
   t: translate,
   text: localizeText,
   message: localeMessage,
+  locale: uiLocale,
+  localeRestored,
 } = useLocale();
 
 import {
   defineAsyncComponent,
+  computed,
   nextTick,
   ref,
   onBeforeUnmount,
@@ -39,6 +43,9 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
+import { useArticlePageStore } from "@/stores/article-page";
+import { getArticlePath, getSourceLocale, resolveArticleVersion } from "@/utils/blog/article-versions";
+import { captureTrackedPosition, restoreTrackedPosition } from "@/composables/usePosTracker";
 import { fetchBlogSearchArticles } from "@/services/search-content";
 
 import { usePosTracker } from "@/composables/usePosTracker";
@@ -56,6 +63,7 @@ const ArticleDetail = defineAsyncComponent({
 
 const route = useRoute();
 const router = useRouter();
+const articlePage = useArticlePageStore();
 
 const { fetchArticleContent } = useArticleApi();
 const readingProgress = useReadingProgress();
@@ -66,6 +74,7 @@ let restoredArticleId = '';
 // SSR 与浏览器 hydration 使用同一份正文，不加载其他文章快照。
 const initialArticle = route.meta.article || null;
 const initialContent = route.meta.pageData?.article?.content || "";
+articlePage.setPage(route.path, initialArticle);
 const initialArticleId = String(
   route.params.articleId || initialArticle?.id || "",
 ).trim();
@@ -78,6 +87,7 @@ const initialArticles = Array.isArray(route.meta.articles)
   ? route.meta.articles
   : [];
 const articles = ref(initialArticles);
+const localizedArticles = computed(() => articles.value.map((article) => resolveArticleVersion(article, uiLocale.value)));
 const loadingList = ref(initialArticles.length === 0);
 
 const currentArticle = ref(initialArticle);
@@ -90,6 +100,21 @@ const lastListRoute = ref(route.meta.blogList ? route.fullPath : "/blog");
 const stopBlogPosTracker = ref(null);
 const trackedArticleId = ref("");
 const renderedArticleId = ref("");
+let contentRequest = 0;
+let listRequestId = 0;
+let languagePosition = null;
+let mounted = false;
+let localeSyncRequest = 0;
+
+const getRouteLocale = () => String(route.params.locale ||
+  (route.path.split("/").filter(Boolean).length === 3 ? route.meta.article?.lang : "") || "");
+
+const switchArticleLanguage = (lang, { replace = false } = {}) => {
+  const path = getArticlePath(getRouteArticleId(), lang);
+  if (route.path === path) return;
+  languagePosition = captureTrackedPosition();
+  return router[replace ? 'replace' : 'push']({ path, query: route.query, hash: route.hash });
+};
 
 const getRouteArticleId = () =>
   String(route.params.articleId || route.meta.article?.id || "").trim();
@@ -143,14 +168,18 @@ const setupBlogPosTracker = () => {
 };
 
 const loadArticles = async () => {
+  const request = ++listRequestId;
   loadingList.value = true;
 
   try {
-    articles.value = await fetchBlogSearchArticles();
+    const result = await fetchBlogSearchArticles(uiLocale.value);
+    // Preference restoration can start another locale request before the first
+    // index arrives. The reader still needs that first source catalog to load.
+    if (request === listRequestId || !articles.value.length) articles.value = result;
   } catch (err) {
     console.error("加载文章列表失败:", err);
   } finally {
-    loadingList.value = false;
+    if (request === listRequestId) loadingList.value = false;
   }
 };
 
@@ -192,36 +221,53 @@ const handleArticleReady = async (articleId) => {
   if (getRouteArticleId() !== articleId || loadingContent.value) return;
   renderedArticleId.value = articleId;
   setupBlogPosTracker();
+  if (languagePosition && typeof window !== "undefined") {
+    const position = languagePosition;
+    languagePosition = null;
+    await nextTick();
+    restoreTrackedPosition({ anchorToken: position.anchorToken, snapshot: { anchorToken: position.anchorToken, viewportTop: position.viewportTop } });
+  }
 };
 
-const loadArticleContent = async (id, { keepCurrentContent = false } = {}) => {
-  const article =
+const loadArticleContent = async (id, { keepCurrentContent = false, force = false } = {}) => {
+  const request = ++contentRequest;
+  const source =
     articles.value.find((item) => String(item.id) === String(id)) ||
     (String(currentArticle.value?.id) === String(id)
       ? currentArticle.value
       : null);
 
+  const lang = getRouteLocale() || getSourceLocale(source);
+  const article = resolveArticleVersion(source, lang, { explicit: true });
   if (!article) {
+    articleContent.value = "";
+    currentArticle.value = null;
+    articlePage.setPage(route.path, null, true);
     errorContent.value = localeMessage("pages.blog.articleNotFound");
     loadingContent.value = false;
     return;
   }
 
   currentArticle.value = article;
+  articlePage.setPage(route.path, article);
   errorContent.value = "";
 
   if (!keepCurrentContent) {
+    articleContent.value = "";
     renderedArticleId.value = "";
     loadingContent.value = true;
   }
 
   try {
-    articleContent.value = await fetchArticleContent(article.path);
+    const content = await fetchArticleContent(article.path, { force, contentHash: article.contentHash });
+    if (request !== contentRequest) return;
+    articleContent.value = content;
   } catch (err) {
+    if (request !== contentRequest) return;
     console.error("加载文章内容失败:", err);
     errorContent.value = localeMessage("pages.blog.failedToLoadArticleContent");
   } finally {
-    loadingContent.value = false;
+    if (request === contentRequest) loadingContent.value = false;
   }
 };
 
@@ -230,7 +276,7 @@ const refreshCurrentArticle = async () => {
 
   if (!id) return;
 
-  await loadArticleContent(String(id));
+  await loadArticleContent(String(id), { force: true });
 };
 
 watch(
@@ -244,14 +290,17 @@ watch(
 );
 
 watch(
-  [() => route.params.articleId, () => route.meta.article?.id],
+  [() => route.path, () => route.params.articleId],
   async () => {
+    if (!mounted) return;
     const articleId = getRouteArticleId();
     restoredArticleId = '';
     renderedArticleId.value = "";
     disposeBlogPosTracker();
 
     if (!articleId) {
+      ++contentRequest;
+      articlePage.setPage(route.path, null);
       pendingNavigationArticleId.value = "";
       currentComponent.value = "ArticleList";
       currentArticle.value = null;
@@ -262,9 +311,10 @@ watch(
     }
 
     currentComponent.value = "ArticleDetail";
-    pendingNavigationArticleId.value = route.hash ? "" : articleId;
+    pendingNavigationArticleId.value = route.hash || currentArticle.value?.id === articleId ? "" : articleId;
     loadingContent.value = true;
 
+    if (await redirectLegacyArticle()) return;
     if (articles.value.length > 0) {
       await loadArticleContent(articleId);
     }
@@ -283,7 +333,39 @@ watch(
   { immediate: true },
 );
 
+const redirectLegacyArticle = async () => {
+  if (!localeRestored.value || getRouteLocale()) return false;
+  const articleId = getRouteArticleId();
+  const source = articles.value.find((article) => String(article.id) === articleId);
+  if (!source) return false;
+  const version = resolveArticleVersion(source, uiLocale.value);
+  await router.replace({ path: version.routePath, query: route.query, hash: route.hash });
+  return true;
+};
+
+watch([uiLocale, localeRestored], ([lang, ready], [previousLang, previouslyReady]) => {
+  if (!mounted || lang === previousLang) return;
+  const request = ++localeSyncRequest;
+  const listRequest = loadArticles();
+  // Restoring a saved UI preference must preserve an explicitly opened URL.
+  // Subsequent user language changes synchronize the article as requested.
+  if (!ready || !previouslyReady) return;
+  const articleId = getRouteArticleId();
+  if (!articleId) return;
+  const synchronize = () => {
+    if (!mounted || request !== localeSyncRequest || getRouteArticleId() !== articleId) return;
+    const source = articles.value.find((article) => String(article.id) === articleId);
+    if (!source) return;
+    const version = resolveArticleVersion(source, lang);
+    void switchArticleLanguage(version.lang, { replace: true });
+  };
+  if (articles.value.some((article) => String(article.id) === articleId)) synchronize();
+  else void listRequest.then(synchronize);
+});
+watch(localeRestored, () => { if (mounted) void redirectLegacyArticle(); });
+
 onMounted(async () => {
+  mounted = true;
   const listRequest = loadArticles();
 
   // 静态页面已有文章元数据时，正文刷新不必等待整个索引。
@@ -291,6 +373,7 @@ onMounted(async () => {
 
   const articleId = getRouteArticleId();
   if (!articleId) return;
+  if (await redirectLegacyArticle()) return;
 
   currentComponent.value = "ArticleDetail";
 
@@ -301,6 +384,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  mounted = false;
+  ++contentRequest;
   disposeBlogPosTracker();
 });
 </script>

@@ -20,7 +20,9 @@ export const generatedArticles = Array.isArray(articleMetadata)
   ? articleMetadata
   : [];
 
-export const generatedArticleList = generatedArticles.map((entry) => ({
+export const generatedArticleList = generatedArticles.filter((entry) =>
+  !entry.legacy && (!entry.article.lang || entry.article.lang === (entry.article.sourceLocale || "zh-CN")),
+).map((entry) => ({
   ...entry.article,
   routePath: entry.path,
   frontmatter: entry.article,
@@ -42,6 +44,7 @@ export const articleRoutes = generatedArticles.map((entry) => ({
     localeGroups: ["blog", "reader"],
     hideToTop: true,
     article: entry.article,
+    legacyArticle: entry.legacy === true,
     // 文章列表用于计算上下篇导航，SSR 预渲染阶段即可生成完整翻页按钮
     articles: generatedArticleList,
   },

@@ -8,6 +8,7 @@ import {
   normalizeArticleTag,
 } from "@/composables/blog/useArticleFilter";
 import { useArticleApi } from "@/services/api-articles";
+import { resolveArticleVersion } from "@/utils/blog/article-versions";
 import { useChapterApi } from "@/services/api-chapters";
 import { fetchChangelogWithFallback } from "@/services/api-changelog";
 import { typeText } from "@/utils/type-changelog";
@@ -88,6 +89,7 @@ const INTERNAL_FRONTMATTER_KEYS = new Set([
   "uuid",
   "volumeOrder",
   "volumeTitle",
+  "translations", "sourceLocale", "lang", "translationOf", "machineTranslated", "contentHash", "routePath", "metadata", "metadataText",
 ]);
 
 const DATE_FRONTMATTER_KEYS = new Set([
@@ -98,9 +100,9 @@ const DATE_FRONTMATTER_KEYS = new Set([
   "uploadDate",
 ]);
 
-let blogSearchPromise;
+const blogSearchPromises = new Map();
 let novelSearchPromise;
-let globalSearchPromise;
+const globalSearchPromises = new Map();
 watch(() => [githubSession.authenticated, githubSession.revision], () => { novelSearchPromise = null; }, { flush: 'sync' });
 
 const uniqueStrings = (values) => {
@@ -311,7 +313,8 @@ const withType = (entry, type) => {
   };
 };
 
-export const fetchBlogSearchArticles = async () => {
+export const fetchBlogSearchArticles = async (locale = "zh-CN") => {
+  let blogSearchPromise = blogSearchPromises.get(locale);
   if (blogSearchPromise) return blogSearchPromise;
 
   blogSearchPromise = (async () => {
@@ -322,16 +325,24 @@ export const fetchBlogSearchArticles = async () => {
       articles.map(async (article) => {
         try {
           const document = article?.path
-            ? await fetchArticleDocument(article.path)
+            ? await fetchArticleDocument(article.path, { contentHash: article.contentHash })
             : { attributes: {}, content: "" };
           const frontmatter = {
             ...article,
             ...document.attributes,
           };
           const { metadata, metadataText } = createBlogMetadata(frontmatter);
+          let translations = article.translations;
+          const selectedLocale = resolveArticleVersion(article, locale).lang;
+          if (translations?.[selectedLocale]) {
+            const translation = translations[selectedLocale];
+            const localized = await fetchArticleDocument(translation.path, { contentHash: translation.contentHash });
+            translations = { ...translations, [selectedLocale]: { ...translation, content: localized.content } };
+          }
 
           return {
             ...article,
+            translations,
             content: document.content,
             frontmatter,
             metadata,
@@ -352,17 +363,18 @@ export const fetchBlogSearchArticles = async () => {
       }),
     );
   })();
+  blogSearchPromises.set(locale, blogSearchPromise);
 
   try {
     return await blogSearchPromise;
   } catch (error) {
-    blogSearchPromise = null;
+    blogSearchPromises.delete(locale);
     throw error;
   }
 };
 
-const fetchBlogEntries = async () => {
-  const articles = await fetchBlogSearchArticles();
+const fetchBlogEntries = async (locale) => {
+  const articles = (await fetchBlogSearchArticles(locale)).map((article) => resolveArticleVersion(article, locale));
 
   return articles.map((article, catalogOrder) => {
     const id = String(article?.id || "").trim();
@@ -380,17 +392,19 @@ const fetchBlogEntries = async () => {
         });
       })
       .filter(Boolean);
-    const blogMetadata = createBlogMetadata(article?.frontmatter);
+    const blogMetadata = createBlogMetadata(article);
     const metadata = Array.isArray(article?.metadata)
       ? article.metadata
       : blogMetadata.metadata;
 
-    const url = id ? `/blog/${encodeURIComponent(id)}` : "/blog";
+    const url = article.routePath || "/blog";
     const title = String(article?.title || "未命名文章");
 
     return withType(
       {
         url,
+        articleId: id,
+        lang: article.lang || article.sourceLocale || "zh-CN",
         title,
         summary: String(article?.summary || ""),
         content: String(article?.content || ""),
@@ -685,12 +699,13 @@ const fetchLicenseEntries = async () => {
   return entries;
 };
 
-export const fetchGlobalSearchIndex = async () => {
+export const fetchGlobalSearchIndex = async (locale = "zh-CN") => {
+  let globalSearchPromise = globalSearchPromises.get(locale);
   if (globalSearchPromise) return globalSearchPromise;
 
   globalSearchPromise = (async () => {
     const sources = await Promise.allSettled([
-      fetchBlogEntries(),
+      fetchBlogEntries(locale),
       fetchChangelogEntries(),
       fetchLicenseEntries(),
     ]);
@@ -704,11 +719,12 @@ export const fetchGlobalSearchIndex = async () => {
 
     return entries;
   })();
+  globalSearchPromises.set(locale, globalSearchPromise);
 
   try {
     return await globalSearchPromise;
   } catch (error) {
-    globalSearchPromise = null;
+    globalSearchPromises.delete(locale);
     throw error;
   }
 };

@@ -1,4 +1,5 @@
 import fm from "front-matter";
+import { validateArticleIndex } from "@/utils/blog/article-versions";
 import { loadImageManifest } from "@/utils/images/responsive-images";
 import {
   createArticleAssetResolver,
@@ -6,6 +7,7 @@ import {
 } from "@/utils/resolve-article-assets";
 
 const BASE_URL = import.meta.env.VITE_BLOG_RAW;
+const documents = new Map();
 
 const {
   contentBaseUrl: CONTENT_BASE_URL,
@@ -19,6 +21,12 @@ const normalizeArticleMeta = (article = {}) => {
   return {
     ...article,
     banner: normalizeBanner(article.banner),
+    translations: Object.fromEntries(Object.entries(article.translations || {}).map(
+      ([lang, translation]) => [lang, {
+        ...translation,
+        ...(translation.banner ? { banner: normalizeBanner(translation.banner) } : {}),
+      }],
+    )),
   };
 };
 
@@ -46,7 +54,7 @@ export function useArticleApi() {
 
     // 新格式：数组
     if (Array.isArray(raw)) {
-      return raw.map(normalizeArticleMeta);
+      return validateArticleIndex(raw).map(normalizeArticleMeta);
     }
 
     // 防止错误数据
@@ -63,12 +71,14 @@ export function useArticleApi() {
       }
     }
 
-    return flat.map(normalizeArticleMeta);
+    return validateArticleIndex(flat).map(normalizeArticleMeta);
   };
 
-  const fetchArticleDocument = async (path) => {
+  const downloadArticleDocument = async (path, { force = false, contentHash = "" } = {}) => {
     const images = loadImageManifest(CONTENT_BASE_URL);
-    const res = await fetch(`${CONTENT_BASE_URL}/${path}`);
+    const url = new URL(`${CONTENT_BASE_URL}/${path}`, typeof location === "undefined" ? "https://komori.cc" : location.href);
+    if (contentHash) url.searchParams.set("v", contentHash);
+    const res = await fetch(url, { cache: force ? "reload" : "default" });
 
     if (!res.ok) {
       throw new Error(`获取文章内容失败: ${res.status}`);
@@ -91,13 +101,24 @@ export function useArticleApi() {
     };
   };
 
+  const fetchArticleDocument = (path, options = {}) => {
+    const key = `${path}:${options.contentHash || ""}`;
+    if (!options.force && documents.has(key)) return documents.get(key);
+    const pending = downloadArticleDocument(path, options).catch((error) => {
+      if (documents.get(key) === pending) documents.delete(key);
+      throw error;
+    });
+    documents.set(key, pending);
+    return pending;
+  };
+
   /**
    * 获取单篇文章的 Markdown 内容（已剥离 frontmatter）
    * @param {string} path - 文章文件路径（扁平结构下即文件名，如 "2024-07-07.md"）
    * @returns {Promise<string>}
    */
-  const fetchArticleContent = async (path) => {
-    const document = await fetchArticleDocument(path);
+  const fetchArticleContent = async (path, options) => {
+    const document = await fetchArticleDocument(path, options);
     return document.content;
   };
 

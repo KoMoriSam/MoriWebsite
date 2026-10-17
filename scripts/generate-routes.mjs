@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
-import fm from "front-matter";
 import fs from "fs";
 import path from "path";
-import { createArticleAssetResolver } from "../src/utils/resolve-article-assets.js";
 import { createArticleMetadata } from "../src/utils/ssg/page-data.js";
+import { createArticleSnapshot, retryDownload } from "./lib/article-snapshot.mjs";
 
 dotenv.config({
   path: ".env.production",
@@ -22,20 +21,13 @@ if (!NOVEL_API_URL) {
 
 const BASE = API_URL.replace(/\/+$/, "");
 const NOVEL_BASE = NOVEL_API_URL.replace(/\/+$/, "");
-const { normalizeBanner } = createArticleAssetResolver(BASE);
 
 console.log("Article API:", BASE);
 
 /**
  * 获取文章索引
  */
-const indexRes = await fetch(`${BASE}/index.json`);
-
-if (!indexRes.ok) {
-  throw new Error(`获取 index.json 失败: ${indexRes.status}`);
-}
-
-const raw = await indexRes.json();
+const raw = await retryDownload(`${BASE}/index.json`, (response) => response.json());
 
 let articles = [];
 
@@ -51,39 +43,9 @@ if (Array.isArray(raw)) {
 
 console.log(`Found ${articles.length} articles`);
 
-const generatedArticles = [];
-
-for (const article of articles) {
-  if (!article.id || !article.path) {
-    continue;
-  }
-
-  console.log("Fetching:", article.path);
-
-  const mdRes = await fetch(`${BASE}/${article.path}`);
-
-  if (!mdRes.ok) {
-    console.warn("Skip:", article.path);
-    continue;
-  }
-
-  const rawContent = await mdRes.text();
-  const { attributes, body: content } = fm(rawContent);
-  const articleData = {
-    ...attributes,
-    ...article,
-  };
-
-  generatedArticles.push({
-    id: article.id,
-    path: `/blog/${article.id}`,
-    article: {
-      ...articleData,
-      banner: normalizeBanner(articleData.banner),
-    },
-    content,
-  });
-}
+const generatedArticles = await createArticleSnapshot(articles, BASE);
+const finalIndex = await retryDownload(`${BASE}/index.json`, (response) => response.json());
+if (JSON.stringify(finalIndex) !== JSON.stringify(raw)) throw new Error("Article index changed during build; retry after publishing completes");
 
 /*
 生成统一的 SSG 数据快照。

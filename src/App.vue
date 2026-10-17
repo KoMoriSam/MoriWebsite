@@ -43,6 +43,8 @@ import { useLocale } from "@/i18n";
 import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 import { useToast } from "@/composables/useToast";
 import { findRouteGame } from '@/games/catalog';
+import { getArticleLocales, getArticlePath } from '@/utils/blog/article-versions';
+import { useArticlePageStore } from '@/stores/article-page';
 
 const { t: translate, locale, text: localizeText, restoreLocale } = useLocale();
 const { GLOBAL_INFO } = useGlobalStorage();
@@ -91,8 +93,11 @@ const PAGE_DESCRIPTIONS = {
 };
 
 const routeName = computed(() => String(route.name || ""));
-const article = computed(() => route.meta.article || null);
+const articlePageStore = useArticlePageStore();
+const articlePage = computed(() => articlePageStore.page?.path === route.path ? articlePageStore.page : null);
+const article = computed(() => articlePage.value ? articlePage.value.article : route.meta.article || null);
 const isArticle = computed(() => Boolean(article.value));
+const contentLocale = computed(() => article.value?.lang || article.value?.sourceLocale || locale.value);
 const blogPageNumber = computed(() => {
   if (!route.meta.blogList) return 1;
 
@@ -111,7 +116,8 @@ const hasBlogFilters = computed(() => {
   });
 });
 const isIndexable = computed(
-  () => !["NotFound", "test"].includes(routeName.value),
+  () => !["NotFound", "test"].includes(routeName.value) && !articlePage.value?.unavailable &&
+    (!/^\/blog\/[^/]+(?:\/[^/]+)?$/.test(route.path) || route.meta.blogList || Boolean(article.value)),
 );
 
 const pageTitle = computed(() => {
@@ -143,6 +149,7 @@ const pageDescription = computed(() => {
 });
 
 const canonicalUrl = computed(() => {
+  if (article.value) return new URL(getArticlePath(article.value.id, article.value.lang || article.value.sourceLocale || 'zh-CN'), `${SITE_URL}/`).href;
   const path = routeName.value === "home" ? "/" : route.path;
   return new URL(path, `${SITE_URL}/`).href;
 });
@@ -151,6 +158,11 @@ const headLinks = computed(() => {
   if (!isIndexable.value) return [];
 
   const links = [{ rel: "canonical", href: canonicalUrl.value }];
+  if (article.value) {
+    for (const lang of getArticleLocales(article.value)) {
+      links.push({ rel: 'alternate', hreflang: lang, href: new URL(getArticlePath(article.value.id, lang), `${SITE_URL}/`).href });
+    }
+  }
 
   if (!route.meta.blogList || hasBlogFilters.value) return links;
 
@@ -197,7 +209,7 @@ const structuredData = computed(() => {
       description: pageDescription.value,
       url: canonicalUrl.value,
       mainEntityOfPage: canonicalUrl.value,
-      inLanguage: "zh-CN",
+      inLanguage: contentLocale.value,
       datePublished: article.value?.date || article.value?.created,
       dateModified: article.value?.modified || article.value?.date,
       author: person,
@@ -252,7 +264,7 @@ useHead(() => {
   return {
     title: pageTitle.value,
     htmlAttrs: {
-      lang: locale.value,
+      lang: contentLocale.value,
     },
     link: headLinks.value,
     meta: [
@@ -265,7 +277,7 @@ useHead(() => {
           ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
           : "noindex, nofollow",
       },
-      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', si: 'si_LK' }[locale.value] },
+      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', si: 'si_LK' }[contentLocale.value] },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: pageTitle.value },
       { property: "og:description", content: pageDescription.value },

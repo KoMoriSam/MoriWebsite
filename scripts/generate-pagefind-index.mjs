@@ -110,6 +110,7 @@ const createRecord = ({
   catalogOrder = 0,
   searchTitle = title,
   indexContext = true,
+  language = "zh-CN",
 }) => {
   const typeMeta = TYPE_META[type];
   const normalizedTags = uniqueStrings(tags);
@@ -126,7 +127,7 @@ const createRecord = ({
 
   return {
     url,
-    language: "zh",
+    language: language === "zh-CN" ? "zh" : language,
     content: (() => {
       const plainContent = stripMarkdown(
         [
@@ -213,7 +214,7 @@ const createMarkdownRecords = ({
   ];
 };
 
-const blogRecords = (ssgData.articles || []).flatMap((entry, catalogOrder) => {
+const blogRecords = (ssgData.articles || []).filter((entry) => !entry.legacy).flatMap((entry, catalogOrder) => {
   const article = entry.article || {};
   const date = normalizeDate(article.date);
   const metadata = [
@@ -236,6 +237,7 @@ const blogRecords = (ssgData.articles || []).flatMap((entry, catalogOrder) => {
     fallbackSummary: article.summary || "",
     aliases: Array.isArray(article.aliases) ? article.aliases : [],
     type: "blog",
+    language: article.lang || "zh-CN",
     tags: article.tags,
     metadata,
     date,

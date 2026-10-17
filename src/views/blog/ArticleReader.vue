@@ -5,6 +5,7 @@
       v-if="article && (loading || content)"
       :ref="scrollRef"
       :content="content"
+      :lang="article.lang || article.sourceLocale || 'zh-CN'"
       :is-loading="loading"
       :show-loading="false"
       :header-data="headerData"
@@ -81,186 +82,258 @@
           </div>
 
           <div
-            class="relative flex min-h-72 flex-col justify-end p-5 sm:min-h-80 sm:p-8"
+            class="relative flex min-h-72 flex-col p-5 sm:min-h-80 sm:p-8"
             :class="hasVisibleBanner ? 'text-white' : 'text-base-content'"
           >
-            <div
-              v-if="article?.tags?.length"
-              class="mb-3 flex flex-wrap items-center gap-2"
-            >
-              <nav
-                class="tooltip tooltip-right"
-                :data-tip="translate('pages.articleReader.backToArticles')"
+            <div class="mb-6 flex items-start justify-between gap-3">
+              <div
+                class="flex min-h-8 min-w-0 flex-1 flex-wrap items-center gap-2"
               >
-                <RouterLink
-                  class="btn btn-xs btn-circle lg:btn-sm"
+                <nav
+                  class="tooltip tooltip-right"
+                  :data-tip="translate('pages.articleReader.backToArticles')"
+                >
+                  <RouterLink
+                    class="btn btn-sm btn-circle shrink-0"
+                    :aria-label="
+                      translate('pages.articleReader.backToArticles')
+                    "
+                    :class="
+                      hasVisibleBanner
+                        ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
+                        : 'btn-primary btn-soft'
+                    "
+                    :to="listRoute"
+                  >
+                    <i class="ri-arrow-left-line"></i>
+                  </RouterLink>
+                </nav>
+
+                <span
+                  v-for="tag in article.tags"
+                  :key="tag"
+                  data-pagefind-body
+                  data-pagefind-filter="tag"
+                  class="badge h-auto min-h-5 max-w-full whitespace-normal break-words text-left max-lg:badge-sm"
                   :class="
                     hasVisibleBanner
                       ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
-                      : 'btn-primary btn-soft'
+                      : 'badge-primary badge-soft'
                   "
-                  :to="listRoute"
                 >
-                  <i class="ri-arrow-left-line"></i>
-                </RouterLink>
-              </nav>
-
-              <span
-                v-for="tag in article.tags"
-                :key="tag"
-                data-pagefind-body
-                data-pagefind-filter="tag"
-                class="badge max-lg:badge-sm"
-                :class="
-                  hasVisibleBanner
-                    ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
-                    : 'badge-primary badge-soft'
-                "
-              >
-                {{ tag }}
-              </span>
+                  {{ tag }}
+                </span>
+              </div>
+              <label v-if="articleLocales.length > 1" class="shrink-0">
+                <span class="sr-only">{{
+                  translate("pages.articleReader.articleLanguage")
+                }}</span>
+                <select
+                  class="select select-sm w-auto max-w-36 shadow-sm backdrop-blur-sm"
+                  :class="
+                    hasVisibleBanner
+                      ? 'border-white/20 bg-white/15 text-white'
+                      : 'bg-base-100/90 text-base-content'
+                  "
+                  :value="article.lang"
+                  :disabled="loading"
+                  @change="emit('language', $event.target.value)"
+                >
+                  <option
+                    v-for="lang in articleLocales"
+                    :key="lang"
+                    :value="lang"
+                    :lang="lang"
+                  >
+                    {{ languageNames[lang] }}
+                  </option>
+                </select>
+              </label>
             </div>
 
-            <h1
-              :id="`article-title-${articleId}`"
-              data-pagefind-body
-              data-pagefind-meta="localizeText(title)"
-              data-pagefind-weight="10"
-              class="max-w-4xl text-balance font-serif text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-5xl"
-              :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
-            >
-              {{ article?.title }}
-            </h1>
-
-            <p
-              v-if="article?.summary"
-              data-pagefind-body
-              data-pagefind-meta="summary"
-              data-pagefind-weight="2"
-              class="sr-only"
-            >
-              {{ article.summary }}
-            </p>
-
-            <span
-              v-if="articleTagsText"
-              data-pagefind-meta="tags"
-              class="sr-only"
-            >
-              {{ articleTagsText }}
-            </span>
-
-            <span
-              v-if="publicationYear"
-              data-pagefind-filter="year"
-              class="sr-only"
-            >
-              {{ publicationYear }}
-            </span>
-
-            <time
-              v-if="publicationDate"
-              :datetime="publicationDate"
-              data-pagefind-meta="date"
-              data-pagefind-sort="date"
-              class="sr-only"
-            >
-              {{ publicationDate }}
-            </time>
-
-            <p
-              v-if="aliasList.length"
-              class="mt-3 flex max-w-3xl flex-wrap text-sm leading-relaxed sm:text-base"
-            >
-              <span
-                v-for="alias in aliasList"
-                :key="alias"
-                :title="alias"
-                class="badge scrollbar-none mr-2 mb-2 inline-flex max-w-full items-center justify-start overflow-x-auto px-2 text-left font-bold whitespace-nowrap"
-                :class="
-                  hasVisibleBanner
-                    ? 'border-white/15 bg-white/10 text-white/85'
-                    : 'border-base-300 bg-base-100 text-base-content/75'
-                "
+            <div class="mt-auto">
+              <h1
+                :id="`article-title-${articleId}`"
+                data-pagefind-body
+                data-pagefind-meta="localizeText(title)"
+                data-pagefind-weight="10"
+                class="max-w-4xl text-balance font-serif text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-5xl"
+                :class="hasVisibleBanner ? 'drop-shadow-sm' : ''"
               >
-                <span class="min-w-max">{{ alias }}</span>
-              </span>
-            </p>
+                {{ article?.title }}
+              </h1>
 
-            <div
-              class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-              :class="
-                hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'
-              "
-            >
-              <time v-if="article?.date" class="inline-flex items-center gap-1">
-                <i class="ri-calendar-line"></i>
-                {{ formatLocalizedDate(article.date) }}
+              <p
+                v-if="article?.summary"
+                data-pagefind-body
+                data-pagefind-meta="summary"
+                data-pagefind-weight="2"
+                class="sr-only"
+              >
+                {{ article.summary }}
+              </p>
+
+              <span
+                v-if="articleTagsText"
+                data-pagefind-meta="tags"
+                class="sr-only"
+              >
+                {{ articleTagsText }}
+              </span>
+
+              <span
+                v-if="publicationYear"
+                data-pagefind-filter="year"
+                class="sr-only"
+              >
+                {{ publicationYear }}
+              </span>
+
+              <time
+                v-if="publicationDate"
+                :datetime="publicationDate"
+                data-pagefind-meta="date"
+                data-pagefind-sort="date"
+                class="sr-only"
+              >
+                {{ publicationDate }}
               </time>
 
-              <span
-                v-if="article?.length"
-                class="inline-flex items-center gap-1"
+              <p
+                v-if="aliasList.length"
+                class="mt-3 flex max-w-3xl flex-wrap text-sm leading-relaxed sm:text-base"
               >
-                <i class="ri-file-text-line"></i>
-                {{ translate("pages.articleReader.about") }}
-                {{ article.length }}
-                {{ translate("reader.chapterList.characters") }}
-              </span>
-
-              <span
-                v-if="article?.length"
-                class="inline-flex items-center gap-1"
-              >
-                <i class="ri-time-line"></i>
-                {{ estimateReadingTime(article.length) }}
-                {{ translate("pages.articleReader.minRead") }}
-              </span>
-
-              <span
-                v-if="analyticsAvailable && articleReadStatus !== 'error'"
-                class="inline-flex items-center gap-1"
-              >
-                <i class="ri-eye-line" aria-hidden="true"></i>
-
-                <template v-if="Number.isFinite(articleReads)">
-                  {{ formatReadCount(articleReads) }}
-                  {{ translate("reader.chapterList.reads") }}
-                </template>
-
                 <span
-                  v-else
-                  class="loading loading-dots loading-xs"
-                  :aria-label="
-                    translate('pages.articleReader.loadingArticleReads')
+                  v-for="alias in aliasList"
+                  :key="alias"
+                  :title="alias"
+                  class="badge scrollbar-none mr-2 mb-2 inline-flex max-w-full items-center justify-start overflow-x-auto px-2 text-left font-bold whitespace-nowrap"
+                  :class="
+                    hasVisibleBanner
+                      ? 'border-white/15 bg-white/10 text-white/85'
+                      : 'border-base-300 bg-base-100 text-base-content/75'
                   "
-                ></span>
-              </span>
+                >
+                  <span class="min-w-max">{{ alias }}</span>
+                </span>
+              </p>
 
-              <span
-                v-if="
-                  commentCountsAvailable && articleCommentStatus !== 'error'
+              <div
+                class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+                :class="
+                  hasVisibleBanner ? 'text-white/70' : 'text-base-content/55'
                 "
-                class="inline-flex items-center gap-1"
               >
-                <i class="ri-chat-3-line" aria-hidden="true"></i>
-
-                <template v-if="Number.isFinite(articleComments)">
-                  {{ formatReadCount(articleComments) }}
-                  {{ translate("markdown.moment.comments") }}
-                </template>
+                <time
+                  v-if="article?.date"
+                  class="inline-flex items-center gap-1"
+                >
+                  <i class="ri-calendar-line"></i>
+                  {{ formatLocalizedDate(article.date) }}
+                </time>
 
                 <span
-                  v-else
-                  class="loading loading-dots loading-xs"
-                  :aria-label="
-                    translate('pages.articleReader.loadingArticleComments')
+                  v-if="article?.length"
+                  class="inline-flex items-center gap-1"
+                >
+                  <i class="ri-file-text-line"></i>
+                  {{ translate("pages.articleReader.about") }}
+                  {{ article.length }}
+                  {{ translate("reader.chapterList.characters") }}
+                </span>
+
+                <span
+                  v-if="article?.length"
+                  class="inline-flex items-center gap-1"
+                >
+                  <i class="ri-time-line"></i>
+                  {{ estimateReadingTime(article.length) }}
+                  {{ translate("pages.articleReader.minRead") }}
+                </span>
+
+                <span
+                  v-if="analyticsAvailable && articleReadStatus !== 'error'"
+                  class="inline-flex items-center gap-1"
+                >
+                  <i class="ri-eye-line" aria-hidden="true"></i>
+
+                  <template v-if="Number.isFinite(articleReads)">
+                    {{ formatReadCount(articleReads) }}
+                    {{ translate("reader.chapterList.reads") }}
+                  </template>
+
+                  <span
+                    v-else
+                    class="loading loading-dots loading-xs"
+                    :aria-label="
+                      translate('pages.articleReader.loadingArticleReads')
+                    "
+                  ></span>
+                </span>
+
+                <span
+                  v-if="
+                    commentCountsAvailable && articleCommentStatus !== 'error'
                   "
-                ></span>
-              </span>
+                  class="inline-flex items-center gap-1"
+                >
+                  <i class="ri-chat-3-line" aria-hidden="true"></i>
+
+                  <template v-if="Number.isFinite(articleComments)">
+                    {{ formatReadCount(articleComments) }}
+                    {{ translate("markdown.moment.comments") }}
+                  </template>
+
+                  <span
+                    v-else
+                    class="loading loading-dots loading-xs"
+                    :aria-label="
+                      translate('pages.articleReader.loadingArticleComments')
+                    "
+                  ></span>
+                </span>
+              </div>
             </div>
           </div>
         </header>
+        <p
+          v-if="missingTranslation"
+          role="status"
+          class="alert alert-soft not-prose mb-4 font-sans text-sm"
+        >
+          <i class="ri-information-line" aria-hidden="true"></i>
+          <span>{{
+            translate("pages.articleReader.translationUnavailable", {
+              requestedLanguage: localizedLanguageNames[uiLocale],
+              currentLanguage:
+                localizedLanguageNames[
+                  article.lang || article.sourceLocale || "zh-CN"
+                ],
+            })
+          }}</span>
+        </p>
+        <div
+          v-if="article.machineTranslated === true"
+          class="not-prose mb-6 font-sans"
+        >
+          <p role="note" class="alert alert-soft text-sm">
+            <i class="ri-translate-2" aria-hidden="true"></i>
+            <I18nT
+              keypath="pages.articleReader.machineTranslationNotice"
+              tag="span"
+              scope="global"
+            >
+              <template #original>
+                <RouterLink
+                  :to="getArticlePath(article.id, getSourceLocale(article))"
+                  class="link link-primary link-hover"
+                >
+                  {{ translate("pages.articleReader.originalArticle") }}
+                </RouterLink>
+              </template>
+            </I18nT>
+          </p>
+        </div>
       </template>
 
       <template #loading>
@@ -422,6 +495,7 @@ const {
   t: translate,
   text: localizeText,
   locale: uiLocale,
+  localeRestored,
   commentLocale,
   number: formatNumber,
   date: formatLocalizedDate,
@@ -429,6 +503,7 @@ const {
 
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { Translation as I18nT } from "vue-i18n";
 import { githubSession } from "@/composables/auth/useGithubSession";
 import Giscus from "@giscus/vue";
 import { useRoute, useRouter } from "vue-router";
@@ -443,6 +518,11 @@ import { useReaderTextContext } from "@/composables/reader/useReaderTextContext"
 import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
 import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
 import CONFIG from "@/constants/config";
+import {
+  getArticleLocales,
+  getArticlePath,
+  getSourceLocale,
+} from "@/utils/blog/article-versions";
 
 import FloatingActionButton from "@/components/interaction/controls/FloatingActionButton.vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
@@ -484,7 +564,20 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["back", "refresh", "navigate", "ready"]);
+const emit = defineEmits(["back", "refresh", "navigate", "ready", "language"]);
+const articleLocales = computed(() => getArticleLocales(props.article));
+const missingTranslation = computed(
+  () =>
+    localeRestored.value &&
+    props.article &&
+    !articleLocales.value.includes(uiLocale.value),
+);
+const languageNames = { "zh-CN": "简体中文", en: "English", si: "සිංහල" };
+const localizedLanguageNames = computed(() => ({
+  "zh-CN": translate("pages.articleReader.languageNames.zh-CN"),
+  en: translate("pages.articleReader.languageNames.en"),
+  si: translate("pages.articleReader.languageNames.si"),
+}));
 
 const articleId = computed(() => String(props.article?.id || "").trim());
 const commentCountsStore = useCommentCountsStore();
@@ -811,7 +904,9 @@ const getArticleRoute = (article) => {
   if (generatedPath) return generatedPath;
 
   const articleId = String(article?.id || "").trim();
-  return articleId ? `/blog/${encodeURIComponent(articleId)}` : "/blog";
+  return articleId
+    ? getArticlePath(articleId, article.lang || article.sourceLocale || "zh-CN")
+    : "/blog";
 };
 
 const formatArticleDate = (article) => {

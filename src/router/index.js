@@ -96,6 +96,16 @@ export const routes = [
     meta: { title: "开源许可与第三方声明 | 远方之森", localeGroups: ["licenses"] },
   },
   {
+    path: "/blog/:articleId/:locale",
+    name: "blog-article-locale",
+    component: () => import("@/views/Blog.vue"),
+    meta: {
+      title: "博客 | 远方之森", navName: "blog", hideToTop: true,
+      localeGroups: ["blog", "reader"],
+      articles: generatedArticleList,
+    },
+  },
+  {
     path: "/blog/:articleId",
     name: "blog-article",
     component: () => import("@/views/Blog.vue"),
@@ -193,6 +203,8 @@ const router = createRouter({
       const target = document.getElementById(anchorId) || document.getElementById(rawHash);
       if (target) return { el: target, top: 96 };
     }
+    const articleId = (route) => String(route.params.articleId || route.meta.article?.id || "");
+    if (articleId(to) && articleId(to) === articleId(from)) return false;
     if (to.path !== from.path) return { top: 0 };
     return false;
   },

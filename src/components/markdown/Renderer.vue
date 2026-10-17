@@ -1,6 +1,6 @@
 <template>
   <article
-    :lang="isReaderMode ? 'zh-CN' : undefined"
+    :lang="lang || (isReaderMode ? 'zh-CN' : undefined)"
     ref="articleRef"
     :id="contentId"
     :class="[
@@ -74,6 +74,7 @@ import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
 
 const props = defineProps({
+  lang: { type: String, default: "" },
   mode: {
     type: String,
     default: MARKDOWN_MODE_READER,

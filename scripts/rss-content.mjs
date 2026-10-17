@@ -215,6 +215,8 @@ export const createRssFeed = (
   const items = [];
 
   for (const entry of entries) {
+    // Retain the original feed identity and one Chinese item per article.
+    if (entry?.article?.lang && !entry.legacy) continue;
     const item = normalizeArticle(entry, {
       assetResolver,
       now,

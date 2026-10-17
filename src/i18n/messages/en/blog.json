@@ -35,6 +35,15 @@
       "tag": "Tag {p0}"
     },
     "articleReader": {
+      "articleLanguage": "Article language",
+      "languageNames": {
+        "zh-CN": "Chinese (Simplified)",
+        "en": "English",
+        "si": "Sinhala"
+      },
+      "translationUnavailable": "This article is not available in {requestedLanguage}. Showing {currentLanguage} instead.",
+      "machineTranslationNotice": "This article was machine translated and may contain errors. Refer to {original} when in doubt.",
+      "originalArticle": "the original",
       "backToArticles": "Back to articles",
       "about": "About",
       "minRead": "min read",
