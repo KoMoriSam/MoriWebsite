@@ -7,7 +7,7 @@
       <article
         v-for="card in cards"
         :key="card.id"
-        class="card card-border min-w-0 w-full bg-base-100 sm:w-auto sm:flex-[1_1_18rem]"
+        class="card card-border min-w-0 w-full border-base-300 bg-base-200/15 sm:w-auto sm:flex-[1_1_18rem]"
         :class="{ 'sm:basis-full': card.wide }"
         :aria-labelledby="`sinhala-example-${card.id}`"
       >

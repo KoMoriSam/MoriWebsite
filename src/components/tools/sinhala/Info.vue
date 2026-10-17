@@ -266,13 +266,15 @@
   <div class="divider"></div>
 
   <div class="join join-vertical w-full">
-    <details class="join-item collapse collapse-arrow border border-base-300">
+    <details
+      class="join-item collapse collapse-arrow border border-base-300 bg-base-200/15"
+    >
       <summary class="collapse-title">
         <hgroup
           class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2"
         >
           <i
-            class="ri-information-line row-span-2 text-xl"
+            class="ri-code-s-slash-line row-span-2 text-xl"
             aria-hidden="true"
           ></i>
 
@@ -293,13 +295,15 @@
       </p>
     </details>
 
-    <details class="join-item collapse collapse-arrow border border-base-300">
+    <details
+      class="join-item collapse collapse-arrow border border-base-300 bg-base-200/15"
+    >
       <summary class="collapse-title">
         <hgroup
           class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-2"
         >
           <i
-            class="ri-information-line row-span-2 text-xl"
+            class="ri-font-sans-serif row-span-2 text-xl"
             aria-hidden="true"
           ></i>
 
