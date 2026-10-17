@@ -20,10 +20,10 @@ export const TOAST_POSITIONS = {
 export const DEFAULT_POSITION = "end-bottom";
 
 export const TOAST_ICONS = {
-  info: "ri-information-line",
-  success: "ri-checkbox-circle-line",
-  error: "ri-close-circle-line",
-  warning: "ri-alert-line",
+  info: "ri-information-fill",
+  success: "ri-checkbox-circle-fill",
+  error: "ri-close-circle-fill",
+  warning: "ri-alert-fill",
   loading: "loading loading-spinner loading-xs",
-  star: "ri-star-smile-line",
+  star: "ri-star-smile-fill",
 };
