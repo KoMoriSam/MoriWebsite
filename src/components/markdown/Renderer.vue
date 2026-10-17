@@ -207,7 +207,6 @@ import MarkdownItAbbr from "markdown-it-abbr";
 import MarkdownItAttrs from "markdown-it-attrs";
 import MarkdownItBracketedSpans from "markdown-it-bracketed-spans";
 import { full as emojiPlugin } from "markdown-it-emoji";
-import MarkdownItRuby from "markdown-it-ruby";
 import MarkdownItSub from "markdown-it-sub";
 import MarkdownItSup from "markdown-it-sup";
 import MarkdownItMark from "markdown-it-mark";
@@ -224,6 +223,7 @@ import { codePlugin } from "@/utils/markdown/markdown-it-code";
 import { linkIconPlugin } from "@/utils/markdown/markdown-it-link-icon";
 import { mermaidPlugin } from "@/utils/markdown/markdown-it-mermaid";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
+import { rubyPlugin } from "@/utils/markdown/markdown-it-ruby";
 import { figurePlugin } from "@/utils/markdown/markdown-it-figure";
 import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
 import { taskStatusPlugin } from "@/utils/markdown/markdown-it-task-status";
@@ -741,12 +741,6 @@ const loadMarkdownFeaturePlugins = async (content = "") => {
   }
 };
 
-const rubyPlugin = (md) => {
-  MarkdownItRuby(md, {
-    rp: ["（", "）"],
-  });
-};
-
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
   MarkdownItBracketedSpans,
@@ -760,7 +754,7 @@ const sharedPlugins = computed(() => [
   codePlugin,
   emojiPlugin,
   footnotePlugin,
-  rubyPlugin,
+  [rubyPlugin, { rp: ["（", "）"] }],
   MarkdownItSub,
   MarkdownItSup,
   taskStatusPlugin,

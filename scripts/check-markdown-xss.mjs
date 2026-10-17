@@ -4,7 +4,6 @@ import { renderToString } from "@vue/server-renderer";
 import MarkdownIt from "markdown-it";
 import MarkdownItAttrs from "markdown-it-attrs";
 import MarkdownItBracketedSpans from "markdown-it-bracketed-spans";
-import MarkdownItRuby from "markdown-it-ruby";
 import { createSSRApp, h } from "vue";
 
 import { projectMarkdownComponentProps } from "../src/utils/markdown/markdown-component-props.js";
@@ -19,6 +18,7 @@ import {
   parseCodeFenceInfo,
 } from "../src/utils/markdown/markdown-it-code.js";
 import { footnotePlugin } from "../src/utils/markdown/markdown-it-footnote.js";
+import { rubyPlugin } from "../src/utils/markdown/markdown-it-ruby.js";
 import { linkIconPlugin } from "../src/utils/markdown/markdown-it-link-icon.js";
 import { mermaidPlugin } from "../src/utils/markdown/markdown-it-mermaid.js";
 import { taskStatusPlugin } from "../src/utils/markdown/markdown-it-task-status.js";
@@ -324,7 +324,7 @@ const attrsMarkdown = new MarkdownIt({ html: true })
   .use(MarkdownItBracketedSpans)
   .use(MarkdownItAttrs, { allowedAttributes: ["id", "class", "data-tip"] })
   .use(footnotePlugin)
-  .use(MarkdownItRuby);
+  .use(rubyPlugin);
 const attrsHtml = sanitizeMarkdownHtml(
   attrsMarkdown.render(
     '![image](/safe.png){#safe .wide onerror="alert(1)" style="color:red" src="javascript:alert(1)"}\n\n[text](/safe){#link .safe onclick="alert(1)" href="javascript:alert(1)"}',
@@ -361,6 +361,28 @@ assert.doesNotMatch(inlineCompatibilityHtml, /<span[^>]*class="(?:literal|escape
 assert.match(inlineCompatibilityHtml, /\[plain\]/u);
 assert.match(inlineCompatibilityHtml, /<span class="ruby-wrapper"><ruby>/u);
 assert.match(inlineCompatibilityHtml, /<span class="first">adjacent<\/span><span class="second">containers<\/span>/u);
+
+const rubyBoundaryTableHtml = sanitizeMarkdownHtml(attrsMarkdown.render(
+  String.raw`| FM | Unicode |
+| --- | --- |
+| [[\|]{.font-abhaya-legacy} = [\|]{.font-abhaya-legacy .group-[&:is(:hover,:active)]:font-mono}]{.group} | {漢字\|かんじ} |`,
+));
+assert.match(rubyBoundaryTableHtml, /<td><span class="group"><span class="font-abhaya-legacy">\|<\/span> = <span class="font-abhaya-legacy group-\[&amp;:is\(:hover,:active\)\]:font-mono">\|<\/span><\/span><\/td>/u);
+assert.match(rubyBoundaryTableHtml, /<td><ruby>漢字<rt>かんじ<\/rt><\/ruby><\/td>/u);
+assert.equal((rubyBoundaryTableHtml.match(/<ruby>/gu) || []).length, 1);
+assert.equal(
+  attrsMarkdown.render("{plain} | after {漢字|かんじ}"),
+  "<p>{plain} | after <ruby>漢字<rt>かんじ</rt></ruby></p>\n",
+);
+assert.equal(
+  attrsMarkdown.render(String.raw`{字\}|じ} {字\|形|じけい}`),
+  "<p><ruby>字}<rt>じ</rt></ruby> <ruby>字|形<rt>じけい</rt></ruby></p>\n",
+);
+const rubyWithFallback = new MarkdownIt().use(rubyPlugin, { rp: ["（", "）"] });
+assert.equal(
+  rubyWithFallback.render("{漢字|かん|じ}{**言葉**|ことば}"),
+  "<p><ruby>漢<rp>（</rp><rt>かん</rt><rp>）</rp>字<rp>（</rp><rt>じ</rt><rp>）</rp></ruby><ruby><strong>言葉</strong><rp>（</rp><rt>ことば</rt><rp>）</rp></ruby></p>\n",
+);
 
 const tooltipHtml = sanitizeMarkdownHtml(
   attrsMarkdown.render(
