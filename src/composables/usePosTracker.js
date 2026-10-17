@@ -762,13 +762,27 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
   // 监听点击事件，捕获页内锚点跳转
   trackListener(
     useEventListener(document, "click", (e) => {
-      if (!isTrackingActive()) {
+      if (
+        !isTrackingActive() ||
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey ||
+        e.shiftKey
+      ) {
         return;
       }
 
       if (!(e.target instanceof Element)) return;
 
       const target = e.target.closest("a");
+      if (
+        target?.hasAttribute("download") ||
+        (target?.target && target.target !== "_self")
+      ) {
+        return;
+      }
       const href = target?.getAttribute("href") || "";
       if (href.startsWith("#")) {
         const hashTarget = normalizeAnchorToken(href);
@@ -778,6 +792,21 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         suppressNextScrollUpdates(4);
         syncReadContext();
         readPos.value = persistedPosToken;
+
+        if (
+          target.closest(".markdown-content") &&
+          target.closest(
+            ".footnote-ref, .footnote-backref, [data-footnote-ref], [data-footnote-backref]",
+          ) &&
+          findAnchorElement(hashTarget).element
+        ) {
+          // 原生锚点跳转会触发 popstate，让路由加载态与阅读位置恢复抢滚动。
+          e.preventDefault();
+          cancelPreciseRestore();
+          window.clearTimeout(settledScrollTimer);
+          pendingStoredRestore = false;
+          scrollToAnchorWithRetry(hashTarget);
+        }
       }
     }),
   );
