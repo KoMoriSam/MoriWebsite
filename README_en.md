@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>2.18.2</strong>
+  Current version: <strong>2.19.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -33,7 +33,7 @@ MoriWebsite is KoMoriSam's personal website project. Its static frontend handles
 The site currently includes:
 
 - a responsive profile homepage with dynamic backgrounds and contact links
-- a blog with keyword, tag, and year filters
+- a blog with keyword, tag, and year filters, plus language switching where translations are available
 - volumes, chapter navigation, and a paginated reader for the original novel _Toward the Distance_
 - site-wide search across blog posts, novel chapters, changelogs, and open-source licenses
 - Giscus comments at article, chapter, and paragraph level
@@ -49,6 +49,7 @@ Production routes:
 /
 /blog
 /blog/:articleId
+/blog/:articleId/:locale
 /novel
 /novel/:volumeSlug/:chapterSlug?
 /tools
@@ -81,7 +82,7 @@ Development also exposes `/test` for component testing. Unknown URLs use the in-
 
 ### Content and Reading
 
-- blog list and detail views with combined keyword, tag, and year filtering
+- blog list and detail views with combined keyword, tag, and year filtering; articles can switch between published Chinese, English, and Sinhala versions
 - novel volumes, chapter navigation, total word counts, persisted reading position, and reader settings
 - Markdown code highlighting, footnotes, task lists, math, callouts, custom dialogue blocks, attributes, and ruby annotations
 - Obsidian-style image references, banner resolution, lazy image loading, and code copying

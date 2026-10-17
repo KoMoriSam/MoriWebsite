@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>2.18.2</strong>
+  Version actuelle : <strong>2.19.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -33,7 +33,7 @@ MoriWebsite est le projet de site personnel de KoMoriSam. Son interface statique
 Le site comprend actuellement :
 
 - une page d'accueil responsive avec profil, arrière-plan dynamique et liens de contact
-- un blog filtrable par mot-clé, étiquette et année
+- un blog filtrable par mot-clé, étiquette et année, avec changement de langue lorsque des traductions existent
 - les volumes, la navigation entre chapitres et un lecteur paginé pour le roman original _Vers le lointain_ (`《向远方》`)
 - une recherche globale couvrant articles, chapitres, versions du site et licences open source
 - des commentaires Giscus au niveau des articles, chapitres et paragraphes
@@ -49,6 +49,7 @@ Routes de production :
 /
 /blog
 /blog/:articleId
+/blog/:articleId/:locale
 /novel
 /novel/:volumeSlug/:chapterSlug?
 /tools
@@ -81,7 +82,7 @@ En développement, `/test` permet également de tester les composants. Les URL i
 
 ### Contenu et lecture
 
-- liste et détail des articles avec filtres combinés par mot-clé, étiquette et année
+- liste et détail des articles avec filtres combinés par mot-clé, étiquette et année ; les articles peuvent passer entre leurs versions publiées en chinois, anglais et cinghalais
 - volumes, navigation entre chapitres, nombre total de caractères, position de lecture et réglages persistants
 - coloration du code Markdown, notes de bas de page, tâches, formules, encadrés, dialogues personnalisés, attributs et annotations ruby
 - références d'images de style Obsidian, résolution des bannières, chargement différé et copie du code

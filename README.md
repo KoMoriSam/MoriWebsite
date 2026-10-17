@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>2.18.2</strong>
+  当前版本：<strong>2.19.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -33,7 +33,7 @@ MoriWebsite 是 KoMoriSam 的个人网站项目。静态前端负责内容阅读
 站点目前提供：
 
 - 响应式个人主页、动态背景与联系方式
-- 支持关键词、标签和年份筛选的博客
+- 支持关键词、标签和年份筛选的博客；有译文的文章可切换语言
 - 原创小说《向远方》的卷目、章节导航和分页阅读器
 - 覆盖博客、小说、更新日志与开源许可的全站搜索
 - 文章、章节与段落级 Giscus 评论
@@ -49,6 +49,7 @@ MoriWebsite 是 KoMoriSam 的个人网站项目。静态前端负责内容阅读
 /
 /blog
 /blog/:articleId
+/blog/:articleId/:locale
 /novel
 /novel/:volumeSlug/:chapterSlug?
 /tools
@@ -81,7 +82,7 @@ MoriWebsite 是 KoMoriSam 的个人网站项目。静态前端负责内容阅读
 
 ### 内容与阅读
 
-- 博客列表与详情页，支持关键词、标签、年份组合筛选
+- 博客列表与详情页支持关键词、标签、年份组合筛选；文章可在已发布的中文、英语和僧伽罗语版本间切换
 - 小说卷目、章节导航、总字数统计、阅读位置与阅读器设置持久化
 - Markdown 代码高亮、脚注、任务列表、数学公式、警告框、自定义对话、属性与 ruby 注音
 - Obsidian 风格图片引用、横幅解析、图片懒加载和代码复制
