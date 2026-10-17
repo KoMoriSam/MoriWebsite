@@ -11,7 +11,12 @@
       <figure class="max-w-md select-none">
         <img
           v-fade-in
-          v-bind="getImageAttrs('/assets/images/animates/idle.gif', '(min-width: 1024px) 224px, (min-width: 768px) 192px, 168px')"
+          v-bind="
+            getImageAttrs(
+              '/assets/images/animates/idle.gif',
+              '(min-width: 1024px) 224px, (min-width: 768px) 192px, 168px',
+            )
+          "
           alt="idle"
           class="w-42 md:w-48 lg:w-56 mx-auto object-cover"
           @load="handleImageLoad"
@@ -49,7 +54,8 @@
             class="flex flex-col lg:flex-row gap-4 justify-center items-center mt-6 md:mt-8 lg:mt-12"
           >
             <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
-              <i class="ri-article-fill"></i>{{ translate('pages.home.readTheBlog') }}
+              <i class="ri-article-fill"></i
+              >{{ translate("pages.home.readTheBlog") }}
             </router-link>
             <router-link
               to="/novel"
@@ -59,7 +65,7 @@
               <i
                 class="ri-eye-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate('pages.home.exploreTheNovel') }}
+              {{ translate("pages.home.exploreTheNovel") }}
             </router-link>
             <router-link
               to="/tools/server-status"
@@ -71,7 +77,7 @@
               <i
                 class="ri-gamepad-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate('pages.home.serverStatus') }}
+              {{ translate("pages.home.serverStatus") }}
             </router-link>
           </section>
           <client-only v-if="hero.pageUrl">
@@ -81,9 +87,10 @@
               rel="noopener noreferrer"
               class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
             >
-              {{ translate('pages.home.photo') }}{{ hero.author?.name || translate('pages.home.pixabayUser') }}
+              {{ translate("pages.home.photo")
+              }}{{ hero.author?.name || translate("pages.home.pixabayUser") }}
               <br />
-              {{ translate('pages.home.sourcePixabay') }}
+              {{ translate("pages.home.sourcePixabay") }}
             </a>
           </client-only>
           <a
@@ -93,9 +100,9 @@
             rel="noopener noreferrer"
             class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
           >
-            {{ translate('pages.home.photoFlorianhoellmueller') }}
+            {{ translate("pages.home.photoFlorianhoellmueller") }}
             <br />
-            {{ translate('pages.home.sourcePixabay') }}
+            {{ translate("pages.home.sourcePixabay") }}
           </a>
           <i
             class="ri-arrow-down-s-line absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
@@ -114,17 +121,26 @@
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
             >In Progress</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.whatIMWorkingOn') }}</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">
+            {{ translate("pages.home.whatIMWorkingOn") }}
+          </h2>
         </hgroup>
         <figure class="p-0 mx-auto w-42 lg:w-56">
           <img
             v-fade-in
-            v-bind="getImageAttrs('/assets/images/animates/mine.gif', '(min-width: 1024px) 224px, 168px')"
+            v-bind="
+              getImageAttrs(
+                '/assets/images/animates/mine.gif',
+                '(min-width: 1024px) 224px, 168px',
+              )
+            "
             class="w-42 lg:w-56 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
-        <p class="max-w-lg mx-auto">{{ translate('pages.home.theClassicLineWelcomeToMyDigitalGarden') }}</p>
+        <p class="max-w-lg mx-auto">
+          {{ translate("pages.home.theClassicLineWelcomeToMyDigitalGarden") }}
+        </p>
       </section>
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <section class="card card-dash bg-base-200/10 border border-base-200">
@@ -132,24 +148,30 @@
             <aside class="card-icon">
               <i class="ri-article-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.personalBlog') }}</h2>
+            <h2 class="card-title font-serif font-bold">
+              {{ translate("pages.home.personalBlog") }}
+            </h2>
             <p>
-              {{ translate('pages.home.notesOnExploringTechnology') }} <small>{{ translate('pages.home.aiExperimentsCountToo') }}</small>
-              <br />{{ translate('pages.home.alongWithEssaysReadingNotesAndMore') }}<br />
+              {{ translate("pages.home.notesOnExploringTechnology") }}
+              <small>{{ translate("pages.home.aiExperimentsCountToo") }}</small>
+              <br />{{
+                translate("pages.home.alongWithEssaysReadingNotesAndMore")
+              }}<br />
               <small
-                >{{ translate('pages.home.updatedOccasionallyWith') }}
+                >{{ translate("pages.home.updatedOccasionallyWith") }}
                 <a
                   class="link link-primary link-hover"
                   href="/rss.xml"
                   type="application/rss+xml"
                 >
                   <i class="ri-rss-fill" aria-hidden="true"></i>
-                  {{ translate('pages.home.rssSubscription') }}
+                  {{ translate("pages.home.rssSubscription") }}
                 </a>
               </small>
             </p>
             <router-link to="/blog" class="btn btn-primary btn-soft btn-sm">
-              {{ translate('pages.home.readArticles') }}<i class="ri-arrow-right-line"></i>
+              {{ translate("pages.home.readArticles")
+              }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -158,14 +180,19 @@
             <aside class="card-icon">
               <i class="ri-article-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.writingFictionForFun') }}</h2>
+            <h2 class="card-title font-serif font-bold">
+              {{ translate("pages.home.writingFictionForFun") }}
+            </h2>
             <p>
-              {{ translate('pages.home.theUsualAttemptAtWritingANovel') }}
-              <br />{{ translate('pages.home.justWritingForFun') }}<br />
-              <small>{{ translate('pages.home.updatesAndAnEndingAreNotGuaranteed') }}</small>
+              {{ translate("pages.home.theUsualAttemptAtWritingANovel") }}
+              <br />{{ translate("pages.home.justWritingForFun") }}<br />
+              <small>{{
+                translate("pages.home.updatesAndAnEndingAreNotGuaranteed")
+              }}</small>
             </p>
             <router-link to="/novel" class="btn btn-primary btn-soft btn-sm">
-              {{ translate('pages.home.readTheNovel') }}<i class="ri-arrow-right-line"></i>
+              {{ translate("pages.home.readTheNovel")
+              }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -174,19 +201,26 @@
             <aside class="card-icon">
               <i class="ri-pencil-ruler-2-line"></i>
             </aside>
-            <h2 class="card-title font-serif font-bold">{{ translate('pages.home.tools') }}</h2>
-            <p>{{ translate('pages.home.aFewLittleToolsUsefulOrOtherwise') }}</p>
+            <h2 class="card-title font-serif font-bold">
+              {{ translate("pages.home.tools") }}
+            </h2>
+            <p>
+              {{ translate("pages.home.aFewLittleToolsUsefulOrOtherwise") }}
+            </p>
             <div class="flex flex-wrap gap-1.5">
-              <span class="badge badge-outline badge-sm">{{ translate('pages.home.imageConverter') }}</span>
+              <span class="badge badge-outline badge-sm">{{
+                translate("pages.home.imageConverter")
+              }}</span>
               <span class="badge badge-outline badge-sm">
-                {{ translate('pages.home.minecraftServerLookup') }}
+                {{ translate("pages.home.minecraftServerLookup") }}
               </span>
               <span class="badge badge-outline badge-sm">
-                {{ translate('pages.home.sinhalaFontEncodingConverter') }}
+                {{ translate("pages.home.sinhalaFontEncodingConverter") }}
               </span>
             </div>
             <router-link to="/tools" class="btn btn-primary btn-soft btn-sm">
-              {{ translate('pages.home.useTheTools') }}<i class="ri-arrow-right-line"></i>
+              {{ translate("pages.home.useTheTools")
+              }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
         </section>
@@ -204,18 +238,25 @@
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
             >Behind the Site</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.aboutMe') }}</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">
+            {{ translate("pages.home.aboutMe") }}
+          </h2>
         </hgroup>
         <figure class="p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            v-bind="getImageAttrs('/assets/images/animates/turn.gif', '(min-width: 1024px) 184px, 128px')"
+            v-bind="
+              getImageAttrs(
+                '/assets/images/animates/turn.gif',
+                '(min-width: 1024px) 184px, 128px',
+              )
+            "
             class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          {{ translate('pages.home.hiIMKomori') }}
+          {{ translate("pages.home.hiIMKomori") }}
           <br />
           <span lang="ja"
             >22 <ruby>歳<rp>（</rp><rt>さい</rt><rp>）</rp></ruby>で、<ruby
@@ -224,11 +265,12 @@
           >
           <br />
           <small
-            >{{ translate('pages.home.youCanAlsoCallMeByMySinhalaName') }}
+            >{{ translate("pages.home.youCanAlsoCallMeByMySinhalaName") }}
             <ruby>විශ්ව<rp>（</rp><rt>Wishwa</rt><rp>）</rp></ruby></small
           >
           <br />
-          {{ translate('pages.home.anIndependentDeveloperWhoEnjoysTinkering') }} <small>{{ translate('pages.home.probably') }}</small>
+          {{ translate("pages.home.anIndependentDeveloperWhoEnjoysTinkering") }}
+          <small>{{ translate("pages.home.probably") }}</small>
         </p>
       </section>
     </section>
@@ -244,20 +286,31 @@
             class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
             >Stay Connected</span
           >
-          <h2 class="font-serif text-3xl font-bold mb-3">{{ translate('pages.home.followContactMe') }}</h2>
+          <h2 class="font-serif text-3xl font-bold mb-3">
+            {{ translate("pages.home.followContactMe") }}
+          </h2>
         </hgroup>
         <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
           <img
             v-fade-in
-            v-bind="getImageAttrs('/assets/images/animates/thanks.gif', '(min-width: 1024px) 184px, 128px')"
+            v-bind="
+              getImageAttrs(
+                '/assets/images/animates/thanks.gif',
+                '(min-width: 1024px) 184px, 128px',
+              )
+            "
             class="w-32 lg:w-46 object-cover rounded-lg z-0"
             @load="handleImageLoad"
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          {{ translate('pages.home.findMeOnThesePlatforms') }}
+          {{ translate("pages.home.findMeOnThesePlatforms") }}
           <br />
-          <small> {{ translate('pages.home.iMRarelyOnlineOnWechatOrQqSoAdding') }}</small>
+          <small>
+            {{
+              translate("pages.home.iMRarelyOnlineOnWechatOrQqSoAdding")
+            }}</small
+          >
         </p>
         <div class="flex flex-wrap gap-3 justify-center mt-4 lg:mt-8">
           <a
@@ -293,7 +346,7 @@
               <i
                 class="ri-weibo-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate('pages.home.weibo') }}
+              {{ translate("pages.home.weibo") }}
             </button>
           </a>
           <div class="dropdown dropdown-bottom dropdown-center">
@@ -308,7 +361,7 @@
               <i
                 class="ri-wechat-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate('pages.home.wechat') }}
+              {{ translate("pages.home.wechat") }}
             </a>
             <div
               tabindex="0"
@@ -345,7 +398,7 @@
 
 <script setup>
 import { getImageAttrs, getImageUrl } from "@/utils/images/responsive-images";
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import Footer from "@/components/layout/Footer.vue";
@@ -356,38 +409,38 @@ const { imageLoaded, handleImageLoad } = useImageLoad();
 
 import { ref, onMounted, reactive } from "vue";
 
-const greeting = ref('pages.home.hello');
-const description = ref('pages.home.welcomeToMyPersonalWebsite');
+const greeting = ref("pages.home.hello");
+const description = ref("pages.home.welcomeToMyPersonalWebsite");
 
 onMounted(() => {
   const isPrerenderBot = /HeadlessChrome|Prerender/i.test(navigator.userAgent);
   if (isPrerenderBot) return;
   const hour = new Date().getHours();
   if (hour < 6) {
-    greeting.value = 'pages.home.helloEarlyBird';
-    description.value = 'pages.home.itSLateGetSomeRest';
+    greeting.value = "pages.home.helloEarlyBird";
+    description.value = "pages.home.itSLateGetSomeRest";
   } else if (hour < 12) {
-    greeting.value = 'pages.home.goodMorning';
-    description.value = 'pages.home.rememberToHaveBreakfast';
+    greeting.value = "pages.home.goodMorning";
+    description.value = "pages.home.rememberToHaveBreakfast";
   } else if (hour < 14) {
-    greeting.value = 'pages.home.goodAfternoon';
-    description.value = 'pages.home.timeForLunchTakeABreak';
+    greeting.value = "pages.home.goodAfternoon";
+    description.value = "pages.home.timeForLunchTakeABreak";
   } else if (hour < 18) {
-    greeting.value = 'pages.home.goodAfternoon2';
-    description.value = 'pages.home.takeABreatherAndEnjoyACupOfTea';
+    greeting.value = "pages.home.goodAfternoon2";
+    description.value = "pages.home.takeABreatherAndEnjoyACupOfTea";
   } else if (hour < 21) {
-    greeting.value = 'pages.home.goodEvening';
-    description.value = 'pages.home.howWasYourDay';
+    greeting.value = "pages.home.goodEvening";
+    description.value = "pages.home.howWasYourDay";
   } else {
-    greeting.value = 'pages.home.helloNightOwl';
-    description.value = 'pages.home.rememberToTakeCareOfYourself';
+    greeting.value = "pages.home.helloNightOwl";
+    description.value = "pages.home.rememberToTakeCareOfYourself";
   }
 });
 
 import { fetchRandomHero } from "@/services/api-pixabay";
 
 const fallbackImage =
-  "/assets/images/backgrounds/florianhoellmueller-mountains-4950252_1920.webp";
+  "/assets/images/banners/florianhoellmueller-mountains-4950252_1920.webp";
 
 const hero = reactive({
   url: "",

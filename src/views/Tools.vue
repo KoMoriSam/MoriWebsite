@@ -2,9 +2,14 @@
   <ContentPage
     eyebrow="Tool List"
     :title="translate('pages.home.tools')"
-    :description="translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')"
+    :description="
+      translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')
+    "
   >
-    <section class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6" :aria-label="translate('pages.tools.availableTools')">
+    <section
+      class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
+      :aria-label="translate('pages.tools.availableTools')"
+    >
       <CatalogCard
         v-for="tool in tools"
         :key="tool.name"
@@ -18,7 +23,11 @@
         <template #tags="{ coverLoaded }">
           <span
             class="badge badge-sm h-auto min-h-5 max-w-full py-0.5 transition-colors duration-300 motion-reduce:transition-none"
-            :class="coverLoaded ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm' : 'badge-primary badge-soft'"
+            :class="
+              coverLoaded
+                ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
+                : 'badge-primary badge-soft'
+            "
           >
             <span class="min-w-0 break-words">{{ tool.category }}</span>
           </span>
@@ -29,7 +38,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import ContentPage from "@/components/layout/ContentPage.vue";
@@ -38,26 +47,53 @@ import CatalogCard from "@/components/interaction/navigation/CatalogCard.vue";
 const tools = [
   {
     name: "image-converter",
-    get title() { return translate('pages.home.imageConverter'); },
-    get description() { return translate('pages.tools.batchConvertImagesInYourBrowserWithCompressionResizingAnimation'); },
-    get category() { return translate('pages.tools.imageProcessing'); },
+    get title() {
+      return translate("pages.home.imageConverter");
+    },
+    get description() {
+      return translate(
+        "pages.tools.batchConvertImagesInYourBrowserWithCompressionResizingAnimation",
+      );
+    },
+    get category() {
+      return translate("pages.tools.imageProcessing");
+    },
     icon: "ri-image-edit-line",
+    cover: "/assets/images/banners/image-converter.webp",
     to: { name: "image-converter" },
   },
   {
     name: "server-status",
-    get title() { return translate('pages.tools.minecraftServerStatus'); },
-    get description() { return translate('pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft'); },
-    get category() { return translate('pages.tools.serverLookup'); },
+    get title() {
+      return translate("pages.tools.minecraftServerStatus");
+    },
+    get description() {
+      return translate(
+        "pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft",
+      );
+    },
+    get category() {
+      return translate("pages.tools.serverLookup");
+    },
     icon: "ri-server-line",
+    cover: "/assets/images/banners/server-status.webp",
     to: { name: "server-status" },
   },
   {
     name: "sinhala-font-converter",
-    get title() { return translate('pages.home.sinhalaFontEncodingConverter'); },
-    get description() { return translate('pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings'); },
-    get category() { return translate('pages.tools.textEncodingConversion'); },
+    get title() {
+      return translate("pages.home.sinhalaFontEncodingConverter");
+    },
+    get description() {
+      return translate(
+        "pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings",
+      );
+    },
+    get category() {
+      return translate("pages.tools.textEncodingConversion");
+    },
     icon: "ri-code-s-slash-line",
+    cover: "/assets/images/banners/sinhala-font-converter.webp",
     to: { name: "sinhala-font-converter" },
   },
 ];
