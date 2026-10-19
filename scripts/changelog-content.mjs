@@ -12,11 +12,6 @@ export const CHANGELOG_DIR = join(PROJECT_ROOT, "changelog", "releases");
 export const STATIC_CHANGELOG_PATH = join(
   PROJECT_ROOT,
   "public",
-  "changelog.v1.json",
-);
-export const LEGACY_CHANGELOG_PATH = join(
-  PROJECT_ROOT,
-  "public",
   "changelog.json",
 );
 export const CHANGELOG_SCHEMA_VERSION = 1;
@@ -412,58 +407,6 @@ export const toPublicRelease = (release) => ({
   ...(release.warning ? { warning: release.warning } : {}),
 });
 
-const extractTopLevelListItems = (markdown) => {
-  const tokens = MARKDOWN.parse(markdown, {});
-  const itemLevels = tokens
-    .filter((token) => token.type === "list_item_open")
-    .map((token) => token.level);
-  if (!itemLevels.length) return [];
-  const topLevel = Math.min(...itemLevels);
-  const items = [];
-  for (let index = 0; index < tokens.length; index += 1) {
-    if (tokens[index].type !== "list_item_open" || tokens[index].level !== topLevel) {
-      continue;
-    }
-    const content = [];
-    for (index += 1; index < tokens.length; index += 1) {
-      if (tokens[index].type === "list_item_close" && tokens[index].level === topLevel) {
-        break;
-      }
-      if (tokens[index].type === "inline") content.push(tokens[index].content);
-    }
-    items.push(content.join(" ").trim());
-  }
-  return items.filter(Boolean);
-};
-
-const createLegacyChangelog = (releases) =>
-  Object.fromEntries(
-    releases
-      .map((entry) => entry.release || entry)
-      .filter((release) => release.status === "released")
-      .sort((left, right) => compareVersions(right.version, left.version))
-      .map((release) => [
-        release.version,
-        {
-          date: release.date,
-          changes: Object.fromEntries(
-            release.groups.map((group) => [
-              group.type,
-              extractTopLevelListItems(group.markdown),
-            ]),
-          ),
-          ...(release.intro || release.note
-            ? {
-                note: [release.intro, release.note]
-                  .filter(Boolean)
-                  .join("\n\n"),
-              }
-            : {}),
-          ...(release.warning ? { warning: release.warning } : {}),
-        },
-      ]),
-  );
-
 export const createChangelogPayload = (
   releases,
   { updatedAt, serverTime } = {},
@@ -574,50 +517,5 @@ export const writeStaticChangelog = async (releases = null) => {
     `${JSON.stringify(payload, null, 2)}\n`,
     "utf8",
   );
-  await writeFile(
-    LEGACY_CHANGELOG_PATH,
-    `${JSON.stringify(createLegacyChangelog(entries), null, 2)}\n`,
-    "utf8",
-  );
   return payload;
-};
-
-const legacyReleaseToMarkdown = (version, item) => {
-  const groups = Object.entries(item?.changes || {}).map(([type, changes]) => {
-    if (!Object.hasOwn(CHANGELOG_TYPES, type) || !Array.isArray(changes)) {
-      throw new Error(`${version} 包含不支持的更新分类：${type}`);
-    }
-    const markdown = changes.map((change) => `- ${String(change).trim()}`).join("\n");
-    return { type, markdown, count: changes.length };
-  });
-  const firstChange = groups
-    .flatMap((group) => group.markdown.split("\n"))
-    .map((line) => line.replace(/^-\s+/, ""))
-    .find(Boolean);
-  return renderReleaseMarkdown({
-    version,
-    status: "released",
-    date: item.date,
-    summary: firstChange || item.note || item.warning || `${version} 版本更新`,
-    intro: "",
-    groups,
-    note: item.note || "",
-    warning: item.warning || "",
-  });
-};
-
-export const migrateLegacyChangelog = async () => {
-  const legacy = JSON.parse(await readFile(LEGACY_CHANGELOG_PATH, "utf8"));
-  if (legacy?.schemaVersion === CHANGELOG_SCHEMA_VERSION) {
-    throw new Error("public/changelog.json 已是新版结构，不能重复迁移。");
-  }
-  await mkdir(CHANGELOG_DIR, { recursive: true });
-  for (const [version, item] of Object.entries(legacy)) {
-    await writeFile(
-      releasePath(version),
-      legacyReleaseToMarkdown(version, item),
-      "utf8",
-    );
-  }
-  return Object.keys(legacy).length;
 };

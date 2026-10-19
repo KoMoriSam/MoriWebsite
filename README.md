@@ -249,8 +249,7 @@ mock/              # 被 Git 忽略的本地博客与小说内容镜像
 public/
   assets/          # 图片、字体与图标
   archive/         # 历史静态页面归档
-  changelog.json   # 兼容旧客户端的版本更新数据
-  changelog.v1.json # 更新日志 API 的静态回退数据
+  changelog.json   # 新版更新日志数据，用于 API 静态回退与预渲染
 ```
 
 ## 内容与构建说明
@@ -260,7 +259,7 @@ public/
 - Giscus 的公开仓库与分类配置集中在 `src/constants/config.js`。
 - 博客、小说和全站搜索逻辑分别位于 `src/services/api-articles.js`、`src/services/api-chapters.js` 与 `src/services/search-content.js`。
 - Markdown 扩展位于 `src/utils/markdown/`，文章图片与横幅路径由 `src/utils/resolve-article-assets.js` 解析。
-- 更新日志源文件位于 `changelog/releases/`，构建生成 `public/changelog.json` 与 `public/changelog.v1.json`；公告源文件位于本地被 Git 忽略的 `announcements/`。
+- 更新日志源文件位于 `changelog/releases/`，构建仅生成新版结构的 `public/changelog.json`；公告源文件位于本地被 Git 忽略的 `announcements/`。
 - 网站静态资源与 API Worker 分别使用 `wrangler.jsonc`、`wrangler.api.jsonc` 配置。
 
 ## 浏览器支持

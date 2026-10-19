@@ -249,8 +249,7 @@ mock/              # copies locales ignorées par Git du blog et du roman
 public/
   assets/          # images, polices et icônes
   archive/         # anciennes pages statiques archivées
-  changelog.json    # données des versions pour les anciens clients
-  changelog.v1.json # secours statique de l'API du journal
+  changelog.json   # données au format actuel pour le secours de l'API et le prérendu
 ```
 
 ## Notes sur le contenu et le build
@@ -260,7 +259,7 @@ public/
 - La configuration publique des dépôts et catégories Giscus est centralisée dans `src/constants/config.js`.
 - La logique du blog, du roman et de la recherche globale se trouve dans `src/services/api-articles.js`, `src/services/api-chapters.js` et `src/services/search-content.js`.
 - Les extensions Markdown se trouvent dans `src/utils/markdown/` ; `src/utils/resolve-article-assets.js` résout les images et bannières des articles.
-- Les sources du journal se trouvent dans `changelog/releases/` et génèrent `public/changelog.json` et `public/changelog.v1.json` ; les annonces locales dans `announcements/` sont ignorées par Git.
+- Les sources du journal se trouvent dans `changelog/releases/` et génèrent uniquement `public/changelog.json` au format actuel ; les annonces locales dans `announcements/` sont ignorées par Git.
 - Les ressources statiques du site et l'API Worker sont configurés respectivement dans `wrangler.jsonc` et `wrangler.api.jsonc`.
 
 ## Compatibilité

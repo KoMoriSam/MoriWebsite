@@ -249,8 +249,7 @@ mock/              # Git-ignored local mirrors of blog and novel content
 public/
   assets/          # images, fonts, and icons
   archive/         # archived legacy static pages
-  changelog.json    # legacy-compatible version data
-  changelog.v1.json # static fallback for the changelog API
+  changelog.json   # current-schema data for API fallback and prerendering
 ```
 
 ## Content and Build Notes
@@ -260,7 +259,7 @@ public/
 - Public Giscus repository and category settings are centralized in `src/constants/config.js`.
 - Blog, novel, and global-search logic lives in `src/services/api-articles.js`, `src/services/api-chapters.js`, and `src/services/search-content.js`.
 - Markdown extensions live under `src/utils/markdown/`; `src/utils/resolve-article-assets.js` resolves article images and banners.
-- Changelog sources live under `changelog/releases/` and generate `public/changelog.json` and `public/changelog.v1.json`; local announcement sources under `announcements/` are ignored by Git.
+- Changelog sources live under `changelog/releases/` and generate only `public/changelog.json` using the current schema; local announcement sources under `announcements/` are ignored by Git.
 - The website's static assets and API Worker use `wrangler.jsonc` and `wrangler.api.jsonc`, respectively.
 
 ## Browser Support

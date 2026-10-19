@@ -11,7 +11,7 @@ const REMOTE_ENDPOINT = normalizeEndpoint(
       ? "https://api.komori.cc/changelog"
       : "/api/changelog"),
 );
-const STATIC_ENDPOINT = "/changelog.v1.json";
+const STATIC_ENDPOINT = "/changelog.json";
 const REQUEST_TIMEOUT_MS = 6000;
 const CHANGELOG_TYPES = new Set([
   "feature",

@@ -7,7 +7,6 @@ import { createInterface } from "node:readline/promises";
 import {
   CHANGELOG_DIR,
   CHANGELOG_TYPES,
-  LEGACY_CHANGELOG_PATH,
   PROJECT_ROOT,
   SEMVER_BUMPS,
   STATIC_CHANGELOG_PATH,
@@ -38,6 +37,10 @@ const BACKUP_DIR = join(PROJECT_ROOT, ".tmp", "changelog-backups");
 const TEMP_DIR = join(PROJECT_ROOT, ".tmp", "changelog");
 const ANNOUNCEMENTS_DIR = join(PROJECT_ROOT, "announcements");
 const PACKAGE_PATH = join(PROJECT_ROOT, "package.json");
+const README_PATHS = ["README.md", "README_en.md", "README_fr.md"].map((name) =>
+  join(PROJECT_ROOT, name),
+);
+const README_VERSION_PATTERN = /^([\t ]*(?:当前版本：|Current version:|Version actuelle :)[\t ]*<strong>)([^<\r\n]+)(<\/strong>)/gm;
 const DRAFT_INTRO = "请填写版本概述。";
 const DRAFT_CHANGE = "- 请填写更新内容。";
 const DRAFT_WARNING = "请说明破坏性变化和升级方式。";
@@ -51,7 +54,7 @@ const helpText = `更新日志工具
   edit <version>                        编辑版本日志
   list                                  查看全部本地版本
   check                                 校验全部版本文件
-  prepare <version> [--date YYYY-MM-DD] 将草稿转为可提交的正式版本并生成公告
+  prepare <version> [--date YYYY-MM-DD] 将草稿转为正式版本，同步 README 并生成公告
   release <version> [--date YYYY-MM-DD] prepare 的兼容别名
   publish [--dry-run] [--yes]           重新发布全部正式版本
   announcement <version> [--update]     生成或更新版本公告草稿
@@ -346,6 +349,16 @@ const checkReleases = async () => {
   );
 };
 
+const readReadmeVersions = async () =>
+  Promise.all(README_PATHS.map(async (path) => {
+    const content = await readFile(path, "utf8");
+    const matches = [...content.matchAll(README_VERSION_PATTERN)];
+    if (matches.length !== 1) {
+      throw new Error(`${basename(path)} 必须包含唯一的当前版本标记。`);
+    }
+    return { path, content, version: matches[0][2].trim() };
+  }));
+
 export const verifyReleaseVersion = async (expectedVersion) => {
   const entries = await readReleaseFiles();
   const released = entries
@@ -365,6 +378,14 @@ export const verifyReleaseVersion = async (expectedVersion) => {
     throw new Error(
       `发布版本 ${expectedVersion} 与最新正式日志 ${latest.version} 不一致。`,
     );
+  }
+
+  for (const readme of await readReadmeVersions()) {
+    if (readme.version !== latest.version) {
+      throw new Error(
+        `${basename(readme.path)} 版本 ${readme.version} 与最新正式日志 ${latest.version} 不一致。`,
+      );
+    }
   }
 
   return { entries, version: latest.version };
@@ -477,20 +498,20 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
   const release = parseReleaseMarkdown(releaseContent, entry.name);
   const candidateEntries = entries.map((item) => item === entry ? { ...item, release } : item);
   validateReleaseChain(candidateEntries);
+  const readmes = await readReadmeVersions();
   if (dryRun) {
     console.log(`准备发布：${pkg.version} → ${version}`);
     console.log(`发布日期：${release.date}`);
-    console.log("将更新 package.json、静态更新日志快照和版本公告；不会写入远端。");
+    console.log("将更新 package.json、三语 README 版本号、静态更新日志快照和版本公告；不会写入远端。");
     return;
   }
 
   const announcementPath = join(ANNOUNCEMENTS_DIR, `release-${version}.md`);
-  const snapshots = new Map();
+  const snapshots = new Map(readmes.map(({ path, content }) => [path, content]));
   for (const path of [
     entry.path,
     PACKAGE_PATH,
     STATIC_CHANGELOG_PATH,
-    LEGACY_CHANGELOG_PATH,
     announcementPath,
   ]) {
     snapshots.set(path, await readOptionalFile(path));
@@ -503,6 +524,15 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
       updatePackageVersion(packageContent, pkg.version, version),
       "utf8",
     );
+    for (const { path, content } of readmes) {
+      await writeFile(
+        path,
+        content.replace(README_VERSION_PATTERN, (_, prefix, previousVersion, suffix) =>
+          `${prefix}${version}${suffix}`,
+        ),
+        "utf8",
+      );
+    }
     await writeStaticChangelog(candidateEntries);
     await createAnnouncementDraft(release, { skipExisting: true });
   } catch (error) {

@@ -13,8 +13,8 @@ const helpText = `版本发布工具
 用法：pnpm release <command> <version> [options]
 
 命令：
-  prepare <version> [--date YYYY-MM-DD] 将草稿转为正式版本并生成本地发布文件
-  verify <version>                     校验版本号、package.json 与更新日志
+  prepare <version> [--date YYYY-MM-DD] 将草稿转为正式版本，同步 README 并生成本地发布文件
+  verify <version>                     校验 package.json、README 与更新日志版本
   publish <version> [--dry-run] [--yes] 发布更新日志和公告 KV
 
 发布步骤：
