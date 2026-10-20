@@ -236,16 +236,6 @@
   overflow-x: auto;
 }
 
-.mobile-page-viewport
-  :deep(.mobile-page-article .markdown-table-wrapper table) {
-  width: fit-content;
-  min-width: 100%;
-  max-width: none;
-  /* 页间距由顶层阅读流统一提供，避免 typography 的 table 上下 margin
-     在每个续表片段里重复占掉两段正文高度。 */
-  margin-block: 0;
-}
-
 .mobile-page-viewport :deep(.mobile-page-article .mobile-table-flow-marker) {
   display: block;
   width: 0;
@@ -267,14 +257,6 @@
   :deep(.mobile-page-article .markdown-table-scroll:has(> .mobile-table-fragment)) {
   break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
-}
-
-.mobile-page-viewport
-  :deep(
-    .mobile-page-article .markdown-table-wrapper.mobile-table-fragment table
-  ) {
-  width: fit-content;
-  min-width: 100%;
 }
 
 .mobile-page-viewport

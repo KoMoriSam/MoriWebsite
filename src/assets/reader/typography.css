@@ -292,22 +292,36 @@
     @apply w-full max-w-full h-auto;
   }
 
+  :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-scroll) {
+    @apply w-full max-w-full min-w-0;
+  }
+
+  :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-wrapper) {
+    @apply w-full max-w-full min-w-0 overflow-x-auto scrollbar-thin;
+    margin-block: 1.5em;
+  }
+
+  :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-wrapper table) {
+    @apply w-full max-w-none my-0;
+    table-layout: auto;
+  }
+
+  :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-wrapper :is(th, td)) {
+    min-width: 12em;
+    max-width: 32em;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
   .markdown-content.prose :deep(.markdown-table-wrapper) {
-    @apply w-full max-w-full min-w-0 overflow-x-auto scrollbar-thin my-[calc(var(--para-margin-inline)+var(--para-font-size)*var(--para-line-height)*0.5)];
+    @apply my-[calc(var(--para-margin-inline)+var(--para-font-size)*var(--para-line-height)*0.5)];
   }
 
   .markdown-content.prose :deep(.markdown-table-wrapper table) {
     @apply text-[calc(var(--para-font-size)*0.875)]
     tracking-[calc(var(--para-letter-spacing)*0.875)]
-    leading-[calc(var(--para-line-height)*0.875)]
-    w-max min-w-full max-w-none my-0;
-  }
-
-  .markdown-content.prose
-    :deep(
-      :where(th, td):not(:where([class~="not-prose"], [class~="not-prose"] *))
-    ) {
-    @apply whitespace-normal;
+    leading-[calc(var(--para-line-height)*0.875)];
   }
 
   .markdown-content.prose :deep(hr) {

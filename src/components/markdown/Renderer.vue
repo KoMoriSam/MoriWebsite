@@ -528,6 +528,15 @@ const resolveMarkdownComponent = ({
 
 const resolveStandardMarkdownComponent = (context) => {
   const { tagName } = context;
+  if (
+    tagName === "table" ||
+    (tagName === "section" &&
+      String(context.props.class || "")
+        .split(/\s+/)
+        .includes("markdown-table-wrapper"))
+  ) {
+    return resolveMarkdownComponent(context);
+  }
   if (!tagName.startsWith("markdown-")) return undefined;
   if (!["markdown-alert", "markdown-code"].includes(tagName)) return false;
   return resolveMarkdownComponent(context);
