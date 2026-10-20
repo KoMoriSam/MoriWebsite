@@ -174,6 +174,10 @@ const writeDistributionFiles = async ({
     resolve(ROOT, "THIRD_PARTY_NOTICES.zh-CN.md"),
     resolve(OUTPUT_ROOT, "THIRD_PARTY_NOTICES.zh-CN.txt"),
   );
+  await copyFile(
+    resolve(ROOT, "THIRD_PARTY_NOTICES.si.md"),
+    resolve(OUTPUT_ROOT, "THIRD_PARTY_NOTICES.si.txt"),
+  );
   await copyFile(resolve(ROOT, "LICENSE"), resolve(OUTPUT_ROOT, "LICENSE"));
 
   for (const license of supplementalLicenses) {
@@ -213,6 +217,9 @@ const main = async () => {
     ).trim(),
     noticesMarkdownZh: (
       await readFile(resolve(ROOT, "THIRD_PARTY_NOTICES.zh-CN.md"), "utf8")
+    ).trim(),
+    noticesMarkdownSi: (
+      await readFile(resolve(ROOT, "THIRD_PARTY_NOTICES.si.md"), "utf8")
     ).trim(),
     dependencyCount: dependencyNotices.length,
     missingLicenseFileCount: dependencyNotices.filter(

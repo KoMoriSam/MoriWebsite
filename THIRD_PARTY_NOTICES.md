@@ -1,9 +1,9 @@
 # Third-party notices
 
-A Simplified Chinese translation is available in
-[`THIRD_PARTY_NOTICES.zh-CN.md`](./THIRD_PARTY_NOTICES.zh-CN.md). It is
-provided for convenience; if the two versions differ, this English version
-controls.
+Simplified Chinese and Sinhala translations are available in
+[`THIRD_PARTY_NOTICES.zh-CN.md`](./THIRD_PARTY_NOTICES.zh-CN.md) and
+[`THIRD_PARTY_NOTICES.si.md`](./THIRD_PARTY_NOTICES.si.md). They are
+provided for convenience; if the versions differ, this English version controls.
 
 The MIT License in [`LICENSE`](./LICENSE) applies only to the original software
 source code in this repository unless a file states otherwise. It does not

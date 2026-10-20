@@ -16,7 +16,8 @@
       "upstream": "Upstream:",
       "theInstalledVersionOfThisPackageDoesNotIncludeA": "The installed version of this package does not include a top-level license file.",
       "additionalLicenseFiles": "Additional license files",
-      "viewChineseSource": "View Chinese source"
+      "viewChineseSource": "View Chinese source",
+      "viewSource": "View source text"
     }
   }
 }

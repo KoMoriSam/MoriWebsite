@@ -56,7 +56,7 @@
       </details>
     </section>
 
-    <section id="notices" class="scroll-mt-24 my-8">
+    <section id="notices" class="scroll-mt-24 my-8 min-w-0">
       <div
         class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
@@ -65,26 +65,20 @@
           <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.thirdPartyNotices') }}</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <div class="join" role="group" :aria-label="translate('pages.licenses.noticeLanguage')">
-            <button
-              type="button"
-              class="btn btn-sm join-item"
-              :class="{ 'btn-active': noticeLanguage === 'zh-CN' }"
-              :aria-pressed="noticeLanguage === 'zh-CN'"
-              @click="noticeLanguage = 'zh-CN'"
+          <select
+            v-model="noticeLanguage"
+            class="select select-sm w-auto max-w-full"
+            :aria-label="translate('pages.licenses.noticeLanguage')"
+          >
+            <option
+              v-for="language in LOCALES"
+              :key="language.code"
+              :value="language.code"
+              :lang="language.code"
             >
-              {{ translate('pages.licenses.chinese') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm join-item"
-              :class="{ 'btn-active': noticeLanguage === 'en' }"
-              :aria-pressed="noticeLanguage === 'en'"
-              @click="noticeLanguage = 'en'"
-            >
-              English
-            </button>
-          </div>
+              {{ language.name }}
+            </option>
+          </select>
 
           <a
             class="link link-hover text-sm"
@@ -92,19 +86,24 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ rawNoticeLabel }}
+            {{ translate('pages.licenses.viewSource') }}
             <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
           </a>
         </div>
       </div>
 
-      <article class="card card-border bg-base-100" :lang="noticeLanguage">
-        <div class="card-body">
-          <div class="prose max-w-none">
-            <RenderedContent :html="renderedNoticesHtml" />
-          </div>
+      <div class="card card-border min-w-0 bg-base-100">
+        <div class="card-body min-w-0">
+          <Renderer
+            :content="renderedNotices"
+            :lang="noticeLanguage"
+            content-id="third-party-notices"
+            mode="standard"
+            :manage-route-anchor="false"
+            class="max-w-none min-w-0 wrap-break-word"
+          />
         </div>
-      </article>
+      </div>
     </section>
 
     <section
@@ -233,35 +232,34 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { useLocale } from '@/i18n';
-const { t: translate } = useLocale();
+import { LOCALES, useLocale } from '@/i18n';
+const { t: translate, locale } = useLocale();
 
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import MarkdownIt from "markdown-it";
 import { useRoute } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
-import RenderedContent from "@/components/markdown/RenderedContent.vue";
+import Renderer from "@/components/markdown/Renderer.vue";
 import licenseData from "@/router/license-data";
 import { createLicenseAnchor } from "@/utils/create-license-anchor";
 
 const route = useRoute();
 
-const markdownOptions = {
-  html: false,
-  linkify: true,
-  typographer: true,
-};
+const noticeLanguage = ref(locale.value);
+watch(locale, (language) => { noticeLanguage.value = language; });
 
-const noticeLanguage = ref("zh-CN");
+const noticesByLanguage = {
+  "zh-CN": licenseData.noticesMarkdownZh,
+  en: licenseData.noticesMarkdownEn,
+  si: licenseData.noticesMarkdownSi,
+};
 const currentNoticesMarkdown = computed(() =>
-  noticeLanguage.value === "zh-CN"
-    ? licenseData.noticesMarkdownZh
-    : licenseData.noticesMarkdownEn,
+  noticesByLanguage[noticeLanguage.value] || "",
 );
 
 const renderedNotices = computed(() =>
   currentNoticesMarkdown.value
+    .replace(/^# [^\r\n]*(?:\r?\n|$)/, "")
     .replaceAll("(./LICENSE)", "(/legal/LICENSE)")
     .replaceAll(
       "(./THIRD_PARTY_NOTICES.zh-CN.md)",
@@ -271,20 +269,15 @@ const renderedNotices = computed(() =>
       "(./THIRD_PARTY_NOTICES.md)",
       "(/legal/THIRD_PARTY_NOTICES.txt)",
     )
+    .replaceAll(
+      "(./THIRD_PARTY_NOTICES.si.md)",
+      "(/legal/THIRD_PARTY_NOTICES.si.txt)",
+    )
     .replaceAll("(./licenses/", "(/legal/licenses/"),
-);
-const renderedNoticesHtml = computed(() =>
-  new MarkdownIt(markdownOptions).render(renderedNotices.value),
 );
 
 const rawNoticeUrl = computed(() =>
-  noticeLanguage.value === "zh-CN"
-    ? "/legal/THIRD_PARTY_NOTICES.zh-CN.txt"
-    : "/legal/THIRD_PARTY_NOTICES.txt",
-);
-
-const rawNoticeLabel = computed(() =>
-  noticeLanguage.value === "zh-CN" ? translate('pages.licenses.viewChineseSource') : translate('common.sections.viewEnglishSource'),
+  `/legal/THIRD_PARTY_NOTICES${noticeLanguage.value === "en" ? "" : `.${noticeLanguage.value}`}.txt`,
 );
 
 const dependencyAnchor = (dependency) =>

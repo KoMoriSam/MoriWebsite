@@ -7,6 +7,7 @@ const licenseData = generatedDataModules["./license-data.generated.js"] || {
   projectLicense: "",
   noticesMarkdownEn: "",
   noticesMarkdownZh: "",
+  noticesMarkdownSi: "",
   dependencyCount: 0,
   missingLicenseFileCount: 0,
   dependencyNotices: [],

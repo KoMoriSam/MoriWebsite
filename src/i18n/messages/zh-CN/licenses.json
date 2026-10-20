@@ -16,7 +16,8 @@
       "upstream": "上游：",
       "theInstalledVersionOfThisPackageDoesNotIncludeA": "此软件包未随已安装版本提供顶层许可证文件。",
       "additionalLicenseFiles": "补充许可文件",
-      "viewChineseSource": "查看中文原始文本"
+      "viewChineseSource": "查看中文原始文本",
+      "viewSource": "查看原始文本"
     }
   }
 }

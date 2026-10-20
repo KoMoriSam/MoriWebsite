@@ -16,7 +16,8 @@
       "upstream": "මුල් මූලාශ්‍රය:",
       "theInstalledVersionOfThisPackageDoesNotIncludeA": "මෙම පැකේජයේ ස්ථාපිත අනුවාදයට ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් ඇතුළත් නැත.",
       "additionalLicenseFiles": "අතිරේක බලපත්‍ර ගොනු",
-      "viewChineseSource": "චීන මුල් පෙළ බලන්න"
+      "viewChineseSource": "චීන මුල් පෙළ බලන්න",
+      "viewSource": "මුල් පෙළ බලන්න"
     }
   }
 }
