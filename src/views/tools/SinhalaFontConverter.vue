@@ -71,6 +71,7 @@
                   'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
                 )
               "
+              :disabled="documentBusy"
               @click="swapPanels"
             >
               <i
@@ -89,117 +90,127 @@
           </hgroup>
         </div>
         <div
-          class="card card-dash min-h-[170px] border-base-content bg-base-100 transition-colors lg:min-h-[234px] motion-reduce:transition-none"
-          :class="
-            isDocumentDragging ? 'border-base-content/50 bg-base-200/60' : ''
-          "
-          @dragenter.prevent="isDocumentDragging = true"
-          @dragover.prevent="isDocumentDragging = true"
+          class="card card-dash min-h-[170px] min-w-0 border-base-content bg-base-100 transition-colors lg:min-h-[234px] motion-reduce:transition-none"
+          :class="{
+            'border-base-content/50 bg-base-200/60': isDocumentDragging,
+          }"
+          @dragenter.prevent="isDocumentDragging = !documentBusy"
+          @dragover.prevent="isDocumentDragging = !documentBusy"
           @dragleave.prevent="handleDocumentDragLeave"
           @drop.prevent="handleDocumentDrop"
         >
           <div
-            class="card-body items-center justify-center gap-1 p-3 text-center lg:gap-2 lg:p-6"
+            class="card-body min-w-0 justify-center gap-4 p-4 sm:gap-5 sm:p-5 lg:p-6"
           >
-            <span
-              class="flex size-10 items-center justify-center rounded-box bg-base-200 text-xl lg:size-12 lg:text-2xl"
-              aria-hidden="true"
-            >
-              <i
-                :class="
-                  isDocumentDragging
-                    ? 'ri-file-transfer-line'
-                    : documentFile
-                      ? 'ri-file-text-line'
-                      : 'ri-file-add-line'
-                "
-              ></i>
-            </span>
-            <template v-if="documentFile">
-              <p
-                v-if="documentText"
-                class="text-sm text-base-content/70 text-balance"
+            <div class="flex min-w-0 flex-col items-center gap-2 text-center">
+              <div
+                class="relative flex h-10 w-full min-w-0 items-center justify-center lg:h-12"
               >
-                {{
-                  documentDetectedEncoding
-                    ? translate(
-                        "tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect",
-                        {
-                          p0:
-                            documentDetectedEncoding === "legacy"
-                              ? "Legacy"
-                              : "Unicode",
-                        },
-                      )
-                    : translate(
-                        "tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection",
-                      )
-                }}
-              </p>
-              <p class="max-w-full break-all font-medium">
                 <span
-                  v-if="documentBusy"
-                  class="loading loading-spinner loading-xs"
+                  class="flex size-10 shrink-0 items-center justify-center rounded-box bg-base-200 text-xl lg:size-12 lg:text-2xl"
                   aria-hidden="true"
-                ></span>
-                <span v-else>
-                  <i class="ri-checkbox-circle-fill text-success"></i>
-                  <span class="badge badge-success badge-soft badge-xs">{{
-                    translate("tools.sinhalaFontConverter.conversionSuccessful")
-                  }}</span>
+                >
+                  <i
+                    :class="
+                      isDocumentDragging
+                        ? 'ri-file-transfer-line'
+                        : documentFile
+                          ? documentIsPdf
+                            ? 'ri-file-pdf-2-fill text-error'
+                            : documentIsPptx
+                              ? 'ri-file-ppt-fill text-warning'
+                              : 'ri-file-word-fill text-info'
+                          : 'ri-file-add-line'
+                    "
+                  ></i>
                 </span>
-                {{ documentFile.name }}
-              </p>
-              <p class="text-xs text-base-content/60">
-                {{ documentText.length }}
-                {{ translate("tools.sinhalaFontConverter.characters") }}
-              </p>
-              <p v-if="documentError" role="alert" class="text-sm text-error">
-                {{ localizeText(documentError) }}
-              </p>
-              <div class="card-actions justify-center gap-2">
-                <label
-                  class="btn btn-sm"
-                  :class="isDocumentDragging ? 'btn-dash' : 'btn-outline'"
-                  for="sinhala-document-upload"
-                >
-                  <i class="ri-upload-line"></i>
-                  {{ translate("tools.sinhalaFontConverter.changeFile") }}
-                </label>
                 <button
+                  v-if="documentFile"
                   type="button"
-                  class="btn btn-sm"
-                  :disabled="!documentText.trim() || documentBusy"
-                  @click="convertUploadedDocument"
+                  class="btn btn-xs group absolute bottom-0 left-[calc(50%+1rem)] h-auto min-h-6 max-w-[calc(50%-1rem)] gap-1 rounded-full border-base-100 bg-base-200 px-2 py-1 text-base-content/70 shadow-xs transition-colors duration-150 enabled:hover:bg-base-300 enabled:hover:text-base-content enabled:active:bg-base-300 active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/50 disabled:opacity-50 motion-safe:enabled:active:translate-y-px motion-reduce:transition-none lg:left-[calc(50%+1.25rem)] lg:max-w-[calc(50%-1.25rem)]"
+                  :aria-label="
+                    translate('tools.sinhalaFontConverter.changeFile')
+                  "
+                  :disabled="documentBusy"
+                  @click="documentUploadInput?.click()"
                 >
-                  <span
-                    v-if="documentBusy"
-                    class="loading loading-spinner loading-xs"
+                  <i
+                    class="ri-refresh-line shrink-0 text-sm transition-transform duration-150 motion-safe:group-enabled:group-hover:rotate-12 motion-reduce:transition-none"
                     aria-hidden="true"
-                  ></span>
-                  <i v-else class="ri-download-line"></i>
-                  {{
-                    documentBusy
-                      ? documentText
-                        ? translate("tools.sinhalaFontConverter.converting")
-                        : translate("tools.sinhalaFontConverter.reading")
-                      : translate("tools.sinhalaFontConverter.downloadDocx")
-                  }}
+                  ></i>
+                  <span
+                    class="min-w-0 whitespace-normal [overflow-wrap:anywhere]"
+                    >{{
+                      translate("tools.sinhalaFontConverter.changeFileShort")
+                    }}</span
+                  >
                 </button>
               </div>
-            </template>
-            <template v-else>
-              <div>
+              <div v-if="documentFile" class="w-full min-w-0 space-y-1">
+                <p
+                  class="min-w-0 text-sm font-medium [overflow-wrap:anywhere] sm:text-base"
+                >
+                  {{ documentFile.name }}
+                </p>
+                <p
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  class="flex min-h-5 min-w-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-base-content/55"
+                >
+                  <span
+                    class="badge badge-soft badge-xs shrink-0"
+                    :class="
+                      documentError
+                        ? 'badge-error'
+                        : documentResult
+                          ? 'badge-success'
+                          : ''
+                    "
+                    >{{ documentFileStatus }}</span
+                  >
+                  <span class="whitespace-nowrap">
+                    <template v-if="documentText"
+                      >{{ documentText.length }}
+                      {{
+                        translate("tools.sinhalaFontConverter.characters")
+                      }}</template
+                    >
+                    <template v-else>{{
+                      documentFile.name.split(".").pop()?.toUpperCase()
+                    }}</template>
+                  </span>
+                  <span
+                    v-if="documentReading || !documentError || documentText"
+                    class="inline-flex min-w-0 max-w-full items-center gap-1.5 [overflow-wrap:anywhere]"
+                  >
+                    <span
+                      v-if="documentReading"
+                      class="loading loading-spinner loading-xs shrink-0"
+                      aria-hidden="true"
+                    ></span>
+                    <span>{{ documentSourceStatus }}</span>
+                  </span>
+                </p>
+                <p
+                  v-if="documentError"
+                  role="alert"
+                  class="pt-1 text-sm text-error [overflow-wrap:anywhere]"
+                >
+                  {{ localizeText(documentError) }}
+                </p>
+              </div>
+              <div v-else class="min-w-0 space-y-1">
                 <h3 class="font-serif text-base font-bold lg:text-lg">
                   {{
-                    isDocumentDragging
-                      ? translate("tools.imageConverter.dropFilesHere")
-                      : translate(
-                          "tools.sinhalaFontConverter.dropDocxOrPdfFilesHere",
-                        )
+                    translate(
+                      isDocumentDragging
+                        ? "tools.imageConverter.dropFilesHere"
+                        : "tools.sinhalaFontConverter.dropDocxOrPdfFilesHere",
+                    )
                   }}
                 </h3>
-                <p class="mt-1 text-xs text-base-content/60 lg:text-sm">
+                <p class="text-xs text-base-content/60 sm:text-sm">
                   {{
                     translate(
                       "tools.sinhalaFontConverter.selectADocumentToDetectItsEncodingAndConvertIt",
@@ -207,20 +218,140 @@
                   }}
                 </p>
               </div>
-              <label
-                class="btn btn-sm"
-                :class="isDocumentDragging ? 'btn-dash' : 'btn-outline'"
-                for="sinhala-document-upload"
+            </div>
+            <div
+              class="grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)] items-center gap-x-4 gap-y-2 self-center md:w-fit"
+              :class="{
+                'md:grid-cols-[minmax(0,max-content)_auto]': documentIsPdf,
+              }"
+            >
+              <template v-if="documentIsPdf">
+                <div
+                  class="col-start-1 row-start-1 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+                >
+                  <label
+                    for="sinhala-pdf-format"
+                    class="min-w-0 text-xs font-medium"
+                    >{{
+                      translate(
+                        "tools.sinhalaFontConverter.documentOutputFormat",
+                      )
+                    }}</label
+                  >
+                  <label class="label min-w-0 cursor-pointer gap-1.5 text-xs">
+                    <input
+                      v-model="documentPdfAutomatic"
+                      type="checkbox"
+                      class="checkbox checkbox-xs shrink-0"
+                      :disabled="documentBusy || !documentText"
+                    />
+                    <span class="whitespace-normal [overflow-wrap:anywhere]">{{
+                      translate("tools.sinhalaFontConverter.pdfOutputAutomatic")
+                    }}</span>
+                  </label>
+                </div>
+                <select
+                  id="sinhala-pdf-format"
+                  v-model="documentPdfSelectedFormat"
+                  class="select select-sm col-start-1 row-start-2 w-full min-w-0"
+                  :disabled="documentBusy || !documentText"
+                >
+                  <option value="docx">
+                    {{
+                      translate(
+                        "tools.sinhalaFontConverter.flowingDocumentDocx",
+                      )
+                    }}
+                  </option>
+                  <option value="pptx">
+                    {{
+                      translate(
+                        "tools.sinhalaFontConverter.positionedSlidesPptx",
+                      )
+                    }}
+                  </option>
+                </select>
+              </template>
+              <button
+                v-if="documentResult"
+                type="button"
+                class="link link-primary link-hover text-xs"
+                :class="{ 'md:col-start-2 md:row-start-1': documentIsPdf }"
+                :disabled="!documentText.trim() || documentBusy"
+                @click="convertUploadedDocument"
               >
-                <i class="ri-folder-open-line" aria-hidden="true"></i>
-                {{ translate("tools.sinhalaFontConverter.chooseDocument") }}
-              </label>
-            </template>
+                <i class="ri-repeat-2-line" aria-hidden="true"></i>
+                {{ translate("tools.sinhalaFontConverter.reconvertDocument") }}
+              </button>
+              <div
+                class="flex min-w-0 flex-wrap items-center justify-center gap-2 md:flex-nowrap"
+                :class="{
+                  'md:col-start-2 md:row-start-2 [&>.btn]:flex-1 md:[&>.btn]:flex-none':
+                    documentIsPdf,
+                }"
+              >
+                <button
+                  v-if="!documentFile"
+                  type="button"
+                  class="btn btn-primary btn-sm h-auto min-h-8 min-w-0 max-w-full whitespace-normal py-1"
+                  :disabled="documentBusy"
+                  @click="documentUploadInput?.click()"
+                >
+                  <i class="ri-folder-open-line" aria-hidden="true"></i>
+                  {{ translate("tools.sinhalaFontConverter.chooseDocument") }}
+                </button>
+                <button
+                  v-if="documentFile && !documentResult"
+                  type="button"
+                  class="btn btn-sm h-auto min-h-8 min-w-0 max-w-full whitespace-normal py-1"
+                  :class="
+                    documentError && !documentText ? 'btn-ghost' : 'btn-primary'
+                  "
+                  :disabled="!documentText.trim() || documentBusy"
+                  @click="convertUploadedDocument"
+                >
+                  <span
+                    v-if="documentConverting"
+                    class="loading loading-spinner loading-xs"
+                    aria-hidden="true"
+                  ></span>
+                  <i v-else class="ri-repeat-2-line" aria-hidden="true"></i>
+                  {{
+                    translate(
+                      documentConverting
+                        ? "tools.sinhalaFontConverter.converting"
+                        : documentHasConverted ||
+                            (documentError && documentText)
+                          ? "tools.sinhalaFontConverter.reconvertDocument"
+                          : "tools.sinhalaFontConverter.convertDocument",
+                    )
+                  }}
+                </button>
+                <a
+                  v-if="documentResult"
+                  class="btn btn-primary btn-sm h-auto min-h-8 min-w-0 max-w-full whitespace-normal py-1"
+                  :href="documentResult.url"
+                  :download="documentResult.filename"
+                >
+                  <i class="ri-download-line" aria-hidden="true"></i>
+                  {{
+                    translate(
+                      documentResult.format === "pptx"
+                        ? "tools.sinhalaFontConverter.downloadPptx"
+                        : "tools.sinhalaFontConverter.downloadDocx",
+                    )
+                  }}
+                </a>
+              </div>
+            </div>
             <input
               id="sinhala-document-upload"
+              ref="documentUploadInput"
               type="file"
-              accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept=".docx,.pptx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               class="sr-only"
+              :disabled="documentBusy"
+              tabindex="-1"
               @change="handleDocumentSelection"
             />
           </div>
@@ -783,8 +914,9 @@
         {{ translate("tools.sinhalaFontConverter.toConvertDocxOrPdfFiles") }}
       </p>
 
-      <div
-        class="mt-3 flex flex-wrap items-start gap-x-8 gap-y-4 [overflow-anchor:none] md:grid-cols-2"
+      <fieldset
+        class="mt-3 flex min-w-0 flex-wrap items-start gap-x-8 gap-y-4 [overflow-anchor:none] md:grid-cols-2"
+        :disabled="inputMode === 'document' && documentConverting"
         @pointerdown.capture="captureControlViewport"
         @keydown.capture="captureControlViewport"
       >
@@ -962,7 +1094,7 @@
             sinhala="හල් කිරීම් ඉවත් කිරීම"
           />
         </label>
-      </div>
+      </fieldset>
     </section>
 
     <Notes />
@@ -987,6 +1119,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  shallowRef,
   watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -997,6 +1130,7 @@ import Info from "@/components/tools/sinhala/Info.vue";
 import OptionLabel from "@/components/tools/sinhala/OptionLabel.vue";
 import Notes from "@/components/tools/sinhala/Notes.vue";
 import { createSinhalaDocx } from "@/utils/sinhala/create-docx";
+import { convertSinhalaDocx } from "@/utils/sinhala/convert-docx";
 import { readSinhalaDocument } from "@/utils/sinhala/read-document";
 import {
   legacyFontPreviewText,
@@ -1086,13 +1220,111 @@ const inputMode = computed({
   },
 });
 const documentFile = ref(null);
+const documentUploadInput = ref(null);
 const documentText = ref("");
+const documentSourceDocx = shallowRef(null);
+const documentPdfPages = shallowRef(null);
+const documentPdfFormat = ref("auto");
+const documentPdfSuggestedFormat = ref(null);
+const documentIsPdf = computed(() =>
+  Boolean(documentFile.value?.name.toLowerCase().endsWith(".pdf")),
+);
+const documentIsPptx = computed(() =>
+  Boolean(documentFile.value?.name.toLowerCase().endsWith(".pptx")),
+);
+const documentPdfOutputFormat = computed(() =>
+  documentPdfFormat.value === "auto"
+    ? documentPdfSuggestedFormat.value || "docx"
+    : documentPdfFormat.value,
+);
+const documentPdfSelectedFormat = computed({
+  get: () => documentPdfOutputFormat.value,
+  set: (format) => {
+    documentPdfFormat.value = format;
+  },
+});
+const documentPdfAutomatic = computed({
+  get: () => documentPdfFormat.value === "auto",
+  set: (automatic) => {
+    documentPdfFormat.value = automatic
+      ? "auto"
+      : documentPdfOutputFormat.value;
+  },
+});
 const documentDetectedEncoding = ref(null);
 const documentError = ref("");
-const documentBusy = ref(false);
+const documentReading = ref(false);
+const documentReadStage = ref("reading");
+const documentConverting = ref(false);
+const documentBusy = computed(
+  () => documentReading.value || documentConverting.value,
+);
+const documentResult = ref(null);
+const documentHasConverted = ref(false);
+const documentDirectionReversed = ref(false);
+const documentDirectionManual = ref(false);
+const documentSourceStatus = computed(() => {
+  if (documentReading.value) {
+    const messages = {
+      reading: "readingDocumentFile",
+      parsing: "parsingDocumentContent",
+      detecting: "detectingDocumentEncoding",
+    };
+    return translate(
+      `tools.sinhalaFontConverter.${messages[documentReadStage.value]}`,
+    );
+  }
+  if (!documentText.value && documentError.value) {
+    return translate("tools.sinhalaFontConverter.failedToReadFile");
+  }
+  return documentDetectedEncoding.value
+    ? translate(
+        "tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect",
+        {
+          p0:
+            documentDetectedEncoding.value === "legacy" ? "Legacy" : "Unicode",
+        },
+      )
+    : translate(
+        "tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection",
+      );
+});
+const documentFileStatus = computed(() =>
+  translate(
+    `tools.sinhalaFontConverter.${
+      documentReading.value
+        ? "reading"
+        : documentConverting.value
+          ? "converting"
+          : documentError.value
+            ? documentText.value
+              ? "conversionFailed"
+              : "failedToReadFile"
+            : documentResult.value
+              ? "conversionSuccessful"
+              : "fileReady"
+    }`,
+  ),
+);
+let documentReadRequest = 0;
+let documentConversionRequest = 0;
 const isDocumentDragging = ref(false);
 const LONG_TEXT_THRESHOLD = 5000;
-const isDirectionReversed = ref(false);
+const textDirectionReversed = ref(false);
+const isDirectionReversed = computed({
+  get: () =>
+    inputMode.value === "document"
+      ? documentDirectionReversed.value
+      : textDirectionReversed.value,
+  set: (reversed) => {
+    if (inputMode.value === "document") {
+      documentDirectionManual.value = true;
+      documentDirectionReversed.value = reversed;
+    } else {
+      textDirectionReversed.value = reversed;
+    }
+  },
+});
 const preserveCurrentReducedForms = ref(true);
 const preserveRepaya = ref(true);
 const preserveYansaya = ref(true);
@@ -1102,6 +1334,23 @@ const unifiedConjuncts = ref({ common: false, rare: false });
 const useTouchingConjuncts = ref(false);
 const removePaliHalForms = ref(false);
 const compactDaForms = ref(false);
+const documentConversionKey = computed(() =>
+  JSON.stringify({
+    format: documentPdfPages.value
+      ? documentPdfOutputFormat.value
+      : documentIsPptx.value
+        ? "pptx"
+        : "docx",
+    reversed: documentDirectionReversed.value,
+    options: {
+      ...conjunctConversionOptions(),
+      compactDaForms: compactDaForms.value,
+    },
+    legacyFont: legacyFontId.value,
+    legacyBold: legacyBold.value,
+  }),
+);
+watch(documentConversionKey, clearDocumentResult, { flush: "sync" });
 const isFmPreviewEditing = ref(false);
 const isFmPreviewComposing = ref(false);
 const renderedFmPreviewHtml = ref("");
@@ -1537,8 +1786,10 @@ function cancelScheduledTextareaResize() {
 }
 
 watch(inputMode, (mode) => {
-  if (mode === "text") scheduleTextareaResize();
-  else cancelScheduledTextareaResize();
+  if (mode === "text") {
+    handleConversionOptionsChange();
+    scheduleTextareaResize();
+  } else cancelScheduledTextareaResize();
 });
 
 watch(
@@ -2061,6 +2312,13 @@ function stabilizeControlViewport(event) {
 }
 
 function handleConversionOptionsChange(event) {
+  if (inputMode.value === "document") {
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.conversionOptionsUpdated",
+    );
+    stabilizeControlViewport(event);
+    return;
+  }
   cancelScheduledTextareaResize();
   flushFmPreviewConversion();
   resetCopyStatus();
@@ -2085,6 +2343,15 @@ function handleConversionOptionsChange(event) {
 }
 
 function swapPanels(event) {
+  if (inputMode.value === "document") {
+    if (documentBusy.value) return;
+    isDirectionReversed.value = !isDirectionReversed.value;
+    liveMessage.value = translate(
+      "tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped",
+    );
+    stabilizeControlViewport(event);
+    return;
+  }
   cancelScheduledTextareaResize();
   flushFmPreviewConversion();
   isDirectionReversed.value = !isDirectionReversed.value;
@@ -2179,6 +2446,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  documentReadRequest++;
+  documentConversionRequest++;
+  clearDocumentResult();
   stopControlViewportRestore?.();
   unicodeFontRequest++;
   legacyFontRequest++;
@@ -2307,13 +2577,16 @@ async function legacyDocumentFontPair() {
   };
 }
 
-async function convertedLegacyDocumentSegments(text = unicodeText.value) {
-  const { sinhala, other, otherBold } = await legacyDocumentFontPair();
-  const sinhalaBold = legacyBold.value && !isFmAbabldFont(sinhala);
-  return unicodeToFmSegments(text, {
+async function convertedLegacyDocumentSegments(
+  text = unicodeText.value,
+  options = {
     ...conjunctConversionOptions(),
     compactDaForms: compactDaForms.value,
-  }).flatMap(({ text, useLegacyFont }) =>
+  },
+) {
+  const { sinhala, other, otherBold } = await legacyDocumentFontPair();
+  const sinhalaBold = legacyBold.value && !isFmAbabldFont(sinhala);
+  return unicodeToFmSegments(text, options).flatMap(({ text, useLegacyFont }) =>
     text
       .split(/([0-9]+)/gu)
       .filter(Boolean)
@@ -2388,29 +2661,57 @@ function convertedUnicodeDocumentSegments(text, fontFamilies) {
     });
 }
 
+function clearDocumentResult() {
+  if (documentResult.value) URL.revokeObjectURL(documentResult.value.url);
+  documentResult.value = null;
+  if (documentText.value) documentError.value = "";
+}
+
 async function setDocumentFile(file) {
+  if (documentConverting.value) return;
+  const request = ++documentReadRequest;
+  clearDocumentResult();
+  documentHasConverted.value = false;
   documentFile.value = file;
   documentText.value = "";
+  documentSourceDocx.value = null;
+  documentPdfPages.value = null;
+  documentPdfSuggestedFormat.value = null;
   documentDetectedEncoding.value = null;
   documentError.value = "";
+  documentReadStage.value = "reading";
+  documentReading.value = Boolean(file);
   if (!file) return;
-  documentBusy.value = true;
   try {
-    const text = await readSinhalaDocument(file);
-    if (documentFile.value !== file) return;
+    await nextTick();
+    if (request !== documentReadRequest) return;
+    const { text, sourceDocx, pdfPages, pdfSuggestedFormat } =
+      await readSinhalaDocument(file, {
+        includeLayout: true,
+        onStage: (stage) => {
+          if (request === documentReadRequest) documentReadStage.value = stage;
+        },
+      });
+    if (request !== documentReadRequest) return;
     if (!text.trim())
       throw new Error(
         translate(
-          "tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet",
+          documentIsPdf.value
+            ? "tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet"
+            : "tools.sinhalaFontConverter.noConvertibleTextFound",
         ),
       );
-    documentText.value = text;
+    documentReadStage.value = "detecting";
+    await nextTick();
+    if (request !== documentReadRequest) return;
     const detectedEncoding = detectSinhalaEncoding(text);
+    documentText.value = text;
+    documentSourceDocx.value = sourceDocx;
+    documentPdfPages.value = pdfPages || null;
+    documentPdfSuggestedFormat.value = pdfSuggestedFormat || null;
     documentDetectedEncoding.value = detectedEncoding;
-    if (detectedEncoding) {
-      isDirectionReversed.value = detectedEncoding === "legacy";
-      resetFmHistory();
-      refreshFmPreview();
+    if (detectedEncoding && !documentDirectionManual.value) {
+      documentDirectionReversed.value = detectedEncoding === "legacy";
     }
     liveMessage.value = detectedEncoding
       ? translate("tools.sinhalaFontConverter.readDetectedEncoding", {
@@ -2422,7 +2723,7 @@ async function setDocumentFile(file) {
           { p0: file.name },
         );
   } catch (error) {
-    if (documentFile.value === file) {
+    if (request === documentReadRequest) {
       documentError.value =
         error instanceof Error
           ? error.message
@@ -2430,14 +2731,14 @@ async function setDocumentFile(file) {
       liveMessage.value = localizeText(documentError.value);
     }
   } finally {
-    if (documentFile.value === file) documentBusy.value = false;
+    if (request === documentReadRequest) documentReading.value = false;
   }
 }
 
 function handleDocumentSelection(event) {
   const file = event.target.files?.[0];
   event.target.value = "";
-  if (file) setDocumentFile(file);
+  if (file && !documentBusy.value) setDocumentFile(file);
 }
 
 function handleDocumentDragLeave(event) {
@@ -2448,42 +2749,80 @@ function handleDocumentDragLeave(event) {
 
 function handleDocumentDrop(event) {
   isDocumentDragging.value = false;
+  if (documentBusy.value) return;
   const file = event.dataTransfer?.files?.[0];
   if (file) setDocumentFile(file);
 }
 
 async function convertUploadedDocument() {
-  if (!documentText.value.trim() || documentBusy.value) return;
-  documentBusy.value = true;
+  if (!documentFile.value || !documentText.value.trim() || documentBusy.value)
+    return;
+  const request = ++documentConversionRequest;
+  const file = documentFile.value;
+  const source = documentSourceDocx.value || file;
+  const pages = documentPdfPages.value;
+  const format = pages
+    ? documentPdfOutputFormat.value
+    : documentIsPptx.value
+      ? "pptx"
+      : "docx";
+  const key = documentConversionKey.value;
+  const target = documentDirectionReversed.value ? "unicode" : "legacy";
+  const options = {
+    ...conjunctConversionOptions(),
+    compactDaForms: compactDaForms.value,
+  };
+  clearDocumentResult();
+  documentConverting.value = true;
   documentError.value = "";
   try {
-    const target = isDirectionReversed.value ? "unicode" : "legacy";
-    const segments = isDirectionReversed.value
-      ? convertedUnicodeDocumentSegments(
-          fmToUnicodePreservingNonSinhala(
-            documentText.value,
-            conjunctConversionOptions(),
-          ),
-          await unicodeDocumentFonts(),
-        )
-      : await convertedLegacyDocumentSegments(documentText.value);
-    const blob = await createSinhalaDocx(segments);
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${documentFile.value.name.replace(/\.(docx|pdf)$/iu, "")}-${target}.docx`;
-    anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    const legacyFonts =
+      target === "legacy" ? await legacyDocumentFontPair() : null;
+    const settings = {
+      target,
+      options,
+      legacyFontFamily:
+        legacyFonts && isFmAbabldFont(legacyFonts.sinhala)
+          ? "FMAbhaya"
+          : legacyFonts?.sinhala,
+      unicodeFontFamilies:
+        target === "unicode" ? await unicodeDocumentFonts() : null,
+    };
+    const blob = documentIsPptx.value
+      ? await (
+          await import("@/utils/sinhala/convert-pptx.js")
+        ).convertSinhalaPptx(file, settings)
+      : format === "pptx"
+        ? await (
+            await import("@/utils/sinhala/create-pdf-pptx.js")
+          ).createPdfPptx(pages, settings)
+        : await convertSinhalaDocx(source, settings);
+    if (
+      request !== documentConversionRequest ||
+      key !== documentConversionKey.value
+    )
+      return;
+    documentResult.value = {
+      url: URL.createObjectURL(blob),
+      filename: `${file.name.replace(/\.(docx|pptx|pdf)$/iu, "")}-${target}.${format}`,
+      format,
+    };
+    documentHasConverted.value = true;
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.convertedDocxDownloaded",
+      "tools.sinhalaFontConverter.documentConversionReady",
     );
   } catch {
+    if (
+      request !== documentConversionRequest ||
+      key !== documentConversionKey.value
+    )
+      return;
     documentError.value = localeMessage(
       "tools.sinhalaFontConverter.documentConversionFailedPleaseRetry",
     );
     liveMessage.value = documentError.value;
   } finally {
-    documentBusy.value = false;
+    if (request === documentConversionRequest) documentConverting.value = false;
   }
 }
 

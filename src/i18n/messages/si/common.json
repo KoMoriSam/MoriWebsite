@@ -303,7 +303,7 @@
     "read-document": {
       "theDocxDocumentHasNoBody": "DOCX ලේඛනයේ පෙළ නැත",
       "cannotReadDocxContent": "DOCX අන්තර්ගතය කියවිය නොහැක",
-      "onlyDocxAndPdfFilesAreSupported": "DOCX සහ PDF ගොනු පමණක් සහාය දක්වයි"
+      "onlyDocxAndPdfFilesAreSupported": "DOCX, PPTX සහ PDF ගොනු පමණක් සහාය දක්වයි"
     },
     "image-watermark": {
       "watermark": "දියසලකුණ"

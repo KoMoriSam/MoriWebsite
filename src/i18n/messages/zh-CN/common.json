@@ -303,7 +303,7 @@
     "read-document": {
       "theDocxDocumentHasNoBody": "DOCX 文档缺少正文",
       "cannotReadDocxContent": "DOCX 正文无法读取",
-      "onlyDocxAndPdfFilesAreSupported": "仅支持 DOCX 或 PDF 文件"
+      "onlyDocxAndPdfFilesAreSupported": "仅支持 DOCX、PPTX 或 PDF 文件"
     },
     "image-watermark": {
       "watermark": "水印"

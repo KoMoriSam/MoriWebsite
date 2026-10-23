@@ -1,0 +1,128 @@
+"""Generate exact Sinhala outline-to-text fingerprints; requires fontTools."""
+
+import argparse
+import json
+import os
+from pathlib import Path
+import struct
+
+from fontTools.ttLib import TTFont
+
+
+def digest(data):
+    first, second = 2166136261, 5381
+    for byte in data:
+        first = ((first ^ byte) * 16777619) & 0xFFFFFFFF
+        second = ((second * 33) ^ byte) & 0xFFFFFFFF
+    return f"{first:08x}{second:08x}"
+
+
+def font_mappings(path):
+    with TTFont(path) as font:
+        raw = font.reader["glyf"]
+        locations = font["loca"].locations
+        fingerprints = {}
+
+        def fingerprint(gid, depth=0):
+            if gid in fingerprints:
+                return fingerprints[gid]
+            if depth > 12:
+                return ""
+            data = raw[locations[gid]:locations[gid + 1]]
+            if not data:
+                return ""
+            contours = struct.unpack_from(">h", data)[0]
+            parts, position = bytearray(data[:10]), 10
+            if contours >= 0:
+                ends = struct.unpack_from(f">{contours}H", data, position) if contours else []
+                parts.extend(data[position:position + 2 * contours])
+                position += 2 * contours
+                instructions = struct.unpack_from(">H", data, position)[0]
+                position += 2 + instructions
+                start, flags = position, []
+                while len(flags) < (ends[-1] + 1 if ends else 0):
+                    flag = data[position]
+                    position += 1
+                    repeat = data[position] + 1 if flag & 8 else 1
+                    if flag & 8:
+                        position += 1
+                    flags.extend([flag] * repeat)
+                position += sum(
+                    (1 if flag & 2 else 0 if flag & 16 else 2) +
+                    (1 if flag & 4 else 0 if flag & 32 else 2)
+                    for flag in flags
+                )
+                parts.extend(data[start:position])
+            else:
+                while True:
+                    flags, component = struct.unpack_from(">HH", data, position)
+                    position += 4
+                    parts.extend(struct.pack(">H", flags & ~256))
+                    parts.extend(fingerprint(component, depth + 1).encode("ascii"))
+                    size = (4 if flags & 1 else 2) + (
+                        2 if flags & 8 else 4 if flags & 64 else 8 if flags & 128 else 0
+                    )
+                    parts.extend(data[position:position + size])
+                    position += size
+                    if not flags & 32:
+                        break
+            fingerprints[gid] = digest(parts)
+            return fingerprints[gid]
+
+        mappings = {
+            glyph: chr(code) for code, glyph in font.getBestCmap().items()
+            if 0xD80 <= code <= 0xDFF or code in (0x200C, 0x200D)
+        }
+        for _ in range(20):
+            previous = len(mappings)
+            for lookup in font["GSUB"].table.LookupList.Lookup:
+                for subtable in lookup.SubTable:
+                    subtable = getattr(subtable, "ExtSubTable", subtable)
+                    for source, target in getattr(subtable, "mapping", {}).items():
+                        if source in mappings and target not in mappings:
+                            mappings[target] = mappings[source]
+                    for source, ligatures in getattr(subtable, "ligatures", {}).items():
+                        for ligature in ligatures:
+                            components = [source] + ligature.Component
+                            if all(part in mappings for part in components):
+                                mappings.setdefault(ligature.LigGlyph, "".join(
+                                    mappings[part] for part in components
+                                ))
+            if len(mappings) == previous:
+                break
+        return [(fingerprint(font.getGlyphID(glyph)), text)
+                for glyph, text in mappings.items()
+                if any(0xD80 <= ord(character) <= 0xDFF for character in text)]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("fonts", nargs="*", type=Path)
+    parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] /
+                        "src/utils/sinhala/pdf-unicode-glyphs.generated.js")
+    args = parser.parse_args()
+    directory = Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts"
+    fonts = args.fonts or [directory / name for name in (
+        "iskpota.ttf", "iskpotab.ttf", "Nirmala.ttf", "NirmalaB.ttf", "NirmalaS.ttf"
+    )]
+    mappings, ambiguous = {}, set()
+    for path in fonts:
+        for key, text in font_mappings(path):
+            if key in mappings and mappings[key] != text:
+                ambiguous.add(key)
+            else:
+                mappings[key] = text
+    for key in ambiguous:
+        mappings.pop(key, None)
+    args.output.write_text(
+        "// Generated by scripts/generate-sinhala-pdf-glyphs.py from Sinhala cmap/GSUB tables.\n"
+        "// Default sources: Iskoola Pota and Nirmala UI (regular, bold and semilight).\n"
+        "// Only exact fingerprints and text are stored; no outlines or ambiguous mappings.\n"
+        "export default " + json.dumps(mappings, ensure_ascii=False, indent=2) + ";\n",
+        encoding="utf-8",
+    )
+    print(f"Generated {len(mappings)} glyph mappings; omitted {len(ambiguous)} ambiguous fingerprints.")
+
+
+if __name__ == "__main__":
+    main()

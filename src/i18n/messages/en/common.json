@@ -303,7 +303,7 @@
     "read-document": {
       "theDocxDocumentHasNoBody": "The DOCX document has no body",
       "cannotReadDocxContent": "Cannot read DOCX content",
-      "onlyDocxAndPdfFilesAreSupported": "Only DOCX and PDF files are supported"
+      "onlyDocxAndPdfFilesAreSupported": "Only DOCX, PPTX and PDF files are supported"
     },
     "image-watermark": {
       "watermark": "Watermark"
