@@ -10,21 +10,21 @@
             id="chapter-directory-title"
             class="font-serif text-2xl font-semibold text-balance"
           >
-            {{ translate('reader.chapterList.chapters') }}
+            {{ translate('reader.chapters.title') }}
           </h2>
           <span class="text-sm text-base-content/55">
-            {{ chapterVolumes.length }} {{ translate('reader.chapterList.volumes') }} {{ chapterCount }} {{ translate('reader.chapterList.chapters2') }}
+            {{ chapterVolumes.length }} {{ translate('reader.chapters.volumes') }} {{ chapterCount }} {{ translate('reader.chapters.countUnit') }}
           </span>
         </div>
       </hgroup>
 
       <div class="flex shrink-0 items-center gap-1">
-        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapterList.refreshChapters')">
+        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapters.refresh')">
           <button
             type="button"
             class="btn btn-ghost btn-sm btn-square"
-            :aria-label="translate('reader.chapterList.refreshChapters')"
-            :title="translate('reader.chapterList.refreshChapters')"
+            :aria-label="translate('reader.chapters.refresh')"
+            :title="translate('reader.chapters.refresh')"
             :disabled="isLoadingList"
             @click="novelStore.refreshChapters()"
           >
@@ -35,12 +35,12 @@
             ></i>
           </button>
         </div>
-        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapterList.clearReadingHistory')">
+        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapters.clearHistory')">
           <button
             type="button"
             class="btn btn-ghost btn-sm btn-square"
-            :aria-label="translate('reader.chapterList.clearReadingHistory')"
-            :title="translate('reader.chapterList.clearReadingHistory')"
+            :aria-label="translate('reader.chapters.clearHistory')"
+            :title="translate('reader.chapters.clearHistory')"
             :disabled="isLoadingList"
             @click="novelStore.refreshReadChapters()"
           >
@@ -54,9 +54,9 @@
       v-if="isLoadingList"
       role="status"
       aria-busy="true"
-      :aria-label="translate('reader.chapterList.loadingChapters')"
+      :aria-label="translate('reader.chapters.loading')"
     >
-      <span class="sr-only">{{ translate('reader.chapterList.loadingChapters') }}</span>
+      <span class="sr-only">{{ translate('reader.chapters.loading') }}</span>
 
       <div class="join join-vertical w-full" aria-hidden="true">
         <div
@@ -137,7 +137,7 @@
               {{ volume.volumeInfo.title }}
             </h3>
             <p class="mt-0.5 block text-xs text-base-content/50">
-              {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterList.chapters2') }}
+              {{ volume.chapters?.length || 0 }} {{ translate('reader.chapters.countUnit') }}
             </p>
           </hgroup>
         </summary>
@@ -211,7 +211,7 @@
                   >
                     <span v-if="isRead(chapter.uuid)" class="status"></span>
                     <span v-else class="status status-primary"></span>
-                    {{ isRead(chapter.uuid) ? translate('reader.chapterList.read') : translate('reader.chapterList.unread') }}
+                    {{ isRead(chapter.uuid) ? translate('reader.chapters.read') : translate('reader.chapters.unread') }}
                   </span>
                   <span class="inline-flex items-center gap-1">
                     <i class="ri-time-line font-normal" aria-hidden="true"></i>
@@ -222,7 +222,7 @@
                       class="ri-file-text-line font-normal"
                       aria-hidden="true"
                     ></i>
-                    {{ chapter.length }} {{ translate('reader.chapterList.characters') }}
+                    {{ chapter.length }} {{ translate('reader.chapters.characters') }}
                   </span>
                   <client-only>
                     <span
@@ -237,12 +237,12 @@
                         v-if="Number.isFinite(getChapterReads(chapter.uuid))"
                       >
                         {{ formatReadCount(getChapterReads(chapter.uuid)) }}
-                        {{ translate('reader.chapterList.reads') }}
+                        {{ translate('reader.chapters.reads') }}
                       </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapterList.loadingReadsFor', { p0: chapter.title })"
+                        :aria-label="translate('reader.chapters.loadingReads', { p0: chapter.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -267,7 +267,7 @@
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapterList.loadingCommentsFor', { p0: chapter.title })"
+                        :aria-label="translate('reader.chapters.loadingComments', { p0: chapter.title })"
                       ></span>
                     </span>
                   </client-only>
@@ -289,8 +289,8 @@
       class="flex min-h-64 flex-col items-center justify-center gap-2 border-y border-dashed border-base-300 px-6 py-12 text-center text-base-content/50"
     >
       <i class="ri-book-open-line text-3xl" aria-hidden="true"></i>
-      <p class="font-semibold text-base-content/70">{{ translate('reader.chapterList.noChaptersAreAvailableYet') }}</p>
-      <p class="text-sm">{{ translate('reader.chapterList.refreshTheChapterListAndTryAgain') }}</p>
+      <p class="font-semibold text-base-content/70">{{ translate('reader.chapters.empty') }}</p>
+      <p class="text-sm">{{ translate('reader.chapters.emptyHint') }}</p>
     </div>
   </section>
 </template>

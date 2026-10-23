@@ -6,9 +6,9 @@
         class="flex shrink-0 items-start gap-3 border-b border-base-300 px-3 py-3"
       >
         <div class="min-w-0 flex-1">
-          <h3 class="m-0 text-base font-semibold tracking-wide">{{ translate('reader.formatSetting.readingLayout') }}</h3>
+          <h3 class="m-0 text-base font-semibold tracking-wide">{{ translate('reader.format.title') }}</h3>
           <p class="mt-0.5 text-xs text-base-content/55">
-            {{ translate('reader.formatSetting.previewChangesBelowAsYouAdjust') }}
+            {{ translate('reader.format.previewHint') }}
           </p>
         </div>
         <button
@@ -18,7 +18,7 @@
           @click="resetLayout"
         >
           <i class="ri-reset-left-line" aria-hidden="true"></i>
-          {{ translate('reader.formatSetting.resetToDefaults') }}
+          {{ translate('reader.format.reset') }}
         </button>
       </header>
 
@@ -38,16 +38,16 @@
                 '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
               },
             ]"
-            :aria-label="mobile ? translate('reader.formatSetting.currentMobileLayoutPreview') : translate('reader.formatSetting.currentDesktopLayoutPreview')"
+            :aria-label="mobile ? translate('reader.format.mobilePreview') : translate('reader.format.desktopPreview')"
           >
             <p class="m-0 indent-(--para-text-indent) text-justify text-pretty">
-              {{ translate('reader.formatSetting.duskSettlesOverThePagesLeavingRoomToBreatheBetween') }}
+              {{ translate('reader.format.previewText') }}
             </p>
             <p
               class="mb-0 indent-(--para-text-indent) text-justify text-pretty"
               :style="{ marginBlockStart: previewParagraphGap }"
             >
-              {{ translate('reader.formatSetting.turnThePageTheStoryContinuesAhead') }}
+              {{ translate('reader.format.previewNext') }}
             </p>
           </div>
         </ScrollableContainer>
@@ -81,9 +81,9 @@
               :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
             >
               <span class="label block text-xs md:text-sm">
-                {{ translate('reader.formatSetting.textFont') }}
-                <small :title="translate('reader.formatSetting.customAndDeviceFontsApplyOnlyToThisSessionAnd')">
-                  {{ translate('reader.formatSetting.onlySiteFontsCanBeSavedInSettings') }}
+                {{ translate('reader.format.textFont') }}
+                <small :title="translate('reader.format.sessionFontHint')">
+                  {{ translate('reader.format.savedFontHint') }}
                 </small>
               </span>
               <FontSelect
@@ -91,7 +91,7 @@
                 :model-value="styleConfigs.fontStyle"
                 :fallback-font-id="readerFallbackFontId"
                 :website-fonts="readerWebsiteFonts"
-                :aria-label="translate('reader.formatSetting.textFont')"
+                :aria-label="translate('reader.format.textFont')"
                 @update:model-value="selectReaderFont"
                 @update:fallback-font-id="selectReaderFallbackFont"
               />
@@ -104,7 +104,7 @@
               @click="resetLayout"
             >
               <i class="ri-reset-left-line" aria-hidden="true"></i>
-              {{ translate('reader.formatSetting.resetToDefaults') }}
+              {{ translate('reader.format.reset') }}
             </button>
             <label
               v-for="control in READER_TYPOGRAPHY_CONTROLS"
@@ -127,7 +127,7 @@
           </div>
           <template v-if="mobile">
             <fieldset class="mt-4">
-              <legend class="label text-xs">{{ translate('reader.formatSetting.readingColors') }}</legend>
+              <legend class="label text-xs">{{ translate('reader.format.readingColors') }}</legend>
               <div class="mt-2 grid grid-cols-5 gap-2">
                 <button
                   v-for="theme in MOBILE_READER_COLOR_THEMES"
@@ -150,11 +150,11 @@
               <legend
                 class="label text-xs w-full flex items-center justify-between"
               >
-                <span>{{ translate('reader.formatSetting.wantSomethingElseCustomizeIt') }}</span>
+                <span>{{ translate('reader.format.customize') }}</span>
                 <div
                   role="tablist"
                   class="tabs tabs-box tabs-xs"
-                  :aria-label="translate('reader.formatSetting.readingBackgroundType')"
+                  :aria-label="translate('reader.format.backgroundType')"
                 >
                   <button
                     v-for="option in backgroundTypeOptions"
@@ -181,7 +181,7 @@
                   <label
                     class="input input-sm flex w-full items-center justify-between gap-2"
                   >
-                    <span class="text-xs">{{ translate('reader.formatSetting.textColor') }}</span>
+                    <span class="text-xs">{{ translate('reader.format.textColor') }}</span>
                     <input
                       type="color"
                       class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -192,7 +192,7 @@
                   <label
                     class="input input-sm flex w-full items-center justify-between gap-2"
                   >
-                    <span class="text-xs">{{ translate('reader.formatSetting.backgroundColor') }}</span>
+                    <span class="text-xs">{{ translate('reader.format.backgroundColor') }}</span>
                     <input
                       type="color"
                       class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -221,7 +221,7 @@
                         getReaderBackgroundImageUrl(image.id),
                       ),
                     }"
-                    :aria-label="translate('reader.formatSetting.chooseReadingBackground', { p0: localizeText(image.label) })"
+                    :aria-label="translate('reader.format.chooseBackground', { p0: localizeText(image.label) })"
                     :aria-pressed="styleConfigs.backgroundImage === image.id"
                     @click="selectBackgroundImage(image)"
                   >
@@ -238,7 +238,7 @@
             </fieldset>
           </template>
           <fieldset v-else class="mt-4">
-            <legend class="label block text-xs md:text-sm">{{ translate('reader.formatSetting.siteTheme') }}</legend>
+            <legend class="label block text-xs md:text-sm">{{ translate('reader.format.siteTheme') }}</legend>
             <div class="mt-2 grid grid-cols-5 gap-2">
               <button
                 v-for="theme in siteThemeOptions"
@@ -252,7 +252,7 @@
                   theme.value === 'default' ? systemTheme : theme.value
                 "
                 :title="localizeText(theme.description)"
-                :aria-label="translate('reader.formatSetting.switchSiteTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
+                :aria-label="translate('reader.format.switchTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
                 :aria-pressed="selectedSiteTheme === theme.value"
                 @click="themeStore.setTheme(theme.value)"
               >
@@ -275,7 +275,7 @@
         <ScrollableContainer>
           <div
             class="flex gap-3 overflow-x-auto px-1 py-1.5 scrollbar-thin"
-            :aria-label="translate('reader.formatSetting.builtInAndSavedLayoutPresets')"
+            :aria-label="translate('reader.format.presetsHint')"
           >
             <button
               v-for="{ preset, label } in systemPresets"
@@ -296,7 +296,7 @@
               "
               :style="presetSampleStyle(preset)"
               :title="localizeText(preset.description)"
-              :aria-label="translate('reader.formatSetting.applyBuiltInPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
+              :aria-label="translate('reader.format.applyDefaultPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
               :aria-pressed="isPresetActive(preset)"
               @click="applyPreset(preset)"
             >
@@ -327,7 +327,7 @@
                 "
                 :style="presetSampleStyle(preset)"
                 :title="localizeText(preset.name)"
-                :aria-label="translate('reader.formatSetting.applySavedPreset', { p0: localizeText(preset.name) })"
+                :aria-label="translate('reader.format.applySavedPreset', { p0: localizeText(preset.name) })"
                 :aria-pressed="isPresetActive(preset)"
                 @click="applyPreset(preset)"
               >
@@ -338,7 +338,7 @@
               <button
                 type="button"
                 class="btn btn-circle btn-xs absolute -right-1 -top-1 size-5 min-h-0 border-base-300 bg-base-100 p-0 shadow-sm"
-                :aria-label="translate('reader.formatSetting.deletePreset', { p0: localizeText(preset.name) })"
+                :aria-label="translate('reader.format.deletePreset', { p0: localizeText(preset.name) })"
                 @click="store.removeReaderLayoutPreset(preset.id)"
               >
                 <i class="ri-close-line" aria-hidden="true"></i>
@@ -352,10 +352,10 @@
             v-model="presetName"
             class="input input-sm join-item min-w-0 flex-1"
             maxlength="24"
-            :placeholder="translate('reader.formatSetting.saveCurrentLayoutAsAPreset')"
-            :aria-label="translate('reader.formatSetting.layoutPresetName')"
+            :placeholder="translate('reader.format.savePreset')"
+            :aria-label="translate('reader.format.presetName')"
           />
-          <button class="btn btn-sm join-item" type="submit">{{ translate('reader.formatSetting.save') }}</button>
+          <button class="btn btn-sm join-item" type="submit">{{ translate('reader.format.save') }}</button>
         </form>
       </footer>
     </section>
@@ -428,12 +428,12 @@ const readerWebsiteFonts = FONTS.map(({ name, style }) => ({
 const backgroundTypeOptions = Object.freeze([
   {
     value: "color",
-    get label() { return translate('reader.formatSetting.solidColor'); },
+    get label() { return translate('reader.format.solidColor'); },
     icon: "ri-palette-line",
   },
   {
     value: "image",
-    get label() { return translate('reader.formatSetting.backgroundImage'); },
+    get label() { return translate('reader.format.backgroundImage'); },
     icon: "ri-image-line",
   },
 ]);
@@ -443,8 +443,8 @@ const systemTheme = computed(() => (prefersDark.value ? "forest" : "lemonade"));
 const siteThemeOptions = computed(() => [
   {
     value: "default",
-    get label() { return translate('reader.formatSetting.systemDefault'); },
-    get description() { return translate('reader.formatSetting.matchYourSystemSLightOrDarkAppearance'); },
+    get label() { return translate('reader.format.system'); },
+    get description() { return translate('reader.format.systemHint'); },
     icon: "ri-contrast-line",
   },
   ...siteThemeList.value.map((theme) => ({
@@ -459,7 +459,7 @@ const isLayoutDefault = computed(() =>
 const systemPresets = computed(() =>
   READER_SYSTEM_PRESETS.map((preset, index) => ({
     preset,
-    get label() { return translate('reader.formatSetting.preset', { p0: index + 1 }); },
+    get label() { return translate('reader.format.preset', { p0: index + 1 }); },
   })),
 );
 
@@ -669,7 +669,7 @@ const selectReaderFont = async (fontId) => {
   try {
     const resolved = await readerFontSelect.value?.resolveFont(
       fontId,
-      translate('reader.formatSetting.duskSettlesOverThePages'),
+      translate('reader.format.previewTitle'),
       "normal",
       readerFallbackFontId.value,
     );

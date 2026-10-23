@@ -1,14 +1,14 @@
 <template>
-  <ContentPage eyebrow="Release Notes & Maintenance" :title="translate('pages.changelog.changelog')">
+  <ContentPage eyebrow="Release Notes & Maintenance" :title="translate('changelog.title')">
     <template #meta>
       <template v-if="totalVersions">
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-commit-line"></i>
-          {{ translate('pages.changelog.currentVersion') }} {{ latestVersion }}
+          {{ translate('changelog.current') }} {{ latestVersion }}
         </span>
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-branch-line"></i>
-          {{ totalVersions }} {{ translate('pages.changelog.releaseRecords') }}
+          {{ totalVersions }} {{ translate('changelog.releases') }}
         </span>
       </template>
     </template>
@@ -20,9 +20,9 @@
     >
       <i class="ri-cloud-off-line text-xl" aria-hidden="true"></i>
       <div class="min-w-0 flex-1">
-        <h2 class="font-semibold">{{ translate('pages.changelog.theLatestRemoteRecordsAreUnavailable') }}</h2>
+        <h2 class="font-semibold">{{ translate('changelog.remoteUnavailable') }}</h2>
         <p class="text-sm opacity-80">
-          {{ translate('pages.changelog.showingTheStaticVersionIncludedWithTheWebsite') }}{{ errorMessage }}
+          {{ translate('changelog.staticFallback') }}{{ errorMessage }}
         </p>
       </div>
       <button type="button" class="btn btn-sm" @click="refreshChangelog">
@@ -32,7 +32,7 @@
           aria-hidden="true"
         ></span>
         <i v-else class="ri-refresh-line" aria-hidden="true"></i>
-        {{ translate('pages.announcements.reload') }}
+        {{ translate('announcements.reload') }}
       </button>
     </section>
 
@@ -76,12 +76,12 @@
     >
       <i class="ri-error-warning-line text-xl" aria-hidden="true"></i>
       <div class="min-w-0 flex-1">
-        <h2 class="font-semibold">{{ translate('pages.changelog.theChangelogCouldNotBeLoaded') }}</h2>
+        <h2 class="font-semibold">{{ translate('changelog.loadFailed') }}</h2>
         <p class="text-sm opacity-80">{{ errorMessage }}</p>
       </div>
       <button type="button" class="btn btn-sm" @click="refreshChangelog">
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        {{ translate('pages.announcements.reload') }}
+        {{ translate('announcements.reload') }}
       </button>
     </section>
 
@@ -93,9 +93,9 @@
         class="ri-file-history-line text-3xl text-base-content/40"
         aria-hidden="true"
       ></i>
-      <h2 class="mt-3 font-serif text-xl font-semibold">{{ translate('pages.changelog.noReleasesYet') }}</h2>
+      <h2 class="mt-3 font-serif text-xl font-semibold">{{ translate('changelog.empty') }}</h2>
       <p class="mt-1 text-sm text-base-content/60">
-        {{ translate('pages.changelog.futureChangesWillAppearHere') }}
+        {{ translate('changelog.emptyHint') }}
       </p>
     </section>
 
@@ -117,7 +117,7 @@
           >
             <span class="hidden text-right md:block">
               <span class="text-xs text-base-content/45">
-                {{ group.releases.length }} {{ translate('pages.changelog.versions') }}
+                {{ group.releases.length }} {{ translate('changelog.versions') }}
               </span>
             </span>
             <span
@@ -131,7 +131,7 @@
                 {{ group.year }}
               </span>
               <span class="text-sm text-base-content/45 md:hidden">
-                {{ group.releases.length }} {{ translate('pages.changelog.versions') }}
+                {{ group.releases.length }} {{ translate('changelog.versions') }}
               </span>
               <span class="h-px flex-1 bg-base-300"></span>
               <i
@@ -161,7 +161,7 @@
                     v-if="release.version === latestVersion"
                     class="badge badge-primary badge-sm"
                   >
-                    {{ translate('pages.changelog.latest') }}
+                    {{ translate('changelog.latest') }}
                   </span>
                   <h3 class="font-serif text-2xl font-bold">
                     {{ release.version }}
@@ -174,7 +174,7 @@
                   {{ formatDate(release.date) }}
                 </time>
                 <p class="mt-1 text-xs text-base-content/40">
-                  {{ release.changeCount }} {{ translate('pages.changelog.changes') }}
+                  {{ release.changeCount }} {{ translate('changelog.changes') }}
                 </p>
               </header>
 
@@ -214,14 +214,14 @@
                         v-if="release.version === latestVersion"
                         class="badge badge-primary badge-sm"
                       >
-                        {{ translate('pages.changelog.latest') }}
+                        {{ translate('changelog.latest') }}
                       </span>
                     </div>
                     <div class="text-right text-xs text-base-content/50">
                       <time :datetime="release.date" class="block">
                         {{ formatDate(release.date) }}
                       </time>
-                      <span>{{ release.changeCount }} {{ translate('pages.changelog.changes') }}</span>
+                      <span>{{ release.changeCount }} {{ translate('changelog.changes') }}</span>
                     </div>
                   </header>
 
@@ -287,7 +287,7 @@
                     ></i>
                     <div class="min-w-0 flex-1">
                       <p class="text-sm font-semibold">
-                        {{ release.warning ? translate('pages.changelog.beforeUpgrading') : translate('pages.changelog.releaseNotes') }}
+                        {{ release.warning ? translate('changelog.beforeUpgrading') : translate('changelog.releaseNotes') }}
                       </p>
                       <Renderer
                         lang="zh-CN"
@@ -338,7 +338,7 @@ const error = computed(() => store.error);
 const latestVersion = computed(() => store.latestVersion);
 const totalVersions = computed(() => store.totalVersions);
 const errorMessage = computed(() =>
-  localizeText(String(error.value?.message || error.value || translate('pages.changelog.pleaseTryAgainLater'))),
+  localizeText(String(error.value?.message || error.value || translate('changelog.retryHint'))),
 );
 
 const groupedLogs = computed(() => {
@@ -346,7 +346,7 @@ const groupedLogs = computed(() => {
   releases.value.forEach((release) => {
     const year = /^\d{4}/.test(release.date)
       ? release.date.slice(0, 4)
-      : translate('pages.changelog.other');
+      : translate('changelog.other');
     const changeCount = release.groups.reduce(
       (total, group) => total + group.count,
       0,

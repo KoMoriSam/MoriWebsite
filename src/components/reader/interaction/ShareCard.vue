@@ -21,7 +21,7 @@
               id="reader-share-card-title"
               class="font-serif text-lg font-bold text-pretty"
             >
-              {{ translate('reader.shareCard.shareImage') }}
+              {{ translate('reader.share.shareImage') }}
             </h2>
             <p
               v-if="truncated"
@@ -31,13 +31,13 @@
                 class="ri-information-line mt-px shrink-0"
                 aria-hidden="true"
               ></i>
-              <span>{{ translate('reader.shareCard.theSelectionIsLongSomeContentWasOmittedFromThe') }}</span>
+              <span>{{ translate('reader.share.truncated') }}</span>
             </p>
           </div>
           <button
             type="button"
             class="btn btn-ghost btn-circle btn-sm shrink-0"
-            :aria-label="translate('reader.shareCard.closeShareCardPreview')"
+            :aria-label="translate('reader.share.close')"
             @click="close"
           >
             <i class="ri-close-line text-lg" aria-hidden="true"></i>
@@ -54,7 +54,7 @@
               role="status"
             >
               <span class="loading loading-spinner loading-lg"></span>
-              <p>{{ translate('reader.shareCard.layingOutTheShareCard') }}</p>
+              <p>{{ translate('reader.share.generating') }}</p>
             </div>
             <div
               v-else-if="errorMessage"
@@ -66,13 +66,13 @@
                 aria-hidden="true"
               ></i>
               <div>
-                <p class="font-semibold">{{ translate('reader.shareCard.cardGenerationFailed') }}</p>
+                <p class="font-semibold">{{ translate('reader.share.failed') }}</p>
                 <p class="mt-1 max-w-md text-sm text-base-content/60">
                   {{ localizeText(errorMessage) }}
                 </p>
               </div>
               <button type="button" class="btn btn-sm" @click="generate">
-                {{ translate('reader.shareCard.generateAgain') }}
+                {{ translate('reader.share.retry') }}
               </button>
             </div>
             <img
@@ -94,7 +94,7 @@
             @click="downloadImage"
           >
             <i class="ri-download-2-line" aria-hidden="true"></i>
-            {{ translate('reader.shareCard.downloadImage') }}
+            {{ translate('reader.share.downloadImage') }}
           </button>
           <button
             type="button"
@@ -103,13 +103,13 @@
             @click="shareImage"
           >
             <i class="ri-share-forward-line" aria-hidden="true"></i>
-            {{ canShareFile ? translate('reader.shareCard.shareImage') : translate('reader.shareCard.saveImage') }}
+            {{ canShareFile ? translate('reader.share.shareImage') : translate('reader.share.saveImage') }}
           </button>
         </footer>
       </section>
 
       <form method="dialog" class="modal-backdrop">
-        <button :aria-label="translate('reader.shareCard.closeShareCardPreview')">{{ translate('common.modal.close') }}</button>
+        <button :aria-label="translate('reader.share.close')">{{ translate('common.modal.close') }}</button>
       </form>
     </dialog>
   </Teleport>
@@ -154,7 +154,7 @@ const canShareFile = computed(() => {
 });
 const previewAlt = computed(() => {
   const meta = payload.value?.meta || {};
-  return translate('reader.shareCard.textShareCardFor', { p0: meta.title || meta.sourceLabel || "远方之森" });
+  return translate('reader.share.label', { p0: meta.title || meta.sourceLabel || "远方之森" });
 });
 
 const revokePreviewUrl = () => {
@@ -185,7 +185,7 @@ const generate = async () => {
     previewUrl.value = URL.createObjectURL(result.blob);
   } catch (error) {
     if (token !== generationToken) return;
-    errorMessage.value = error?.message || localeMessage('reader.shareCard.cannotGenerateTheShareCardRightNow');
+    errorMessage.value = error?.message || localeMessage('reader.share.generateFailed');
   } finally {
     if (token === generationToken) loading.value = false;
   }
@@ -247,13 +247,13 @@ const triggerDownload = () => {
 
 const downloadImage = () => {
   triggerDownload();
-  toast.success(translate('reader.shareCard.shareCardDownloaded'));
+  toast.success(translate('reader.share.downloaded'));
 };
 
 const shareImage = async () => {
   if (!canShareFile.value) {
     triggerDownload();
-    toast.success(translate('reader.shareCard.yourBrowserDoesNotSupportImageSharingTheCardWas'));
+    toast.success(translate('reader.share.shareUnsupported'));
     return;
   }
 
@@ -264,7 +264,7 @@ const shareImage = async () => {
       files: [imageFile.value],
     });
   } catch (error) {
-    if (error?.name !== "AbortError") toast.error(translate('reader.shareCard.cannotShareTheImageRightNow'));
+    if (error?.name !== "AbortError") toast.error(translate('reader.share.shareFailed'));
   }
 };
 

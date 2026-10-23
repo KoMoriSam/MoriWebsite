@@ -1,7 +1,7 @@
 <template>
   <section
     class="flex min-h-0 flex-1 flex-col"
-    :aria-label="translate('common.noticeCenter.notifications')"
+    :aria-label="translate('common.notices.title')"
   >
     <ScrollableContainer class="flex-1">
       <div
@@ -9,7 +9,7 @@
       >
         <div v-if="loading && !loaded" role="status" aria-busy="true">
           <span class="sr-only">{{
-            translate("common.noticeCenter.loadingAnnouncements")
+            translate("common.notices.loading")
           }}</span>
           <ul class="grid gap-2 max-lg:gap-1.5" aria-hidden="true">
             <li
@@ -45,7 +45,7 @@
             <p class="font-semibold">
               {{
                 translate(
-                  "common.noticeCenter.announcementsAreTemporarilyUnavailable",
+                  "common.notices.loadFailed",
                 )
               }}
             </p>
@@ -57,7 +57,7 @@
               @click="store.fetchAnnouncements({ force: true })"
             >
               <i class="ri-refresh-line" aria-hidden="true"></i>
-              {{ translate("pages.announcements.retry") }}
+              {{ translate("announcements.retry") }}
             </button>
           </div>
         </div>
@@ -68,7 +68,7 @@
           <div>
             <i class="ri-notification-off-line text-2xl" aria-hidden="true"></i>
             <p class="mt-2 text-sm">
-              {{ translate("common.noticeCenter.noActiveAnnouncements") }}
+              {{ translate("common.notices.empty") }}
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@
           <i class="ri-error-warning-line" aria-hidden="true"></i>
           {{
             translate(
-              "pages.announcements.refreshFailedShowingPreviouslyLoadedAnnouncements",
+              "announcements.refreshFailed",
             )
           }}
         </p>
@@ -135,7 +135,7 @@
       >
         <i class="ri-history-line shrink-0" aria-hidden="true"></i>
         <span class="min-w-0 flex-1">{{
-          translate("common.noticeCenter.viewAllAndPastAnnouncements")
+          translate("common.notices.viewAll")
         }}</span>
         <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
       </RouterLink>

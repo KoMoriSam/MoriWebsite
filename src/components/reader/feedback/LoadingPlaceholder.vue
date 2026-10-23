@@ -9,10 +9,10 @@
     :role="preview ? undefined : 'status'"
     :aria-live="preview ? undefined : 'polite'"
     :aria-busy="preview ? undefined : true"
-    :aria-label="preview ? undefined : translate('common.navigationFeedback.loading')"
+    :aria-label="preview ? undefined : translate('common.navigationStatus.loading')"
   >
     <span v-if="!preview" class="sr-only">{{
-      translate("common.navigationFeedback.loading")
+      translate("common.navigationStatus.loading")
     }}</span>
     <ContentGrid
       v-if="page"

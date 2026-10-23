@@ -1,7 +1,7 @@
 <template>
   <nav
     class="mt-12 flex border-t border-base-300 pt-6 justify-between font-sans"
-    :aria-label="translate('reader.chapterController.chapterNavigation')"
+    :aria-label="translate('reader.navigation.label')"
   >
     <button
       v-if="hasPrevious"
@@ -15,7 +15,7 @@
         <span
           class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
         >
-          {{ translate('reader.chapterController.previousChapter') }}
+          {{ translate('reader.navigation.previous') }}
         </span>
         <span>{{ previousChapter?.title }}</span>
       </div>
@@ -32,7 +32,7 @@
         <span
           class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
         >
-          {{ translate('reader.chapterController.nextChapter') }}
+          {{ translate('reader.navigation.next') }}
         </span>
         <span>{{ nextChapter?.title }}</span>
       </div>
@@ -129,8 +129,8 @@ const isPagedMode = computed(
 );
 const controlButtonAriaLabel = computed(() =>
   isPagedMode.value
-    ? translate('reader.chapterController.bookProgressChapterPageOfTapForReadingControls', { p0: readingProgressLabel.value, p1: safeCurrentPage.value, p2: safeTotalPages.value })
-    : translate('reader.chapterController.bookProgressScrollingModeTapForReadingControls', { p0: readingProgressLabel.value }),
+    ? translate('reader.navigation.pagedProgress', { p0: readingProgressLabel.value, p1: safeCurrentPage.value, p2: safeTotalPages.value })
+    : translate('reader.navigation.scrollProgress', { p0: readingProgressLabel.value }),
 );
 const pageJumpValue = ref(1);
 const controlsDialogRef = ref(null);

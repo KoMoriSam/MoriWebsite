@@ -9,8 +9,8 @@
     :progress="chapterProgress"
     :progress-label="chapterProgressLabel"
     :current-label="currentChapterTitle"
-    :title="translate('reader.chapterToc.readingProgress')"
-    :aria-label="translate('reader.chapterList.chapters')"
+    :title="translate('reader.toc.progress')"
+    :aria-label="translate('reader.chapters.title')"
     icon-class="ri-book-2-line"
     desktop-content-class="flex min-h-0 flex-1 flex-col"
     @toggle-compact="emit('toggle-compact')"
@@ -30,7 +30,7 @@
       ></i>
       <span class="min-w-0 flex-1">
         <span class="block text-xs font-semibold text-base-content/45">
-          {{ translate('reader.chapterToc.latestChapter') }}
+          {{ translate('reader.toc.latest') }}
         </span>
         <span class="block truncate text-sm" :title="latestChapterTitle">
           {{ latestChapterTitle }}
@@ -49,7 +49,7 @@
         mobile ? 'min-h-32' : 'min-h-0 flex-1',
       ]"
       role="status"
-      :aria-label="translate('reader.chapterList.loadingChapters')"
+      :aria-label="translate('reader.chapters.loading')"
     >
       <span class="loading loading-spinner loading-sm text-primary"></span>
     </div>
@@ -88,10 +88,10 @@
             </span>
             <small
               class="ml-auto shrink-0 whitespace-nowrap tabular-nums text-base-content/35"
-              :title="translate('reader.chapterToc.chaptersRead2', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
+              :title="translate('reader.toc.readCount', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
             >
-              {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.chapterToc.chaptersRead') }}
-              {{ getVolumeReadCount(volume) }} {{ translate('reader.chapterList.chapters2') }}
+              {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.toc.readUnit') }}
+              {{ getVolumeReadCount(volume) }} {{ translate('reader.chapters.countUnit') }}
             </small>
           </button>
           <ol
@@ -149,7 +149,7 @@
         mobile ? 'min-h-32' : 'min-h-0 flex-1',
       ]"
     >
-      {{ translate('reader.chapterList.noChaptersAreAvailableYet') }}
+      {{ translate('reader.chapters.empty') }}
     </p>
   </TocFrame>
 </template>

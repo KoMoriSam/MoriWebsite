@@ -2,6 +2,7 @@
   "fogport": {
     "howTo": "Start your enterprise",
     "guide": "Invite 2–4 players. Drag cards or industries onto the board, choose targets and resources, then review and confirm. Spending sets the next round’s order; era scoring determines the winner.",
+    "gameMode": "Game mode",
     "mode": {
       "pending": "Submitting. Please wait for the result",
       "back": "Return to the current plan",

@@ -552,15 +552,15 @@
             :aria-label="
               t(
                 sidebarExpanded
-                  ? 'common.sideBar.closeSidebar'
-                  : 'common.sideBar.openSidebar',
+                  ? 'common.sidebar.close'
+                  : 'common.sidebar.open',
               )
             "
             :data-tip="
               t(
                 sidebarExpanded
-                  ? 'common.sideBar.closeSidebar'
-                  : 'common.sideBar.openSidebar',
+                  ? 'common.sidebar.close'
+                  : 'common.sidebar.open',
               )
             "
             @click="sidebarExpanded = !sidebarExpanded"

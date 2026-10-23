@@ -7,7 +7,7 @@
     :progress="progressValue"
     :progress-label="`${progressValue}%`"
     :current-label="activeText"
-    :aria-label="translate('reader.readerBody.readingContents')"
+    :aria-label="translate('reader.body.contents')"
     icon-class="ri-list-unordered"
     @toggle-compact="emit('toggle-compact')"
     @menu-open-change="emit('menu-open-change', $event)"

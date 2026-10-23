@@ -1,14 +1,12 @@
 {
-  "pages": {
-    "tools": {
-      "toolCount": "Tools: {count}",
-      "chooseAToolToOpenItsPageBookmarkOrShare": "Choose a tool to open its page. Bookmark or share its address.",
-      "availableTools": "Available tools",
-      "openTool": "Open tool",
-      "batchConvertImagesInYourBrowserWithCompressionResizingAnimation": "Batch-convert images in your browser with compression, resizing, animation, and watermarks.",
-      "imageProcessing": "Image processing",
-      "serverLookup": "Server lookup",
-      "textEncodingConversion": "Text encoding conversion"
-    }
+  "tools": {
+    "count": "Tools: {count}",
+    "description": "Choose a tool to open its page. Bookmark or share its address.",
+    "available": "Available tools",
+    "open": "Open tool",
+    "imageDescription": "Batch-convert images in your browser with compression, resizing, animation, and watermarks.",
+    "imageProcessing": "Image processing",
+    "serverLookup": "Server lookup",
+    "textEncoding": "Text encoding conversion"
   }
 }

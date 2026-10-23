@@ -16,7 +16,7 @@
       id="projects-megamenu"
       popover="auto"
       class="shadow-xl"
-      :aria-label="translate('common.projectMenu.projectNavigation')"
+      :aria-label="translate('common.projectNav.label')"
     >
       <div class="mx-auto w-full max-w-5xl px-6 py-7">
         <div class="mb-5 flex items-end justify-between gap-6">
@@ -24,7 +24,7 @@
             <p
               class="text-primary mb-1 text-xs font-bold tracking-[0.16em] uppercase"
             >Projects</p>
-            <h2 class="font-serif text-2xl font-semibold">{{ translate('common.projectMenu.myProjects') }}</h2>
+            <h2 class="font-serif text-2xl font-semibold">{{ translate('common.projectNav.title') }}</h2>
           </div>
           <a
             :href="PROJECTS_GITHUB_URL"
@@ -34,7 +34,7 @@
             @click="closeMenus"
           >
             <i class="ri-github-fill text-lg"></i>
-            {{ translate('common.projectMenu.allRepositories') }}
+            {{ translate('common.projectNav.repositories') }}
             <i class="ri-arrow-right-up-line"></i>
           </a>
         </div>

@@ -5,27 +5,27 @@
     <aside>
       <img
         v-bind="getImageAttrs('/assets/images/titles/welcome.webp', '260px')"
-        :alt="translate('common.sections.welcome')"
+        :alt="translate('common.footer.welcome')"
         class="h-6"
       />
       <p class="leading-relaxed">
-        {{ translate('pages.app.personalBlogIndependentDevelopment') }}
+        {{ translate('site.title') }}
         <br />
         © 2025–2026 KoMoriSam
       </p>
       <small class="text-xs text-base-content/50">
         <router-link class="link link-hover block my-2" to="/changelog">
-          {{ translate('pages.changelog.changelog') }}
+          {{ translate('changelog.title') }}
           <i class="ri-arrow-right-line"></i>
         </router-link>
         <router-link class="link link-hover block my-2" to="/licenses">
-          {{ translate('pages.licenses.licensesThirdPartyNotices') }}
+          {{ translate('licenses.title') }}
           <i class="ri-arrow-right-line"></i>
         </router-link>
       </small>
     </aside>
     <nav v-if="analyticsAvailable" aria-labelledby="site-statistics-title">
-      <h6 id="site-statistics-title" class="footer-title">{{ translate('common.footBar.siteStatistics') }}</h6>
+      <h6 id="site-statistics-title" class="footer-title">{{ translate('common.footer.statistics') }}</h6>
       <dl
         class="grid min-w-44 gap-2 text-sm text-base-content/70"
         aria-live="polite"
@@ -33,7 +33,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-calendar-check-line" aria-hidden="true"></i>
-            {{ translate('common.footBar.visitsToday') }}
+            {{ translate('common.footer.visitsToday') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(todayVisits) }}
@@ -42,7 +42,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-global-line" aria-hidden="true"></i>
-            {{ translate('common.footBar.totalVisits') }}
+            {{ translate('common.footer.totalVisits') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(totalVisits) }}
@@ -51,7 +51,7 @@
         <div class="flex items-center justify-between gap-6">
           <dt class="inline-flex items-center gap-1">
             <i class="ri-book-open-line" aria-hidden="true"></i>
-            {{ translate('common.footBar.totalReads') }}
+            {{ translate('common.footer.totalReads') }}
           </dt>
           <dd class="font-mono font-semibold tabular-nums text-base-content">
             {{ formatCount(totalReads) }}
@@ -59,17 +59,17 @@
         </div>
       </dl>
       <small v-if="startedAtLabel" class="mt-1 text-xs text-base-content/50">
-        {{ translate('common.footBar.trackedSince') }} {{ startedAtLabel }}
+        {{ translate('common.footer.trackedSince') }} {{ startedAtLabel }}
       </small>
       <small
         v-else-if="globalStatus === 'error'"
         class="mt-1 text-xs text-base-content/50"
       >
-        {{ translate('common.footBar.statisticsUnavailable') }}
+        {{ translate('common.footer.unavailable') }}
       </small>
     </nav>
     <nav>
-      <h6 class="footer-title">{{ translate('common.footBar.socialAccounts') }}</h6>
+      <h6 class="footer-title">{{ translate('common.footer.social') }}</h6>
       <address class="grid grid-flow-col gap-4">
         <a href="https://github.com/KoMoriSam">
           <i class="ri-github-fill text-2xl"></i>
@@ -83,13 +83,13 @@
       </address>
       <br />
       <small class="text-xs text-base-content/50">
-        {{ translate('common.footBar.lookingForTheOldWebsite') }}
+        {{ translate('common.footer.oldSiteHint') }}
         <a
           class="link link-primary no-underline hover:underline"
           href="/archive/home/index.html"
           target="_blank"
         >
-          {{ translate('common.footBar.visitItHere') }}
+          {{ translate('common.footer.oldSiteLink') }}
           <i class="ri-arrow-right-up-line"></i>
         </a>
       </small>

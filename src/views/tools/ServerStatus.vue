@@ -1,5 +1,5 @@
 <template>
-  <ContentPage :title="translate('pages.tools.minecraftServerStatus')" :metas-label="translate('tools.imageConverter.toolInformation')">
+  <ContentPage :title="translate('server.title')" :metas-label="translate('tools.info')">
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-gamepad-line" aria-hidden="true"></i>
@@ -7,11 +7,11 @@
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-pulse-line" aria-hidden="true"></i>
-        {{ translate('tools.serverStatus.liveLookup') }}
+        {{ translate('server.liveLookup') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-dashboard-3-line" aria-hidden="true"></i>
-        {{ translate('tools.serverStatus.statusPlayersLatency') }}
+        {{ translate('server.summary') }}
       </span>
     </template>
 

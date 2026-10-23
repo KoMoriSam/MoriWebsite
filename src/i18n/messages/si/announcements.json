@@ -1,14 +1,12 @@
 {
-  "pages": {
-    "announcements": {
-      "announcements": "අඩවි නිවේදන",
-      "updated": "යාවත්කාලීන කළේ",
-      "announcementsCouldNotBeLoaded": "නිවේදන පූරණය කළ නොහැකි විය",
-      "loading": "පූරණය වෙමින්",
-      "currentAnnouncements": "වත්මන් නිවේදන",
-      "thereAreNoActiveAnnouncements": "සක්‍රිය නිවේදන නොමැත.",
-      "pastAnnouncements": "පැරණි නිවේදන",
-      "thereAreNoPastAnnouncementsYet": "තවම පැරණි නිවේදන නොමැත."
-    }
+  "announcements": {
+    "title": "අඩවි නිවේදන",
+    "updated": "යාවත්කාලීන කළේ",
+    "loadFailed": "නිවේදන පූරණය කළ නොහැකි විය",
+    "loading": "පූරණය වෙමින්",
+    "current": "වත්මන් නිවේදන",
+    "empty": "සක්‍රිය නිවේදන නොමැත.",
+    "past": "පැරණි නිවේදන",
+    "pastEmpty": "තවම පැරණි නිවේදන නොමැත."
   }
 }

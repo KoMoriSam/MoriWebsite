@@ -21,7 +21,7 @@
         class="preview-loading"
         role="status"
         aria-live="polite"
-        :aria-label="translate('common.imagePreview.loadingImage')"
+        :aria-label="translate('common.imagePreview.loading')"
       >
         <span
           class="loading loading-spinner loading-xl text-primary"
@@ -32,7 +32,7 @@
       <header v-if="mode === 'fullscreen'" class="preview-header">
         <p
           class="preview-info ps-2.5 pt-2.5 text-center text-xs tabular-nums leading-relaxed text-gray-300 text-shadow-xs/90"
-          :aria-label="translate('common.imagePreview.imageOf', { p0: currentIndex + 1, p1: totalImages })"
+          :aria-label="translate('common.imagePreview.position', { p0: currentIndex + 1, p1: totalImages })"
         >
           <span class="font-bold">{{ currentIndex + 1 }}</span>
           <span class="text-gray-300/50"> / {{ totalImages }}</span>
@@ -49,7 +49,7 @@
           type="button"
           class="btn btn-circle btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-close text-shadow-xs/90"
           data-preview-control
-          :aria-label="translate('common.imagePreview.closeImagePreview')"
+          :aria-label="translate('common.imagePreview.close')"
           :title="translate('common.modal.close')"
           @click="close"
         >
@@ -62,7 +62,7 @@
         class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-prev text-shadow-xs/90"
         data-preview-control
         :disabled="cannotGoPrevious"
-        :aria-label="translate('common.imagePreview.previousImage')"
+        :aria-label="translate('common.imagePreview.previousLabel')"
         :title="translate('common.imagePreview.previous')"
         @click="previous"
       >
@@ -74,7 +74,7 @@
         class="btn btn-square btn-lg btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 preview-next text-shadow-xs/90"
         data-preview-control
         :disabled="cannotGoNext"
-        :aria-label="translate('common.imagePreview.nextImage')"
+        :aria-label="translate('common.imagePreview.nextLabel')"
         :title="translate('common.imagePreview.next')"
         @click="next"
       >
@@ -84,13 +84,13 @@
       <div
         class="preview-footer"
         data-preview-control
-        :aria-label="translate('common.imagePreview.imagePreviewControls')"
+        :aria-label="translate('common.imagePreview.controls')"
       >
         <button
           type="button"
           class="btn btn-square btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotZoomOut"
-          :aria-label="translate('common.imagePreview.zoomOutOfImage')"
+          :aria-label="translate('common.imagePreview.zoomOut')"
           :title="translate('markdown.mermaid.zoomOut')"
           @click="changeZoom(1 / ZOOM_FACTOR)"
         >
@@ -100,8 +100,8 @@
           type="button"
           class="btn btn-ghost font-mono tabular-nums btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotResetZoom"
-          :aria-label="translate('common.imagePreview.zoomClickToFitToScreen', { p0: zoomPercent })"
-          :title="translate('common.imagePreview.fitToScreen')"
+          :aria-label="translate('common.imagePreview.zoomHint', { p0: zoomPercent })"
+          :title="translate('common.imagePreview.fit')"
           @click="resetZoom"
         >
           {{ zoomPercent }}%
@@ -115,7 +115,7 @@
           type="button"
           class="btn btn-square btn-ghost btn-neutral disabled:text-gray-300/25 text-gray-300 text-shadow-xs/90"
           :disabled="cannotZoomIn"
-          :aria-label="translate('common.imagePreview.zoomInOnImage')"
+          :aria-label="translate('common.imagePreview.zoomIn')"
           :title="translate('markdown.mermaid.zoomIn')"
           @click="changeZoom(ZOOM_FACTOR)"
         >
@@ -438,7 +438,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     PhotoSwipe = await loadPhotoSwipe();
   } catch (error) {
     console.error("图片预览模块加载失败", error);
-    if (requestId === openRequestId) toast.error(translate('common.imagePreview.imagePreviewFailedToLoad'));
+    if (requestId === openRequestId) toast.error(translate('common.imagePreview.loadFailed'));
     return;
   }
   if (requestId !== openRequestId) return;
@@ -493,7 +493,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     close: false,
     zoom: false,
     preloader: false,
-    get errorMsg() { return translate('common.imagePreview.imageFailedToLoad'); },
+    get errorMsg() { return translate('common.imagePreview.imageFailed'); },
     paddingFn: (_viewportSize, itemData) => ({
       top: 16,
       right: 16,
@@ -617,7 +617,7 @@ const createPreview = async ({ slides, index = 0, pointer = null } = {}) => {
     photoSwipe = null;
     resetPreviewState();
     if (!inline) modalClose.discard({ close: false });
-    toast.error(translate('common.imagePreview.imagePreviewFailedToOpen'));
+    toast.error(translate('common.imagePreview.openFailed'));
   }
 };
 

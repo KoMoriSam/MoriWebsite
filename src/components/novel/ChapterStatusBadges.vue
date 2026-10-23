@@ -5,16 +5,16 @@
   <span
     v-if="chapter.modifiedDate"
     class="badge badge-info badge-xs shrink-0"
-    :title="translate('reader.chapterStatusBadges.thisChapterHasBeenRevised')"
+    :title="translate('reader.badges.revisedHint')"
   >
     {{ localizeText(revisionLabel) }}
   </span>
   <span
     v-else
     class="badge badge-ghost badge-xs shrink-0"
-    :title="translate('reader.chapterStatusBadges.thisIsTheOriginalChapterVersion')"
+    :title="translate('reader.badges.originalHint')"
   >
-    {{ translate('reader.chapterStatusBadges.original') }}
+    {{ translate('reader.badges.original') }}
   </span>
   <span v-if="showRecent" class="badge badge-warning badge-xs shrink-0">
     {{ recentLabel }}

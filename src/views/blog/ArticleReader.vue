@@ -91,12 +91,12 @@
               >
                 <nav
                   class="tooltip tooltip-right"
-                  :data-tip="translate('pages.articleReader.backToArticles')"
+                  :data-tip="translate('blog.article.back')"
                 >
                   <RouterLink
                     class="btn btn-sm btn-circle shrink-0"
                     :aria-label="
-                      translate('pages.articleReader.backToArticles')
+                      translate('blog.article.back')
                     "
                     :class="
                       hasVisibleBanner
@@ -126,7 +126,7 @@
               </div>
               <label v-if="articleLocales.length > 1" class="shrink-0">
                 <span class="sr-only">{{
-                  translate("pages.articleReader.articleLanguage")
+                  translate("blog.article.language")
                 }}</span>
                 <select
                   class="select select-sm w-auto max-w-36 shadow-sm backdrop-blur-sm"
@@ -237,9 +237,9 @@
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-file-text-line"></i>
-                  {{ translate("pages.articleReader.about") }}
+                  {{ translate("blog.article.about") }}
                   {{ article.length }}
-                  {{ translate("reader.chapterList.characters") }}
+                  {{ translate("reader.chapters.characters") }}
                 </span>
 
                 <span
@@ -248,7 +248,7 @@
                 >
                   <i class="ri-time-line"></i>
                   {{ estimateReadingTime(article.length) }}
-                  {{ translate("pages.articleReader.minRead") }}
+                  {{ translate("blog.article.minRead") }}
                 </span>
 
                 <span
@@ -259,14 +259,14 @@
 
                   <template v-if="Number.isFinite(articleReads)">
                     {{ formatReadCount(articleReads) }}
-                    {{ translate("reader.chapterList.reads") }}
+                    {{ translate("reader.chapters.reads") }}
                   </template>
 
                   <span
                     v-else
                     class="loading loading-dots loading-xs"
                     :aria-label="
-                      translate('pages.articleReader.loadingArticleReads')
+                      translate('blog.article.loadingReads')
                     "
                   ></span>
                 </span>
@@ -288,7 +288,7 @@
                     v-else
                     class="loading loading-dots loading-xs"
                     :aria-label="
-                      translate('pages.articleReader.loadingArticleComments')
+                      translate('blog.article.loadingComments')
                     "
                   ></span>
                 </span>
@@ -303,7 +303,7 @@
         >
           <i class="ri-information-line" aria-hidden="true"></i>
           <span>{{
-            translate("pages.articleReader.translationUnavailable", {
+            translate("blog.article.fallbackNotice", {
               requestedLanguage: localizedLanguageNames[uiLocale],
               currentLanguage:
                 localizedLanguageNames[
@@ -319,7 +319,7 @@
           <p role="note" class="alert alert-soft text-sm">
             <i class="ri-translate-2" aria-hidden="true"></i>
             <I18nT
-              keypath="pages.articleReader.machineTranslationNotice"
+              keypath="blog.article.machineNotice"
               tag="span"
               scope="global"
             >
@@ -328,7 +328,7 @@
                   :to="getArticlePath(article.id, getSourceLocale(article))"
                   class="link link-primary link-hover"
                 >
-                  {{ translate("pages.articleReader.originalArticle") }}
+                  {{ translate("blog.article.original") }}
                 </RouterLink>
               </template>
             </I18nT>
@@ -344,14 +344,14 @@
         <nav
           v-if="previousArticle || nextArticle"
           class="not-prose font-sans mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
-          :aria-label="translate('pages.articleReader.articleNavigation')"
+          :aria-label="translate('blog.article.navigation')"
         >
           <RouterLink
             v-if="previousArticle"
             :to="getArticleRoute(previousArticle)"
             class="btn btn-sm h-fit min-w-0 max-w-full justify-start gap-2 py-1 md:btn-md md:max-w-[calc(50%-0.25rem)] lg:gap-3"
             :aria-label="
-              translate('pages.articleReader.previousArticle2', {
+              translate('blog.article.previousTitle', {
                 p0: previousArticle.title,
               })
             "
@@ -365,7 +365,7 @@
               <span
                 class="text-base-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
               >
-                {{ translate("pages.articleReader.previousArticle") }}
+                {{ translate("blog.article.previous") }}
               </span>
 
               <span class="max-w-full truncate text-left">
@@ -377,7 +377,7 @@
                 :datetime="getArticleDate(previousArticle)"
                 class="text-base-content/50 text-[0.5625rem] font-semibold tracking-wide"
               >
-                {{ translate("pages.articleReader.published") }}
+                {{ translate("blog.article.published") }}
                 {{ formatArticleDate(previousArticle) }}
               </time>
             </div>
@@ -388,7 +388,7 @@
             :to="getArticleRoute(nextArticle)"
             class="btn btn-neutral btn-sm h-fit min-w-0 max-w-full self-end justify-end gap-2 py-1 md:btn-md md:ml-auto md:max-w-[calc(50%-0.25rem)] md:self-auto lg:gap-3"
             :aria-label="
-              translate('pages.articleReader.nextArticle2', {
+              translate('blog.article.nextTitle', {
                 p0: nextArticle.title,
               })
             "
@@ -400,7 +400,7 @@
               <span
                 class="text-neutral-content/50 hidden text-[0.5625rem] font-semibold tracking-wide md:block"
               >
-                {{ translate("pages.articleReader.nextArticle") }}
+                {{ translate("blog.article.next") }}
               </span>
 
               <span class="max-w-full truncate text-right">
@@ -412,7 +412,7 @@
                 :datetime="getArticleDate(nextArticle)"
                 class="text-neutral-content/50 text-[0.5625rem] font-semibold tracking-wide"
               >
-                {{ translate("pages.articleReader.published") }}
+                {{ translate("blog.article.published") }}
                 {{ formatArticleDate(nextArticle) }}
               </time>
             </div>
@@ -431,7 +431,7 @@
 
       <div>
         <h2 class="font-bold">
-          {{ translate("pages.articleReader.articleFailedToLoad") }}
+          {{ translate("blog.article.loadFailed") }}
         </h2>
         <p class="text-sm">{{ error }}</p>
       </div>
@@ -441,7 +441,7 @@
     <div v-else class="my-32 text-center text-base-content/50">
       <i class="ri-file-unknow-line mb-4 block text-5xl"></i>
       <p>
-        {{ translate("pages.articleReader.articleNotFoundOrFailedToLoad") }}
+        {{ translate("blog.article.loadFailedHint") }}
       </p>
     </div>
 
@@ -574,9 +574,9 @@ const missingTranslation = computed(
 );
 const languageNames = { "zh-CN": "中文（简体）", en: "English", si: "සිංහල" };
 const localizedLanguageNames = computed(() => ({
-  "zh-CN": translate("pages.articleReader.languageNames.zh-CN"),
-  en: translate("pages.articleReader.languageNames.en"),
-  si: translate("pages.articleReader.languageNames.si"),
+  "zh-CN": translate("blog.article.languages.zh-CN"),
+  en: translate("blog.article.languages.en"),
+  si: translate("blog.article.languages.si"),
 }));
 
 const articleId = computed(() => String(props.article?.id || "").trim());
@@ -765,10 +765,10 @@ const articleShareMeta = computed(() => {
   const displayDate = date ? formatLocalizedDate(props.article?.date) : "";
   const lengthText =
     Number.isFinite(length) && length > 0
-      ? translate("pages.articleReader.characters", { p0: length })
+      ? translate("blog.article.characters", { p0: length })
       : "";
   const readingTimeText = lengthText
-    ? translate("pages.articleReader.minRead2", {
+    ? translate("blog.article.readTime", {
         p0: estimateReadingTime(length),
       })
     : "";
@@ -777,11 +777,11 @@ const articleShareMeta = computed(() => {
     Boolean,
   );
   const publicationInfo = date
-    ? translate("pages.articleReader.published2", { p0: displayDate })
+    ? translate("blog.article.publishDate", { p0: displayDate })
     : "";
   const contentInfo = [
     Number.isFinite(length) && length > 0
-      ? translate("pages.articleReader.aboutCharacters", {
+      ? translate("blog.article.aboutCharacters", {
           p0: length.toLocaleString(uiLocale.value),
         })
       : "",
@@ -791,12 +791,12 @@ const articleShareMeta = computed(() => {
     .join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(articleReads.value)
-      ? translate("pages.articleReader.reads", {
+      ? translate("blog.article.reads", {
           p0: formatReadCount(articleReads.value),
         })
       : "",
     commentCountsAvailable.value && Number.isFinite(articleComments.value)
-      ? translate("pages.articleReader.comments", {
+      ? translate("blog.article.comments", {
           p0: formatReadCount(articleComments.value),
         })
       : "",
@@ -808,7 +808,7 @@ const articleShareMeta = computed(() => {
 
   return {
     get sourceLabel() {
-      return translate("pages.articleReader.blog");
+      return translate("blog.article.blog");
     },
     title: props.article?.title || "",
     detail: detailLines.join(" · "),
@@ -960,7 +960,7 @@ const fabActions = computed(() => {
     {
       key: "bottom",
       get label() {
-        return translate("pages.articleReader.toBottom");
+        return translate("blog.article.toBottom");
       },
       icon: "ri-skip-down-line",
       buttonClass: "btn-info btn-soft",
@@ -969,7 +969,7 @@ const fabActions = computed(() => {
     {
       key: "top",
       get label() {
-        return translate("pages.articleReader.toTop");
+        return translate("blog.article.toTop");
       },
       icon: "ri-skip-up-line",
       buttonClass: "btn-info btn-soft",
@@ -978,7 +978,7 @@ const fabActions = computed(() => {
     {
       key: "settings",
       get label() {
-        return translate("reader.formatSetting.readingLayout");
+        return translate("reader.format.title");
       },
       icon: "ri-settings-3-line",
       buttonClass: "btn-primary btn-soft",
@@ -987,7 +987,7 @@ const fabActions = computed(() => {
     {
       key: "refresh",
       get label() {
-        return translate("pages.articleReader.refreshArticle");
+        return translate("blog.article.refresh");
       },
       icon: props.loading ? "ri-loader-4-line animate-spin" : "ri-refresh-line",
       buttonClass: "btn-success btn-soft",
@@ -996,7 +996,7 @@ const fabActions = computed(() => {
     {
       key: "back",
       get label() {
-        return translate("pages.articleReader.backToArticles");
+        return translate("blog.article.back");
       },
       icon: "ri-arrow-go-back-line",
       buttonClass: "btn-secondary btn-soft",

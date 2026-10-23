@@ -29,22 +29,22 @@
                 :aria-label="
                   translate(
                     showEncodings
-                      ? 'tools.info.showGlyphs'
-                      : 'tools.info.showEncoding',
+                      ? 'sinhala.info.showGlyphs'
+                      : 'sinhala.info.showEncoding',
                   )
                 "
                 :title="
                   translate(
                     showEncodings
-                      ? 'tools.info.showGlyphs'
-                      : 'tools.info.showEncoding',
+                      ? 'sinhala.info.showGlyphs'
+                      : 'sinhala.info.showEncoding',
                   )
                 "
                 :data-tip="
                   translate(
                     showEncodings
-                      ? 'tools.info.showGlyphs'
-                      : 'tools.info.showEncoding',
+                      ? 'sinhala.info.showGlyphs'
+                      : 'sinhala.info.showEncoding',
                   )
                 "
                 @click="emit('toggle-encoding')"
@@ -60,7 +60,7 @@
           </th>
           <th scope="col" class="p-0">
             <span class="sr-only">{{
-              translate("tools.info.conversionDirection")
+              translate("sinhala.info.conversionDirection")
             }}</span>
           </th>
           <th
@@ -73,9 +73,9 @@
               v-if="compareForms"
               class="mt-1 font-normal text-base-content/80"
             >
-              {{ translate("tools.info.conjunctGlyph")
+              {{ translate("sinhala.info.conjunctGlyph")
               }}<span class="text-base-content/55"
-                >（{{ translate("tools.info.expandedForm") }}）</span
+                >（{{ translate("sinhala.info.expandedForm") }}）</span
               >
             </p>
           </th>
@@ -98,7 +98,7 @@
                   v-if="showEncodings && legacyIndex > 0"
                   class="shrink-0 font-serif text-xs text-base-content/55"
                   :lang="locale"
-                  >{{ translate("tools.info.encodingAlternative") }}</span
+                  >{{ translate("sinhala.info.encodingAlternative") }}</span
                 >
                 <span
                   class="min-w-0"
@@ -142,7 +142,7 @@
             <span
               v-if="compareForms"
               class="whitespace-nowrap"
-              :aria-label="translate('tools.info.conjunctGlyph')"
+              :aria-label="translate('sinhala.info.conjunctGlyph')"
               >{{ row.unicode }}</span
             >
             <template v-else>{{ row.unicode }}</template>
@@ -150,7 +150,7 @@
           <td
             v-if="compareForms"
             class="px-2 py-1 font-abhaya text-base-content/55"
-            :aria-label="translate('tools.info.expandedForm')"
+            :aria-label="translate('sinhala.info.expandedForm')"
             lang="si"
           >
             <span v-if="row.plain" class="whitespace-nowrap"

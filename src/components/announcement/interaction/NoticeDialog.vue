@@ -7,7 +7,7 @@
     :show-cancel="mode !== 'summary'"
     scroll-content
     :show-back="canGoBack"
-    :back-label="translate('common.modal.backToImportantAnnouncements')"
+    :back-label="translate('common.modal.backToList')"
     :on-submit="submit"
     @back="emit('back')"
     @close="emit('close')"
@@ -15,7 +15,7 @@
     <template #title>
       <hgroup v-if="mode === 'summary'">
         <h3 class="font-serif text-lg font-bold flex items-center gap-2">
-          {{ translate('common.modal.importantAnnouncements') }}
+          {{ translate('common.modal.announcements') }}
           <span
             v-if="unreadSummaryCount"
             class="badge badge-error badge-sm tabular-nums px-1.25"
@@ -23,7 +23,7 @@
             {{ unreadSummaryCount }}
           </span>
         </h3>
-        <p class="text-base-content/55 text-xs">{{ translate('common.modal.pleaseTakeNoteOfTheFollowing') }}</p>
+        <p class="text-base-content/55 text-xs">{{ translate('common.modal.hint') }}</p>
       </hgroup>
 
       <div
@@ -80,7 +80,7 @@
     </template>
 
     <template #description>
-      <section v-if="mode === 'summary'" :aria-label="translate('common.modal.importantAnnouncementList')">
+      <section v-if="mode === 'summary'" :aria-label="translate('common.modal.listLabel')">
         <ul class="grid gap-3">
           <li
             v-for="announcement in summaryAnnouncements"
@@ -117,9 +117,9 @@
         role="alert"
         class="flex flex-col items-center gap-3 py-6"
       >
-        <p>{{ translate('markdown.markdown.loadingFailedPleaseTryAgainLater') }}</p>
+        <p>{{ translate('markdown.content.loadFailed') }}</p>
         <button type="button" class="btn btn-sm" @click="retryRenderer">
-          {{ translate('pages.announcements.retry') }}
+          {{ translate('announcements.retry') }}
         </button>
       </div>
       <Renderer
@@ -208,7 +208,7 @@ const buttonMode = computed(() =>
 const buttonText = computed(() =>
   props.mode === "summary"
     ? unreadSummaryCount.value
-      ? translate('common.modal.markAllAsRead')
+      ? translate('common.modal.markRead')
       : translate('common.modal.close')
     : translate('common.modal.gotIt'),
 );

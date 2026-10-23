@@ -1,9 +1,9 @@
 <template>
   <ContentPage
     eyebrow="Chinese Typography"
-    :title="translate('pages.kaiming.kaimingPunctuation')"
-    :description="translate('pages.kaiming.punctuationFontsForChineseWebTypographyWithSansSerifAnd')"
-    :metasLabel="translate('pages.kaiming.fontSpecifications')"
+    :title="translate('kaiming.title')"
+    :description="translate('kaiming.description')"
+    :metasLabel="translate('kaiming.specifications')"
   >
     <template #meta>
       <li class="inline-flex items-center gap-1">
@@ -29,7 +29,7 @@
         rel="noopener noreferrer"
       >
         <i class="ri-github-fill"></i>
-        {{ translate('pages.kaiming.viewSource') }}
+        {{ translate("kaiming.viewSource") }}
         <i class="ri-arrow-right-up-line"></i>
       </a>
     </template>
@@ -42,15 +42,19 @@
         class="flex flex-col gap-4 border-b border-base-200 bg-base-200/60 p-4 md:flex-row md:items-start md:justify-between"
       >
         <fieldset class="fieldset">
-          <legend class="fieldset-legend">{{ translate('pages.kaiming.punctuationFontFamily') }}</legend>
+          <legend class="fieldset-legend">
+            {{ translate("kaiming.family") }}
+          </legend>
           <select
             class="select w-full max-w-xs md:w-48"
             :style="demoStyle"
             v-model="family"
-            :aria-label="translate('pages.kaiming.punctuationFontFamily')"
+            :aria-label="translate('kaiming.family')"
             @change="family = $event.target.value"
           >
-            <option disabled selected>{{ translate('pages.kaiming.chooseFontFamily') }}</option>
+            <option disabled selected>
+              {{ translate("kaiming.chooseFamily") }}
+            </option>
             <option
               v-for="option in familyOptions"
               :key="option.value"
@@ -67,7 +71,7 @@
         </fieldset>
         <fieldset class="fieldset flex-1">
           <legend class="fieldset-legend">
-            {{ translate('pages.kaiming.variableWeight') }}
+            {{ translate("kaiming.variableWeight") }}
             <output
               class="badge badge-primary badge-sm font-mono"
               for="kaiming-weight"
@@ -83,18 +87,20 @@
             min="100"
             max="900"
             step="1"
-            :aria-valuetext="translate('pages.kaiming.weight', { p0: weight })"
+            :aria-valuetext="translate('kaiming.weight', { p0: weight })"
           />
         </fieldset>
       </div>
 
       <div class="p-6">
-        <h2 id="specimen-title" class="sr-only">{{ translate('pages.kaiming.liveFontSpecimen') }}</h2>
+        <h2 id="specimen-title" class="sr-only">
+          {{ translate("kaiming.specimen") }}
+        </h2>
         <div
           class="text-justify mx-auto min-h-64 w-[11em] md:w-[17em] lg:w-[18em] xl:w-[19em] rounded-box p-3 leading-snug outline-none transition-colors hover:bg-base-200/40 focus:bg-base-200/60 md:min-h-80 md:p-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
           contenteditable="true"
           role="textbox"
-          :aria-label="translate('pages.kaiming.editableFontSpecimen')"
+          :aria-label="translate('kaiming.specimenLabel')"
           aria-multiline="true"
           spellcheck="false"
           :style="demoStyle"
@@ -107,8 +113,10 @@
       <div
         class="flex flex-wrap justify-between gap-2 border-t border-base-200 bg-base-200/60 px-4 py-2 text-xs text-base-content/60"
       >
-        <span>{{ translate('pages.kaiming.clickTheSpecimenToEdit') }}</span>
-        <span>{{ translate('pages.kaiming.currentFont') }}{{ activeFamilyLabel }}</span>
+        <span>{{ translate("kaiming.specimenHint") }}</span>
+        <span
+          >{{ translate("kaiming.currentFont") }}{{ activeFamilyLabel }}</span
+        >
       </div>
     </section>
 
@@ -116,12 +124,14 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >Typography Features</p>
+        >
+          Typography Features
+        </p>
         <h2
           id="features-title"
           class="font-serif text-2xl font-bold md:text-3xl"
         >
-          {{ translate('pages.kaiming.refiningPunctuationRhythmInChineseText') }}
+          {{ translate("kaiming.rhythmTitle") }}
         </h2>
       </header>
 
@@ -155,12 +165,14 @@
       <header class="mb-8 text-center">
         <p
           class="mb-2 text-sm font-semibold tracking-wide text-primary uppercase"
-        >Use on the Web</p>
+        >
+          Use on the Web
+        </p>
         <h2 id="usage-title" class="font-serif text-2xl font-bold md:text-3xl">
-          {{ translate('pages.kaiming.oneLineImportWithFontFallback') }}
+          {{ translate("kaiming.importTitle") }}
         </h2>
         <p class="mx-auto mt-3 max-w-xl text-base-content/70">
-          {{ translate('pages.kaiming.preciseCssUnicodeRangeLoadsAndReplacesOnlyTheIncluded') }}
+          {{ translate("kaiming.importHint") }}
         </p>
       </header>
 
@@ -171,17 +183,19 @@
           <CodeBlock class="my-2" :code="usageCode" language="css" />
         </article>
 
-        <article class="card border border-base-200 bg-base-200/10">
-          <div class="card-body">
-            <h3 class="card-title font-serif font-bold">{{ translate('pages.kaiming.downloadsSource') }}</h3>
+        <article class="card">
+          <div class="card-body px-0">
+            <h3 class="card-title font-serif font-bold">
+              {{ translate("kaiming.downloads") }}
+            </h3>
             <p class="text-sm text-base-content/70">
-              {{ translate('pages.kaiming.useTheWebFontsDirectlyOrGetOtherFormatsAnd') }}
+              {{ translate("kaiming.downloadsHint") }}
             </p>
             <div class="mt-2 grid gap-2">
               <a
                 v-for="download in downloads"
                 :key="download.href"
-                class="btn btn-ghost justify-between border-base-200"
+                class="btn justify-between first:btn-primary not-first:btn-ghost"
                 :href="download.href"
                 :target="download.external ? '_blank' : undefined"
                 :rel="download.external ? 'noopener noreferrer' : undefined"
@@ -200,7 +214,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import { computed, ref } from "vue";
@@ -212,8 +226,18 @@ const weight = ref(400);
 const family = ref("serif");
 
 const familyOptions = [
-  { get label() { return translate('pages.kaiming.sansSerif'); }, value: "sans" },
-  { get label() { return translate('pages.kaiming.serif'); }, value: "serif" },
+  {
+    get label() {
+      return translate("kaiming.sansSerif");
+    },
+    value: "sans",
+  },
+  {
+    get label() {
+      return translate("kaiming.serif");
+    },
+    value: "serif",
+  },
 ];
 
 const activeFamilyLabel = computed(
@@ -232,21 +256,33 @@ const demoStyle = computed(() => ({
 const features = [
   {
     index: "01",
-    get title() { return translate('pages.kaiming.halfWidthPunctuation'); },
+    get title() {
+      return translate("kaiming.halfWidthTitle");
+    },
     sample: "「开」「明」",
-    get description() { return translate('pages.kaiming.bracketsQuotesAndCommasUseHalfWidthSpacingForA'); },
+    get description() {
+      return translate("kaiming.halfWidthHint");
+    },
   },
   {
     index: "02",
-    get title() { return translate('pages.kaiming.compactSentenceEndings'); },
+    get title() {
+      return translate("kaiming.compactTitle");
+    },
     sample: "真的？！",
-    get description() { return translate('pages.kaiming.consecutiveEndingMarksAreCompactedPreservingEmphasisWithoutExcessSpacing'); },
+    get description() {
+      return translate("kaiming.compactHint");
+    },
   },
   {
     index: "03",
-    get title() { return translate('pages.kaiming.dashLigature'); },
+    get title() {
+      return translate("kaiming.dashTitle");
+    },
     sample: "上篇——下篇",
-    get description() { return translate('pages.kaiming.doubleDashesFormAContinuousTwoCharacterWideLigatureThat'); },
+    get description() {
+      return translate("kaiming.dashHint");
+    },
   },
 ];
 
@@ -262,25 +298,33 @@ article {
 
 const downloads = [
   {
-    get label() { return translate('pages.kaiming.webImport'); },
+    get label() {
+      return translate("kaiming.webImport");
+    },
     meta: "CSS",
     href: "https://raw.komori.cc/kaiming/index.css",
     external: true,
   },
   {
-    get label() { return translate('pages.kaiming.releases'); },
+    get label() {
+      return translate("kaiming.releases");
+    },
     meta: "Releases",
     href: "https://github.com/KoMoriSam/Kaiming/releases",
     external: true,
   },
   {
-    get label() { return translate('pages.kaiming.sourceRepository'); },
+    get label() {
+      return translate("kaiming.sourceRepository");
+    },
     meta: "GitHub",
     href: "https://github.com/KoMoriSam/Kaiming",
     external: true,
   },
   {
-    get label() { return translate('pages.kaiming.openSourceLicense'); },
+    get label() {
+      return translate("kaiming.openSourceLicense");
+    },
     meta: "OFL 1.1",
     href: "https://raw.komori.cc/kaiming/LICENSE",
     external: true,

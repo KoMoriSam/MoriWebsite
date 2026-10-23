@@ -26,13 +26,13 @@
         ref="searchTriggerButton"
         type="button"
         class="btn btn-ghost max-lg:btn-square mx-2"
-        :aria-label="translate('common.navBar.openSiteSearch')"
+        :aria-label="translate('common.nav.openSearch')"
         aria-keyshortcuts="Control+K Meta+K"
         @click="activateSearch"
       >
         <i class="ri-search-line text-lg" aria-hidden="true"></i>
         <span class="hidden xl:inline">{{
-          translate("common.navBar.search")
+          translate("common.nav.search")
         }}</span>
         <kbd class="kbd kbd-sm hidden xl:inline-flex">
           {{ searchShortcutLabel }} K

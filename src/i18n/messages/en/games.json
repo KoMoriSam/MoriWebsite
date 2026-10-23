@@ -5,8 +5,8 @@
     "description": "Find Merlin with friends. A 5–10 player game of hidden roles, team votes and quests."
   },
   "games": {
-    "gameInformation": "Game information",
-    "gameCount": "Games: {count}",
+    "info": "Game information",
+    "count": "Games: {count}",
     "progress": {
       "online": "Online",
       "complete": "Completed",

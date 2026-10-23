@@ -2,7 +2,7 @@
   <footer
     ref="barRef"
     class="mt-auto flex h-6 min-h-6 shrink-0 items-center gap-3 overflow-hidden text-[0.6875rem] leading-6 text-base-content/55 tabular-nums"
-    :aria-label="translate('reader.readerStatusBar.readingInformation')"
+    :aria-label="translate('reader.status.label')"
   >
     <span class="min-w-0 flex-1 truncate text-left">{{ statusTitle }}</span>
     <span class="shrink-0">{{ currentPage }} / {{ totalPages }}</span>

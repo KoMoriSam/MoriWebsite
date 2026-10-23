@@ -13,7 +13,7 @@
         class="fixed z-[100] w-fit max-w-[calc(100dvw-1rem)] rounded-box border border-base-300 bg-base-100 text-base-content shadow-xl"
         :style="menuPosition"
         data-reader-interactive
-        :aria-label="translate('reader.contextMenu.textActions')"
+        :aria-label="translate('reader.contextMenu.label')"
         @pointerdown.stop
         @contextmenu.prevent
       >
@@ -43,13 +43,13 @@
                   "
                   aria-hidden="true"
                 ></i>
-                <span>{{ context.image ? translate('reader.formatSetting.save') : translate('reader.contextMenu.copy') }}</span>
+                <span>{{ context.image ? translate('reader.format.save') : translate('reader.contextMenu.copy') }}</span>
               </button>
             </li>
             <li>
               <button type="button" :disabled="!context.text" @click="searchText">
                 <i class="ri-search-line" aria-hidden="true"></i>
-                <span>{{ translate('common.navBar.search') }}</span>
+                <span>{{ translate('common.nav.search') }}</span>
               </button>
             </li>
             <li>
@@ -195,7 +195,7 @@ const copyText = async () => {
     await copyToClipboard(props.context.text);
     toast.success(translate('reader.contextMenu.textCopied'));
   } catch {
-    toast.error(translate('reader.contextMenu.copyFailedPleaseSelectTheTextManually'));
+    toast.error(translate('reader.contextMenu.copyTextFailed'));
   }
   close();
 };
@@ -256,7 +256,7 @@ const saveImage = async () => {
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    toast.info(translate('reader.contextMenu.originalImageOpenedUseYourBrowserToSaveIt'));
+    toast.info(translate('reader.contextMenu.imageOpened'));
   }
 };
 const handlePrimaryAction = () =>
@@ -264,9 +264,9 @@ const handlePrimaryAction = () =>
 const copyLatexSource = async () => {
   try {
     await copyToClipboard(props.context.latex?.text || "");
-    toast.success(translate('reader.contextMenu.latexSourceCopied'));
+    toast.success(translate('reader.contextMenu.latexCopied'));
   } catch {
-    toast.error(translate('reader.contextMenu.copyFailedPleaseSelectTheFormulaManually'));
+    toast.error(translate('reader.contextMenu.copyFormulaFailed'));
   }
   close();
 };
@@ -280,7 +280,7 @@ const copyLatexAsSvg = async () => {
     });
     toast.success(translate('reader.contextMenu.svgCopied'));
   } catch {
-    toast.error(translate('reader.contextMenu.yourBrowserCannotCopySvg'));
+    toast.error(translate('reader.contextMenu.svgUnsupported'));
   }
   close();
 };
@@ -316,7 +316,7 @@ const shareText = async () => {
     await ensureShareDialog();
     await shareDialogRef.value?.open(payload);
   } catch {
-    toast.error(translate('reader.contextMenu.cannotOpenTheShareCardRightNow'));
+    toast.error(translate('reader.contextMenu.shareFailed'));
   }
 };
 const openComment = () => {

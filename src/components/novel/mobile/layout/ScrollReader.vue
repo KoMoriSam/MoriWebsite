@@ -2,7 +2,7 @@
   <section
     ref="scrollContainerRef"
     class="scroll-reader absolute inset-x-0 top-0 bottom-6 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]"
-    :aria-label="translate('reader.scrollReader.scrollingReader')"
+    :aria-label="translate('reader.scroll.label')"
     :aria-busy="showChapterLoadingOverlay"
     @pointerdown.capture="handleTextPointerDown"
     @pointermove.capture="handleTextPointerMove"
@@ -60,7 +60,7 @@
           class="alert alert-soft pointer-events-auto block w-[calc(100%-1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
           :aria-label="
             translate(
-              'reader.scrollReader.scrollingHelpTapAGridZoneForItsActionSwipe',
+              'reader.scroll.help',
             )
           "
           @click="dismissReaderHint"
@@ -68,10 +68,10 @@
           <span class="block w-full">
             <span class="flex items-baseline justify-between gap-3">
               <span class="text-sm font-semibold">{{
-                translate("reader.pagedReader.readingControls")
+                translate("reader.paged.controls")
               }}</span>
               <span class="text-[0.6875rem] text-base-content/45">
-                {{ translate("reader.pagedReader.tapThisHintToDismiss") }}
+                {{ translate("reader.paged.dismissHint") }}
               </span>
             </span>
 
@@ -82,13 +82,13 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  {{ translate("reader.scrollReader.verticalScrolling") }}
+                  {{ translate("reader.scroll.scroll") }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  {{ translate("reader.pagedReader.textArea") }}<br />{{
-                    translate("reader.scrollReader.swipeVerticallyToRead")
+                  {{ translate("reader.paged.textArea") }}<br />{{
+                    translate("reader.scroll.swipeHint")
                   }}
                 </span>
               </span>
@@ -99,14 +99,14 @@
                   aria-hidden="true"
                 ></i>
                 <span class="mt-1.5 block text-xs font-semibold">
-                  {{ translate("reader.pagedReader.tapActionsCustomizable") }}
+                  {{ translate("reader.paged.tapActions") }}
                 </span>
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  {{ translate("reader.pagedReader.tapTheCenterForTheMenu")
+                  {{ translate("reader.paged.centerHint")
                   }}<br />
-                  {{ translate("reader.pagedReader.tapTheEdgesToTurnPages") }}
+                  {{ translate("reader.paged.edgeHint") }}
                 </span>
               </span>
             </span>
@@ -115,12 +115,12 @@
               class="mt-2.5 flex items-baseline gap-2 border-t border-base-300 pt-2 text-xs"
             >
               <span class="shrink-0 font-semibold">{{
-                translate("reader.pagedReader.moreControls")
+                translate("reader.paged.moreControls")
               }}</span>
               <span class="text-base-content/60">
                 {{
                   translate(
-                    "reader.pagedReader.assignGridZonesToTheMenuPreviousOrNextChapter",
+                    "reader.paged.zonesHint",
                   )
                 }}
               </span>

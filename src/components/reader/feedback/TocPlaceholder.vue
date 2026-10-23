@@ -7,7 +7,7 @@
     <div class="flex min-w-0 items-center gap-2" :class="mobile ? 'px-1' : ''">
       <i class="shrink-0 text-2xl text-primary" :class="novel ? 'ri-book-2-line' : 'ri-list-unordered'"></i>
       <div class="min-w-0 flex-1">
-        <span :class="mobile ? 'block text-xs font-bold' : 'text-base font-bold'">{{ translate('reader.chapterToc.readingProgress') }}</span>
+        <span :class="mobile ? 'block text-xs font-bold' : 'text-base font-bold'">{{ translate('reader.toc.progress') }}</span>
         <div v-if="mobile" class="skeleton mt-1 h-3 w-2/3 motion-reduce:animate-none"></div>
       </div>
       <div class="skeleton h-3 w-7 motion-reduce:animate-none"></div>

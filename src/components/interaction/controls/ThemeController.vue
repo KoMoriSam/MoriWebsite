@@ -1,5 +1,5 @@
 <template>
-  <section :aria-label="translate('common.themeController.themeSelection')">
+  <section :aria-label="translate('common.theme.label')">
     <ScrollableContainer class="-mx-1">
       <div class="min-h-0 overflow-y-auto overscroll-contain px-1">
         <div

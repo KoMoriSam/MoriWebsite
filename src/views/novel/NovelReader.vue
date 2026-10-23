@@ -124,14 +124,14 @@
           "
           role="status"
           aria-live="assertive"
-          :aria-label="translate('reader.novelReader.loadingChapter')"
+          :aria-label="translate('novel.reader.loadingLabel')"
           @pointerdown.stop
           @click.stop
         >
           <div class="flex flex-col items-center gap-3">
             <span class="loading loading-spinner loading-lg"></span>
             <span class="text-sm font-medium">{{
-              translate("reader.novelReader.loadingChapter2")
+              translate("novel.reader.loading")
             }}</span>
           </div>
         </div>
@@ -175,8 +175,8 @@
         <h2 class="min-w-0 text-2xl font-serif font-bold break-words">
           {{
             currentMapping === "title"
-              ? translate("reader.novelReader.chapterComments")
-              : translate("reader.novelReader.bookComments")
+              ? translate("novel.reader.chapterComments")
+              : translate("novel.reader.bookComments")
           }}
         </h2>
 
@@ -187,8 +187,8 @@
         >
           {{
             currentMapping === "title"
-              ? translate("reader.novelReader.switchToBookComments")
-              : translate("reader.novelReader.switchToChapterComments")
+              ? translate("novel.reader.showBookComments")
+              : translate("novel.reader.showChapterComments")
           }}
         </button>
       </section>
@@ -233,12 +233,12 @@
         class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
       >
         <h2 class="text-xl font-serif font-bold">
-          {{ translate("reader.novelReader.chapterComments") }}
+          {{ translate("novel.reader.chapterComments") }}
         </h2>
         <button
           type="button"
           class="btn btn-ghost btn-sm btn-circle"
-          :aria-label="translate('reader.novelReader.closeChapterComments')"
+          :aria-label="translate('novel.reader.closeComments')"
           @click="requestCloseChapterComments"
         >
           <i class="ri-close-line text-xl" aria-hidden="true"></i>
@@ -267,7 +267,7 @@
     </section>
     <form method="dialog" class="modal-backdrop">
       <button @click.prevent="requestCloseChapterComments">
-        {{ translate("reader.novelReader.closeChapterComments") }}
+        {{ translate("novel.reader.closeComments") }}
       </button>
     </form>
   </dialog>
@@ -824,7 +824,7 @@ const chapterStats = computed(() => {
     {
       icon: "ri-time-line",
       text: currentChapter.value?.uploadDate
-        ? translate("pages.articleReader.published2", {
+        ? translate("blog.article.publishDate", {
             p0: formatLocalizedDate(currentChapter.value.uploadDate, {
               year: "numeric",
               month: "numeric",
@@ -849,7 +849,7 @@ const chapterStats = computed(() => {
   stats.push({
     icon: "ri-file-text-line",
     get text() {
-      return translate("pages.articleReader.aboutCharacters", {
+      return translate("blog.article.aboutCharacters", {
         p0: currentChapter.value?.length || 0,
       });
     },
@@ -859,7 +859,7 @@ const chapterStats = computed(() => {
     stats.push({
       icon: "ri-eye-line",
       get text() {
-        return translate("pages.articleReader.reads", {
+        return translate("blog.article.reads", {
           p0: chapterReadCountFormatter.format(chapterReads.value),
         });
       },
@@ -881,12 +881,12 @@ const textShareMeta = computed(() => {
   const contentInfo = contentItems.join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(chapterReads.value)
-      ? translate("pages.articleReader.reads", {
+      ? translate("blog.article.reads", {
           p0: chapterReadCountFormatter.format(chapterReads.value),
         })
       : "",
     commentCountsAvailable.value && Number.isFinite(chapterComments.value)
-      ? translate("pages.articleReader.comments", {
+      ? translate("blog.article.comments", {
           p0: chapterReadCountFormatter.format(chapterComments.value),
         })
       : "",
@@ -928,7 +928,7 @@ const fabActions = computed(() => [
   {
     key: "bottom",
     get label() {
-      return translate("pages.articleReader.toBottom");
+      return translate("blog.article.toBottom");
     },
     icon: "ri-skip-down-line",
     buttonClass: "btn-info btn-soft",
@@ -937,7 +937,7 @@ const fabActions = computed(() => [
   {
     key: "top",
     get label() {
-      return translate("pages.articleReader.toTop");
+      return translate("blog.article.toTop");
     },
     icon: "ri-skip-up-line",
     buttonClass: "btn-info btn-soft",
@@ -946,7 +946,7 @@ const fabActions = computed(() => [
   {
     key: "settings",
     get label() {
-      return translate("reader.formatSetting.readingLayout");
+      return translate("reader.format.title");
     },
     icon: "ri-settings-3-line",
     buttonClass: "btn-primary btn-soft",
@@ -955,7 +955,7 @@ const fabActions = computed(() => [
   {
     key: "refresh",
     get label() {
-      return translate("reader.novelReader.refreshContent");
+      return translate("novel.reader.refreshContent");
     },
     icon: isLoadingContent.value
       ? "ri-loader-4-line animate-spin"
@@ -966,7 +966,7 @@ const fabActions = computed(() => [
   {
     key: "cover",
     get label() {
-      return translate("reader.novelReader.cover");
+      return translate("novel.reader.cover");
     },
     icon: "ri-arrow-go-back-line",
     buttonClass: "btn-secondary btn-soft",

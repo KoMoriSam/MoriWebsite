@@ -64,7 +64,7 @@
           v-if="$slots.actions"
           class="order-3 flex max-w-full shrink-0 flex-wrap items-center gap-x-5 gap-y-2 md:order-none md:shrink"
           :class="[actionsEnd ? 'ml-auto justify-end' : '', hideMobileActions ? 'hidden lg:flex' : '', compactHeader ? 'max-lg:flex-nowrap max-lg:shrink-0 max-lg:gap-1' : '']"
-          :aria-label="translate('common.contentPage.pageActions')"
+          :aria-label="translate('common.page.actions')"
         >
           <slot name="actions"></slot>
         </aside>

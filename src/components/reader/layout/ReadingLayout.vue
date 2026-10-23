@@ -74,10 +74,10 @@
     </div>
     <form method="dialog" class="modal-backdrop">
       <button
-        :aria-label="translate('reader.reader.closeReadingLayoutSettings')"
+        :aria-label="translate('reader.settings.close')"
         @click.prevent="requestCloseFormatSetting"
       >
-        {{ translate('reader.reader.closeReadingLayoutSettings') }}
+        {{ translate('reader.settings.close') }}
       </button>
     </form>
   </dialog>
@@ -236,7 +236,7 @@ const getHeadingText = (element, index) => {
     .querySelectorAll(".comment-trigger")
     .forEach((trigger) => trigger.remove());
 
-  return heading.textContent?.trim() || translate('reader.reader.heading', { p0: index + 1 });
+  return heading.textContent?.trim() || translate('reader.settings.heading', { p0: index + 1 });
 };
 
 const createHeadingId = (element, index, text) => {

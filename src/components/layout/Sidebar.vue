@@ -9,7 +9,7 @@
     <aside class="drawer-side">
       <label
         :for="drawerId"
-        :aria-label="translate('common.sideBar.closeSidebar')"
+        :aria-label="translate('common.sidebar.close')"
         class="drawer-overlay"
       ></label>
       <section

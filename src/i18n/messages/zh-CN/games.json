@@ -5,8 +5,8 @@
     "description": "与朋友一起寻找梅林。5–10 人房间联机，秘密身份、组队投票与任务冒险。"
   },
   "games": {
-    "gameInformation": "游戏信息",
-    "gameCount": "共 {count} 款游戏",
+    "info": "游戏信息",
+    "count": "共 {count} 款游戏",
     "progress": {
       "online": "在线",
       "complete": "已完成",

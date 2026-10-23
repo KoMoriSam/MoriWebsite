@@ -1,9 +1,9 @@
 <template>
-  <ContentPage eyebrow="Site Updates" :title="translate('pages.announcements.announcements')">
+  <ContentPage eyebrow="Site Updates" :title="translate('announcements.title')">
     <template #meta>
       <span v-if="updatedAt" class="inline-flex items-center gap-1">
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        {{ translate('pages.announcements.updated') }} {{ formatAnnouncementDate(updatedAt, true, uiLocale) }}
+        {{ translate('announcements.updated') }} {{ formatAnnouncementDate(updatedAt, true, uiLocale) }}
       </span>
     </template>
 
@@ -14,7 +14,7 @@
     >
       <i class="ri-error-warning-line text-xl" aria-hidden="true"></i>
       <div>
-        <h2 class="font-semibold">{{ translate('pages.announcements.announcementsCouldNotBeLoaded') }}</h2>
+        <h2 class="font-semibold">{{ translate('announcements.loadFailed') }}</h2>
         <p class="text-sm opacity-80">{{ error }}</p>
       </div>
       <button
@@ -24,7 +24,7 @@
         @click="store.fetchAnnouncements({ force: true })"
       >
         <i class="ri-refresh-line" aria-hidden="true"></i>
-        {{ translate('pages.announcements.reload') }}
+        {{ translate('announcements.reload') }}
       </button>
     </section>
 
@@ -35,14 +35,14 @@
         role="status"
       >
         <i class="ri-error-warning-line" aria-hidden="true"></i>
-        <span>{{ translate('pages.announcements.refreshFailedShowingPreviouslyLoadedAnnouncements') }}</span>
+        <span>{{ translate('announcements.refreshFailed') }}</span>
         <button
           type="button"
           class="btn btn-sm"
           :disabled="loading"
           @click="store.fetchAnnouncements({ force: true })"
         >
-          {{ translate('pages.announcements.retry') }}
+          {{ translate('announcements.retry') }}
         </button>
       </div>
 
@@ -73,7 +73,7 @@
           role="status"
           aria-busy="true"
         >
-          <span class="sr-only">{{ translate('pages.announcements.loading') }}{{ group.title }}</span>
+          <span class="sr-only">{{ translate('announcements.loading') }}{{ group.title }}</span>
           <div
             v-for="index in group.skeletonCount"
             :key="index"
@@ -192,12 +192,12 @@ const announcementGroups = computed(() => [
   {
     key: "active",
     eyebrow: "Active",
-    get title() { return translate('pages.announcements.currentAnnouncements'); },
+    get title() { return translate('announcements.current'); },
     titleId: "active-announcements-title",
     items: pageActiveAnnouncements.value,
     sectionClass: "my-8",
     emptyIcon: "ri-notification-off-line",
-    get emptyText() { return translate('pages.announcements.thereAreNoActiveAnnouncements'); },
+    get emptyText() { return translate('announcements.empty'); },
     skeletonCount: 3,
     markRead: true,
     forceRead: false,
@@ -205,12 +205,12 @@ const announcementGroups = computed(() => [
   {
     key: "history",
     eyebrow: "Archive",
-    get title() { return translate('pages.announcements.pastAnnouncements'); },
+    get title() { return translate('announcements.past'); },
     titleId: "history-announcements-title",
     items: historyAnnouncements.value,
     sectionClass: "my-12",
     emptyIcon: "ri-archive-line",
-    get emptyText() { return translate('pages.announcements.thereAreNoPastAnnouncementsYet'); },
+    get emptyText() { return translate('announcements.pastEmpty'); },
     skeletonCount: 2,
     markRead: false,
     forceRead: true,

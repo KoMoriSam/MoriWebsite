@@ -56,7 +56,7 @@
           }"
         >
           <slot name="description">
-            {{ localizeText(description) || translate('common.modal.thisIsTheDefaultDescription') }}
+            {{ localizeText(description) || translate('common.modal.defaultDescription') }}
             <!-- fallback -->
           </slot>
         </section>

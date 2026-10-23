@@ -13,7 +13,7 @@
         <img
           v-fade-in
           v-bind="getImageAttrs(novelCoverUrl, '(min-width: 768px) 320px, 288px')"
-          :alt="translate('reader.novelDetail.coverOf')"
+          :alt="translate('novel.detail.cover')"
           class="relative z-0 aspect-12/17 w-full rounded-lg object-cover shadow-2xl"
           @load="handleImageLoad"
         />
@@ -78,7 +78,7 @@
               <i class="ri-sparkling-2-line shrink-0 text-lg"></i>
               <span class="min-w-0 text-left">
                 <span class="block text-xs font-normal">
-                  {{ translate("reader.chapterToc.latestChapter") }}
+                  {{ translate("reader.toc.latest") }}
                 </span>
                 <span class="block truncate" :title="latestChapterTitle">
                   {{ latestChapterTitle }}
@@ -93,17 +93,17 @@
             <span class="inline-flex items-center gap-1">
               <i class="ri-book-open-line"></i>
               {{ readChapters.length }}
-              {{ translate("reader.novelDetail.chaptersRead") }}
+              {{ translate("novel.detail.chaptersRead") }}
             </span>
             <span class="inline-flex items-center gap-1">
               <i class="ri-stack-line"></i>
               {{ flatChapters.length }}
-              {{ translate("reader.novelDetail.chaptersIncluded") }}
+              {{ translate("novel.detail.chaptersIncluded") }}
             </span>
             <span class="inline-flex items-center gap-1">
               <i class="ri-edit-line"></i>
               {{ translate("common.pagination.of") }} {{ totalWordCount }}
-              {{ translate("reader.chapterList.characters") }}
+              {{ translate("reader.chapters.characters") }}
             </span>
             <client-only v-if="analyticsAvailable || commentCountsAvailable">
               <span
@@ -113,13 +113,13 @@
                 <i class="ri-eye-line" aria-hidden="true"></i>
                 <template v-if="Number.isFinite(novelTotalReads)">
                   {{ formatReadCount(novelTotalReads) }}
-                  {{ translate("reader.chapterList.reads") }}
+                  {{ translate("reader.chapters.reads") }}
                 </template>
                 <span
                   v-else
                   class="loading loading-dots loading-xs"
                   :aria-label="
-                    translate('reader.novelDetail.loadingTotalNovelReads')
+                    translate('novel.detail.loadingReads')
                   "
                 ></span>
               </span>
@@ -136,7 +136,7 @@
                   v-else
                   class="loading loading-dots loading-xs"
                   :aria-label="
-                    translate('reader.novelDetail.loadingTotalNovelComments')
+                    translate('novel.detail.loadingComments')
                   "
                 ></span>
               </span>
@@ -151,7 +151,7 @@
     >
       <section
         class="min-w-0 lg:pr-10 xl:pr-12"
-        :aria-label="translate('reader.novelDetail.novelChapters')"
+        :aria-label="translate('novel.detail.chapters')"
       >
         <ChapterList />
       </section>
@@ -165,7 +165,7 @@
               Discussion
             </p>
             <h2 class="font-serif text-2xl font-semibold text-balance">
-              {{ translate("reader.novelDetail.bookComments") }}
+              {{ translate("novel.detail.bookComments") }}
             </h2>
           </hgroup>
         </header>
@@ -292,8 +292,8 @@ const { handleFirstChapter, handleAnyChapter } = useChapters();
 const hasReadingHistory = computed(() => readChapters.value.length > 0);
 const primaryActionLabel = computed(() =>
   hasReadingHistory.value
-    ? translate("reader.novelDetail.continueReading")
-    : translate("reader.novelDetail.startReading"),
+    ? translate("novel.detail.continueReading")
+    : translate("novel.detail.startReading"),
 );
 const primaryChapter = computed(() =>
   hasReadingHistory.value ? currentChapter.value : flatChapters.value[0],
@@ -301,12 +301,12 @@ const primaryChapter = computed(() =>
 const primaryChapterTitle = computed(
   () =>
     getChapterDisplayTitle(primaryChapter.value) ||
-    translate("reader.novelDetail.loading"),
+    translate("novel.detail.loading"),
 );
 const latestChapterTitle = computed(
   () =>
     getChapterDisplayTitle(latestChapter.value) ||
-    translate("reader.novelDetail.loading"),
+    translate("novel.detail.loading"),
 );
 const primaryChapterDisabled = computed(() =>
   hasReadingHistory.value

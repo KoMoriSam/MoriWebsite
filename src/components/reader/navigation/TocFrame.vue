@@ -189,7 +189,7 @@ const contentVisible = computed(
     (expanded.value && (props.popupOnly || !props.compact)),
 );
 const compactToggleLabel = computed(
-  () => `${props.compact ? translate('reader.tocFrame.expand') : translate('reader.tocFrame.collapse')}${props.ariaLabel}`,
+  () => `${props.compact ? translate('reader.toc.expand') : translate('reader.toc.collapse')}${props.ariaLabel}`,
 );
 
 watch(

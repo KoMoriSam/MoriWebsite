@@ -1,14 +1,12 @@
 {
-  "pages": {
-    "announcements": {
-      "announcements": "Announcements",
-      "updated": "Updated",
-      "announcementsCouldNotBeLoaded": "Announcements could not be loaded",
-      "loading": "Loading",
-      "currentAnnouncements": "Current announcements",
-      "thereAreNoActiveAnnouncements": "There are no active announcements.",
-      "pastAnnouncements": "Past announcements",
-      "thereAreNoPastAnnouncementsYet": "There are no past announcements yet."
-    }
+  "announcements": {
+    "title": "Announcements",
+    "updated": "Updated",
+    "loadFailed": "Announcements could not be loaded",
+    "loading": "Loading",
+    "current": "Current announcements",
+    "empty": "There are no active announcements.",
+    "past": "Past announcements",
+    "pastEmpty": "There are no past announcements yet."
   }
 }

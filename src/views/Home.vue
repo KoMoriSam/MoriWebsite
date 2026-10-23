@@ -55,7 +55,7 @@
           >
             <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
               <i class="ri-article-fill"></i
-              >{{ translate("pages.home.readTheBlog") }}
+              >{{ translate("home.openBlog") }}
             </router-link>
             <router-link
               to="/novel"
@@ -65,7 +65,7 @@
               <i
                 class="ri-eye-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate("pages.home.exploreTheNovel") }}
+              {{ translate("home.exploreNovel") }}
             </router-link>
             <router-link
               to="/tools/server-status"
@@ -77,7 +77,7 @@
               <i
                 class="ri-gamepad-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate("pages.home.serverStatus") }}
+              {{ translate("home.serverStatus") }}
             </router-link>
           </section>
           <client-only v-if="hero.pageUrl">
@@ -87,10 +87,10 @@
               rel="noopener noreferrer"
               class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
             >
-              {{ translate("pages.home.photo")
-              }}{{ hero.author?.name || translate("pages.home.pixabayUser") }}
+              {{ translate("home.photo")
+              }}{{ hero.author?.name || translate("home.pixabayUser") }}
               <br />
-              {{ translate("pages.home.sourcePixabay") }}
+              {{ translate("home.sourcePixabay") }}
             </a>
           </client-only>
           <a
@@ -100,9 +100,9 @@
             rel="noopener noreferrer"
             class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
           >
-            {{ translate("pages.home.photoFlorianhoellmueller") }}
+            {{ translate("home.photoCredit") }}
             <br />
-            {{ translate("pages.home.sourcePixabay") }}
+            {{ translate("home.sourcePixabay") }}
           </a>
           <i
             class="ri-arrow-down-s-line absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
@@ -122,7 +122,7 @@
             >In Progress</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("pages.home.whatIMWorkingOn") }}
+            {{ translate("home.projectsTitle") }}
           </h2>
         </hgroup>
         <figure class="p-0 mx-auto w-42 lg:w-56">
@@ -139,7 +139,7 @@
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          {{ translate("pages.home.theClassicLineWelcomeToMyDigitalGarden") }}
+          {{ translate("home.projectsIntro") }}
         </p>
       </section>
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -149,28 +149,28 @@
               <i class="ri-article-line"></i>
             </aside>
             <h2 class="card-title font-serif font-bold">
-              {{ translate("pages.home.personalBlog") }}
+              {{ translate("home.blogTitle") }}
             </h2>
             <p>
-              {{ translate("pages.home.notesOnExploringTechnology") }}
-              <small>{{ translate("pages.home.aiExperimentsCountToo") }}</small>
+              {{ translate("home.blogSummary") }}
+              <small>{{ translate("home.blogAside") }}</small>
               <br />{{
-                translate("pages.home.alongWithEssaysReadingNotesAndMore")
+                translate("home.blogTopics")
               }}<br />
               <small
-                >{{ translate("pages.home.updatedOccasionallyWith") }}
+                >{{ translate("home.blogUpdates") }}
                 <a
                   class="link link-primary link-hover"
                   href="/rss.xml"
                   type="application/rss+xml"
                 >
                   <i class="ri-rss-fill" aria-hidden="true"></i>
-                  {{ translate("pages.home.rssSubscription") }}
+                  {{ translate("home.rss") }}
                 </a>
               </small>
             </p>
             <router-link to="/blog" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("pages.home.readArticles")
+              {{ translate("home.readArticles")
               }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
@@ -181,17 +181,17 @@
               <i class="ri-article-line"></i>
             </aside>
             <h2 class="card-title font-serif font-bold">
-              {{ translate("pages.home.writingFictionForFun") }}
+              {{ translate("home.novelTitle") }}
             </h2>
             <p>
-              {{ translate("pages.home.theUsualAttemptAtWritingANovel") }}
-              <br />{{ translate("pages.home.justWritingForFun") }}<br />
+              {{ translate("home.novelSummary") }}
+              <br />{{ translate("home.novelAside") }}<br />
               <small>{{
-                translate("pages.home.updatesAndAnEndingAreNotGuaranteed")
+                translate("home.novelUpdates")
               }}</small>
             </p>
             <router-link to="/novel" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("pages.home.readTheNovel")
+              {{ translate("home.openNovel")
               }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
@@ -202,24 +202,24 @@
               <i class="ri-pencil-ruler-2-line"></i>
             </aside>
             <h2 class="card-title font-serif font-bold">
-              {{ translate("pages.home.tools") }}
+              {{ translate("tools.title") }}
             </h2>
             <p>
-              {{ translate("pages.home.aFewLittleToolsUsefulOrOtherwise") }}
+              {{ translate("home.toolsSummary") }}
             </p>
             <div class="flex flex-wrap gap-1.5">
               <span class="badge badge-outline badge-sm">{{
-                translate("pages.home.imageConverter")
+                translate("image.title")
               }}</span>
               <span class="badge badge-outline badge-sm">
-                {{ translate("pages.home.minecraftServerLookup") }}
+                {{ translate("home.serverLookup") }}
               </span>
               <span class="badge badge-outline badge-sm">
-                {{ translate("pages.home.sinhalaFontEncodingConverter") }}
+                {{ translate("sinhala.title") }}
               </span>
             </div>
             <router-link to="/tools" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("pages.home.useTheTools")
+              {{ translate("home.openTools")
               }}<i class="ri-arrow-right-line"></i>
             </router-link>
           </section>
@@ -239,7 +239,7 @@
             >Behind the Site</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("pages.home.aboutMe") }}
+            {{ translate("home.aboutTitle") }}
           </h2>
         </hgroup>
         <figure class="p-0 mx-auto w-32 lg:w-46">
@@ -256,7 +256,7 @@
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          {{ translate("pages.home.hiIMKomori") }}
+          {{ translate("home.aboutIntro") }}
           <br />
           <span lang="ja"
             >22 <ruby>歳<rp>（</rp><rt>さい</rt><rp>）</rp></ruby>で、<ruby
@@ -265,12 +265,12 @@
           >
           <br />
           <small
-            >{{ translate("pages.home.youCanAlsoCallMeByMySinhalaName") }}
+            >{{ translate("home.sinhalaName") }}
             <ruby>විශ්ව<rp>（</rp><rt>Wishwa</rt><rp>）</rp></ruby></small
           >
           <br />
-          {{ translate("pages.home.anIndependentDeveloperWhoEnjoysTinkering") }}
-          <small>{{ translate("pages.home.probably") }}</small>
+          {{ translate("home.developerIntro") }}
+          <small>{{ translate("home.probably") }}</small>
         </p>
       </section>
     </section>
@@ -287,7 +287,7 @@
             >Stay Connected</span
           >
           <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("pages.home.followContactMe") }}
+            {{ translate("home.contactTitle") }}
           </h2>
         </hgroup>
         <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
@@ -304,11 +304,11 @@
           />
         </figure>
         <p class="max-w-lg mx-auto">
-          {{ translate("pages.home.findMeOnThesePlatforms") }}
+          {{ translate("home.contactIntro") }}
           <br />
           <small>
             {{
-              translate("pages.home.iMRarelyOnlineOnWechatOrQqSoAdding")
+              translate("home.contactHint")
             }}</small
           >
         </p>
@@ -346,7 +346,7 @@
               <i
                 class="ri-weibo-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate("pages.home.weibo") }}
+              {{ translate("home.weibo") }}
             </button>
           </a>
           <div class="dropdown dropdown-bottom dropdown-center">
@@ -361,7 +361,7 @@
               <i
                 class="ri-wechat-fill hidden group-hover:block group-active:block"
               ></i>
-              {{ translate("pages.home.wechat") }}
+              {{ translate("home.wechat") }}
             </a>
             <div
               tabindex="0"
@@ -409,31 +409,31 @@ const { imageLoaded, handleImageLoad } = useImageLoad();
 
 import { ref, onMounted, reactive } from "vue";
 
-const greeting = ref("pages.home.hello");
-const description = ref("pages.home.welcomeToMyPersonalWebsite");
+const greeting = ref("home.greeting.default");
+const description = ref("home.greeting.welcome");
 
 onMounted(() => {
   const isPrerenderBot = /HeadlessChrome|Prerender/i.test(navigator.userAgent);
   if (isPrerenderBot) return;
   const hour = new Date().getHours();
   if (hour < 6) {
-    greeting.value = "pages.home.helloEarlyBird";
-    description.value = "pages.home.itSLateGetSomeRest";
+    greeting.value = "home.greeting.dawn";
+    description.value = "home.greeting.dawnHint";
   } else if (hour < 12) {
-    greeting.value = "pages.home.goodMorning";
-    description.value = "pages.home.rememberToHaveBreakfast";
+    greeting.value = "home.greeting.morning";
+    description.value = "home.greeting.morningHint";
   } else if (hour < 14) {
-    greeting.value = "pages.home.goodAfternoon";
-    description.value = "pages.home.timeForLunchTakeABreak";
+    greeting.value = "home.greeting.noon";
+    description.value = "home.greeting.noonHint";
   } else if (hour < 18) {
-    greeting.value = "pages.home.goodAfternoon2";
-    description.value = "pages.home.takeABreatherAndEnjoyACupOfTea";
+    greeting.value = "home.greeting.afternoon";
+    description.value = "home.greeting.afternoonHint";
   } else if (hour < 21) {
-    greeting.value = "pages.home.goodEvening";
-    description.value = "pages.home.howWasYourDay";
+    greeting.value = "home.greeting.evening";
+    description.value = "home.greeting.eveningHint";
   } else {
-    greeting.value = "pages.home.helloNightOwl";
-    description.value = "pages.home.rememberToTakeCareOfYourself";
+    greeting.value = "home.greeting.night";
+    description.value = "home.greeting.nightHint";
   }
 });
 

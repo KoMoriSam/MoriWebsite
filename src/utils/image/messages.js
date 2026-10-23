@@ -1,75 +1,75 @@
 // Worker UI metadata; image processing and original diagnostics remain unchanged.
 const messages = [
   {
-    "key": "common.additional.error",
+    "key": "markdown.alert.error",
     "source": "错误"
   },
   {
-    "key": "common.additional.decoding",
+    "key": "image.worker.decoding",
     "source": "正在解码"
   },
   {
-    "key": "common.additional.encoding",
+    "key": "image.worker.encoding",
     "source": "正在编码"
   },
   {
-    "key": "common.additional.processingFrame",
+    "key": "image.worker.processingFrame",
     "source": "正在处理 {p0}/{p1} 帧"
   },
   {
-    "key": "common.additional.encodingFrame",
+    "key": "image.worker.encodingFrame",
     "source": "正在编码 {p0}/{p1} 帧"
   },
   {
-    "key": "common.additional.estimatedDecodingMemoryExceedsThisDeviceSSafeLimit",
+    "key": "image.worker.memoryLimit",
     "source": "预计解码占用 {p0}，超过当前设备 {p1} 的安全上限"
   },
   {
-    "key": "common.additional.fileSignatureDoesNotMatchItsFormat",
+    "key": "image.worker.invalidSignature",
     "source": "文件签名与识别格式不一致"
   },
   {
-    "key": "common.additional.yourBrowserCannotDecodeThisFile",
+    "key": "image.worker.decodeFailed",
     "source": "浏览器无法解码该 {p0} 文件：{p1}"
   },
   {
-    "key": "common.additional.unknownError",
+    "key": "common.errors.unknown",
     "source": "未知错误"
   },
   {
-    "key": "common.additional.cannotDecodeAnimatedWebp",
+    "key": "image.worker.webpDecodeFailed",
     "source": "无法解码动画 WebP"
   },
   {
-    "key": "common.additional.theGifContainsNoUsableFrames",
+    "key": "image.worker.emptyGif",
     "source": "GIF 中没有可用帧"
   },
   {
-    "key": "common.additional.theEncoderReturnedAnInvalidFileSignature",
+    "key": "image.worker.encoderSignature",
     "source": "{p0} 编码器返回了错误的文件签名"
   },
   {
-    "key": "common.additional.unsupportedStaticOutputFormat",
+    "key": "image.worker.unsupportedFormat",
     "source": "不支持的静态输出格式"
   },
   {
-    "key": "common.additional.webpEncodingFailed",
+    "key": "image.worker.webpEncodeFailed",
     "source": "WebP 编码失败"
   },
   {
-    "key": "common.additional.onlyTheFirstAnimationFrameWasExported",
+    "key": "image.worker.firstFrameOnly",
     "source": "动画来源仅输出第一帧"
   },
   {
-    "key": "common.additional.avifAnimationIsUnsupportedFramesWereExportedSeparately",
+    "key": "image.worker.avifFrames",
     "source": "AVIF 不支持动画，已逐帧输出"
   },
   {
-    "key": "common.additional.avifAnimationIsUnsupportedTheFirstFrameWasExported",
+    "key": "image.worker.avifFirstFrame",
     "source": "AVIF 不支持动画，已输出第一帧"
   },
   {
-    "key": "common.additional.onlyTheFirstFrameOfAnimatedAvifIsCurrentlyProcessed",
+    "key": "image.worker.avifInputFrame",
     "source": "动画 AVIF 当前仅处理第一帧"
   }
 ];

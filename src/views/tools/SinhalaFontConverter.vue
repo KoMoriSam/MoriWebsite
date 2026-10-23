@@ -1,16 +1,16 @@
 <template>
   <ContentPage
-    :title="translate('pages.home.sinhalaFontEncodingConverter')"
-    :metas-label="translate('tools.imageConverter.toolInformation')"
+    :title="translate('sinhala.title')"
+    :metas-label="translate('tools.info')"
   >
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-repeat-2-line" aria-hidden="true"></i>
-        {{ translate("tools.sinhalaFontConverter.bidirectionalConversion") }}
+        {{ translate("sinhala.directions") }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        {{ translate("tools.imageConverter.processedInYourBrowser") }}
+        {{ translate("common.localOnly") }}
       </span>
     </template>
     <template #actions>
@@ -24,7 +24,7 @@
           @click="inputMode = 'text'"
         >
           <i class="ri-t-box-line" aria-hidden="true"></i>
-          {{ translate("tools.imageConverter.text2") }}
+          {{ translate("common.text") }}
         </button>
         <button
           type="button"
@@ -35,7 +35,7 @@
           @click="inputMode = 'document'"
         >
           <i class="ri-file-text-line" aria-hidden="true"></i>
-          {{ translate("tools.imageConverter.documents") }}
+          {{ translate("common.documents") }}
         </button>
       </div>
     </template>
@@ -47,14 +47,14 @@
               {{ isDirectionReversed ? "Legacy" : "Unicode" }}
             </h2>
             <p class="text-xs text-base-content/55">
-              {{ translate("tools.sinhalaFontConverter.sourceEncoding") }}
+              {{ translate("sinhala.sourceEncoding") }}
             </p>
           </hgroup>
           <div
             class="tooltip"
             :data-tip="
               translate(
-                'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+                'sinhala.swapShortcut',
               )
             "
           >
@@ -63,12 +63,12 @@
               class="btn btn-ghost btn-circle"
               :aria-label="
                 translate(
-                  'tools.sinhalaFontConverter.swapSourceAndTargetEncodings',
+                  'sinhala.swap',
                 )
               "
               :title="
                 translate(
-                  'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+                  'sinhala.swapShortcut',
                 )
               "
               :disabled="documentBusy"
@@ -85,7 +85,7 @@
               {{ isDirectionReversed ? "Unicode" : "Legacy" }}
             </h2>
             <p class="text-xs text-base-content/55">
-              {{ translate("tools.sinhalaFontConverter.targetEncoding") }}
+              {{ translate("sinhala.targetEncoding") }}
             </p>
           </hgroup>
         </div>
@@ -129,7 +129,7 @@
                   type="button"
                   class="btn btn-xs group absolute bottom-0 left-[calc(50%+1rem)] h-auto min-h-6 max-w-[calc(50%-1rem)] gap-1 rounded-full border-base-100 bg-base-200 px-2 py-1 text-base-content/70 shadow-xs transition-colors duration-150 enabled:hover:bg-base-300 enabled:hover:text-base-content enabled:active:bg-base-300 active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/50 disabled:opacity-50 motion-safe:enabled:active:translate-y-px motion-reduce:transition-none lg:left-[calc(50%+1.25rem)] lg:max-w-[calc(50%-1.25rem)]"
                   :aria-label="
-                    translate('tools.sinhalaFontConverter.changeFile')
+                    translate('sinhala.changeFile')
                   "
                   :disabled="documentBusy"
                   @click="documentUploadInput?.click()"
@@ -141,7 +141,7 @@
                   <span
                     class="min-w-0 whitespace-normal [overflow-wrap:anywhere]"
                     >{{
-                      translate("tools.sinhalaFontConverter.changeFileShort")
+                      translate("sinhala.changeFileShort")
                     }}</span
                   >
                 </button>
@@ -173,7 +173,7 @@
                     <template v-if="documentText"
                       >{{ documentText.length }}
                       {{
-                        translate("tools.sinhalaFontConverter.characters")
+                        translate("sinhala.characters")
                       }}</template
                     >
                     <template v-else>{{
@@ -205,15 +205,15 @@
                   {{
                     translate(
                       isDocumentDragging
-                        ? "tools.imageConverter.dropFilesHere"
-                        : "tools.sinhalaFontConverter.dropDocxOrPdfFilesHere",
+                        ? "common.dropHint"
+                        : "sinhala.dropHint",
                     )
                   }}
                 </h3>
                 <p class="text-xs text-base-content/60 sm:text-sm">
                   {{
                     translate(
-                      "tools.sinhalaFontConverter.selectADocumentToDetectItsEncodingAndConvertIt",
+                      "sinhala.documentHint",
                     )
                   }}
                 </p>
@@ -234,7 +234,7 @@
                     class="min-w-0 text-xs font-medium"
                     >{{
                       translate(
-                        "tools.sinhalaFontConverter.documentOutputFormat",
+                        "sinhala.outputFormat",
                       )
                     }}</label
                   >
@@ -246,7 +246,7 @@
                       :disabled="documentBusy || !documentText"
                     />
                     <span class="whitespace-normal [overflow-wrap:anywhere]">{{
-                      translate("tools.sinhalaFontConverter.pdfOutputAutomatic")
+                      translate("sinhala.autoOutput")
                     }}</span>
                   </label>
                 </div>
@@ -259,14 +259,14 @@
                   <option value="docx">
                     {{
                       translate(
-                        "tools.sinhalaFontConverter.flowingDocumentDocx",
+                        "sinhala.docxOutput",
                       )
                     }}
                   </option>
                   <option value="pptx">
                     {{
                       translate(
-                        "tools.sinhalaFontConverter.positionedSlidesPptx",
+                        "sinhala.pptxOutput",
                       )
                     }}
                   </option>
@@ -281,7 +281,7 @@
                 @click="convertUploadedDocument"
               >
                 <i class="ri-repeat-2-line" aria-hidden="true"></i>
-                {{ translate("tools.sinhalaFontConverter.reconvertDocument") }}
+                {{ translate("sinhala.reconvertDocument") }}
               </button>
               <div
                 class="flex min-w-0 flex-wrap items-center justify-center gap-2 md:flex-nowrap"
@@ -298,7 +298,7 @@
                   @click="documentUploadInput?.click()"
                 >
                   <i class="ri-folder-open-line" aria-hidden="true"></i>
-                  {{ translate("tools.sinhalaFontConverter.chooseDocument") }}
+                  {{ translate("sinhala.chooseDocument") }}
                 </button>
                 <button
                   v-if="documentFile && !documentResult"
@@ -319,11 +319,11 @@
                   {{
                     translate(
                       documentConverting
-                        ? "tools.sinhalaFontConverter.converting"
+                        ? "sinhala.converting"
                         : documentHasConverted ||
                             (documentError && documentText)
-                          ? "tools.sinhalaFontConverter.reconvertDocument"
-                          : "tools.sinhalaFontConverter.convertDocument",
+                          ? "sinhala.reconvertDocument"
+                          : "sinhala.convertDocument",
                     )
                   }}
                 </button>
@@ -337,8 +337,8 @@
                   {{
                     translate(
                       documentResult.format === "pptx"
-                        ? "tools.sinhalaFontConverter.downloadPptx"
-                        : "tools.sinhalaFontConverter.downloadDocx",
+                        ? "sinhala.downloadPptx"
+                        : "sinhala.downloadDocx",
                     )
                   }}
                 </a>
@@ -370,12 +370,12 @@
           >
             <hgroup class="min-w-0">
               <h2 class="block font-serif text-lg font-bold">
-                {{ translate("common.sections.unicodeText") }}
+                {{ translate("sinhala.unicodeText") }}
               </h2>
               <p class="text-xs text-base-content/55">
                 {{
                   translate(
-                    "tools.sinhalaFontConverter.standardUnicodeSinhalaText",
+                    "sinhala.unicodeLabel",
                   )
                 }}
               </p>
@@ -395,14 +395,14 @@
                   local-font-coverage="sinhala-unicode"
                   size="xs"
                   :aria-label="
-                    translate('tools.sinhalaFontConverter.unicodeFont')
+                    translate('sinhala.unicodeFont')
                   "
                   @select="onUnicodeFontSelected"
                 />
               </label>
               <div
                 class="tooltip"
-                :data-tip="translate('tools.sinhalaFontConverter.bold')"
+                :data-tip="translate('sinhala.bold')"
               >
                 <button
                   type="button"
@@ -410,10 +410,10 @@
                   :class="{ 'btn-active': unicodeBold }"
                   :aria-pressed="unicodeBold"
                   :aria-label="
-                    translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')
+                    translate('sinhala.unicodeBold')
                   "
                   :title="
-                    translate('tools.sinhalaFontConverter.boldUnicodeGlyphs')
+                    translate('sinhala.unicodeBold')
                   "
                   @click="toggleUnicodeBold"
                 >
@@ -446,7 +446,7 @@
                 role="textbox"
                 tabindex="0"
                 aria-multiline="true"
-                :aria-label="translate('common.sections.unicodeText')"
+                :aria-label="translate('sinhala.unicodeText')"
                 class="min-h-32 w-full whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 font-abhaya text-lg leading-7 outline-none empty:after:pointer-events-none empty:after:font-serif empty:after:text-base-content/40 empty:after:content-[attr(data-placeholder)] lg:min-h-48"
                 :class="{
                   'before:float-right before:ml-2 before:h-8 before:w-8 before:content-[\'\']':
@@ -465,9 +465,9 @@
                 :data-placeholder="
                   !isDirectionReversed
                     ? translate(
-                        'tools.sinhalaFontConverter.enterUnicodeSinhalaTextHere',
+                        'sinhala.unicodePlaceholder',
                       )
-                    : translate('tools.sinhalaFontConverter.unicodeTextPreview')
+                    : translate('sinhala.unicodePreview')
                 "
                 lang="si"
                 spellcheck="false"
@@ -480,14 +480,14 @@
                 v-if="hasText && !isDirectionReversed"
                 for="clear-text-1"
                 class="tooltip tooltip-left absolute right-2 top-2"
-                :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
+                :data-tip="translate('sinhala.clearAll')"
               >
                 <button
                   type="button"
                   id="clear-text-1"
                   class="btn btn-ghost btn-circle btn-sm"
-                  :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
-                  :title="translate('tools.sinhalaFontConverter.clearAll')"
+                  :aria-label="translate('sinhala.clearAll')"
+                  :title="translate('sinhala.clearAll')"
                   @click="clearText"
                 >
                   <i class="ri-close-line" aria-hidden="true"></i>
@@ -544,7 +544,7 @@
                   v-if="isDirectionReversed"
                   class="tooltip tooltip-right"
                   :data-tip="
-                    translate('tools.sinhalaFontConverter.downloadUnicodeDocx')
+                    translate('sinhala.unicodeDownload')
                   "
                 >
                   <button
@@ -553,12 +553,12 @@
                     :disabled="!unicodeText || downloadingField === 'unicode'"
                     :aria-label="
                       translate(
-                        'tools.sinhalaFontConverter.downloadUnicodeDocx',
+                        'sinhala.unicodeDownload',
                       )
                     "
                     :title="
                       translate(
-                        'tools.sinhalaFontConverter.downloadUnicodeDocx',
+                        'sinhala.unicodeDownload',
                       )
                     "
                     @click="downloadDocument('unicode')"
@@ -591,7 +591,7 @@
 
               <span class="text-xs tabular-nums text-base-content/75">
                 {{ unicodeText.length }}
-                {{ translate("tools.sinhalaFontConverter.characters") }}
+                {{ translate("sinhala.characters") }}
               </span>
             </div>
           </div>
@@ -602,7 +602,7 @@
           class="tooltip before:max-w-[calc(100vw-3rem)] order-2 justify-self-center self-start md:mt-1.5"
           :data-tip="
             translate(
-              'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+              'sinhala.swapShortcut',
             )
           "
         >
@@ -612,12 +612,12 @@
             class="btn btn-ghost btn-circle"
             :aria-label="
               translate(
-                'tools.sinhalaFontConverter.swapSourceAndTargetEncodings',
+                'sinhala.swap',
               )
             "
             :title="
               translate(
-                'tools.sinhalaFontConverter.swapSourceAndTargetEncodingsCtrlShiftS',
+                'sinhala.swapShortcut',
               )
             "
             @pointerdown.capture="captureControlViewport"
@@ -643,12 +643,12 @@
                 id="sinhala-legacy-label"
                 class="font-serif text-lg font-bold"
               >
-                {{ translate("common.sections.legacyText") }}
+                {{ translate("sinhala.legacyText") }}
               </h2>
               <p class="text-xs text-base-content/55">
                 {{
                   translate(
-                    "tools.sinhalaFontConverter.legacyEncodingAndGlyphPreview",
+                    "sinhala.legacyLabel",
                   )
                 }}
               </p>
@@ -668,7 +668,7 @@
                   local-font-coverage="sinhala-legacy"
                   size="xs"
                   :aria-label="
-                    translate('tools.sinhalaFontConverter.legacyPreviewFont')
+                    translate('sinhala.legacyFont')
                   "
                   :disabled="showLegacySource"
                   @select="onLegacyFontSelected"
@@ -676,7 +676,7 @@
               </label>
               <div
                 class="tooltip"
-                :data-tip="translate('tools.sinhalaFontConverter.bold')"
+                :data-tip="translate('sinhala.bold')"
               >
                 <button
                   type="button"
@@ -684,10 +684,10 @@
                   :class="{ 'btn-active': legacyBold }"
                   :aria-pressed="legacyBold"
                   :aria-label="
-                    translate('tools.sinhalaFontConverter.boldLegacyGlyphs')
+                    translate('sinhala.legacyBold')
                   "
                   :title="
-                    translate('tools.sinhalaFontConverter.boldLegacyGlyphs')
+                    translate('sinhala.legacyBold')
                   "
                   :disabled="showLegacySource"
                   @click="toggleLegacyBold"
@@ -729,17 +729,17 @@
                   showLegacySource
                     ? isDirectionReversed
                       ? translate(
-                          'tools.sinhalaFontConverter.enterLegacyFontSourceHere',
+                          'sinhala.sourcePlaceholder',
                         )
                       : translate(
-                          'tools.sinhalaFontConverter.legacyFontSourcePreview',
+                          'sinhala.sourcePreview',
                         )
                     : isDirectionReversed
                       ? translate(
-                          'tools.sinhalaFontConverter.enterLegacyFontTextHere',
+                          'sinhala.legacyPlaceholder',
                         )
                       : translate(
-                          'tools.sinhalaFontConverter.legacyGlyphPreview',
+                          'sinhala.legacyPreview',
                         )
                 "
                 class="min-h-32 w-full whitespace-pre-wrap wrap-break-word bg-transparent px-3 py-2 text-lg leading-7 empty:after:pointer-events-none empty:after:font-serif empty:after:text-base-content/40 empty:after:content-[attr(data-placeholder)] lg:min-h-48"
@@ -778,14 +778,14 @@
                 v-if="hasText && isDirectionReversed"
                 for="clear-text-2"
                 class="tooltip tooltip-left absolute right-2 top-2"
-                :data-tip="translate('tools.sinhalaFontConverter.clearAll')"
+                :data-tip="translate('sinhala.clearAll')"
               >
                 <button
                   type="button"
                   id="clear-text-2"
                   class="btn btn-ghost btn-circle btn-sm"
-                  :aria-label="translate('tools.sinhalaFontConverter.clearAll')"
-                  :title="translate('tools.sinhalaFontConverter.clearAll')"
+                  :aria-label="translate('sinhala.clearAll')"
+                  :title="translate('sinhala.clearAll')"
                   @click="clearText"
                 >
                   <i class="ri-close-line" aria-hidden="true"></i>
@@ -832,7 +832,7 @@
                   v-if="!isDirectionReversed"
                   class="tooltip tooltip-right"
                   :data-tip="
-                    translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                    translate('sinhala.legacyDownload')
                   "
                 >
                   <button
@@ -840,10 +840,10 @@
                     class="btn btn-ghost btn-circle btn-sm"
                     :disabled="!fmText || downloadingField === 'legacy'"
                     :aria-label="
-                      translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                      translate('sinhala.legacyDownload')
                     "
                     :title="
-                      translate('tools.sinhalaFontConverter.downloadLegacyDocx')
+                      translate('sinhala.legacyDownload')
                     "
                     @click="downloadDocument('legacy')"
                   >
@@ -862,7 +862,7 @@
                     @change="handleLegacySourceChange"
                   />
                   <span class="text-xs">{{
-                    translate("tools.sinhalaFontConverter.showSource")
+                    translate("sinhala.showSource")
                   }}</span>
                 </label>
 
@@ -890,7 +890,7 @@
 
               <span class="text-xs tabular-nums text-base-content/75">
                 {{ fmText.length }}
-                {{ translate("tools.sinhalaFontConverter.characters") }}
+                {{ translate("sinhala.characters") }}
               </span>
             </div>
           </div>
@@ -901,17 +901,17 @@
         v-if="inputMode === 'text' && sourceTextLength >= LONG_TEXT_THRESHOLD"
         class="mt-3 text-sm text-base-content/70"
       >
-        {{ translate("tools.sinhalaFontConverter.longText")
+        {{ translate("sinhala.longText")
         }}{{ sourceTextLength }}
-        {{ translate("tools.sinhalaFontConverter.charactersConsiderUsing") }}
+        {{ translate("sinhala.longTextHint") }}
         <button
           type="button"
           class="link link-primary"
           @click="inputMode = 'document'"
         >
-          {{ translate("tools.sinhalaFontConverter.documentMode") }}
+          {{ translate("sinhala.documentMode") }}
         </button>
-        {{ translate("tools.sinhalaFontConverter.toConvertDocxOrPdfFiles") }}
+        {{ translate("sinhala.longTextSuffix") }}
       </p>
 
       <fieldset
@@ -931,7 +931,7 @@
               @change="handleConversionOptionsChange"
             />
             <OptionLabel
-              message-key="tools.sinhalaFontConverter.preserveAbbreviatedConsonants"
+              message-key="sinhala.preserveReduced"
               sinhala="ව්‍යඤ්ජන නියෝජක සංකේත"
             />
           </label>
@@ -950,7 +950,7 @@
                 @change="handleConversionOptionsChange"
               />
               <OptionLabel
-                message-key="tools.sinhalaFontConverter.yansaya"
+                message-key="sinhala.yansaya"
                 sinhala="යංශය"
               >
                 <template #glyph>
@@ -972,7 +972,7 @@
                 @change="handleConversionOptionsChange"
               />
               <OptionLabel
-                message-key="tools.sinhalaFontConverter.rakaransaya"
+                message-key="sinhala.rakaransaya"
                 sinhala="රකාරාංශය"
               >
                 <template #glyph>
@@ -994,7 +994,7 @@
                 @change="handleConversionOptionsChange"
               />
               <OptionLabel
-                message-key="tools.sinhalaFontConverter.repaya"
+                message-key="sinhala.repaya"
                 sinhala="රේඵය"
               >
                 <template #glyph>
@@ -1019,7 +1019,7 @@
             @change="handleConversionOptionsChange"
           />
           <OptionLabel
-            message-key="tools.sinhalaFontConverter.compactConjunctGlyphsFor"
+            message-key="sinhala.compactDa"
             sinhala="සංක්ෂිප්ත “ද” රූප"
           />
         </label>
@@ -1035,7 +1035,7 @@
               @change="handleConversionOptionsChange"
             />
             <OptionLabel
-              message-key="tools.sinhalaFontConverter.preserveConsonantConjuncts"
+              message-key="sinhala.preserveConjuncts"
               sinhala="බැඳි අකුරු"
             />
           </label>
@@ -1056,7 +1056,7 @@
                 @change="handleConversionOptionsChange"
               />
               <OptionLabel
-                :message-key="`tools.sinhalaFontConverter.${category}Conjuncts`"
+                :message-key="`sinhala.${category}Conjuncts`"
                 :sinhala="
                   category === 'common' ? 'සුලබ බැඳි අකුරු' : 'දුලබ බැඳි අකුරු'
                 "
@@ -1073,7 +1073,7 @@
                 @change="handleConversionOptionsChange"
               />
               <OptionLabel
-                message-key="tools.sinhalaFontConverter.touchingConjuncts"
+                message-key="sinhala.touchingConjuncts"
                 sinhala="ස්පර්ශ රූප"
               />
             </label>
@@ -1090,7 +1090,7 @@
             @change="handleConversionOptionsChange"
           />
           <OptionLabel
-            message-key="tools.sinhalaFontConverter.removePaliHalForms"
+            message-key="sinhala.paliVowels"
             sinhala="හල් කිරීම් ඉවත් කිරීම"
           />
         </label>
@@ -1266,32 +1266,32 @@ const documentDirectionManual = ref(false);
 const documentSourceStatus = computed(() => {
   if (documentReading.value) {
     const messages = {
-      reading: "readingDocumentFile",
-      parsing: "parsingDocumentContent",
-      detecting: "detectingDocumentEncoding",
+      reading: "readFile",
+      parsing: "parseFile",
+      detecting: "detectEncoding",
     };
     return translate(
-      `tools.sinhalaFontConverter.${messages[documentReadStage.value]}`,
+      `sinhala.${messages[documentReadStage.value]}`,
     );
   }
   if (!documentText.value && documentError.value) {
-    return translate("tools.sinhalaFontConverter.failedToReadFile");
+    return translate("sinhala.readFailed");
   }
   return documentDetectedEncoding.value
     ? translate(
-        "tools.sinhalaFontConverter.detectedEncodingSwapManuallyIfIncorrect",
+        "sinhala.detectedEncoding",
         {
           p0:
             documentDetectedEncoding.value === "legacy" ? "Legacy" : "Unicode",
         },
       )
     : translate(
-        "tools.sinhalaFontConverter.sourceEncodingUnknownPleaseConfirmTheConversionDirection",
+        "sinhala.unknownEncoding",
       );
 });
 const documentFileStatus = computed(() =>
   translate(
-    `tools.sinhalaFontConverter.${
+    `sinhala.${
       documentReading.value
         ? "reading"
         : documentConverting.value
@@ -1299,9 +1299,9 @@ const documentFileStatus = computed(() =>
           : documentError.value
             ? documentText.value
               ? "conversionFailed"
-              : "failedToReadFile"
+              : "readFailed"
             : documentResult.value
-              ? "conversionSuccessful"
+              ? "success"
               : "fileReady"
     }`,
   ),
@@ -1389,13 +1389,13 @@ const encodingSuggestion = computed(() => {
   return isDirectionReversed.value
     ? {
         get message() {
-          return translate("tools.sinhalaFontConverter.sourceEncoding2");
+          return translate("sinhala.sourceLabel");
         },
         actionLabel: "Unicode",
       }
     : {
         get message() {
-          return translate("tools.sinhalaFontConverter.sourceEncoding2");
+          return translate("sinhala.sourceLabel");
         },
         actionLabel: "Legacy",
       };
@@ -1580,8 +1580,8 @@ function handleLegacySourceChange() {
   flushFmPreviewConversion();
   refreshFmPreview();
   liveMessage.value = showLegacySource.value
-    ? translate("tools.sinhalaFontConverter.legacySourceIsNowVisible")
-    : translate("tools.sinhalaFontConverter.legacyGlyphPreviewIsNowVisible");
+    ? translate("sinhala.sourceVisible")
+    : translate("sinhala.glyphsVisible");
   scheduleTextareaResize();
 }
 
@@ -1701,7 +1701,7 @@ watch(
     } catch {
       if (request === unicodeFontRequest) {
         liveMessage.value = translate(
-          "tools.sinhalaFontConverter.cannotLoadTheUnicodeFontPleaseChooseAgain",
+          "sinhala.unicodeFontFailed",
         );
       }
     }
@@ -1751,7 +1751,7 @@ watch(
     } catch {
       if (request === legacyFontRequest) {
         liveMessage.value = translate(
-          "tools.sinhalaFontConverter.cannotLoadTheSelectedFontPleaseChooseAgain",
+          "sinhala.fontFailed",
         );
       }
     }
@@ -2314,7 +2314,7 @@ function stabilizeControlViewport(event) {
 function handleConversionOptionsChange(event) {
   if (inputMode.value === "document") {
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.conversionOptionsUpdated",
+      "sinhala.optionsUpdated",
     );
     stabilizeControlViewport(event);
     return;
@@ -2337,7 +2337,7 @@ function handleConversionOptionsChange(event) {
   }
   refreshFmPreview({ preserveSelection: isFmPreviewEditing.value });
   liveMessage.value = translate(
-    "tools.sinhalaFontConverter.conversionOptionsUpdated",
+    "sinhala.optionsUpdated",
   );
   stabilizeControlViewport(event);
 }
@@ -2347,7 +2347,7 @@ function swapPanels(event) {
     if (documentBusy.value) return;
     isDirectionReversed.value = !isDirectionReversed.value;
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped",
+      "sinhala.encodingsSwapped",
     );
     stabilizeControlViewport(event);
     return;
@@ -2358,7 +2358,7 @@ function swapPanels(event) {
   resetFmHistory();
   refreshFmPreview();
   liveMessage.value = translate(
-    "tools.sinhalaFontConverter.sourceAndTargetEncodingsSwapped",
+    "sinhala.encodingsSwapped",
   );
   stabilizeControlViewport(event);
 }
@@ -2404,7 +2404,7 @@ function applyEncodingSuggestion() {
   resetFmHistory();
   refreshFmPreview();
   liveMessage.value = translate(
-    "tools.sinhalaFontConverter.conversionDirectionSwappedInputPreserved",
+    "sinhala.directionSwapped",
   );
   scheduleTextareaResize();
 }
@@ -2424,7 +2424,7 @@ async function clearText() {
   resetFmHistory();
   refreshFmPreview();
   resetCopyStatus();
-  liveMessage.value = translate("tools.sinhalaFontConverter.contentCleared");
+  liveMessage.value = translate("sinhala.contentCleared");
   await nextTick();
   resizeAllTextareas();
   if (isDirectionReversed.value) {
@@ -2505,8 +2505,8 @@ async function pasteText(field) {
     pastedField.value = field;
     liveMessage.value =
       field === "unicode"
-        ? translate("tools.sinhalaFontConverter.unicodeTextPastedFromClipboard")
-        : translate("tools.sinhalaFontConverter.legacyTextPastedFromClipboard");
+        ? translate("sinhala.unicodePasted")
+        : translate("sinhala.legacyPasted");
 
     await nextTick();
     if (field === "unicode") {
@@ -2525,7 +2525,7 @@ async function pasteText(field) {
   } catch {
     pasteFailedField.value = field;
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.allowClipboardAccessOrPasteManually",
+      "sinhala.clipboardDenied",
     );
   }
 
@@ -2544,12 +2544,12 @@ async function copyText(field) {
     copiedField.value = field;
     liveMessage.value =
       field === "unicode"
-        ? translate("tools.sinhalaFontConverter.unicodeTextCopied")
-        : translate("tools.sinhalaFontConverter.legacyTextCopied");
+        ? translate("sinhala.unicodeCopied")
+        : translate("sinhala.legacyCopied");
   } catch {
     copyFailedField.value = field;
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.cannotCopyAutomaticallyPleaseSelectTheTextManually",
+      "sinhala.clipboardFailed",
     );
   }
 
@@ -2697,8 +2697,8 @@ async function setDocumentFile(file) {
       throw new Error(
         translate(
           documentIsPdf.value
-            ? "tools.sinhalaFontConverter.noTextFoundScannedPdfsAreNotSupportedYet"
-            : "tools.sinhalaFontConverter.noConvertibleTextFound",
+            ? "sinhala.noSelectableText"
+            : "sinhala.noConvertibleText",
         ),
       );
     documentReadStage.value = "detecting";
@@ -2714,12 +2714,12 @@ async function setDocumentFile(file) {
       documentDirectionReversed.value = detectedEncoding === "legacy";
     }
     liveMessage.value = detectedEncoding
-      ? translate("tools.sinhalaFontConverter.readDetectedEncoding", {
+      ? translate("sinhala.encodingDetected", {
           p0: file.name,
           p1: detectedEncoding === "legacy" ? "Legacy" : "Unicode",
         })
       : translate(
-          "tools.sinhalaFontConverter.readSourceEncodingCouldNotBeDetected",
+          "sinhala.encodingUndetected",
           { p0: file.name },
         );
   } catch (error) {
@@ -2727,7 +2727,7 @@ async function setDocumentFile(file) {
       documentError.value =
         error instanceof Error
           ? error.message
-          : translate("tools.sinhalaFontConverter.failedToReadFile");
+          : translate("sinhala.readFailed");
       liveMessage.value = localizeText(documentError.value);
     }
   } finally {
@@ -2809,7 +2809,7 @@ async function convertUploadedDocument() {
     };
     documentHasConverted.value = true;
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.documentConversionReady",
+      "sinhala.documentReady",
     );
   } catch {
     if (
@@ -2818,7 +2818,7 @@ async function convertUploadedDocument() {
     )
       return;
     documentError.value = localeMessage(
-      "tools.sinhalaFontConverter.documentConversionFailedPleaseRetry",
+      "sinhala.documentFailed",
     );
     liveMessage.value = documentError.value;
   } finally {
@@ -2851,12 +2851,12 @@ async function downloadDocument(field) {
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.documentDownloaded",
+      "sinhala.documentDownloaded",
       { p0: field === "unicode" ? "Unicode" : "Legacy" },
     );
   } catch {
     liveMessage.value = translate(
-      "tools.sinhalaFontConverter.documentGenerationFailedPleaseRetry",
+      "sinhala.exportFailed",
     );
   } finally {
     downloadingField.value = "";
@@ -2865,12 +2865,12 @@ async function downloadDocument(field) {
 
 function copyLabel(field) {
   if (copiedField.value === field)
-    return translate("tools.sinhalaFontConverter.copied");
+    return translate("sinhala.copied");
   if (copyFailedField.value === field)
-    return translate("tools.sinhalaFontConverter.copyFailed");
+    return translate("sinhala.copyFailed");
   return field === "unicode"
-    ? translate("tools.sinhalaFontConverter.copyUnicodeText")
-    : translate("tools.sinhalaFontConverter.copyLegacyText");
+    ? translate("sinhala.copyUnicode")
+    : translate("sinhala.copyLegacy");
 }
 
 function copyIcon(field) {
@@ -2879,10 +2879,10 @@ function copyIcon(field) {
 
 function pasteLabel(field) {
   if (pastedField.value === field)
-    return translate("tools.sinhalaFontConverter.pasted");
+    return translate("sinhala.pasted");
   if (pasteFailedField.value === field)
-    return translate("tools.sinhalaFontConverter.pasteFailed");
-  return translate("tools.serverInfo.pasteFromClipboard");
+    return translate("sinhala.pasteFailed");
+  return translate("common.actions.paste");
 }
 
 function pasteIcon(field) {

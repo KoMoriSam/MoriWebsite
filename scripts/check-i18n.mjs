@@ -59,6 +59,21 @@ if (process.argv.includes('--messages-only')) {
 }
 
 let components = 0;
+const checkReferences = (source, file) => {
+  for (const match of source.matchAll(/\b(?:translate|t|localeMessage)\(\s*(['"])([\w.-]+)\1/g)) {
+    const key = match[2];
+    assert.ok(key.endsWith('.') ? keys.some(candidate => candidate.startsWith(key)) : catalogs['zh-CN'].has(key), `${file}: unknown key ${key}`);
+  }
+  for (const match of source.matchAll(/(?<![:@\w-])(?:keypath|message-key|title-key|term-key|description-key|note-key|footer-note-key)=['"]([\w.-]+)['"]/g)) {
+    assert.ok(catalogs['zh-CN'].has(match[1]), `${file}: unknown message attribute ${match[1]}`);
+  }
+  for (const match of source.matchAll(/\b(?:key|messageKey|titleKey|termKey|descriptionKey|noteKey|footerNoteKey)['"]?\s*:\s*['"]([\w-]+\.[\w.-]+)['"]/g)) {
+    assert.ok(catalogs['zh-CN'].has(match[1]), `${file}: unknown message key ${match[1]}`);
+  }
+};
+for (const file of fs.readdirSync('src', { recursive: true }).filter(file => file.endsWith('.js'))) {
+  checkReferences(fs.readFileSync('src/' + file, 'utf8'), file);
+}
 for (const file of fs.readdirSync('src', { recursive: true }).filter(file => file.endsWith('.vue') && !/^views[\\/]test[\\/]|^views[\\/]Test.vue/.test(file))) {
   const source = fs.readFileSync('src/' + file, 'utf8');
   const { descriptor, errors } = parse(source, { filename: file });
@@ -68,10 +83,11 @@ for (const file of fs.readdirSync('src', { recursive: true }).filter(file => fil
     const result = compileTemplate({ source: descriptor.template.content, filename: file, id: file, compilerOptions: { bindingMetadata: bindings } });
     assert.deepEqual(result.errors, [], file);
     for (const helper of ['translate', 'localizeText', 'commentLocale', 'formatNumber', 'formatLocalizedDate']) {
-      if (new RegExp(helper === 'commentLocale' ? ':lang="commentLocale"' : `\\b${helper}\\s*\\(`).test(descriptor.template.content)) assert.ok(bindings[helper], `${file}: missing ${helper}`);
+      const pattern = helper === 'commentLocale' ? ':lang="commentLocale"' : helper === 'translate' ? `\\btranslate\\s*\\(\\s*['"]\\w` : `\\b${helper}\\s*\\(`;
+      if (new RegExp(pattern).test(descriptor.template.content)) assert.ok(bindings[helper], `${file}: missing ${helper}`);
     }
   }
-  for (const match of source.matchAll(/\b(?:translate|t|localeMessage)\(['"]([^'"]+)['"]/g)) assert.ok(catalogs['zh-CN'].has(match[1]), `${file}: unknown key ${match[1]}`);
+  checkReferences(source, file);
   components++;
 }
 
@@ -118,11 +134,11 @@ assert.equal(current, 'en');
 assert.deepEqual(saved, ['si']);
 assert.equal(await switchLocale('fr'), false);
 const workerMessage = describeImageMessage('正在处理 2/10 帧');
-assert.deepEqual(workerMessage, { key: 'common.additional.processingFrame', params: { p0: '2', p1: '10' } });
+assert.deepEqual(workerMessage, { key: 'image.worker.processingFrame', params: { p0: '2', p1: '10' } });
 assert.equal(describeImageMessage('Unrecognized native error'), null);
 const md = new MarkdownIt().use(alertPlugin, { translateTitle: title => title === '提示' ? 'Tip' : title });
 const decodeAlert = text => JSON.parse(decodeURIComponent(md.render(text).match(/data-markdown-props="([^"]+)"/)[1]));
 assert.equal(decodeAlert('> [!TIP]\n> 正文').titleHtml, 'Tip');
 assert.equal(decodeAlert('> [!TIP] 提示\n> 正文').titleHtml, '提示');
 console.log(`i18n: ${keys.length} messages × 3 languages in ${groups.length} groups; ${components} Vue components; locale, storage, and loading checks passed.`);
-await import('./check-i18n-runtime.mjs');
+if (!process.argv.includes('--static-only')) await import('./check-i18n-runtime.mjs');

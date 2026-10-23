@@ -4,7 +4,7 @@
     ref="rootRef"
     class="page-footnotes markdown-content prose absolute inset-x-0 z-10 max-w-none overflow-y-auto"
     :class="{ 'page-footnotes-measure': measure }"
-    :aria-label="translate('reader.pageFootnotes.footnotesOnThisPage')"
+    :aria-label="translate('reader.footnotes.title')"
     data-reader-interactive
   >
     <div ref="contentRef" class="page-footnotes-content">

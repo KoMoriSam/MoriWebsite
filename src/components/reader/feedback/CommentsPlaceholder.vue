@@ -1,7 +1,7 @@
 <template>
   <section class="not-prose min-w-0 w-full space-y-5 font-sans" aria-hidden="true">
     <div v-if="novel" class="flex flex-wrap items-center justify-between gap-2">
-      <span class="font-serif text-2xl font-bold">{{ translate('reader.novelReader.chapterComments') }}</span>
+      <span class="font-serif text-2xl font-bold">{{ translate('novel.reader.chapterComments') }}</span>
       <div class="skeleton h-6 w-24 rounded-field motion-reduce:animate-none"></div>
     </div>
     <div class="flex items-center gap-2 py-2">

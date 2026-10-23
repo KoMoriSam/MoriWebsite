@@ -23,10 +23,10 @@
     <template #settings="{ room, canAct, run }">
       <section class="card">
         <div class="card-body gap-3 p-0">
-          <h2 class="card-title font-serif">{{ t("fogport.mode") }}</h2>
+          <h2 class="card-title font-serif">{{ t("fogport.gameMode") }}</h2>
           <select
             class="select w-full"
-            :aria-label="t('fogport.mode')"
+            :aria-label="t('fogport.gameMode')"
             :value="room.gameConfig.mode"
             :disabled="!canAct || room.hostId !== room.selfId"
             @change="

@@ -5,7 +5,7 @@
       type="button"
       popovertarget="mobile-navigation"
       style="anchor-name: --mobile-navigation-anchor"
-      :aria-label="isOpen ? translate('common.mobileNav.closeNavigationMenu') : translate('common.mobileNav.openNavigationMenu')"
+      :aria-label="isOpen ? translate('common.mobileNav.close') : translate('common.mobileNav.open')"
     >
       <i
         class="text-xl transition-transform duration-200"
@@ -18,7 +18,7 @@
       popover="auto"
       class="dropdown dropdown-start bg-base-100 border-base-300 mt-2 max-h-[min(78dvh,42rem)] w-[calc(100vw-1rem)] overflow-hidden overscroll-contain rounded-box border p-3 shadow-xl sm:w-96"
       style="position-anchor: --mobile-navigation-anchor"
-      :aria-label="translate('common.mobileNav.mobileNavigation')"
+      :aria-label="translate('common.mobileNav.label')"
       @toggle="handleToggle"
     >
       <ScrollableContainer>
@@ -63,7 +63,7 @@
                 @click="closeMenu"
               >
                 <i class="ri-github-fill text-base"></i>
-                <span>{{ translate('common.mobileNav.viewAllRepositories') }}</span>
+                <span>{{ translate('common.mobileNav.repositories') }}</span>
                 <i class="ri-arrow-right-up-line"></i>
               </a>
             </div>

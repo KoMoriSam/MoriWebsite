@@ -12,13 +12,13 @@
       role="alert"
       class="alert pointer-events-auto max-w-xl sm:alert-horizontal"
     >
-      <span>{{ translate("common.navigationFeedback.failed") }}</span>
+      <span>{{ translate("common.navigationStatus.failed") }}</span>
       <div class="flex flex-wrap items-center gap-2">
         <button type="button" class="btn btn-sm" @click="retry">
-          {{ translate("common.navigationFeedback.retry") }}
+          {{ translate("common.navigationStatus.retry") }}
         </button>
         <a :href="reloadHref" class="btn btn-sm btn-ghost">
-          {{ translate("common.navigationFeedback.reload") }}
+          {{ translate("common.navigationStatus.reload") }}
         </a>
         <button
           type="button"
@@ -55,7 +55,7 @@ watch(
   (loading) => {
     if (loading) {
       loadingToast = toast.loading(
-        translate("common.navigationFeedback.loading"),
+        translate("common.navigationStatus.loading"),
         { position: "center-top" },
       );
     } else {

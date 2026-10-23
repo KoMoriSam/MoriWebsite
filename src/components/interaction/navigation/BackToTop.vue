@@ -4,7 +4,7 @@
     :main-visible="showButton"
     main-icon="ri-skip-up-line"
     :main-button-class="`btn-info btn-soft`"
-    :main-label="translate('common.toTop.backToTop')"
+    :main-label="translate('common.toTop.label')"
     :fab-class="`fixed right-6 bottom-18 z-1 transition-opacity duration-500`"
   />
 </template>

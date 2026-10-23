@@ -14,7 +14,7 @@
 
     <aside
       v-if="showToc"
-      :aria-label="translate('reader.readerBody.readingContents')"
+      :aria-label="translate('reader.body.contents')"
       :class="[
         'sticky z-10 xl:hidden transition-[top] duration-300 ease-out motion-reduce:transition-none',
         mobileTocCompact ? 'top-0' : 'top-2',
@@ -86,7 +86,7 @@
           top: stickyTop,
           height: `calc(90dvh - ${stickyTop})`,
         }"
-        :aria-label="translate('reader.readerBody.readingContents')"
+        :aria-label="translate('reader.body.contents')"
       >
         <slot name="toc" />
       </aside>
@@ -118,7 +118,7 @@
       >
         <aside
           class="max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto scrollbar-none"
-          :aria-label="translate('reader.readerBody.readingAids')"
+          :aria-label="translate('reader.body.aids')"
         >
           <slot name="aside" />
         </aside>

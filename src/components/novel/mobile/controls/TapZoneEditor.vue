@@ -2,15 +2,15 @@
   <section
     class="fixed inset-0 z-[95] bg-neutral/30 text-base-content"
     data-reader-interactive
-    :aria-label="translate('reader.tapZoneEditor.nineZoneTapSettings')"
+    :aria-label="translate('reader.tapZones.label')"
   >
     <header
       class="absolute inset-x-2 top-2 z-10 flex items-center gap-2 rounded-box border border-base-300 bg-base-100/95 p-2 shadow-lg backdrop-blur"
     >
       <div class="min-w-0 flex-1 px-1">
-        <h2 class="text-sm font-bold">{{ translate('reader.readerMoreSettings.tapZoneSettings') }}</h2>
+        <h2 class="text-sm font-bold">{{ translate('reader.more.tapZones') }}</h2>
         <p class="truncate text-[0.6875rem] text-base-content/55">
-          {{ translate('reader.tapZoneEditor.tapAZoneToChooseItsAction') }}
+          {{ translate('reader.tapZones.hint') }}
         </p>
       </div>
       <button
@@ -19,16 +19,16 @@
         @click="store.resetMobileTapZones"
       >
         <i class="ri-reset-left-line" aria-hidden="true"></i>
-        {{ translate('reader.formatSetting.resetToDefaults') }}
+        {{ translate('reader.format.reset') }}
       </button>
       <button type="button" class="btn btn-sm shrink-0" @click="emit('close')">
-        {{ translate('reader.tapZoneEditor.done') }}
+        {{ translate('reader.tapZones.done') }}
       </button>
     </header>
 
     <div
       class="absolute inset-x-0 top-18 bottom-6 grid grid-cols-3 grid-rows-3 p-1"
-      :aria-label="translate('reader.tapZoneEditor.textTapZones')"
+      :aria-label="translate('reader.tapZones.zones')"
     >
       <button
         v-for="(action, index) in mobileTapZones"
@@ -36,7 +36,7 @@
         type="button"
         class="group flex min-h-0 min-w-0 items-center justify-center border border-base-content/25 bg-base-100/25 px-1 text-center transition-colors active:bg-primary/25"
         :class="{ 'border-primary bg-primary/20': selectedZoneIndex === index }"
-        :aria-label="translate('reader.tapZoneEditor.currentActionTapToOpenTheActionMenu', { p0: actionLabel(action) })"
+        :aria-label="translate('reader.tapZones.currentAction', { p0: actionLabel(action) })"
         :aria-expanded="selectedZoneIndex === index"
         @click="openActionMenu(index)"
       >
@@ -58,7 +58,7 @@
         class="w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-xl"
         role="dialog"
         aria-modal="true"
-        :aria-label="translate('reader.tapZoneEditor.chooseTapZoneAction')"
+        :aria-label="translate('reader.tapZones.chooseAction')"
       >
         <ul class="menu grid w-full grid-cols-2 gap-1 p-0">
           <li v-for="action in MOBILE_READER_ZONE_ACTIONS" :key="action.value">
@@ -97,7 +97,7 @@ const selectedZoneIndex = ref(null);
 
 const actionLabel = (value) =>
   localizeText(MOBILE_READER_ZONE_ACTIONS.find((item) => item.value === value)?.label) ||
-  translate('reader.tapZoneEditor.noAction');
+  translate('reader.tapZones.noAction');
 const openActionMenu = (index) => {
   selectedZoneIndex.value = index;
 };

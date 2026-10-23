@@ -10,7 +10,7 @@
         v-if="controlsOpen"
         class="fixed inset-0 z-[60] bg-neutral/35"
         data-mobile-reader-controls
-        :aria-label="translate('reader.readerControls.readingControlsAreOpenTapOutsideToClose')"
+        :aria-label="translate('reader.controls.dismissHint')"
         @pointerdown.self="closeAll"
       >
         <div class="pointer-events-none absolute inset-x-0 bottom-0">
@@ -24,32 +24,32 @@
                 <button
                   type="button"
                   class="btn shadow-sm"
-                  :aria-label="translate('reader.readerControls.searchInBook')"
+                  :aria-label="translate('reader.controls.search')"
                   @click="openDialog('search')"
                 >
                   <i
                     class="ri-search-line text-xl"
                     aria-hidden="true"
                   ></i>
-                  {{ translate('common.navBar.search') }}
+                  {{ translate('common.nav.search') }}
                 </button>
                 <button
                   type="button"
                   class="btn shadow-sm"
-                  :aria-label="translate('reader.readerControls.help')"
+                  :aria-label="translate('reader.controls.helpLabel')"
                   @click="showHelp"
                 >
                   <i
                     class="ri-question-line text-xl"
                     aria-hidden="true"
                   ></i>
-                  {{ translate('reader.readerControls.help2') }}
+                  {{ translate('reader.controls.help') }}
                 </button>
                 <button
                   type="button"
                   class="btn shadow-sm"
                   :disabled="isLoadingContent"
-                  :aria-label="translate('reader.novelReader.refreshContent')"
+                  :aria-label="translate('novel.reader.refreshContent')"
                   @click="refreshContent"
                 >
                   <i
@@ -57,13 +57,13 @@
                     :class="{ 'animate-spin': isLoadingContent }"
                     aria-hidden="true"
                   ></i>
-                  {{ translate('reader.readerControls.refresh') }}
+                  {{ translate('reader.controls.refresh') }}
                 </button>
               </div>
 
               <nav
                 class="w-full border-t border-base-300 bg-base-100/95 pb-[env(safe-area-inset-bottom)] shadow-2xl backdrop-blur-md"
-                :aria-label="translate('reader.readerControls.mobileReadingControls')"
+                :aria-label="translate('reader.controls.label')"
               >
                 <div
                   class="grid min-h-14 w-full grid-cols-[3rem_minmax(0,1fr)_3rem] items-center gap-1 border-b border-base-300/70 px-1 sm:grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] sm:gap-2 sm:px-2"
@@ -72,7 +72,7 @@
                     type="button"
                     class="btn btn-ghost btn-sm btn-square mx-auto"
                     :disabled="!hasPrevious || isLoadingContent"
-                    :aria-label="translate('reader.chapterController.previousChapter')"
+                    :aria-label="translate('reader.navigation.previous')"
                     @click="emit('change-chapter', -1)"
                   >
                     <i class="ri-skip-left-line text-xl" aria-hidden="true"></i>
@@ -83,10 +83,10 @@
                     <span
                       >{{
                         isPagedMode
-                          ? translate('reader.readerControls.chapterPage', { p0: safeCurrentPage, p1: safeTotalPages })
-                          : translate('reader.readerControls.chapterProgress', { p0: pageProgressLabel })
+                          ? translate('reader.controls.chapterPage', { p0: safeCurrentPage, p1: safeTotalPages })
+                          : translate('reader.controls.chapterProgress', { p0: pageProgressLabel })
                       }}
-                      {{ translate('reader.readerControls.bookProgress') }} {{ readingProgressLabel }}</span
+                      {{ translate('reader.controls.bookProgress') }} {{ readingProgressLabel }}</span
                     >
                     <input
                       type="range"
@@ -95,7 +95,7 @@
                       :max="progressMax"
                       :value="progressValue"
                       :disabled="!paginationReady"
-                      :aria-label="translate('reader.readerControls.adjustChapterReadingPosition')"
+                      :aria-label="translate('reader.controls.position')"
                       @input="handleProgressInput"
                     />
                   </label>
@@ -103,7 +103,7 @@
                     type="button"
                     class="btn btn-ghost btn-sm btn-square mx-auto"
                     :disabled="!hasNext || isLoadingContent"
-                    :aria-label="translate('reader.chapterController.nextChapter')"
+                    :aria-label="translate('reader.navigation.next')"
                     @click="emit('change-chapter', 1)"
                   >
                     <i
@@ -118,23 +118,23 @@
                 >
                   <button type="button" @click="goToCover">
                     <i class="ri-book-open-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">{{ translate('reader.readerControls.backToCover') }}</span>
+                    ><span class="dock-label">{{ translate('reader.controls.backToCover') }}</span>
                   </button>
                   <button type="button" @click="openDialog('toc')">
                     <i class="ri-list-unordered text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">{{ translate('reader.chapterList.chapters') }}</span>
+                    ><span class="dock-label">{{ translate('reader.chapters.title') }}</span>
                   </button>
                   <button type="button" @click="openDialog('comments')">
                     <i class="ri-chat-3-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">{{ translate('reader.readerControls.comments') }}</span>
+                    ><span class="dock-label">{{ translate('reader.controls.comments') }}</span>
                   </button>
                   <button type="button" @click="openDialog('format')">
                     <i class="ri-font-size-2 text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">{{ translate('reader.readerControls.layout') }}</span>
+                    ><span class="dock-label">{{ translate('reader.controls.layout') }}</span>
                   </button>
                   <button type="button" @click="openDialog('more')">
                     <i class="ri-settings-3-line text-xl" aria-hidden="true"></i
-                    ><span class="dock-label">{{ translate('tools.imageConverter.moreSettings') }}</span>
+                    ><span class="dock-label">{{ translate('common.moreSettings') }}</span>
                   </button>
                 </div>
               </nav>
@@ -150,7 +150,7 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[72dvh] flex-col rounded-t-box p-0">
-        <ReaderDialogHeader :title="translate('reader.readerControls.searchInBook')" @back="requestCloseDialog" />
+        <ReaderDialogHeader :title="translate('reader.controls.search')" @back="requestCloseDialog" />
         <section class="min-h-0 overflow-hidden p-4">
           <ContentSearch
             :active="activeDialog === 'search'"
@@ -161,7 +161,7 @@
         </section>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>
       </form>
     </dialog>
 
@@ -171,7 +171,7 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[76dvh] flex-col rounded-t-box p-0">
-        <ReaderDialogHeader :title="translate('reader.chapterList.chapters')" @back="requestCloseDialog" />
+        <ReaderDialogHeader :title="translate('reader.chapters.title')" @back="requestCloseDialog" />
         <section class="min-h-0 p-4">
           <ChapterToc
             mobile
@@ -184,7 +184,7 @@
         </section>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>
       </form>
     </dialog>
 
@@ -197,8 +197,8 @@
         class="modal-box flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none p-0 sm:h-[min(90dvh,52rem)] sm:max-h-[min(90dvh,52rem)] sm:rounded-box"
       >
         <ReaderDialogHeader
-          :title="translate('reader.readerControls.layout')"
-          :subtitle="translate('reader.formatSetting.previewChangesBelowAsYouAdjust')"
+          :title="translate('reader.controls.layout')"
+          :subtitle="translate('reader.format.previewHint')"
           @back="requestCloseDialog"
         >
           <template #action>
@@ -209,14 +209,14 @@
               @click="readerStore.resetMobileLayout"
             >
               <i class="ri-reset-left-line" aria-hidden="true"></i>
-              {{ translate('reader.formatSetting.resetToDefaults') }}
+              {{ translate('reader.format.reset') }}
             </button>
           </template>
         </ReaderDialogHeader>
         <FormatSetting mobile :show-header="false" />
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>
       </form>
     </dialog>
 
@@ -226,7 +226,7 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div class="modal-box flex max-h-[78dvh] flex-col overflow-hidden rounded-t-box p-0">
-        <ReaderDialogHeader class="shrink-0" :title="translate('tools.imageConverter.moreSettings')" @back="requestCloseDialog" />
+        <ReaderDialogHeader class="shrink-0" :title="translate('common.moreSettings')" @back="requestCloseDialog" />
         <ScrollableContainer class="flex-1">
           <div class="min-h-0 overflow-y-auto overscroll-contain scrollbar-thin">
             <ReaderMoreSettings @edit-tap-zones="openTapZoneEditor" />
@@ -234,7 +234,7 @@
         </ScrollableContainer>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>
       </form>
     </dialog>
 
@@ -245,7 +245,7 @@
     >
       <div class="modal-box flex max-h-[78dvh] flex-col rounded-t-box p-0">
         <ReaderDialogHeader
-          :title="currentMapping === 'title' ? translate('reader.novelReader.chapterComments') : translate('reader.novelReader.bookComments')"
+          :title="currentMapping === 'title' ? translate('novel.reader.chapterComments') : translate('novel.reader.bookComments')"
           @back="requestCloseDialog"
         >
           <template #action>
@@ -254,7 +254,7 @@
               class="btn btn-info btn-soft btn-xs shrink-0"
               @click="commentToggle"
             >
-              {{ currentMapping === "title" ? translate('reader.novelReader.switchToBookComments') : translate('reader.novelReader.switchToChapterComments') }}
+              {{ currentMapping === "title" ? translate('novel.reader.showBookComments') : translate('novel.reader.showChapterComments') }}
             </button>
           </template>
         </ReaderDialogHeader>
@@ -280,7 +280,7 @@
         </ScrollableContainer>
       </div>
       <form method="dialog" class="modal-backdrop">
-        <button @click.prevent="requestCloseDialog">{{ translate('reader.readerControls.backToReadingControls') }}</button>
+        <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>
       </form>
     </dialog>
 

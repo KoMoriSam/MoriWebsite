@@ -55,10 +55,10 @@ try {
   // Each SSG app receives its own catalog, including its source-text index.
   const isolated = createLocaleService();
   assert.equal(isolated.locale.value, 'zh-CN');
-  assert.equal(isolated.i18n.global.te('pages.home.readTheBlog'), false);
+  assert.equal(isolated.i18n.global.te('home.openBlog'), false);
   assert.equal(isolated.text('阅读博客'), '阅读博客');
   const render = () => {
-    const ssr = createSSRApp({ render: () => h('p', isolated.t('pages.home.readTheBlog')) });
+    const ssr = createSSRApp({ render: () => h('p', isolated.t('home.openBlog')) });
     isolated.install(ssr);
     return renderToString(ssr);
   };

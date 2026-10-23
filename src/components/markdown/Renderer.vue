@@ -36,7 +36,7 @@
       />
 
       <h1 v-if="isReaderMode && !renderedPages.length">
-        {{ translate("markdown.markdown.loadingFailedPleaseTryAgainLater") }}
+        {{ translate("markdown.content.loadFailed") }}
       </h1>
     </template>
 
@@ -282,8 +282,8 @@ const syncPreviewImages = (root = articleRef.value) => {
       image.setAttribute(
         "aria-label",
         alt
-          ? translate("markdown.markdown.previewImage2", { p0: alt })
-          : translate("markdown.markdown.previewImage"),
+          ? translate("markdown.content.previewLabel", { p0: alt })
+          : translate("markdown.content.preview"),
       );
     }
   });

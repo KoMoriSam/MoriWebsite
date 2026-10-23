@@ -1,5 +1,5 @@
 <template>
-  <section class="flex min-h-0 flex-col" :aria-label="translate('reader.novelContentSearch.searchTheNovel')">
+  <section class="flex min-h-0 flex-col" :aria-label="translate('reader.search.title')">
     <LoginGate v-if="!auth.authenticated.value" />
     <template v-else>
     <label class="input flex w-full shrink-0 items-center gap-2">
@@ -9,7 +9,7 @@
         v-model="keyword"
         type="search"
         class="grow"
-        :placeholder="translate('reader.novelContentSearch.searchChapterTitlesOrText')"
+        :placeholder="translate('reader.search.placeholder')"
         autocomplete="off"
         enterkeyhint="search"
       />
@@ -17,7 +17,7 @@
         v-if="keyword"
         type="button"
         class="btn btn-circle btn-ghost btn-xs"
-        :aria-label="translate('reader.novelContentSearch.clearSearch')"
+        :aria-label="translate('reader.search.clear')"
         @click="keyword = ''"
       >
         <i class="ri-close-line" aria-hidden="true"></i>
@@ -35,7 +35,7 @@
           role="status"
         >
           <span class="loading loading-spinner loading-sm"></span>
-          <span>{{ translate('reader.novelContentSearch.loadingTheNovelIndex') }}</span>
+          <span>{{ translate('reader.search.loading') }}</span>
         </div>
 
         <div
@@ -51,17 +51,17 @@
           v-else-if="!normalizedKeyword"
           class="py-8 text-center text-sm text-base-content/55"
         >
-          {{ translate('reader.novelContentSearch.enterKeywordsToSearchChapterTitlesAndText') }}
+          {{ translate('reader.search.hint') }}
         </p>
 
         <p
           v-else-if="!results.length"
           class="py-8 text-center text-sm text-base-content/55"
         >
-          {{ translate('reader.novelContentSearch.noMatchingNovelContentFound') }}
+          {{ translate('reader.search.noMatches') }}
         </p>
 
-        <ul v-else class="menu w-full gap-1 p-0" :aria-label="translate('reader.novelContentSearch.novelSearchResults')">
+        <ul v-else class="menu w-full gap-1 p-0" :aria-label="translate('reader.search.results')">
           <li v-for="result in results" :key="result.url">
             <button
               type="button"
@@ -201,7 +201,7 @@ const initialize = async () => {
   } catch (error) {
     if (id !== request) return;
     console.error("初始化小说搜索失败:", error);
-    errorMessage.value = localeMessage('reader.novelContentSearch.novelContentIsUnavailablePleaseTryAgainLater');
+    errorMessage.value = localeMessage('reader.search.loadFailed');
   } finally {
     if (id === request) isLoading.value = false;
   }

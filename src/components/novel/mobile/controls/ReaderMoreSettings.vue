@@ -2,9 +2,9 @@
   <section class="space-y-4 p-4">
     <label class="flex min-h-11 items-center justify-between gap-4">
       <span>
-        <span class="block text-sm font-medium">{{ translate('reader.readerMoreSettings.mouseWheelPageTurning') }}</span>
+        <span class="block text-sm font-medium">{{ translate('reader.more.wheel') }}</span>
         <span class="block text-xs text-base-content/55">
-          {{ translate('reader.readerMoreSettings.useTheMouseWheelToTurnPagesInPagedMode') }}
+          {{ translate('reader.more.wheelHint') }}
         </span>
       </span>
       <input
@@ -20,7 +20,7 @@
       :class="{ 'opacity-55': !volumeKeySupported }"
     >
       <span>
-        <span class="block text-sm font-medium">{{ translate('reader.readerMoreSettings.volumeKeyPageTurning') }}</span>
+        <span class="block text-sm font-medium">{{ translate('reader.more.volumeKeys') }}</span>
         <span class="block text-xs text-base-content/55">
           {{ volumeKeyDescription }}
         </span>
@@ -40,9 +40,9 @@
       class="flex min-h-11 items-center justify-between gap-4"
     >
       <span>
-        <span class="block text-sm font-medium">{{ translate('reader.readerMoreSettings.tapZoneSettings') }}</span>
+        <span class="block text-sm font-medium">{{ translate('reader.more.tapZones') }}</span>
         <span class="block text-xs text-base-content/55">
-          {{ translate('reader.readerMoreSettings.showTapZonesTapEachZoneToCycleItsAction') }}
+          {{ translate('reader.more.tapZonesHint') }}
         </span>
       </span>
       <i class="ri-grid-line shrink-0 text-xl" aria-hidden="true"></i>
@@ -67,7 +67,7 @@ const volumeKeySupported =
     !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
 const volumeKeyDescription = computed(() =>
   volumeKeySupported
-    ? translate('reader.readerMoreSettings.externalKeyboardsAreSupportedNativeContainersCanUseTheReader')
-    : translate('reader.readerMoreSettings.theSystemHandlesHardwareVolumeKeysInThisBrowserThe'),
+    ? translate('reader.more.keyboardHint')
+    : translate('reader.more.volumeKeysHint'),
 );
 </script>

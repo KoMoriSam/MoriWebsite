@@ -4,18 +4,18 @@
   <article aria-labelledby="sinhala-font-about">
     <hgroup class="mb-4 md:mb-6">
       <h2 id="sinhala-font-about" class="font-serif text-lg font-bold">
-        {{ translate("tools.info.aboutSinhalaLegacyFontEncodings") }}
+        {{ translate("sinhala.info.encodingsTitle") }}
       </h2>
       <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
         {{
-          translate("tools.info.howDoLegacyEncodingsDifferFromStandardUnicode")
+          translate("sinhala.info.encodingsQuestion")
         }}
         <RouterLink
           :to="articlePath"
           target="_blank"
           class="link link-primary link-hover"
         >
-          {{ translate("tools.info.learnMore") }}
+          {{ translate("sinhala.info.learnMore") }}
           <i class="ri-external-link-line" aria-hidden="true"></i>
         </RouterLink>
       </p>
@@ -31,7 +31,7 @@
       >
         <div class="mb-1 flex items-center gap-2 text-xs text-base-content/75">
           <i class="ri-file-text-line"></i>
-          {{ translate("tools.info.legacyFontEncoding") }}
+          {{ translate("sinhala.info.legacyTitle") }}
         </div>
 
         <div class="mt-2 w-full text-xl">
@@ -41,7 +41,7 @@
             <li class="contents">
               <span
                 class="badge badge-xs font-mono w-fit sm:badge-sm sm:my-2 sm:mr-3 sm:justify-self-end sm:self-center"
-                >{{ translate("common.sections.default") }}</span
+                >{{ translate("common.default") }}</span
               >
               <p
                 class="min-w-0 text-left text-base text-base-content font-mono sm:border-l-2 sm:border-base-content/10 sm:py-2 sm:pl-3 sm:text-xl"
@@ -85,18 +85,18 @@
         >
           {{
             translate(
-              "tools.info.theStoredDataIsAsciiWithoutTheCorrespondingFontThe",
+              "sinhala.info.legacyDescription",
             )
           }}
           <br />
           <small class="grid grid-cols-[auto_minmax(0,1fr)] items-start mt-2">
-            <span>{{ translate("tools.info.note") }}</span>
+            <span>{{ translate("sinhala.info.note") }}</span>
 
             <span class="space-y-1">
               <span class="block">
                 {{
                   translate(
-                    "tools.info.sinhalafontsNetHasFmAbhayaFmMalithiFmGemunuFm",
+                    "sinhala.info.fmFontsHint",
                   )
                 }}
                 <a
@@ -105,14 +105,14 @@
                   rel="noopener noreferrer"
                   class="not-prose link link-primary link-hover"
                 >
-                  {{ translate("tools.info.viewFmFontsOnSinhalafontsNet")
+                  {{ translate("sinhala.info.fmFontsLink")
                   }}<i class="ri-arrow-right-up-line"></i>
                 </a>
               </span>
               <span class="block">
                 {{
                   translate(
-                    "tools.info.pitakaLkProvidesUnicodeVersionsThatPreserveTraditionalFmDesigns",
+                    "sinhala.info.pitakaHint",
                   )
                 }}
                 <a
@@ -121,7 +121,7 @@
                   rel="noopener noreferrer"
                   class="not-prose link link-primary link-hover"
                 >
-                  {{ translate("tools.info.viewUnicodeFontsOnPitakaLk")
+                  {{ translate("sinhala.info.pitakaLink")
                   }}<i class="ri-arrow-right-up-line"></i>
                 </a>
               </span>
@@ -142,7 +142,7 @@
       >
         <div class="mb-1 flex items-center gap-2 text-xs text-base-content/70">
           <i class="ri-code-s-slash-line"></i>
-          {{ translate("tools.info.standardUnicodeFonts") }}
+          {{ translate("sinhala.info.unicodeTitle") }}
         </div>
 
         <ul
@@ -182,16 +182,16 @@
         >
           {{
             translate(
-              "tools.info.modernOperatingSystemsUsuallyIncludeSinhalaFontsTheTextUses",
+              "sinhala.info.unicodeDescription",
             )
           }}
           <br />
           <small class="grid grid-cols-[auto_minmax(0,1fr)] items-start mt-2">
-            <span>{{ translate("tools.info.note") }}</span>
+            <span>{{ translate("sinhala.info.note") }}</span>
             <span>
               {{
                 translate(
-                  "tools.info.defaultFontsVaryByOperatingSystemCommonChoicesAreListed",
+                  "sinhala.info.systemFontsHint",
                 )
               }}
               <ul class="ml-2.45 ps-0 space-y-1 list-[circle]">
@@ -199,7 +199,7 @@
                   <strong>Windows：</strong>
                   {{
                     translate(
-                      "tools.info.nirmalaUiIsASansSerifUiFontForWindows",
+                      "sinhala.info.windowsFonts",
                     )
                   }}
                 </li>
@@ -208,7 +208,7 @@
                   <strong>macOS / iOS：</strong>
                   {{
                     translate(
-                      "tools.info.sinhalaSangamMnHasAModernUiStyleWhileSinhala",
+                      "sinhala.info.appleFonts",
                     )
                   }}
                 </li>
@@ -217,7 +217,7 @@
                   <strong>Android / AOSP：</strong>
                   {{
                     translate(
-                      "tools.info.notoSansSinhalaIsUsuallyTheMainSinhalaFallbackNoto",
+                      "sinhala.info.androidFonts",
                     )
                   }}
                 </li>
@@ -234,28 +234,28 @@
   <article aria-labelledby="sinhala-font-about">
     <hgroup class="mb-4 md:mb-6">
       <h2 id="sinhala-font-about" class="font-serif text-lg font-bold">
-        {{ translate("tools.info.aboutTheSinhalaEncodingConverter") }}
+        {{ translate("sinhala.info.converterTitle") }}
       </h2>
       <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
-        {{ translate("tools.info.whatDoesThisConverterDo") }}
+        {{ translate("sinhala.info.converterQuestion") }}
         <RouterLink
           :to="`${articlePath}#四、僧伽罗字体编码转换器可以做什么？`"
           target="_blank"
           class="link link-primary link-hover"
         >
-          {{ translate("tools.info.learnMore") }}
+          {{ translate("sinhala.info.learnMore") }}
           <i class="ri-external-link-line" aria-hidden="true"></i>
         </RouterLink>
       </p>
     </hgroup>
     <section class="prose max-md:prose-sm max-w-none prose-p:text-justify">
       <p>
-        {{ translate("tools.info.thisIsNotAOneToOneAsciiSubstitutionLegacy") }}
+        {{ translate("sinhala.info.converterDescription") }}
       </p>
 
       <p>
         {{
-          translate("tools.info.theExamplesBelowShowLegacyGlyphsOnTheLeftAnd")
+          translate("sinhala.info.examplesHint")
         }}
       </p>
 
@@ -279,11 +279,11 @@
           ></i>
 
           <h2 class="min-w-0 font-serif text-base font-bold sm:text-lg">
-            {{ translate("tools.info.aboutTheLegacyEncodingOnThisWebsite") }}
+            {{ translate("sinhala.info.legacyScopeTitle") }}
           </h2>
 
           <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
-            {{ translate("tools.info.whatIsLegacyEncoding") }}
+            {{ translate("sinhala.info.legacyScopeQuestion") }}
           </p>
         </hgroup>
       </summary>
@@ -291,7 +291,7 @@
       <p
         class="collapse-content prose max-md:prose-sm max-w-none prose-p:text-justify"
       >
-        {{ translate("tools.info.legacyEncodingIsNotStandardized") }}
+        {{ translate("sinhala.info.legacyScopeDescription") }}
       </p>
     </details>
 
@@ -308,12 +308,12 @@
           ></i>
 
           <h2 class="min-w-0 font-serif text-base font-bold sm:text-lg">
-            {{ translate("tools.info.aboutTheFmFontsOnThisWebsite") }}
+            {{ translate("sinhala.info.fontsTitle") }}
           </h2>
 
           <p class="mt-0.5 min-w-0 text-sm text-base-content/60">
             {{
-              translate("tools.info.areTheseOriginalFontsWhatAboutUsageRights")
+              translate("sinhala.info.fontsQuestion")
             }}
           </p>
         </hgroup>
@@ -324,18 +324,18 @@
       >
         {{
           translate(
-            "tools.info.theLegacyEditorAndExamplesUseBuiltInCompatibleFonts",
+            "sinhala.info.fontsPrefix",
           )
         }}<a
           href="/licenses"
           target="_blank"
           rel="noopener noreferrer"
           class="not-prose link link-primary link-hover"
-          >{{ translate("tools.info.thirdPartyLicenses")
+          >{{ translate("sinhala.info.thirdPartyLicenses")
           }}<i class="ri-arrow-right-up-line"></i></a
         >{{
           translate(
-            "tools.info.theySimulateLegacyCharacterMappingsAndAreNotTheOriginal",
+            "sinhala.info.fontsSuffix",
           )
         }}
       </p>

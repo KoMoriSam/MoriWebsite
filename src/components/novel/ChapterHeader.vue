@@ -6,7 +6,7 @@
     <!-- 标题区域 -->
     <section
       class="group min-w-0 max-w-full lg:flex-1"
-      :aria-label="translate('reader.chapterHeader.chapterInformation')"
+      :aria-label="translate('reader.header.label')"
     >
       <hgroup class="min-w-0">
         <!-- 卷标（桌面端显示） -->
@@ -16,14 +16,14 @@
         >
           <!-- 返回封面 -->
           <nav
-            :aria-label="translate('reader.chapterHeader.navigation')"
+            :aria-label="translate('reader.header.navigation')"
             class="tooltip tooltip-right shrink-0"
-            :data-tip="translate('reader.chapterHeader.backToCover')"
+            :data-tip="translate('reader.header.backToCover')"
           >
             <RouterLink
               to="/novel"
               class="btn btn-soft btn-primary btn-xs btn-circle"
-              :aria-label="translate('reader.chapterHeader.backToNovelCover')"
+              :aria-label="translate('reader.header.backLabel')"
             >
               <i class="ri-arrow-left-line" aria-hidden="true"></i>
             </RouterLink>
@@ -61,7 +61,7 @@
     <!-- 统计信息 -->
     <section
       v-if="stats.length"
-      :aria-label="translate('reader.chapterHeader.chapterStatistics')"
+      :aria-label="translate('reader.header.statistics')"
       class="min-w-0 lg:max-w-[40%] lg:shrink"
     >
       <ul

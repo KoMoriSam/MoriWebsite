@@ -10,18 +10,18 @@
       <template #actions>
         <nav
           class="flex shrink-0 items-center gap-1"
-          :aria-label="translate('markdown.mermaid.mermaidDiagramTools')"
+          :aria-label="translate('markdown.mermaid.tools')"
         >
           <div
             role="tablist"
-            :aria-label="translate('markdown.mermaid.switchMermaidView')"
+            :aria-label="translate('markdown.mermaid.switchView')"
             class="tabs tabs-box tabs-xs shrink-0"
           >
             <button
               role="tab"
               class="tab"
               :class="viewMode === 'code' ? 'tab-active' : ''"
-              :aria-label="translate('markdown.mermaid.viewMermaidSource')"
+              :aria-label="translate('markdown.mermaid.sourceLabel')"
               :aria-pressed="viewMode === 'code'"
               :title="translate('markdown.mermaid.code')"
               @click="viewMode = 'code'"
@@ -32,7 +32,7 @@
               role="tab"
               class="tab"
               :class="viewMode === 'preview' ? 'tab-active' : ''"
-              :aria-label="translate('markdown.mermaid.viewMermaidPreview')"
+              :aria-label="translate('markdown.mermaid.previewLabel')"
               :aria-pressed="viewMode === 'preview'"
               :title="translate('markdown.mermaid.preview')"
               @click="viewMode = 'preview'"
@@ -49,7 +49,7 @@
                   ? translate('markdown.mermaid.exitFullscreen')
                   : translate('markdown.mermaid.fullscreen')
                 : copied
-                  ? translate('markdown.codeBlock.copiedSuccessfully')
+                  ? translate('markdown.codeBlock.copied')
                   : translate('markdown.mermaid.copyCode')
             "
           >
@@ -57,7 +57,7 @@
               v-if="viewMode === 'preview'"
               type="button"
               class="btn btn-sm btn-square btn-ghost shrink-0"
-              :aria-label="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.viewDiagramFullscreen')"
+              :aria-label="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.fullscreenLabel')"
               :aria-pressed="isFullscreen"
               :title="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.fullscreen')"
               :disabled="!canFullscreen"
@@ -77,8 +77,8 @@
               type="button"
               class="btn btn-sm btn-square shrink-0"
               :class="copied ? 'btn-success' : 'btn-ghost'"
-              :aria-label="copied ? translate('markdown.mermaid.mermaidSourceCopied') : translate('markdown.mermaid.copyMermaidSource')"
-              :title="copied ? translate('markdown.codeBlock.copiedSuccessfully') : translate('markdown.mermaid.copyCode')"
+              :aria-label="copied ? translate('markdown.mermaid.copied') : translate('markdown.mermaid.copyLabel')"
+              :title="copied ? translate('markdown.codeBlock.copied') : translate('markdown.mermaid.copyCode')"
               @click="copy(source)"
             >
               <i
@@ -110,7 +110,7 @@
           class="loading loading-spinner loading-sm"
           aria-hidden="true"
         ></span>
-        <span>{{ translate('markdown.mermaid.loadingMermaidDiagram') }}</span>
+        <span>{{ translate('markdown.mermaid.loading') }}</span>
       </div>
 
       <div
@@ -122,7 +122,7 @@
           class="ri-error-warning-line text-2xl text-warning"
           aria-hidden="true"
         ></i>
-        <span>{{ translate('markdown.mermaid.invalidOrUnsupportedDiagram') }}</span>
+        <span>{{ translate('markdown.mermaid.invalid') }}</span>
       </div>
 
       <div
@@ -130,7 +130,7 @@
         v-show="viewMode === 'preview' && renderStatus === 'ready'"
         tabindex="0"
         role="img"
-        :aria-label="translate('markdown.mermaid.mermaidDiagramPreview')"
+        :aria-label="translate('markdown.mermaid.diagramLabel')"
         class="min-h-[inherit] touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-base-content/30"
         :class="[
           isFullscreen ? 'absolute inset-0' : 'relative',
@@ -165,12 +165,12 @@
       <div
         v-show="viewMode === 'preview' && renderStatus === 'ready'"
         class="join join-vertical pointer-events-none absolute end-2 bottom-2 z-10 overflow-hidden rounded-full border border-base-300 bg-base-100 opacity-0 shadow-sm transition-opacity duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100"
-        :aria-label="translate('markdown.mermaid.diagramZoom')"
+        :aria-label="translate('markdown.mermaid.zoom')"
       >
         <button
           type="button"
           class="btn btn-sm btn-square btn-ghost join-item"
-          :aria-label="translate('markdown.mermaid.zoomInOnDiagram')"
+          :aria-label="translate('markdown.mermaid.zoomInLabel')"
           :title="translate('markdown.mermaid.zoomIn')"
           :disabled="zoom >= MAX_ZOOM"
           @click="changeZoom(ZOOM_STEP)"
@@ -180,7 +180,7 @@
         <button
           type="button"
           class="btn btn-sm btn-square btn-ghost join-item"
-          :aria-label="translate('markdown.mermaid.zoomOutOfDiagram')"
+          :aria-label="translate('markdown.mermaid.zoomOutLabel')"
           :title="translate('markdown.mermaid.zoomOut')"
           :disabled="zoom <= MIN_ZOOM"
           @click="changeZoom(-ZOOM_STEP)"
@@ -428,7 +428,7 @@ const renderDiagram = async () => {
       .slice(2)}`;
     const { svg, bindFunctions } = await renderMermaidSource(renderId, source);
     if (requestId !== renderRequestId || source !== props.source.trim()) return;
-    if (!insertRenderedSvg(svg)) throw new Error(translate('markdown.mermaid.mermaidDidNotReturnAValidSvg'));
+    if (!insertRenderedSvg(svg)) throw new Error(translate('markdown.mermaid.invalidSvg'));
 
     bindFunctions?.(diagramElement.value);
     renderStatus.value = "ready";

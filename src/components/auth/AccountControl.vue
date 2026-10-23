@@ -115,7 +115,7 @@
               class="collapse-title flex min-h-11 items-center gap-2 py-3 pl-3 pr-9 text-sm font-medium"
             >
               <i class="ri-notification-2-line" aria-hidden="true"></i
-              >{{ t("common.noticeCenter.notifications") }}
+              >{{ t("common.notices.title") }}
               <span v-if="unreadCount" class="badge badge-error badge-xs">{{
                 unreadCount
               }}</span>
@@ -126,7 +126,7 @@
                 @click.stop.prevent="announcements.markAllRead()"
                 @keydown.stop
               >
-                {{ t("common.modal.markAllAsRead") }}
+                {{ t("common.modal.markRead") }}
               </button>
             </summary>
             <div class="collapse-content">
@@ -159,7 +159,7 @@
             >
               <i :class="currentTheme.icon" aria-hidden="true"></i
               ><span class="min-w-0">{{
-                t("common.themeController.interfaceTheme")
+                t("common.theme.title")
               }}</span>
               <span
                 v-if="!themes.followSystem"
@@ -172,12 +172,12 @@
                 @click.stop
                 @keydown.stop
               >
-                <span>{{ t("common.themeController.followSystemTheme") }}</span>
+                <span>{{ t("common.theme.system") }}</span>
                 <input
                   v-model="themes.followSystem"
                   type="checkbox"
                   class="toggle toggle-xs shrink-0"
-                  :aria-label="t('common.themeController.followSystemTheme')"
+                  :aria-label="t('common.theme.system')"
                   @click.stop
                   @keydown.stop
                 />

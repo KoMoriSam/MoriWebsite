@@ -1,8 +1,6 @@
 {
-  "pages": {
-    "notFound": {
-      "goHome": "Go home",
-      "readArticles": "Read articles"
-    }
+  "notFound": {
+    "goHome": "Go home",
+    "readArticles": "Read articles"
   }
 }

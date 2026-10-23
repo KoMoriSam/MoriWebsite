@@ -1,24 +1,24 @@
 <template>
   <ContentPage
     eyebrow="Open Source & Attributions"
-    :title="translate('pages.licenses.licensesThirdPartyNotices')"
-    :description="translate('pages.licenses.theProjectSMitLicenseAppliesOnlyToOriginalSoftware')"
+    :title="translate('licenses.title')"
+    :description="translate('licenses.scope')"
   >
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-puzzle-line"></i>
-        {{ licenseData.dependencyCount }} {{ translate('pages.licenses.dependencyVersions') }}
+        {{ licenseData.dependencyCount }} {{ translate('licenses.dependencies') }}
       </span>
       <span class="inline-flex items-center gap-1">
         <i class="ri-certificate-line"></i>
-        {{ licenseData.supplementalLicenses.length }} {{ translate('pages.licenses.additionalLicenses') }}
+        {{ licenseData.supplementalLicenses.length }} {{ translate('licenses.additionalLicenses') }}
       </span>
       <span
         v-if="licenseData.missingLicenseFileCount"
         class="inline-flex items-center gap-1"
       >
         <i class="ri-certificate-2-line"></i>
-        {{ licenseData.missingLicenseFileCount }} {{ translate('pages.licenses.packagesWithoutATopLevelLicenseFile') }}
+        {{ licenseData.missingLicenseFileCount }} {{ translate('licenses.missingLicenses') }}
       </span>
     </template>
 
@@ -28,7 +28,7 @@
       >
         <div>
           <p class="text-sm text-base-content/60">Original software source</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.projectMitLicense') }}</h2>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.projectLicense') }}</h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -36,7 +36,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ translate('pages.licenses.downloadLicense') }}
+          {{ translate('licenses.downloadLicense') }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
@@ -62,13 +62,13 @@
       >
         <div>
           <p class="text-sm text-base-content/60">Scope and attribution</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.thirdPartyNotices') }}</h2>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.thirdPartyNotices') }}</h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <select
             v-model="noticeLanguage"
             class="select select-sm w-auto max-w-full"
-            :aria-label="translate('pages.licenses.noticeLanguage')"
+            :aria-label="translate('licenses.noticeLanguage')"
           >
             <option
               v-for="language in LOCALES"
@@ -86,7 +86,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ translate('pages.licenses.viewSource') }}
+            {{ translate('licenses.viewSource') }}
             <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
           </a>
         </div>
@@ -116,7 +116,7 @@
       >
         <div>
           <p class="text-sm text-base-content/60">Installed production dependency graph</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.productionDependencyLicenses') }}</h2>
+          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.dependencyLicenses') }}</h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -124,13 +124,13 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ translate('pages.licenses.downloadAllNotices') }}
+          {{ translate('licenses.downloadAllNotices') }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
 
       <p class="mb-5 text-sm text-base-content/70">
-        {{ translate('pages.licenses.theseNoticesComeFromThePackagesInstalledAtBuildTime') }}
+        {{ translate('licenses.noticesHint') }}
       </p>
 
       <div class="grid gap-3">
@@ -156,7 +156,7 @@
 
           <div v-if="loadedLicenses.has(dependencyAnchor(dependency))" class="collapse-content">
             <p class="mb-4 text-sm text-base-content/70">
-              {{ translate('pages.licenses.upstream') }}
+              {{ translate('licenses.upstream') }}
               <a
                 v-if="sourceUrl(dependency.source)"
                 class="link link-hover break-all"
@@ -173,7 +173,7 @@
               v-if="!dependency.licenseFiles.length"
               class="rounded-box bg-base-200 p-4 text-sm text-base-content/70"
             >
-              {{ translate('pages.licenses.theInstalledVersionOfThisPackageDoesNotIncludeA') }}
+              {{ translate('licenses.missingLicenseHint') }}
             </p>
 
             <div v-else class="grid gap-4">
@@ -203,7 +203,7 @@
     >
       <div class="mb-4">
         <p class="text-sm text-base-content/60">Fonts, icons, and manual attributions</p>
-        <h2 class="font-serif text-2xl font-semibold">{{ translate('pages.licenses.additionalLicenseFiles') }}</h2>
+        <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.files') }}</h2>
       </div>
 
       <div class="grid gap-3">

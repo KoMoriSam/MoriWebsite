@@ -2,7 +2,7 @@
   <section
     class="not-prose font-sans"
     data-markdown-moment
-    :aria-label="translate('markdown.moment.sPost', { p0: username })"
+    :aria-label="translate('markdown.moment.postLabel', { p0: username })"
   >
     <!-- 动态作者 -->
     <header class="moments-author">
@@ -11,7 +11,7 @@
           <img
             class="m-0!"
             v-bind="avatarAttrs(username)"
-            :alt="translate('markdown.moment.sAvatar', { p0: username })"
+            :alt="translate('markdown.moment.avatarLabel', { p0: username })"
           />
         </div>
       </div>
@@ -92,7 +92,7 @@
                 <img
                   class="m-0!"
                   v-bind="avatarAttrs(comment.username)"
-                  :alt="translate('markdown.moment.sAvatar', { p0: comment.username })"
+                  :alt="translate('markdown.moment.avatarLabel', { p0: comment.username })"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@
                   <img
                     class="m-0!"
                     v-bind="avatarAttrs(reply.replier)"
-                    :alt="translate('markdown.moment.sAvatar', { p0: reply.replier })"
+                    :alt="translate('markdown.moment.avatarLabel', { p0: reply.replier })"
                   />
                 </div>
               </div>

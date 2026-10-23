@@ -15,7 +15,7 @@
         <a
           :href="href"
           class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-          :aria-label="translate('common.pagination.previousPage')"
+          :aria-label="translate('common.pagination.previous')"
           @click="requestLinkedPage(currentPage - 1, $event)"
         >
           <i class="ri-arrow-left-s-line text-lg"></i>
@@ -28,7 +28,7 @@
         class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
         :disabled="currentPage <= 1 && !canNavigateBefore"
         :aria-label="
-          currentPage <= 1 && canNavigateBefore ? localizeText(beforeBoundaryLabel) : translate('common.pagination.previousPage')
+          currentPage <= 1 && canNavigateBefore ? localizeText(beforeBoundaryLabel) : translate('common.pagination.previous')
         "
         @click="requestPrevious"
       >
@@ -106,7 +106,7 @@
         <a
           :href="href"
           class="btn join-item min-w-9 px-1 min-h-10 h-10 sm:min-w-10"
-          :aria-label="translate('common.pagination.nextPage')"
+          :aria-label="translate('common.pagination.next')"
           @click="requestLinkedPage(currentPage + 1, $event)"
         >
           <i class="ri-arrow-right-s-line text-lg"></i>
@@ -121,7 +121,7 @@
         :aria-label="
           currentPage >= totalPages && canNavigateAfter
             ? localizeText(afterBoundaryLabel)
-            : translate('common.pagination.nextPage')
+            : translate('common.pagination.next')
         "
         @click="requestNext"
       >
@@ -134,11 +134,11 @@
       v-if="isCompactLayout && isPageMenuOpen"
       :visible="true"
       button-mode="close"
-      :title="translate('common.pagination.choosePage')"
+      :title="translate('common.pagination.choose')"
       @close="closePageMenu"
     >
       <template #title>
-        <h3 class="text-lg font-bold">{{ translate('common.pagination.choosePage') }}</h3>
+        <h3 class="text-lg font-bold">{{ translate('common.pagination.choose') }}</h3>
         <p class="mt-1 text-sm font-normal text-base-content/60">
           {{ translate('common.pagination.position', { p0: formatNumber(currentPage), p1: formatNumber(totalPages) }) }}
         </p>
@@ -206,7 +206,7 @@
               @click="selectLinkedPage(1, $event)"
             >
               <i class="ri-skip-left-line shrink-0"></i>
-              <span>{{ translate('common.pagination.firstPage') }}</span>
+              <span>{{ translate('common.pagination.first') }}</span>
             </a>
           </RouterLink>
 
@@ -218,7 +218,7 @@
             @click="selectPage(1)"
           >
             <i class="ri-skip-left-line shrink-0"></i>
-            <span>{{ translate('common.pagination.firstPage') }}</span>
+            <span>{{ translate('common.pagination.first') }}</span>
           </button>
 
           <RouterLink
@@ -232,7 +232,7 @@
               class="btn min-w-0 gap-2"
               @click="selectLinkedPage(totalPages, $event)"
             >
-              <span>{{ translate('common.pagination.lastPage') }}</span>
+              <span>{{ translate('common.pagination.last') }}</span>
               <i class="ri-skip-right-line shrink-0"></i>
             </a>
           </RouterLink>
@@ -244,7 +244,7 @@
             :disabled="currentPage >= totalPages"
             @click="selectPage(totalPages)"
           >
-            <span>{{ translate('common.pagination.lastPage') }}</span>
+            <span>{{ translate('common.pagination.last') }}</span>
             <i class="ri-skip-right-line shrink-0"></i>
           </button>
         </footer>

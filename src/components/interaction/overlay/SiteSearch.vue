@@ -15,7 +15,7 @@
           class="flex max-h-[82vh] w-full max-w-3xl flex-col rounded-box border border-base-300 bg-base-100 shadow-2xl"
           @keydown="handleDialogKeydown"
         >
-          <h2 id="global-search-title" class="sr-only">{{ translate('common.search.siteSearch') }}</h2>
+          <h2 id="global-search-title" class="sr-only">{{ translate('common.search.title') }}</h2>
 
           <div class="border-base-300 pt-1 p-2 sm:pt-2 sm:p-4">
             <div ref="searchBox" class="relative">
@@ -69,7 +69,7 @@
                 </div>
 
                 <label for="global-article-search" class="sr-only">
-                  {{ translate('common.search.searchContentUseForContentTypesForCategoriesAndFor') }}
+                  {{ translate('common.search.placeholder') }}
                 </label>
                 <input
                   id="global-article-search"
@@ -78,7 +78,7 @@
                   type="search"
                   role="combobox"
                   class="min-w-32 flex-1 text-base sm:text-lg"
-                  :placeholder="translate('common.search.searchThisSite')"
+                  :placeholder="translate('common.search.label')"
                   autocomplete="off"
                   spellcheck="false"
                   aria-autocomplete="list"
@@ -114,7 +114,7 @@
                   v-if="searchText || hasFilters"
                   type="button"
                   class="btn btn-circle btn-ghost btn-sm shrink-0"
-                  :aria-label="translate('common.search.clearAllSearchFilters')"
+                  :aria-label="translate('common.search.clearFilters')"
                   @click="resetSearch"
                 >
                   <i class="ri-delete-bin-line" aria-hidden="true"></i>
@@ -130,10 +130,10 @@
                 role="listbox"
                 :aria-label="
                   activeFilterQuery.type === 'tag'
-                    ? translate('common.search.tagFilterSuggestions')
+                    ? translate('common.search.tagSuggestions')
                     : activeFilterQuery.type === 'year'
-                      ? translate('common.search.yearFilterSuggestions')
-                      : translate('common.search.contentTypeFilterSuggestions')
+                      ? translate('common.search.yearSuggestions')
+                      : translate('common.search.typeSuggestions')
                 "
               >
                 <div
@@ -152,16 +152,16 @@
                     ></i>
                     {{
                       activeFilterQuery.type === "tag"
-                        ? translate('common.search.chooseContentCategory')
+                        ? translate('common.search.chooseCategory')
                         : activeFilterQuery.type === "year"
-                          ? translate('common.search.choosePublicationYear')
-                          : translate('common.search.chooseContentType')
+                          ? translate('common.search.chooseYear')
+                          : translate('common.search.chooseType')
                     }}
                   </span>
                   <span class="hidden sm:inline">
                     <kbd class="kbd kbd-xs">↑</kbd
-                    ><kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select') }}
-                    <kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.confirm') }}
+                    ><kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.selectHint') }}
+                    <kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.confirmHint') }}
                     <kbd class="kbd kbd-xs">Esc</kbd> {{ translate('common.modal.close') }}
                   </span>
                 </div>
@@ -206,7 +206,7 @@
                                 ? `${option.typeLabel} ${option.fullLabel}`
                                 : option.type === 'year'
                                   ? translate('common.search.year', { p0: option.label })
-                                  : translate('common.search.contentType', { p0: option.label })
+                                  : translate('common.search.type', { p0: option.label })
                             "
                             :aria-selected="activeFilterIndex === option.index"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
@@ -239,7 +239,7 @@
                             </span>
                             <span class="text-xs text-base-content/40">
                               {{ option.count }}
-                              {{ option.type === "type" ? translate('common.search.items') : translate('pages.articleList.articles3') }}
+                              {{ option.type === "type" ? translate('common.search.items') : translate('blog.list.countUnit') }}
                             </span>
                           </button>
                         </li>
@@ -254,17 +254,17 @@
                 >
                   {{
                     activeFilterQuery.query
-                      ? translate('common.search.noOptionsMatch', { p0: activeFilterQuery.query })
-                      : translate('common.search.noMoreFiltersAvailable')
+                      ? translate('common.search.noOptions', { p0: activeFilterQuery.query })
+                      : translate('common.search.noFilters')
                   }}
                 </p>
               </div>
             </div>
 
             <p class="my-1 px-1 text-xs text-base-content/40">
-              {{ translate('common.search.enter') }} <kbd class="kbd kbd-xs">@</kbd> {{ translate('common.search.toFilterTypes') }}
-              <kbd class="kbd kbd-xs">#</kbd> {{ translate('common.search.toFilterTagsNovelVolumesOrChangeTypes') }}
-              <kbd class="kbd kbd-xs">/</kbd> {{ translate('common.search.toFilterYearsYouCanCombineFilters') }}
+              {{ translate('common.search.enter') }} <kbd class="kbd kbd-xs">@</kbd> {{ translate('common.search.typeHint') }}
+              <kbd class="kbd kbd-xs">#</kbd> {{ translate('common.search.categoryHint') }}
+              <kbd class="kbd kbd-xs">/</kbd> {{ translate('common.search.yearHint') }}
             </p>
           </div>
 
@@ -300,7 +300,7 @@
                     class="ri-error-warning-line mb-3 block text-4xl text-error/65"
                     aria-hidden="true"
                   ></i>
-                  <p class="font-medium">{{ translate('common.search.theSearchIndexIsTemporarilyUnavailable') }}</p>
+                  <p class="font-medium">{{ translate('common.search.indexUnavailable') }}</p>
                   <p class="mt-1 text-sm text-base-content/50">
                     {{ localizeText(errorMessage) }}
                   </p>
@@ -309,14 +309,14 @@
                     class="btn btn-outline btn-sm mt-5"
                     @click="initializeSearch(true)"
                   >
-                    {{ translate('pages.announcements.retry') }}
+                    {{ translate('announcements.retry') }}
                   </button>
                 </div>
                 <ul
                   v-else-if="results.length"
                   class="menu w-full gap-1 p-2 sm:p-3"
                   role="listbox"
-                  :aria-label="translate('common.search.siteSearchResults')"
+                  :aria-label="translate('common.search.resultsLabel')"
                 >
                   <li v-for="(result, index) in results" :key="result.url">
                     <button
@@ -437,9 +437,9 @@
                     class="ri-search-eye-line mb-3 block text-4xl text-base-content/20"
                     aria-hidden="true"
                   ></i>
-                  <p class="font-medium">{{ translate('common.search.noMatchingContentFound') }}</p>
+                  <p class="font-medium">{{ translate('common.search.noMatches') }}</p>
                   <p class="mt-1 text-sm text-base-content/45">
-                    {{ translate('common.search.tryShorterKeywordsOrRemoveSomeFilters') }}
+                    {{ translate('common.search.noMatchesHint') }}
                   </p>
                 </div>
               </template>
@@ -454,7 +454,7 @@
             <span class="hidden items-center gap-3 sm:flex">
               <span
                 ><kbd class="kbd kbd-xs">↑</kbd>
-                <kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select2') }}</span
+                <kbd class="kbd kbd-xs">↓</kbd> {{ translate('common.search.select') }}</span
               >
               <span><kbd class="kbd kbd-xs">Enter</kbd> {{ translate('common.search.open') }}</span>
             </span>
@@ -476,7 +476,7 @@ const metadataValue = (meta) => {
     if (/[T\s]\d{1,2}:\d{2}/.test(String(meta.rawValue))) Object.assign(options, { hour: '2-digit', minute: '2-digit' });
     return formatLocalizedDate(meta.rawValue, options);
   }
-  if (meta.key === 'length' && Number.isFinite(Number(meta.rawValue))) return translate('pages.articleReader.characters', { p0: formatNumber(Number(meta.rawValue)) });
+  if (meta.key === 'length' && Number.isFinite(Number(meta.rawValue))) return translate('blog.article.characters', { p0: formatNumber(Number(meta.rawValue)) });
   return localizeText(meta.value);
 };
 
@@ -919,7 +919,7 @@ const mapPagefindResult = async (result) => {
 
   return {
     url: String(data?.url || result.url || "/"),
-    title: String(meta.title || translate('common.search.untitledContent')),
+    title: String(meta.title || translate('common.search.untitled')),
     summary,
     content: excerpt,
     tags: parsePagefindMetadata(meta.tags),
@@ -1028,7 +1028,7 @@ const loadSearchEngine = async () => {
     throw (
       entriesResult.reason ||
       pagefindResult.reason ||
-      new Error(translate('common.search.noSearchIndexIsAvailable'))
+      new Error(translate('common.search.noIndex'))
     );
   }
 
@@ -1094,7 +1094,7 @@ const initializeSearch = async (force = false) => {
     if (await loadSearchEngine() === false) return;
   } catch (error) {
     console.error("初始化全局搜索失败:", error);
-    errorMessage.value = localeMessage('common.search.refreshThePageAndTryAgain');
+    errorMessage.value = localeMessage('common.search.retryHint');
     return;
   }
 
@@ -1176,7 +1176,7 @@ async function runSearch() {
     if (requestId !== searchRequestId) return;
 
     console.error("全局搜索失败:", error);
-    errorMessage.value = localeMessage('common.search.cannotReadSearchResultsPleaseTryAgainLater');
+    errorMessage.value = localeMessage('common.search.loadFailed');
     results.value = [];
     activeIndex.value = -1;
   } finally {

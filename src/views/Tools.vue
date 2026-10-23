@@ -1,21 +1,21 @@
 <template>
   <ContentPage
     eyebrow="Tool List"
-    :title="translate('pages.home.tools')"
+    :title="translate('tools.title')"
     :description="
-      translate('pages.tools.chooseAToolToOpenItsPageBookmarkOrShare')
+      translate('tools.description')
     "
-    :metas-label="translate('tools.imageConverter.toolInformation')"
+    :metas-label="translate('tools.info')"
   >
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-tools-line" aria-hidden="true"></i>
-        {{ translate('pages.tools.toolCount', { count: tools.length }) }}
+        {{ translate('tools.count', { count: tools.length }) }}
       </span>
     </template>
     <section
       class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
-      :aria-label="translate('pages.tools.availableTools')"
+      :aria-label="translate('tools.available')"
     >
       <CatalogCard
         v-for="tool in tools"
@@ -25,7 +25,7 @@
         :description="tool.description"
         :icon="tool.icon"
         :cover="tool.cover"
-        :action="translate('pages.tools.openTool')"
+        :action="translate('tools.open')"
       >
         <template #tags="{ coverLoaded }">
           <span
@@ -55,15 +55,15 @@ const tools = [
   {
     name: "image-converter",
     get title() {
-      return translate("pages.home.imageConverter");
+      return translate("image.title");
     },
     get description() {
       return translate(
-        "pages.tools.batchConvertImagesInYourBrowserWithCompressionResizingAnimation",
+        "tools.imageDescription",
       );
     },
     get category() {
-      return translate("pages.tools.imageProcessing");
+      return translate("tools.imageProcessing");
     },
     icon: "ri-image-edit-line",
     cover: "/assets/images/banners/image-converter.webp",
@@ -72,15 +72,15 @@ const tools = [
   {
     name: "server-status",
     get title() {
-      return translate("pages.tools.minecraftServerStatus");
+      return translate("server.title");
     },
     get description() {
       return translate(
-        "pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft",
+        "site.serverDescription",
       );
     },
     get category() {
-      return translate("pages.tools.serverLookup");
+      return translate("tools.serverLookup");
     },
     icon: "ri-server-line",
     cover: "/assets/images/banners/server-status.webp",
@@ -89,15 +89,15 @@ const tools = [
   {
     name: "sinhala-font-converter",
     get title() {
-      return translate("pages.home.sinhalaFontEncodingConverter");
+      return translate("sinhala.title");
     },
     get description() {
       return translate(
-        "pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings",
+        "site.sinhalaDescription",
       );
     },
     get category() {
-      return translate("pages.tools.textEncodingConversion");
+      return translate("tools.textEncoding");
     },
     icon: "ri-code-s-slash-line",
     cover: "/assets/images/banners/sinhala-font-converter.webp",

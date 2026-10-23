@@ -2,20 +2,20 @@
   <IllustratedPage
     :imageSrc="`/assets/images/animates/unknown.gif`"
     imageAlt="me!"
-    :title="translate('common.sections.notFoundTitle')"
-    :description="translate('common.sections.notFoundDescription')"
+    :title="translate('notFound.title')"
+    :description="translate('notFound.description')"
   >
     <section
       class="flex flex-col md:flex-row gap-2 md:gap-3 lg:gap-4 mt-2 md:mt-3 lg:mt-4"
     >
       <button class="btn btn-primary" @click="route.push('/')">
-        <i class="ri-home-9-fill"></i>{{ translate('pages.notFound.goHome') }}
+        <i class="ri-home-9-fill"></i>{{ translate('notFound.goHome') }}
       </button>
       <button class="btn" @click="route.push('/blog')">
-        <i class="ri-article-line"></i>{{ translate('pages.notFound.readArticles') }}
+        <i class="ri-article-line"></i>{{ translate('notFound.readArticles') }}
       </button>
       <button class="btn" @click="route.push('/novel')">
-        <i class="ri-book-line"></i>{{ translate('pages.home.readTheNovel') }}
+        <i class="ri-book-line"></i>{{ translate('home.openNovel') }}
       </button>
     </section>
   </IllustratedPage>

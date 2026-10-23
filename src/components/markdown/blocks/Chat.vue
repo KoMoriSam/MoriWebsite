@@ -81,7 +81,7 @@
       <!-- 麦克风 / 键盘 -->
       <button
         class="btn btn-ghost btn-square btn-sm"
-        :aria-label="voiceMode ? translate('markdown.chat.switchToKeyboardInput') : translate('markdown.chat.switchToVoiceInput')"
+        :aria-label="voiceMode ? translate('markdown.chat.keyboard') : translate('markdown.chat.voice')"
         @click="voiceMode = !voiceMode"
       >
         <i :class="voiceMode ? 'ri-keyboard-line' : 'ri-mic-line'"></i>
@@ -93,7 +93,7 @@
         v-model="inputText"
         class="input input-sm min-w-0 w-full"
         type="text"
-        :placeholder="translate('markdown.chat.typeAMessage')"
+        :placeholder="translate('markdown.chat.placeholder')"
       />
 
       <!-- 语音输入模式 -->

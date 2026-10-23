@@ -77,18 +77,18 @@ const KEYWORDS = "远方之森,个人博客,技术博客,独立开发,原创小�
 
 const PAGE_DESCRIPTIONS = {
   get games() { return translate('games.description'); },
-  get licenses() { return translate('pages.app.licensesAndRightsNoticesForOriginalSoftwareDependenciesFontsIcons'); },
-  get blog() { return translate('pages.app.readKomoriSTechnologyExplorationsEssaysAndReadingNotes'); },
-  get "blog-article"() { return translate('pages.app.readKomoriSBlogArticles'); },
-  get changelog() { return translate('pages.app.featureUpdatesFixesAndReleasesForKomoriSWebsite'); },
-  get announcements() { return translate('pages.app.currentAndPastWebsiteAnnouncements'); },
-  get novel() { return translate('pages.app.readKomoriSOriginalNovelOnline'); },
-  get "novel-reader"() { return translate('pages.app.readKomoriSOriginalNovelOnline2'); },
-  get tools() { return translate('pages.app.onlineToolsAndServiceLookupsByKomori'); },
-  get "server-status"() { return translate('pages.app.checkTheStatusAndDetailsOfJavaOrBedrockMinecraft'); },
-  get "sinhala-font-converter"() { return translate('pages.app.convertBetweenStandardUnicodeAndAsciiLegacyFontEncodings'); },
-  get kaiming() { return translate('pages.app.tryKaimingChinesePunctuationWithSansSerifSerifAndVariable'); },
-  get NotFound() { return translate('pages.app.theRequestedPageWasNotFound'); },
+  get licenses() { return translate('site.licensesDescription'); },
+  get blog() { return translate('site.blogDescription'); },
+  get "blog-article"() { return translate('site.articleDescription'); },
+  get changelog() { return translate('site.changelogDescription'); },
+  get announcements() { return translate('site.announcementsDescription'); },
+  get novel() { return translate('site.novelDescription'); },
+  get "novel-reader"() { return translate('site.chapterDescription'); },
+  get tools() { return translate('site.toolsDescription'); },
+  get "server-status"() { return translate('site.serverDescription'); },
+  get "sinhala-font-converter"() { return translate('site.sinhalaDescription'); },
+  get kaiming() { return translate('site.kaimingDescription'); },
+  get NotFound() { return translate('site.notFoundDescription'); },
   test: "远方之森网站的组件测试页面。",
 };
 
@@ -127,7 +127,7 @@ const pageTitle = computed(() => {
   if (routeName.value === "home") return localizeText(DEFAULT_TITLE);
   if (routeName.value === "novel-reader") return novelTitle.value;
   if (route.meta.blogList) {
-    return translate('pages.app.blogP', { p0: blogPageNumber.value });
+    return translate('site.blogPageTitle', { p0: blogPageNumber.value });
   }
   return article.value?.title
     ? `${article.value.title} | ${SITE_NAME}`
@@ -136,7 +136,7 @@ const pageTitle = computed(() => {
 
 const pageDescription = computed(() => {
   if (route.meta.blogList && blogPageNumber.value > 1) {
-    return translate('pages.app.readKomoriSTechnologyExplorationsEssaysAndReadingNotesPage', { p0: blogPageNumber.value });
+    return translate('site.blogPageDescription', { p0: blogPageNumber.value });
   }
 
   const description =
@@ -289,7 +289,7 @@ useHead(() => {
       { property: "og:image", content: SOCIAL_IMAGE },
       {
         property: "og:image:alt",
-        get content() { return translate('pages.app.komorisamSAvatar'); },
+        get content() { return translate('site.avatar'); },
       },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: pageTitle.value },

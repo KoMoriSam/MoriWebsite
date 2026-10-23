@@ -1,13 +1,13 @@
 <template>
-  <ContentPage :title="translate('pages.home.imageConverter')" :metas-label="translate('tools.imageConverter.toolInformation')">
+  <ContentPage :title="translate('image.title')" :metas-label="translate('tools.info')">
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        {{ translate('tools.imageConverter.processedInYourBrowser') }}
+        {{ translate('common.localOnly') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-stack-line" aria-hidden="true"></i>
-        {{ translate('tools.imageConverter.upTo100Files') }}
+        {{ translate('image.fileLimit') }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-image-line" aria-hidden="true"></i>
@@ -45,7 +45,7 @@
               mode="inline"
               class="size-full"
               :slides="previewSlides"
-              :aria-label="translate('tools.imageConverter.preview', { p0: selectedItem.file.name })"
+              :aria-label="translate('image.preview', { p0: selectedItem.file.name })"
             >
               <template #overlay>
                 <canvas
@@ -70,7 +70,7 @@
                 min="0"
                 :max="Math.max(0, selectedPreviewFrames.length - 1)"
                 :disabled="!selectedPreviewFrames.length"
-                :aria-label="translate('tools.imageConverter.animationFrameProgress')"
+                :aria-label="translate('image.frameProgress')"
               />
               <span class="tabular-nums"
                 >{{ previewFramePosition + 1 }}/{{
@@ -82,7 +82,7 @@
               <button
                 class="btn btn-ghost btn-sm btn-circle"
                 type="button"
-                :aria-label="translate('tools.imageConverter.previousFrame')"
+                :aria-label="translate('image.previousFrame')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="stepFrame(-1)"
               >
@@ -91,7 +91,7 @@
               <button
                 class="btn btn-ghost btn-circle"
                 type="button"
-                :aria-label="isAnimationPlaying ? translate('tools.imageConverter.pause') : translate('tools.imageConverter.play')"
+                :aria-label="isAnimationPlaying ? translate('image.pause') : translate('image.play')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="toggleAnimation"
               >
@@ -103,7 +103,7 @@
               <button
                 class="btn btn-ghost btn-sm btn-circle"
                 type="button"
-                :aria-label="translate('tools.imageConverter.nextFrame')"
+                :aria-label="translate('image.nextFrame')"
                 :disabled="!selectedPreviewFrames.length"
                 @click="stepFrame(1)"
               >
@@ -122,7 +122,7 @@
         >
           <header class="flex flex-wrap items-center justify-between gap-3">
             <hgroup>
-              <h2 class="card-title font-serif">{{ translate('tools.imageConverter.fileQueue') }}</h2>
+              <h2 class="card-title font-serif">{{ translate('image.fileQueue') }}</h2>
               <p v-if="queue.length" class="text-sm text-base-content/55">
                 {{ queueSummary }}
               </p>
@@ -131,7 +131,7 @@
               <div
                 class="tabs tabs-box tabs-sm"
                 role="tablist"
-                :aria-label="translate('tools.imageConverter.queueDisplayMode')"
+                :aria-label="translate('image.queueView')"
               >
                 <button
                   class="tab"
@@ -139,8 +139,8 @@
                   type="button"
                   role="tab"
                   :aria-selected="queueViewMode === 'detailed'"
-                  :aria-label="translate('tools.imageConverter.detailedView')"
-                  :title="translate('tools.imageConverter.detailedView')"
+                  :aria-label="translate('image.detailedView')"
+                  :title="translate('image.detailedView')"
                   @click="queueViewMode = 'detailed'"
                 >
                   <i class="ri-list-check-3" aria-hidden="true"></i>
@@ -151,8 +151,8 @@
                   type="button"
                   role="tab"
                   :aria-selected="queueViewMode === 'compact'"
-                  :aria-label="translate('tools.imageConverter.compactView')"
-                  :title="translate('tools.imageConverter.compactView')"
+                  :aria-label="translate('image.compactView')"
+                  :title="translate('image.compactView')"
                   @click="queueViewMode = 'compact'"
                 >
                   <i class="ri-list-unordered" aria-hidden="true"></i>
@@ -175,7 +175,7 @@
                       : ''
                   "
                   :aria-busy="isLoadingFiles"
-                  :aria-label="translate('tools.imageConverter.imagesToConvert')"
+                  :aria-label="translate('image.pendingImages')"
                 >
                   <li
                     v-for="item in queue"
@@ -198,7 +198,7 @@
                     <button
                       class="min-w-0 text-left focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
                       type="button"
-                      :aria-label="translate('tools.imageConverter.preview2', { p0: item.file.name })"
+                      :aria-label="translate('image.previewLabel', { p0: item.file.name })"
                       :aria-current="selectedId === item.id ? 'true' : undefined"
                       @click="selectedId = item.id"
                     >
@@ -218,10 +218,10 @@
                         {{
                           item.width
                             ? `${item.width} × ${item.height}`
-                            : translate('tools.imageConverter.readingDimensions')
+                            : translate('image.readingDimensions')
                         }}
                         <template v-if="item.frameCount > 1">
-                          · {{ item.frameCount }} {{ translate('tools.imageConverter.frames') }}</template
+                          · {{ item.frameCount }} {{ translate('image.frames') }}</template
                         >
                         · {{ formatBytes(item.file.size) }}
                         <template v-if="item.resultSize">
@@ -260,7 +260,7 @@
                     <span
                       class="flex shrink-0 items-center self-center"
                       :class="queueViewMode === 'compact' ? 'gap-0.5' : 'gap-1'"
-                      :aria-label="translate('tools.imageConverter.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
+                      :aria-label="translate('image.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
                     >
                       <span class="badge badge-outline badge-xs">{{
                         formatLabel(item.format)
@@ -301,7 +301,7 @@
                         class="btn btn-square btn-ghost"
                         :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                         type="button"
-                        :aria-label="translate('tools.imageConverter.downloadResult')"
+                        :aria-label="translate('image.downloadResult')"
                         @click.stop="downloadItem(item)"
                       >
                         <i class="ri-download-2-line" aria-hidden="true"></i>
@@ -313,7 +313,7 @@
                         class="btn btn-square btn-ghost"
                         :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                         type="button"
-                        :aria-label="translate('tools.imageConverter.convertAgain')"
+                        :aria-label="translate('image.convertAgain')"
                         @click.stop="retryItem(item)"
                       >
                         <i class="ri-restart-line" aria-hidden="true"></i>
@@ -323,7 +323,7 @@
                         :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
                         type="button"
                         :disabled="item.status === 'processing'"
-                        :aria-label="translate('tools.imageConverter.removeFile')"
+                        :aria-label="translate('image.removeFile')"
                         @click.stop="removeItem(item.id)"
                       >
                         <i class="ri-close-line" aria-hidden="true"></i>
@@ -352,7 +352,7 @@
                   aria-hidden="true"
                 ></span>
                 <span>
-                  {{ translate('tools.imageConverter.loaded') }}
+                  {{ translate('image.loaded') }}
                   <span class="tabular-nums"
                     >{{ loadedFileCount }}/{{ loadingFileTotal }}</span
                   >
@@ -383,10 +383,10 @@
                 ></i>
                 {{
                   isQueueFull
-                    ? translate('tools.imageConverter.theQueueIsFull')
+                    ? translate('image.queueFull')
                     : dragging
-                      ? translate('tools.imageConverter.dropFilesHere')
-                      : translate('tools.imageConverter.dropOrAddMoreImages')
+                      ? translate('common.dropHint')
+                      : translate('image.addMore')
                 }}
                 <input
                   class="sr-only"
@@ -410,13 +410,13 @@
                       class="loading loading-spinner loading-xs"
                       aria-hidden="true"
                     ></span>
-                    {{ translate('tools.imageConverter.converting') }}
+                    {{ translate('image.converting') }}
                     <span class="inline-block w-[4ch] text-right tabular-nums">
                       {{ conversionProgress }}%
                     </span>
                   </template>
                   <template v-else>
-                    <i class="ri-file-zip-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.downloadAll') }}
+                    <i class="ri-file-zip-line" aria-hidden="true"></i>{{ translate('image.downloadAll') }}
                   </template>
                 </button>
                 <button
@@ -427,7 +427,7 @@
                   "
                   @click="resetQueue"
                 >
-                  <i class="ri-refresh-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.resetStatus') }}
+                  <i class="ri-refresh-line" aria-hidden="true"></i>{{ translate('image.resetStatus') }}
                 </button>
                 <button
                   class="btn btn-sm"
@@ -435,7 +435,7 @@
                   :disabled="isRunning || isLoadingFiles"
                   @click="clearQueue"
                 >
-                  <i class="ri-delete-bin-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.clear') }}
+                  <i class="ri-delete-bin-line" aria-hidden="true"></i>{{ translate('image.clear') }}
                 </button>
               </div>
             </div>
@@ -459,10 +459,10 @@
               </span>
               <div>
                 <h3 class="font-serif text-lg font-bold">
-                  {{ dragging ? translate('tools.imageConverter.dropFilesHere') : translate('tools.imageConverter.dropImagesHere') }}
+                  {{ dragging ? translate('common.dropHint') : translate('image.dropImagesHere') }}
                 </h3>
                 <p class="mt-1 text-sm text-base-content/60">
-                  {{ translate('tools.imageConverter.previewAddedFilesAboveAndManageTheConversionQueueHere') }}
+                  {{ translate('image.queueHint') }}
                 </p>
               </div>
               <label
@@ -481,7 +481,7 @@
                   "
                   aria-hidden="true"
                 ></i>
-                {{ dragging ? translate('tools.imageConverter.addImages') : translate('tools.imageConverter.chooseImages') }}
+                {{ dragging ? translate('image.addImages') : translate('image.chooseImages') }}
                 <input
                   class="sr-only"
                   type="file"
@@ -499,7 +499,7 @@
       <fieldset
         class="fieldset rounded-box border border-base-300 bg-base-100 p-4 md:sticky md:top-4 md:col-start-2 md:row-span-2 md:row-start-1"
       >
-        <legend class="fieldset-legend p-0">{{ translate('tools.imageConverter.conversionSettings') }}</legend>
+        <legend class="fieldset-legend p-0">{{ translate('image.settings') }}</legend>
 
         <div class="flex min-h-0 flex-col gap-1.5 md:max-h-[calc(100dvh-5rem)]">
           <div class="grid shrink-0 grid-cols-4 gap-x-4 gap-y-3">
@@ -516,7 +516,7 @@
                     : 'col-span-4'
               "
             >
-              <label class="label" for="format">{{ translate('tools.imageConverter.outputFormat') }}</label>
+              <label class="label" for="format">{{ translate('image.outputFormat') }}</label>
               <select
                 id="format"
                 v-model="settings.format"
@@ -538,11 +538,11 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="quality">
-                <span>{{ translate('tools.imageConverter.quality') }}</span>
+                <span>{{ translate('image.quality') }}</span>
                 <span class="tabular-nums">
                   {{
                     settings.format !== "jpeg" && settings.lossless
-                      ? translate('tools.imageConverter.lossless')
+                      ? translate('image.lossless')
                       : settings.quality
                   }}
                 </span>
@@ -564,9 +564,9 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="png-level">
-                <span v-if="!settings.pngOptimize">{{ translate('tools.imageConverter.optimizationDisabled') }}</span>
+                <span v-if="!settings.pngOptimize">{{ translate('image.optimizationDisabled') }}</span>
                 <span v-else>
-                  {{ translate('tools.imageConverter.optimizationLevel') }}
+                  {{ translate('image.optimizationLevel') }}
                   <span class="tabular-nums">{{ settings.pngLevel }}</span>
                 </span>
               </label>
@@ -585,7 +585,7 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="gif-colors">
-                <span>{{ translate('tools.imageConverter.paletteColors') }}</span>
+                <span>{{ translate('image.paletteColors') }}</span>
                 <span class="tabular-nums">{{ settings.gifColors }}</span>
               </label>
               <input
@@ -610,15 +610,15 @@
                   : 'col-span-2'
               "
             >
-              <label class="label" for="animation-mode">{{ translate('tools.imageConverter.animationSource') }}</label>
+              <label class="label" for="animation-mode">{{ translate('image.animationSource') }}</label>
               <select
                 id="animation-mode"
                 v-model="settings.animationMode"
                 class="select max-sm:select-sm w-full"
                 :disabled="isRunning"
               >
-                <option value="frames">{{ translate('tools.imageConverter.exportFramesAsZip') }}</option>
-                <option value="first">{{ translate('tools.imageConverter.firstFrameOnly') }}</option>
+                <option value="frames">{{ translate('image.exportFramesAsZip') }}</option>
+                <option value="first">{{ translate('image.firstFrameOnly') }}</option>
               </select>
             </div>
             <div
@@ -633,7 +633,7 @@
               "
             >
               <label class="label" for="background-color">
-                {{ translate('tools.imageConverter.transparencyFill') }}
+                {{ translate('image.transparencyFill') }}
                 <span class="font-mono text-xs">
                   {{ settings.backgroundColor }}
                 </span>
@@ -648,7 +648,7 @@
           </div>
 
           <div class="grid shrink-0 gap-2 [&>*+.label]:mt-2">
-            <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.moreSettings') }}</div>
+            <div class="divider mt-2 mb-0">{{ translate('common.moreSettings') }}</div>
 
             <div class="grid gap-3 sm:gap-6 grid-flow-col auto-cols-fr">
               <label
@@ -663,7 +663,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('tools.imageConverter.losslessCompression') }}
+                {{ translate('image.losslessCompression') }}
               </label>
 
               <label
@@ -678,7 +678,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('tools.imageConverter.losslessOptimization') }}
+                {{ translate('image.losslessOptimization') }}
               </label>
 
               <label class="label" for="resize">
@@ -689,7 +689,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('tools.imageConverter.resize') }}
+                {{ translate('image.resize') }}
               </label>
 
               <label class="label" for="watermark">
@@ -700,7 +700,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('tools.imageConverter.addWatermark') }}
+                {{ translate('image.addWatermark') }}
               </label>
             </div>
           </div>
@@ -714,12 +714,12 @@
                 class="grid gap-1"
                 aria-labelledby="resize-settings"
               >
-                <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.sizeSettings') }}</div>
+                <div class="divider mt-2 mb-0">{{ translate('image.sizeSettings') }}</div>
                 <div
                   class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2"
                 >
                   <div class="min-w-0">
-                    <label class="label" for="resize-width">{{ translate('tools.imageConverter.width') }}</label>
+                    <label class="label" for="resize-width">{{ translate('image.width') }}</label>
                     <label class="input max-sm:input-sm w-full">
                       <input
                         id="resize-width"
@@ -741,8 +741,8 @@
                     for="resize-lock-aspect-ratio"
                     :data-tip="
                       settings.resize.lockAspectRatio
-                        ? translate('tools.imageConverter.aspectRatioLocked')
-                        : translate('tools.imageConverter.aspectRatioUnlocked')
+                        ? translate('image.aspectRatioLocked')
+                        : translate('image.aspectRatioUnlocked')
                     "
                   >
                     <button
@@ -755,14 +755,14 @@
                       type="button"
                       :aria-label="
                         settings.resize.lockAspectRatio
-                          ? translate('tools.imageConverter.unlockAspectRatio')
-                          : translate('tools.imageConverter.lockOriginalAspectRatio')
+                          ? translate('image.unlockAspectRatio')
+                          : translate('image.lockOriginalAspectRatio')
                       "
                       :aria-pressed="settings.resize.lockAspectRatio"
                       :title="
                         settings.resize.lockAspectRatio
-                          ? translate('tools.imageConverter.aspectRatioLocked')
-                          : translate('tools.imageConverter.aspectRatioUnlocked')
+                          ? translate('image.aspectRatioLocked')
+                          : translate('image.aspectRatioUnlocked')
                       "
                       :disabled="isRunning"
                       @click="toggleResizeAspectRatio"
@@ -778,7 +778,7 @@
                     </button>
                   </label>
                   <div class="min-w-0">
-                    <label class="label" for="resize-height">{{ translate('tools.imageConverter.height') }}</label>
+                    <label class="label" for="resize-height">{{ translate('image.height') }}</label>
                     <label class="input max-sm:input-sm w-full">
                       <input
                         id="resize-height"
@@ -803,11 +803,11 @@
                     type="checkbox"
                     :disabled="isRunning"
                   />
-                  {{ translate('tools.imageConverter.doNotEnlargeBeyondTheOriginalSize') }}
+                  {{ translate('image.limitSize') }}
                 </label>
               </section>
               <div v-show="watermark.enabled" class="grid gap-1">
-                <div class="divider mt-2 mb-0">{{ translate('tools.imageConverter.watermarkSettings') }}</div>
+                <div class="divider mt-2 mb-0">{{ translate('image.watermarkSettings') }}</div>
                 <section class="grid gap-y-2">
                   <div
                     class="grid grid-cols-[minmax(0,1fr)_auto] justify-between gap-x-3 gap-y-2"
@@ -817,7 +817,7 @@
                       :class="watermark.mode === 'single' ? '' : 'col-span-2'"
                     >
                       <label for="watermark-content" class="label"
-                        >{{ translate('tools.imageConverter.watermarkContent') }}</label
+                        >{{ translate('image.watermarkContent') }}</label
                       >
                       <div
                         id="watermark-content"
@@ -838,7 +838,7 @@
                             :disabled="isRunning"
                             @change="setWatermarkTextEnabled($event)"
                           />
-                          {{ translate('tools.imageConverter.text') }}
+                          {{ translate('image.text') }}
                         </label>
                         <label class="label" for="watermark-image-toggle">
                           <input
@@ -860,7 +860,7 @@
                             :disabled="isRunning"
                             @change="setWatermarkGraphicEnabled('icon', $event)"
                           />
-                          {{ translate('tools.imageConverter.icon') }}
+                          {{ translate('image.icon') }}
                         </label>
                       </div>
                     </div>
@@ -868,11 +868,11 @@
                       v-if="watermark.mode === 'single'"
                       class="row-span-2 min-w-0 border-l border-base-300 pl-3"
                     >
-                      <span class="label">{{ translate('tools.imageConverter.position') }}</span>
+                      <span class="label">{{ translate('image.position') }}</span>
                       <div
                         class="grid w-fit grid-cols-3 gap-1"
                         role="radiogroup"
-                        :aria-label="translate('tools.imageConverter.watermarkPosition')"
+                        :aria-label="translate('image.watermarkPosition')"
                       >
                         <input
                           v-for="position in watermarkPositions"
@@ -898,15 +898,15 @@
                         watermark.mode === 'single' ? 'col-start-1' : 'col-span-2'
                       "
                     >
-                      <label class="label" for="watermark-mode">{{ translate('tools.imageConverter.arrangement') }}</label>
+                      <label class="label" for="watermark-mode">{{ translate('image.arrangement') }}</label>
                       <select
                         id="watermark-mode"
                         v-model="watermark.mode"
                         class="select max-sm:select-sm w-full"
                         :disabled="isRunning"
                       >
-                        <option value="single">{{ translate('tools.imageConverter.single') }}</option>
-                        <option value="tile">{{ translate('tools.imageConverter.tile') }}</option>
+                        <option value="single">{{ translate('image.single') }}</option>
+                        <option value="tile">{{ translate('image.tile') }}</option>
                       </select>
                     </div>
                   </div>
@@ -915,19 +915,19 @@
                     class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                   >
                     <div class="min-w-0">
-                      <label class="label" for="watermark-text">{{ translate('tools.imageConverter.text2') }}</label>
+                      <label class="label" for="watermark-text">{{ translate('common.text') }}</label>
                       <input
                         id="watermark-text"
                         v-model="watermark.text"
                         class="input max-sm:input-sm w-full"
                         type="text"
                         maxlength="80"
-                        :placeholder="translate('tools.imageConverter.enterWatermarkText')"
+                        :placeholder="translate('image.enterWatermarkText')"
                         :disabled="isRunning"
                       />
                     </div>
                     <div>
-                      <label class="label" for="watermark-text-color">{{ translate('tools.imageConverter.color') }}</label>
+                      <label class="label" for="watermark-text-color">{{ translate('image.color') }}</label>
                       <input
                         id="watermark-text-color"
                         v-model="watermark.color"
@@ -945,13 +945,13 @@
                       v-model:fallback-font-id="watermark.fallbackFontId"
                       :website-fonts="websiteWatermarkFonts"
                       :disabled="isRunning"
-                      :aria-label="translate('tools.imageConverter.watermarkFont')"
+                      :aria-label="translate('image.watermarkFont')"
                     />
                   </div>
                   <div v-if="watermarkNeedsGraphic()" class="min-w-0">
                     <div v-if="usesWatermarkImageFile()">
                       <label class="label" for="watermark-graphic-image">
-                        {{ translate('tools.imageConverter.imageSiteIconByDefault') }}
+                        {{ translate('image.defaultIcon') }}
                       </label>
                       <input
                         id="watermark-graphic-image"
@@ -972,7 +972,7 @@
                         class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                       >
                         <div class="min-w-0">
-                          <span class="label">{{ translate('tools.imageConverter.iconPicker') }}</span>
+                          <span class="label">{{ translate('image.iconPicker') }}</span>
                           <button
                             class="select max-sm:select-sm w-full justify-start font-normal"
                             popovertarget="watermark-icon-picker"
@@ -990,7 +990,7 @@
                         </div>
                         <div v-if="!watermarkContainsText()">
                           <label class="label" for="watermark-graphic-color">
-                            {{ translate('tools.imageConverter.color') }}
+                            {{ translate('image.color') }}
                           </label>
                           <input
                             id="watermark-graphic-color"
@@ -1021,15 +1021,15 @@
                             v-model.trim="iconSearch"
                             class="input input-sm w-full"
                             type="search"
-                            :placeholder="translate('tools.imageConverter.searchNamesOrKeywords')"
-                            :aria-label="translate('tools.imageConverter.searchRemixIconNamesOrKeywords')"
+                            :placeholder="translate('image.iconSearch')"
+                            :aria-label="translate('image.iconSearchLabel')"
                           />
                           <select
                             v-model="remixIconCategory"
                             class="select select-sm w-full"
-                            :aria-label="translate('tools.imageConverter.remixIconCategories')"
+                            :aria-label="translate('image.iconCategories')"
                           >
-                            <option value="all">{{ translate('tools.imageConverter.allCategories') }}</option>
+                            <option value="all">{{ translate('image.allCategories') }}</option>
                             <option
                               v-for="category in remixIconCategories"
                               :key="category.value"
@@ -1043,7 +1043,7 @@
                           <div
                             class="grid max-h-52 grid-cols-6 gap-1 overflow-x-hidden overflow-y-auto overscroll-contain"
                             role="listbox"
-                            :aria-label="translate('tools.imageConverter.remixIconIcons')"
+                            :aria-label="translate('image.icons')"
                             @scroll.passive="hideIconTooltip(true)"
                           >
                             <button
@@ -1072,7 +1072,7 @@
                           v-else
                           class="py-4 text-center text-sm text-base-content/55"
                         >
-                          {{ translate('tools.imageConverter.noMatchingIcons') }}
+                          {{ translate('image.noMatchingIcons') }}
                         </p>
                       </div>
                       <div
@@ -1099,7 +1099,7 @@
                   <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1">
                     <div class="min-w-0">
                       <label class="label" for="watermark-opacity">
-                        <span>{{ translate('tools.imageConverter.opacity') }}</span>
+                        <span>{{ translate('image.opacity') }}</span>
                         <span class="tabular-nums">
                           {{ Math.round(watermark.opacity * 100) }}%
                         </span>
@@ -1117,7 +1117,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-scale">
-                        <span>{{ translate('tools.imageConverter.scale') }}</span>
+                        <span>{{ translate('image.scale') }}</span>
                         <span class="tabular-nums">
                           {{ Math.round(watermark.scale * 100) }}%
                         </span>
@@ -1135,7 +1135,7 @@
                     </div>
                     <div v-if="watermark.mode === 'single'" class="min-w-0">
                       <label class="label" for="watermark-margin">
-                        <span>{{ translate('tools.imageConverter.margin') }}</span>
+                        <span>{{ translate('image.margin') }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.margin }} px</span
                         >
@@ -1152,7 +1152,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-offset-x">
-                        <span>{{ translate('tools.imageConverter.xOffset') }}</span>
+                        <span>{{ translate('image.xOffset') }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.offsetX }} px</span
                         >
@@ -1169,7 +1169,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-offset-y">
-                        <span>{{ translate('tools.imageConverter.yOffset') }}</span>
+                        <span>{{ translate('image.yOffset') }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.offsetY }} px</span
                         >
@@ -1186,7 +1186,7 @@
                     </div>
                     <div v-if="watermark.mode === 'tile'" class="min-w-0">
                       <label class="label" for="watermark-gap">
-                        <span>{{ translate('tools.imageConverter.spacing') }}</span>
+                        <span>{{ translate('image.spacing') }}</span>
                         <span class="tabular-nums">{{ watermark.gap }} px</span>
                       </label>
                       <input
@@ -1201,7 +1201,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-rotation">
-                        <span>{{ translate('tools.imageConverter.rotation') }}</span>
+                        <span>{{ translate('image.rotation') }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.rotation }}°</span
                         >
@@ -1217,7 +1217,7 @@
                         :disabled="isRunning"
                       />
                     </div>
-                    <label class="label" for="watermark-other">{{ translate('tools.imageConverter.otherSettings') }}</label>
+                    <label class="label" for="watermark-other">{{ translate('image.otherSettings') }}</label>
                     <div class="min-w-0" id="watermark-other">
                       <label class="label" for="watermark-shadow">
                         <input
@@ -1227,7 +1227,7 @@
                           type="checkbox"
                           :disabled="isRunning"
                         />
-                        {{ translate('tools.imageConverter.watermarkShadow') }}
+                        {{ translate('image.watermarkShadow') }}
                       </label>
                     </div>
                   </div>
@@ -1243,7 +1243,7 @@
               type="button"
               @click="cancelConversion"
             >
-              <i class="ri-stop-circle-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.cancelConversion') }}
+              <i class="ri-stop-circle-line" aria-hidden="true"></i>{{ translate('image.cancelConversion') }}
             </button>
             <button
               v-else
@@ -1252,7 +1252,7 @@
               :disabled="!queue.length || !readyItems.length || isLoadingFiles"
               @click="startConversion"
             >
-              <i class="ri-magic-line" aria-hidden="true"></i>{{ translate('tools.imageConverter.startConversion') }}
+              <i class="ri-magic-line" aria-hidden="true"></i>{{ translate('image.startConversion') }}
             </button>
           </div>
         </div>
@@ -1325,26 +1325,26 @@ const FEATURED_REMIX_ICONS = [
   "ri-shield-check-line",
 ];
 const REMIX_ICON_CATEGORY_LABELS = {
-  get Arrows() { return translate('tools.imageConverter.arrows'); },
-  get Buildings() { return translate('tools.imageConverter.buildings'); },
-  get Business() { return translate('tools.imageConverter.business'); },
-  get Communication() { return translate('tools.imageConverter.communication'); },
-  get Design() { return translate('tools.imageConverter.design'); },
-  get Development() { return translate('tools.imageConverter.development'); },
-  get Device() { return translate('tools.imageConverter.devices'); },
-  get Document() { return translate('tools.imageConverter.documents'); },
-  get Editor() { return translate('tools.imageConverter.editing'); },
-  get Finance() { return translate('tools.imageConverter.finance'); },
-  get Food() { return translate('tools.imageConverter.foodDrink'); },
-  get "Game & Sports"() { return translate('tools.imageConverter.gamesSports'); },
-  get "Health & Medical"() { return translate('tools.imageConverter.healthMedical'); },
-  get Logos() { return translate('tools.imageConverter.brandLogos'); },
-  get Map() { return translate('tools.imageConverter.maps'); },
-  get Media() { return translate('tools.imageConverter.media'); },
-  get System() { return translate('tools.imageConverter.system'); },
-  get "User & Faces"() { return translate('tools.imageConverter.usersEmoji'); },
-  get Weather() { return translate('tools.imageConverter.weather'); },
-  get Others() { return translate('pages.changelog.other'); },
+  get Arrows() { return translate('image.arrows'); },
+  get Buildings() { return translate('image.buildings'); },
+  get Business() { return translate('image.business'); },
+  get Communication() { return translate('image.communication'); },
+  get Design() { return translate('image.design'); },
+  get Development() { return translate('image.development'); },
+  get Device() { return translate('image.devices'); },
+  get Document() { return translate('common.documents'); },
+  get Editor() { return translate('image.editing'); },
+  get Finance() { return translate('image.finance'); },
+  get Food() { return translate('image.foodDrink'); },
+  get "Game & Sports"() { return translate('image.gamesSports'); },
+  get "Health & Medical"() { return translate('image.healthMedical'); },
+  get Logos() { return translate('image.brandLogos'); },
+  get Map() { return translate('image.maps'); },
+  get Media() { return translate('image.media'); },
+  get System() { return translate('image.system'); },
+  get "User & Faces"() { return translate('image.usersEmoji'); },
+  get Weather() { return translate('image.weather'); },
+  get Others() { return translate('changelog.other'); },
 };
 const REMIX_ICON_TAG_INDEX = new Map();
 for (const [category, icons] of Object.entries(remixIconTags)) {
@@ -1616,7 +1616,7 @@ const hasQualityControl = computed(() =>
 const staticOutput = computed(() => !["gif", "webp"].includes(settings.format));
 const queueSummary = computed(
   () =>
-    translate('tools.imageConverter.filesCompleted', { p0: queue.value.length, p1: successfulItems.value.length, p2: queue.value.some((item) => item.status === "error") ? translate('tools.imageConverter.includesFailedItems') : "" }),
+    translate('image.filesCompleted', { p0: queue.value.length, p1: successfulItems.value.length, p2: queue.value.some((item) => item.status === "error") ? translate('image.failedSuffix') : "" }),
 );
 
 watch(
@@ -1779,7 +1779,7 @@ async function resolveWatermarkFont(
   fallbackFontId = watermark.fallbackFontId,
 ) {
   const selector = watermarkFontSelect.value;
-  if (!selector) throw new Error(translate('tools.imageConverter.theFontPickerIsNotReady'));
+  if (!selector) throw new Error(translate('image.fontNotReady'));
   return selector.resolveFont(fontId, text, 600, fallbackFontId);
 }
 
@@ -1881,7 +1881,7 @@ function loadSvgWatermarkImage(blob) {
       image.decoding = "async";
       await new Promise((resolve, reject) => {
         image.onload = resolve;
-        image.onerror = () => reject(new Error(translate('tools.imageConverter.cannotReadTheSvgWatermark')));
+        image.onerror = () => reject(new Error(translate('image.svgReadFailed')));
         image.src = url;
       });
       if (aspectRatio) {
@@ -1927,9 +1927,9 @@ function rasterizeSvgWatermark(blob, size, scale) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * density));
     canvas.height = Math.max(1, Math.ceil(stampHeight * density));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateAnSvgWatermark'));
+    if (!context) throw new Error(translate('image.svgUnsupported'));
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvasToBlob(canvas, translate('tools.imageConverter.cannotGenerateTheSvgWatermark'));
+    return canvasToBlob(canvas, translate('image.svgFailed'));
   })();
   cache.set(key, promise);
   while (cache.size > 3) cache.delete(cache.keys().next().value);
@@ -1954,7 +1954,7 @@ async function renderRemixIconBlob(icon, color) {
     element.remove();
   }
   if (!content || ["none", "normal"].includes(content))
-    throw new Error(translate('tools.imageConverter.cannotReadRemixIcon'));
+    throw new Error(translate('image.iconReadFailed'));
   const glyph = content
     .replace(/^['"]|['"]$/g, "")
     .replace(/\\([0-9a-f]{1,6})\s?/gi, (_, code) =>
@@ -1979,7 +1979,7 @@ async function renderRemixIconBlob(icon, color) {
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
-        blob ? resolve(blob) : reject(new Error(translate('tools.imageConverter.cannotGenerateRemixIcon'))),
+        blob ? resolve(blob) : reject(new Error(translate('image.iconFailed'))),
       "image/png",
     ),
   );
@@ -2119,7 +2119,7 @@ async function createTextWatermarkStamp(size, config) {
     const fontSize = Math.round(calculateWatermarkBaseSize(size, config.scale));
     const measureCanvas = document.createElement("canvas");
     const measureContext = measureCanvas.getContext("2d");
-    if (!measureContext) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateATextWatermark'));
+    if (!measureContext) throw new Error(translate('image.textUnsupported'));
     measureContext.font = `${weight} ${fontSize}px ${family}`;
     const metrics = measureContext.measureText(text);
     const textLeft = Math.max(0, metrics.actualBoundingBoxLeft || 0);
@@ -2166,7 +2166,7 @@ async function createTextWatermarkStamp(size, config) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * renderScale));
     canvas.height = Math.max(1, Math.ceil(stampHeight * renderScale));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error(translate('tools.imageConverter.yourBrowserCannotCreateATextWatermark'));
+    if (!context) throw new Error(translate('image.textUnsupported'));
     context.font = `${weight} ${fontSize * renderScale}px ${family}`;
     context.textBaseline = "alphabetic";
     context.fillStyle = config.color || "#ffffff";
@@ -2184,7 +2184,7 @@ async function createTextWatermarkStamp(size, config) {
       (padding + graphicWidth + contentGap + textLeft) * renderScale,
       (padding + (contentHeight - textHeight) / 2 + textAscent) * renderScale,
     );
-    const blob = await canvasToBlob(canvas, translate('tools.imageConverter.cannotGenerateTheTextWatermark'));
+    const blob = await canvasToBlob(canvas, translate('image.textFailed'));
     return { blob, width: stampWidth, height: stampHeight };
   } finally {
     graphic?.close?.();
@@ -2220,7 +2220,7 @@ async function addFiles(fileList) {
   const available = MAX_FILES - queue.value.length;
   const files = [...fileList].slice(0, Math.max(0, available));
   if (fileList.length > available)
-    toast.warning(translate('tools.imageConverter.upToFilesPerBatchExtraFilesWereNotAdded', { p0: MAX_FILES }));
+    toast.warning(translate('image.batchLimit', { p0: MAX_FILES }));
   if (!files.length) return;
   isLoadingFiles.value = true;
   loadedFileCount.value = 0;
@@ -2231,7 +2231,7 @@ async function addFiles(fileList) {
         await addFile(file);
       } catch (error) {
         toast.error(
-          `${file.name}：${error instanceof Error ? error.message : translate('tools.imageConverter.cannotReadTheFile')}`,
+          `${file.name}：${error instanceof Error ? error.message : translate('image.fileReadFailed')}`,
         );
       } finally {
         loadedFileCount.value += 1;
@@ -2246,7 +2246,7 @@ async function addFile(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const format = detectImageFormat(bytes);
   if (!format) {
-    toast.error(translate('tools.imageConverter.isNotASupportedImageFormat', { p0: file.name }));
+    toast.error(translate('image.unsupportedFormat', { p0: file.name }));
     return;
   }
   const item = {
@@ -2291,7 +2291,7 @@ async function addFile(file) {
       Object.assign(queueItem, {
         status: "error",
         message: "",
-        messageDescriptor: { key: 'tools.imageConverter.estimatedDecodingMemoryExceedsTheDeviceLimit', params: { p0: formatBytes(estimated), p1: formatBytes(limit) } },
+        messageDescriptor: { key: 'image.memoryLimit', params: { p0: formatBytes(estimated), p1: formatBytes(limit) } },
       });
     else {
       if (queueItem.frameCount > 1) {
@@ -2304,7 +2304,7 @@ async function addFile(file) {
   } catch (error) {
     Object.assign(queueItem, {
       status: "error",
-      message: error instanceof Error ? error.message : translate('tools.imageConverter.cannotReadTheImage'),
+      message: error instanceof Error ? error.message : translate('image.imageReadFailed'),
     });
   }
 }
@@ -2344,7 +2344,7 @@ async function readMetadata(file, format, bytes) {
     if (image) dimensions = { width: image.width, height: image.height };
   }
   if (!dimensions?.width || !dimensions?.height)
-    throw new Error(translate('tools.imageConverter.cannotReadImageDimensions'));
+    throw new Error(translate('image.dimensionsFailed'));
   const { width, height } = dimensions;
   let frameCount = 1;
   let animated = false;
@@ -2365,7 +2365,7 @@ async function readMetadata(file, format, bytes) {
 async function startConversion() {
   if (!worker.value || isRunning.value) return;
   if (watermark.enabled && usesWatermarkImageFile() && !watermark.file) {
-    toast.warning(translate('tools.imageConverter.chooseAWatermarkImageFirst'));
+    toast.warning(translate('image.watermarkRequired'));
     return;
   }
   isRunning.value = true;
@@ -2378,10 +2378,10 @@ async function startConversion() {
   const cancelled = batch.filter((item) => item.status === "cancelled").length;
   isRunning.value = false;
   currentJobId.value = null;
-  if (cancelled) toast.info(translate('tools.imageConverter.conversionCanceled'));
-  else if (failed === batch.length) toast.error(translate('tools.imageConverter.allConversionsInThisBatchFailed'));
-  else if (failed) toast.warning(translate('tools.imageConverter.conversionFinishedFilesFailed', { p0: failed }));
-  else if (batch.length) toast.success(translate('tools.imageConverter.imageConversionFinished'));
+  if (cancelled) toast.info(translate('image.cancelNotice'));
+  else if (failed === batch.length) toast.error(translate('image.batchFailed'));
+  else if (failed) toast.warning(translate('image.partialFailure', { p0: failed }));
+  else if (batch.length) toast.success(translate('image.doneNotice'));
 }
 
 async function convertItem(item) {
@@ -2500,7 +2500,7 @@ function onWorkerMessage({ data }) {
   pendingJobs.delete(data.jobId);
   if (["result", "previewResult"].includes(data.type)) pending.resolve(data);
   else if (data.type === "cancelled")
-    pending.reject(new DOMException(translate('tools.imageConverter.canceled'), "AbortError"));
+    pending.reject(new DOMException(translate('image.canceled'), "AbortError"));
   else pending.reject(Object.assign(new Error(data.message || "转换失败"), { uiMessage: data.errorMessage }));
 }
 
@@ -2510,7 +2510,7 @@ function onWorkerError(event) {
     : null;
   if (pending) {
     pendingJobs.delete(currentJobId.value);
-    pending.reject(new Error(event.message || translate('tools.imageConverter.imageProcessingWorkerFailed')));
+    pending.reject(new Error(event.message || translate('image.workerFailed')));
   }
 }
 
@@ -2813,18 +2813,18 @@ function targetFormatBadgeClass(item) {
 function savingsLabel(item) {
   const rate = (1 - item.resultSize / item.file.size) * 100;
   return rate >= 0
-    ? translate('tools.imageConverter.saved', { p0: rate.toFixed(1) })
-    : translate('tools.imageConverter.increased', { p0: Math.abs(rate).toFixed(1) });
+    ? translate('image.saved', { p0: rate.toFixed(1) })
+    : translate('image.increased', { p0: Math.abs(rate).toFixed(1) });
 }
 function statusLabel(status) {
   return (
     {
-      get reading() { return translate('tools.imageConverter.reading'); },
-      get ready() { return translate('tools.imageConverter.waitingToConvert'); },
-      get processing() { return translate('tools.imageConverter.processing'); },
-      get done() { return translate('tools.imageConverter.completed'); },
-      get error() { return translate('tools.imageConverter.failed'); },
-      get cancelled() { return translate('tools.imageConverter.canceled'); },
+      get reading() { return translate('image.reading'); },
+      get ready() { return translate('image.waitingToConvert'); },
+      get processing() { return translate('image.processing'); },
+      get done() { return translate('image.completed'); },
+      get error() { return translate('image.failed'); },
+      get cancelled() { return translate('image.canceled'); },
     }[status] || status
   );
 }
@@ -2840,15 +2840,15 @@ function statusIcon(status) {
 }
 function positionLabel(position) {
   return {
-    get "top-left"() { return translate('tools.imageConverter.topLeft'); },
-    get "top-center"() { return translate('tools.imageConverter.topCenter'); },
-    get "top-right"() { return translate('tools.imageConverter.topRight'); },
-    get "center-left"() { return translate('tools.imageConverter.centerLeft'); },
-    get "center-center"() { return translate('tools.imageConverter.center'); },
-    get "center-right"() { return translate('tools.imageConverter.centerRight'); },
-    get "bottom-left"() { return translate('tools.imageConverter.bottomLeft'); },
-    get "bottom-center"() { return translate('tools.imageConverter.bottomCenter'); },
-    get "bottom-right"() { return translate('tools.imageConverter.bottomRight'); },
+    get "top-left"() { return translate('image.topLeft'); },
+    get "top-center"() { return translate('image.topCenter'); },
+    get "top-right"() { return translate('image.topRight'); },
+    get "center-left"() { return translate('image.centerLeft'); },
+    get "center-center"() { return translate('image.center'); },
+    get "center-right"() { return translate('image.centerRight'); },
+    get "bottom-left"() { return translate('image.bottomLeft'); },
+    get "bottom-center"() { return translate('image.bottomCenter'); },
+    get "bottom-right"() { return translate('image.bottomRight'); },
   }[position];
 }
 function baseName(name) {

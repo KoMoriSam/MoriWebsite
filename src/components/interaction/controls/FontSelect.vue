@@ -47,8 +47,8 @@
           v-model="fontSearchQuery"
           type="search"
           class="input input-sm w-full"
-          :aria-label="translate('common.fontSelect.searchFonts')"
-          :placeholder="translate('common.fontSelect.searchFonts')"
+          :aria-label="translate('common.fontSelect.search')"
+          :placeholder="translate('common.fontSelect.search')"
           @keydown.stop
         />
       </div>
@@ -65,7 +65,7 @@
           <span class="px-3">{{ group.label }}</span>
           <span
             class="border-base-200 flex self-stretch items-center justify-center border-l text-[0.625rem]"
-            :title="translate('common.fontSelect.defaultFallbackFont')"
+            :title="translate('common.fontSelect.defaultFallback')"
           >
             {{ translate('common.fontSelect.fallback') }}
           </span>
@@ -112,7 +112,7 @@
               :name="fallbackRadioName"
               :value="font.id"
               :checked="effectiveFallbackFontId === font.id"
-              :aria-label="translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label })"
+              :aria-label="translate('common.fontSelect.setFallback', { p0: font.label })"
               :disabled="disabled"
               @change="selectFallbackFont(font.id)"
             />
@@ -120,11 +120,11 @@
         </div>
       </div>
 
-      <div role="group" :aria-label="translate('common.fontSelect.customFonts')">
+      <div role="group" :aria-label="translate('common.fontSelect.custom')">
         <div
           class="bg-base-100 border-b border-base-200 sticky -top-1 z-10 px-3 py-1.5 text-xs leading-4 font-medium text-base-content/55"
         >
-          {{ translate('common.fontSelect.customFonts') }}
+          {{ translate('common.fontSelect.custom') }}
         </div>
         <button
           v-for="font in filteredUploadedFonts"
@@ -165,7 +165,7 @@
           ></span>
           <i v-else class="ri-upload-2-line" aria-hidden="true"></i>
           <span class="ml-0.5">{{
-            isUploadingFont ? translate('common.fontSelect.loadingFont') : translate('common.fontSelect.uploadFont')
+            isUploadingFont ? translate('common.fontSelect.loadingLabel') : translate('common.fontSelect.upload')
           }}</span>
           <span
             v-if="uploadHint"
@@ -275,7 +275,7 @@
             {{
               showLocalFontLoading && localFontLoadingPhase === "more"
                 ? translate('common.fontSelect.loading', { p0: virtualGroup.label })
-                : translate('common.fontSelect.scrollDownToLoadMore')
+                : translate('common.fontSelect.loadMore')
             }}
           </span>
         </button>
@@ -286,7 +286,7 @@
         class="px-3 py-2 text-sm text-base-content/55"
         role="status"
       >
-        {{ translate('common.fontSelect.noMatchingFonts') }}
+        {{ translate('common.fontSelect.noMatches') }}
       </p>
       <div
         ref="fallbackTooltip"
@@ -585,11 +585,11 @@ const loadedFontFaces = new Map();
 const pendingFontLoads = new Map();
 
 const fontGroups = computed(() => [
-  { id: "uploaded", get label() { return translate('common.fontSelect.uploadFont'); }, fonts: uploadedFonts.value },
-  { id: "website", get label() { return translate('common.fontSelect.siteFonts'); }, fonts: props.websiteFonts },
+  { id: "uploaded", get label() { return translate('common.fontSelect.upload'); }, fonts: uploadedFonts.value },
+  { id: "website", get label() { return translate('common.fontSelect.site'); }, fonts: props.websiteFonts },
   {
     id: "device",
-    get label() { return translate('common.fontSelect.deviceFonts'); },
+    get label() { return translate('common.fontSelect.device'); },
     fonts: localFonts.value,
     virtual: true,
     hasMore: pendingLocalFontCount.value > 0,
@@ -670,7 +670,7 @@ const selectedFont = computed(() =>
 );
 const selectedFontStyle = computed(() => fontPreviewStyle(selectedFont.value));
 const selectedFontLabel = computed(() =>
-  selectedFont.value ? selectedFont.value.label : translate('common.fontSelect.chooseFont'),
+  selectedFont.value ? selectedFont.value.label : translate('common.fontSelect.choose'),
 );
 const effectiveFallbackFontId = computed(
   () =>
@@ -680,16 +680,16 @@ const effectiveFallbackFontId = computed(
     "",
 );
 const localFontActionLabel = computed(() => {
-  if (!supportsLocalFontAccess.value) return translate('common.fontSelect.yourBrowserCannotReadDeviceFonts');
+  if (!supportsLocalFontAccess.value) return translate('common.fontSelect.deviceUnsupported');
   if (showLocalFontLoading.value && localFontLoadingPhase.value === "initial")
-    return translate('common.fontSelect.readingDeviceFonts');
-  if (isReadingLocalFonts.value) return translate('common.fontSelect.readDeviceFonts');
+    return translate('common.fontSelect.readingDevice');
+  if (isReadingLocalFonts.value) return translate('common.fontSelect.readDevice');
   if (pendingLocalFontCount.value)
-    return translate('common.fontSelect.loadedDeviceFonts', { p0: localFonts.value.length, p1: totalLocalFontCount.value });
+    return translate('common.fontSelect.loadProgress', { p0: localFonts.value.length, p1: totalLocalFontCount.value });
   if (localFonts.value.length)
-    return translate('common.fontSelect.readDeviceFonts2', { p0: localFonts.value.length });
-  if (hasReadLocalFonts.value) return translate('common.fontSelect.noDeviceFontsAvailable');
-  return translate('common.fontSelect.readDeviceFonts');
+    return translate('common.fontSelect.deviceLoaded', { p0: localFonts.value.length });
+  if (hasReadLocalFonts.value) return translate('common.fontSelect.noDeviceFonts');
+  return translate('common.fontSelect.readDevice');
 });
 const isLocalFontLoading = computed(
   () => isReadingLocalFonts.value || isLoadingMoreLocalFonts.value,
@@ -747,7 +747,7 @@ async function showFallbackTooltip(font, event) {
   clearTimeout(fallbackTooltipCloseTimer);
   const rect = event.currentTarget.getBoundingClientRect();
   const request = ++fallbackTooltipRequest;
-  fallbackTooltipText.value = translate('common.fontSelect.setDefaultFallbackFont', { p0: font.label });
+  fallbackTooltipText.value = translate('common.fontSelect.setFallback', { p0: font.label });
   await nextTick();
   if (request !== fallbackTooltipRequest || !popover.value?.matches(":popover-open")) return;
   if (!tooltip.matches(":popover-open")) tooltip.showPopover();
@@ -993,7 +993,7 @@ async function onFontFile(event) {
   } catch (error) {
     customFontSources.delete(id);
     toast.error(
-      `${file.name}：${error instanceof Error ? error.message : translate('common.fontSelect.cannotLoadFont')}`,
+      `${file.name}：${error instanceof Error ? error.message : translate('common.fontSelect.loadFailed')}`,
     );
   } finally {
     isUploadingFont.value = false;
@@ -1039,7 +1039,7 @@ async function readLocalFonts() {
       : readableFonts;
     for (const font of availableFonts) {
       const family =
-        font.family || font.fullName || font.postscriptName || translate('common.fontSelect.unnamedFont');
+        font.family || font.fullName || font.postscriptName || translate('common.fontSelect.unnamed');
       const sourceKey = family.toLocaleLowerCase();
       const existing = uniqueFonts.get(sourceKey);
       if (existing) {
@@ -1107,13 +1107,13 @@ async function readLocalFonts() {
     totalLocalFontCount.value = nextLocalFonts.length;
     await loadMoreLocalFonts();
     if (totalLocalFontCount.value)
-      toast.success(translate('common.fontSelect.readDeviceFonts2', { p0: totalLocalFontCount.value }));
-    else toast.info(translate('common.fontSelect.noUsableDeviceFontsFound'));
+      toast.success(translate('common.fontSelect.deviceLoaded', { p0: totalLocalFontCount.value }));
+    else toast.info(translate('common.fontSelect.noUsableFonts'));
   } catch (error) {
     if (error?.name === "NotAllowedError")
-      toast.warning(translate('common.fontSelect.deviceFontAccessWasNotGranted'));
+      toast.warning(translate('common.fontSelect.accessDenied'));
     else
-      toast.error(error instanceof Error ? error.message : translate('common.fontSelect.cannotReadDeviceFonts'));
+      toast.error(error instanceof Error ? error.message : translate('common.fontSelect.readFailed'));
   } finally {
     isReadingLocalFonts.value = false;
   }
@@ -1396,7 +1396,7 @@ async function loadCustomFont(id) {
   const promise = (async () => {
     const source = customFontSources.get(id);
     if (!(source instanceof Blob))
-      throw new Error(translate('common.fontSelect.theCustomFontIsNoLongerAvailablePleaseSelectIt'));
+      throw new Error(translate('common.fontSelect.customUnavailable'));
     const family = `Mori Custom Font ${++loadedFontFamilyId}`;
     const face = new FontFace(family, await source.arrayBuffer());
     await face.load();

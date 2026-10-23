@@ -55,16 +55,16 @@
               <section class="min-w-0">
                 <h4 class="text-sm font-medium">
                   <ExampleTitle
-                    title-key="tools.info.touchingConjuncts"
-                    term-key="tools.info.terms.touchingLetters"
+                    title-key="sinhala.info.touchingConjuncts"
+                    term-key="sinhala.info.terms.touchingLetters"
                   />
                 </h4>
                 <p class="mt-1 text-xs leading-5 text-base-content/60">
-                  {{ translate("tools.info.touchingSequenceDescription") }}
+                  {{ translate("sinhala.info.touchingDescription") }}
                 </p>
                 <p class="mt-2 text-xs text-base-content/55">
-                  {{ translate("tools.info.touchingGlyph") }}（{{
-                    translate("tools.info.expandedForm")
+                  {{ translate("sinhala.info.touchingGlyph") }}（{{
+                    translate("sinhala.info.expandedForm")
                   }}）
                 </p>
                 <div
@@ -85,7 +85,7 @@
                 <p class="mt-1 text-xs leading-5 text-base-content/60">
                   {{
                     translate(
-                      "tools.notes.touchingLettersHaveNoDedicatedLegacyCodesConversionExpandsThem",
+                      "sinhala.notes.touchingLetters",
                     )
                   }}
                 </p>
@@ -94,18 +94,18 @@
               <section class="min-w-0">
                 <h4 class="text-sm font-medium">
                   <ExampleTitle
-                    title-key="tools.info.paliVowelSpelling"
-                    term-key="tools.info.terms.paliVowelSpelling"
+                    title-key="sinhala.info.paliVowelSpelling"
+                    term-key="sinhala.info.terms.paliVowelSpelling"
                   />
                 </h4>
                 <p
                   class="mt-1 text-sm leading-6 text-pretty text-base-content/70"
                 >
-                  {{ translate("tools.info.paliHalFormsDescription") }}
+                  {{ translate("sinhala.info.paliVowelsDescription") }}
                 </p>
                 <p class="mt-2 text-xs text-base-content/55">
-                  {{ translate("tools.info.unicodeSpelling") }} →
-                  {{ translate("tools.info.paliSpelling") }}
+                  {{ translate("sinhala.info.unicodeSpelling") }} →
+                  {{ translate("sinhala.info.paliSpelling") }}
                 </p>
                 <div class="mt-1 flex min-w-0 flex-wrap gap-x-5 gap-y-1">
                   <div
@@ -128,20 +128,20 @@
                 <summary
                   class="collapse-title min-h-0 py-2 text-sm font-semibold after:start-0 after:inset-e-auto pe-0 ps-5"
                 >
-                  {{ translate("tools.info.conjunctRules") }}
+                  {{ translate("sinhala.info.conjunctRules") }}
                 </summary>
                 <div
                   class="space-y-2 text-sm leading-6 text-pretty text-base-content/70"
                 >
                   <p>
-                    {{ translate("tools.info.conjunctOptionsDescription") }}
+                    {{ translate("sinhala.info.optionsDescription") }}
                   </p>
-                  <p>{{ translate("tools.info.conjunctAvailability") }}</p>
+                  <p>{{ translate("sinhala.info.conjunctAvailability") }}</p>
                 </div>
               </details>
 
               <p class="text-xs leading-5 text-base-content/60">
-                {{ translate("tools.info.classificationReference") }}
+                {{ translate("sinhala.info.classificationReference") }}
                 <a
                   href="https://pitaka.lk/tools/unicode/pali_bandi.htm"
                   target="_blank"
@@ -210,57 +210,57 @@ const rowFor = (unicode, options = {}) => ({
   unicode,
 });
 const groupFor = (titleKey, examples, options) => ({
-  titleKey: `tools.info.${titleKey}`,
+  titleKey: `sinhala.info.${titleKey}`,
   rows: examples.map((unicode) => rowFor(unicode, options)),
 });
 const mixedSourceSegments = unicodeToFmSegments("සිංහල English 2026");
 const cards = [
   {
     id: "vowels",
-    titleKey: "tools.info.vowelSigns",
-    termKey: "tools.info.terms.vowelSigns",
+    titleKey: "sinhala.info.vowelSigns",
+    termKey: "sinhala.info.terms.vowelSigns",
     descriptionKey:
-      "tools.info.reorderLegacyVowelSignsIntoUnicodeCharacterOrder",
+      "sinhala.info.vowelsDescription",
     groups: [
       groupFor("commonVowels", ["කා", "කැ", "කෙ", "කෝ", "කූ"]),
       {
         ...groupFor("variantsAndCombinations", ["ළූ", "දි", "ද්‍රු", "බ්‍රූ"]),
-        footerNoteKey: "tools.notes.rakarVowelFormsShareLegacyCodes",
+        footerNoteKey: "sinhala.notes.vowelCodes",
       },
     ],
   },
   {
     id: "dedicated",
-    titleKey: "tools.info.specialGlyphs",
-    descriptionKey: "tools.info.dedicatedGlyphsDescription",
+    titleKey: "sinhala.info.specialGlyphs",
+    descriptionKey: "sinhala.info.glyphsDescription",
     groups: [
       {
         ...groupFor("prenasalizedConsonants", ["ඟ", "ඦ", "ඬ", "ඳ", "ඹ"]),
-        termKey: "tools.info.terms.prenasalizedConsonants",
+        termKey: "sinhala.info.terms.prenasalizedConsonants",
       },
       {
         ...groupFor(
-          "compactFormsEnableTheOption",
+          "compactForms",
           ["දා", "දැ", "ඳා", "ඳැ", "න්‍දා"],
           { compactDaForms: true },
         ),
         targetClass: "font-features-['ss01']",
-        termKey: "tools.info.compactFormsOptionNote",
+        termKey: "sinhala.info.compactHint",
       },
     ],
   },
   {
     id: "conjuncts",
     wide: true,
-    titleKey: "tools.info.conjunctsAndSpecialGlyphs",
-    termKey: "tools.info.terms.conjuncts",
+    titleKey: "sinhala.info.conjunctsTitle",
+    termKey: "sinhala.info.terms.conjuncts",
     descriptionKey:
-      "tools.info.recognizeConjunctsAndPrenasalizedConsonantsWithDedicatedGlyphsWhenCompact",
+      "sinhala.info.conjunctsDescription",
     groups: Object.entries(SINHALA_CONJUNCT_CATEGORIES).map(
       ([category, pairs]) => ({
-        titleKey: `tools.info.${category}Conjuncts`,
-        termKey: `tools.info.terms.${category}Conjuncts`,
-        noteKey: "tools.info.conjunctComparisonNote",
+        titleKey: `sinhala.info.${category}Conjuncts`,
+        termKey: `sinhala.info.terms.${category}Conjuncts`,
+        noteKey: "sinhala.info.conjunctComparisonNote",
         compareForms: true,
         rows: pairs.map((pair) => ({
           legacyInputs: legacyInputsFor(pair.unicode, pair.legacy, {
@@ -274,13 +274,13 @@ const cards = [
   },
   {
     id: "reduced",
-    titleKey: "tools.info.consonantAbbreviationsAndJoining",
-    termKey: "tools.info.terms.reducedConsonantForms",
+    titleKey: "sinhala.info.reducedForms",
+    termKey: "sinhala.info.terms.reducedConsonantForms",
     descriptionKey:
-      "tools.info.recognizeFormsSuchAsTrailingLowerAndUpperBuiltWith",
+      "sinhala.info.reducedDescription",
     groups: [
       {
-        titleKey: "tools.info.trailingLowerUpper",
+        titleKey: "sinhala.info.reducedNames",
         compareForms: true,
         rows: ["ක්‍ය", "ක්‍ර", "ර්‍ක"].map((unicode) => ({
           ...rowFor(unicode),
@@ -291,28 +291,28 @@ const cards = [
   },
   {
     id: "order",
-    titleKey: "tools.info.nonstandardGlyphOrderInOldDocuments",
+    titleKey: "sinhala.info.glyphOrder",
     descriptionKey:
-      "tools.info.differentLegacyInputOrdersForTheSameGlyphNormalizeTo",
+      "sinhala.info.orderDescription",
     groups: [
       {
-        titleKey: "tools.info.orderOfLowerAndVowelSigns",
+        titleKey: "sinhala.info.vowelOrder",
         rows: [{ legacyInputs: ["l%s", "ls%"], unicode: "ක්‍රි" }],
       },
       {
-        titleKey: "tools.info.orderOfLowerAndLongVowelMarker",
+        titleKey: "sinhala.info.longVowelOrder",
         rows: [{ legacyInputs: ["fl%a", "fla%"], unicode: "ක්‍රේ" }],
       },
     ],
   },
   {
     id: "mixed",
-    titleKey: "tools.info.mixedSinhalaAndNonSinhalaLegacyText",
+    titleKey: "sinhala.info.mixedText",
     descriptionKey:
-      "tools.info.convertOnlySinhalaSegmentsPreservingEnglishNumbersAndOtherText",
+      "sinhala.info.mixedDescription",
     groups: [
       {
-        titleKey: "tools.info.sinhalaEnglishAndNumbers",
+        titleKey: "sinhala.info.mixedExample",
         rows: [
           {
             legacyInputs: [
@@ -346,8 +346,8 @@ function toggleExampleEncodings() {
     "announcement",
     translate(
       showExampleEncodings.value
-        ? "tools.info.legacyExampleEncodingIsNowVisible"
-        : "tools.info.legacyExampleGlyphsAreNowVisible",
+        ? "sinhala.info.encodingVisible"
+        : "sinhala.info.glyphsVisible",
     ),
   );
 }

@@ -157,7 +157,7 @@ const setupBlogPosTracker = () => {
     onStoredRestore: () => {
       if (restoredArticleId === articleId) return;
       restoredArticleId = articleId;
-      toast.info(translate('pages.blog.restoredReadingProgress'));
+      toast.info(translate('blog.progressRestored'));
     },
     isActive: () =>
       !loadingContent.value &&
@@ -243,7 +243,7 @@ const loadArticleContent = async (id, { keepCurrentContent = false, force = fals
     articleContent.value = "";
     currentArticle.value = null;
     articlePage.setPage(route.path, null, true);
-    errorContent.value = localeMessage("pages.blog.articleNotFound");
+    errorContent.value = localeMessage("blog.notFound");
     loadingContent.value = false;
     return;
   }
@@ -265,7 +265,7 @@ const loadArticleContent = async (id, { keepCurrentContent = false, force = fals
   } catch (err) {
     if (request !== contentRequest) return;
     console.error("加载文章内容失败:", err);
-    errorContent.value = localeMessage("pages.blog.failedToLoadArticleContent");
+    errorContent.value = localeMessage("blog.loadFailed");
   } finally {
     if (request === contentRequest) loadingContent.value = false;
   }

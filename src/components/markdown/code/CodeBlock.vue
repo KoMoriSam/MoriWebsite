@@ -10,7 +10,7 @@
         <aside
           class="tooltip tooltip-left font-mono"
           :class="copied ? 'tooltip-success' : ''"
-          :data-tip="copied ? translate('markdown.codeBlock.copiedSuccessfully') : translate('markdown.codeBlock.copyToClipboard')"
+          :data-tip="copied ? translate('markdown.codeBlock.copied') : translate('markdown.codeBlock.copy')"
         >
           <button
             class="btn btn-sm btn-square"

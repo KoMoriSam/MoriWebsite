@@ -1,8 +1,6 @@
 {
-  "pages": {
-    "notFound": {
-      "goHome": "回到主页",
-      "readArticles": "读读文章"
-    }
+  "notFound": {
+    "goHome": "回到主页",
+    "readArticles": "读读文章"
   }
 }

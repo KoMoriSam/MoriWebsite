@@ -1,110 +1,112 @@
 {
   "reader": {
-    "chapterController": {
-      "chapterNavigation": "Chapter navigation",
-      "previousChapter": "Previous chapter",
-      "nextChapter": "Next chapter",
-      "bookProgressChapterPageOfTapForReadingControls": "Book progress {p0}, chapter page {p1} of {p2}. Tap for reading controls.",
-      "bookProgressScrollingModeTapForReadingControls": "Book progress {p0}, scrolling mode. Tap for reading controls."
+    "navigation": {
+      "label": "Chapter navigation",
+      "previous": "Previous chapter",
+      "next": "Next chapter",
+      "pagedProgress": "Book progress {p0}, chapter page {p1} of {p2}. Tap for reading controls.",
+      "scrollProgress": "Book progress {p0}, scrolling mode. Tap for reading controls."
     },
-    "chapterHeader": {
-      "chapterInformation": "Chapter information",
+    "header": {
+      "label": "Chapter information",
       "navigation": "Navigation",
       "backToCover": "Back to cover",
-      "backToNovelCover": "Back to novel cover",
-      "chapterStatistics": "Chapter statistics"
+      "backLabel": "Back to novel cover",
+      "statistics": "Chapter statistics"
     },
-    "chapterList": {
-      "chapters": "Chapters",
+    "chapters": {
+      "title": "Chapters",
       "volumes": "volumes ·",
-      "chapters2": "chapters",
-      "refreshChapters": "Refresh chapters",
-      "clearReadingHistory": "Clear reading history",
-      "loadingChapters": "Loading chapters",
+      "countUnit": "chapters",
+      "refresh": "Refresh chapters",
+      "clearHistory": "Clear reading history",
+      "loading": "Loading chapters",
       "characters": "characters",
       "reads": "reads",
-      "noChaptersAreAvailableYet": "No chapters are available yet",
-      "refreshTheChapterListAndTryAgain": "Refresh the chapter list and try again",
+      "empty": "No chapters are available yet",
+      "emptyHint": "Refresh the chapter list and try again",
       "read": "Read",
       "unread": "Unread",
-      "loadingReadsFor": "Loading reads for 《{p0}》",
-      "loadingCommentsFor": "Loading comments for 《{p0}》"
+      "loadingReads": "Loading reads for 《{p0}》",
+      "loadingComments": "Loading comments for 《{p0}》"
     },
-    "chapterStatusBadges": {
-      "thisChapterHasBeenRevised": "This chapter has been revised",
-      "thisIsTheOriginalChapterVersion": "This is the original chapter version",
+    "badges": {
+      "revisedHint": "This chapter has been revised",
+      "originalHint": "This is the original chapter version",
       "original": "Original"
     },
-    "chapterToc": {
-      "readingProgress": "Reading progress",
-      "latestChapter": "Latest chapter",
-      "chaptersRead": "chapters · read",
-      "chaptersRead2": "{p0} chapters, {p1} read"
+    "toc": {
+      "progress": "Reading progress",
+      "latest": "Latest chapter",
+      "readUnit": "chapters · read",
+      "readCount": "{p0} chapters, {p1} read",
+      "expand": "Expand",
+      "collapse": "Collapse"
     },
-    "novelContentSearch": {
-      "searchTheNovel": "Search the novel",
-      "searchChapterTitlesOrText": "Search chapter titles or text",
-      "clearSearch": "Clear search",
-      "loadingTheNovelIndex": "Loading the novel index…",
-      "enterKeywordsToSearchChapterTitlesAndText": "Enter keywords to search chapter titles and text",
-      "noMatchingNovelContentFound": "No matching novel content found",
-      "novelSearchResults": "Novel search results",
-      "novelContentIsUnavailablePleaseTryAgainLater": "Novel content is unavailable. Please try again later."
+    "search": {
+      "title": "Search the novel",
+      "placeholder": "Search chapter titles or text",
+      "clear": "Clear search",
+      "loading": "Loading the novel index…",
+      "hint": "Enter keywords to search chapter titles and text",
+      "noMatches": "No matching novel content found",
+      "results": "Novel search results",
+      "loadFailed": "Novel content is unavailable. Please try again later."
     },
-    "commentTrigger": {
-      "openParagraphComments": "Open paragraph comments",
-      "paragraphCommentCount": "Paragraph comment count"
+    "comments": {
+      "open": "Open paragraph comments",
+      "count": "Paragraph comment count"
     },
     "contextMenu": {
-      "textActions": "Text actions",
+      "label": "Text actions",
       "copyLatex": "Copy LaTeX",
       "copySvg": "Copy SVG",
       "textCopied": "Text copied",
-      "copyFailedPleaseSelectTheTextManually": "Copy failed. Please select the text manually.",
+      "copyTextFailed": "Copy failed. Please select the text manually.",
       "imageSaved": "Image saved",
-      "originalImageOpenedUseYourBrowserToSaveIt": "Original image opened. Use your browser to save it.",
-      "latexSourceCopied": "LaTeX source copied",
-      "copyFailedPleaseSelectTheFormulaManually": "Copy failed. Please select the formula manually.",
+      "imageOpened": "Original image opened. Use your browser to save it.",
+      "latexCopied": "LaTeX source copied",
+      "copyFormulaFailed": "Copy failed. Please select the formula manually.",
       "svgCopied": "SVG copied",
-      "yourBrowserCannotCopySvg": "Your browser cannot copy SVG",
-      "cannotOpenTheShareCardRightNow": "Cannot open the share card right now",
+      "svgUnsupported": "Your browser cannot copy SVG",
+      "shareFailed": "Cannot open the share card right now",
       "copy": "Copy"
     },
-    "formatSetting": {
-      "readingLayout": "Reading layout",
-      "previewChangesBelowAsYouAdjust": "Preview changes below as you adjust",
-      "resetToDefaults": "Reset to defaults",
-      "duskSettlesOverThePagesLeavingRoomToBreatheBetween": "Dusk settles over the pages, leaving room to breathe between the lines.",
-      "turnThePageTheStoryContinuesAhead": "Turn the page; the story continues ahead.",
+    "format": {
+      "title": "Reading layout",
+      "previewHint": "Preview changes below as you adjust",
+      "reset": "Reset to defaults",
+      "previewText": "Dusk settles over the pages, leaving room to breathe between the lines.",
+      "previewNext": "Turn the page; the story continues ahead.",
       "textFont": "Text font",
-      "customAndDeviceFontsApplyOnlyToThisSessionAnd": "Custom and device fonts apply only to this session and are not saved",
-      "onlySiteFontsCanBeSavedInSettings": "(Only site fonts can be saved in settings)",
+      "sessionFontHint": "Custom and device fonts apply only to this session and are not saved",
+      "savedFontHint": "(Only site fonts can be saved in settings)",
       "readingColors": "Reading colors",
-      "wantSomethingElseCustomizeIt": "Want something else? Customize it",
-      "readingBackgroundType": "Reading background type",
+      "customize": "Want something else? Customize it",
+      "backgroundType": "Reading background type",
       "textColor": "Text color",
       "backgroundColor": "Background color",
       "siteTheme": "Site theme",
-      "builtInAndSavedLayoutPresets": "Built-in and saved layout presets",
-      "saveCurrentLayoutAsAPreset": "Save current layout as a preset",
-      "layoutPresetName": "Layout preset name",
+      "presetsHint": "Built-in and saved layout presets",
+      "savePreset": "Save current layout as a preset",
+      "presetName": "Layout preset name",
       "save": "Save",
       "solidColor": "Solid color",
       "backgroundImage": "Background image",
-      "duskSettlesOverThePages": "Dusk settles over the pages",
+      "previewTitle": "Dusk settles over the pages",
       "preset": "Preset {p0}",
-      "currentMobileLayoutPreview": "Current mobile layout preview",
-      "currentDesktopLayoutPreview": "Current desktop layout preview",
-      "chooseReadingBackground": "Choose reading background: {p0}",
-      "switchSiteTheme": "Switch site theme: {p0}, {p1}",
-      "applyBuiltInPreset": "Apply built-in preset {p0}: {p1}",
+      "mobilePreview": "Current mobile layout preview",
+      "desktopPreview": "Current desktop layout preview",
+      "chooseBackground": "Choose reading background: {p0}",
+      "switchTheme": "Switch site theme: {p0}, {p1}",
+      "applyDefaultPreset": "Apply built-in preset {p0}: {p1}",
       "applySavedPreset": "Apply saved preset {p0}",
       "deletePreset": "Delete preset {p0}"
     },
-    "reader": {
-      "closeReadingLayoutSettings": "Close reading layout settings",
+    "settings": {
+      "close": "Close reading layout settings",
       "heading": "Heading {p0}",
-      "horizontalPageTurning": "Horizontal page turning",
+      "paged": "Horizontal page turning",
       "followSite": "Follow site",
       "softLight": "Soft light",
       "naturalDark": "Natural dark",
@@ -116,68 +118,64 @@
       "bambooShadows": "Bamboo shadows",
       "menu": "Menu",
       "default": "Default",
-      "balancedFontSizeAndSpacingForExtendedReading": "Balanced font size and spacing for extended reading",
+      "defaultHint": "Balanced font size and spacing for extended reading",
       "paper": "Paper",
-      "parchmentTextureForASofterBackground": "Parchment texture for a softer background",
+      "paperHint": "Parchment texture for a softer background",
       "dim": "Dim",
-      "aQuietNightInDimLight": "A quiet night in dim light",
+      "dimHint": "A quiet night in dim light",
       "night": "Night",
-      "moonlitBambooInNightMode": "Moonlit bamboo in night mode",
+      "nightHint": "Moonlit bamboo in night mode",
       "largeText": "Large text",
-      "focusedContentEasyOnTheEyes": "Focused content, easy on the eyes",
+      "largeTextHint": "Focused content, easy on the eyes",
       "fontSize": "Font size",
       "size": "Size",
       "letterSpacing": "Letter spacing",
       "letterGap": "Letter gap",
       "lineHeight": "Line height",
       "lineGap": "Line gap",
-      "message": "×",
+      "multiplier": "×",
       "paragraphSpacing": "Paragraph spacing",
       "paragraphGap": "Paragraph gap",
       "lines": "lines"
     },
-    "readerBody": {
-      "readingContents": "Reading contents",
-      "readingAids": "Reading aids"
+    "body": {
+      "contents": "Reading contents",
+      "aids": "Reading aids"
     },
-    "shareCard": {
+    "share": {
       "shareImage": "Share image",
-      "theSelectionIsLongSomeContentWasOmittedFromThe": "The selection is long. Some content was omitted from the image.",
-      "closeShareCardPreview": "Close share card preview",
-      "layingOutTheShareCard": "Laying out the share card…",
-      "cardGenerationFailed": "Card generation failed",
-      "generateAgain": "Generate again",
+      "truncated": "The selection is long. Some content was omitted from the image.",
+      "close": "Close share card preview",
+      "generating": "Laying out the share card…",
+      "failed": "Card generation failed",
+      "retry": "Generate again",
       "downloadImage": "Download image",
-      "cannotGenerateTheShareCardRightNow": "Cannot generate the share card right now",
-      "shareCardDownloaded": "Share card downloaded",
-      "yourBrowserDoesNotSupportImageSharingTheCardWas": "Your browser does not support image sharing. The card was downloaded.",
-      "cannotShareTheImageRightNow": "Cannot share the image right now",
-      "textShareCardFor": "Text share card for {p0}",
-      "saveImage": "Save image"
+      "generateFailed": "Cannot generate the share card right now",
+      "downloaded": "Share card downloaded",
+      "shareUnsupported": "Your browser does not support image sharing. The card was downloaded.",
+      "shareFailed": "Cannot share the image right now",
+      "label": "Text share card for {p0}",
+      "saveImage": "Save image",
+      "errors": {
+        "imageUnsupported": "Your browser cannot validate content images",
+        "fontFailed": "Cannot load font: {p0}",
+        "mermaidUnsupported": "Your browser cannot validate Mermaid images",
+        "mermaidBlocked": "Your browser blocked Mermaid image export",
+        "mermaidFailed": "Cannot render the Mermaid diagram",
+        "renderFailed": "Cannot generate the share card image",
+        "empty": "No text to share",
+        "unsupported": "Your browser cannot generate share cards"
+      },
+      "labels": {
+        "mermaid": "Mermaid diagram",
+        "chat": "Conversation",
+        "moment": "Post",
+        "shareCard": "Share card"
+      }
     },
     "styleMenu": {
       "resetValue": "Reset value",
       "defaultValue": "Default value"
-    },
-    "tocFrame": {
-      "expand": "Expand",
-      "collapse": "Collapse"
-    },
-    "create-reader-share-card": {
-      "yourBrowserCannotValidateContentImages": "Your browser cannot validate content images",
-      "cannotLoadFont": "Cannot load font: {p0}",
-      "yourBrowserCannotValidateMermaidImages": "Your browser cannot validate Mermaid images",
-      "yourBrowserBlockedMermaidImageExport": "Your browser blocked Mermaid image export",
-      "cannotRenderTheMermaidDiagram": "Cannot render the Mermaid diagram",
-      "cannotGenerateTheShareCardImage": "Cannot generate the share card image",
-      "noTextToShare": "No text to share",
-      "yourBrowserCannotGenerateShareCards": "Your browser cannot generate share cards"
-    },
-    "shareLabels": {
-      "mermaid": "Mermaid diagram",
-      "chat": "Conversation",
-      "moment": "Post",
-      "shareCard": "Share card"
     }
   }
 }

@@ -5,7 +5,7 @@
     <button
       type="button"
       class="btn btn-circle btn-ghost btn-sm"
-      :aria-label="translate('reader.readerControls.backToReadingControls')"
+      :aria-label="translate('reader.controls.back')"
       @click="$emit('back')"
     >
       <i class="ri-arrow-left-line text-xl" aria-hidden="true"></i>

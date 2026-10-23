@@ -1,8 +1,6 @@
 {
-  "pages": {
-    "notFound": {
-      "goHome": "මුල් පිටුවට යන්න",
-      "readArticles": "ලිපි කියවන්න"
-    }
+  "notFound": {
+    "goHome": "මුල් පිටුවට යන්න",
+    "readArticles": "ලිපි කියවන්න"
   }
 }
