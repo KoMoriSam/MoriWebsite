@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>2.19.0</strong>
+  Current version: <strong>2.20.0</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -108,7 +108,7 @@ Development also exposes `/test` for component testing. Unknown URLs use the in-
 ### Tools, Games, and Languages
 
 - an in-browser image converter for batch conversion, compression, resizing, watermarks, and animated images
-- a Sinhala font-encoding converter for Unicode and legacy encodings, with a document mode that exports DOCX
+- a Sinhala font-encoding converter for Unicode and legacy encodings; document mode handles DOCX, PPTX, and PDFs with selectable text, with editable DOCX or PPTX output
 - Avalon rooms joined by code or invitation link, with role configuration, game records, and reconnection
 - Chinese, English, and Sinhala interface text loaded by page, with the language preference saved locally
 - responsive WebP variants for local images and optional variant manifests from the blog and novel sources

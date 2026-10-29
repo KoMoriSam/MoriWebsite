@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>2.19.0</strong>
+  Version actuelle : <strong>2.20.0</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -108,7 +108,7 @@ En développement, `/test` permet également de tester les composants. Les URL i
 ### Outils, jeux et langues
 
 - conversion, compression et redimensionnement d'images par lot dans le navigateur, avec filigranes et prise en charge des animations
-- conversion entre Unicode et anciens encodages de polices cinghalaises, avec export DOCX en mode document
+- conversion entre Unicode et anciens encodages de polices cinghalaises ; le mode document traite DOCX, PPTX et les PDF à texte sélectionnable, puis exporte en DOCX ou PPTX modifiable
 - salles d'Avalon accessibles par code ou lien d'invitation, avec configuration des rôles, historique et reconnexion
 - textes de l'interface en chinois, anglais et cinghalais chargés selon la page, avec préférence linguistique locale
 - variantes WebP des images locales et, si disponibles, manifestes de variantes des sources du blog et du roman
