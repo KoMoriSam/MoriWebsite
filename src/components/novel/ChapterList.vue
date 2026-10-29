@@ -1,46 +1,64 @@
 <template>
-  <section class="min-w-0" aria-labelledby="chapter-directory-title">
-    <header
-      class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
-    >
-      <hgroup class="min-w-0">
-        <p class="text-sm text-base-content/55">Contents</p>
-        <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+  <section
+    class="min-w-0"
+    aria-labelledby="chapter-directory-title"
+    :aria-busy="isLoadingList"
+  >
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p
+          class="mb-2 font-sans text-xs font-semibold tracking-widest text-base-content/55 uppercase"
+          lang="en"
+        >
+          Contents
+        </p>
+        <div class="flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-2">
           <h2
             id="chapter-directory-title"
-            class="font-serif text-2xl font-semibold text-balance"
+            class="font-serif text-2xl font-bold text-balance md:text-3xl"
           >
-            {{ translate('reader.chapters.title') }}
+            {{ translate("reader.chapters.title") }}
           </h2>
-          <span class="text-sm text-base-content/55">
-            {{ chapterVolumes.length }} {{ translate('reader.chapters.volumes') }} {{ chapterCount }} {{ translate('reader.chapters.countUnit') }}
-          </span>
+          <CatalogMeta
+            icon="ri-stack-line"
+            class="text-xs text-base-content/55"
+          >
+            {{ formatNumber(chapterVolumes.length) }}
+            {{ translate("reader.chapters.volumes") }}
+            {{ formatNumber(chapterCount) }}
+            {{ translate("reader.chapters.countUnit") }}
+          </CatalogMeta>
         </div>
-      </hgroup>
-
+      </div>
       <div class="flex shrink-0 items-center gap-1">
-        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapters.refresh')">
+        <div
+          class="tooltip tooltip-left"
+          :data-tip="translate('reader.chapters.refresh')"
+        >
           <button
             type="button"
-            class="btn btn-ghost btn-sm btn-square"
+            class="btn btn-ghost btn-sm btn-square text-base-content/55"
             :aria-label="translate('reader.chapters.refresh')"
-            :title="translate('reader.chapters.refresh')"
             :disabled="isLoadingList"
             @click="novelStore.refreshChapters()"
           >
             <i
               class="ri-refresh-line"
-              :class="{ 'animate-spin': isLoadingList }"
+              :class="
+                isLoadingList ? 'animate-spin motion-reduce:animate-none' : ''
+              "
               aria-hidden="true"
             ></i>
           </button>
         </div>
-        <div class="tooltip tooltip-left" :data-tip="translate('reader.chapters.clearHistory')">
+        <div
+          class="tooltip tooltip-left"
+          :data-tip="translate('reader.chapters.clearHistory')"
+        >
           <button
             type="button"
-            class="btn btn-ghost btn-sm btn-square"
+            class="btn btn-ghost btn-sm btn-square text-base-content/55"
             :aria-label="translate('reader.chapters.clearHistory')"
-            :title="translate('reader.chapters.clearHistory')"
             :disabled="isLoadingList"
             @click="novelStore.refreshReadChapters()"
           >
@@ -52,128 +70,76 @@
 
     <div
       v-if="isLoadingList"
+      class="space-y-4"
       role="status"
-      aria-busy="true"
       :aria-label="translate('reader.chapters.loading')"
     >
-      <span class="sr-only">{{ translate('reader.chapters.loading') }}</span>
-
-      <div class="join join-vertical w-full" aria-hidden="true">
-        <div
-          v-for="volumeIndex in 2"
-          :key="volumeIndex"
-          class="join-item collapse collapse-arrow collapse-open min-w-0 border border-base-300 bg-base-100"
-        >
-          <div class="collapse-title min-w-0">
-            <span class="min-w-0 flex-1">
-              <span class="skeleton block h-5 w-40 max-w-2/3"></span>
-              <span class="skeleton mt-1.5 block h-3 w-12"></span>
-            </span>
-          </div>
-
-          <ul
-            class="collapse-content grid grid-cols-1 border-t border-base-300 bg-base-200/15 px-0 pb-0 lg:grid-cols-2"
+      <span class="sr-only">{{ translate("reader.chapters.loading") }}</span>
+      <div
+        v-for="volumeIndex in 2"
+        :key="volumeIndex"
+        class="rounded-box border border-base-300 bg-base-100 p-4"
+        aria-hidden="true"
+      >
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <span class="skeleton h-6 w-40 max-w-2/3"></span>
+          <span class="skeleton h-4 w-12"></span>
+        </div>
+        <div class="grid gap-3 md:grid-cols-2">
+          <div
+            v-for="chapterIndex in SKELETON_CHAPTER_COUNT"
+            :key="chapterIndex"
+            class="space-y-3 p-3"
           >
-            <li
-              v-for="chapterIndex in SKELETON_CHAPTER_COUNT"
-              :key="chapterIndex"
-              class="min-w-0 border-base-300"
-              :class="{
-                'border-b': chapterIndex < SKELETON_CHAPTER_COUNT,
-                'border-b-0': chapterIndex === SKELETON_CHAPTER_COUNT,
-                'lg:border-r': hasChapterColumnDivider(chapterIndex - 1, 2),
-                'lg:border-r-0': !hasChapterColumnDivider(chapterIndex - 1, 2),
-                'lg:border-b': !isChapterInLastRow(
-                  chapterIndex - 1,
-                  SKELETON_CHAPTER_COUNT,
-                  2,
-                ),
-                'lg:border-b-0': isChapterInLastRow(
-                  chapterIndex - 1,
-                  SKELETON_CHAPTER_COUNT,
-                  2,
-                ),
-              }"
-            >
-              <div
-                class="btn btn-ghost h-fit w-full items-start rounded-none py-2 text-start"
-              >
-                <span class="min-w-0 flex-1">
-                  <span class="flex min-w-0 items-start gap-2">
-                    <span class="skeleton h-4 w-3/5"></span>
-                    <span class="skeleton h-4 w-12 shrink-0"></span>
-                  </span>
-                  <span class="mt-2.5 flex items-center gap-3">
-                    <span class="skeleton h-3 w-10"></span>
-                    <span class="skeleton h-3 w-16"></span>
-                    <span class="skeleton h-3 w-12"></span>
-                  </span>
-                </span>
-                <span
-                  class="skeleton mt-0.5 size-4 shrink-0 rounded-selector"
-                ></span>
-              </div>
-            </li>
-          </ul>
+            <span class="skeleton block h-4 w-4/5"></span>
+            <div class="flex gap-3">
+              <span class="skeleton h-3 w-12"></span>
+              <span class="skeleton h-3 w-20"></span>
+              <span class="skeleton h-3 w-12"></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div
-      v-else-if="chapterVolumes.length > 0"
-      class="join join-vertical w-full"
-    >
+    <div v-else-if="chapterVolumes.length" class="space-y-4">
       <details
         v-for="volume in chapterVolumes"
         :key="volume.volumeInfo.uuid"
         open
-        class="join-item collapse collapse-arrow min-w-0 bg-base-100 border-base-300 border"
+        class="collapse collapse-arrow min-w-0 rounded-box border border-base-300 bg-base-100"
       >
         <summary
           class="collapse-title min-w-0 transition-colors hover:bg-base-200/50 [&::-webkit-details-marker]:hidden"
         >
-          <hgroup class="min-w-0 flex-1">
-            <h3 class="block truncate font-serif text-lg font-semibold">
-              {{ volume.volumeInfo.title }}
-            </h3>
-            <p class="mt-0.5 block text-xs text-base-content/50">
-              {{ volume.chapters?.length || 0 }} {{ translate('reader.chapters.countUnit') }}
-            </p>
-          </hgroup>
+          <span class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+            <span
+              class="min-w-0 wrap-break-word font-serif text-lg font-bold"
+              >{{ volume.volumeInfo.title }}</span
+            >
+            <CatalogMeta
+              icon="ri-book-open-line"
+              class="text-xs font-normal text-base-content/50"
+            >
+              {{ formatNumber(volume.chapters?.length || 0) }}
+              {{ translate("reader.chapters.countUnit") }}
+            </CatalogMeta>
+          </span>
         </summary>
-
         <ul
-          v-if="volume.chapters && volume.chapters.length > 0"
-          class="collapse-content grid grid-cols-1 border-t border-base-300 bg-base-200/15 px-0 pb-0 xl:grid-cols-2"
+          v-if="volume.chapters?.length"
+          class="collapse-content grid grid-cols-1 gap-2 px-3 pt-1 pb-3 md:grid-cols-2 md:gap-3 md:px-4 md:pb-4"
         >
           <li
-            v-for="(chapter, chapterIndex) in volume.chapters"
+            v-for="chapter in volume.chapters"
             :key="chapter.uuid"
-            class="min-w-0 border-base-300"
-            :class="{
-              'border-b': chapterIndex < volume.chapters.length - 1,
-              'border-b-0': chapterIndex === volume.chapters.length - 1,
-              'xl:border-r': hasChapterColumnDivider(chapterIndex, 2),
-              'xl:border-r-0': !hasChapterColumnDivider(chapterIndex, 2),
-              'xl:border-b': !isChapterInLastRow(
-                chapterIndex,
-                volume.chapters.length,
-                2,
-              ),
-              'xl:border-b-0': isChapterInLastRow(
-                chapterIndex,
-                volume.chapters.length,
-                2,
-              ),
-            }"
+            class="min-w-0"
           >
             <button
               v-if="chapter"
               type="button"
-              class="group/chapter btn btn-ghost border-0 rounded-none h-fit w-full items-start text-start py-2"
-              :class="{
-                'btn-active': chapter.uuid === currentChapterUuid,
-              }"
+              class="group/chapter btn btn-ghost h-auto min-h-0 w-full items-start gap-2 rounded-field border-0 p-3 text-start font-normal"
+              :class="chapter.uuid === currentChapterUuid ? 'bg-base-200' : ''"
               :aria-current="
                 chapter.uuid === currentChapterUuid ? 'page' : undefined
               "
@@ -181,13 +147,12 @@
               @click="onClick(chapter.uuid)"
             >
               <span class="min-w-0 flex-1">
-                <span class="flex min-w-0 items-start gap-2">
+                <span class="flex min-w-0 flex-wrap items-start gap-2">
                   <span
-                    class="min-w-0 flex-1 text-pretty leading-snug font-semibold break-words"
+                    class="min-w-0 grow basis-40 wrap-break-word text-sm leading-snug font-semibold text-pretty"
+                    >{{ chapter.title }}</span
                   >
-                    {{ chapter.title }}
-                  </span>
-                  <span class="flex shrink-0 flex-wrap justify-end gap-1">
+                  <span class="flex shrink-0 flex-wrap gap-1">
                     <ChapterStatusBadges
                       :chapter="chapter"
                       :latest-chapter-uuid="latestChapter?.uuid"
@@ -197,85 +162,84 @@
                     />
                   </span>
                 </span>
-
                 <span
-                  class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-normal text-xs text-base-content/50"
+                  class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/50"
                 >
-                  <span
-                    class="inline-flex items-center gap-1"
+                  <CatalogMeta
+                    :icon="
+                      isRead(chapter.uuid)
+                        ? 'ri-check-double-line'
+                        : 'ri-book-open-line'
+                    "
                     :class="
                       isRead(chapter.uuid)
                         ? 'text-base-content/45'
                         : 'text-primary'
                     "
                   >
-                    <span v-if="isRead(chapter.uuid)" class="status"></span>
-                    <span v-else class="status status-primary"></span>
-                    {{ isRead(chapter.uuid) ? translate('reader.chapters.read') : translate('reader.chapters.unread') }}
-                  </span>
-                  <span class="inline-flex items-center gap-1">
-                    <i class="ri-time-line font-normal" aria-hidden="true"></i>
-                    {{ formatLocalizedDate(chapter.uploadDate) }}
-                  </span>
-                  <span class="inline-flex items-center gap-1">
-                    <i
-                      class="ri-file-text-line font-normal"
-                      aria-hidden="true"
-                    ></i>
-                    {{ chapter.length }} {{ translate('reader.chapters.characters') }}
-                  </span>
+                    {{
+                      isRead(chapter.uuid)
+                        ? translate("reader.chapters.read")
+                        : translate("reader.chapters.unread")
+                    }}
+                  </CatalogMeta>
+                  <CatalogMeta icon="ri-calendar-line">{{
+                    formatLocalizedDate(chapter.uploadDate)
+                  }}</CatalogMeta>
+                  <CatalogMeta icon="ri-file-text-line"
+                    >{{ formatNumber(chapter.length) }}
+                    {{ translate("reader.chapters.characters") }}</CatalogMeta
+                  >
                   <client-only>
-                    <span
+                    <CatalogMeta
                       v-if="
                         analyticsAvailable &&
                         getChapterReadStatus(chapter.uuid) !== 'error'
                       "
-                      class="inline-flex items-center gap-1"
+                      icon="ri-eye-line"
                     >
-                      <i class="ri-eye-line font-normal" aria-hidden="true"></i>
                       <template
                         v-if="Number.isFinite(getChapterReads(chapter.uuid))"
+                        >{{ formatReadCount(getChapterReads(chapter.uuid)) }}
+                        {{ translate("reader.chapters.reads") }}</template
                       >
-                        {{ formatReadCount(getChapterReads(chapter.uuid)) }}
-                        {{ translate('reader.chapters.reads') }}
-                      </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapters.loadingReads', { p0: chapter.title })"
+                        :aria-label="
+                          translate('reader.chapters.loadingReads', {
+                            p0: chapter.title,
+                          })
+                        "
                       ></span>
-                    </span>
-                  </client-only>
-                  <client-only>
-                    <span
+                    </CatalogMeta>
+                    <CatalogMeta
                       v-if="
                         commentCountsAvailable &&
                         getChapterCommentStatus(chapter) !== 'error'
                       "
-                      class="inline-flex items-center gap-1"
+                      icon="ri-chat-3-line"
                     >
-                      <i
-                        class="ri-chat-3-line font-normal"
-                        aria-hidden="true"
-                      ></i>
                       <template
                         v-if="Number.isFinite(getChapterComments(chapter))"
+                        >{{ formatReadCount(getChapterComments(chapter)) }}
+                        {{ translate("markdown.moment.comments") }}</template
                       >
-                        {{ formatReadCount(getChapterComments(chapter)) }}
-                        {{ translate('markdown.moment.comments') }}
-                      </template>
                       <span
                         v-else
                         class="loading loading-dots loading-xs"
-                        :aria-label="translate('reader.chapters.loadingComments', { p0: chapter.title })"
+                        :aria-label="
+                          translate('reader.chapters.loadingComments', {
+                            p0: chapter.title,
+                          })
+                        "
                       ></span>
-                    </span>
+                    </CatalogMeta>
                   </client-only>
                 </span>
               </span>
-
               <i
-                class="ri-arrow-right-line mt-0.5 shrink-0 text-base-content/20 transition-[color,transform] group-hover/chapter:translate-x-0.5 group-hover/chapter:text-base-content/55"
+                class="ri-arrow-right-line mt-0.5 shrink-0 text-base-content/25 transition-[color,transform] group-hover/chapter:translate-x-0.5 group-hover/chapter:text-primary motion-reduce:transform-none motion-reduce:transition-none"
                 aria-hidden="true"
               ></i>
             </button>
@@ -286,18 +250,23 @@
 
     <div
       v-else
-      class="flex min-h-64 flex-col items-center justify-center gap-2 border-y border-dashed border-base-300 px-6 py-12 text-center text-base-content/50"
+      class="card card-border min-h-48 items-center justify-center gap-2 bg-base-100 px-6 py-10 text-center text-base-content/50"
     >
-      <i class="ri-book-open-line text-3xl" aria-hidden="true"></i>
-      <p class="font-semibold text-base-content/70">{{ translate('reader.chapters.empty') }}</p>
-      <p class="text-sm">{{ translate('reader.chapters.emptyHint') }}</p>
+      <i class="ri-book-open-line text-3xl text-primary" aria-hidden="true"></i>
+      <p class="font-semibold text-base-content/70">
+        {{ translate("reader.chapters.empty") }}
+      </p>
+      <p class="text-sm">{{ translate("reader.chapters.emptyHint") }}</p>
     </div>
   </section>
 </template>
-
 <script setup>
-import { useLocale } from '@/i18n';
-const { t: translate, number: formatNumber, date: formatLocalizedDate } = useLocale();
+import { useLocale } from "@/i18n";
+const {
+  t: translate,
+  number: formatNumber,
+  date: formatLocalizedDate,
+} = useLocale();
 
 import { storeToRefs } from "pinia";
 
@@ -309,6 +278,7 @@ import { useChapters } from "@/composables/novel/useChapters";
 import { useClickLimit } from "@/composables/useClickLimit";
 
 import ChapterStatusBadges from "@/components/novel/ChapterStatusBadges.vue";
+import CatalogMeta from "@/components/interaction/navigation/CatalogMeta.vue";
 
 const novelStore = useNovelStore();
 const analyticsStore = useAnalyticsStore();
@@ -325,13 +295,7 @@ const getChapterComments = (chapter) =>
   commentCountsStore.getContentCommentTotal("novel", chapter?.uuid);
 const getChapterCommentStatus = (chapter) =>
   commentCountsStore.getContentCommentStatus("novel", chapter?.uuid);
-const isChapterInLastRow = (index, chapterCount, columnCount) => {
-  const lastRowSize = chapterCount % columnCount || columnCount;
-  return index >= chapterCount - lastRowSize;
-};
 const SKELETON_CHAPTER_COUNT = 5;
-const hasChapterColumnDivider = (index, columnCount) =>
-  (index + 1) % columnCount !== 0;
 const {
   chapterCount,
   chapterVolumes,

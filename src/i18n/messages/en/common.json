@@ -71,7 +71,8 @@
     "compactDaLabel": "Compact “ද” forms"
   },
   "licenses": {
-    "title": "Licenses & third-party notices",
+    "title": "License",
+    "statement": "Open-source licenses & third-party notices",
     "viewEnglishSource": "View English source"
   },
   "server": {
@@ -98,6 +99,7 @@
     }
   },
   "common": {
+    "chat": { "sending": "Sending", "delivered": "Delivered", "read": "Read" },
     "actions": {
       "paste": "Paste from clipboard",
       "confirm": "Confirm"
@@ -167,12 +169,18 @@
       "actions": "Page actions"
     },
     "footer": {
+      "about": "About this site",
       "statistics": "Site statistics",
       "visitsToday": "Visits today",
       "totalVisits": "Total visits",
       "totalReads": "Total reads",
       "trackedSince": "Tracked since",
       "unavailable": "Statistics unavailable",
+      "source": "Website source repository",
+      "other": "Subscriptions & feedback",
+      "issues": "GitHub Issues",
+      "discussions": "GitHub Discussions",
+      "email": "Email feedback",
       "social": "Social accounts",
       "oldSiteHint": "Looking for the old website?",
       "oldSiteLink": "Visit it here",
@@ -496,8 +504,6 @@
     "nickname": "Custom name",
     "avatar": "Player avatar",
     "account": "Account and settings",
-    "email": "Email",
-    "emailPrivate": "Email not public",
     "loginTitle": "Sign in to continue reading",
     "editProfile": "Edit player profile",
     "errors": {

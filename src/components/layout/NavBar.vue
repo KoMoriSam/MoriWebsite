@@ -1,11 +1,11 @@
 <template>
   <header
     ref="navbar"
-    class="navbar bg-base-100 shadow-sm"
+    class="navbar relative z-40 h-(--navbar-height) min-h-(--navbar-height) bg-base-100/70 px-2 py-0 shadow-sm backdrop-blur-md"
     :class="
       overlayNavbar
         ? [
-            'max-lg:fixed max-lg:inset-x-0 max-lg:top-0 max-lg:z-70 max-lg:bg-base-100/95 max-lg:backdrop-blur-md max-lg:transition-transform max-lg:duration-200 motion-reduce:transition-none',
+            'max-lg:fixed max-lg:inset-x-0 max-lg:top-0 max-lg:z-70 max-lg:transition-transform max-lg:duration-200 motion-reduce:transition-none',
             overlayNavbarVisible
               ? 'max-lg:translate-y-0'
               : 'max-lg:pointer-events-none max-lg:-translate-y-full',
@@ -15,12 +15,7 @@
     :inert="mobileViewport && overlayNavbar && !overlayNavbarVisible"
   >
     <nav class="navbar-start">
-      <a
-        @click="router.push('/')"
-        class="max-lg:hidden lg:btn lg:btn-ghost lg:text-xl"
-      >
-        <img v-bind="getImageAttrs('/assets/images/icons/logo.webp', '128px')" alt="KoMoriSam" class="h-8" />
-      </a>
+      <SiteLogo class="hidden lg:inline-flex" />
       <MobileNav />
       <button
         ref="searchTriggerButton"
@@ -45,21 +40,14 @@
         @restore-focus="restoreSearchTriggerFocus"
       />
     </nav>
-    <nav class="navbar-center max-lg:min-w-0 max-lg:shrink">
-      <a
-        @click="router.push('/')"
-        class="lg:hidden btn btn-ghost min-w-0 max-w-full text-xl"
-      >
-        <img
-          v-bind="getImageAttrs('/assets/images/icons/logo.webp', '152px')"
-          alt="KoMoriSam"
-          class="h-10 min-w-0 object-contain"
-        />
-      </a>
-      <div class="hidden items-center lg:flex">
-        <ul class="menu menu-horizontal px-1">
+    <nav class="navbar-center h-full max-lg:min-w-0 max-lg:shrink">
+      <SiteLogo class="lg:hidden" />
+      <div class="hidden h-full items-center lg:flex">
+        <div
+          class="tabs tabs-border h-full flex-nowrap [--tab-height:var(--navbar-height)]"
+        >
           <NavLinks />
-        </ul>
+        </div>
         <ProjectMenu />
       </div>
     </nav>
@@ -70,7 +58,6 @@
 </template>
 
 <script setup>
-import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 import { gameNavbarMode, useMobileNavbar } from "@/composables/useMobileNavbar";
 import { githubSession } from "@/composables/auth/useGithubSession";
@@ -85,19 +72,19 @@ import {
   shallowRef,
   watch,
 } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import {
   MOBILE_READER_NAVBAR_HIDE_EVENT,
   MOBILE_READER_NAVBAR_SHOW_EVENT,
 } from "@/constants/reader";
 
-const router = useRouter();
 const route = useRoute();
 
 import AccountControl from "@/components/auth/AccountControl.vue";
 import NavLinks from "@/components/layout/NavLinks.vue";
 import MobileNav from "@/components/layout/MobileNav.vue";
 import ProjectMenu from "@/components/layout/ProjectMenu.vue";
+import SiteLogo from "@/components/layout/SiteLogo.vue";
 
 const navbar = ref(null);
 const readerNavbarVisible = ref(false);
@@ -114,7 +101,9 @@ const {
   hide: hideMobileNavbar,
 } = useMobileNavbar(navbar, gameNavbarMode);
 const overlayNavbarVisible = computed(() =>
-  isNovelReaderRoute.value ? readerNavbarVisible.value : mobileNavbarVisible.value,
+  isNovelReaderRoute.value
+    ? readerNavbarVisible.value
+    : mobileNavbarVisible.value,
 );
 const hideReaderNavbar = () => {
   readerNavbarVisible.value = false;

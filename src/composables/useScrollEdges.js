@@ -1,14 +1,17 @@
 import { computed, onScopeDispose, ref, watch } from "vue";
+import { layoutMotionActive } from "./layout/useLayoutMotion";
+import { useThemeStore } from "@/stores/themeStore";
 
 const emptyEdges = () => ({ top: false, bottom: false, left: false, right: false });
 const scrollable = (overflow) => /^(auto|scroll|overlay)$/.test(overflow);
 
 export const useScrollEdges = (viewportRef, hostRef) => {
+  const themes = useThemeStore();
   const edges = ref(emptyEdges());
   // Keep the cue at full strength while content remains hidden. Only change
   // the target opacity at the boundary; the component handles the transition.
   const edgeOpacity = computed(() => Object.fromEntries(
-    Object.entries(edges.value).map(([edge, visible]) => [edge, visible ? 1 : 0]),
+    Object.entries(edges.value).map(([edge, visible]) => [edge, visible && !layoutMotionActive.value ? 1 : 0]),
   ));
   const overlayStyle = ref({});
   let dispose = () => {};
@@ -41,7 +44,8 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     };
 
     const update = () => {
-      if (!viewport.isConnected || !viewport.clientWidth || !viewport.clientHeight) {
+      if (layoutMotionActive.value) return;
+      if (!viewport.isConnected || viewport.closest('details:not([open]), .collapse-close') || !viewport.clientWidth || !viewport.clientHeight) {
         if (Object.values(edges.value).some(Boolean)) edges.value = emptyEdges();
         return;
       }
@@ -84,6 +88,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
         width: `${viewport.clientWidth}px`,
         height: `${viewport.clientHeight}px`,
         borderRadius: style.borderRadius,
+        cornerShape: style.getPropertyValue("corner-shape") || "round",
         "--scroll-fade-background": backgroundImage,
       };
       if (Object.keys(nextStyle).some((key) => overlayStyle.value[key] !== nextStyle[key])) {
@@ -92,7 +97,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     };
 
     const schedule = () => {
-      if (disposed || frame) return;
+      if (disposed || frame || layoutMotionActive.value) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
         update();
@@ -103,7 +108,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       appearanceDirty = true;
       schedule();
     };
-    const resizeObserver = new ResizeObserver(refresh);
+    const resizeObserver = new ResizeObserver(schedule);
     const syncResizeTargets = () => {
       // Nested fixed-size children can overflow without resizing their parent.
       const nextTargets = new Set([host, viewport, ...viewport.querySelectorAll("*")]);
@@ -123,14 +128,34 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     syncResizeTargets();
 
     const contentObserver = new MutationObserver((records) => {
-      if (records.some((record) => record.type === "childList")) syncResizeTargets();
-      refresh();
+      if (records.some((record) => record.type === "childList")) {
+        syncResizeTargets();
+        syncAncestors();
+      }
+      if (records.some((record) => record.type === "attributes" && record.target === viewport)) {
+        appearanceDirty = true;
+      }
+      schedule();
     });
     contentObserver.observe(viewport, {
       subtree: true, childList: true, characterData: true, attributes: true,
       attributeFilter: ["class", "style", "hidden", "open", "dir", "lang", "src", "width", "height", "data-theme"],
     });
     const appearanceObserver = new MutationObserver(refresh);
+    const stopThemeWatch = watch(() => themes.resolvedTheme, refresh, { flush: "post" });
+    const syncThemeAppearance = () => {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+      syncAncestors();
+      appearanceDirty = true;
+      update();
+    };
+    const stopMotionWatch = watch(layoutMotionActive, (active) => {
+      if (active) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      } else refresh();
+    });
     const finishAppearanceChange = (event) => {
       if (ancestors.includes(event.target) || viewport.contains(event.target)) refresh();
     };
@@ -140,6 +165,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     viewport.addEventListener("load", refresh, true);
     document.addEventListener("transitionend", finishAppearanceChange, true);
     document.addEventListener("animationend", finishAppearanceChange, true);
+    document.addEventListener("mori:theme-change", syncThemeAppearance);
     window.addEventListener("resize", refresh);
     document.fonts?.addEventListener("loadingdone", refresh);
     document.fonts?.ready.then(() => { if (!disposed) refresh(); });
@@ -147,6 +173,8 @@ export const useScrollEdges = (viewportRef, hostRef) => {
 
     dispose = () => {
       disposed = true;
+      stopMotionWatch();
+      stopThemeWatch();
       refreshViewport = () => {};
       window.cancelAnimationFrame(frame);
       resizeObserver.disconnect();
@@ -156,6 +184,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       viewport.removeEventListener("load", refresh, true);
       document.removeEventListener("transitionend", finishAppearanceChange, true);
       document.removeEventListener("animationend", finishAppearanceChange, true);
+      document.removeEventListener("mori:theme-change", syncThemeAppearance);
       window.removeEventListener("resize", refresh);
       document.fonts?.removeEventListener("loadingdone", refresh);
     };

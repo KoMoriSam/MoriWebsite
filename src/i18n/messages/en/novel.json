@@ -1,6 +1,13 @@
 {
   "novel": {
     "detail": {
+      "aboutBook": "About the book",
+      "introduction": "Synopsis",
+      "authorNote": "From the author",
+      "greeting": {
+        "long": "Welcome to my novel😋",
+        "short": "Feeling shy😫"
+      },
       "cover": "Cover of 《向远方》",
       "chaptersRead": "chapters read",
       "chaptersIncluded": "chapters included",
@@ -10,6 +17,10 @@
       "bookComments": "Book comments",
       "continueReading": "Continue reading",
       "startReading": "Start reading",
+      "readLatest": "Read the latest chapter",
+      "rereadLatest": "Reread the latest chapter",
+      "readChapter": "Read this chapter",
+      "rereadChapter": "Reread this chapter",
       "loading": "Loading…"
     },
     "reader": {

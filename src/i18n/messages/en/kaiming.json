@@ -1,5 +1,7 @@
 {
   "kaiming": {
+    "navigation": "Page sections",
+    "defaultPunctuation": "Default punctuation",
     "title": "Kaiming punctuation",
     "description": "Punctuation fonts for Chinese web typography, with sans-serif and serif styles and variable weights from 100 to 900.",
     "specifications": "Font specifications",

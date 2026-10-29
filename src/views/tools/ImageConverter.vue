@@ -1,13 +1,16 @@
 <template>
-  <ContentPage :title="translate('image.title')" :metas-label="translate('tools.info')">
+  <ContentPage
+    :title="translate('image.title')"
+    :metas-label="translate('tools.info')"
+  >
     <template #meta>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-device-line" aria-hidden="true"></i>
-        {{ translate('common.localOnly') }}
+        {{ translate("common.localOnly") }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-stack-line" aria-hidden="true"></i>
-        {{ translate('image.fileLimit') }}
+        {{ translate("image.fileLimit") }}
       </span>
       <span class="inline-flex items-center gap-1.5">
         <i class="ri-image-line" aria-hidden="true"></i>
@@ -21,7 +24,9 @@
           class="min-w-0 space-y-2 overflow-hidden max-sm:sticky max-sm:top-2 max-sm:z-20 max-sm:rounded-box max-sm:border max-sm:border-base-300 max-sm:bg-base-100/95 max-sm:p-2 max-sm:shadow-sm max-sm:backdrop-blur"
         >
           <header class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="card-title font-serif">{{ translate('markdown.mermaid.preview') }}</h2>
+            <h2 class="card-title font-serif">
+              {{ translate("markdown.mermaid.preview") }}
+            </h2>
             <span class="text-xs text-base-content/55">
               {{ selectedItem.width || "—" }} ×
               {{ selectedItem.height || "—" }}
@@ -45,7 +50,9 @@
               mode="inline"
               class="size-full"
               :slides="previewSlides"
-              :aria-label="translate('image.preview', { p0: selectedItem.file.name })"
+              :aria-label="
+                translate('image.preview', { p0: selectedItem.file.name })
+              "
             >
               <template #overlay>
                 <canvas
@@ -91,7 +98,11 @@
               <button
                 class="btn btn-ghost btn-circle"
                 type="button"
-                :aria-label="isAnimationPlaying ? translate('image.pause') : translate('image.play')"
+                :aria-label="
+                  isAnimationPlaying
+                    ? translate('image.pause')
+                    : translate('image.play')
+                "
                 :disabled="!selectedPreviewFrames.length"
                 @click="toggleAnimation"
               >
@@ -122,7 +133,9 @@
         >
           <header class="flex flex-wrap items-center justify-between gap-3">
             <hgroup>
-              <h2 class="card-title font-serif">{{ translate('image.fileQueue') }}</h2>
+              <h2 class="card-title font-serif">
+                {{ translate("image.fileQueue") }}
+              </h2>
               <p v-if="queue.length" class="text-sm text-base-content/55">
                 {{ queueSummary }}
               </p>
@@ -163,17 +176,17 @@
 
           <template v-if="queue.length || isLoadingFiles">
             <div
-              class="relative my-2"
-              :class="isLoadingFiles ? 'min-h-24' : ''"
+              class="relative my-2 overflow-hidden rounded-box border border-base-300 bg-base-100"
+              :class="[
+                isLoadingFiles ? 'min-h-24' : '',
+                dragging
+                  ? 'border-dashed border-base-content bg-base-200/60'
+                  : '',
+              ]"
             >
               <ScrollableContainer>
                 <ul
-                  class="list max-h-[min(32rem,60dvh)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-box border border-base-300 bg-base-100 scrollbar-thin"
-                  :class="
-                    dragging
-                      ? 'border-dashed border-base-content bg-base-200/60'
-                      : ''
-                  "
+                  class="list max-h-[min(32rem,60dvh)] overflow-x-hidden overflow-y-auto overscroll-contain scrollbar-thin"
                   :aria-busy="isLoadingFiles"
                   :aria-label="translate('image.pendingImages')"
                 >
@@ -193,13 +206,19 @@
                       :src="item.previewUrl"
                       alt=""
                       class="shrink-0 rounded-field object-cover image-checker"
-                      :class="queueViewMode === 'compact' ? 'size-8' : 'size-14'"
+                      :class="
+                        queueViewMode === 'compact' ? 'size-8' : 'size-14'
+                      "
                     />
                     <button
                       class="min-w-0 text-left focus-visible:rounded-field focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
                       type="button"
-                      :aria-label="translate('image.previewLabel', { p0: item.file.name })"
-                      :aria-current="selectedId === item.id ? 'true' : undefined"
+                      :aria-label="
+                        translate('image.previewLabel', { p0: item.file.name })
+                      "
+                      :aria-current="
+                        selectedId === item.id ? 'true' : undefined
+                      "
                       @click="selectedId = item.id"
                     >
                       <span
@@ -218,10 +237,11 @@
                         {{
                           item.width
                             ? `${item.width} × ${item.height}`
-                            : translate('image.readingDimensions')
+                            : translate("image.readingDimensions")
                         }}
                         <template v-if="item.frameCount > 1">
-                          · {{ item.frameCount }} {{ translate('image.frames') }}</template
+                          · {{ item.frameCount }}
+                          {{ translate("image.frames") }}</template
                         >
                         · {{ formatBytes(item.file.size) }}
                         <template v-if="item.resultSize">
@@ -260,7 +280,12 @@
                     <span
                       class="flex shrink-0 items-center self-center"
                       :class="queueViewMode === 'compact' ? 'gap-0.5' : 'gap-1'"
-                      :aria-label="translate('image.convertTo', { p0: formatLabel(item.format), p1: formatLabel(queueTargetFormat(item)) })"
+                      :aria-label="
+                        translate('image.convertTo', {
+                          p0: formatLabel(item.format),
+                          p1: formatLabel(queueTargetFormat(item)),
+                        })
+                      "
                     >
                       <span class="badge badge-outline badge-xs">{{
                         formatLabel(item.format)
@@ -299,7 +324,9 @@
                       <button
                         v-if="item.status === 'done'"
                         class="btn btn-square btn-ghost"
-                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        :class="
+                          queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'
+                        "
                         type="button"
                         :aria-label="translate('image.downloadResult')"
                         @click.stop="downloadItem(item)"
@@ -311,7 +338,9 @@
                           item.status === 'error' || item.status === 'cancelled'
                         "
                         class="btn btn-square btn-ghost"
-                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        :class="
+                          queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'
+                        "
                         type="button"
                         :aria-label="translate('image.convertAgain')"
                         @click.stop="retryItem(item)"
@@ -320,7 +349,9 @@
                       </button>
                       <button
                         class="btn btn-square btn-ghost"
-                        :class="queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'"
+                        :class="
+                          queueViewMode === 'compact' ? 'btn-xs' : 'btn-sm'
+                        "
                         type="button"
                         :disabled="item.status === 'processing'"
                         :aria-label="translate('image.removeFile')"
@@ -343,7 +374,7 @@
               </ScrollableContainer>
               <div
                 v-if="isLoadingFiles"
-                class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-box bg-black/50 text-sm text-white text-shadow-xs"
+                class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/50 text-sm text-white text-shadow-xs"
                 role="status"
                 aria-live="polite"
               >
@@ -352,7 +383,7 @@
                   aria-hidden="true"
                 ></span>
                 <span>
-                  {{ translate('image.loaded') }}
+                  {{ translate("image.loaded") }}
                   <span class="tabular-nums"
                     >{{ loadedFileCount }}/{{ loadingFileTotal }}</span
                   >
@@ -383,10 +414,10 @@
                 ></i>
                 {{
                   isQueueFull
-                    ? translate('image.queueFull')
+                    ? translate("image.queueFull")
                     : dragging
-                      ? translate('common.dropHint')
-                      : translate('image.addMore')
+                      ? translate("common.dropHint")
+                      : translate("image.addMore")
                 }}
                 <input
                   class="sr-only"
@@ -410,13 +441,14 @@
                       class="loading loading-spinner loading-xs"
                       aria-hidden="true"
                     ></span>
-                    {{ translate('image.converting') }}
+                    {{ translate("image.converting") }}
                     <span class="inline-block w-[4ch] text-right tabular-nums">
                       {{ conversionProgress }}%
                     </span>
                   </template>
                   <template v-else>
-                    <i class="ri-file-zip-line" aria-hidden="true"></i>{{ translate('image.downloadAll') }}
+                    <i class="ri-file-zip-line" aria-hidden="true"></i
+                    >{{ translate("image.downloadAll") }}
                   </template>
                 </button>
                 <button
@@ -427,7 +459,8 @@
                   "
                   @click="resetQueue"
                 >
-                  <i class="ri-refresh-line" aria-hidden="true"></i>{{ translate('image.resetStatus') }}
+                  <i class="ri-refresh-line" aria-hidden="true"></i
+                  >{{ translate("image.resetStatus") }}
                 </button>
                 <button
                   class="btn btn-sm"
@@ -435,7 +468,8 @@
                   :disabled="isRunning || isLoadingFiles"
                   @click="clearQueue"
                 >
-                  <i class="ri-delete-bin-line" aria-hidden="true"></i>{{ translate('image.clear') }}
+                  <i class="ri-delete-bin-line" aria-hidden="true"></i
+                  >{{ translate("image.clear") }}
                 </button>
               </div>
             </div>
@@ -459,10 +493,14 @@
               </span>
               <div>
                 <h3 class="font-serif text-lg font-bold">
-                  {{ dragging ? translate('common.dropHint') : translate('image.dropImagesHere') }}
+                  {{
+                    dragging
+                      ? translate("common.dropHint")
+                      : translate("image.dropImagesHere")
+                  }}
                 </h3>
                 <p class="mt-1 text-sm text-base-content/60">
-                  {{ translate('image.queueHint') }}
+                  {{ translate("image.queueHint") }}
                 </p>
               </div>
               <label
@@ -481,7 +519,11 @@
                   "
                   aria-hidden="true"
                 ></i>
-                {{ dragging ? translate('image.addImages') : translate('image.chooseImages') }}
+                {{
+                  dragging
+                    ? translate("image.addImages")
+                    : translate("image.chooseImages")
+                }}
                 <input
                   class="sr-only"
                   type="file"
@@ -499,9 +541,13 @@
       <fieldset
         class="fieldset rounded-box border border-base-300 bg-base-100 p-4 md:sticky md:top-4 md:col-start-2 md:row-span-2 md:row-start-1"
       >
-        <legend class="fieldset-legend p-0">{{ translate('image.settings') }}</legend>
+        <legend class="fieldset-legend p-0">
+          {{ translate("image.settings") }}
+        </legend>
 
-        <div class="flex min-h-0 flex-col gap-1.5 md:max-h-[calc(100dvh-5rem)]">
+        <div
+          class="flex min-h-0 flex-col gap-1.5 md:max-h-[calc(100dvh-var(--navbar-height)-1rem)]"
+        >
           <div class="grid shrink-0 grid-cols-4 gap-x-4 gap-y-3">
             <div
               class="grid min-w-0 content-start"
@@ -516,7 +562,9 @@
                     : 'col-span-4'
               "
             >
-              <label class="label" for="format">{{ translate('image.outputFormat') }}</label>
+              <label class="label" for="format">{{
+                translate("image.outputFormat")
+              }}</label>
               <select
                 id="format"
                 v-model="settings.format"
@@ -538,11 +586,11 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="quality">
-                <span>{{ translate('image.quality') }}</span>
+                <span>{{ translate("image.quality") }}</span>
                 <span class="tabular-nums">
                   {{
                     settings.format !== "jpeg" && settings.lossless
-                      ? translate('image.lossless')
+                      ? translate("image.lossless")
                       : settings.quality
                   }}
                 </span>
@@ -564,9 +612,11 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="png-level">
-                <span v-if="!settings.pngOptimize">{{ translate('image.optimizationDisabled') }}</span>
+                <span v-if="!settings.pngOptimize">{{
+                  translate("image.optimizationDisabled")
+                }}</span>
                 <span v-else>
-                  {{ translate('image.optimizationLevel') }}
+                  {{ translate("image.optimizationLevel") }}
                   <span class="tabular-nums">{{ settings.pngLevel }}</span>
                 </span>
               </label>
@@ -585,7 +635,7 @@
               class="grid min-w-0 content-start col-span-2"
             >
               <label class="label" for="gif-colors">
-                <span>{{ translate('image.paletteColors') }}</span>
+                <span>{{ translate("image.paletteColors") }}</span>
                 <span class="tabular-nums">{{ settings.gifColors }}</span>
               </label>
               <input
@@ -610,15 +660,21 @@
                   : 'col-span-2'
               "
             >
-              <label class="label" for="animation-mode">{{ translate('image.animationSource') }}</label>
+              <label class="label" for="animation-mode">{{
+                translate("image.animationSource")
+              }}</label>
               <select
                 id="animation-mode"
                 v-model="settings.animationMode"
                 class="select max-sm:select-sm w-full"
                 :disabled="isRunning"
               >
-                <option value="frames">{{ translate('image.exportFramesAsZip') }}</option>
-                <option value="first">{{ translate('image.firstFrameOnly') }}</option>
+                <option value="frames">
+                  {{ translate("image.exportFramesAsZip") }}
+                </option>
+                <option value="first">
+                  {{ translate("image.firstFrameOnly") }}
+                </option>
               </select>
             </div>
             <div
@@ -633,7 +689,7 @@
               "
             >
               <label class="label" for="background-color">
-                {{ translate('image.transparencyFill') }}
+                {{ translate("image.transparencyFill") }}
                 <span class="font-mono text-xs">
                   {{ settings.backgroundColor }}
                 </span>
@@ -648,7 +704,9 @@
           </div>
 
           <div class="grid shrink-0 gap-2 [&>*+.label]:mt-2">
-            <div class="divider mt-2 mb-0">{{ translate('common.moreSettings') }}</div>
+            <div class="divider mt-2 mb-0">
+              {{ translate("common.moreSettings") }}
+            </div>
 
             <div class="grid gap-3 sm:gap-6 grid-flow-col auto-cols-fr">
               <label
@@ -663,7 +721,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('image.losslessCompression') }}
+                {{ translate("image.losslessCompression") }}
               </label>
 
               <label
@@ -678,7 +736,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('image.losslessOptimization') }}
+                {{ translate("image.losslessOptimization") }}
               </label>
 
               <label class="label" for="resize">
@@ -689,7 +747,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('image.resize') }}
+                {{ translate("image.resize") }}
               </label>
 
               <label class="label" for="watermark">
@@ -700,7 +758,7 @@
                   type="checkbox"
                   :disabled="isRunning"
                 />
-                {{ translate('image.addWatermark') }}
+                {{ translate("image.addWatermark") }}
               </label>
             </div>
           </div>
@@ -714,12 +772,16 @@
                 class="grid gap-1"
                 aria-labelledby="resize-settings"
               >
-                <div class="divider mt-2 mb-0">{{ translate('image.sizeSettings') }}</div>
+                <div class="divider mt-2 mb-0">
+                  {{ translate("image.sizeSettings") }}
+                </div>
                 <div
                   class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2"
                 >
                   <div class="min-w-0">
-                    <label class="label" for="resize-width">{{ translate('image.width') }}</label>
+                    <label class="label" for="resize-width">{{
+                      translate("image.width")
+                    }}</label>
                     <label class="input max-sm:input-sm w-full">
                       <input
                         id="resize-width"
@@ -778,7 +840,9 @@
                     </button>
                   </label>
                   <div class="min-w-0">
-                    <label class="label" for="resize-height">{{ translate('image.height') }}</label>
+                    <label class="label" for="resize-height">{{
+                      translate("image.height")
+                    }}</label>
                     <label class="input max-sm:input-sm w-full">
                       <input
                         id="resize-height"
@@ -803,11 +867,13 @@
                     type="checkbox"
                     :disabled="isRunning"
                   />
-                  {{ translate('image.limitSize') }}
+                  {{ translate("image.limitSize") }}
                 </label>
               </section>
               <div v-show="watermark.enabled" class="grid gap-1">
-                <div class="divider mt-2 mb-0">{{ translate('image.watermarkSettings') }}</div>
+                <div class="divider mt-2 mb-0">
+                  {{ translate("image.watermarkSettings") }}
+                </div>
                 <section class="grid gap-y-2">
                   <div
                     class="grid grid-cols-[minmax(0,1fr)_auto] justify-between gap-x-3 gap-y-2"
@@ -816,9 +882,9 @@
                       class="min-w-0"
                       :class="watermark.mode === 'single' ? '' : 'col-span-2'"
                     >
-                      <label for="watermark-content" class="label"
-                        >{{ translate('image.watermarkContent') }}</label
-                      >
+                      <label for="watermark-content" class="label">{{
+                        translate("image.watermarkContent")
+                      }}</label>
                       <div
                         id="watermark-content"
                         class="flex mt-1 mb-3 sm:mt-1.5 sm:mb-3.5"
@@ -838,7 +904,7 @@
                             :disabled="isRunning"
                             @change="setWatermarkTextEnabled($event)"
                           />
-                          {{ translate('image.text') }}
+                          {{ translate("image.text") }}
                         </label>
                         <label class="label" for="watermark-image-toggle">
                           <input
@@ -847,9 +913,11 @@
                             type="checkbox"
                             :checked="watermarkUsesGraphicKind('image')"
                             :disabled="isRunning"
-                            @change="setWatermarkGraphicEnabled('image', $event)"
+                            @change="
+                              setWatermarkGraphicEnabled('image', $event)
+                            "
                           />
-                          {{ translate('reader.contextMenu.image') }}
+                          {{ translate("reader.contextMenu.image") }}
                         </label>
                         <label class="label" for="watermark-icon-toggle">
                           <input
@@ -860,7 +928,7 @@
                             :disabled="isRunning"
                             @change="setWatermarkGraphicEnabled('icon', $event)"
                           />
-                          {{ translate('image.icon') }}
+                          {{ translate("image.icon") }}
                         </label>
                       </div>
                     </div>
@@ -868,7 +936,9 @@
                       v-if="watermark.mode === 'single'"
                       class="row-span-2 min-w-0 border-l border-base-300 pl-3"
                     >
-                      <span class="label">{{ translate('image.position') }}</span>
+                      <span class="label">{{
+                        translate("image.position")
+                      }}</span>
                       <div
                         class="grid w-fit grid-cols-3 gap-1"
                         role="radiogroup"
@@ -879,7 +949,9 @@
                           :key="position"
                           class="radio radio-lg sm:radio-xl"
                           :class="
-                            watermark.position === position ? 'radio-primary' : ''
+                            watermark.position === position
+                              ? 'radio-primary'
+                              : ''
                           "
                           type="radio"
                           role="radio"
@@ -895,18 +967,26 @@
                     <div
                       class="min-w-0"
                       :class="
-                        watermark.mode === 'single' ? 'col-start-1' : 'col-span-2'
+                        watermark.mode === 'single'
+                          ? 'col-start-1'
+                          : 'col-span-2'
                       "
                     >
-                      <label class="label" for="watermark-mode">{{ translate('image.arrangement') }}</label>
+                      <label class="label" for="watermark-mode">{{
+                        translate("image.arrangement")
+                      }}</label>
                       <select
                         id="watermark-mode"
                         v-model="watermark.mode"
                         class="select max-sm:select-sm w-full"
                         :disabled="isRunning"
                       >
-                        <option value="single">{{ translate('image.single') }}</option>
-                        <option value="tile">{{ translate('image.tile') }}</option>
+                        <option value="single">
+                          {{ translate("image.single") }}
+                        </option>
+                        <option value="tile">
+                          {{ translate("image.tile") }}
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -915,7 +995,9 @@
                     class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                   >
                     <div class="min-w-0">
-                      <label class="label" for="watermark-text">{{ translate('common.text') }}</label>
+                      <label class="label" for="watermark-text">{{
+                        translate("common.text")
+                      }}</label>
                       <input
                         id="watermark-text"
                         v-model="watermark.text"
@@ -927,7 +1009,9 @@
                       />
                     </div>
                     <div>
-                      <label class="label" for="watermark-text-color">{{ translate('image.color') }}</label>
+                      <label class="label" for="watermark-text-color">{{
+                        translate("image.color")
+                      }}</label>
                       <input
                         id="watermark-text-color"
                         v-model="watermark.color"
@@ -938,7 +1022,9 @@
                     </div>
                   </div>
                   <div v-if="watermarkContainsText()" class="min-w-0">
-                    <span class="label">{{ translate('common.fontSelect.font') }}</span>
+                    <span class="label">{{
+                      translate("common.fontSelect.font")
+                    }}</span>
                     <FontSelect
                       ref="watermarkFontSelect"
                       v-model="watermark.fontId"
@@ -951,7 +1037,7 @@
                   <div v-if="watermarkNeedsGraphic()" class="min-w-0">
                     <div v-if="usesWatermarkImageFile()">
                       <label class="label" for="watermark-graphic-image">
-                        {{ translate('image.defaultIcon') }}
+                        {{ translate("image.defaultIcon") }}
                       </label>
                       <input
                         id="watermark-graphic-image"
@@ -972,7 +1058,9 @@
                         class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2"
                       >
                         <div class="min-w-0">
-                          <span class="label">{{ translate('image.iconPicker') }}</span>
+                          <span class="label">{{
+                            translate("image.iconPicker")
+                          }}</span>
                           <button
                             class="select max-sm:select-sm w-full justify-start font-normal"
                             popovertarget="watermark-icon-picker"
@@ -990,7 +1078,7 @@
                         </div>
                         <div v-if="!watermarkContainsText()">
                           <label class="label" for="watermark-graphic-color">
-                            {{ translate('image.color') }}
+                            {{ translate("image.color") }}
                           </label>
                           <input
                             id="watermark-graphic-color"
@@ -1029,7 +1117,9 @@
                             class="select select-sm w-full"
                             :aria-label="translate('image.iconCategories')"
                           >
-                            <option value="all">{{ translate('image.allCategories') }}</option>
+                            <option value="all">
+                              {{ translate("image.allCategories") }}
+                            </option>
                             <option
                               v-for="category in remixIconCategories"
                               :key="category.value"
@@ -1050,7 +1140,9 @@
                               v-for="icon in filteredRemixIcons"
                               :key="icon"
                               class="btn btn-ghost btn-square btn-sm"
-                              :class="watermark.icon === icon ? 'btn-active' : ''"
+                              :class="
+                                watermark.icon === icon ? 'btn-active' : ''
+                              "
                               type="button"
                               role="option"
                               :aria-selected="watermark.icon === icon"
@@ -1072,7 +1164,7 @@
                           v-else
                           class="py-4 text-center text-sm text-base-content/55"
                         >
-                          {{ translate('image.noMatchingIcons') }}
+                          {{ translate("image.noMatchingIcons") }}
                         </p>
                       </div>
                       <div
@@ -1096,10 +1188,12 @@
                   </div>
                 </section>
                 <section aria-labelledby="watermark-appearance" class="mt-2">
-                  <div class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1">
+                  <div
+                    class="grid gap-x-4 gap-y-3 sm:grid-cols-2 md:grid-cols-1"
+                  >
                     <div class="min-w-0">
                       <label class="label" for="watermark-opacity">
-                        <span>{{ translate('image.opacity') }}</span>
+                        <span>{{ translate("image.opacity") }}</span>
                         <span class="tabular-nums">
                           {{ Math.round(watermark.opacity * 100) }}%
                         </span>
@@ -1117,7 +1211,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-scale">
-                        <span>{{ translate('image.scale') }}</span>
+                        <span>{{ translate("image.scale") }}</span>
                         <span class="tabular-nums">
                           {{ Math.round(watermark.scale * 100) }}%
                         </span>
@@ -1135,7 +1229,7 @@
                     </div>
                     <div v-if="watermark.mode === 'single'" class="min-w-0">
                       <label class="label" for="watermark-margin">
-                        <span>{{ translate('image.margin') }}</span>
+                        <span>{{ translate("image.margin") }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.margin }} px</span
                         >
@@ -1152,7 +1246,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-offset-x">
-                        <span>{{ translate('image.xOffset') }}</span>
+                        <span>{{ translate("image.xOffset") }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.offsetX }} px</span
                         >
@@ -1169,7 +1263,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-offset-y">
-                        <span>{{ translate('image.yOffset') }}</span>
+                        <span>{{ translate("image.yOffset") }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.offsetY }} px</span
                         >
@@ -1186,7 +1280,7 @@
                     </div>
                     <div v-if="watermark.mode === 'tile'" class="min-w-0">
                       <label class="label" for="watermark-gap">
-                        <span>{{ translate('image.spacing') }}</span>
+                        <span>{{ translate("image.spacing") }}</span>
                         <span class="tabular-nums">{{ watermark.gap }} px</span>
                       </label>
                       <input
@@ -1201,7 +1295,7 @@
                     </div>
                     <div class="min-w-0">
                       <label class="label" for="watermark-rotation">
-                        <span>{{ translate('image.rotation') }}</span>
+                        <span>{{ translate("image.rotation") }}</span>
                         <span class="tabular-nums"
                           >{{ watermark.rotation }}°</span
                         >
@@ -1217,7 +1311,9 @@
                         :disabled="isRunning"
                       />
                     </div>
-                    <label class="label" for="watermark-other">{{ translate('image.otherSettings') }}</label>
+                    <label class="label" for="watermark-other">{{
+                      translate("image.otherSettings")
+                    }}</label>
                     <div class="min-w-0" id="watermark-other">
                       <label class="label" for="watermark-shadow">
                         <input
@@ -1227,7 +1323,7 @@
                           type="checkbox"
                           :disabled="isRunning"
                         />
-                        {{ translate('image.watermarkShadow') }}
+                        {{ translate("image.watermarkShadow") }}
                       </label>
                     </div>
                   </div>
@@ -1243,7 +1339,8 @@
               type="button"
               @click="cancelConversion"
             >
-              <i class="ri-stop-circle-line" aria-hidden="true"></i>{{ translate('image.cancelConversion') }}
+              <i class="ri-stop-circle-line" aria-hidden="true"></i
+              >{{ translate("image.cancelConversion") }}
             </button>
             <button
               v-else
@@ -1252,7 +1349,8 @@
               :disabled="!queue.length || !readyItems.length || isLoadingFiles"
               @click="startConversion"
             >
-              <i class="ri-magic-line" aria-hidden="true"></i>{{ translate('image.startConversion') }}
+              <i class="ri-magic-line" aria-hidden="true"></i
+              >{{ translate("image.startConversion") }}
             </button>
           </div>
         </div>
@@ -1263,7 +1361,7 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 
 import {
@@ -1325,26 +1423,66 @@ const FEATURED_REMIX_ICONS = [
   "ri-shield-check-line",
 ];
 const REMIX_ICON_CATEGORY_LABELS = {
-  get Arrows() { return translate('image.arrows'); },
-  get Buildings() { return translate('image.buildings'); },
-  get Business() { return translate('image.business'); },
-  get Communication() { return translate('image.communication'); },
-  get Design() { return translate('image.design'); },
-  get Development() { return translate('image.development'); },
-  get Device() { return translate('image.devices'); },
-  get Document() { return translate('common.documents'); },
-  get Editor() { return translate('image.editing'); },
-  get Finance() { return translate('image.finance'); },
-  get Food() { return translate('image.foodDrink'); },
-  get "Game & Sports"() { return translate('image.gamesSports'); },
-  get "Health & Medical"() { return translate('image.healthMedical'); },
-  get Logos() { return translate('image.brandLogos'); },
-  get Map() { return translate('image.maps'); },
-  get Media() { return translate('image.media'); },
-  get System() { return translate('image.system'); },
-  get "User & Faces"() { return translate('image.usersEmoji'); },
-  get Weather() { return translate('image.weather'); },
-  get Others() { return translate('changelog.other'); },
+  get Arrows() {
+    return translate("image.arrows");
+  },
+  get Buildings() {
+    return translate("image.buildings");
+  },
+  get Business() {
+    return translate("image.business");
+  },
+  get Communication() {
+    return translate("image.communication");
+  },
+  get Design() {
+    return translate("image.design");
+  },
+  get Development() {
+    return translate("image.development");
+  },
+  get Device() {
+    return translate("image.devices");
+  },
+  get Document() {
+    return translate("common.documents");
+  },
+  get Editor() {
+    return translate("image.editing");
+  },
+  get Finance() {
+    return translate("image.finance");
+  },
+  get Food() {
+    return translate("image.foodDrink");
+  },
+  get "Game & Sports"() {
+    return translate("image.gamesSports");
+  },
+  get "Health & Medical"() {
+    return translate("image.healthMedical");
+  },
+  get Logos() {
+    return translate("image.brandLogos");
+  },
+  get Map() {
+    return translate("image.maps");
+  },
+  get Media() {
+    return translate("image.media");
+  },
+  get System() {
+    return translate("image.system");
+  },
+  get "User & Faces"() {
+    return translate("image.usersEmoji");
+  },
+  get Weather() {
+    return translate("image.weather");
+  },
+  get Others() {
+    return translate("changelog.other");
+  },
 };
 const REMIX_ICON_TAG_INDEX = new Map();
 for (const [category, icons] of Object.entries(remixIconTags)) {
@@ -1614,9 +1752,14 @@ const hasQualityControl = computed(() =>
   ["jpeg", "webp", "avif"].includes(settings.format),
 );
 const staticOutput = computed(() => !["gif", "webp"].includes(settings.format));
-const queueSummary = computed(
-  () =>
-    translate('image.filesCompleted', { p0: queue.value.length, p1: successfulItems.value.length, p2: queue.value.some((item) => item.status === "error") ? translate('image.failedSuffix') : "" }),
+const queueSummary = computed(() =>
+  translate("image.filesCompleted", {
+    p0: queue.value.length,
+    p1: successfulItems.value.length,
+    p2: queue.value.some((item) => item.status === "error")
+      ? translate("image.failedSuffix")
+      : "",
+  }),
 );
 
 watch(
@@ -1779,7 +1922,7 @@ async function resolveWatermarkFont(
   fallbackFontId = watermark.fallbackFontId,
 ) {
   const selector = watermarkFontSelect.value;
-  if (!selector) throw new Error(translate('image.fontNotReady'));
+  if (!selector) throw new Error(translate("image.fontNotReady"));
   return selector.resolveFont(fontId, text, 600, fallbackFontId);
 }
 
@@ -1881,7 +2024,8 @@ function loadSvgWatermarkImage(blob) {
       image.decoding = "async";
       await new Promise((resolve, reject) => {
         image.onload = resolve;
-        image.onerror = () => reject(new Error(translate('image.svgReadFailed')));
+        image.onerror = () =>
+          reject(new Error(translate("image.svgReadFailed")));
         image.src = url;
       });
       if (aspectRatio) {
@@ -1927,9 +2071,9 @@ function rasterizeSvgWatermark(blob, size, scale) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * density));
     canvas.height = Math.max(1, Math.ceil(stampHeight * density));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error(translate('image.svgUnsupported'));
+    if (!context) throw new Error(translate("image.svgUnsupported"));
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvasToBlob(canvas, translate('image.svgFailed'));
+    return canvasToBlob(canvas, translate("image.svgFailed"));
   })();
   cache.set(key, promise);
   while (cache.size > 3) cache.delete(cache.keys().next().value);
@@ -1954,7 +2098,7 @@ async function renderRemixIconBlob(icon, color) {
     element.remove();
   }
   if (!content || ["none", "normal"].includes(content))
-    throw new Error(translate('image.iconReadFailed'));
+    throw new Error(translate("image.iconReadFailed"));
   const glyph = content
     .replace(/^['"]|['"]$/g, "")
     .replace(/\\([0-9a-f]{1,6})\s?/gi, (_, code) =>
@@ -1979,7 +2123,7 @@ async function renderRemixIconBlob(icon, color) {
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
-        blob ? resolve(blob) : reject(new Error(translate('image.iconFailed'))),
+        blob ? resolve(blob) : reject(new Error(translate("image.iconFailed"))),
       "image/png",
     ),
   );
@@ -2119,7 +2263,7 @@ async function createTextWatermarkStamp(size, config) {
     const fontSize = Math.round(calculateWatermarkBaseSize(size, config.scale));
     const measureCanvas = document.createElement("canvas");
     const measureContext = measureCanvas.getContext("2d");
-    if (!measureContext) throw new Error(translate('image.textUnsupported'));
+    if (!measureContext) throw new Error(translate("image.textUnsupported"));
     measureContext.font = `${weight} ${fontSize}px ${family}`;
     const metrics = measureContext.measureText(text);
     const textLeft = Math.max(0, metrics.actualBoundingBoxLeft || 0);
@@ -2166,7 +2310,7 @@ async function createTextWatermarkStamp(size, config) {
     canvas.width = Math.max(1, Math.ceil(stampWidth * renderScale));
     canvas.height = Math.max(1, Math.ceil(stampHeight * renderScale));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error(translate('image.textUnsupported'));
+    if (!context) throw new Error(translate("image.textUnsupported"));
     context.font = `${weight} ${fontSize * renderScale}px ${family}`;
     context.textBaseline = "alphabetic";
     context.fillStyle = config.color || "#ffffff";
@@ -2184,7 +2328,7 @@ async function createTextWatermarkStamp(size, config) {
       (padding + graphicWidth + contentGap + textLeft) * renderScale,
       (padding + (contentHeight - textHeight) / 2 + textAscent) * renderScale,
     );
-    const blob = await canvasToBlob(canvas, translate('image.textFailed'));
+    const blob = await canvasToBlob(canvas, translate("image.textFailed"));
     return { blob, width: stampWidth, height: stampHeight };
   } finally {
     graphic?.close?.();
@@ -2220,7 +2364,7 @@ async function addFiles(fileList) {
   const available = MAX_FILES - queue.value.length;
   const files = [...fileList].slice(0, Math.max(0, available));
   if (fileList.length > available)
-    toast.warning(translate('image.batchLimit', { p0: MAX_FILES }));
+    toast.warning(translate("image.batchLimit", { p0: MAX_FILES }));
   if (!files.length) return;
   isLoadingFiles.value = true;
   loadedFileCount.value = 0;
@@ -2231,7 +2375,7 @@ async function addFiles(fileList) {
         await addFile(file);
       } catch (error) {
         toast.error(
-          `${file.name}：${error instanceof Error ? error.message : translate('image.fileReadFailed')}`,
+          `${file.name}：${error instanceof Error ? error.message : translate("image.fileReadFailed")}`,
         );
       } finally {
         loadedFileCount.value += 1;
@@ -2246,7 +2390,7 @@ async function addFile(file) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const format = detectImageFormat(bytes);
   if (!format) {
-    toast.error(translate('image.unsupportedFormat', { p0: file.name }));
+    toast.error(translate("image.unsupportedFormat", { p0: file.name }));
     return;
   }
   const item = {
@@ -2291,7 +2435,10 @@ async function addFile(file) {
       Object.assign(queueItem, {
         status: "error",
         message: "",
-        messageDescriptor: { key: 'image.memoryLimit', params: { p0: formatBytes(estimated), p1: formatBytes(limit) } },
+        messageDescriptor: {
+          key: "image.memoryLimit",
+          params: { p0: formatBytes(estimated), p1: formatBytes(limit) },
+        },
       });
     else {
       if (queueItem.frameCount > 1) {
@@ -2304,7 +2451,10 @@ async function addFile(file) {
   } catch (error) {
     Object.assign(queueItem, {
       status: "error",
-      message: error instanceof Error ? error.message : translate('image.imageReadFailed'),
+      message:
+        error instanceof Error
+          ? error.message
+          : translate("image.imageReadFailed"),
     });
   }
 }
@@ -2344,7 +2494,7 @@ async function readMetadata(file, format, bytes) {
     if (image) dimensions = { width: image.width, height: image.height };
   }
   if (!dimensions?.width || !dimensions?.height)
-    throw new Error(translate('image.dimensionsFailed'));
+    throw new Error(translate("image.dimensionsFailed"));
   const { width, height } = dimensions;
   let frameCount = 1;
   let animated = false;
@@ -2365,7 +2515,7 @@ async function readMetadata(file, format, bytes) {
 async function startConversion() {
   if (!worker.value || isRunning.value) return;
   if (watermark.enabled && usesWatermarkImageFile() && !watermark.file) {
-    toast.warning(translate('image.watermarkRequired'));
+    toast.warning(translate("image.watermarkRequired"));
     return;
   }
   isRunning.value = true;
@@ -2378,10 +2528,11 @@ async function startConversion() {
   const cancelled = batch.filter((item) => item.status === "cancelled").length;
   isRunning.value = false;
   currentJobId.value = null;
-  if (cancelled) toast.info(translate('image.cancelNotice'));
-  else if (failed === batch.length) toast.error(translate('image.batchFailed'));
-  else if (failed) toast.warning(translate('image.partialFailure', { p0: failed }));
-  else if (batch.length) toast.success(translate('image.doneNotice'));
+  if (cancelled) toast.info(translate("image.cancelNotice"));
+  else if (failed === batch.length) toast.error(translate("image.batchFailed"));
+  else if (failed)
+    toast.warning(translate("image.partialFailure", { p0: failed }));
+  else if (batch.length) toast.success(translate("image.doneNotice"));
 }
 
 async function convertItem(item) {
@@ -2445,12 +2596,18 @@ async function convertItem(item) {
       : null;
     item.status = "done";
     item.progress = 100;
-    item.warnings = (result.warnings || []).map((warning, index) => result.warningMessages?.[index] || warning);
+    item.warnings = (result.warnings || []).map(
+      (warning, index) => result.warningMessages?.[index] || warning,
+    );
     item.messageDescriptor = null;
     item.message = "转换完成";
   } catch (error) {
     if (error?.name === "AbortError")
-      Object.assign(item, { status: "cancelled", message: "已取消", messageDescriptor: null });
+      Object.assign(item, {
+        status: "cancelled",
+        message: "已取消",
+        messageDescriptor: null,
+      });
     else
       Object.assign(item, {
         status: "error",
@@ -2500,8 +2657,13 @@ function onWorkerMessage({ data }) {
   pendingJobs.delete(data.jobId);
   if (["result", "previewResult"].includes(data.type)) pending.resolve(data);
   else if (data.type === "cancelled")
-    pending.reject(new DOMException(translate('image.canceled'), "AbortError"));
-  else pending.reject(Object.assign(new Error(data.message || "转换失败"), { uiMessage: data.errorMessage }));
+    pending.reject(new DOMException(translate("image.canceled"), "AbortError"));
+  else
+    pending.reject(
+      Object.assign(new Error(data.message || "转换失败"), {
+        uiMessage: data.errorMessage,
+      }),
+    );
 }
 
 function onWorkerError(event) {
@@ -2510,7 +2672,7 @@ function onWorkerError(event) {
     : null;
   if (pending) {
     pendingJobs.delete(currentJobId.value);
-    pending.reject(new Error(event.message || translate('image.workerFailed')));
+    pending.reject(new Error(event.message || translate("image.workerFailed")));
   }
 }
 
@@ -2813,18 +2975,30 @@ function targetFormatBadgeClass(item) {
 function savingsLabel(item) {
   const rate = (1 - item.resultSize / item.file.size) * 100;
   return rate >= 0
-    ? translate('image.saved', { p0: rate.toFixed(1) })
-    : translate('image.increased', { p0: Math.abs(rate).toFixed(1) });
+    ? translate("image.saved", { p0: rate.toFixed(1) })
+    : translate("image.increased", { p0: Math.abs(rate).toFixed(1) });
 }
 function statusLabel(status) {
   return (
     {
-      get reading() { return translate('image.reading'); },
-      get ready() { return translate('image.waitingToConvert'); },
-      get processing() { return translate('image.processing'); },
-      get done() { return translate('image.completed'); },
-      get error() { return translate('image.failed'); },
-      get cancelled() { return translate('image.canceled'); },
+      get reading() {
+        return translate("image.reading");
+      },
+      get ready() {
+        return translate("image.waitingToConvert");
+      },
+      get processing() {
+        return translate("image.processing");
+      },
+      get done() {
+        return translate("image.completed");
+      },
+      get error() {
+        return translate("image.failed");
+      },
+      get cancelled() {
+        return translate("image.canceled");
+      },
     }[status] || status
   );
 }
@@ -2840,15 +3014,33 @@ function statusIcon(status) {
 }
 function positionLabel(position) {
   return {
-    get "top-left"() { return translate('image.topLeft'); },
-    get "top-center"() { return translate('image.topCenter'); },
-    get "top-right"() { return translate('image.topRight'); },
-    get "center-left"() { return translate('image.centerLeft'); },
-    get "center-center"() { return translate('image.center'); },
-    get "center-right"() { return translate('image.centerRight'); },
-    get "bottom-left"() { return translate('image.bottomLeft'); },
-    get "bottom-center"() { return translate('image.bottomCenter'); },
-    get "bottom-right"() { return translate('image.bottomRight'); },
+    get "top-left"() {
+      return translate("image.topLeft");
+    },
+    get "top-center"() {
+      return translate("image.topCenter");
+    },
+    get "top-right"() {
+      return translate("image.topRight");
+    },
+    get "center-left"() {
+      return translate("image.centerLeft");
+    },
+    get "center-center"() {
+      return translate("image.center");
+    },
+    get "center-right"() {
+      return translate("image.centerRight");
+    },
+    get "bottom-left"() {
+      return translate("image.bottomLeft");
+    },
+    get "bottom-center"() {
+      return translate("image.bottomCenter");
+    },
+    get "bottom-right"() {
+      return translate("image.bottomRight");
+    },
   }[position];
 }
 function baseName(name) {

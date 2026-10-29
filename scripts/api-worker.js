@@ -1,4 +1,5 @@
 import { handleGames } from './games/gateway.js';
+import { handleGithubProfile } from './auth/github-profile.js';
 export { GameRoom } from './games/room.js';
 
 const HERO_CACHE_TTL_SECONDS = 60 * 60;
@@ -61,7 +62,7 @@ function buildCorsHeaders(origin = "*") {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, If-None-Match",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -1729,6 +1730,10 @@ function handleServiceInfo(corsOrigin) {
       ok: true,
       service: "komorisam-api",
       endpoints: {
+        githubProfile: {
+          method: "GET",
+          path: "/github/users/:username",
+        },
         paragraphCounts: {
           method: "POST",
           path: "/paragraph-counts",
@@ -1786,6 +1791,10 @@ export default {
 
     if (pathname === "/paragraph-counts" || pathname === "/para-counts") {
       return handleParagraphCounts(request, env, corsOrigin);
+    }
+
+    if (pathname === "/github/users" || pathname.startsWith("/github/users/")) {
+      return handleGithubProfile(request, env, buildCorsHeaders(corsOrigin));
     }
 
     if (pathname === "/random-hero" || pathname === "/api/random-hero") {

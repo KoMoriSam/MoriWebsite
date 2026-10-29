@@ -59,12 +59,15 @@ globalThis.localStorage = local;
 globalThis.sessionStorage = savedReturn;
 let profileResponse = {
   name: "Actual GitHub Name",
-  avatar_url: "https://avatars.githubusercontent.com/u/1?v=4",
+  avatarUrl: "https://avatars.githubusercontent.com/u/1?v=4",
   email: "never@example.com",
 };
 let pendingProfile;
 let profileCalls = 0;
-globalThis.fetch = async () => {
+globalThis.fetch = async (url, options) => {
+  assert.match(url, /^https:\/\/api\.komori\.cc\/github\/users\/[a-z\d-]+$/i);
+  assert.equal(options.credentials, "omit");
+  assert.equal(options.headers.Authorization, undefined);
   profileCalls++;
   if (pendingProfile) return pendingProfile;
   return { ok: true, json: async () => profileResponse };
@@ -93,7 +96,7 @@ assert.equal(new URL(window.location.href).searchParams.has("giscus"), false);
 emitViewer("account");
 await tick();
 assert.equal(auth.state.profile.name, "Actual GitHub Name");
-assert.equal(auth.state.profile.email, "never@example.com");
+assert.equal(Object.hasOwn(auth.state.profile, "email"), false);
 auth.login();
 assert.equal(
   new URL(window.location.assigned).searchParams.get("redirect_uri"),
@@ -107,12 +110,12 @@ assert.equal(local.getItem("mori:github:profile"), null);
 local.setItem("giscus-session", JSON.stringify("second"));
 listeners.get("storage")();
 widget.__session = "second";
-profileResponse = { name: null, avatar_url: null };
+profileResponse = { name: null, avatarUrl: null };
 emitViewer("fallback-account");
 await tick();
 assert.equal(auth.state.profile.name, "fallback-account");
 assert.equal(auth.state.profile.avatarUrl, "");
-assert.equal(auth.state.profile.email, "");
+assert.equal(Object.hasOwn(auth.state.profile, "email"), false);
 let resolveProfile;
 pendingProfile = new Promise((resolve) => {
   resolveProfile = resolve;
@@ -180,7 +183,7 @@ assert.equal(failedProfileCalls, 1, "metadata cannot repeat a failed request");
 assert.equal(failing.state.error, "profile", "metadata cannot hide profile errors");
 globalThis.fetch = async () => ({
   ok: true,
-  json: async () => ({ name: "Recovered", avatar_url: "" }),
+  json: async () => ({ name: "Recovered", avatarUrl: "" }),
 });
 failing.retry();
 assert.equal(
@@ -329,7 +332,7 @@ try {
         "x-ratelimit-remaining": "0",
         "x-ratelimit-reset": String(rateReset),
       }),
-      json: async () => ({ message: "API rate limit exceeded" }),
+      json: async () => ({ error: "GITHUB_PROFILE_UNAVAILABLE", reason: "rate-limit" }),
     };
   };
   recovering.retry();

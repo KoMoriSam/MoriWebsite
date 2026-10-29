@@ -1,34 +1,120 @@
 {
   "home": {
-    "openBlog": "Read the blog",
-    "exploreNovel": "Explore the novel",
-    "serverStatus": "Server status",
-    "photo": "Photo ·",
+    "navigation": {
+      "label": "Page sections",
+      "about": "About me"
+    },
+    "hero": {
+      "title": "远方之森",
+      "description": "Writing a few words, making a few tools, and recreating things that catch my interest.",
+      "read": "Read the blog",
+      "explore": "Wander around",
+      "note": "Still tinkering today.",
+      "photos": {
+        "ginkgo": {
+          "location": "Kunming, Yunnan",
+          "description": "Golden ginkgo leaves beside Qinglai Road"
+        },
+        "bellTower": {
+          "location": "Kunming, Yunnan",
+          "description": "Yunnan University's bell tower and lavender beneath a blue sky"
+        },
+        "pavilion": {
+          "location": "Kunming, Yunnan",
+          "description": "Pavilion eaves among the green leaves of Yunshan"
+        },
+        "observatory": {
+          "location": "Kunming, Yunnan",
+          "description": "The radio telescope at Yunshan Observatory"
+        },
+        "lakeSide": {
+          "location": "Kunming, Yunnan",
+          "description": "Ze Lake and stone steps in the sunlight"
+        },
+        "playgroundLawn": {
+          "location": "Kunming, Yunnan",
+          "description": "The lawn at Yunnan University's Chengdong Stadium"
+        },
+        "universityRoad": {
+          "location": "Kunming, Yunnan",
+          "description": "Sunlight filtering through the trees along Qinglai West Road"
+        },
+        "zhongshanPark": {
+          "location": "Dongcheng, Beijing",
+          "description": "The waterfront and its reflections in Zhongshan Park"
+        },
+        "beijingHutong": {
+          "location": "Dongcheng, Beijing",
+          "description": "Everyday life along a Beijing hutong"
+        },
+        "bfsuLibrary": {
+          "location": "Haidian, Beijing",
+          "description": "The multilingual wall at Beijing Foreign Studies University's library"
+        },
+        "beihaiBoating": {
+          "location": "Xicheng, Beijing",
+          "description": "A boat on the shimmering waters of Beihai Park"
+        },
+        "jingshanPavilion": {
+          "location": "Xicheng, Beijing",
+          "description": "Pavilion eaves among the trees in Jingshan Park"
+        },
+        "tiananmenSlogans": {
+          "location": "Dongcheng, Beijing",
+          "description": "Tiananmen Gate and its slogans at dawn"
+        },
+        "beihaiPagoda": {
+          "location": "Xicheng, Beijing",
+          "description": "Beihai Park's White Pagoda framed by willow branches"
+        }
+      },
+      "time": {
+        "now": "Now",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "tomorrow": "Tomorrow"
+      },
+      "characterAlt": "KoMori's pixel character",
+      "highlights": "Start exploring",
+      "latest": "Latest writing"
+    },
+    "writing": {
+      "allArticles": "All articles",
+      "rss": "Subscribe via RSS",
+      "novelTitle": "向远方",
+      "openNovel": "Open this book",
+      "title": "Recent Writing",
+      "refresh": "Refresh the blog index and novel chapters",
+      "refreshing": "Refreshing recent writing",
+      "refreshed": "Recent writing refreshed.",
+      "refreshFailed": "Some content could not be refreshed. Please try again later.",
+      "intro": "Discoveries in technology and language, with a few thoughts from everyday life.",
+      "read": "Continue reading",
+      "loading": "Loading recent writing",
+      "emptyTitle": "Begin with an article.",
+      "readingTime": "{count} min",
+      "novelDescription": "From childhood in the family compound to studying far from home, Fang Yuanluo comes to understand home and distant horizons through companionship and farewells."
+    },
+    "workshop": {
+      "title": "Little gadgets I’ve tinkered with",
+      "allTools": "All tools",
+      "viewMore": "View more"
+    },
+    "games": {
+      "intro": "Everyone here? Let's start a game.",
+      "allGames": "All games"
+    },
+    "about": {
+      "title": "Hi, I'm {name}.",
+      "intro": "Also known as විශ්ව (Wishwa). I like words, languages, and the process of turning ideas into something real.",
+      "note": "An independent developer who enjoys tinkering with all sorts of things. Probably.",
+      "contact": "Find me elsewhere",
+      "wechatQr": "WeChat contact QR code",
+      "source": "Explore the site's source",
+      "colophon": "Writing a little, making a little. Thanks for wandering through this forest."
+    },
     "sourcePixabay": "Source · Pixabay",
-    "photoCredit": "Photo · florianhoellmueller",
-    "projectsTitle": "What I'm working on",
-    "projectsIntro": "The classic line: welcome to my digital garden",
-    "blogTitle": "Personal blog",
-    "blogSummary": "Notes on exploring technology",
-    "blogAside": "AI experiments count too",
-    "blogTopics": "along with essays, reading notes, and more",
-    "blogUpdates": "Updated occasionally, with",
-    "readArticles": "Read articles",
-    "novelTitle": "Writing fiction for fun",
-    "novelSummary": "The usual attempt at writing a novel",
-    "novelAside": "Just writing for fun",
-    "novelUpdates": "Updates and an ending are not guaranteed",
-    "toolsSummary": "A few little tools, useful or otherwise",
-    "serverLookup": "Minecraft server lookup",
-    "openTools": "Use the tools",
-    "aboutTitle": "About me",
-    "aboutIntro": "Hi, I'm KoMori",
-    "sinhalaName": "You can also call me by my Sinhala name",
-    "developerIntro": "An independent developer who enjoys tinkering",
-    "probably": "(probably)",
-    "contactTitle": "Follow & contact me",
-    "contactIntro": "Find me on these platforms",
-    "contactHint": "I'm rarely online on WeChat or QQ, so adding me may take a while",
+    "contactHint": "I'm rarely on WeChat or QQ, meow. I can't promise I'll add you back",
     "weibo": "Weibo",
     "wechat": "WeChat",
     "greeting": {
@@ -47,6 +133,10 @@
       "night": "Hello, night owl!",
       "nightHint": "Remember to take care of yourself!"
     },
-    "pixabayUser": "Pixabay user"
+    "explore": {
+      "writing": "Technology, language & everyday life",
+      "tools": "Text, images & servers",
+      "games": "A browser, a few friends, a game"
+    }
   }
 }

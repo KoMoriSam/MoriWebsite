@@ -11,6 +11,7 @@ import {
 } from "vue-router";
 import { gameRoutes } from '@/games/catalog';
 import { getBlogListScroll } from '@/utils/blog/list-scroll';
+import { getNavbarScrollOffset } from '@/utils/layout/navbar';
 
 const testRoutes = import.meta.env.DEV
   ? (await import("./test-routes")).testRoutes
@@ -40,7 +41,7 @@ export const routes = [
     path: "/",
     name: "home",
     component: () => import("@/views/Home.vue"),
-    meta: { title: "主页 | 远方之森", navName: "home", localeGroups: ["home"] },
+    meta: { title: "主页 | 远方之森", navName: "home", localeGroups: ["home", "tools", "games", "kaiming", "novel", "reader"] },
   },
   {
     path: "/home",
@@ -201,7 +202,7 @@ const router = createRouter({
       }
 
       const target = document.getElementById(anchorId) || document.getElementById(rawHash);
-      if (target) return { el: target, top: 96 };
+      if (target) return { el: target, top: getNavbarScrollOffset() };
     }
     const articleId = (route) => String(route.params.articleId || route.meta.article?.id || "");
     if (articleId(to) && articleId(to) === articleId(from)) return false;

@@ -41,9 +41,9 @@ export function useArticleApi() {
    * 索引为扁平数组；兼容旧的嵌套格式 { tagName: { articles: [...] } }
    * @returns {Promise<Array<{id, title, summary, date, tags, path, banner?}>>}
    */
-  const fetchArticleList = async () => {
+  const fetchArticleList = async ({ force = false } = {}) => {
     const images = loadImageManifest(CONTENT_BASE_URL);
-    const res = await fetch(`${CONTENT_BASE_URL}/index.json`);
+    const res = await fetch(`${CONTENT_BASE_URL}/index.json`, { cache: force ? "reload" : "default" });
 
     if (!res.ok) {
       throw new Error(`获取文章列表失败: ${res.status}`);

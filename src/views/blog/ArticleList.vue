@@ -1,8 +1,5 @@
 <template>
-  <ContentPage
-    eyebrow="Writing & Notes"
-    :title="translate('blog.list.title')"
-  >
+  <ContentPage eyebrow="Writing & Notes" :title="translate('blog.list.title')">
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
@@ -21,9 +18,7 @@
           <span
             v-else
             class="loading loading-dots loading-xs"
-            :aria-label="
-              translate('blog.list.loadingReads')
-            "
+            :aria-label="translate('blog.list.loadingReads')"
           ></span>
         </span>
       </client-only>
@@ -40,120 +35,121 @@
           <span
             v-else
             class="loading loading-dots loading-xs"
-            :aria-label="
-              translate('blog.list.loadingComments')
-            "
+            :aria-label="translate('blog.list.loadingComments')"
           ></span>
         </span>
       </client-only>
-      <a
-        id="rss-feed"
-        class="btn btn-primary btn-soft btn-sm"
-        href="/rss.xml"
-        type="application/rss+xml"
-      >
-        <i class="ri-rss-fill" aria-hidden="true"></i>
-        {{ translate("home.rss") }}
-      </a>
     </template>
 
     <template v-if="loading || articles.length">
       <!-- 检索区域 -->
-      <section
-        class="my-6"
-        :aria-label="translate('blog.list.searchLabel')"
-      >
+      <section class="my-6" :aria-label="translate('blog.list.searchLabel')">
         <div ref="searchBox" class="relative min-w-0">
-          <div
-            class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
-          >
-            <label for="article-search" class="sr-only">{{
-              translate("blog.list.searchPlaceholder")
-            }}</label>
-            <i
-              class="ri-search-line shrink-0 text-base-content/45"
-              aria-hidden="true"
-            ></i>
-
+          <div class="flex gap-2">
             <div
-              v-if="advancedFilterCount"
-              class="flex max-w-full flex-wrap items-center gap-1.5"
+              class="input input-bordered flex h-auto min-h-12 w-full min-w-0 flex-wrap items-center gap-2 py-2 transition-shadow focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-base-content/20"
             >
-              <button
-                v-for="tag in selectedTags"
-                :key="`tag-${tag}`"
-                type="button"
-                class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
-                :aria-label="
-                  translate('blog.list.removeTag', { p0: tag })
-                "
-                @click="removeTag(tag)"
+              <label for="article-search" class="sr-only">{{
+                translate("blog.list.searchPlaceholder")
+              }}</label>
+              <i
+                class="ri-search-line shrink-0 text-base-content/45"
+                aria-hidden="true"
+              ></i>
+
+              <div
+                v-if="advancedFilterCount"
+                class="flex max-w-full flex-wrap items-center gap-1.5"
               >
-                <span class="truncate">{{ formatTag(tag) }}</span>
-                <i class="ri-close-line shrink-0" aria-hidden="true"></i>
-              </button>
+                <button
+                  v-for="tag in selectedTags"
+                  :key="`tag-${tag}`"
+                  type="button"
+                  class="badge badge-primary badge-soft h-7 max-w-full gap-1 pl-2.5 pr-1.5"
+                  :aria-label="translate('blog.list.removeTag', { p0: tag })"
+                  @click="removeTag(tag)"
+                >
+                  <span class="truncate">{{ formatTag(tag) }}</span>
+                  <i class="ri-close-line shrink-0" aria-hidden="true"></i>
+                </button>
+
+                <button
+                  v-for="year in selectedYears"
+                  :key="`year-${year}`"
+                  type="button"
+                  class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
+                  :aria-label="
+                    translate('common.search.removeYear', { p0: year })
+                  "
+                  @click="removeYear(year)"
+                >
+                  {{ year }}
+                  <i class="ri-close-line" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <input
+                id="article-search"
+                ref="searchInput"
+                v-model="searchText"
+                type="search"
+                role="combobox"
+                class="min-w-32 flex-1"
+                :placeholder="translate('blog.list.searchPlaceholder')"
+                autocomplete="off"
+                spellcheck="false"
+                aria-autocomplete="list"
+                :aria-expanded="isFilterMenuOpen"
+                :aria-controls="
+                  isFilterMenuOpen
+                    ? 'article-filter-suggestions'
+                    : 'article-results'
+                "
+                :aria-activedescendant="
+                  activeFilterIndex >= 0 && filteredFilterOptions.length
+                    ? `article-filter-option-${activeFilterIndex}`
+                    : null
+                "
+                @input="handleSearchInput"
+                @focus="updateFilterQuery"
+                @click="updateFilterQuery"
+                @keydown.down="handleFilterArrow($event, 1)"
+                @keydown.up="handleFilterArrow($event, -1)"
+                @keydown.enter="handleFilterEnter"
+                @keydown.tab="handleFilterTab"
+                @keydown.backspace="handleSearchBackspace"
+                @keydown.esc.prevent="handleSearchEscape"
+                @compositionstart="isComposing = true"
+                @compositionend="handleCompositionEnd"
+              />
 
               <button
-                v-for="year in selectedYears"
-                :key="`year-${year}`"
+                v-if="advancedFilterCount"
                 type="button"
-                class="badge badge-secondary badge-soft h-7 gap-1 pl-2.5 pr-1.5"
-                :aria-label="
-                  translate('common.search.removeYear', { p0: year })
-                "
-                @click="removeYear(year)"
+                class="btn btn-circle btn-ghost btn-xs shrink-0"
+                :aria-label="translate('common.search.clearFilters')"
+                @click="resetFilter"
               >
-                {{ year }}
-                <i class="ri-close-line" aria-hidden="true"></i>
+                <i class="ri-delete-bin-line" aria-hidden="true"></i>
               </button>
             </div>
-
-            <input
-              id="article-search"
-              ref="searchInput"
-              v-model="searchText"
-              type="search"
-              role="combobox"
-              class="min-w-32 flex-1"
-              :placeholder="translate('blog.list.searchPlaceholder')"
-              autocomplete="off"
-              spellcheck="false"
-              aria-autocomplete="list"
-              :aria-expanded="isFilterMenuOpen"
-              :aria-controls="
-                isFilterMenuOpen
-                  ? 'article-filter-suggestions'
-                  : 'article-results'
-              "
-              :aria-activedescendant="
-                activeFilterIndex >= 0 && filteredFilterOptions.length
-                  ? `article-filter-option-${activeFilterIndex}`
-                  : null
-              "
-              @input="handleSearchInput"
-              @focus="updateFilterQuery"
-              @click="updateFilterQuery"
-              @keydown.down="handleFilterArrow($event, 1)"
-              @keydown.up="handleFilterArrow($event, -1)"
-              @keydown.enter="handleFilterEnter"
-              @keydown.tab="handleFilterTab"
-              @keydown.backspace="handleSearchBackspace"
-              @keydown.esc.prevent="handleSearchEscape"
-              @compositionstart="isComposing = true"
-              @compositionend="handleCompositionEnd"
-            />
-
-            <button
-              v-if="advancedFilterCount"
-              type="button"
-              class="btn btn-circle btn-ghost btn-xs shrink-0"
-              :aria-label="translate('common.search.clearFilters')"
-              @click="resetFilter"
+            <div
+              class="max-sm:tooltip tooltip-end"
+              :data-tip="translate('home.rss')"
             >
-              <i class="ri-delete-bin-line" aria-hidden="true"></i>
-            </button>
+              <a
+                id="rss-feed"
+                class="btn btn-primary btn-soft shrink-0 h-auto min-h-12"
+                href="/rss.xml"
+                type="application/rss+xml"
+              >
+                <i class="ri-rss-fill" aria-hidden="true"></i>
+                <span class="hidden sm:block whitespace-nowrap">{{
+                  translate("home.rss")
+                }}</span>
+              </a>
+            </div>
           </div>
-
           <div
             v-if="isFilterMenuOpen"
             id="article-filter-suggestions"
@@ -315,8 +311,8 @@
               v-if="keyword.trim()"
               class="font-medium text-base-content/75"
             >
-              {{ translate("blog.list.emptyPrefix")
-              }}{{ keyword.trim() }}{{ translate("blog.list.emptySuffix") }}
+              {{ translate("blog.list.emptyPrefix") }}{{ keyword.trim()
+              }}{{ translate("blog.list.emptySuffix") }}
             </span>
           </template>
 
@@ -339,8 +335,7 @@
                 v-if="filteredArticles.length > 1"
                 class="text-base-content/50"
               >
-                {{ translate("blog.list.viewing")
-                }}{{ pageDisplayText }}）
+                {{ translate("blog.list.viewing") }}{{ pageDisplayText }}）
               </span>
             </span>
 
@@ -371,9 +366,7 @@
           aria-busy="true"
           :aria-label="translate('blog.list.loading')"
         >
-          <span class="sr-only">{{
-            translate("blog.list.loading")
-          }}</span>
+          <span class="sr-only">{{ translate("blog.list.loading") }}</span>
 
           <div
             class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
@@ -430,7 +423,12 @@
                     v-fade-in
                     :key="getBannerKey(item)"
                     :ref="(element) => setBannerImageRef(item, element)"
-                    v-bind="getImageAttrs(resolveBannerUrl(item.banner), '(min-width: 1280px) 400px, (min-width: 768px) 50vw, calc(100vw - 2rem)')"
+                    v-bind="
+                      getImageAttrs(
+                        resolveBannerUrl(item.banner),
+                        '(min-width: 1280px) 400px, (min-width: 768px) 50vw, calc(100vw - 2rem)',
+                      )
+                    "
                     :alt="item.title"
                     loading="lazy"
                     decoding="async"
@@ -710,6 +708,7 @@
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { getImageAttrs } from "@/utils/images/responsive-images";
+import { getNavbarScrollOffset } from "@/utils/layout/navbar";
 import { useLocale } from "@/i18n";
 const {
   t: translate,
@@ -882,7 +881,9 @@ const handlePageChange = async (page) => {
     ).matches;
     const top = Math.max(
       0,
-      window.scrollY + results.getBoundingClientRect().top - 96,
+      window.scrollY +
+        results.getBoundingClientRect().top -
+        getNavbarScrollOffset(),
     );
 
     window.scrollTo({
@@ -1338,6 +1339,8 @@ const getArticleRoute = (article) => {
   if (generatedPath) return generatedPath;
 
   const articleId = String(article?.id || "").trim();
-  return articleId ? `/blog/${encodeURIComponent(articleId)}/${article.lang || article.sourceLocale || 'zh-CN'}` : "/blog";
+  return articleId
+    ? `/blog/${encodeURIComponent(articleId)}/${article.lang || article.sourceLocale || "zh-CN"}`
+    : "/blog";
 };
 </script>

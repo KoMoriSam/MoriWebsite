@@ -5,6 +5,9 @@ const PROFILE_KEY = "mori:github:profile";
 const RETURN_KEY = "mori:github:return";
 const RECHECK_AFTER = 5 * 60 * 1000;
 export const GISCUS_ORIGIN = "https://giscus.app";
+const PROFILE_API = String(import.meta.env?.VITE_GITHUB_PROFILE_API
+  || (import.meta.env?.DEV ? "/api/github/users" : "https://api.komori.cc/github/users"))
+  .trim().replace(/\/+$/, "");
 
 const classifyError = (message) => {
   if (/State has expired/i.test(message)) return "token-expired";
@@ -159,7 +162,7 @@ export function createGithubSession() {
   };
   const loadProfile = async (login) => {
     profileAttemptLogin = login;
-    // 匿名 API 的限制按 IP 共享，重新确认/切换会话也不能绕过冷却。
+    // 遵守资料服务的冷却时间，重新确认会话不能绕过上游限流。
     if (Date.now() < profileRetryAt) {
       report("profile", "profile", profileFailure.status, profileFailure.reason);
       return;
@@ -174,9 +177,11 @@ export function createGithubSession() {
     const timer = window.setTimeout(() => controller.abort(), 15000);
     try {
       const response = await fetch(
-        `https://api.github.com/users/${encodeURIComponent(login)}`,
+        `${PROFILE_API}/${encodeURIComponent(login)}`,
         {
           headers: { Accept: "application/vnd.github+json" },
+          credentials: "omit",
+          cache: "no-cache",
           signal: controller.signal,
         },
       );
@@ -186,18 +191,19 @@ export function createGithubSession() {
         const remaining = response.headers?.get("x-ratelimit-remaining");
         const reset = Number(response.headers?.get("x-ratelimit-reset")) * 1000;
         const retryAfter = response.headers?.get("retry-after");
-        let message = "";
+        let reason = "";
         try {
-          message = (await response.json()).message || "";
+          reason = (await response.json()).reason || "";
         } catch {
           /* Proxy errors may not contain JSON. */
         }
         error.reason =
           remaining === "0" ||
           response.status === 429 ||
-          /rate limit/i.test(message)
+          reason === "rate-limit"
             ? "rate-limit"
-            : classifyError(String(response.status));
+            : ["forbidden", "timeout", "network", "api"].includes(reason)
+              ? reason : classifyError(String(response.status));
         if ([403, 429].includes(response.status)) {
           const retryAt = retryAfter
             ? /^\d+$/.test(retryAfter)
@@ -217,8 +223,7 @@ export function createGithubSession() {
       state.profile = {
         login,
         name: String(data.name || login).trim() || login,
-        avatarUrl: String(data.avatar_url || state.profile?.avatarUrl || ""),
-        email: String(data.email || "").trim(),
+        avatarUrl: String(data.avatarUrl || state.profile?.avatarUrl || ""),
       };
       profileFailure = null;
       profileRetryAt = 0;
@@ -291,12 +296,11 @@ export function createGithubSession() {
     if (state.errorInfo?.phase !== "profile") clearError();
     state.checking = !!profileRequestLogin;
     if (!state.profile || state.profile.login !== login) {
-      // metadata 已确认身份，公开资料仅补充显示名和邮箱。
+      // metadata 已确认身份，公开资料仅补充显示名和头像。
       state.profile = {
         login,
         name: login,
         avatarUrl: String(message.viewer.avatarUrl || ""),
-        email: "",
       };
     } else if (message.viewer.avatarUrl && !state.profile.avatarUrl) {
       state.profile = {

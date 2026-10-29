@@ -1,5 +1,7 @@
 {
   "kaiming": {
+    "navigation": "页面章节",
+    "defaultPunctuation": "默认标点",
     "title": "开明标点",
     "description": "一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。",
     "specifications": "字体规格",

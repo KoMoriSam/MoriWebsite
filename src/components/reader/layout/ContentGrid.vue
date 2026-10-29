@@ -117,7 +117,7 @@
         }"
       >
         <aside
-          class="max-h-[unset] lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto scrollbar-none"
+          class="max-h-[unset] lg:max-h-[calc(100dvh-var(--navbar-height)-3rem)] lg:overflow-y-auto scrollbar-none"
           :aria-label="translate('reader.body.aids')"
         >
           <slot name="aside" />

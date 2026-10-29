@@ -1,6 +1,13 @@
 {
   "novel": {
     "detail": {
+      "aboutBook": "පොත ගැන",
+      "introduction": "හැඳින්වීම",
+      "authorNote": "කතුවරයාගෙන්",
+      "greeting": {
+        "long": "මගේ නවකතාව කියවන්න ආවට සාදරයෙන් පිළිගන්නවා😋",
+        "short": "ලැජ්ජයි අනේ😫"
+      },
       "cover": "《向远方》 නවකතා කවරය",
       "chaptersRead": "කියවූ පරිච්ඡේද",
       "chaptersIncluded": "ඇතුළත් පරිච්ඡේද",
@@ -10,6 +17,10 @@
       "bookComments": "පොතේ අදහස්",
       "continueReading": "දිගටම කියවන්න",
       "startReading": "කියවීම අරඹන්න",
+      "readLatest": "අලුත්ම පරිච්ඡේදය කියවන්න",
+      "rereadLatest": "අලුත්ම පරිච්ඡේදය නැවත කියවන්න",
+      "readChapter": "මෙම පරිච්ඡේදය කියවන්න",
+      "rereadChapter": "මෙම පරිච්ඡේදය නැවත කියවන්න",
       "loading": "පූරණය වෙමින්…"
     },
     "reader": {

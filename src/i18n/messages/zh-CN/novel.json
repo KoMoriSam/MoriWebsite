@@ -1,6 +1,13 @@
 {
   "novel": {
     "detail": {
+      "aboutBook": "关于本书",
+      "introduction": "简介",
+      "authorNote": "作者说",
+      "greeting": {
+        "long": "欢迎来看我的小说😋",
+        "short": "害羞捏😫"
+      },
       "cover": "《向远方》小说封面",
       "chaptersRead": "章已读",
       "chaptersIncluded": "章收录",
@@ -10,6 +17,10 @@
       "bookComments": "本书评论",
       "continueReading": "继续上次阅读",
       "startReading": "开始阅读",
+      "readLatest": "阅读最新章节",
+      "rereadLatest": "重读最新章节",
+      "readChapter": "阅读本章",
+      "rereadChapter": "重读本章",
       "loading": "加载中……"
     },
     "reader": {

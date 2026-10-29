@@ -1,10 +1,11 @@
 import { computed } from "vue";
 
 export const useNovelGetters = (state) => {
-  const getVisibleChapters = () =>
+  const visibleChapters = computed(() =>
     state.flatChapters.value.filter((chapter) => {
       return !chapter.volumeTitle?.toLowerCase().includes("test");
-    });
+    }),
+  );
 
   const getLatestByDate = (chapters, dateKey) => {
     const latestChapter = chapters.reduce((latest, chapter) => {
@@ -22,6 +23,7 @@ export const useNovelGetters = (state) => {
   };
 
   return {
+    visibleChapters,
     chapterVolumes: computed(() =>
       Array.isArray(state.chapters.value)
         ? state.chapters.value
@@ -43,7 +45,7 @@ export const useNovelGetters = (state) => {
     }),
 
     latestChapter: computed(() => {
-      return getLatestByDate(getVisibleChapters(), "uploadDate");
+      return getLatestByDate(visibleChapters.value, "uploadDate");
     }),
 
     totalPages: computed(() => {

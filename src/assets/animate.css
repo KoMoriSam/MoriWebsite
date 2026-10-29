@@ -1,28 +1,42 @@
 @theme {
-  --animate-typing: typing 8s steps(15, end) infinite;
+  --animate-typing: typing 7.5s linear infinite;
   --animate-cursor-blink: cursor-blink 0.8s step-end infinite;
+  --animate-arrow-bounce: arrow-bounce 1s infinite;
+
+  @keyframes arrow-bounce {
+    0%,
+    100% {
+      transform: translateY(-2px);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+
+    50% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
 
   @keyframes typing {
     /* 开头停顿 */
     0%,
     8% {
-      --type-progress: 0%;
+      --typed: 0;
     }
 
     /* 逐字输入 */
     45% {
-      --type-progress: 100%;
+      --typed: var(--count);
     }
 
     /* 阅读停留 */
     68% {
-      --type-progress: 100%;
+      --typed: var(--count);
     }
 
     /* 逐字删除 */
     92%,
     100% {
-      --type-progress: 0%;
+      --typed: 0;
     }
   }
 
@@ -67,4 +81,10 @@
   syntax: "<percentage>";
   inherits: true;
   initial-value: 0%;
+}
+
+@property --typed {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 0;
 }

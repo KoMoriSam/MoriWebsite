@@ -2,6 +2,7 @@ import daisyui from "daisyui";
 import typography from "@tailwindcss/typography";
 import theme from "tailwindcss/theme.css?raw";
 import fontStyles from "@/assets/font/index.css?raw";
+import themeStyles from "@/assets/theme.css?raw";
 import mainStyles from "@/assets/main.css?raw";
 import { createMarkdownStyleCompiler } from "@/utils/markdown/markdown-style-compiler";
 
@@ -12,7 +13,7 @@ self.onmessage = ({ data: { id, classes, existing } }) => {
   queue = queue.then(async () => {
     compiler ||= createMarkdownStyleCompiler({
       theme,
-      sources: [fontStyles, mainStyles],
+      sources: [fontStyles, themeStyles, mainStyles],
       loadPlugin: async (name) => {
         if (name === "daisyui") return daisyui;
         if (name === "@tailwindcss/typography") return typography;

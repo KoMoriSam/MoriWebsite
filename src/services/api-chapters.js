@@ -8,9 +8,11 @@ const BASE_URL = import.meta.env.VITE_NOVEL_RAW;
 const { normalizeMarkdown } = createArticleAssetResolver(BASE_URL);
 
 export function useChapterApi() {
-  const fetchChapters = async () => {
+  const fetchChapters = async ({ force = false } = {}) => {
     const images = loadImageManifest(BASE_URL);
-    const { data, error } = await useFetch(`${BASE_URL}/index.json`).json();
+    const { data, error } = await useFetch(`${BASE_URL}/index.json`, {
+      cache: force ? "reload" : "default",
+    }).json();
     if (error.value) {
       throw new Error("获取章节列表失败");
     }

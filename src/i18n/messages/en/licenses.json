@@ -4,7 +4,7 @@
     "dependencies": "dependency versions",
     "additionalLicenses": "additional licenses",
     "missingLicenses": "packages without a top-level license file",
-    "projectLicense": "Project MIT license",
+    "projectLicense": "License",
     "downloadLicense": "Download LICENSE",
     "thirdPartyNotices": "Third-party notices",
     "noticeLanguage": "Notice language",

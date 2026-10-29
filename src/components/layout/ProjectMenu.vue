@@ -1,15 +1,19 @@
 <template>
-  <div class="megamenu megamenu-full">
+  <div
+    class="megamenu megamenu-full tabs tabs-border h-full [--size:var(--navbar-height)] [--tab-height:var(--navbar-height)] [--mm-p:0.75rem] lg:max-xl:[--mm-p:0.5rem]"
+  >
     <button
-      :class="isKaimingActive ? 'btn btn-primary' : 'btn btn-ghost'"
+      class="tab flex-nowrap whitespace-nowrap"
+      :class="isKaimingActive || projectsOpen ? 'tab-active' : ''"
+      :aria-expanded="projectsOpen"
       popovertarget="projects-megamenu"
       type="button"
     >
       <i
-        class="text-xl"
+        class="shrink-0 text-lg"
         :class="isKaimingActive ? 'ri-shapes-fill' : 'ri-shapes-line'"
       ></i>
-      {{ translate('common.mobileNav.projects') }}
+      {{ translate("common.mobileNav.projects") }}
     </button>
 
     <div
@@ -17,14 +21,19 @@
       popover="auto"
       class="shadow-xl"
       :aria-label="translate('common.projectNav.label')"
+      @toggle="projectsOpen = $event.newState === 'open'"
     >
       <div class="mx-auto w-full max-w-5xl px-6 py-7">
         <div class="mb-5 flex items-end justify-between gap-6">
           <div>
             <p
               class="text-primary mb-1 text-xs font-bold tracking-[0.16em] uppercase"
-            >Projects</p>
-            <h2 class="font-serif text-2xl font-semibold">{{ translate('common.projectNav.title') }}</h2>
+            >
+              Projects
+            </p>
+            <h2 class="font-serif text-2xl font-semibold">
+              {{ translate("common.projectNav.title") }}
+            </h2>
           </div>
           <a
             :href="PROJECTS_GITHUB_URL"
@@ -34,7 +43,7 @@
             @click="closeMenus"
           >
             <i class="ri-github-fill text-lg"></i>
-            {{ translate('common.projectNav.repositories') }}
+            {{ translate("common.projectNav.repositories") }}
             <i class="ri-arrow-right-up-line"></i>
           </a>
         </div>
@@ -55,7 +64,9 @@
             </span>
             <span class="min-w-0 flex-1">
               <span class="mb-1 flex items-center gap-2">
-                <strong class="font-serif text-lg">{{ localizeText(project.name) }}</strong>
+                <strong class="font-serif text-lg">{{
+                  localizeText(project.name)
+                }}</strong>
                 <span class="badge badge-ghost badge-sm">{{
                   localizeText(project.category)
                 }}</span>
@@ -76,23 +87,26 @@
       </div>
     </div>
 
-    <span class="megamenu-active"></span>
+    <span class="megamenu-active hidden"></span>
   </div>
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { useNavigationTarget } from "@/composables/useNavigationFeedback";
 
 import { PROJECTS, PROJECTS_GITHUB_URL } from "@/constants/projects.js";
 
 const navigationRoute = useNavigationTarget();
+const projectsOpen = ref(false);
 
-const isKaimingActive = computed(() => navigationRoute.value.name === "kaiming");
+const isKaimingActive = computed(
+  () => navigationRoute.value.name === "kaiming",
+);
 
 const projectLinkProps = (project) =>
   project.to

@@ -1,7 +1,7 @@
 <template>
   <section :aria-label="t('common.language')">
-    <ScrollableContainer class="-mx-1">
-      <div class="min-h-0 overflow-y-auto overscroll-contain px-1">
+    <div class="-mx-1">
+      <div class="px-1">
         <ul class="grid gap-2 py-1 max-lg:gap-1.5">
           <li v-for="language in LOCALES" :key="language.code">
             <label
@@ -50,12 +50,11 @@
           </li>
         </ul>
       </div>
-    </ScrollableContainer>
+    </div>
   </section>
 </template>
 
 <script setup>
-import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { ref } from "vue";
 import { useLocale, LOCALES } from "@/i18n";
 const { t, locale, switchLocale } = useLocale();

@@ -1,5 +1,8 @@
 <template>
-  <Room game-type="fogport">
+  <Room
+    game-type="fogport"
+    :entry-notice="`${t('fogport.testStatus')} · ${t('fogport.testNotice')}`"
+  >
     <template #page-notice>
       <p class="flex items-start gap-2 text-xs leading-5 text-base-content/75" role="status">
         <span class="badge badge-warning badge-soft badge-sm shrink-0">{{ t("fogport.testStatus") }}</span>

@@ -1,33 +1,119 @@
 {
   "home": {
-    "openBlog": "阅读博客",
-    "exploreNovel": "视奸小说",
-    "serverStatus": "服务器状态",
-    "photo": "摄影 ·",
+    "navigation": {
+      "label": "页面章节",
+      "about": "关于我"
+    },
+    "hero": {
+      "title": "远方之森",
+      "description": "撰写一些文字，制作一些工具，复刻一些有趣的东西。",
+      "read": "阅读博客",
+      "explore": "随处逛逛",
+      "note": "今天也在折腾。",
+      "photos": {
+        "ginkgo": {
+          "location": "云南昆明",
+          "description": "庆来路旁的金黄银杏落叶"
+        },
+        "bellTower": {
+          "location": "云南昆明",
+          "description": "蓝天下的云大钟楼与薰衣草"
+        },
+        "pavilion": {
+          "location": "云南昆明",
+          "description": "云山绿叶掩映的亭檐"
+        },
+        "observatory": {
+          "location": "云南昆明",
+          "description": "云山天文台的射电望远镜"
+        },
+        "lakeSide": {
+          "location": "云南昆明",
+          "description": "阳光下的泽湖与石阶"
+        },
+        "playgroundLawn": {
+          "location": "云南昆明",
+          "description": "云大呈东体育场的草坪"
+        },
+        "universityRoad": {
+          "location": "云南昆明",
+          "description": "阳光穿过树荫的庆来西路"
+        },
+        "zhongshanPark": {
+          "location": "北京东城",
+          "description": "中山公园的水岸与倒影"
+        },
+        "beijingHutong": {
+          "location": "北京东城",
+          "description": "北京胡同里的街巷日常"
+        },
+        "bfsuLibrary": {
+          "location": "北京海淀",
+          "description": "北外图书馆的多语种文字墙"
+        },
+        "beihaiBoating": {
+          "location": "北京西城",
+          "description": "波光里的北海游船"
+        },
+        "jingshanPavilion": {
+          "location": "北京西城",
+          "description": "景山公园里绿树掩映的亭檐"
+        },
+        "tiananmenSlogans": {
+          "location": "北京东城",
+          "description": "晨曦中的天安门城楼与标语"
+        },
+        "beihaiPagoda": {
+          "location": "北京西城",
+          "description": "垂柳掩映的北海白塔"
+        }
+      },
+      "time": {
+        "now": "现在",
+        "today": "今天",
+        "yesterday": "昨天",
+        "tomorrow": "明天"
+      },
+      "characterAlt": "KoMori 的像素角色",
+      "highlights": "从这里开始",
+      "latest": "最近一篇"
+    },
+    "writing": {
+      "allArticles": "全部文章",
+      "rss": "订阅 RSS",
+      "novelTitle": "向远方",
+      "openNovel": "翻开这本书",
+      "title": "最近的写作",
+      "refresh": "刷新文章索引与小说目录",
+      "refreshing": "正在刷新最近写作",
+      "refreshed": "最近写作已刷新。",
+      "refreshFailed": "部分内容刷新失败，请稍后重试。",
+      "intro": "记录技术与语言里的发现，也留下一些日常的思考。",
+      "read": "继续阅读",
+      "loading": "正在加载最近写作",
+      "emptyTitle": "从一篇文章开始。",
+      "readingTime": "{count} 分钟",
+      "novelDescription": "从家属院的童年到异乡求学的青春，方远洛在陪伴与离别中，慢慢理解远方与故乡。"
+    },
+    "workshop": {
+      "title": "鼓捣的小玩意儿",
+      "allTools": "全部工具",
+      "viewMore": "查看更多"
+    },
+    "games": {
+      "intro": "朋友到齐，就开一局。",
+      "allGames": "全部游戏"
+    },
+    "about": {
+      "title": "你好，我是{name}。",
+      "intro": "也叫 විශ්ව（Wishwa）。喜欢文字、语言，以及把想法做出来的过程。",
+      "note": "一个热衷于折腾各种东西的独立开发者（存疑）。",
+      "contact": "在别处，也能找到我",
+      "wechatQr": "微信联系二维码",
+      "source": "看看本站源码",
+      "colophon": "慢慢写，慢慢做。谢谢你路过这片森林。"
+    },
     "sourcePixabay": "来源 · Pixabay",
-    "photoCredit": "摄影 · florianhoellmueller",
-    "projectsTitle": "我在做什么",
-    "projectsIntro": "典中典之「这里是我的『数字花园』」",
-    "blogTitle": "个人博客",
-    "blogSummary": "记录技术探索",
-    "blogAside": "AI 探索也是探索",
-    "blogTopics": "以及随笔、读书笔记等内容",
-    "blogUpdates": "不定期更新，支持",
-    "readArticles": "阅读文章",
-    "novelTitle": "瞎写小说",
-    "novelSummary": "经典写小说",
-    "novelAside": "孩子写着玩的",
-    "novelUpdates": "不保证更新，不保证完结",
-    "toolsSummary": "一些有用没用的小工具捏",
-    "serverLookup": "Minecraft 服务器查询",
-    "openTools": "使用工具",
-    "aboutTitle": "关于我",
-    "aboutIntro": "你好，我是 KoMori",
-    "sinhalaName": "你还可以叫我的僧伽罗名字",
-    "developerIntro": "一个热衷于折腾各种东西的独立开发者",
-    "probably": "（存疑）",
-    "contactTitle": "关注 & 联系我",
-    "contactIntro": "在这些平台上可以找到我",
     "contactHint": "微信和 QQ 常年不在线喵，不保证可以加上",
     "weibo": "微博",
     "wechat": "微信",
@@ -47,6 +133,10 @@
       "night": "深夜好！",
       "nightHint": "记得照顾好自己～"
     },
-    "pixabayUser": "Pixabay 用户"
+    "explore": {
+      "writing": "技术、语言与日常",
+      "tools": "文字、图片与服务器",
+      "games": "和朋友在浏览器里开一局"
+    }
   }
 }

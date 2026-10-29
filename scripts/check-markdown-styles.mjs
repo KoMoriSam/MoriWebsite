@@ -11,7 +11,7 @@ const emptyRegistry = () => ({
 });
 const build = await createMarkdownStyleCompiler({
   theme: await readFile(new URL("../node_modules/tailwindcss/theme.css", import.meta.url), "utf8"),
-  sources: await Promise.all(["font/index.css", "main.css"].map((file) =>
+  sources: await Promise.all(["font/index.css", "theme.css", "main.css"].map((file) =>
     readFile(new URL(`../src/assets/${file}`, import.meta.url), "utf8"),
   )),
   loadPlugin: async (id) => (await import(id)).default,
@@ -19,12 +19,16 @@ const build = await createMarkdownStyleCompiler({
 const classes = [
   "p-4", "tooltip", "sm:tooltip-right", "hover:badge-success", "w-[137px]",
   "font-gemunu", "shadow-xl", "animate-spin", "prose-xl", "card-icon",
+  "hover:photo-frame", "focus:rounded-inner", "md:rounded-photo",
 ];
 const existing = { ...emptyRegistry(), classes: ["p-4", "tooltip"], rootProperties: ["--spacing"] };
 const first = await build(classes, existing);
 assert.match(first, /\.sm\\:tooltip-right/u);
 assert.match(first, /@media \(width >= 40rem\)/u);
 assert.match(first, /\.hover\\:badge-success/u);
+assert.match(first, /\.hover\\:photo-frame/u);
+assert.match(first, /\.focus\\:rounded-inner/u);
+assert.match(first, /\.md\\:rounded-photo/u);
 assert.match(first, /width: 137px/u);
 for (const name of ["font-gemunu", "prose-xl", "card-icon"]) assert.ok(first.includes(`.${name}`));
 assert.doesNotMatch(first, /\.p-4\s*\{|\.tooltip\s*\{|--spacing:|@layer base|\[data-theme=/u);

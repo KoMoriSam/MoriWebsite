@@ -1,175 +1,246 @@
 <template>
-  <main class="flex-1 mx-auto w-full max-w-7xl px-8 py-12 md:px-10 lg:py-16">
+  <main
+    class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-12 md:pt-4 md:pb-8 lg:px-16 xl:px-20"
+    aria-labelledby="novel-title"
+  >
     <section
-      class="grid items-center gap-8 border-b border-base-300 pb-10 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)] md:gap-12 lg:gap-16 lg:pb-14"
+      id="novel-opening"
+      ref="opening"
+      class="@container/novel viewport-section relative flex scroll-mt-(--navbar-scroll-offset) flex-col justify-center md:my-6"
+      aria-labelledby="novel-title"
     >
-      <figure class="relative mx-auto w-full max-w-72 md:max-w-none">
-        <client-only>
-          <div
-            v-show="!imageLoaded"
-            class="skeleton absolute inset-0 z-10 aspect-12/17 w-full rounded-lg"
-          ></div>
-        </client-only>
-        <img
-          v-fade-in
-          v-bind="getImageAttrs(novelCoverUrl, '(min-width: 768px) 320px, 288px')"
-          :alt="translate('novel.detail.cover')"
-          class="relative z-0 aspect-12/17 w-full rounded-lg object-cover shadow-2xl"
-          @load="handleImageLoad"
+      <div
+        v-if="isWideOpening"
+        class="pointer-events-none absolute inset-x-0 top-0 z-10 grid grid-cols-12 gap-x-4 @min-[30rem]/novel:max-md:gap-x-6 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)] md:gap-x-12 lg:gap-x-16"
+      >
+        <AuthorGreeting
+          class="col-span-full min-w-0 text-sm sm:col-span-6 sm:col-start-7 md:col-span-1 md:col-start-2"
         />
-      </figure>
-
-      <section class="min-w-0 flex flex-col lg:gap-12">
-        <section>
-          <p
-            class="mb-6 flex items-center max-sm:justify-between sm:gap-4 text-xs font-bold tracking-[0.24em] text-primary uppercase"
+      </div>
+      <div
+        class="relative isolate grid grid-cols-12 items-start gap-x-4 @min-[30rem]/novel:max-md:gap-x-6 md:grid-cols-[minmax(220px,320px)_minmax(0,1fr)] md:gap-x-12 lg:gap-x-16"
+      >
+        <ForestBackdrop />
+        <div
+          class="contents md:col-span-1 md:col-start-2 md:row-start-1 md:block md:pt-20 md:max-lg:self-end lg:pt-28"
+        >
+          <div
+            class="col-span-6 col-start-7 row-start-1 min-w-0 self-end pb-2 @min-[30rem]/novel:pb-0"
           >
-            The Horizon
-            <span class="h-px w-16 bg-primary/50"></span>
-            Mori
-            <span class="h-px w-8 bg-primary/50"></span>
-          </p>
-          <h1
-            class="font-serif leading-none font-black text-balance text-5xl lg:text-6xl"
-          >
-            向远方
-          </h1>
-          <p
-            class="mt-6 max-w-2xl font-serif text-justify text-base leading-8 text-base-content/70 sm:text-lg"
-          >
-            <span lang="zh-CN"
-              >方远洛生在潋城县一个普通的教师家庭。从家属院的童年，到异乡求学的青春，他在家人的守望、朋友的陪伴与一次次离别中慢慢长大。曾经，他以为离开家门便是远方；后来才明白，远方既是不断抵达的新生活，也是始终牵引他回望的故乡。</span
+            <p
+              class="mb-3 font-sans text-xs font-semibold tracking-widest text-base-content/55 uppercase"
+              lang="en"
             >
-          </p>
-        </section>
-
-        <section>
-          <section
-            class="mt-8 grid gap-3 sm:grid-cols-[minmax(max-content,1fr)_minmax(0,16rem)] sm:items-stretch"
+              The Horizon
+            </p>
+            <h1
+              id="novel-title"
+              class="font-serif text-[clamp(2.25rem,7vw,3rem)] font-black leading-tight tracking-tight text-balance md:text-6xl"
+            >
+              向<span class="text-primary">远方</span>
+            </h1>
+            <CatalogMeta
+              icon="ri-quill-pen-line"
+              class="mt-3 text-xs text-base-content/55"
+              >Mori</CatalogMeta
+            >
+          </div>
+          <div
+            class="col-span-full row-start-2 mt-6 flex min-w-0 items-start gap-3 @min-[30rem]/novel:mt-5 sm:block"
+          >
+            <div ref="openingPanelSurface" class="min-w-0 flex-1 overflow-hidden sm:overflow-visible">
+              <p
+                v-if="isWideOpening || openingPanel === 'introduction'"
+                id="novel-introduction-panel"
+                :role="isWideOpening ? undefined : 'tabpanel'"
+                :aria-labelledby="isWideOpening ? undefined : 'novel-introduction-tab'"
+                :tabindex="isWideOpening ? undefined : 0"
+                class="max-w-2xl font-serif text-sm leading-7 text-pretty text-base-content/70 md:text-base md:leading-8"
+                lang="zh-CN"
+              >
+                方远洛生在潋城县一个普通的教师家庭。从家属院的童年，到异乡求学的青春，他在家人的守望、朋友的陪伴与一次次离别中慢慢长大。曾经，他以为离开家门便是远方；后来才明白，远方既是不断抵达的新生活，也是始终牵引他回望的故乡。
+              </p>
+              <div
+                v-else
+                id="novel-author-panel"
+                role="tabpanel"
+                aria-labelledby="novel-author-tab"
+                tabindex="0"
+                class="min-w-0 text-sm"
+              >
+                <AuthorGreeting side="start" />
+              </div>
+            </div>
+            <div
+              v-if="!isWideOpening"
+              role="tablist"
+              aria-orientation="vertical"
+              :aria-label="translate('novel.detail.aboutBook')"
+              class="tabs tabs-box tabs-sm shrink-0 flex-nowrap [--tabs-direction:column] sm:hidden"
+            >
+              <label class="tab size-10 p-0" :title="translate('novel.detail.introduction')">
+                <input
+                  id="novel-introduction-tab"
+                  v-model="openingPanel"
+                  type="radio"
+                  name="novel-opening-panel"
+                  value="introduction"
+                  role="tab"
+                  :aria-label="translate('novel.detail.introduction')"
+                  :aria-selected="openingPanel === 'introduction'"
+                  aria-controls="novel-introduction-panel"
+                />
+                <i class="ri-book-open-line text-lg" aria-hidden="true"></i>
+              </label>
+              <label class="tab size-10 p-0" :title="translate('novel.detail.authorNote')">
+                <input
+                  id="novel-author-tab"
+                  v-model="openingPanel"
+                  type="radio"
+                  name="novel-opening-panel"
+                  value="author"
+                  role="tab"
+                  :aria-label="translate('novel.detail.authorNote')"
+                  :aria-selected="openingPanel === 'author'"
+                  aria-controls="novel-author-panel"
+                />
+                <i class="ri-chat-3-line text-lg" aria-hidden="true"></i>
+              </label>
+            </div>
+          </div>
+          <div
+            class="relative z-20 col-span-full row-start-3 mt-6 flex min-w-0 flex-wrap items-center gap-2"
           >
             <button
               type="button"
-              class="btn btn-primary min-h-14 min-w-0 justify-between gap-4 text-left"
+              class="btn btn-primary h-auto min-h-10 min-w-0 max-w-full py-2"
+              :title="primaryChapterTitle"
               :disabled="primaryChapterDisabled"
               @click="handlePrimaryChapter"
             >
-              <span class="min-w-0">
-                <span class="block text-xs font-normal opacity-70">
-                  {{ primaryActionLabel }}
-                </span>
-                <span
-                  class="block truncate text-base"
-                  :title="primaryChapterTitle"
-                >
-                  {{ primaryChapterTitle }}
-                </span>
-              </span>
-              <i class="ri-arrow-right-line shrink-0 text-xl"></i>
+              {{ primaryActionLabel }}
+              <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
             </button>
-
             <button
               type="button"
-              class="btn btn-outline btn-primary min-h-14 min-w-0 w-full justify-start gap-3"
+              class="btn btn-ghost h-auto min-h-10 min-w-0 max-w-full py-2"
+              :title="getChapterDisplayTitle(latestChapter) || undefined"
               :disabled="!latestChapter?.uuid"
               @click="
                 latestChapter?.uuid && handleAnyChapter(latestChapter.uuid)
               "
             >
-              <i class="ri-sparkling-2-line shrink-0 text-lg"></i>
-              <span class="min-w-0 text-left">
-                <span class="block text-xs font-normal">
-                  {{ translate("reader.toc.latest") }}
-                </span>
-                <span class="block truncate" :title="latestChapterTitle">
-                  {{ latestChapterTitle }}
-                </span>
-              </span>
+              {{ translate("novel.detail.readLatest") }}
+              <i class="ri-sparkling-2-line shrink-0" aria-hidden="true"></i>
             </button>
-          </section>
+          </div>
+        </div>
 
-          <section
-            class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-base-content/60"
+        <figure
+          class="photo-frame relative col-span-6 col-start-1 row-start-1 box-border aspect-[2480/3508] w-full max-w-72 self-start md:col-span-1 md:max-w-none md:border-8 md:max-lg:self-end"
+        >
+          <client-only>
+            <div
+              v-show="!imageLoaded"
+              class="skeleton absolute inset-0 z-10 rounded-none"
+            ></div>
+          </client-only>
+          <img
+            v-fade-in
+            width="2480"
+            height="3508"
+            v-bind="
+              getImageAttrs(novelCoverUrl, '(min-width: 768px) 320px, 288px')
+            "
+            :alt="translate('novel.detail.cover')"
+            class="absolute inset-0 size-full object-cover"
+            @load="handleImageLoad"
+          />
+        </figure>
+      </div>
+
+      <div
+        class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-base-content/55 md:text-sm"
+      >
+        <client-only>
+          <CatalogMeta icon="ri-book-open-line"
+            >{{ formatNumber(readChapters.length) }}
+            {{ translate("novel.detail.chaptersRead") }}</CatalogMeta
           >
-            <span class="inline-flex items-center gap-1">
-              <i class="ri-book-open-line"></i>
-              {{ readChapters.length }}
-              {{ translate("novel.detail.chaptersRead") }}
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <i class="ri-stack-line"></i>
-              {{ flatChapters.length }}
-              {{ translate("novel.detail.chaptersIncluded") }}
-            </span>
-            <span class="inline-flex items-center gap-1">
-              <i class="ri-edit-line"></i>
-              {{ translate("common.pagination.of") }} {{ totalWordCount }}
-              {{ translate("reader.chapters.characters") }}
-            </span>
-            <client-only v-if="analyticsAvailable || commentCountsAvailable">
-              <span
-                v-if="analyticsAvailable && novelReadsStatus !== 'error'"
-                class="inline-flex items-center gap-1"
-              >
-                <i class="ri-eye-line" aria-hidden="true"></i>
-                <template v-if="Number.isFinite(novelTotalReads)">
-                  {{ formatReadCount(novelTotalReads) }}
-                  {{ translate("reader.chapters.reads") }}
-                </template>
-                <span
-                  v-else
-                  class="loading loading-dots loading-xs"
-                  :aria-label="
-                    translate('novel.detail.loadingReads')
-                  "
-                ></span>
-              </span>
-              <span
-                v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
-                class="inline-flex items-center gap-1"
-              >
-                <i class="ri-chat-3-line" aria-hidden="true"></i>
-                <template v-if="Number.isFinite(novelTotalComments)">
-                  {{ formatReadCount(novelTotalComments) }}
-                  {{ translate("markdown.moment.comments") }}
-                </template>
-                <span
-                  v-else
-                  class="loading loading-dots loading-xs"
-                  :aria-label="
-                    translate('novel.detail.loadingComments')
-                  "
-                ></span>
-              </span>
-            </client-only>
-          </section>
-        </section>
-      </section>
+        </client-only>
+        <CatalogMeta icon="ri-stack-line"
+          >{{ formatNumber(flatChapters.length) }}
+          {{ translate("novel.detail.chaptersIncluded") }}</CatalogMeta
+        >
+        <CatalogMeta icon="ri-file-text-line"
+          >{{ translate("common.pagination.of") }}
+          {{ formatNumber(totalWordCount) }}
+          {{ translate("reader.chapters.characters") }}</CatalogMeta
+        >
+        <client-only v-if="analyticsAvailable || commentCountsAvailable">
+          <CatalogMeta
+            v-if="analyticsAvailable && novelReadsStatus !== 'error'"
+            icon="ri-eye-line"
+          >
+            <template v-if="Number.isFinite(novelTotalReads)"
+              >{{ formatReadCount(novelTotalReads) }}
+              {{ translate("reader.chapters.reads") }}</template
+            >
+            <span
+              v-else
+              class="loading loading-dots loading-xs"
+              :aria-label="translate('novel.detail.loadingReads')"
+            ></span>
+          </CatalogMeta>
+          <CatalogMeta
+            v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
+            icon="ri-chat-3-line"
+          >
+            <template v-if="Number.isFinite(novelTotalComments)"
+              >{{ formatReadCount(novelTotalComments) }}
+              {{ translate("markdown.moment.comments") }}</template
+            >
+            <span
+              v-else
+              class="loading loading-dots loading-xs"
+              :aria-label="translate('novel.detail.loadingComments')"
+            ></span>
+          </CatalogMeta>
+        </client-only>
+      </div>
     </section>
 
-    <div
-      class="grid gap-12 py-12 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-0 lg:py-16"
+    <div class="divider" aria-hidden="true"></div>
+    <div id="novel-content" class="grid min-w-0 scroll-mt-(--navbar-scroll-offset) grid-cols-1 py-8 md:py-10 lg:grid-cols-[minmax(0,3fr)_auto_minmax(0,2fr)] xl:py-14">
+    <section
+      id="novel-chapters"
+      class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
+      :aria-label="translate('novel.detail.chapters')"
     >
-      <section
-        class="min-w-0 lg:pr-10 xl:pr-12"
-        :aria-label="translate('novel.detail.chapters')"
-      >
-        <ChapterList />
-      </section>
+      <ChapterList />
+    </section>
 
-      <section
-        class="min-w-0 border-t border-base-300 pt-12 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10 xl:pl-12"
-      >
-        <header class="mb-6">
-          <hgroup>
-            <p class="text-sm text-base-content/55">
-              Discussion
-            </p>
-            <h2 class="font-serif text-2xl font-semibold text-balance">
-              {{ translate("novel.detail.bookComments") }}
-            </h2>
-          </hgroup>
-        </header>
-
+    <div class="divider lg:divider-horizontal" aria-hidden="true"></div>
+    <section
+      id="novel-comments"
+      class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
+      aria-labelledby="novel-comments-title"
+    >
+      <header class="mb-6">
+        <p
+          class="mb-2 font-sans text-xs font-semibold tracking-widest text-base-content/55 uppercase"
+          lang="en"
+        >
+          Between the lines
+        </p>
+        <h2
+          id="novel-comments-title"
+          class="font-serif text-2xl font-bold text-balance md:text-3xl"
+        >
+          {{ translate("novel.detail.bookComments") }}
+        </h2>
+      </header>
+      <div class="min-w-0">
         <Giscus
           :key="githubSession.revision"
           :repo="GISCUS.novelRepo.name"
@@ -186,31 +257,43 @@
           :lang="commentLocale"
           loading="lazy"
         />
-      </section>
+      </div>
+    </section>
     </div>
+    <SectionNavigation
+      :label="translate('novel.detail.aboutBook')"
+      :sections="sections"
+      :active-section="activeSection"
+      :section-position="sectionPosition"
+      :section-span="sectionSpan"
+      @navigate="scrollToSection"
+    />
   </main>
   <Footer />
 </template>
-
 <script setup>
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 const { t: translate, commentLocale, number: formatNumber } = useLocale();
 
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import { githubSession } from "@/composables/auth/useGithubSession";
 import Giscus from "@giscus/vue";
 
 import { useChapters } from "@/composables/novel/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
+import { useViewportSection } from "@/composables/layout/useViewportSection";
+import { useHeightTransition } from "@/composables/layout/useHeightTransition";
+import { useSectionNavigation } from "@/composables/layout/useSectionNavigation";
 import {
   getChapterContextTitle,
   getChapterDisplayTitle,
 } from "@/utils/novel/format-label";
 
 import CONFIG from "@/constants/config";
+import { NOVEL_COVER_URL as novelCoverUrl } from "@/constants/novel-assets";
 const { GISCUS } = CONFIG;
-const novelCoverUrl = `${String(import.meta.env.VITE_NOVEL_RAW || CONFIG.BASE_URL).replace(/\/+$/, "")}/images/covers/theHorizon.webp`;
 
 import { storeToRefs } from "pinia";
 import { useNovelStore } from "@/stores/novel";
@@ -219,7 +302,11 @@ import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
 
 import ChapterList from "@/components/novel/ChapterList.vue";
+import ForestBackdrop from "@/components/novel/ForestBackdrop.vue";
+import AuthorGreeting from "@/components/novel/AuthorGreeting.vue";
 import Footer from "@/components/layout/Footer.vue";
+import CatalogMeta from "@/components/interaction/navigation/CatalogMeta.vue";
+import SectionNavigation from "@/components/interaction/navigation/SectionNavigation.vue";
 
 const novelStore = useNovelStore();
 const {
@@ -286,6 +373,19 @@ watch(
 );
 
 const { imageLoaded, handleImageLoad } = useImageLoad();
+const opening = useViewportSection();
+const isWideOpening = useMediaQuery("(min-width: 40rem)");
+const sections = [
+  { id: "novel-opening", titleKey: "novel.reader.cover" },
+  { id: "novel-chapters", titleKey: "novel.detail.chapters" },
+  { id: "novel-comments", titleKey: "novel.detail.bookComments" },
+];
+const { activeSection, sectionPosition, sectionSpan, scrollToSection } = useSectionNavigation(sections);
+const openingPanel = ref("introduction");
+const openingPanelSurface = ref(null);
+useHeightTransition(openingPanelSurface, openingPanel, {
+  enabled: () => !isWideOpening.value,
+});
 
 const { handleFirstChapter, handleAnyChapter } = useChapters();
 
@@ -303,15 +403,10 @@ const primaryChapterTitle = computed(
     getChapterDisplayTitle(primaryChapter.value) ||
     translate("novel.detail.loading"),
 );
-const latestChapterTitle = computed(
+const primaryChapterDisabled = computed(
   () =>
-    getChapterDisplayTitle(latestChapter.value) ||
-    translate("novel.detail.loading"),
-);
-const primaryChapterDisabled = computed(() =>
-  hasReadingHistory.value
-    ? !currentChapter.value?.uuid
-    : flatChapters.value.length === 0,
+    !primaryChapter.value?.uuid ||
+    !novelStore.getPermalinkByUuid(primaryChapter.value.uuid),
 );
 
 const handlePrimaryChapter = () => {

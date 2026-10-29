@@ -105,6 +105,6 @@ export const injectMarkdownSearchAnchors = (source) =>
   createMarkdownSearchBlocks(source)
     .map(
       ({ id, content }) =>
-        `<div id="${id}" class="scroll-mt-12" aria-hidden="true"></div>\n\n${content}`,
+        `<div id="${id}" class="scroll-mt-(--navbar-scroll-offset)" aria-hidden="true"></div>\n\n${content}`,
     )
     .join("\n\n");

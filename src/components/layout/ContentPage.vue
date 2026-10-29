@@ -1,10 +1,18 @@
 <template>
   <main
-    class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-8 md:pt-4 md:pb-8"
-    :class="fillHeight ? 'flex h-full min-h-0 flex-col overflow-hidden max-lg:pb-0 max-sm:px-4' : ''"
+    class="mx-auto w-full max-w-7xl flex-1 px-6 pt-3 pb-6 md:px-12 md:pt-4 md:pb-8 lg:px-16 xl:px-20"
+    :class="
+      [fillHeight
+        ? 'flex h-full min-h-0 flex-col overflow-hidden max-lg:pb-0 max-sm:px-4'
+        : '', viewportSection ? 'viewport-section' : '']
+    "
     :aria-labelledby="showHeader ? titleId : undefined"
   >
-    <nav v-if="crumbs.length && !compactHeader" class="breadcrumbs text-sm" aria-label="面包屑导航">
+    <nav
+      v-if="crumbs.length && !compactHeader"
+      class="breadcrumbs text-sm"
+      aria-label="面包屑导航"
+    >
       <ul>
         <li v-for="(crumb, index) in crumbs" :key="crumb.name ?? crumb.path">
           <router-link v-if="crumb.to" :to="crumb.to">
@@ -20,13 +28,27 @@
         </li>
       </ul>
     </nav>
-    <header v-if="showHeader" :class="[compactHeader ? 'mb-2 lg:mb-3' : 'mb-6', fillHeight ? 'shrink-0' : '']">
+    <header
+      v-if="showHeader"
+      :class="[
+        compactHeader ? 'mb-2 lg:mb-3' : 'mb-6',
+        fillHeight ? 'shrink-0' : '',
+      ]"
+    >
       <section
         class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 md:flex-nowrap md:gap-4"
-        :class="compactHeader ? 'max-lg:flex-nowrap max-lg:gap-2' : 'md:items-end'"
+        :class="
+          compactHeader ? 'max-lg:flex-nowrap max-lg:gap-2' : 'md:items-end'
+        "
       >
-        <hgroup class="contents md:block md:max-w-3xl md:min-w-0" :class="compactHeader ? 'min-w-0 flex-1' : ''">
-          <div class="order-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:order-none" :class="compactHeader ? 'sr-only' : 'w-full md:w-auto'">
+        <hgroup
+          class="contents md:block md:max-w-3xl md:min-w-0"
+          :class="compactHeader ? 'min-w-0 flex-1' : ''"
+        >
+          <div
+            class="order-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:order-none"
+            :class="compactHeader ? 'sr-only' : 'w-full md:w-auto'"
+          >
             <h1
               :id="titleId"
               class="font-serif text-3xl font-bold md:text-4xl text-balance"
@@ -45,7 +67,11 @@
           <div
             v-if="$slots.meta"
             class="order-2 flex max-w-full flex-wrap items-center text-sm text-base-content/60 md:order-none"
-            :class="compactHeader ? 'min-w-0 flex-1 shrink gap-x-3 gap-y-1 max-lg:text-xs' : 'shrink-0 gap-x-5 gap-y-2 md:mt-3 md:shrink'"
+            :class="
+              compactHeader
+                ? 'min-w-0 flex-1 shrink gap-x-3 gap-y-1 max-lg:text-xs'
+                : 'shrink-0 gap-x-5 gap-y-2 md:mt-3 md:shrink'
+            "
             :aria-label="metasLabel || undefined"
           >
             <slot name="meta"></slot>
@@ -63,7 +89,13 @@
         <aside
           v-if="$slots.actions"
           class="order-3 flex max-w-full shrink-0 flex-wrap items-center gap-x-5 gap-y-2 md:order-none md:shrink"
-          :class="[actionsEnd ? 'ml-auto justify-end' : '', hideMobileActions ? 'hidden lg:flex' : '', compactHeader ? 'max-lg:flex-nowrap max-lg:shrink-0 max-lg:gap-1' : '']"
+          :class="[
+            actionsEnd ? 'ml-auto justify-end' : '',
+            hideMobileActions ? 'hidden lg:flex' : '',
+            compactHeader
+              ? 'max-lg:flex-nowrap max-lg:shrink-0 max-lg:gap-1'
+              : '',
+          ]"
           :aria-label="translate('common.page.actions')"
         >
           <slot name="actions"></slot>
@@ -80,7 +112,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import { computed } from "vue";
@@ -119,6 +151,10 @@ defineProps({
   showHeader: {
     type: Boolean,
     default: true,
+  },
+  viewportSection: {
+    type: Boolean,
+    default: false,
   },
   showFooter: {
     type: Boolean,

@@ -1,18 +1,19 @@
 <template>
-  <li v-for="link in navLinks" :key="link.to.name">
-    <router-link
-      :to="link.to"
-      class="btn m-1 lg:m-1.5"
-      :class="isLinkActive(link) ? 'btn-primary' : 'btn-ghost'"
+  <router-link
+    v-for="link in navLinks"
+    :key="link.to.name"
+    :to="link.to"
+    class="tab flex-nowrap whitespace-nowrap lg:max-xl:[--tab-p:0.5rem] xl:gap-2"
+    :class="isLinkActive(link) ? 'tab-active font-bold' : ''"
+    :aria-current="isLinkActive(link) ? 'page' : undefined"
+  >
+    <i
+      class="shrink-0 text-lg font-normal"
+      :class="`${link.icon}-${isLinkActive(link) ? 'fill' : 'line'}`"
     >
-      <i
-        class="lg:text-xl"
-        :class="`${link.icon}-${isLinkActive(link) ? 'fill' : 'line'}`"
-      >
-      </i>
-      {{ localizeText(link.name) }}
-    </router-link>
-  </li>
+    </i>
+    {{ localizeText(link.name) }}
+  </router-link>
 </template>
 
 <script setup>
@@ -25,7 +26,8 @@ const navigationRoute = useNavigationTarget();
 
 // SSG 直达文章页会匹配无 name 的具体文章路由。
 // 使用 navName 标记它所属的一级导航，避免给所有文章路由设置重复 name。
-const isLinkActive = (link) => isNavigationLinkActive(navigationRoute.value, link);
+const isLinkActive = (link) =>
+  isNavigationLinkActive(navigationRoute.value, link);
 
 const navLinks = NAV_LINKS;
 </script>

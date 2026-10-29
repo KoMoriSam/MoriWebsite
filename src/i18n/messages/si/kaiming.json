@@ -1,5 +1,7 @@
 {
   "kaiming": {
+    "navigation": "පිටුවේ කොටස්",
+    "defaultPunctuation": "පෙරනිමි විරාම ලකුණු",
     "title": "Kaiming විරාම ලකුණු",
     "description": "චීන වෙබ් මුද්‍රණ සැකැස්ම සඳහා විරාම ලකුණු අකුරු; sans-serif සහ serif රටා හා 100–900 විචල්‍ය බර සමඟ.",
     "specifications": "අකුරු පිරිවිතර",

@@ -101,6 +101,7 @@ import {
   watch,
 } from "vue";
 import ContentGrid from "@/components/reader/layout/ContentGrid.vue";
+import { getNavbarScrollOffset } from "@/utils/layout/navbar";
 import { READER_PAGE_CLASS, READER_GRID_CLASS } from '@/constants/reader-layout';
 import Toc from "@/components/reader/navigation/Toc.vue";
 import Footer from "@/components/layout/Footer.vue";
@@ -267,6 +268,7 @@ const observeHeadings = (elements) => {
     return;
   }
 
+  const navbarOffset = getNavbarScrollOffset();
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       const visible = entries
@@ -284,12 +286,12 @@ const observeHeadings = (elements) => {
       }
 
       const passed = elements.filter(
-        (element) => element.getBoundingClientRect().top < 120,
+        (element) => element.getBoundingClientRect().top < navbarOffset + 24,
       );
       activeHeadingId.value = passed.at(-1)?.id || elements[0].id;
     },
     {
-      rootMargin: "-96px 0px -70% 0px",
+      rootMargin: `-${navbarOffset}px 0px -70% 0px`,
       threshold: [0, 1],
     },
   );

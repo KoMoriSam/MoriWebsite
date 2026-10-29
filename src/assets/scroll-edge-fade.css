@@ -4,6 +4,7 @@
   z-index: 10;
   overflow: hidden;
   border-radius: inherit;
+  corner-shape: inherit;
 }
 
 .scroll-edge-fade {

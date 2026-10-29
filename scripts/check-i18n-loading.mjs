@@ -35,7 +35,13 @@ try {
 
   await service.loadRoute(home);
   await service.switchLocale('en', { save: false });
-  assert.deepEqual(calls.sort(), [id('zh-CN', 'home'), id('en', 'common'), id('en', 'home')].sort());
+  assert.deepEqual(calls.sort(), [
+    id('en', 'common'),
+    ...home.meta.localeGroups.flatMap(group => [id('zh-CN', group), id('en', group)]),
+  ].sort());
+  for (const key of ['image.title', 'server.title', 'sinhala.title', 'tools.imageDescription', 'kaiming.title', 'kaiming.description', 'avalon.title', 'fogport.title']) {
+    assert.ok(service.i18n.global.te(key, 'en'), `Home shared messages: ${key}`);
+  }
   assert.equal(service.i18n.global.te('avalon.phases.discussion', 'en'), false);
   assert.equal(service.text('正在处理 2/10 帧'), 'Processing frame 2/10');
   await Promise.all([service.loadRoute(image), service.loadRoute(image)]);
@@ -55,10 +61,10 @@ try {
   // Each SSG app receives its own catalog, including its source-text index.
   const isolated = createLocaleService();
   assert.equal(isolated.locale.value, 'zh-CN');
-  assert.equal(isolated.i18n.global.te('home.openBlog'), false);
+  assert.equal(isolated.i18n.global.te('home.hero.read'), false);
   assert.equal(isolated.text('阅读博客'), '阅读博客');
   const render = () => {
-    const ssr = createSSRApp({ render: () => h('p', isolated.t('home.openBlog')) });
+    const ssr = createSSRApp({ render: () => h('p', isolated.t('home.hero.read')) });
     isolated.install(ssr);
     return renderToString(ssr);
   };

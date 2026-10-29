@@ -4,7 +4,7 @@
     "dependencies": "个依赖版本",
     "additionalLicenses": "份补充许可",
     "missingLicenses": "个包未附顶层许可文件",
-    "projectLicense": "项目 MIT 许可",
+    "projectLicense": "许可证",
     "downloadLicense": "下载 LICENSE",
     "thirdPartyNotices": "第三方声明",
     "noticeLanguage": "第三方声明语言",

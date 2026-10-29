@@ -49,6 +49,9 @@
       "PROFILE": "Invalid player profile."
     },
     "nickname": "Nickname",
+    "nicknameHint": "1–24 characters",
+    "githubNicknameHint": "Currently using your GitHub name",
+    "roomCodeHint": "Ask the host or open an invitation link",
     "kick": "Remove player",
     "kickPlayer": "Remove {name}",
     "confirmKick": "Remove {name} from the room? Their seat and current connection will be removed.",

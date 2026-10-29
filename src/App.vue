@@ -40,6 +40,7 @@ import { useSearchResultHighlight } from "@/composables/useSearchResultHighlight
 import { useStorageMigration } from "@/composables/storage/useStorageMigration";
 import { useDiscardStorage } from "@/composables/storage/useDiscardStorage";
 import { useLocale } from "@/i18n";
+import { useThemeTransition } from "@/composables/layout/useThemeTransition";
 import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 import { useToast } from "@/composables/useToast";
 import { findRouteGame } from '@/games/catalog';
@@ -51,6 +52,7 @@ const { GLOBAL_INFO } = useGlobalStorage();
 const localeToast = useToast();
 
 const route = useRoute();
+useThemeTransition();
 const auth = useGithubSession();
 const stopAuth = auth.start(useRouter());
 onBeforeUnmount(() => stopAuth?.());

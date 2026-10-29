@@ -1,6 +1,7 @@
 <template>
   <section
-    class="flex min-h-0 flex-1 flex-col"
+    class="flex min-h-0 flex-1 flex-col [&_.animate-bounce]:[animation-play-state:var(--notice-animation-state)] [&_.skeleton]:[animation-play-state:var(--notice-animation-state)]"
+    :style="{ '--notice-animation-state': active && !layoutMotionActive ? 'running' : 'paused' }"
     :aria-label="translate('common.notices.title')"
   >
     <ScrollableContainer class="flex-1">
@@ -145,6 +146,7 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
+import { layoutMotionActive } from "@/composables/layout/useLayoutMotion";
 import { useLocale } from "@/i18n";
 const { t: translate, locale: uiLocale } = useLocale();
 
@@ -154,6 +156,7 @@ import NoticeTitle from "@/components/announcement/display/NoticeTitle.vue";
 import { useAnnouncementStore } from "@/stores/announcementStore";
 import { formatAnnouncementDate } from "@/utils/announcement/format";
 
+defineProps({ active: { type: Boolean, default: true } });
 const emit = defineEmits(["navigate"]);
 const store = useAnnouncementStore();
 const { activeAnnouncements, error, loaded, loading } = storeToRefs(store);

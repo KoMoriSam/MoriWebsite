@@ -2,14 +2,31 @@
   <div
     ref="roomRoot"
     class="min-w-0 flex-1"
-    :class="
+    :class="[
+      entryBackdropVisible ? 'relative isolate' : '',
       showSidebar
         ? 'drawer drawer-end max-lg:fixed max-lg:inset-0 max-lg:grid-rows-[minmax(0,1fr)] max-lg:overflow-hidden lg:drawer-open'
         : nightPhase
           ? 'flex min-h-dvh flex-col'
-          : 'flex flex-col'
-    "
+          : 'flex flex-col',
+    ]"
   >
+    <Transition
+      enter-active-class="transition-opacity duration-400 ease-out motion-reduce:transition-none"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-400 ease-in-out motion-reduce:transition-none"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+      @before-enter="entryBackdropVisible = true"
+      @after-leave="entryBackdropVisible = !room"
+    >
+      <EntryBackdrop
+        v-if="!room"
+        ref="entryBackdrop"
+        :definition="definition"
+      />
+    </Transition>
     <input
       v-if="showSidebar"
       :id="sidebarId"
@@ -26,13 +43,14 @@
       <ContentPage
         :title="t(definition.titleKey)"
         :description="t(definition.descriptionKey)"
+        :viewport-section="!room"
         :show-footer="!viewportFrame"
         :fill-height="viewportFrame"
         :compact-header="!!room && room.status !== 'lobby'"
         :actions-end="!!room"
         hide-mobile-footer
       >
-        <template v-if="$slots['page-notice']" #header-notice>
+        <template v-if="$slots['page-notice'] && room" #header-notice>
           <slot name="page-notice"></slot>
         </template>
         <template #meta>
@@ -112,7 +130,11 @@
           </template>
         </template>
         <template #actions>
-          <div v-if="!room" role="tablist" class="tabs tabs-box w-fit">
+          <div
+            v-if="!room"
+            role="tablist"
+            class="tabs tabs-box w-fit bg-base-100/60 backdrop-blur-sm"
+          >
             <button
               v-for="mode in ['create', 'join']"
               :key="mode"
@@ -136,6 +158,7 @@
               {{ t(`games.${mode}`) }}
             </button>
           </div>
+
           <div
             v-else
             class="flex items-center justify-end gap-1 max-sm:has-[>:nth-child(5_of_:not(dialog))]:w-20 max-sm:has-[>:nth-child(5_of_:not(dialog))]:flex-wrap max-sm:has-[>:nth-child(7_of_:not(dialog))]:w-27"
@@ -183,7 +206,7 @@
           </div>
         </template>
         <div
-          v-if="error"
+          v-if="room && error"
           role="alert"
           class="alert alert-error alert-soft alert-vertical mb-4 sm:alert-horizontal"
         >
@@ -199,20 +222,20 @@
           </button>
         </div>
         <p
-          v-if="!storageAvailable"
+          v-if="room && !storageAvailable"
           role="status"
           class="mb-4 text-sm text-warning"
         >
           {{ t("games.storageWarning") }}
         </p>
-        <div v-if="!room" class="grid gap-6 lg:grid-cols-2">
-          <section class="card">
+        <EntryLayout v-if="!room">
+          <template #form>
             <form
               id="game-entry-panel"
               role="tabpanel"
               :aria-labelledby="`game-entry-${entryMode}`"
-              class="card-body gap-3 p-0"
-              :aria-busy="auth.state.checking"
+              class="flex min-w-0 flex-col gap-3"
+              :aria-busy="entryDisabled"
               novalidate
               @submit.prevent="enterRoom(entryMode === 'join')"
             >
@@ -229,99 +252,119 @@
                 <template #action>
                   <button
                     v-if="entryMode === 'create'"
+                    data-entry-submit
                     type="submit"
-                    class="btn shrink-0"
+                    class="btn btn-primary relative shrink-0"
                     :disabled="entryDisabled"
+                    :aria-busy="entryLoading"
                   >
-                    {{ t("games.create") }}
+                    <span :class="{ invisible: entryLoading }">{{
+                      t("games.create")
+                    }}</span>
+                    <span
+                      v-if="entryLoading"
+                      class="absolute inset-0 flex items-center justify-center"
+                      aria-hidden="true"
+                    >
+                      <span class="loading loading-spinner loading-sm"></span>
+                    </span>
                   </button>
                 </template>
-                <fieldset v-if="entryMode === 'join'" class="fieldset">
-                  <label class="label" for="room-code">{{
-                    t("games.roomCode")
-                  }}</label>
-                  <div class="flex flex-wrap items-start gap-3">
-                    <div class="min-w-0">
-                      <label
-                        class="otp validator"
-                        :class="{ 'opacity-50': entryDisabled }"
+                <Transition
+                  leave-active-class="pointer-events-none transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                  leave-from-class="opacity-100"
+                  leave-to-class="opacity-0"
+                  @before-leave="freezeCodeLayout"
+                  @leave-cancelled="restoreCodeLayout"
+                >
+                  <fieldset
+                    v-if="entryMode === 'join'"
+                    data-entry-code-reveal
+                    class="fieldset"
+                  >
+                    <label class="label" for="room-code">{{
+                      t("games.roomCode")
+                    }}</label>
+                    <div class="flex flex-wrap items-start gap-3">
+                      <div class="min-w-0">
+                        <label
+                          class="otp validator text-[length:min(1.75rem,8cqi)]"
+                          :class="{ 'opacity-50': entryDisabled }"
+                        >
+                          <span
+                            v-for="digit in 8"
+                            :key="digit"
+                            aria-hidden="true"
+                          ></span>
+                          <input
+                            type="text"
+                            id="room-code"
+                            ref="codeInput"
+                            :value="code"
+                            @input="updateRoomCode"
+                            maxlength="8"
+                            pattern="[A-HJ-NP-Z2-9]{8}"
+                            required
+                            inputmode="text"
+                            autocapitalize="characters"
+                            autocomplete="off"
+                            :spellcheck="false"
+                            :aria-label="t('games.roomCode')"
+                            aria-describedby="room-code-hint"
+                            :aria-invalid="codeChecked && !validCode"
+                            @blur="codeChecked = true"
+                            :disabled="entryDisabled"
+                          />
+                        </label>
+                        <p
+                          id="room-code-hint"
+                          class="mt-1 grid text-xs leading-4 text-base-content/50"
+                          role="status"
+                        >
+                          <span class="col-start-1 row-start-1" :class="{ invisible: codeChecked && !validCode }" :aria-hidden="codeChecked && !validCode">{{ t("games.roomCodeHint") }}</span>
+                          <span class="col-start-1 row-start-1 text-error" :class="{ invisible: !codeChecked || validCode }" :aria-hidden="!codeChecked || validCode">{{ t("games.errors.ROOM_CODE") }}</span>
+                        </p>
+                      </div>
+                      <button
+                        data-entry-submit
+                        type="submit"
+                        class="btn btn-primary relative shrink-0 self-start"
+                        :disabled="entryDisabled"
+                        :aria-busy="entryLoading"
                       >
+                        <span :class="{ invisible: entryLoading }">{{
+                          t("games.join")
+                        }}</span>
                         <span
-                          v-for="digit in 8"
-                          :key="digit"
+                          v-if="entryLoading"
+                          class="absolute inset-0 flex items-center justify-center"
                           aria-hidden="true"
-                        ></span>
-                        <input
-                          type="text"
-                          id="room-code"
-                          ref="codeInput"
-                          :value="code"
-                          @input="updateRoomCode"
-                          maxlength="8"
-                          pattern="[A-HJ-NP-Z2-9]{8}"
-                          required
-                          inputmode="text"
-                          autocapitalize="characters"
-                          autocomplete="off"
-                          :spellcheck="false"
-                          :aria-label="t('games.roomCode')"
-                          aria-describedby="room-code-hint"
-                          :aria-invalid="codeChecked && !validCode"
-                          @blur="codeChecked = true"
-                          :disabled="entryDisabled"
-                        />
-                      </label>
-                      <p
-                        id="room-code-hint"
-                        class="validator-hint hidden"
-                        aria-live="polite"
+                        >
+                          <span
+                            class="loading loading-spinner loading-sm"
+                          ></span>
+                        </span>
+                      </button>
+                      <button
+                        v-if="canReconnect && connection !== 'online'"
+                        type="button"
+                        class="btn shrink-0 self-start"
+                        :disabled="entryDisabled"
+                        @click="confirmReconnect"
                       >
-                        {{ t("games.errors.ROOM_CODE") }}
-                      </p>
+                        <i class="ri-cloud-line" aria-hidden="true"></i>
+                        {{ t("games.reconnect") }}
+                      </button>
                     </div>
-                    <button
-                      type="submit"
-                      class="btn btn-primary shrink-0 self-start"
-                      :disabled="entryDisabled"
-                    >
-                      {{ t("games.join") }}
-                    </button>
-                    <button
-                      v-if="canReconnect && connection !== 'online'"
-                      type="button"
-                      class="btn shrink-0 self-start"
-                      :disabled="entryDisabled"
-                      @click="confirmReconnect"
-                    >
-                      <i class="ri-cloud-line" aria-hidden="true"></i>
-                      {{ t("games.reconnect") }}
-                    </button>
-                  </div>
-                </fieldset>
+                  </fieldset>
+                </Transition>
               </ProfileForm>
-              <p
-                v-if="connection !== 'offline'"
-                role="status"
-                aria-live="polite"
-                class="inline-flex items-center gap-1.5 text-sm text-base-content/60"
-              >
-                <span
-                  v-if="connectionLoading"
-                  class="loading loading-spinner loading-xs"
-                  aria-hidden="true"
-                ></span>
-                <i v-else :class="connectionIcon" aria-hidden="true"></i>
-                {{ t(`games.connections.${connection}`) }}
-              </p>
             </form>
-          </section>
-          <section class="py-2 lg:px-4">
+          </template>
+          <template #instructions>
             <slot name="instructions"></slot>
-            <p class="mt-6 text-sm text-base-content/60">
-              {{ t("games.reconnectHint") }}
-            </p>
-          </section>
-        </div>
+          </template>
+        </EntryLayout>
         <div
           v-else
           :class="
@@ -602,6 +645,9 @@ import {
   watch,
 } from "vue";
 import ContentPage from "@/components/layout/ContentPage.vue";
+import EntryLayout from "@/components/games/layout/EntryLayout.vue";
+import EntryBackdrop from "@/components/games/display/EntryBackdrop.vue";
+import { useViewportSection } from "@/composables/layout/useViewportSection";
 import Footer from "@/components/layout/Footer.vue";
 import { useLocale } from "@/i18n";
 import { findGame } from "@/games/catalog";
@@ -610,15 +656,24 @@ import PlayerAvatars from "@/components/games/display/PlayerAvatars.vue";
 import ProfileForm from "@/components/games/interaction/ProfileForm.vue";
 import { useGithubSession } from "@/composables/auth/useGithubSession";
 import { useGameRoom } from "@/composables/games/useGameRoom";
+import { useEntryTransition } from "@/composables/games/useEntryTransition";
+import { useEntryFeedback } from "@/composables/games/useEntryFeedback";
 import { usePlayerAvatarColors } from "@/composables/games/usePlayerAvatarColors";
 import { gameNavbarMode } from "@/composables/useMobileNavbar";
 import { useGameAudio } from "@/composables/games/useGameAudio";
 import { useGameRoomActivity } from "@/composables/games/useGameRoomActivity";
 import { useModal } from "@/composables/useModal";
-const props = defineProps({ gameType: { type: String, required: true } });
+const props = defineProps({
+  gameType: { type: String, required: true },
+  entryNotice: { type: String, default: "" },
+});
 const emit = defineEmits(["room-state", "room-activity"]);
 const slots = useSlots();
 const roomRoot = ref(null);
+const entryBackdrop = ref(null);
+useViewportSection({
+  target: computed(() => roomRoot.value?.querySelector("main")),
+});
 const sidebarId = `game-sidebar-${useId()}`;
 const sidebarExpanded = ref(true);
 const desktopViewport = ref(false);
@@ -697,6 +752,14 @@ const {
   leave,
   reconnect,
 } = useGameRoom(props.gameType);
+const entryBackdropVisible = ref(!room.value);
+watch(
+  () => !!room.value,
+  (entered) => {
+    if (entered) entryBackdrop.value?.freezeLayout();
+  },
+  { flush: "pre" },
+);
 usePlayerAvatarColors(room, code);
 watch(
   () => room.value?.status,
@@ -796,6 +859,9 @@ const connectionIcon = computed(
 );
 const auth = useGithubSession();
 const entryDisabled = computed(() => busy.value || auth.state.checking);
+const entryLoading = computed(
+  () => entryDisabled.value || connectionLoading.value,
+);
 const nickname = ref("");
 const useGithubProfile = ref(!!auth.profile.value);
 let customChoice = false;
@@ -911,7 +977,7 @@ function editProfile() {
       const name = draftNickname.value;
       if (
         !name.trim() ||
-        name.length > (githubProfile ? 256 : 24) ||
+        name.length > 24 ||
         /[\p{Cc}\p{Cf}]/u.test(name)
       ) {
         form.value?.focus();
@@ -990,6 +1056,10 @@ watch(
   },
 );
 const entryMode = ref("create");
+const { freezeCodeLayout, restoreCodeLayout } = useEntryTransition(
+  roomRoot,
+  entryMode,
+);
 const nicknameStorageKey = "mori:games:nickname";
 onMounted(() => {
   if (code.value) entryMode.value = "join";
@@ -1019,8 +1089,7 @@ const codeChecked = ref(false);
 const validNickname = computed(
   () =>
     nickname.value.trim().length > 0 &&
-    nickname.value.length <=
-      (useGithubProfile.value && auth.profile.value ? 256 : 24) &&
+    nickname.value.length <= 24 &&
     !/[\p{Cc}\p{Cf}]/u.test(nickname.value),
 );
 const validCode = computed(() => /^[A-HJ-NP-Z2-9]{8}$/.test(code.value));
@@ -1072,6 +1141,13 @@ const errorText = computed(() => {
         ? specific
         : "games.errors.SERVER",
   );
+});
+useEntryFeedback({
+  room,
+  error,
+  errorText,
+  storageAvailable,
+  notice: () => props.entryNotice,
 });
 const selfPlayer = computed(() =>
   room.value?.players.find((p) => p.id === room.value.selfId),

@@ -101,6 +101,10 @@ export const useThemeStore = defineStore("theme", () => {
     );
   });
 
+  const resolvedTheme = computed(() =>
+    followSystem.value ? (isDark.value ? "forest" : "lemonade") : theme.value,
+  );
+
   /**
    * giscus 评论组件主题
    * 根据当前 daisyUI 主题返回对应的 giscus 自定义 CSS 文件 URL
@@ -112,14 +116,8 @@ export const useThemeStore = defineStore("theme", () => {
    *   dim                → dim       (daisyUI 低调夜间)
    */
   const giscusTheme = computed(() => {
-    const resolvedTheme = followSystem.value
-      ? isDark.value
-        ? "forest"
-        : "lemonade"
-      : theme.value;
-
-    return manualThemeValues.has(resolvedTheme)
-      ? `${GISCUS_THEME_BASE}/${resolvedTheme}.css`
+    return manualThemeValues.has(resolvedTheme.value)
+      ? `${GISCUS_THEME_BASE}/${resolvedTheme.value}.css`
       : "preferred_color_scheme";
   });
 
@@ -132,6 +130,7 @@ export const useThemeStore = defineStore("theme", () => {
     theme,
     themeList,
     currentTheme,
+    resolvedTheme,
     followSystem,
     giscusTheme,
     setTheme,

@@ -71,7 +71,8 @@
     "compactDaLabel": "紧凑“ද”形式"
   },
   "licenses": {
-    "title": "开源许可与第三方声明",
+    "title": "许可证",
+    "statement": "开源许可与第三方声明",
     "viewEnglishSource": "查看英文原文"
   },
   "server": {
@@ -98,6 +99,7 @@
     }
   },
   "common": {
+    "chat": { "sending": "发送中", "delivered": "已送达", "read": "已读" },
     "actions": {
       "paste": "从剪贴板粘贴",
       "confirm": "确认"
@@ -167,12 +169,18 @@
       "actions": "页面操作"
     },
     "footer": {
+      "about": "关于本站",
       "statistics": "站点统计",
       "visitsToday": "今日访问",
       "totalVisits": "总访问",
       "totalReads": "总阅读",
       "trackedSince": "统计自",
       "unavailable": "统计暂不可用",
+      "source": "网站源码仓库",
+      "other": "订阅与反馈",
+      "issues": "GitHub 问题反馈",
+      "discussions": "GitHub 讨论",
+      "email": "邮件反馈",
       "social": "社交帐号",
       "oldSiteHint": "在找旧版网页？",
       "oldSiteLink": "这里跳转",
@@ -496,8 +504,6 @@
     "nickname": "自定义昵称",
     "avatar": "玩家头像",
     "account": "账户与设置",
-    "email": "邮箱",
-    "emailPrivate": "未公开邮箱",
     "loginTitle": "登录后继续阅读",
     "editProfile": "编辑玩家资料",
     "errors": {

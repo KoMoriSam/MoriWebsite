@@ -24,15 +24,30 @@ export const mountScrollFade = (viewport, { className = "" } = {}) => {
   host.append(overlay);
   const scope = effectScope(true);
   scope.run(() => {
-    const { edgeOpacity, overlayStyle } = useScrollEdges(shallowRef(viewport), shallowRef(host));
-    watch([edgeOpacity, overlayStyle], ([opacity, style]) => {
-      Object.assign(overlay.style, {
-        left: style.left, top: style.top, width: style.width,
-        height: style.height, borderRadius: style.borderRadius,
-      });
-      overlay.style.setProperty("--scroll-fade-background", style["--scroll-fade-background"] || "none");
-      for (const edge of Object.keys(layers)) layers[edge].style.opacity = String(opacity[edge]);
-    }, { immediate: true, flush: "post" });
+    const { edgeOpacity, overlayStyle } = useScrollEdges(
+      shallowRef(viewport),
+      shallowRef(host),
+    );
+    watch(
+      [edgeOpacity, overlayStyle],
+      ([opacity, style]) => {
+        Object.assign(overlay.style, {
+          left: style.left,
+          top: style.top,
+          width: style.width,
+          height: style.height,
+          borderRadius: style.borderRadius,
+          cornerShape: style.cornerShape,
+        });
+        overlay.style.setProperty(
+          "--scroll-fade-background",
+          style["--scroll-fade-background"] || "none",
+        );
+        for (const edge of Object.keys(layers))
+          layers[edge].style.opacity = String(opacity[edge]);
+      },
+      { immediate: true, flush: "post" },
+    );
   });
   return {
     host,

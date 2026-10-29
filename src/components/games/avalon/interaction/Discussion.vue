@@ -54,15 +54,9 @@
               >
                 {{ t("avalon.phrases.empty") }}
               </div>
-              <TransitionGroup
-                tag="div"
-                name="chat-message"
-                :duration="{ leave: 220 }"
-                appear
+              <ChatMessageTransition
+                group
                 class="relative min-w-0 overflow-x-clip"
-                @before-enter="prepareMessageEnter"
-                @enter="animateMessageEnter"
-                @enter-cancelled="cancelMessageEnter"
               >
                 <div
                   v-for="message in messages"
@@ -94,7 +88,7 @@
                     {{ messageText(message) }}
                   </div>
                 </div>
-              </TransitionGroup>
+              </ChatMessageTransition>
             </div>
           </ScrollableContainer>
           <button
@@ -262,6 +256,7 @@
 </template>
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
+import ChatMessageTransition from "@/components/interaction/feedback/ChatMessageTransition.vue";
 import {
   computed,
   defineComponent,
@@ -320,34 +315,6 @@ const unread = ref(0);
 const atBottom = ref(true);
 const cooling = ref(false);
 let cooldownTimer = null;
-let nextMessageEnterAt = 0;
-const messageEnterTimers = new Map();
-function prepareMessageEnter(element) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const now = Date.now();
-  const start = Math.max(now, nextMessageEnterAt);
-  nextMessageEnterAt = start + 160;
-  element.style.setProperty("--message-delay", `${start - now}ms`);
-}
-function animateMessageEnter(element, done) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    done();
-    return;
-  }
-  const delay =
-    parseFloat(element.style.getPropertyValue("--message-delay")) || 0;
-  const timer = setTimeout(() => {
-    messageEnterTimers.delete(element);
-    done();
-    element.style.removeProperty("--message-delay");
-  }, delay + 320);
-  messageEnterTimers.set(element, timer);
-}
-function cancelMessageEnter(element) {
-  clearTimeout(messageEnterTimers.get(element));
-  messageEnterTimers.delete(element);
-  element.style.removeProperty("--message-delay");
-}
 const currentGroup = computed(() =>
   PHRASE_GROUPS.find((group) => group.id === category.value),
 );
@@ -495,64 +462,6 @@ watch(
 );
 onBeforeUnmount(() => {
   clearTimeout(cooldownTimer);
-  for (const timer of messageEnterTimers.values()) clearTimeout(timer);
-  messageEnterTimers.clear();
 });
 </script>
 
-<style scoped>
-@media (prefers-reduced-motion: no-preference) {
-  .chat-message-enter-active > .chat-bubble,
-  .chat-message-enter-active > .chat-image,
-  .chat-message-enter-active > .chat-header {
-    transition:
-      opacity 360ms ease,
-      transform 360ms ease;
-    transition-delay: var(--message-delay, 0ms);
-  }
-
-  .chat-message-enter-active > .chat-bubble,
-  .chat-message-enter-active > .chat-header {
-    transition-delay: calc(var(--message-delay, 0ms) + 160ms);
-  }
-
-  .chat-message-leave-active {
-    position: absolute;
-    width: 100%;
-  }
-
-  .chat-message-leave-active > .chat-bubble,
-  .chat-message-leave-active > .chat-image,
-  .chat-message-leave-active > .chat-header {
-    transition:
-      opacity 220ms ease,
-      transform 220ms ease;
-  }
-
-  .chat-message-move {
-    transition: transform 300ms ease;
-  }
-
-  .chat-message-enter-from > .chat-bubble,
-  .chat-message-enter-from > .chat-image,
-  .chat-message-enter-from > .chat-header,
-  .chat-message-leave-to > .chat-bubble,
-  .chat-message-leave-to > .chat-image,
-  .chat-message-leave-to > .chat-header {
-    opacity: 0;
-  }
-
-  .chat-message-enter-from > .chat-bubble {
-    transform: translateX(1rem);
-  }
-
-  .chat-message-leave-to > .chat-bubble {
-    transform: translateX(-1rem);
-  }
-
-  .chat-message-enter-from > .chat-image,
-  .chat-message-leave-to > .chat-image {
-    transform: translateY(1rem);
-  }
-}
-</style>

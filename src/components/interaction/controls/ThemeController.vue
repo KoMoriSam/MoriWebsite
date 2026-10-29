@@ -1,7 +1,7 @@
 <template>
   <section :aria-label="translate('common.theme.label')">
-    <ScrollableContainer class="-mx-1">
-      <div class="min-h-0 overflow-y-auto overscroll-contain px-1">
+    <div class="-mx-1">
+      <div class="px-1">
         <div
           class="grid grid-cols-1 gap-2 py-1 min-[22rem]:grid-cols-2 max-lg:gap-1.5"
         >
@@ -15,7 +15,7 @@
               v-model="themeStore.theme"
               type="radio"
               name="theme-navigation"
-              class="theme-controller absolute inset-0 cursor-pointer appearance-none rounded-box opacity-0"
+              class="absolute inset-0 cursor-pointer appearance-none rounded-box opacity-0"
               :aria-label="`${style.name}：${localizeText(style.description)}`"
               :value="style.value"
             />
@@ -42,12 +42,11 @@
           </label>
         </div>
       </div>
-    </ScrollableContainer>
+    </div>
   </section>
 </template>
 
 <script setup>
-import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 

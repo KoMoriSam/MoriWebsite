@@ -6,6 +6,7 @@ import { useToast } from "@/composables/useToast";
 import { useReadingStateStorage } from "@/composables/storage/useReadingStateStorage";
 
 import { useNovelStore } from "@/stores/novel";
+import { getNavbarScrollOffset } from "@/utils/layout/navbar";
 import { githubSession } from '@/composables/auth/useGithubSession';
 
 export function useChapters() {
@@ -75,7 +76,7 @@ export function useChapters() {
 
     const targetTop = Math.max(
       0,
-      window.scrollY + target.getBoundingClientRect().top - 96,
+      window.scrollY + target.getBoundingClientRect().top - getNavbarScrollOffset(),
     );
     window.scrollTo({ top: targetTop, behavior: "auto" });
   };

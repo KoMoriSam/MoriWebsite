@@ -1,565 +1,90 @@
 <template>
-  <section
-    class="hero min-h-[calc(100dvh-4rem)] lg:min-h-[calc(100dvh-5rem)] relative"
-    v-fade-in="getImageUrl(hero.url || fallbackImage, 1920)"
-    :style="{
-      backgroundImage: `url('${getImageUrl(hero.url || fallbackImage, 1920)}')`,
-    }"
-  >
-    <section class="hero-overlay"></section>
-    <section class="hero-content text-center">
-      <figure class="max-w-md select-none">
-        <img
-          v-fade-in
-          v-bind="
-            getImageAttrs(
-              '/assets/images/animates/idle.gif',
-              '(min-width: 1024px) 224px, (min-width: 768px) 192px, 168px',
-            )
-          "
-          alt="idle"
-          class="w-42 md:w-48 lg:w-56 mx-auto object-cover"
-          @load="handleImageLoad"
-        />
-        <figcaption
-          class="flex flex-col text-neutral-content gap-2 md:gap-3 lg:gap-4"
+  <ContentPage :title="translate('home.hero.title')" :show-header="false">
+    <div
+      class="home-layout [--viewport-section-offset:calc(var(--navbar-height)+0.75rem)] md:[--viewport-section-offset:calc(var(--navbar-height)+1rem)]"
+    >
+      <div ref="opening" class="viewport-section flex flex-col">
+        <div
+          id="entrance"
+          ref="entrance"
+          class="flex flex-1 scroll-mt-(--navbar-scroll-offset) items-center py-4"
+          :class="combineOpening ? '' : 'viewport-section'"
         >
-          <h1 class="font-serif font-black text-2xl md:text-3xl lg:text-4xl">
-            <span
-              tabindex="0"
-              class="inline-flex items-baseline outline-none"
-              @mouseenter="handleNameEnter"
-              @mouseleave="handleNameLeave"
-              @focus="handleNameFocus"
-              @blur="handleNameBlur"
-            >
-              远方之森&#8197;
-              <span
-                ref="nameRef"
-                class="inline-block max-w-0 overflow-hidden whitespace-nowrap -translate-x-2 opacity-0 font-normal text-base md:text-lg lg:text-xl animate-name-reveal transition-[max-width,margin-left,transform,opacity] duration-500 ease-out"
-              >
-                /&#8197;<em>Wishwa Luo</em>
-              </span>
-            </span>
-          </h1>
-          <h2
-            class="relative mx-auto w-[15ch] whitespace-nowrap font-mono text-lg md:text-xl lg:text-2xl [--type-color:color-mix(in_oklab,var(--color-neutral-content)_70%,transparent)] text-transparent bg-[linear-gradient(var(--type-color),var(--type-color))] bg-no-repeat bg-[length:var(--type-progress)_100%] bg-clip-text animate-typing after:absolute after:top-1.25 after:lg:top-0 after:left-[var(--type-progress)] after:h-[1em] after:lg:h-[1.25em] after:w-1 after:lg:w-2 after:bg-[var(--type-color)] after:animate-cursor-blink"
-          >
-            Explore Beyond.
-          </h2>
-          <p class="text-base md:text-lg lg:text-xl">
-            {{ translate(greeting) }}{{ translate(description) }}
-          </p>
-          <section
-            class="flex flex-col lg:flex-row gap-4 justify-center items-center mt-6 md:mt-8 lg:mt-12"
-          >
-            <router-link to="/blog" class="btn btn-primary w-64 lg:w-fit">
-              <i class="ri-article-fill"></i
-              >{{ translate("home.openBlog") }}
-            </router-link>
-            <router-link
-              to="/novel"
-              class="btn btn-primary btn-soft w-64 lg:w-fit group"
-            >
-              <i class="ri-eye-line group-hover:hidden group-active:hidden"></i>
-              <i
-                class="ri-eye-fill hidden group-hover:block group-active:block"
-              ></i>
-              {{ translate("home.exploreNovel") }}
-            </router-link>
-            <router-link
-              to="/tools/server-status"
-              class="btn btn-primary btn-soft w-64 lg:w-fit group"
-            >
-              <i
-                class="ri-gamepad-line group-hover:hidden group-active:hidden"
-              ></i>
-              <i
-                class="ri-gamepad-fill hidden group-hover:block group-active:block"
-              ></i>
-              {{ translate("home.serverStatus") }}
-            </router-link>
-          </section>
-          <client-only v-if="hero.pageUrl">
-            <a
-              :href="hero.pageUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
-            >
-              {{ translate("home.photo")
-              }}{{ hero.author?.name || translate("home.pixabayUser") }}
-              <br />
-              {{ translate("home.sourcePixabay") }}
-            </a>
-          </client-only>
-          <a
-            v-else
-            href="https://pixabay.com/zh/photos/mountains-leaves-water-landscape-4950252/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="absolute bottom-4 right-4 z-10 text-right text-xs text-neutral-content/60 hover:text-neutral-content"
-          >
-            {{ translate("home.photoCredit") }}
-            <br />
-            {{ translate("home.sourcePixabay") }}
-          </a>
-          <i
-            class="ri-arrow-down-s-line absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
-          >
-          </i>
-        </figcaption>
-      </figure>
-    </section>
-  </section>
-
-  <section class="py-24 px-6 sm:px-8 lg:px-10">
-    <section class="max-w-6xl mx-auto">
-      <section class="text-center mb-14">
-        <hgroup>
-          <span
-            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >In Progress</span
-          >
-          <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("home.projectsTitle") }}
-          </h2>
-        </hgroup>
-        <figure class="p-0 mx-auto w-42 lg:w-56">
-          <img
-            v-fade-in
-            v-bind="
-              getImageAttrs(
-                '/assets/images/animates/mine.gif',
-                '(min-width: 1024px) 224px, 168px',
-              )
-            "
-            class="w-42 lg:w-56 object-cover rounded-lg z-0"
-            @load="handleImageLoad"
+          <Entrance
+            class="w-full shrink-0"
+            :article="articles[0]"
+            @explore="scrollToRandomSection"
           />
-        </figure>
-        <p class="max-w-lg mx-auto">
-          {{ translate("home.projectsIntro") }}
-        </p>
-      </section>
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <section class="card card-dash bg-base-200/10 border border-base-200">
-          <section class="card-body">
-            <aside class="card-icon">
-              <i class="ri-article-line"></i>
-            </aside>
-            <h2 class="card-title font-serif font-bold">
-              {{ translate("home.blogTitle") }}
-            </h2>
-            <p>
-              {{ translate("home.blogSummary") }}
-              <small>{{ translate("home.blogAside") }}</small>
-              <br />{{
-                translate("home.blogTopics")
-              }}<br />
-              <small
-                >{{ translate("home.blogUpdates") }}
-                <a
-                  class="link link-primary link-hover"
-                  href="/rss.xml"
-                  type="application/rss+xml"
-                >
-                  <i class="ri-rss-fill" aria-hidden="true"></i>
-                  {{ translate("home.rss") }}
-                </a>
-              </small>
-            </p>
-            <router-link to="/blog" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("home.readArticles")
-              }}<i class="ri-arrow-right-line"></i>
-            </router-link>
-          </section>
-        </section>
-        <section class="card card-dash bg-base-200/10 border border-base-200">
-          <section class="card-body">
-            <aside class="card-icon">
-              <i class="ri-article-line"></i>
-            </aside>
-            <h2 class="card-title font-serif font-bold">
-              {{ translate("home.novelTitle") }}
-            </h2>
-            <p>
-              {{ translate("home.novelSummary") }}
-              <br />{{ translate("home.novelAside") }}<br />
-              <small>{{
-                translate("home.novelUpdates")
-              }}</small>
-            </p>
-            <router-link to="/novel" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("home.openNovel")
-              }}<i class="ri-arrow-right-line"></i>
-            </router-link>
-          </section>
-        </section>
-        <section class="card card-dash bg-base-200/10 border border-base-200">
-          <section class="card-body">
-            <aside class="card-icon">
-              <i class="ri-pencil-ruler-2-line"></i>
-            </aside>
-            <h2 class="card-title font-serif font-bold">
-              {{ translate("tools.title") }}
-            </h2>
-            <p>
-              {{ translate("home.toolsSummary") }}
-            </p>
-            <div class="flex flex-wrap gap-1.5">
-              <span class="badge badge-outline badge-sm">{{
-                translate("image.title")
-              }}</span>
-              <span class="badge badge-outline badge-sm">
-                {{ translate("home.serverLookup") }}
-              </span>
-              <span class="badge badge-outline badge-sm">
-                {{ translate("sinhala.title") }}
-              </span>
-            </div>
-            <router-link to="/tools" class="btn btn-primary btn-soft btn-sm">
-              {{ translate("home.openTools")
-              }}<i class="ri-arrow-right-line"></i>
-            </router-link>
-          </section>
-        </section>
-      </section>
-    </section>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="py-24 px-6 sm:px-8 lg:px-10">
-    <section class="max-w-6xl mx-auto">
-      <section class="text-center mb-14">
-        <hgroup>
-          <span
-            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >Behind the Site</span
-          >
-          <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("home.aboutTitle") }}
-          </h2>
-        </hgroup>
-        <figure class="p-0 mx-auto w-32 lg:w-46">
-          <img
-            v-fade-in
-            v-bind="
-              getImageAttrs(
-                '/assets/images/animates/turn.gif',
-                '(min-width: 1024px) 184px, 128px',
-              )
-            "
-            class="w-32 lg:w-46 object-cover rounded-lg z-0"
-            @load="handleImageLoad"
-          />
-        </figure>
-        <p class="max-w-lg mx-auto">
-          {{ translate("home.aboutIntro") }}
-          <br />
-          <span lang="ja"
-            >22 <ruby>歳<rp>（</rp><rt>さい</rt><rp>）</rp></ruby>で、<ruby
-              >学生<rp>（</rp><rt>がくせい</rt><rp>）</rp></ruby
-            >です。</span
-          >
-          <br />
-          <small
-            >{{ translate("home.sinhalaName") }}
-            <ruby>විශ්ව<rp>（</rp><rt>Wishwa</rt><rp>）</rp></ruby></small
-          >
-          <br />
-          {{ translate("home.developerIntro") }}
-          <small>{{ translate("home.probably") }}</small>
-        </p>
-      </section>
-    </section>
-  </section>
-
-  <div class="divider"></div>
-
-  <section class="py-24 px-6 sm:px-8 lg:px-10">
-    <section class="max-w-6xl mx-auto">
-      <section class="text-center mb-14">
-        <hgroup>
-          <span
-            class="mb-2 text-[0.675rem] md:text-xs font-semibold tracking-wide text-base-content/50 uppercase"
-            >Stay Connected</span
-          >
-          <h2 class="font-serif text-3xl font-bold mb-3">
-            {{ translate("home.contactTitle") }}
-          </h2>
-        </hgroup>
-        <figure class="my-4 lg:my-8 p-0 mx-auto w-32 lg:w-46">
-          <img
-            v-fade-in
-            v-bind="
-              getImageAttrs(
-                '/assets/images/animates/thanks.gif',
-                '(min-width: 1024px) 184px, 128px',
-              )
-            "
-            class="w-32 lg:w-46 object-cover rounded-lg z-0"
-            @load="handleImageLoad"
-          />
-        </figure>
-        <p class="max-w-lg mx-auto">
-          {{ translate("home.contactIntro") }}
-          <br />
-          <small>
-            {{
-              translate("home.contactHint")
-            }}</small
-          >
-        </p>
-        <div class="flex flex-wrap gap-3 justify-center mt-4 lg:mt-8">
-          <a
-            href="https://github.com/KoMoriSam"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button class="btn btn-neutral">
-              <i class="ri-github-fill"></i>
-              GitHub
-            </button>
-          </a>
-          <a
-            href="https://space.bilibili.com/71104942"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div class="aura text-info">
-              <button class="btn btn-info">
-                <i class="ri-bilibili-line"></i>Bilibili
-              </button>
-            </div>
-          </a>
-          <a
-            href="https://weibo.com/u/5281976456"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button class="btn btn-error btn-soft group">
-              <i
-                class="ri-weibo-line group-hover:hidden group-active:hidden"
-              ></i>
-              <i
-                class="ri-weibo-fill hidden group-hover:block group-active:block"
-              ></i>
-              {{ translate("home.weibo") }}
-            </button>
-          </a>
-          <div class="dropdown dropdown-bottom dropdown-center">
-            <a
-              tabindex="0"
-              role="button"
-              class="btn btn-success btn-soft group"
-            >
-              <i
-                class="ri-wechat-line group-hover:hidden group-active:hidden"
-              ></i>
-              <i
-                class="ri-wechat-fill hidden group-hover:block group-active:block"
-              ></i>
-              {{ translate("home.wechat") }}
-            </a>
-            <div
-              tabindex="0"
-              class="card card-sm dropdown-content bg-base-200/10 border border-base-200 rounded-box z-1 shadow-sm w-32 mt-2"
-            >
-              <section tabindex="0" class="card-body">
-                <div
-                  class="aspect-square bg-base-content mask-contain mask-no-repeat mask-[url(/assets/images/profile/wechat.svg)]"
-                >
-                  <div alt="" class="w-30"></div>
-                </div>
-              </section>
-            </div>
-          </div>
-          <a
-            href="https://qm.qq.com/q/eYk72ol3qg"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button class="btn btn-info btn-soft group">
-              <i class="ri-qq-line group-hover:hidden group-active:hidden"></i>
-              <i
-                class="ri-qq-fill hidden group-hover:block group-active:block"
-              ></i>
-              QQ
-            </button>
-          </a>
         </div>
+        <div ref="openingDivider" class="divider shrink-0"></div>
+        <section
+          id="about"
+          ref="about"
+          class="shrink-0 scroll-mt-(--navbar-scroll-offset) py-8 md:py-10 xl:py-14"
+          aria-labelledby="home-about-title"
+        >
+          <Profile />
+        </section>
+      </div>
+      <div class="divider"></div>
+      <section
+        id="writing"
+        class="scroll-mt-(--navbar-scroll-offset) py-8 md:py-10 xl:py-14"
+        aria-labelledby="home-writing-title"
+      >
+        <WritingDesk
+          :articles="articles"
+          :loading="loading"
+          :refresh-articles="refreshArticles"
+        />
       </section>
-    </section>
-  </section>
-  <Footer />
+      <div class="divider"></div>
+      <section
+        id="workshop"
+        class="scroll-mt-(--navbar-scroll-offset) py-8 md:py-10 xl:py-14"
+        aria-labelledby="home-workshop-title"
+      >
+        <Workshop />
+      </section>
+    </div>
+    <SectionNavigation
+      :label="translate('home.navigation.label')"
+      :sections="sections"
+      :active-section="activeSection"
+      :section-position="sectionPosition"
+      :section-span="sectionSpan"
+      @navigate="scrollToSection"
+    />
+  </ContentPage>
 </template>
 
 <script setup>
-import { getImageAttrs, getImageUrl } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
+import ContentPage from "@/components/layout/ContentPage.vue";
+import Entrance from "@/components/home/Entrance.vue";
+import WritingDesk from "@/components/home/WritingDesk.vue";
+import Workshop from "@/components/home/Workshop.vue";
+import Profile from "@/components/home/Profile.vue";
+import SectionNavigation from "@/components/interaction/navigation/SectionNavigation.vue";
+import { useLatestArticles } from "@/composables/home/useLatestArticles";
+import { useSectionNavigation } from "@/composables/layout/useSectionNavigation";
+import { useOpeningHeight } from "@/composables/home/useOpeningHeight";
+
 const { t: translate } = useLocale();
-
-import Footer from "@/components/layout/Footer.vue";
-
-import { useImageLoad } from "@/composables/useImageLoad";
-
-const { imageLoaded, handleImageLoad } = useImageLoad();
-
-import { ref, onMounted, reactive } from "vue";
-
-const greeting = ref("home.greeting.default");
-const description = ref("home.greeting.welcome");
-
-onMounted(() => {
-  const isPrerenderBot = /HeadlessChrome|Prerender/i.test(navigator.userAgent);
-  if (isPrerenderBot) return;
-  const hour = new Date().getHours();
-  if (hour < 6) {
-    greeting.value = "home.greeting.dawn";
-    description.value = "home.greeting.dawnHint";
-  } else if (hour < 12) {
-    greeting.value = "home.greeting.morning";
-    description.value = "home.greeting.morningHint";
-  } else if (hour < 14) {
-    greeting.value = "home.greeting.noon";
-    description.value = "home.greeting.noonHint";
-  } else if (hour < 18) {
-    greeting.value = "home.greeting.afternoon";
-    description.value = "home.greeting.afternoonHint";
-  } else if (hour < 21) {
-    greeting.value = "home.greeting.evening";
-    description.value = "home.greeting.eveningHint";
-  } else {
-    greeting.value = "home.greeting.night";
-    description.value = "home.greeting.nightHint";
-  }
-});
-
-import { fetchRandomHero } from "@/services/api-pixabay";
-
-const fallbackImage =
-  "/assets/images/banners/florianhoellmueller-mountains-4950252_1920.webp";
-
-const hero = reactive({
-  url: "",
-  pageUrl: "",
-  author: null,
-});
-
-async function loadHero() {
-  try {
-    const data = await fetchRandomHero();
-
-    hero.url = data.url;
-    hero.pageUrl = data.pageUrl;
-    hero.author = data.author;
-  } catch (error) {
-    console.error("首页背景图加载失败：", error);
-    hero.url = fallbackImage;
-  }
-}
-
-onMounted(loadHero);
-
-const nameRef = ref(null);
-
-let isHovered = false;
-let isFocused = false;
-let resetTimer = null;
-
-function freezeCurrentFrame() {
-  const el = nameRef.value;
-  if (!el) return;
-
-  clearTimeout(resetTimer);
-
-  const style = getComputedStyle(el);
-
-  const current = {
-    maxWidth: style.maxWidth,
-    marginLeft: style.marginLeft,
-    transform: style.transform,
-    opacity: style.opacity,
-  };
-
-  // 先保存动画当前帧
-  el.style.maxWidth = current.maxWidth;
-  el.style.marginLeft = current.marginLeft;
-  el.style.transform = current.transform;
-  el.style.opacity = current.opacity;
-
-  // 再关闭 animation。
-  // 因为已经保存了当前值，所以这里不会瞬移。
-  el.style.animation = "none";
-
-  // 强制浏览器提交当前帧
-  void el.offsetWidth;
-}
-
-function revealName() {
-  const el = nameRef.value;
-  if (!el) return;
-
-  freezeCurrentFrame();
-
-  requestAnimationFrame(() => {
-    el.style.maxWidth = "12rem";
-    el.style.marginLeft = "0.5rem";
-    el.style.transform = "translateX(0)";
-    el.style.opacity = "0.75";
-  });
-}
-
-function collapseAndResume() {
-  const el = nameRef.value;
-  if (!el) return;
-
-  freezeCurrentFrame();
-
-  requestAnimationFrame(() => {
-    el.style.maxWidth = "0";
-    el.style.marginLeft = "0";
-    el.style.transform = "translateX(-0.5rem)";
-    el.style.opacity = "0";
-  });
-
-  // 收回完成后重新交还给自动循环动画
-  resetTimer = setTimeout(() => {
-    if (isHovered || isFocused) return;
-
-    el.style.maxWidth = "";
-    el.style.marginLeft = "";
-    el.style.transform = "";
-    el.style.opacity = "";
-    el.style.animation = "";
-  }, 500);
-}
-
-function handleNameEnter() {
-  isHovered = true;
-  revealName();
-}
-
-function handleNameLeave() {
-  isHovered = false;
-
-  if (!isFocused) {
-    collapseAndResume();
-  }
-}
-
-function handleNameFocus() {
-  isFocused = true;
-  revealName();
-}
-
-function handleNameBlur() {
-  isFocused = false;
-
-  if (!isHovered) {
-    collapseAndResume();
-  }
-}
+const { opening, entrance, openingDivider, about, combineOpening } =
+  useOpeningHeight();
+const { articles, loading, refresh: refreshArticles } = useLatestArticles(4);
+const sections = [
+  { id: "entrance", titleKey: "common.navigation.home" },
+  { id: "about", titleKey: "home.navigation.about" },
+  { id: "writing", titleKey: "home.writing.title" },
+  { id: "workshop", titleKey: "home.workshop.title" },
+];
+const {
+  activeSection,
+  sectionPosition,
+  sectionSpan,
+  scrollToSection,
+  scrollToRandomSection,
+} = useSectionNavigation(sections);
 </script>
