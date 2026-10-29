@@ -86,7 +86,7 @@
                           ? translate('reader.controls.chapterPage', { p0: safeCurrentPage, p1: safeTotalPages })
                           : translate('reader.controls.chapterProgress', { p0: pageProgressLabel })
                       }}
-                      {{ translate('reader.controls.bookProgress') }} {{ readingProgressLabel }}</span
+                      {{ translate('reader.controls.bookProgress', { progress: readingProgressLabel }) }}</span
                     >
                     <input
                       type="range"

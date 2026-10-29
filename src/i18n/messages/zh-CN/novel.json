@@ -9,8 +9,6 @@
         "short": "害羞捏😫"
       },
       "cover": "《向远方》小说封面",
-      "chaptersRead": "章已读",
-      "chaptersIncluded": "章收录",
       "loadingReads": "正在读取小说总阅读量",
       "loadingComments": "正在读取小说总评论量",
       "chapters": "小说章节目录",
@@ -21,7 +19,8 @@
       "rereadLatest": "重读最新章节",
       "readChapter": "阅读本章",
       "rereadChapter": "重读本章",
-      "loading": "加载中……"
+      "loading": "加载中……",
+      "totalCharacters": "共 {count} 字"
     },
     "reader": {
       "loadingLabel": "正在加载章节",
@@ -60,7 +59,7 @@
       "help": "帮助",
       "refresh": "刷新",
       "label": "移动阅读控制",
-      "bookProgress": "· 全书进度",
+      "bookProgress": "全书已读 {progress}",
       "position": "调整本章阅读位置",
       "backToCover": "返回封面",
       "comments": "评论区",

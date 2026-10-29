@@ -240,8 +240,7 @@
                             : translate("image.readingDimensions")
                         }}
                         <template v-if="item.frameCount > 1">
-                          · {{ item.frameCount }}
-                          {{ translate("image.frames") }}</template
+                          · {{ translate("common.counts.frames", { count: item.frameCount }, item.frameCount) }}</template
                         >
                         · {{ formatBytes(item.file.size) }}
                         <template v-if="item.resultSize">
@@ -1753,12 +1752,9 @@ const hasQualityControl = computed(() =>
 );
 const staticOutput = computed(() => !["gif", "webp"].includes(settings.format));
 const queueSummary = computed(() =>
-  translate("image.filesCompleted", {
-    p0: queue.value.length,
-    p1: successfulItems.value.length,
-    p2: queue.value.some((item) => item.status === "error")
-      ? translate("image.failedSuffix")
-      : "",
+  translate(queue.value.some((item) => item.status === "error") ? "image.filesWithFailures" : "image.filesCompleted", {
+    total: queue.value.length,
+    completed: successfulItems.value.length,
   }),
 );
 
@@ -2531,7 +2527,7 @@ async function startConversion() {
   if (cancelled) toast.info(translate("image.cancelNotice"));
   else if (failed === batch.length) toast.error(translate("image.batchFailed"));
   else if (failed)
-    toast.warning(translate("image.partialFailure", { p0: failed }));
+    toast.warning(translate("image.partialFailure", { count: failed }, failed));
   else if (batch.length) toast.success(translate("image.doneNotice"));
 }
 

@@ -9,8 +9,6 @@
         "short": "Feeling shy😫"
       },
       "cover": "Cover of 《向远方》",
-      "chaptersRead": "chapters read",
-      "chaptersIncluded": "chapters included",
       "loadingReads": "Loading total novel reads",
       "loadingComments": "Loading total novel comments",
       "chapters": "Novel chapters",
@@ -21,7 +19,8 @@
       "rereadLatest": "Reread the latest chapter",
       "readChapter": "Read this chapter",
       "rereadChapter": "Reread this chapter",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "totalCharacters": "Total characters: {count}"
     },
     "reader": {
       "loadingLabel": "Loading chapter",
@@ -60,7 +59,7 @@
       "help": "Help",
       "refresh": "Refresh",
       "label": "Mobile reading controls",
-      "bookProgress": "· Book progress",
+      "bookProgress": "Book progress: {progress}",
       "position": "Adjust chapter reading position",
       "backToCover": "Back to cover",
       "comments": "Comments",

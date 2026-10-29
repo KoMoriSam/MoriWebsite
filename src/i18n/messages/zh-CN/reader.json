@@ -16,19 +16,16 @@
     },
     "chapters": {
       "title": "章节目录",
-      "volumes": "卷 ·",
-      "countUnit": "章",
       "refresh": "刷新章节目录",
       "clearHistory": "清除阅读记录",
       "loading": "章节目录加载中",
-      "characters": "字",
-      "reads": "阅读",
       "empty": "暂时没有可阅读的章节",
       "emptyHint": "刷新目录后再试一次",
       "read": "已读",
       "unread": "未读",
       "loadingReads": "正在读取《{p0}》的阅读量",
-      "loadingComments": "正在读取《{p0}》的评论量"
+      "loadingComments": "正在读取《{p0}》的评论量",
+      "summary": "{volumes} 卷 · {chapters} 章"
     },
     "badges": {
       "revisedHint": "该章节有过修订",
@@ -38,7 +35,6 @@
     "toc": {
       "progress": "阅读进度",
       "latest": "最新章节",
-      "readUnit": "章 · 已读",
       "readCount": "共 {p0} 章，已读 {p1} 章",
       "expand": "展开",
       "collapse": "收起"
@@ -136,7 +132,8 @@
       "multiplier": "倍",
       "paragraphSpacing": "段间距",
       "paragraphGap": "段距",
-      "lines": "行"
+      "lines": "行",
+      "lineCount": "{count} 行"
     },
     "body": {
       "contents": "阅读目录",

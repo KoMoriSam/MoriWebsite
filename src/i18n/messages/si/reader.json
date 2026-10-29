@@ -16,19 +16,16 @@
     },
     "chapters": {
       "title": "පරිච්ඡේද ලැයිස්තුව",
-      "volumes": "වෙළුම් ·",
-      "countUnit": "පරිච්ඡේද",
       "refresh": "පරිච්ඡේද යළි පූරණය කරන්න",
       "clearHistory": "කියවීම් ඉතිහාසය ඉවත් කරන්න",
       "loading": "පරිච්ඡේද පූරණය වෙමින්",
-      "characters": "අක්ෂර",
-      "reads": "කියවීම්",
       "empty": "තවම කියවීමට පරිච්ඡේද නොමැත",
       "emptyHint": "පරිච්ඡේද ලැයිස්තුව යළි පූරණය කර උත්සාහ කරන්න",
       "read": "කියවූ",
       "unread": "නොකියවූ",
       "loadingReads": "《{p0}》 කියවීම් පූරණය වෙමින්",
-      "loadingComments": "《{p0}》 අදහස් පූරණය වෙමින්"
+      "loadingComments": "《{p0}》 අදහස් පූරණය වෙමින්",
+      "summary": "වෙළුම් ගණන {volumes}කි · පරිච්ඡේද ගණන {chapters}කි"
     },
     "badges": {
       "revisedHint": "මෙම පරිච්ඡේදය සංශෝධනය කර ඇත",
@@ -38,8 +35,7 @@
     "toc": {
       "progress": "කියවීමේ ප්‍රගතිය",
       "latest": "නවතම පරිච්ඡේදය",
-      "readUnit": "පරිච්ඡේද · කියවූ",
-      "readCount": "පරිච්ඡේද {p0}, කියවූ {p1}",
+      "readCount": "මුළු පරිච්ඡේද ගණන {p0}කි; කියවූ ගණන {p1}කි",
       "expand": "දිගහරින්න",
       "collapse": "හකුළන්න"
     },
@@ -136,7 +132,8 @@
       "multiplier": "×",
       "paragraphSpacing": "ඡේද පරතරය",
       "paragraphGap": "ඡේද පරතරය",
-      "lines": "පේළි"
+      "lines": "පේළි",
+      "lineCount": "පේළි {count}ක්"
     },
     "body": {
       "contents": "කියවීමේ පටුන",

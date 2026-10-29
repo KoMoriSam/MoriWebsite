@@ -849,9 +849,7 @@ const chapterStats = computed(() => {
   stats.push({
     icon: "ri-file-text-line",
     get text() {
-      return translate("blog.article.aboutCharacters", {
-        p0: currentChapter.value?.length || 0,
-      });
+      return translate("common.counts.aboutCharacters", { count: currentChapter.value?.length || 0 }, currentChapter.value?.length || 0);
     },
   });
 
@@ -859,9 +857,7 @@ const chapterStats = computed(() => {
     stats.push({
       icon: "ri-eye-line",
       get text() {
-        return translate("blog.article.reads", {
-          p0: chapterReadCountFormatter.format(chapterReads.value),
-        });
+        return translate("common.counts.reads", { count: chapterReadCountFormatter.format(chapterReads.value) }, chapterReads.value);
       },
     });
   }
@@ -881,14 +877,10 @@ const textShareMeta = computed(() => {
   const contentInfo = contentItems.join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(chapterReads.value)
-      ? translate("blog.article.reads", {
-          p0: chapterReadCountFormatter.format(chapterReads.value),
-        })
+      ? translate("common.counts.reads", { count: chapterReadCountFormatter.format(chapterReads.value) }, chapterReads.value)
       : "",
     commentCountsAvailable.value && Number.isFinite(chapterComments.value)
-      ? translate("blog.article.comments", {
-          p0: chapterReadCountFormatter.format(chapterComments.value),
-        })
+      ? translate("common.counts.comments", { count: chapterReadCountFormatter.format(chapterComments.value) }, chapterComments.value)
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");

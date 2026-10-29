@@ -466,7 +466,10 @@ const systemPresets = computed(() =>
 const formatNumericValue = (control) => {
   const value = Number(styleConfigs.value[control.key]);
   const normalizedValue = Number.isFinite(value) ? value : control.default;
-  return `${Number(normalizedValue.toFixed(control.places))} ${localizeText(control.unit)}`;
+  const count = Number(normalizedValue.toFixed(control.places));
+  return control.key === "paraHeight"
+    ? translate("reader.settings.lineCount", { count }, count)
+    : `${count} ${localizeText(control.unit)}`;
 };
 
 const semanticReaderThemes = new Set(

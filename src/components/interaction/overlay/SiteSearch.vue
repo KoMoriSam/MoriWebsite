@@ -184,7 +184,7 @@
                           {{ group.label }}
                         </span>
                         <span class="shrink-0 font-normal text-base-content/40">
-                          {{ group.count }} {{ translate('common.search.items') }}
+                          {{ translate("common.counts.items", { count: group.count }, group.count) }}
                         </span>
                       </div>
                       <ul
@@ -238,8 +238,7 @@
                               {{ localizeText(option.label) }}
                             </span>
                             <span class="text-xs text-base-content/40">
-                              {{ option.count }}
-                              {{ option.type === "type" ? translate('common.search.items') : translate('blog.list.countUnit') }}
+                              {{ translate("common.counts.items", { count: option.count }, option.count) }}
                             </span>
                           </button>
                         </li>
@@ -450,7 +449,7 @@
             v-if="hasSearchCriteria"
             class="flex items-center justify-between gap-3 border-t border-base-300 bg-base-200/45 px-4 py-2 text-xs text-base-content/45"
           >
-            <span>{{ results.length }} {{ translate('common.search.results') }}</span>
+            <span>{{ translate("common.counts.results", { count: results.length }, results.length) }}</span>
             <span class="hidden items-center gap-3 sm:flex">
               <span
                 ><kbd class="kbd kbd-xs">↑</kbd>
@@ -476,7 +475,7 @@ const metadataValue = (meta) => {
     if (/[T\s]\d{1,2}:\d{2}/.test(String(meta.rawValue))) Object.assign(options, { hour: '2-digit', minute: '2-digit' });
     return formatLocalizedDate(meta.rawValue, options);
   }
-  if (meta.key === 'length' && Number.isFinite(Number(meta.rawValue))) return translate('blog.article.characters', { p0: formatNumber(Number(meta.rawValue)) });
+  if (meta.key === 'length' && Number.isFinite(Number(meta.rawValue))) return translate("common.counts.characters", { count: formatNumber(Number(meta.rawValue)) }, Number(meta.rawValue));
   return localizeText(meta.value);
 };
 

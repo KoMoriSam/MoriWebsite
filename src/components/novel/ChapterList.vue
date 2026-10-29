@@ -23,10 +23,7 @@
             icon="ri-stack-line"
             class="text-xs text-base-content/55"
           >
-            {{ formatNumber(chapterVolumes.length) }}
-            {{ translate("reader.chapters.volumes") }}
-            {{ formatNumber(chapterCount) }}
-            {{ translate("reader.chapters.countUnit") }}
+            {{ translate("reader.chapters.summary", { volumes: formatNumber(chapterVolumes.length), chapters: formatNumber(chapterCount) }) }}
           </CatalogMeta>
         </div>
       </div>
@@ -121,8 +118,7 @@
               icon="ri-book-open-line"
               class="text-xs font-normal text-base-content/50"
             >
-              {{ formatNumber(volume.chapters?.length || 0) }}
-              {{ translate("reader.chapters.countUnit") }}
+              {{ translate("common.counts.chapters", { count: formatNumber(volume.chapters?.length || 0) }, volume.chapters?.length || 0) }}
             </CatalogMeta>
           </span>
         </summary>
@@ -187,8 +183,7 @@
                     formatLocalizedDate(chapter.uploadDate)
                   }}</CatalogMeta>
                   <CatalogMeta icon="ri-file-text-line"
-                    >{{ formatNumber(chapter.length) }}
-                    {{ translate("reader.chapters.characters") }}</CatalogMeta
+                    >{{ translate("common.counts.characters", { count: formatNumber(chapter.length) }, chapter.length) }}</CatalogMeta
                   >
                   <client-only>
                     <CatalogMeta
@@ -200,8 +195,7 @@
                     >
                       <template
                         v-if="Number.isFinite(getChapterReads(chapter.uuid))"
-                        >{{ formatReadCount(getChapterReads(chapter.uuid)) }}
-                        {{ translate("reader.chapters.reads") }}</template
+                        >{{ translate("common.counts.reads", { count: formatReadCount(getChapterReads(chapter.uuid)) }, getChapterReads(chapter.uuid)) }}</template
                       >
                       <span
                         v-else
@@ -222,8 +216,7 @@
                     >
                       <template
                         v-if="Number.isFinite(getChapterComments(chapter))"
-                        >{{ formatReadCount(getChapterComments(chapter)) }}
-                        {{ translate("markdown.moment.comments") }}</template
+                        >{{ translate("common.counts.comments", { count: formatReadCount(getChapterComments(chapter)) }, getChapterComments(chapter)) }}</template
                       >
                       <span
                         v-else

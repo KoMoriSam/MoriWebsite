@@ -51,7 +51,7 @@
           ><span
             >{{ placeName(tile.location, t) }} ·
             {{ tileName(tile.tileId, t) }}</span
-          ><span>{{ t("fogport.output") }} {{ tile.resources }}</span
+          ><span>{{ t("fogport.outputCount", { n: tile.resources }) }}</span
           ><span
             class="badge badge-xs"
             :class="tile.flipped ? 'badge-success' : 'badge-ghost'"

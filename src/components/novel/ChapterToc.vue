@@ -90,8 +90,7 @@
               class="ml-auto shrink-0 whitespace-nowrap tabular-nums text-base-content/35"
               :title="translate('reader.toc.readCount', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) })"
             >
-              {{ translate('common.pagination.of') }} {{ volume.chapters?.length || 0 }} {{ translate('reader.toc.readUnit') }}
-              {{ getVolumeReadCount(volume) }} {{ translate('reader.chapters.countUnit') }}
+              {{ translate('reader.toc.readCount', { p0: volume.chapters?.length || 0, p1: getVolumeReadCount(volume) }) }}
             </small>
           </button>
           <ol

@@ -9,7 +9,6 @@
     "detailedView": "විස්තරාත්මක දසුන",
     "compactView": "සංක්ෂිප්ත දසුන",
     "pendingImages": "පරිවර්තනය කළ යුතු රූප",
-    "frames": "රාමු",
     "downloadResult": "ප්‍රතිඵලය බාගන්න",
     "convertAgain": "නැවත පරිවර්තනය කරන්න",
     "removeFile": "ගොනුව ඉවත් කරන්න",
@@ -86,7 +85,6 @@
     "system": "පද්ධතිය",
     "usersEmoji": "පරිශීලක සහ ඉමොජි",
     "weather": "කාලගුණය",
-    "failedSuffix": " · අසාර්ථක අයිතම ඇතුළත්ය",
     "fontNotReady": "අකුරු තේරීම තවම සූදානම් නැත",
     "svgReadFailed": "SVG දියසලකුණ කියවිය නොහැක",
     "svgUnsupported": "බ්‍රවුසරයට SVG දියසලකුණ සෑදිය නොහැක",
@@ -123,11 +121,11 @@
     "bottomLeft": "පහළ වම",
     "bottomCenter": "පහළ මැද",
     "bottomRight": "පහළ දකුණ",
-    "filesCompleted": "ගොනු {p0} · සම්පූර්ණ {p1}{p2}",
+    "filesCompleted": "මුළු ගොනු ගණන {total}කි · සම්පූර්ණ කළ ගණන {completed}කි",
     "batchLimit": "කණ්ඩායමකට ගොනු {p0} දක්වා. වැඩි ගොනු එක් නොකළා.",
     "unsupportedFormat": "{p0} සහාය දක්වන රූප ආකෘතියක් නොවේ",
     "memoryLimit": "ඇස්තමේන්තු විකේතන මතකය {p0}, උපාංග සීමාව {p1} ඉක්මවයි",
-    "partialFailure": "පරිවර්තනය අවසන්; ගොනු {p0} අසාර්ථකයි",
+    "partialFailure": "පරිවර්තනය අවසන්; අසාර්ථක වූ ගොනු ගණන {count}කි.",
     "saved": "{p0}% ඉතිරි කළා",
     "increased": "{p0}% වැඩි විය",
     "preview": "{p0} පෙරදසුන",
@@ -145,6 +143,7 @@
     "aspectRatioLocked": "දර්ශන අනුපාතය අගුලු දමා ඇත",
     "aspectRatioUnlocked": "දර්ශන අනුපාතය අගුලු හැර ඇත",
     "unlockAspectRatio": "දර්ශන අනුපාතය අගුලු හරින්න",
-    "lockOriginalAspectRatio": "මුල් දර්ශන අනුපාතය අගුලු දමන්න"
+    "lockOriginalAspectRatio": "මුල් දර්ශන අනුපාතය අගුලු දමන්න",
+    "filesWithFailures": "මුළු ගොනු ගණන {total}කි · සම්පූර්ණ කළ ගණන {completed}කි · සමහර ගොනු අසාර්ථක විය"
   }
 }

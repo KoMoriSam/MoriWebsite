@@ -92,6 +92,7 @@
 </template>
 <script setup>
 import { computed, defineComponent, h } from "vue";
+import { Translation as I18nT } from "vue-i18n";
 import ArtIcon from "./ArtIcon.vue";
 import CardSurface from "./CardSurface.vue";
 import { INDUSTRY_ICONS, placeName } from "@/games/fogport/presentation";
@@ -121,17 +122,12 @@ const outputLabel = computed(() =>
   !props.tile
     ? ""
     : props.tile.type === "beer"
-      ? t("fogport.output") +
-        ": " +
-        t("fogport.canal") +
-        " " +
-        (props.tile.canal ? 1 : "—") +
-        " / " +
-        t("fogport.rail") +
-        " " +
-        (props.tile.rail ? 2 : "—")
+      ? t("fogport.beerOutput", {
+          canal: props.tile.canal ? 1 : "—",
+          rail: props.tile.rail ? 2 : "—",
+        })
       : props.tile.output
-        ? t("fogport.output") + ": " + props.tile.output
+        ? t("fogport.outputCount", { n: props.tile.output })
         : "",
 );
 const statsLabel = computed(() =>
@@ -166,8 +162,12 @@ const ValueStats = defineComponent({
       ].map(([key, icon, label]) =>
         h("span", { class: "flex items-center gap-1", title: t(label) }, [
           h("i", { class: icon, "aria-hidden": true }),
-          String(props.tile[key]),
-          props.detail ? h("small", { class: "text-[9px]" }, t(label)) : null,
+          props.detail
+            ? h(I18nT, { keypath: "fogport.statCount", tag: "span", scope: "global" }, {
+                n: () => String(props.tile[key]),
+                label: () => h("small", { class: "text-[9px]" }, t(label)),
+              })
+            : String(props.tile[key]),
         ]),
       ),
     ),

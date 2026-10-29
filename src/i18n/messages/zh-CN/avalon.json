@@ -250,7 +250,7 @@
     },
     "approved": "通过",
     "rejectedLabel": "否决",
-    "failCount": "失败票：{n}",
+    "failCount": "{n} 张阻挠票",
     "agendaSummary": {
       "title": "当前任务",
       "score": "已完成：成功 {success} · 失败 {failure}",
@@ -459,7 +459,9 @@
       "good": "好人",
       "evil": "坏人",
       "questNumber": "任务{n}",
-      "twoFails": "7 人及以上的第 4 次任务需要至少两张阻挠牌才会失败。"
+      "twoFails": "7 人及以上的第 4 次任务需要至少两张阻挠牌才会失败。",
+      "goodCount": "好人 {n} 人",
+      "evilCount": "坏人 {n} 人"
     },
     "winners": {
       "good": "好人获胜",

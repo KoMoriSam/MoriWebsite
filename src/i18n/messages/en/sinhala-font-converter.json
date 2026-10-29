@@ -6,7 +6,6 @@
     "swap": "Swap source and target encodings",
     "targetEncoding": "Target encoding",
     "success": "Conversion successful",
-    "characters": "characters",
     "changeFile": "Change file",
     "changeFileShort": "Change",
     "documentHint": "Convert Sinhala text in DOCX, PPTX or PDF files to Unicode or Legacy encoding",
@@ -31,10 +30,8 @@
     "legacyBold": "Bold legacy glyphs",
     "legacyDownload": "Download legacy DOCX",
     "showSource": "Show source",
-    "longText": "Long text (",
-    "longTextHint": "characters). Consider using",
+    "longText": "This text is long ({count} characters). Consider using {documentMode} to convert DOCX, PPTX or PDF files.",
     "documentMode": "Document mode",
-    "longTextSuffix": "to convert DOCX, PPTX or PDF files.",
     "preserveReduced": "Preserve current reduced consonant forms",
     "yansaya": "යංශය",
     "rakaransaya": "රකාරාංශය",
@@ -193,6 +190,7 @@
       "issueTitle": "[Bug] Sinhala font encoding converter:",
       "emailSubject": "[Feedback] Sinhala font encoding converter",
       "feedbackTemplate": "## Problem\n\nBriefly describe the issue.\n\n## Steps to reproduce\n\n1.\n2.\n3.\n\n## Sample input\n\nPaste reproducible Unicode or Legacy text with sensitive information removed.\n\n## Actual result\n\nDescribe what happened after conversion.\n\n## Expected result\n\nDescribe the correct output or glyphs.\n\n## Environment\n\n- Direction: Unicode → Legacy / Legacy → Unicode\n- Conversion options:\n- Browser and version:\n- Operating system:"
-    }
+    },
+    "characterCount": "{count} character | {count} characters"
   }
 }

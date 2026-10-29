@@ -118,9 +118,7 @@
       "unready": "还有 {n} 名玩家未准备",
       "connection": "全员准备就绪，等待恢复连接",
       "starting": "全员准备就绪，即将自动开始",
-      "startingIn": "距离开局还有",
       "seconds": "{n} 秒后开始",
-      "secondsUnit": "秒",
       "countdownHint": "有人取消准备、离线或新玩家加入时，倒计时会取消。",
       "morePlayers": "也可以继续邀请朋友加入，当前还有 {n} 个空位。",
       "full": "房间人数已满。"

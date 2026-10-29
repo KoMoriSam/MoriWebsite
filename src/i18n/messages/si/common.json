@@ -80,17 +80,10 @@
     "logoLabel": "සේවාදායක ලාංඡනය"
   },
   "blog": {
-    "list": {
-      "countUnit": "ලිපි"
-    },
     "article": {
       "toBottom": "පහළට",
       "toTop": "ඉහළට",
-      "characters": "අක්ෂර {p0}",
-      "publishDate": "පළ කළේ {p0}",
-      "aboutCharacters": "අක්ෂර {p0} පමණ",
-      "reads": "කියවීම් {p0}",
-      "comments": "අදහස් {p0}"
+      "publishDate": "පළ කළේ {p0}"
     },
     "errors": {
       "listFailed": "ලිපි ලබාගැනීම අසාර්ථකයි: {p0}",
@@ -99,11 +92,7 @@
     }
   },
   "common": {
-    "chat": {
-      "sending": "යවමින්",
-      "delivered": "ලබා දෙන ලදී",
-      "read": "කියවන ලදී"
-    },
+    "chat": { "sending": "යවමින්", "delivered": "ලබා දෙන ලදී", "read": "කියවන ලදී" },
     "actions": {
       "paste": "පසුරු පුවරුවෙන් අලවන්න",
       "confirm": "තහවුරු කරන්න"
@@ -148,17 +137,12 @@
       "empty": "සක්‍රිය නිවේදන නොමැත",
       "viewAll": "සියලු සහ පැරණි නිවේදන බලන්න",
       "open": "නිවේදන විවෘත කරන්න",
-      "unread": "නිවේදන විවෘත කරන්න, නොකියවූ {p0}"
+      "unread": "නිවේදන විවෘත කරන්න. නොකියවූ නිවේදන ගණන {p0}කි."
     },
     "pagination": {
       "previous": "පෙර පිටුව",
-      "page": "පිටුව",
-      "pages": "පිටු",
-      "of": "මුළු",
       "next": "ඊළඟ පිටුව",
       "choose": "පිටුව තෝරන්න",
-      "currentPrefix": "පිටුව",
-      "totalPrefix": "මුළු",
       "first": "පළමු පිටුව",
       "last": "අවසන් පිටුව",
       "previousItem": "පෙර අයිතමය",
@@ -213,7 +197,6 @@
       "clearFilters": "සියලු සෙවුම් පෙරහන් ඉවත් කරන්න",
       "selectHint": "තෝරන්න ·",
       "confirmHint": "තහවුරු කරන්න ·",
-      "items": "අයිතම",
       "enter": "ඇතුළත් කරන්න",
       "typeHint": "වර්ග පෙරීමට,",
       "categoryHint": "ටැග්, නවකතා වෙළුම් හෝ වෙනස්කම් වර්ග පෙරීමට,",
@@ -223,7 +206,6 @@
       "resultsLabel": "අඩවි සෙවුම් ප්‍රතිඵල",
       "noMatches": "ගැළපෙන අන්තර්ගතයක් හමු නොවීය",
       "noMatchesHint": "කෙටි සෙවුම් පද හෝ අඩු පෙරහන් භාවිත කරන්න",
-      "results": "ප්‍රතිඵල",
       "select": "තෝරන්න",
       "open": "විවෘත කරන්න",
       "blogTags": "බ්ලොග් ටැග්",
@@ -274,8 +256,8 @@
       "accessDenied": "උපාංග අකුරු ප්‍රවේශයට අවසර ලැබුණේ නැත",
       "readFailed": "උපාංග අකුරු කියවිය නොහැක",
       "customUnavailable": "අභිරුචි අකුරු තවදුරටත් නොමැත. නැවත තෝරන්න.",
-      "loadProgress": "උපාංග අකුරු {p0}/{p1} පූරණය කළා",
-      "deviceLoaded": "උපාංග අකුරු {p0} කියවුවා",
+      "loadProgress": "උපාංග අකුරු වර්ග {p1}කින් {p0}ක් පූරණය කළා",
+      "deviceLoaded": "උපාංග අකුරු වර්ග {p0}ක් කියවුවා",
       "setFallback": "පෙරනිමි ආදේශක අකුරු ලෙස යොදන්න: {p0}",
       "loadingLabel": "අකුරු පූරණය වෙමින්",
       "loading": "{p0} පූරණය වෙමින්",
@@ -390,6 +372,20 @@
       "licenses": "බලපත්‍ර",
       "kaiming": "Kaiming විරාම ලකුණු",
       "NotFound": "පිටුව හමු නොවීය"
+    },
+    "counts": {
+      "articles": "ලිපි {count}ක්",
+      "reads": "කියවීම් {count}ක්",
+      "comments": "අදහස් {count}ක්",
+      "characters": "අක්ෂර {count}ක්",
+      "minutes": "මිනිත්තු {count}ක්",
+      "readingTime": "කියවීමට මිනිත්තු {count}ක්",
+      "chapters": "පරිච්ඡේද {count}ක්",
+      "chaptersRead": "කියවූ පරිච්ඡේද {count}ක්",
+      "items": "අයිතම {count}ක්",
+      "results": "ප්‍රතිඵල {count}ක්",
+      "frames": "රාමු {count}ක්",
+      "aboutCharacters": "අක්ෂර {count}ක් පමණ"
     }
   },
   "markdown": {

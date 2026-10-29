@@ -5,19 +5,12 @@
     "progressRestored": "Restored your last reading position",
     "list": {
       "title": "Articles",
-      "articleLabel": "Articles",
       "loadingReads": "Loading total article reads",
       "loadingComments": "Loading total article comments",
       "searchLabel": "Article search",
       "searchPlaceholder": "Search articles",
       "tagHint": "to filter tags; enter",
-      "emptyPrefix": "No articles found for “",
-      "emptySuffix": "”",
-      "found": "Found",
-      "viewing": "(viewing",
-      "keywords": "Keywords:",
       "loading": "Loading articles",
-      "minutes": "minutes",
       "readMore": "Read more",
       "pagination": "Article pagination",
       "noMatches": "No matching articles",
@@ -26,11 +19,12 @@
       "empty": "No articles yet",
       "emptyHint": "Published articles will appear here",
       "noSummary": "No summary available",
-      "position": "Article {p0}",
-      "range": "Articles {p0}–{p1}",
       "removeTag": "Remove tag {p0}",
       "chooseTags": "Choose tags",
-      "tag": "Tag {p0}"
+      "tag": "Tag {p0}",
+      "summary": "{count} articles. | {count} article (showing article {start}). | {count} articles (showing articles {start}–{end}).",
+      "filteredSummary": "{count} articles found. | {count} article found (showing article {start}). | {count} articles found (showing articles {start}–{end}).",
+      "keywordSummary": "Keywords: {keyword}"
     },
     "article": {
       "language": "Article language",
@@ -43,8 +37,6 @@
       "machineNotice": "This article was machine translated and may contain errors. Refer to {original} when in doubt.",
       "original": "the original",
       "back": "Back to articles",
-      "about": "About",
-      "minRead": "min read",
       "loadingReads": "Loading article reads",
       "loadingComments": "Loading article comments",
       "loading": "Loading article content",
@@ -56,7 +48,6 @@
       "loadFailedHint": "Article not found or failed to load",
       "blog": "远方之森 · Blog",
       "refresh": "Refresh article",
-      "readTime": "{p0} min read",
       "previousTitle": "Previous article: {p0}",
       "nextTitle": "Next article: {p0}"
     }

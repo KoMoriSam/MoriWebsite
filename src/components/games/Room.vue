@@ -404,18 +404,13 @@
                 class="flex items-center gap-2 text-sm font-medium"
               >
                 <i class="ri-timer-line" aria-hidden="true"></i>
-                {{ t("games.lobbyStatus.startingIn") }}
-                <span
-                  class="countdown font-mono text-lg"
-                  :aria-label="
-                    t('games.lobbyStatus.seconds', { n: startSeconds })
-                  "
-                >
-                  <span :style="{ '--value': startSeconds }">{{
-                    startSeconds
-                  }}</span>
-                </span>
-                {{ t("games.lobbyStatus.secondsUnit") }}
+                <I18nT keypath="games.lobbyStatus.seconds" tag="span" scope="global">
+                  <template #n>
+                    <span class="countdown font-mono text-lg">
+                      <span :style="{ '--value': startSeconds }">{{ startSeconds }}</span>
+                    </span>
+                  </template>
+                </I18nT>
               </p>
               <ol
                 class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -633,6 +628,7 @@
   <Footer v-if="showSidebar" class="hidden lg:grid" />
 </template>
 <script setup>
+import { Translation as I18nT } from "vue-i18n";
 import {
   computed,
   h,

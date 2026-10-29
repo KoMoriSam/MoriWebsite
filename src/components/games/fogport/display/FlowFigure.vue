@@ -279,7 +279,7 @@
             :class="frame >= 2 ? 'text-success' : 'text-base-content/40'"
           >
             <i class="ri-arrow-up-circle-line text-xl"></i
-            >{{ frame >= 2 ? "+5" : "0" }} {{ t("fogport.incomeSpaces") }}
+            >{{ t("fogport.incomeSpacesCount", { n: frame >= 2 ? "+5" : "0" }) }}
           </div></foreignObject
         >
         <foreignObject x="179" y="80" width="109" height="33"

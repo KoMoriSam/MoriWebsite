@@ -3,7 +3,7 @@
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
-        {{ articles.length }} {{ translate("blog.list.articleLabel") }}
+        {{ translate("common.counts.articles", { count: articles.length }, articles.length) }}
       </span>
       <client-only>
         <span
@@ -12,8 +12,7 @@
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
-            {{ formatReadCount(articleTotalReads) }}
-            {{ translate("reader.chapters.reads") }}
+            {{ translate("common.counts.reads", { count: formatReadCount(articleTotalReads) }, articleTotalReads) }}
           </template>
           <span
             v-else
@@ -29,8 +28,7 @@
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
-            {{ formatReadCount(articleTotalComments) }}
-            {{ translate("markdown.moment.comments") }}
+            {{ translate("common.counts.comments", { count: formatReadCount(articleTotalComments) }, articleTotalComments) }}
           </template>
           <span
             v-else
@@ -207,8 +205,7 @@
                       {{ group.label }}
                     </span>
                     <span class="shrink-0 font-normal text-base-content/40">
-                      {{ group.count }}
-                      {{ translate("blog.list.countUnit") }}
+                      {{ translate("common.counts.articles", { count: group.count }, group.count) }}
                     </span>
                   </div>
                   <ul
@@ -264,8 +261,7 @@
                           {{ option.label }}
                         </span>
                         <span class="text-xs text-base-content/40">
-                          {{ option.count }}
-                          {{ translate("blog.list.countUnit") }}
+                          {{ translate("common.counts.articles", { count: option.count }, option.count) }}
                         </span>
                       </button>
                     </li>
@@ -306,52 +302,24 @@
       >
         <!-- 左侧：一句话概括全部关键信息 -->
         <p class="flex flex-wrap items-center gap-x-1 gap-y-0">
-          <template v-if="filteredArticles.length === 0">
-            <span
-              v-if="keyword.trim()"
-              class="font-medium text-base-content/75"
-            >
-              {{ translate("blog.list.emptyPrefix") }}{{ keyword.trim()
-              }}{{ translate("blog.list.emptySuffix") }}
-            </span>
-          </template>
-
-          <template v-else>
-            <span>
-              <span v-if="!hasFilter">
-                {{ translate("common.pagination.of") }}
-                <strong class="font-semibold text-base-content">{{
-                  filteredArticles.length
-                }}</strong>
-              </span>
-              <span v-else>
-                {{ translate("blog.list.found") }}
-                <strong class="font-semibold text-base-content">{{
-                  filteredArticles.length
-                }}</strong>
-              </span>
-              {{ translate("blog.list.countUnit") }}
-              <span
-                v-if="filteredArticles.length > 1"
-                class="text-base-content/50"
-              >
-                {{ translate("blog.list.viewing") }}{{ pageDisplayText }}）
-              </span>
-            </span>
-
-            <span v-if="keyword.trim()" class="ml-2">
-              {{ translate("blog.list.keywords") }}
-              <span class="badge badge-primary badge-soft badge-xs">
-                {{ keyword.trim() }}
-              </span>
-            </span>
-          </template>
+          <I18nT
+            :keypath="hasFilter ? 'blog.list.filteredSummary' : 'blog.list.summary'"
+            :plural="filteredArticles.length"
+            tag="span"
+            scope="global"
+          >
+            <template #count><strong class="font-semibold text-base-content">{{ formatNumber(filteredArticles.length) }}</strong></template>
+            <template #start><span class="text-base-content/50">{{ formatNumber(pageStart) }}</span></template>
+            <template #end><span class="text-base-content/50">{{ formatNumber(pageEnd) }}</span></template>
+          </I18nT>
+          <I18nT v-if="keyword.trim()" keypath="blog.list.keywordSummary" tag="span" scope="global" class="ml-2">
+            <template #keyword><span class="badge badge-primary badge-soft badge-xs">{{ keyword.trim() }}</span></template>
+          </I18nT>
         </p>
 
         <p class="text-xs text-base-content/50">
           <template v-if="filteredArticles.length">
-            {{ translate("common.pagination.page") }} {{ currentPage }} /
-            {{ totalPages }} {{ translate("common.pagination.pages") }}
+            {{ translate("common.pagination.position", { p0: formatNumber(currentPage), p1: formatNumber(totalPages) }) }}
           </template>
         </p>
       </div>
@@ -566,14 +534,12 @@
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-time-line"></i>
-                    {{ estimateReadingTime(item.length) }}
-                    {{ translate("blog.list.minutes") }}
+                    {{ translate("common.counts.minutes", { count: estimateReadingTime(item.length) }, estimateReadingTime(item.length)) }}
                   </span>
 
                   <span class="flex items-center gap-1.5">
                     <i class="ri-file-text-line"></i>
-                    {{ item.length || 0 }}
-                    {{ translate("reader.chapters.characters") }}
+                    {{ translate("common.counts.characters", { count: item.length || 0 }, item.length || 0) }}
                   </span>
 
                   <client-only>
@@ -586,8 +552,7 @@
                     >
                       <i class="ri-eye-line" aria-hidden="true"></i>
                       <template v-if="Number.isFinite(getArticleReads(item))">
-                        {{ formatReadCount(getArticleReads(item)) }}
-                        {{ translate("reader.chapters.reads") }}
+                        {{ translate("common.counts.reads", { count: formatReadCount(getArticleReads(item)) }, getArticleReads(item)) }}
                       </template>
                       <span
                         v-else
@@ -613,8 +578,7 @@
                       <template
                         v-if="Number.isFinite(getArticleComments(item))"
                       >
-                        {{ formatReadCount(getArticleComments(item)) }}
-                        {{ translate("markdown.moment.comments") }}
+                        {{ translate("common.counts.comments", { count: formatReadCount(getArticleComments(item)) }, getArticleComments(item)) }}
                       </template>
                       <span
                         v-else
@@ -727,6 +691,7 @@ import {
   watch,
 } from "vue";
 import { storeToRefs } from "pinia";
+import { Translation as I18nT } from "vue-i18n";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
 import Pagination from "@/components/interaction/navigation/Pagination.vue";
@@ -854,16 +819,6 @@ const pageEnd = computed(() => {
     currentPage.value * BLOG_PAGE_SIZE,
     filteredArticles.value.length,
   );
-});
-
-const pageDisplayText = computed(() => {
-  if (pageStart.value === pageEnd.value) {
-    return translate("blog.list.position", { p0: pageStart.value });
-  }
-  return translate("blog.list.range", {
-    p0: pageStart.value,
-    p1: pageEnd.value,
-  });
 });
 
 const handlePageChange = async (page) => {

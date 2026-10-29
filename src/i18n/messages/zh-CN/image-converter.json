@@ -9,7 +9,6 @@
     "detailedView": "详细模式",
     "compactView": "紧凑模式",
     "pendingImages": "待转换图片",
-    "frames": "帧",
     "downloadResult": "下载转换结果",
     "convertAgain": "重新转换",
     "removeFile": "移除文件",
@@ -86,7 +85,6 @@
     "system": "系统",
     "usersEmoji": "用户与表情",
     "weather": "天气",
-    "failedSuffix": " · 含失败项目",
     "fontNotReady": "字体选择器尚未就绪",
     "svgReadFailed": "无法读取 SVG 水印",
     "svgUnsupported": "浏览器无法创建 SVG 水印",
@@ -123,11 +121,11 @@
     "bottomLeft": "左下",
     "bottomCenter": "中下",
     "bottomRight": "右下",
-    "filesCompleted": "{p0} 个文件 · {p1} 个已完成{p2}",
+    "filesCompleted": "共 {total} 个文件 · 已完成 {completed} 个",
     "batchLimit": "单批最多 {p0} 个文件，超出的文件未添加",
     "unsupportedFormat": "{p0} 不是受支持的图片格式",
     "memoryLimit": "预计解码占用 {p0}，超过设备安全上限 {p1}",
-    "partialFailure": "转换完成，{p0} 个文件失败",
+    "partialFailure": "转换完成，{count} 个文件失败",
     "saved": "节省 {p0}%",
     "increased": "增加 {p0}%",
     "preview": "{p0}预览",
@@ -145,6 +143,7 @@
     "aspectRatioLocked": "宽高比已锁定",
     "aspectRatioUnlocked": "宽高比未锁定",
     "unlockAspectRatio": "解除宽高比锁定",
-    "lockOriginalAspectRatio": "锁定原图宽高比"
+    "lockOriginalAspectRatio": "锁定原图宽高比",
+    "filesWithFailures": "共 {total} 个文件 · 已完成 {completed} 个 · 部分失败"
   }
 }

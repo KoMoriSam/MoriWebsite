@@ -171,10 +171,7 @@
                   >
                   <span class="whitespace-nowrap">
                     <template v-if="documentText"
-                      >{{ documentText.length }}
-                      {{
-                        translate("sinhala.characters")
-                      }}</template
+                      >{{ translate("sinhala.characterCount", { count: documentText.length }, documentText.length) }}</template
                     >
                     <template v-else>{{
                       documentFile.name.split(".").pop()?.toUpperCase()
@@ -590,8 +587,7 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ unicodeText.length }}
-                {{ translate("sinhala.characters") }}
+                {{ translate("sinhala.characterCount", { count: unicodeText.length }, unicodeText.length) }}
               </span>
             </div>
           </div>
@@ -889,8 +885,7 @@
               </section>
 
               <span class="text-xs tabular-nums text-base-content/75">
-                {{ fmText.length }}
-                {{ translate("sinhala.characters") }}
+                {{ translate("sinhala.characterCount", { count: fmText.length }, fmText.length) }}
               </span>
             </div>
           </div>
@@ -901,17 +896,12 @@
         v-if="inputMode === 'text' && sourceTextLength >= LONG_TEXT_THRESHOLD"
         class="mt-3 text-sm text-base-content/70"
       >
-        {{ translate("sinhala.longText")
-        }}{{ sourceTextLength }}
-        {{ translate("sinhala.longTextHint") }}
-        <button
-          type="button"
-          class="link link-primary"
-          @click="inputMode = 'document'"
-        >
-          {{ translate("sinhala.documentMode") }}
-        </button>
-        {{ translate("sinhala.longTextSuffix") }}
+        <I18nT keypath="sinhala.longText" tag="span" scope="global">
+          <template #count>{{ sourceTextLength }}</template>
+          <template #documentMode>
+            <button type="button" class="link link-primary" @click="inputMode = 'document'">{{ translate("sinhala.documentMode") }}</button>
+          </template>
+        </I18nT>
       </p>
 
       <fieldset
@@ -1106,6 +1096,7 @@
 </template>
 
 <script setup>
+import { Translation as I18nT } from "vue-i18n";
 import { useLocale } from "@/i18n";
 const {
   t: translate,

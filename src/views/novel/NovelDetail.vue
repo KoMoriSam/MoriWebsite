@@ -164,18 +164,14 @@
       >
         <client-only>
           <CatalogMeta icon="ri-book-open-line"
-            >{{ formatNumber(readChapters.length) }}
-            {{ translate("novel.detail.chaptersRead") }}</CatalogMeta
+            >{{ translate("common.counts.chaptersRead", { count: formatNumber(readChapters.length) }, readChapters.length) }}</CatalogMeta
           >
         </client-only>
         <CatalogMeta icon="ri-stack-line"
-          >{{ formatNumber(flatChapters.length) }}
-          {{ translate("novel.detail.chaptersIncluded") }}</CatalogMeta
+          >{{ translate("common.counts.chapters", { count: formatNumber(flatChapters.length) }, flatChapters.length) }}</CatalogMeta
         >
         <CatalogMeta icon="ri-file-text-line"
-          >{{ translate("common.pagination.of") }}
-          {{ formatNumber(totalWordCount) }}
-          {{ translate("reader.chapters.characters") }}</CatalogMeta
+          >{{ translate("novel.detail.totalCharacters", { count: formatNumber(totalWordCount) }) }}</CatalogMeta
         >
         <client-only v-if="analyticsAvailable || commentCountsAvailable">
           <CatalogMeta
@@ -183,8 +179,7 @@
             icon="ri-eye-line"
           >
             <template v-if="Number.isFinite(novelTotalReads)"
-              >{{ formatReadCount(novelTotalReads) }}
-              {{ translate("reader.chapters.reads") }}</template
+              >{{ translate("common.counts.reads", { count: formatReadCount(novelTotalReads) }, novelTotalReads) }}</template
             >
             <span
               v-else
@@ -197,8 +192,7 @@
             icon="ri-chat-3-line"
           >
             <template v-if="Number.isFinite(novelTotalComments)"
-              >{{ formatReadCount(novelTotalComments) }}
-              {{ translate("markdown.moment.comments") }}</template
+              >{{ translate("common.counts.comments", { count: formatReadCount(novelTotalComments) }, novelTotalComments) }}</template
             >
             <span
               v-else

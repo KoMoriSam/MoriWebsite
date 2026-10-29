@@ -737,7 +737,11 @@ const linkLabel = (link) =>
       props.game.players.find((p) => p.id === builtLink(link).owner)?.nickname
     : "");
 const merchantLabel = (m) =>
-  `${placeName(m.location, t)}: ${m.buys.map((type) => t(`fogport.industries.${type}`)).join(" / ") || t("fogport.blank")} · ${t("fogport.resources.beer")} ${m.beer}`;
+  t("fogport.merchantSummary", {
+    location: placeName(m.location, t),
+    industries: m.buys.map((type) => t(`fogport.industries.${type}`)).join(" / ") || t("fogport.blank"),
+    beer: m.beer,
+  });
 const liquidationOffer = (location, slot) =>
   props.liquidationOffers.find(
     (c) => c.building === building(location, slot)?.id,

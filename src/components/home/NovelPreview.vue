@@ -17,8 +17,7 @@
           date(publishedDate)
         }}</CatalogMeta>
         <CatalogMeta v-if="chapter?.length != null" icon="ri-file-text-line"
-          >{{ number(chapter.length) }}
-          {{ translate("reader.chapters.characters") }}</CatalogMeta
+          >{{ translate("common.counts.characters", { count: number(chapter.length) }, chapter.length) }}</CatalogMeta
         >
       </div>
     </template>

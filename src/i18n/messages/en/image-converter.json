@@ -9,7 +9,6 @@
     "detailedView": "Detailed view",
     "compactView": "Compact view",
     "pendingImages": "Images to convert",
-    "frames": "frames",
     "downloadResult": "Download result",
     "convertAgain": "Convert again",
     "removeFile": "Remove file",
@@ -86,7 +85,6 @@
     "system": "System",
     "usersEmoji": "Users & emoji",
     "weather": "Weather",
-    "failedSuffix": " · includes failed items",
     "fontNotReady": "The font picker is not ready",
     "svgReadFailed": "Cannot read the SVG watermark",
     "svgUnsupported": "Your browser cannot create an SVG watermark",
@@ -123,11 +121,11 @@
     "bottomLeft": "Bottom left",
     "bottomCenter": "Bottom center",
     "bottomRight": "Bottom right",
-    "filesCompleted": "{p0} files · {p1} completed{p2}",
+    "filesCompleted": "Files: {total} · Completed: {completed}",
     "batchLimit": "Up to {p0} files per batch. Extra files were not added.",
     "unsupportedFormat": "{p0} is not a supported image format",
     "memoryLimit": "Estimated decoding memory {p0} exceeds the device limit {p1}",
-    "partialFailure": "Conversion finished; {p0} files failed",
+    "partialFailure": "Conversion complete; {count} file failed | Conversion complete; {count} files failed",
     "saved": "Saved {p0}%",
     "increased": "Increased {p0}%",
     "preview": "{p0} preview",
@@ -145,6 +143,7 @@
     "aspectRatioLocked": "Aspect ratio locked",
     "aspectRatioUnlocked": "Aspect ratio unlocked",
     "unlockAspectRatio": "Unlock aspect ratio",
-    "lockOriginalAspectRatio": "Lock original aspect ratio"
+    "lockOriginalAspectRatio": "Lock original aspect ratio",
+    "filesWithFailures": "Files: {total} · Completed: {completed} · Some failed"
   }
 }

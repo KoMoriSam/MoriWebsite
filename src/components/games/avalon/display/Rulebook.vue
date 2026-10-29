@@ -44,10 +44,10 @@
                 </option>
               </select>
               <span class="badge badge-soft badge-success badge-sm">
-                {{ t("avalon.rulebook.good") }} {{ selectedRow.good }}
+                {{ t("avalon.rulebook.goodCount", { n: selectedRow.good }) }}
               </span>
               <span class="badge badge-soft badge-error badge-sm">
-                {{ t("avalon.rulebook.evil") }} {{ selectedRow.evil }}
+                {{ t("avalon.rulebook.evilCount", { n: selectedRow.evil }) }}
               </span>
             </div>
             <QuestList :player-count="selectedPlayers" />

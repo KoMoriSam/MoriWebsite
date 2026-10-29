@@ -9,8 +9,6 @@
         "short": "ලැජ්ජයි අනේ😫"
       },
       "cover": "《向远方》 නවකතා කවරය",
-      "chaptersRead": "කියවූ පරිච්ඡේද",
-      "chaptersIncluded": "ඇතුළත් පරිච්ඡේද",
       "loadingReads": "මුළු නවකතා කියවීම් පූරණය වෙමින්",
       "loadingComments": "මුළු නවකතා අදහස් පූරණය වෙමින්",
       "chapters": "නවකතා පරිච්ඡේද",
@@ -21,7 +19,8 @@
       "rereadLatest": "අලුත්ම පරිච්ඡේදය නැවත කියවන්න",
       "readChapter": "මෙම පරිච්ඡේදය කියවන්න",
       "rereadChapter": "මෙම පරිච්ඡේදය නැවත කියවන්න",
-      "loading": "පූරණය වෙමින්…"
+      "loading": "පූරණය වෙමින්…",
+      "totalCharacters": "මුළු අක්ෂර ගණන {count}කි"
     },
     "reader": {
       "loadingLabel": "පරිච්ඡේදය පූරණය වෙමින්",
@@ -60,7 +59,7 @@
       "help": "සහාය",
       "refresh": "යළි පූරණය කරන්න",
       "label": "ජංගම කියවීම් පාලක",
-      "bookProgress": "· පොතේ ප්‍රගතිය",
+      "bookProgress": "පොතේ කියවූ ප්‍රමාණය {progress}කි",
       "position": "පරිච්ඡේද කියවීම් ස්ථානය වෙනස් කරන්න",
       "backToCover": "කවරයට ආපසු",
       "comments": "අදහස්",

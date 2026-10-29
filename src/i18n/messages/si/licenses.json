@@ -1,9 +1,6 @@
 {
   "licenses": {
     "scope": "ව්‍යාපෘතියේ MIT බලපත්‍රය මුල් මෘදුකාංග මූල කේතයට පමණක් අදාළය. තෙවන පාර්ශ්ව කොටස් සහ වෙනත් අන්තර්ගතයට ඒවායේම නියම අදාළ වේ.",
-    "dependencies": "යැපීම් අනුවාද",
-    "additionalLicenses": "අතිරේක බලපත්‍ර",
-    "missingLicenses": "ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ",
     "projectLicense": "බලපත්‍රය",
     "downloadLicense": "LICENSE බාගන්න",
     "thirdPartyNotices": "තෙවන පාර්ශ්ව නිවේදන",
@@ -16,6 +13,9 @@
     "missingLicenseHint": "මෙම පැකේජයේ ස්ථාපිත අනුවාදයට ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් ඇතුළත් නැත.",
     "files": "අතිරේක බලපත්‍ර ගොනු",
     "viewChineseSource": "චීන මුල් පෙළ බලන්න",
-    "viewSource": "මුල් පෙළ බලන්න"
+    "viewSource": "මුල් පෙළ බලන්න",
+    "dependenciesCount": "යැපීම් අනුවාද {count}ක්",
+    "additionalLicensesCount": "අතිරේක බලපත්‍ර {count}ක්",
+    "missingLicensesCount": "ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ ගණන {count}කි"
   }
 }

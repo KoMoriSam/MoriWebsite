@@ -251,7 +251,7 @@
       "views": "Game views",
       "turnOrder": "Turn order {n}",
       "recordDetails": "Cards and resource details",
-      "copies": "{n} tiles per player",
+      "copies": "Tiles per player: {n}",
       "canalTip": "Only 1 action in the first round of the Canal Era; one industry per player in each location.",
       "railTip": "Each railway needs coal; build up to two at once. Level II and higher industries survive the era change.",
       "tileLegend": "Level appears at the top; coins, coal and iron show construction costs, and the goblet shows beer needed to sell. The star, upward arrow and route icons show VP, income spaces and link value after flipping.",
@@ -353,8 +353,8 @@
       "scoreHint": "Points already awarded. Flipped industries and links score at the end of each era.",
       "companyDetails": "Company details",
       "stockHint": "Industries remaining in supply",
-      "handAndLinks": "{cards} cards · {links} links available",
-      "marketStock": "{n} units in market",
+      "handAndLinks": "Cards: {cards} · Available links: {links}",
+      "marketStock": "Market stock: {n} units",
       "buyUnit": "Next unit purchase price",
       "externalSupply": "Market empty: external units remain available at this price.",
       "coalMarket": "The consuming location must connect to a merchant. Use the nearest reachable coal mines before buying; buy only when no coal mine is reachable.",
@@ -365,7 +365,7 @@
       "merchantBeerReady": "Sale beer: 1 unit available",
       "merchantBeerUsed": "Sale beer: exhausted",
       "beerReward": "Using this beer awards: {reward} {n}",
-      "deckHint": "{n} cards left to draw; no replenishment once empty.",
+      "deckHint": "Cards left to draw: {n}; no replenishment once empty.",
       "goal": "Earn the most VP across two eras by building industries and links. Income funds later investment; flipped industries and links score at each era end.",
       "restockUnit": "Next unit restock income",
       "marketFull": "Full: no restocking",
@@ -382,6 +382,13 @@
     "actingPlayer": "{name} is acting",
     "liquidationDetails": "Build cost {cost} · Receive {amount} · Still needed after liquidation {remaining}",
     "testStatus": "In testing",
-    "testNotice": "Test version only. Development is on hold; some features are unfinished and the game may not be playable."
+    "testNotice": "Test version only. Development is on hold; some features are unfinished and the game may not be playable.",
+    "incomeSpacesCount": "Income spaces: {n}",
+    "vpCount": "VP: {n}",
+    "cashAmount": "Cash: {n}",
+    "outputCount": "Output: {n}",
+    "beerOutput": "Beer output: Canal {canal} / Rail {rail}",
+    "statCount": "{n} {label}",
+    "merchantSummary": "{location}: {industries} · Beer units: {beer}"
   }
 }

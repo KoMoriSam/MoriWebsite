@@ -16,19 +16,16 @@
     },
     "chapters": {
       "title": "Chapters",
-      "volumes": "volumes ·",
-      "countUnit": "chapters",
       "refresh": "Refresh chapters",
       "clearHistory": "Clear reading history",
       "loading": "Loading chapters",
-      "characters": "characters",
-      "reads": "reads",
       "empty": "No chapters are available yet",
       "emptyHint": "Refresh the chapter list and try again",
       "read": "Read",
       "unread": "Unread",
       "loadingReads": "Loading reads for 《{p0}》",
-      "loadingComments": "Loading comments for 《{p0}》"
+      "loadingComments": "Loading comments for 《{p0}》",
+      "summary": "Volumes: {volumes} · Chapters: {chapters}"
     },
     "badges": {
       "revisedHint": "This chapter has been revised",
@@ -38,8 +35,7 @@
     "toc": {
       "progress": "Reading progress",
       "latest": "Latest chapter",
-      "readUnit": "chapters · read",
-      "readCount": "{p0} chapters, {p1} read",
+      "readCount": "Chapters: {p0}; read: {p1}",
       "expand": "Expand",
       "collapse": "Collapse"
     },
@@ -136,7 +132,8 @@
       "multiplier": "×",
       "paragraphSpacing": "Paragraph spacing",
       "paragraphGap": "Paragraph gap",
-      "lines": "lines"
+      "lines": "lines",
+      "lineCount": "{count} line | {count} lines"
     },
     "body": {
       "contents": "Reading contents",

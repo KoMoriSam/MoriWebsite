@@ -237,9 +237,7 @@
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-file-text-line"></i>
-                  {{ translate("blog.article.about") }}
-                  {{ article.length }}
-                  {{ translate("reader.chapters.characters") }}
+                  {{ translate("common.counts.aboutCharacters", { count: article.length }, article.length) }}
                 </span>
 
                 <span
@@ -247,8 +245,7 @@
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-time-line"></i>
-                  {{ estimateReadingTime(article.length) }}
-                  {{ translate("blog.article.minRead") }}
+                  {{ translate("common.counts.readingTime", { count: estimateReadingTime(article.length) }, estimateReadingTime(article.length)) }}
                 </span>
 
                 <span
@@ -258,8 +255,7 @@
                   <i class="ri-eye-line" aria-hidden="true"></i>
 
                   <template v-if="Number.isFinite(articleReads)">
-                    {{ formatReadCount(articleReads) }}
-                    {{ translate("reader.chapters.reads") }}
+                    {{ translate("common.counts.reads", { count: formatReadCount(articleReads) }, articleReads) }}
                   </template>
 
                   <span
@@ -280,8 +276,7 @@
                   <i class="ri-chat-3-line" aria-hidden="true"></i>
 
                   <template v-if="Number.isFinite(articleComments)">
-                    {{ formatReadCount(articleComments) }}
-                    {{ translate("markdown.moment.comments") }}
+                    {{ translate("common.counts.comments", { count: formatReadCount(articleComments) }, articleComments) }}
                   </template>
 
                   <span
@@ -765,12 +760,10 @@ const articleShareMeta = computed(() => {
   const displayDate = date ? formatLocalizedDate(props.article?.date) : "";
   const lengthText =
     Number.isFinite(length) && length > 0
-      ? translate("blog.article.characters", { p0: length })
+      ? translate("common.counts.characters", { count: length }, length)
       : "";
   const readingTimeText = lengthText
-    ? translate("blog.article.readTime", {
-        p0: estimateReadingTime(length),
-      })
+    ? translate("common.counts.readingTime", { count: estimateReadingTime(length) }, estimateReadingTime(length))
     : "";
   const aliasesText = aliasList.value.join(" ");
   const renderedMetadata = [displayDate, lengthText, readingTimeText].filter(
@@ -781,9 +774,7 @@ const articleShareMeta = computed(() => {
     : "";
   const contentInfo = [
     Number.isFinite(length) && length > 0
-      ? translate("blog.article.aboutCharacters", {
-          p0: length.toLocaleString(uiLocale.value),
-        })
+      ? translate("common.counts.aboutCharacters", { count: length.toLocaleString(uiLocale.value) }, length)
       : "",
     tagsText ? tagsText : "",
   ]
@@ -791,14 +782,10 @@ const articleShareMeta = computed(() => {
     .join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(articleReads.value)
-      ? translate("blog.article.reads", {
-          p0: formatReadCount(articleReads.value),
-        })
+      ? translate("common.counts.reads", { count: formatReadCount(articleReads.value) }, articleReads.value)
       : "",
     commentCountsAvailable.value && Number.isFinite(articleComments.value)
-      ? translate("blog.article.comments", {
-          p0: formatReadCount(articleComments.value),
-        })
+      ? translate("common.counts.comments", { count: formatReadCount(articleComments.value) }, articleComments.value)
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");

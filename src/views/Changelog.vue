@@ -8,7 +8,7 @@
         </span>
         <span class="inline-flex items-center gap-1">
           <i class="ri-git-branch-line"></i>
-          {{ totalVersions }} {{ translate('changelog.releases') }}
+          {{ translate('changelog.releasesCount', { count: totalVersions }, totalVersions) }}
         </span>
       </template>
     </template>
@@ -117,7 +117,7 @@
           >
             <span class="hidden text-right md:block">
               <span class="text-xs text-base-content/45">
-                {{ group.releases.length }} {{ translate('changelog.versions') }}
+                {{ translate('changelog.versionsCount', { count: group.releases.length }, group.releases.length) }}
               </span>
             </span>
             <span
@@ -131,7 +131,7 @@
                 {{ group.year }}
               </span>
               <span class="text-sm text-base-content/45 md:hidden">
-                {{ group.releases.length }} {{ translate('changelog.versions') }}
+                {{ translate('changelog.versionsCount', { count: group.releases.length }, group.releases.length) }}
               </span>
               <span class="h-px flex-1 bg-base-300"></span>
               <i
@@ -174,7 +174,7 @@
                   {{ formatDate(release.date) }}
                 </time>
                 <p class="mt-1 text-xs text-base-content/40">
-                  {{ release.changeCount }} {{ translate('changelog.changes') }}
+                  {{ translate('changelog.changesCount', { count: release.changeCount }, release.changeCount) }}
                 </p>
               </header>
 
@@ -221,7 +221,7 @@
                       <time :datetime="release.date" class="block">
                         {{ formatDate(release.date) }}
                       </time>
-                      <span>{{ release.changeCount }} {{ translate('changelog.changes') }}</span>
+                      <span>{{ translate('changelog.changesCount', { count: release.changeCount }, release.changeCount) }}</span>
                     </div>
                   </header>
 

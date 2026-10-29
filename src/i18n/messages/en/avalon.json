@@ -173,8 +173,8 @@
       "send": "Send",
       "cooldown": "One moment",
       "empty": "No messages yet. Start the discussion with a quick phrase.",
-      "limit": "Latest {n} this game",
-      "unread": "Read {n} new messages",
+      "limit": "Latest {n} messages in this game",
+      "unread": "View {n} new message | View {n} new messages",
       "hint": "Messages are player claims or guesses, not confirmed identities. Votes and quest cards must still be submitted separately.",
       "categories": {
         "accuse": "Accuse",
@@ -459,7 +459,9 @@
       "good": "Good",
       "evil": "Evil",
       "questNumber": "Quest {n}",
-      "twoFails": "With 7 or more players, the fourth quest needs at least two Sabotage cards to fail."
+      "twoFails": "With 7 or more players, the fourth quest needs at least two Sabotage cards to fail.",
+      "goodCount": "Good players: {n}",
+      "evilCount": "Evil players: {n}"
     },
     "winners": {
       "good": "Good wins",

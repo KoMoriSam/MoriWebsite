@@ -7,18 +7,18 @@
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-puzzle-line"></i>
-        {{ licenseData.dependencyCount }} {{ translate('licenses.dependencies') }}
+        {{ translate('licenses.dependenciesCount', { count: licenseData.dependencyCount }, licenseData.dependencyCount) }}
       </span>
       <span class="inline-flex items-center gap-1">
         <i class="ri-certificate-line"></i>
-        {{ licenseData.supplementalLicenses.length }} {{ translate('licenses.additionalLicenses') }}
+        {{ translate('licenses.additionalLicensesCount', { count: licenseData.supplementalLicenses.length }, licenseData.supplementalLicenses.length) }}
       </span>
       <span
         v-if="licenseData.missingLicenseFileCount"
         class="inline-flex items-center gap-1"
       >
         <i class="ri-certificate-2-line"></i>
-        {{ licenseData.missingLicenseFileCount }} {{ translate('licenses.missingLicenses') }}
+        {{ translate('licenses.missingLicensesCount', { count: licenseData.missingLicenseFileCount }, licenseData.missingLicenseFileCount) }}
       </span>
     </template>
 

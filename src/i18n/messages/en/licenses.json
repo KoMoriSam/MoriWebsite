@@ -1,9 +1,6 @@
 {
   "licenses": {
     "scope": "The project's MIT license applies only to original software source code. Third-party components and other content retain their own terms.",
-    "dependencies": "dependency versions",
-    "additionalLicenses": "additional licenses",
-    "missingLicenses": "packages without a top-level license file",
     "projectLicense": "License",
     "downloadLicense": "Download LICENSE",
     "thirdPartyNotices": "Third-party notices",
@@ -16,6 +13,9 @@
     "missingLicenseHint": "The installed version of this package does not include a top-level license file.",
     "files": "Additional license files",
     "viewChineseSource": "View Chinese source",
-    "viewSource": "View source text"
+    "viewSource": "View source text",
+    "dependenciesCount": "{count} dependency version | {count} dependency versions",
+    "additionalLicensesCount": "{count} additional license | {count} additional licenses",
+    "missingLicensesCount": "{count} package without a top-level license file | {count} packages without a top-level license file"
   }
 }

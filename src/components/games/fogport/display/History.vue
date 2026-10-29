@@ -17,8 +17,7 @@
               player(row.playerId)?.nickname
             }}</span
             ><span class="badge badge-soft badge-sm"
-              >{{ row.links + row.industries + row.bonus }}
-              {{ t("fogport.vp") }}</span
+              >{{ t("fogport.vpCount", { n: row.links + row.industries + row.bonus }) }}</span
             >
           </div>
           <dl class="mt-1 flex flex-wrap gap-x-3 text-xs text-base-content/60">
@@ -164,7 +163,7 @@
                 player(row.playerId)?.nickname
               }}</span
               ><span class="tabular-nums"
-                >{{ t("fogport.visual.spent") }} {{ row.spent }}</span
+                >{{ t("fogport.info.roundSpent", { n: row.spent }) }}</span
               >
             </li>
           </ol>
@@ -174,14 +173,14 @@
             :class="entry.amount < 0 ? 'text-error' : 'text-success'"
           >
             <i class="ri-coins-line" aria-hidden="true"></i>
-            {{ t("fogport.cash") }} {{ signed(entry.amount) }}
+            {{ t("fogport.cashAmount", { n: signed(entry.amount) }) }}
           </p>
           <p
             v-if="entry.loss !== undefined"
             class="font-semibold tabular-nums text-error"
           >
             <i class="ri-star-line" aria-hidden="true"></i>
-            {{ t("fogport.vp") }} −{{ entry.loss }}
+            {{ t("fogport.vpCount", { n: `−${entry.loss}` }) }}
           </p>
           <details
             v-if="entry.cards?.length || entry.resourceUsage?.length"

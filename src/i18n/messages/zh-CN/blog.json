@@ -5,19 +5,12 @@
     "progressRestored": "已恢复上次阅读进度",
     "list": {
       "title": "文章列表",
-      "articleLabel": "文章",
       "loadingReads": "正在读取文章总阅读量",
       "loadingComments": "正在读取文章总评论量",
       "searchLabel": "文章检索",
       "searchPlaceholder": "搜索文章",
       "tagHint": "筛选标签，输入",
-      "emptyPrefix": "没有找到与“",
-      "emptySuffix": "”相关的文章",
-      "found": "找到",
-      "viewing": "（当前查看",
-      "keywords": "关键词：",
       "loading": "文章列表加载中",
-      "minutes": "分钟",
       "readMore": "阅读全文",
       "pagination": "文章列表分页",
       "noMatches": "未找到匹配的文章",
@@ -26,11 +19,12 @@
       "empty": "暂无文章",
       "emptyHint": "文章发布后会显示在这里",
       "noSummary": "暂无文章摘要",
-      "position": "第 {p0} 篇",
-      "range": "第 {p0}-{p1} 篇",
       "removeTag": "移除标签 {p0}",
       "chooseTags": "选择标签",
-      "tag": "标签 {p0}"
+      "tag": "标签 {p0}",
+      "summary": "共 {count} 篇文章。 | 共 {count} 篇文章（当前展示第 {start} 篇）。 | 共 {count} 篇文章（当前展示第 {start}–{end} 篇）。",
+      "filteredSummary": "找到 {count} 篇文章。 | 找到 {count} 篇文章（当前展示第 {start} 篇）。 | 找到 {count} 篇文章（当前展示第 {start}–{end} 篇）。",
+      "keywordSummary": "关键词：{keyword}"
     },
     "article": {
       "language": "文章语言",
@@ -43,8 +37,6 @@
       "machineNotice": "本文由机器翻译，可能存在表达或理解偏差，请以{original}为准。",
       "original": "原文",
       "back": "返回文章列表",
-      "about": "约",
-      "minRead": "分钟阅读",
       "loadingReads": "正在读取文章阅读次数",
       "loadingComments": "正在读取文章评论量",
       "loading": "文章正文加载中",
@@ -56,7 +48,6 @@
       "loadFailedHint": "文章不存在或加载失败",
       "blog": "远方之森 · 博客",
       "refresh": "刷新文章",
-      "readTime": "{p0} 分钟阅读",
       "previousTitle": "上一篇：{p0}",
       "nextTitle": "下一篇：{p0}"
     }

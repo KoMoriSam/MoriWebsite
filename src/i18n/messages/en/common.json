@@ -80,17 +80,10 @@
     "logoLabel": "Logo of Server"
   },
   "blog": {
-    "list": {
-      "countUnit": "articles"
-    },
     "article": {
       "toBottom": "To bottom",
       "toTop": "To top",
-      "characters": "{p0} characters",
-      "publishDate": "Published {p0}",
-      "aboutCharacters": "About {p0} characters",
-      "reads": "{p0} reads",
-      "comments": "{p0} comments"
+      "publishDate": "Published {p0}"
     },
     "errors": {
       "listFailed": "Failed to fetch articles: {p0}",
@@ -148,13 +141,8 @@
     },
     "pagination": {
       "previous": "Previous page",
-      "page": "Page",
-      "pages": "pages",
-      "of": "of",
       "next": "Next page",
       "choose": "Choose page",
-      "currentPrefix": "Page",
-      "totalPrefix": "of",
       "first": "First page",
       "last": "Last page",
       "previousItem": "Previous item",
@@ -209,7 +197,6 @@
       "clearFilters": "Clear all search filters",
       "selectHint": "Select ·",
       "confirmHint": "Confirm ·",
-      "items": "items",
       "enter": "Enter",
       "typeHint": "to filter types,",
       "categoryHint": "to filter tags, novel volumes, or change types,",
@@ -219,7 +206,6 @@
       "resultsLabel": "Site search results",
       "noMatches": "No matching content found",
       "noMatchesHint": "Try shorter keywords or remove some filters",
-      "results": "results",
       "select": "Select",
       "open": "Open",
       "blogTags": "Blog tags",
@@ -270,8 +256,8 @@
       "accessDenied": "Device font access was not granted",
       "readFailed": "Cannot read device fonts",
       "customUnavailable": "The custom font is no longer available. Please select it again.",
-      "loadProgress": "Loaded {p0}/{p1} device fonts",
-      "deviceLoaded": "Read {p0} device fonts",
+      "loadProgress": "Device fonts loaded: {p0}/{p1}",
+      "deviceLoaded": "Device fonts read: {p0}",
       "setFallback": "Set default fallback font: {p0}",
       "loadingLabel": "Loading font",
       "loading": "Loading {p0}",
@@ -386,6 +372,20 @@
       "licenses": "Licenses",
       "kaiming": "Kaiming Punctuation",
       "NotFound": "Page not found"
+    },
+    "counts": {
+      "articles": "{count} article | {count} articles",
+      "reads": "{count} read | {count} reads",
+      "comments": "{count} comment | {count} comments",
+      "characters": "{count} character | {count} characters",
+      "minutes": "{count} minute | {count} minutes",
+      "readingTime": "{count} minute read",
+      "chapters": "{count} chapter | {count} chapters",
+      "chaptersRead": "{count} chapter read | {count} chapters read",
+      "items": "{count} item | {count} items",
+      "results": "{count} result | {count} results",
+      "frames": "{count} frame | {count} frames",
+      "aboutCharacters": "About {count} character | About {count} characters"
     }
   },
   "markdown": {

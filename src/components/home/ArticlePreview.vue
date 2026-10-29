@@ -16,7 +16,7 @@
     <template #meta>
       <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
         <CatalogMeta v-if="article.displayDate" tag="time" :datetime="article.displayDate" icon="ri-calendar-line">{{ date(article.displayDate) }}</CatalogMeta>
-        <CatalogMeta v-if="readingTime" icon="ri-time-line">{{ translate('home.writing.readingTime', { count: readingTime }) }}</CatalogMeta>
+        <CatalogMeta v-if="readingTime" icon="ri-time-line">{{ translate('common.counts.minutes', { count: readingTime }, readingTime) }}</CatalogMeta>
       </div>
     </template>
   </CatalogCard>

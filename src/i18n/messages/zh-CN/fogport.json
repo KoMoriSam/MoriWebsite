@@ -382,6 +382,13 @@
     "actingPlayer": "{name} 行动中",
     "liquidationDetails": "建造费用 {cost} · 变卖获得 {amount} · 变卖后仍需 {remaining} 资金",
     "testStatus": "测试中",
-    "testNotice": "当前版本仅供测试，开发暂缓；部分功能尚未完成，可能无法正常游玩。"
+    "testNotice": "当前版本仅供测试，开发暂缓；部分功能尚未完成，可能无法正常游玩。",
+    "incomeSpacesCount": "{n} 收入格",
+    "vpCount": "{n} 胜利分",
+    "cashAmount": "资金 {n}",
+    "outputCount": "产出 {n}",
+    "beerOutput": "啤酒产出：运河 {canal} 份 / 铁路 {rail} 份",
+    "statCount": "{n} {label}",
+    "merchantSummary": "{location}：{industries} · 啤酒 {beer} 份"
   }
 }
