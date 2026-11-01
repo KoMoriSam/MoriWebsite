@@ -124,7 +124,7 @@
           >
             <button
               type="button"
-              class="btn btn-primary h-auto min-h-10 min-w-0 max-w-full py-2"
+              class="btn btn-primary"
               :title="primaryChapterTitle"
               :disabled="primaryChapterDisabled"
               @click="handlePrimaryChapter"
@@ -134,7 +134,7 @@
             </button>
             <button
               type="button"
-              class="btn btn-ghost h-auto min-h-10 min-w-0 max-w-full py-2"
+              class="btn"
               :title="getChapterDisplayTitle(latestChapter) || undefined"
               :disabled="!latestChapter?.uuid"
               @click="
@@ -143,6 +143,18 @@
             >
               {{ translate("novel.detail.readLatest") }}
               <i class="ri-sparkling-2-line shrink-0" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              :title="translate('novel.detail.chapters')"
+              @click="scrollToSection('novel-chapters')"
+            >
+              {{ translate("novel.detail.chapters") }}
+              <i
+                class="ri-arrow-down-s-line animate-arrow-bounce motion-reduce:animate-none translate-y-0.25"
+                aria-hidden="true"
+              ></i>
             </button>
           </div>
         </div>

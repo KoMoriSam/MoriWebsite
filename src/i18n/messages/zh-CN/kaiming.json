@@ -6,6 +6,7 @@
     "description": "一套为网页中文排版制作的标点字体。支持黑体与宋体两种风格，以及 100–900 连续可变字重。",
     "specifications": "字体规格",
     "viewSource": "查看源码",
+    "usage": "下载与使用",
     "family": "标点字体族",
     "chooseFamily": "选择字体族",
     "variableWeight": "可变字重",

@@ -26,7 +26,7 @@
           <i class="ri-quill-pen-line" aria-hidden="true"></i>
         </a>
         <a
-          class="btn btn-ghost"
+          class="btn"
           href="https://github.com/KoMoriSam/Kaiming"
           target="_blank"
           rel="noopener noreferrer"
@@ -34,17 +34,26 @@
           {{ translate("kaiming.viewSource") }}
           <i class="ri-github-fill" aria-hidden="true"></i>
         </a>
+        <a
+          href="#usage-title"
+          class="btn btn-ghost"
+          @click.prevent="$emit('usage')"
+        >
+          {{ translate("kaiming.usage") }}
+          <i
+            class="ri-arrow-down-s-line animate-arrow-bounce motion-reduce:animate-none translate-y-0.25"
+            aria-hidden="true"
+          ></i>
+        </a>
       </div>
       <div
         class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-base-content/55 md:mt-8"
         :aria-label="translate('kaiming.specifications')"
       >
-        <CatalogMeta icon="ri-font-sans-serif">wght 100–900</CatalogMeta>
-        <CatalogMeta icon="ri-font-serif">Sans / Serif</CatalogMeta>
-        <CatalogMeta icon="ri-file-line">WOFF2 Variable</CatalogMeta>
-        <CatalogMeta icon="ri-creative-commons-by-line"
-          >SIL OFL 1.1</CatalogMeta
-        >
+        <CatalogMeta icon="ri-font-size-2">wght 100–900</CatalogMeta>
+        <CatalogMeta icon="ri-font-sans-serif">Sans / Serif</CatalogMeta>
+        <CatalogMeta icon="ri-font-family">WOFF2 Variable</CatalogMeta>
+        <CatalogMeta icon="ri-certificate-2-line">SIL OFL 1.1</CatalogMeta>
       </div>
     </div>
   </div>
@@ -54,6 +63,6 @@
 import { useLocale } from "@/i18n";
 import CatalogMeta from "@/components/interaction/navigation/CatalogMeta.vue";
 
-defineEmits(["try"]);
+defineEmits(["try", "usage"]);
 const { t: translate } = useLocale();
 </script>

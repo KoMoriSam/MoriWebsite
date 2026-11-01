@@ -10,7 +10,10 @@
       aria-labelledby="kaiming-title"
     >
       <PunctuationBackdrop />
-      <Opening @try="scrollToSection('kaiming-specimen')" />
+      <Opening
+        @try="scrollToSection('kaiming-specimen')"
+        @usage="scrollToSection('kaiming-usage')"
+      />
     </section>
 
     <div class="divider" aria-hidden="true"></div>
