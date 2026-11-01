@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { singleThreadCodecs } from "./scripts/vite-single-thread-codecs.mjs";
+import { singleThreadCodecs } from "./scripts/build/single-thread-codecs.mjs";
 
 const outputPaths = {
   entryFileNames: "js/[name]-[hash].js",

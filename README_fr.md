@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Version actuelle : <strong>2.20.0</strong>
+  Version actuelle : <strong>2.20.1</strong>
   ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
@@ -145,7 +145,7 @@ pnpm install
 pnpm dev
 ```
 
-Le hook `predev` génère les variantes d'images locales, les données du journal et celles des licences. Vite écoute par défaut sur `0.0.0.0`. Pour tester l'API des salles de jeu en local, lancez `pnpm dev:games-api` dans un autre terminal.
+`pnpm dev` génère d’abord les variantes d'images locales, les données du journal et celles des licences. Vite écoute par défaut sur `0.0.0.0`. Pour tester l'API des salles de jeu en local, lancez `pnpm dev games` dans un autre terminal.
 
 ### Construire pour la production
 
@@ -161,7 +161,7 @@ Le flux de build complet :
 4. prérend le site et génère `404.html` ;
 5. crée l'index Pagefind pour le blog, le roman, le journal et les licences, puis copie les fichiers de licence dans `dist/legal/`.
 
-Les sources indiquées par `VITE_BLOG_RAW` et `VITE_NOVEL_RAW` doivent être accessibles pendant le build.
+Le build récupère les dépôts privés ObsidianVault et MyWritingVault, utilise leurs exporteurs existants et génère le SSG, le RSS et les index depuis le même instantané local, sans lire le site de contenu en production.
 
 ### Prévisualiser le build
 
@@ -199,7 +199,9 @@ VITE_ANALYTICS_API=
 | `VITE_ANNOUNCEMENTS_API`  | URL facultative de l'API des annonces ; une valeur par défaut existe en production                            |
 | `VITE_ANALYTICS_API`      | URL facultative de l'API de statistiques ; une valeur par défaut existe en production                         |
 
-Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code client. N'y placez aucun secret ni identifiant privé. `scripts/generate-routes.mjs` et `scripts/generate-pagefind-index.mjs` lisent tous deux `.env.production`.
+Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code client. N'y placez aucun secret ni identifiant privé. `scripts/build/routes.mjs` et `scripts/build/pagefind.mjs` lisent tous deux `.env.production`.
+
+Configurez CONTENT_GITHUB_TOKEN comme secret de build Workers Builds avec un accès Contents en lecture seule aux deux dépôts privés, sans préfixe VITE_. Utilisez production comme branche de production et désactivez les builds des autres branches. Seul le workflow des balises de version avance cette branche ; les push ordinaires sur main ne déploient pas le code du site. Les droits de déploiement doivent couvrir les deux Workers et les routes raw.komori.cc. Fixez Node.js 24.15.0 et pnpm 12.3.4. En local, CONTENT_BLOG_DIR et CONTENT_NOVEL_DIR peuvent désigner les deux Vaults ; les exporteurs travaillent uniquement dans des copies temporaires.
 
 ## Scripts disponibles
 
@@ -208,13 +210,14 @@ Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code cli
 | `pnpm dev`                       | Générer les données de licence et lancer le serveur de développement  |
 | `pnpm build`                     | Générer le site SSG, l'index de recherche et les licences distribuées |
 | `pnpm preview`                   | Prévisualiser localement `dist/`                                      |
-| `pnpm deploy`                    | Construire et déployer le site avec Wrangler                          |
+| `pnpm check <cible>` | Exécuter les vérifications ciblées ; sans cible, afficher la liste |
+| `pnpm generate <cible>` | Générer les ressources choisies ; sans cible, afficher la liste |
+| `pnpm run deploy <cible>` | Publier le site et le contenu ensemble, ou l’API/Giscus séparément |
 | `pnpm release prepare <version>` | Préparer le journal, les instantanés et l'annonce                     |
-| `pnpm dev:games-api`            | Démarrer l'API locale des salles de jeu                              |
-| `pnpm api-worker`               | Déployer séparément l'API Worker                                      |
-| `pnpm announcement publish`     | Publier séparément les annonces dans KV                              |
+| `pnpm dev games`            | Démarrer l'API locale des salles de jeu                              |
+| `pnpm release announcement publish`     | Publier séparément les annonces dans KV                              |
 
-Après validation des changements de version, l'envoi d'une balise `v<version>` permet à GitHub Actions de déployer le site et de publier le journal. `announcements/` est ignoré par Git : vérifiez avec `pnpm announcement publish --dry-run`, puis publiez séparément avec `pnpm announcement publish --yes`. Déployez aussi l'API Worker séparément si nécessaire.
+Workers Builds surveille MoriWebsite/production, exécute `pnpm build`, puis `pnpm run deploy website` pour publier successivement les Workers Static Assets du contenu et du site. Les chemins raw.komori.cc/post, /novel, /giscus, /kaiming et /images/spin.gif sont conservés. Les polices web, le CSS et la licence Kaiming proviennent de sa dernière GitHub Release, avec vérification SHA-256 ; CONTENT_KAIMING_RELEASE permet de fixer une version. Chaque dépôt privé déclenche le build avec le secret WORKERS_BUILD_HOOK ; les Actions du roman enregistrent d’abord les métadonnées stables, celles du blog déclenchent uniquement le build. Kaiming utilise son propre WORKERS_BUILD_HOOK après publication d’une version des polices. Les balises de version du site vérifient la publication et publient le journal, puis avancent production au commit exact de la balise, sans réécriture. Tous les hooks de contenu ciblent production : les mises à jour reconstruisent le code publié sans intégrer les commits ultérieurs de main. Giscus reste envoyé manuellement avec `pnpm run deploy giscus`. R2 est désactivé et les images restent dans les ressources statiques. Les annonces se gèrent séparément avec `pnpm release announcement publish`.
 
 ## Structure du projet
 
@@ -237,12 +240,15 @@ src/
   views/           # pages associées aux routes
 
 scripts/
-  generate-routes.mjs                # crée les routes d'articles et l'instantané SSG
-  generate-images.mjs                # crée les variantes locales et lit les manifestes distants
-  generate-rss.mjs                   # crée le flux RSS du blog
-  generate-pagefind-index.mjs        # crée l'index Pagefind global personnalisé
-  generate-third-party-licenses.mjs  # collecte et distribue les données de licence
-  api-worker.js                      # point d'entrée de l'API Cloudflare et des salles de jeu
+  build/           # ressources, prérendu, index de recherche et licences
+  checks/          # vérifications de régression ciblées
+  release/         # versions, journaux et annonces
+  sinhala/         # outils de polices, glyphes et lexiques avec les sources
+  lib/             # logique partagée des scripts
+  run.mjs          # point d’entrée commun des commandes
+
+workers/           # API Cloudflare, salles de jeu et routage du contenu
+giscus/            # styles maintenus et envoyés séparément
 
 licenses/          # licences complémentaires des polices, icônes et autres ressources
 mock/              # copies locales ignorées par Git du blog et du roman
@@ -254,12 +260,13 @@ public/
 
 ## Notes sur le contenu et le build
 
-- Le blog et le roman sont maintenus dans [theWake](https://github.com/KoMoriSam/theWake) et [theHorizon](https://github.com/KoMoriSam/theHorizon).
+- Le blog exporte uniquement les notes public/publish et leurs ressources depuis ObsidianVault/notes. Le roman publie uniquement MyWritingVault/public/, en conservant les chemins, UUID et codes de route. Les miroirs publics ne servent plus à publier le contenu ; Giscus reste indépendant.
 - `src/router/ssg-data.generated.js` et `src/router/license-data.generated.js` sont générés automatiquement, ignorés par Git et ne doivent pas être modifiés manuellement.
 - La configuration publique des dépôts et catégories Giscus est centralisée dans `src/constants/config.js`.
 - La logique du blog, du roman et de la recherche globale se trouve dans `src/services/api-articles.js`, `src/services/api-chapters.js` et `src/services/search-content.js`.
 - Les extensions Markdown se trouvent dans `src/utils/markdown/` ; `src/utils/resolve-article-assets.js` résout les images et bannières des articles.
 - Les sources du journal se trouvent dans `changelog/releases/` et génèrent uniquement `public/changelog.json` au format actuel ; les annonces locales dans `announcements/` sont ignorées par Git.
+- Les annonces sont regroupées par `x.y.0`. Intégrer les résultats des maintenances, optimisations et corrections au texte existant destiné aux lecteurs, sans ajouter de sections par correctif ni copier les journaux techniques. Conserver l’ID et la date de publication, puis augmenter revision une fois le texte révisé.
 - Les ressources statiques du site et l'API Worker sont configurés respectivement dans `wrangler.jsonc` et `wrangler.api.jsonc`.
 
 ## Compatibilité

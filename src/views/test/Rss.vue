@@ -52,7 +52,7 @@
         <div>
           <h3 class="font-semibold">RSS 加载失败</h3>
           <p class="text-sm">
-            {{ error }} 请先运行 <code>pnpm generate:rss</code> 后重试。
+            {{ error }} 请先运行 <code>pnpm generate rss</code> 后重试。
           </p>
         </div>
       </div>

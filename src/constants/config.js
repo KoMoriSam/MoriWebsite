@@ -74,7 +74,7 @@ const GISCUS = {
 };
 
 const CONFIG = {
-  BASE_URL: "https://komorisam.github.io/theHorizon",
+  BASE_URL: "https://raw.komori.cc/novel",
   getDynamicCacheExpiration, // 导出动态调整函数
   GISCUS,
 };

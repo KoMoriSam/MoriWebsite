@@ -1,7 +1,7 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "api",
-	"main": "./scripts/api-worker.js",
+	"main": "./workers/api.js",
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": [
 		"nodejs_compat"

@@ -1,0 +1,29 @@
+import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+export const PROJECT_ROOT = fileURLToPath(new URL("../../", import.meta.url));
+
+export async function run([tool, ...args], { cwd = PROJECT_ROOT, env = process.env, capture = false } = {}) {
+  let executable = process.execPath;
+  if (tool === "git") executable = "git";
+  else if (tool === "python") executable = env.PYTHON || "python";
+  else if (tool !== "node") {
+    const manifestPath = resolve(PROJECT_ROOT, "node_modules", tool, "package.json");
+    const { bin } = JSON.parse(await readFile(manifestPath, "utf8"));
+    const entry = typeof bin === "string" ? bin : bin?.[tool];
+    if (!entry) throw new Error(`找不到 ${tool} 命令，请先安装项目依赖。`);
+    args.unshift(resolve(dirname(manifestPath), entry));
+  }
+  return new Promise((resolve, reject) => {
+    const child = spawn(executable, args, { cwd, env, stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit" });
+    let output = "";
+    if (capture) child.stdout.setEncoding("utf8").on("data", (data) => { output += data; });
+    child.once("error", reject);
+    child.once("close", (code, signal) => {
+      if (code === 0) resolve(output.trim());
+      else reject(Object.assign(new Error(`${tool} 执行失败：${signal || code}`), { exitCode: code || 1 }));
+    });
+  });
+}

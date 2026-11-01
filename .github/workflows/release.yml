@@ -1,4 +1,4 @@
-name: Release website
+name: Publish website release
 
 on:
   push:
@@ -14,20 +14,15 @@ concurrency:
 
 jobs:
   release:
-    name: Build and release
+    name: Verify release and promote website code
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
+    permissions:
+      contents: write
     env:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      VITE_GISCUS_CSS_RAW: ${{ vars.VITE_GISCUS_CSS_RAW }}
-      VITE_BLOG_RAW: ${{ vars.VITE_BLOG_RAW }}
-      VITE_NOVEL_RAW: ${{ vars.VITE_NOVEL_RAW }}
-      VITE_COMMENT_COUNTS_API: ${{ vars.VITE_COMMENT_COUNTS_API }}
-      VITE_RANDOM_HERO_API: ${{ vars.VITE_RANDOM_HERO_API }}
-      VITE_ANALYTICS_API: ${{ vars.VITE_ANALYTICS_API }}
-      VITE_SERVER_ADDRESS: ${{ vars.VITE_SERVER_ADDRESS }}
       WRANGLER_SEND_METRICS: "false"
 
     steps:
@@ -57,11 +52,12 @@ jobs:
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
           pnpm release verify "${GITHUB_REF_NAME#v}"
 
-      - name: Build website
-        run: pnpm build
-
-      - name: Deploy website
-        run: pnpm exec wrangler deploy --config wrangler.jsonc
-
       - name: Publish changelog
-        run: pnpm changelog publish --yes
+        run: pnpm release changelog publish --yes
+
+      - name: Promote verified release to production
+        shell: bash
+        run: |
+          # HEAD is the verified tag commit, not the current tip of main.
+          # A normal push rejects outdated releases instead of rolling production back.
+          git push origin HEAD:refs/heads/production

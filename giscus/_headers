@@ -1,0 +1,5 @@
+/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff

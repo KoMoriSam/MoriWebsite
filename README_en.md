@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  Current version: <strong>2.20.0</strong>
+  Current version: <strong>2.20.1</strong>
   ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
@@ -145,7 +145,7 @@ pnpm install
 pnpm dev
 ```
 
-The `predev` hook generates local responsive images, changelog data, and license data. Vite listens on `0.0.0.0` by default. To test game-room APIs locally, run `pnpm dev:games-api` in another terminal.
+`pnpm dev` first generates local responsive images, changelog data, and license data. Vite listens on `0.0.0.0` by default. To test game-room APIs locally, run `pnpm dev games` in another terminal.
 
 ### Build for production
 
@@ -161,7 +161,7 @@ The complete build pipeline:
 4. prerenders the site and generates `404.html`;
 5. creates the Pagefind index for blog, novel, changelog, and license content, then copies license files into `dist/legal/`.
 
-The sources configured by `VITE_BLOG_RAW` and `VITE_NOVEL_RAW` must be reachable during the build.
+Production builds fetch the private ObsidianVault and MyWritingVault repositories, reuse their existing exporters, and generate SSG, RSS, and search indexes from the same local content snapshot without reading the live content site.
 
 ### Preview the production build
 
@@ -199,7 +199,9 @@ VITE_ANALYTICS_API=
 | `VITE_ANNOUNCEMENTS_API`  | Optional announcements API URL; production has a default                                 |
 | `VITE_ANALYTICS_API`      | Optional site-analytics API URL; production has a default                                |
 
-All of these variables use the `VITE_` prefix and are exposed to client code. Do not store secrets or private credentials in them. Both `scripts/generate-routes.mjs` and `scripts/generate-pagefind-index.mjs` read `.env.production`.
+All of these variables use the `VITE_` prefix and are exposed to client code. Do not store secrets or private credentials in them. Both `scripts/build/routes.mjs` and `scripts/build/pagefind.mjs` read `.env.production`.
+
+Set CONTENT_GITHUB_TOKEN as a Workers Builds build secret with Contents read-only access to the two private repositories; never prefix it with VITE_. Use production as the production branch and disable preview builds. Only the version-tag release workflow advances this branch; ordinary main pushes do not deploy website code. Deployment credentials must cover both Workers and the raw.komori.cc routes. Pin Node.js 24.15.0 and pnpm 12.3.4. For local builds, set CONTENT_BLOG_DIR and CONTENT_NOVEL_DIR to the two Vault directories; exporters run only in temporary copies.
 
 ## Available Scripts
 
@@ -208,13 +210,14 @@ All of these variables use the `VITE_` prefix and are exposed to client code. Do
 | `pnpm dev`                       | Generate license data and start the development server             |
 | `pnpm build`                     | Generate the SSG site, search index, and distributed license files |
 | `pnpm preview`                   | Preview `dist/` locally                                            |
-| `pnpm deploy`                    | Build and deploy the website with Wrangler                         |
+| `pnpm check <target>` | Run focused checks; omit the target to list choices |
+| `pnpm generate <target>` | Generate selected assets; omit the target to list choices |
+| `pnpm run deploy <target>` | Publish the website and content together, or the API/Giscus independently |
 | `pnpm release prepare <version>` | Prepare the changelog, snapshots, and announcement                 |
-| `pnpm dev:games-api`            | Start the local game-room API                                        |
-| `pnpm api-worker`               | Deploy the API Worker separately                                     |
-| `pnpm announcement publish`     | Publish announcements separately to KV                              |
+| `pnpm dev games`            | Start the local game-room API                                        |
+| `pnpm release announcement publish`     | Publish announcements separately to KV                              |
 
-After committing the release changes, pushing a `v<version>` tag lets GitHub Actions deploy the website and publish the changelog. `announcements/` is ignored by Git: check it with `pnpm announcement publish --dry-run`, then publish it separately with `pnpm announcement publish --yes`. Deploy the API Worker separately when needed.
+Workers Builds watches MoriWebsite/production, runs `pnpm build`, then `pnpm run deploy website` to publish content and website Static Assets Workers in that order. The raw.komori.cc/post, /novel, /giscus, /kaiming and /images/spin.gif paths remain available. Kaiming web fonts, CSS and license come from its latest GitHub Release with SHA-256 verification; CONTENT_KAIMING_RELEASE optionally pins a tag. Each private repository uses a WORKERS_BUILD_HOOK secret to trigger builds; novel Actions first persist stable metadata, while blog Actions only trigger. Kaiming uses its own WORKERS_BUILD_HOOK after publishing a font release. Website version tags verify releases and publish changelogs, then fast-forward production to the exact tagged commit. All content hooks target production, so content updates rebuild the released website code without including later main commits. Giscus is uploaded manually with `pnpm run deploy giscus`. R2 is not enabled; images remain in content static assets. Manage announcements separately with `pnpm release announcement publish`.
 
 ## Project Structure
 
@@ -237,12 +240,15 @@ src/
   views/           # route-level pages
 
 scripts/
-  generate-routes.mjs                # creates static blog routes and the SSG snapshot
-  generate-images.mjs                # creates local image variants and reads remote manifests
-  generate-rss.mjs                   # creates the blog RSS feed
-  generate-pagefind-index.mjs        # creates the custom site-wide Pagefind index
-  generate-third-party-licenses.mjs  # collects and distributes license data
-  api-worker.js                      # Cloudflare API and game-room entry point
+  build/           # assets, prerender data, search indexes, and licenses
+  checks/          # focused regression checks
+  release/         # versions, changelogs, and announcements
+  sinhala/         # font, glyph, and lexicon tools with font sources
+  lib/             # shared script logic
+  run.mjs          # shared command entry point
+
+workers/           # Cloudflare API, game rooms, and content routing
+giscus/            # manually maintained styles uploaded separately
 
 licenses/          # supplemental license texts for fonts, icons, and other assets
 mock/              # Git-ignored local mirrors of blog and novel content
@@ -254,12 +260,13 @@ public/
 
 ## Content and Build Notes
 
-- Blog and novel content are maintained in [theWake](https://github.com/KoMoriSam/theWake) and [theHorizon](https://github.com/KoMoriSam/theHorizon).
+- Blog sources are private ObsidianVault/notes; only public/publish notes and their assets are exported. Novels publish only MyWritingVault/public/, preserving volume/chapter paths, UUIDs, and route codes. Public mirror repositories are no longer used for publishing content; Giscus remains separate.
 - `src/router/ssg-data.generated.js` and `src/router/license-data.generated.js` are generated, ignored by Git, and should not be edited manually.
 - Public Giscus repository and category settings are centralized in `src/constants/config.js`.
 - Blog, novel, and global-search logic lives in `src/services/api-articles.js`, `src/services/api-chapters.js`, and `src/services/search-content.js`.
 - Markdown extensions live under `src/utils/markdown/`; `src/utils/resolve-article-assets.js` resolves article images and banners.
 - Changelog sources live under `changelog/releases/` and generate only `public/changelog.json` using the current schema; local announcement sources under `announcements/` are ignored by Git.
+- Release announcements are grouped by `x.y.0`. Integrate maintenance, optimization and fix outcomes into the existing reader-facing prose; do not append per-version patch sections or copy technical logs. Preserve the ID and publication time, then bump revision once after editing.
 - The website's static assets and API Worker use `wrangler.jsonc` and `wrangler.api.jsonc`, respectively.
 
 ## Browser Support

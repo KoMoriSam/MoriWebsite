@@ -1,0 +1,28 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "content-router",
+  "main": "./workers/content.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./.output/content",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/giscus", "/giscus/*"]
+  },
+  "routes": [
+    { "pattern": "raw.komori.cc/post", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/post/*", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/novel", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/novel/*", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/giscus", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/giscus/*", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/kaiming", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/kaiming/*", "zone_name": "komori.cc" },
+    { "pattern": "raw.komori.cc/images/spin.gif", "zone_name": "komori.cc" },
+  ],
+  "vars": {
+    "GISCUS_PAGES_ORIGIN": "https://giscus-cla.pages.dev",
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
+}

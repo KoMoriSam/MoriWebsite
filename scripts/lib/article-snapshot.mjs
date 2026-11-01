@@ -2,8 +2,9 @@ import fm from "front-matter";
 import { createHash } from "node:crypto";
 import { getArticleLocales, getSourceLocale, resolveArticleVersion, validateArticleIndex } from "../../src/utils/blog/article-versions.js";
 import { createArticleAssetResolver } from "../../src/utils/resolve-article-assets.js";
+import { fetchContent } from "./content-source.mjs";
 
-export async function retryDownload(url, parse = (response) => response.text(), fetcher = fetch) {
+export async function retryDownload(url, parse = (response) => response.text(), fetcher = fetchContent) {
   let error;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -18,7 +19,7 @@ export async function retryDownload(url, parse = (response) => response.text(), 
   throw error;
 }
 
-export async function createArticleSnapshot(articles, baseUrl, fetcher = fetch) {
+export async function createArticleSnapshot(articles, baseUrl, fetcher = fetchContent) {
   validateArticleIndex(articles);
   const resolver = createArticleAssetResolver(baseUrl);
   const entries = [];

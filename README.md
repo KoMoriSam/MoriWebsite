@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>2.20.0</strong>
+  当前版本：<strong>2.20.1</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
@@ -145,7 +145,7 @@ pnpm install
 pnpm dev
 ```
 
-`predev` 会先生成本地图片分级版本、更新日志数据和许可证数据。Vite 默认监听 `0.0.0.0`。本地调试游戏房间接口可另开终端运行 `pnpm dev:games-api`。
+`pnpm dev` 会先生成本地图片分级版本、更新日志数据和许可证数据。Vite 默认监听 `0.0.0.0`。本地调试游戏房间接口可另开终端运行 `pnpm dev games`。
 
 ### 构建生产版本
 
@@ -161,7 +161,7 @@ pnpm build
 4. 预渲染站点并生成 `404.html`；
 5. 为博客、小说、更新日志和许可证生成 Pagefind 索引，并将许可证文件复制到 `dist/legal/`。
 
-构建期间必须能够访问 `VITE_BLOG_RAW` 与 `VITE_NOVEL_RAW` 指向的内容源。
+生产构建先拉取私有的 `ObsidianVault` 与 `MyWritingVault`，复用各自导出器生成 `/post`、`/novel`，再从同一份本地导出生成 SSG、RSS 和搜索索引；构建不读取线上已发布的内容。
 
 ### 本地预览
 
@@ -199,7 +199,9 @@ VITE_ANALYTICS_API=
 | `VITE_ANNOUNCEMENTS_API`  | 可选；公告 API 地址，生产环境有默认地址                    |
 | `VITE_ANALYTICS_API`      | 可选；站点统计 API 地址，生产环境有默认地址                |
 
-这些变量都使用 `VITE_` 前缀，会暴露给客户端；请勿在其中保存密钥或其他私密凭据。`scripts/generate-routes.mjs` 和 `scripts/generate-pagefind-index.mjs` 会读取 `.env.production`。
+这些变量都使用 `VITE_` 前缀，会暴露给客户端；请勿在其中保存密钥或其他私密凭据。`scripts/build/routes.mjs` 和 `scripts/build/pagefind.mjs` 会读取 `.env.production`。
+
+Workers Builds 的构建 secret `CONTENT_GITHUB_TOKEN` 仅需对两个私有仓库拥有 Contents 只读权限，不能使用 `VITE_` 前缀。生产分支设为 `production`，关闭非生产分支构建。该分支仅由版本标签发布工作流推进，日常推送 `main` 不部署网站代码。部署凭据需有网站、内容 Worker 和 `raw.komori.cc` 路由的发布权限；构建环境固定 Node.js 24.15.0、pnpm 12.3.4。本地构建可设置 `CONTENT_BLOG_DIR`、`CONTENT_NOVEL_DIR` 指向两个 Vault；只在临时副本内执行导出。
 
 ## 常用脚本
 
@@ -208,13 +210,14 @@ VITE_ANALYTICS_API=
 | `pnpm dev`                    | 生成许可数据并启动开发服务器          |
 | `pnpm build`                  | 生成 SSG 站点、搜索索引与许可分发文件 |
 | `pnpm preview`                | 本地预览 `dist/`                      |
-| `pnpm deploy`                 | 构建并通过 Wrangler 发布网站          |
+| `pnpm check <目标>` | 按业务运行检查，省略目标可查看列表 |
+| `pnpm generate <目标>` | 按需生成资源，省略目标可查看列表 |
+| `pnpm run deploy <目标>` | 统一发布网站与内容，或独立发布 API/Giscus |
 | `pnpm release prepare <版本>` | 准备版本日志、静态快照与公告          |
-| `pnpm dev:games-api`          | 启动本地游戏房间 API                  |
-| `pnpm api-worker`             | 单独发布 API Worker                   |
-| `pnpm announcement publish`   | 单独发布公告到 KV                     |
+| `pnpm dev games`          | 启动本地游戏房间 API                  |
+| `pnpm release announcement publish`   | 单独发布公告到 KV                     |
 
-提交发布变更并推送 `v<版本>` 标签后，GitHub Actions 会部署网站并发布更新日志。`announcements/` 被 Git 忽略，公告需单独使用 `pnpm announcement publish --dry-run` 检查，再执行 `pnpm announcement publish --yes` 发布；API Worker 也按需单独部署。
+网站由 Workers Builds 监听 `MoriWebsite/production`，构建命令为 `pnpm build`，部署命令为 `pnpm run deploy website`，按内容、网站的顺序发布两个 Static Assets Worker。`raw.komori.cc/post`、`/novel` 与 `/giscus` 路径保持不变。内容 Worker 同时发布 `/kaiming` 下的两款可变字体、CSS、许可证及 `/images/spin.gif`，不进入网站 `dist`。字体读取 Kaiming 最新 GitHub Release 并校验 SHA-256，可用 `CONTENT_KAIMING_RELEASE` 固定标签；Kaiming 发布 Release 后通过自己的 `WORKERS_BUILD_HOOK` 触发构建。两个私有仓库使用 `WORKERS_BUILD_HOOK` secret 触发构建，所有 Hook 都绑定网站仓库的 `production` 分支，更新内容时仅重建已发布的网站代码；小说 Actions 仍先生成并回写稳定元数据，博客 Actions 只触发。`v<版本>` 标签触发版本校验和更新日志自动化，成功后把标签对应提交快进到 `production` 分支并触发部署，不读取 `main` 的后续提交。Giscus 使用 `pnpm run deploy giscus` 独立手动发布；R2 暂不启用，图片随内容静态资源发布。公告仍使用 `pnpm release announcement publish` 独立管理。
 
 ## 项目结构
 
@@ -237,12 +240,16 @@ src/
   views/           # 路由页面
 
 scripts/
-  generate-routes.mjs                # 生成博客静态路由与 SSG 快照
-  generate-images.mjs                # 生成站内分级图片并读取远端图片清单
-  generate-rss.mjs                   # 生成博客 RSS
-  generate-pagefind-index.mjs        # 生成全站 Pagefind 自定义索引
-  generate-third-party-licenses.mjs  # 汇总并分发许可证数据
-  api-worker.js                      # Cloudflare API
+  build/           # 构建资源、预渲染数据、索引与许可证
+  checks/          # 按业务运行的回归检查
+  release/         # 版本、更新日志与公告管理
+  sinhala/         # 字体、字形和词库生成工具及字体源文件
+  lib/             # 脚本共享逻辑
+  run.mjs          # 统一命令入口
+
+workers/           # Cloudflare API、游戏房间与内容路由
+giscus/            # 手工维护、独立上传的评论主题样式
+raw/               # 仅供内容 Worker 发布的静态资源，不进入网站 dist
 
 licenses/          # 字体、图标等补充许可证原文
 mock/              # 被 Git 忽略的本地博客与小说内容镜像
@@ -254,12 +261,13 @@ public/
 
 ## 内容与构建说明
 
-- 博客与小说内容分别维护在 [theWake](https://github.com/KoMoriSam/theWake) 和 [theHorizon](https://github.com/KoMoriSam/theHorizon)。
+- 博客源位于私有 `ObsidianVault/notes`，仅导出 `public/publish` 笔记及其资源；小说仅发布私有 `MyWritingVault/public/`，保留卷章路径、UUID 与路由短码。旧公开仓库不再作为内容发布中转，Giscus 配置保持独立。
 - `src/router/ssg-data.generated.js` 与 `src/router/license-data.generated.js` 均由脚本生成且被 Git 忽略，请勿手动编辑。
 - Giscus 的公开仓库与分类配置集中在 `src/constants/config.js`。
 - 博客、小说和全站搜索逻辑分别位于 `src/services/api-articles.js`、`src/services/api-chapters.js` 与 `src/services/search-content.js`。
 - Markdown 扩展位于 `src/utils/markdown/`，文章图片与横幅路径由 `src/utils/resolve-article-assets.js` 解析。
 - 更新日志源文件位于 `changelog/releases/`，构建仅生成新版结构的 `public/changelog.json`；公告源文件位于本地被 Git 忽略的 `announcements/`。
+- 版本公告按 `x.y.0` 归组：维护、优化和修复的实际变化融入原公告正文，面向读者说明最终结果，不追加版本补丁段落或复制技术日志。保留 ID 和发布时间，完成正文修订后增加一次 revision。
 - 网站静态资源与 API Worker 分别使用 `wrangler.jsonc`、`wrangler.api.jsonc` 配置。
 
 ## 浏览器支持

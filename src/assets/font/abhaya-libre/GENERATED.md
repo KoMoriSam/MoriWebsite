@@ -16,7 +16,7 @@ from the repository root:
 
 ```powershell
 python -m pip install fonttools brotli uharfbuzz
-python scripts/generate-fm-fonts-compatible.py
+python scripts/sinhala/generate-fonts.py
 ```
 
 The generated WOFF2 is a committed asset, not a build-time output.

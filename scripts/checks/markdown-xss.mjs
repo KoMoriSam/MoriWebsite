@@ -1,0 +1,427 @@
+import assert from "node:assert/strict";
+
+import { renderToString } from "@vue/server-renderer";
+import MarkdownIt from "markdown-it";
+import MarkdownItAttrs from "markdown-it-attrs";
+import MarkdownItBracketedSpans from "markdown-it-bracketed-spans";
+import { createSSRApp, h } from "vue";
+
+import { projectMarkdownComponentProps } from "../../src/utils/markdown/markdown-component-props.js";
+import { alertPlugin } from "../../src/utils/markdown/markdown-it-alert.js";
+import {
+  chatContainerPlugin,
+  chatHeaderPlugin,
+  momentsPlugin,
+} from "../../src/utils/markdown/markdown-it-chat.js";
+import {
+  codePlugin,
+  parseCodeFenceInfo,
+} from "../../src/utils/markdown/markdown-it-code.js";
+import { footnotePlugin } from "../../src/utils/markdown/markdown-it-footnote.js";
+import { rubyPlugin } from "../../src/utils/markdown/markdown-it-ruby.js";
+import { linkIconPlugin } from "../../src/utils/markdown/markdown-it-link-icon.js";
+import { mermaidPlugin } from "../../src/utils/markdown/markdown-it-mermaid.js";
+import { taskStatusPlugin } from "../../src/utils/markdown/markdown-it-task-status.js";
+import { collectFenceLanguages } from "../../src/utils/markdown/load-markdown-features.js";
+import { loadMathJaxPlugin } from "../../src/utils/markdown/mathjax-svg.js";
+import {
+  parseHtmlFragment,
+  renderHtmlFragment,
+} from "../../src/utils/markdown/render-html-vnodes.js";
+import { sanitizeMarkdownHtml } from "../../src/utils/markdown/sanitize-html.js";
+
+const xssPayloads = [
+  "<script>console.log('XSS-1')</script>",
+  "<img src=x onerror=\"console.log('XSS-2')\">",
+  "<svg onload=\"console.log('XSS-3')\"></svg>",
+  "<a href=\"javascript:console.log('XSS-4')\">click</a>",
+  "<iframe src=\"javascript:console.log('XSS-5')\"></iframe>",
+  "<video src=x onerror=\"console.log('XSS-6')\"></video>",
+  "<details open ontoggle=\"console.log('XSS-7')\"></details>",
+  "<marquee onstart=\"console.log('XSS-8')\"></marquee>",
+  "<ScRiPt>console.log('XSS-9')</ScRiPt>",
+  '<img src=x onerror="&#99;&#111;&#110;&#115;&#111;&#108;&#101;&#46;&#108;&#111;&#103;&#40;&#39;&#88;&#83;&#83;&#45;&#49;&#48;&#39;&#41;">',
+  "<object data=\"data:text/html,<script>console.log('XSS-11')</script>\"></object>",
+  "<form action=\"javascript:console.log('XSS-12')\" onsubmit=\"console.log('XSS-12')\"><input type=submit></form>",
+  "<body onload=\"console.log('XSS-13')\"></body>",
+  "<input onfocus=\"console.log('XSS-14')\" autofocus>",
+  "<textarea onfocus=\"console.log('XSS-15')\" autofocus></textarea>",
+];
+
+const dangerousVariants = [
+  '<a href="java&#x09;script:alert(1)">tab</a>',
+  '<a href="jav&#x61;script:alert(1)">entity</a>',
+  '<iframe srcdoc="<script>alert(1)</script>"></iframe>',
+  '<button formaction="javascript:alert(1)">submit</button>',
+  '<svg><use xlink:href="javascript:alert(1)"></use></svg>',
+  '<svg><a href="data:text/html,<script>alert(1)</script>">svg</a></svg>',
+  '<img src="data:text/html,<script>alert(1)</script>">',
+  '<div is="script" style="background:url(javascript:alert(1))">x</div>',
+  '<a ping="https://tracker.example" href="/safe">safe</a>',
+];
+
+const blockedTags =
+  /<(?:script|style|iframe|object|embed|applet|base|link|meta|form|textarea|select|template|noscript|marquee|video)\b/iu;
+const blockedAttributes =
+  /\s(?:on[a-z]+|srcdoc|action|formaction|autofocus|ping|is)=/iu;
+const blockedProtocols = /(?:javascript|data:text\/html)\s*:/iu;
+const rawHtmlMarkdown = new MarkdownIt({ html: true });
+
+for (const payload of [...xssPayloads, ...dangerousVariants]) {
+  for (const html of [payload, rawHtmlMarkdown.render(payload)]) {
+    const sanitized = sanitizeMarkdownHtml(html);
+    assert.doesNotMatch(sanitized, blockedTags, payload);
+    assert.doesNotMatch(sanitized, blockedAttributes, payload);
+    assert.doesNotMatch(sanitized, blockedProtocols, payload);
+  }
+}
+
+const safeHtml = sanitizeMarkdownHtml(`
+  <div id="safe" class="native-html" style="color:red">
+    <u>underline</u><small>small</small>
+    <details open><summary>summary</summary><p>content</p></details>
+    <a href="#inside">anchor</a>
+    <img src="/images/article.png" alt="article" width="320" height="180"
+      style="max-width:100%;height:auto;width:320px;color:red">
+    <input type="checkbox" checked class="task-list-item-checkbox">
+    <button type="button" class="comment-trigger" data-paragraph-id="p-1"
+      data-source-type="article" aria-label="打开段评">comment</button>
+  </div>
+`);
+
+for (const tag of ["u", "small", "details", "summary", "div", "img", "input", "button"]) {
+  assert.match(safeHtml, new RegExp(`<${tag}\\b`, "u"));
+}
+assert.match(safeHtml, /href="#inside"/u);
+assert.match(safeHtml, /style="max-width: 100%; height: auto; width: 320px"/u);
+assert.doesNotMatch(safeHtml, /color\s*:/iu);
+assert.match(safeHtml, /type="checkbox"/u);
+assert.match(safeHtml, /disabled=""/u);
+assert.match(safeHtml, /data-paragraph-id="p-1"/u);
+
+const safeUrls = sanitizeMarkdownHtml(`
+  <a href="https://example.com" target="_blank">https</a>
+  <a href="mailto:test@example.com">mail</a>
+  <a href="../relative">relative</a>
+  <img src="data:image/png;base64,iVBORw0KGgo=" alt="data image">
+`);
+assert.match(safeUrls, /href="https:\/\/example.com"/u);
+assert.match(safeUrls, /rel="noopener noreferrer"/u);
+assert.match(safeUrls, /href="mailto:test@example.com"/u);
+assert.match(safeUrls, /href="\.\.\/relative"/u);
+assert.match(safeUrls, /src="data:image\/png;base64,iVBORw0KGgo="/u);
+
+const mathJaxHtml = sanitizeMarkdownHtml(`
+  <mjx-container jax="SVG" display="true" style="position:relative"
+    data-reader-latex-source="E = mc^2" data-reader-math-display="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="1ex" height="1ex"
+      viewBox="0 0 100 100" role="img" focusable="false"
+      style="vertical-align:-0.025ex">
+      <defs><path id="MJX-1" d="M0 0" fill="currentColor"></path></defs>
+      <g transform="scale(1,-1)"><use xlink:href="#MJX-1"></use></g>
+    </svg>
+  </mjx-container>
+`);
+for (const tag of ["mjx-container", "svg", "defs", "path", "g", "use"]) {
+  assert.match(mathJaxHtml, new RegExp(`<${tag}\\b`, "u"));
+}
+assert.match(mathJaxHtml, /xlink:href="#MJX-1"/u);
+assert.match(mathJaxHtml, /data-reader-latex-source="E = mc\^2"/u);
+assert.match(mathJaxHtml, /style="position: relative"/u);
+assert.match(mathJaxHtml, /style="vertical-align: -0.025ex"/u);
+
+const mathMarkdown = new MarkdownIt();
+mathMarkdown.use(await loadMathJaxPlugin());
+const actualMathJaxHtml = sanitizeMarkdownHtml(
+  mathMarkdown.render("$\\frac{a}{b}+\\sqrt{x}$\n\n$$\\sum_{i=1}^{n} i$$"),
+);
+assert.match(actualMathJaxHtml, /<mjx-break\b[^>]*size="\d+"/u);
+assert.match(actualMathJaxHtml, /<mjx-container\b[^>]*display="true"/u);
+assert.match(actualMathJaxHtml, /data-latex=/u);
+assert.match(actualMathJaxHtml, /<defs><path/u);
+assert.match(actualMathJaxHtml, /<use\b[^>]*xlink:href="#MJX-/u);
+
+const actualMathJaxTextHtml = sanitizeMarkdownHtml(
+  mathMarkdown.render("$\\text{这是中文}$"),
+);
+assert.match(
+  actualMathJaxTextHtml,
+  /<text\b[^>]*font-size="[\d.]+px"[^>]*font-family="serif"[^>]*>这是中文<\/text>/u,
+);
+
+const markerNames = ["alert", "chat", "moment", "code", "link-icon", "mermaid"];
+assert.deepEqual(parseCodeFenceInfo('javascript title="hello.js"'), {
+  language: "javascript",
+  title: "hello.js",
+});
+assert.deepEqual(parseCodeFenceInfo("css title='theme file.css'"), {
+  language: "css",
+  title: "theme file.css",
+});
+assert.deepEqual(parseCodeFenceInfo('title="untagged.txt"'), {
+  language: "",
+  title: "untagged.txt",
+});
+assert.deepEqual(parseCodeFenceInfo("typescript"), {
+  language: "typescript",
+  title: "",
+});
+assert.deepEqual(
+  collectFenceLanguages(
+    '```js title="safe.js"\ncode\n```\n\n```title="plain.txt"\ntext\n```',
+  ),
+  ["javascript"],
+);
+const markerHtml = sanitizeMarkdownHtml(
+  markerNames
+    .map(
+      (name) =>
+        `<markdown-${name} data-markdown-props="%7B%7D"></markdown-${name}>`,
+    )
+    .join(""),
+);
+for (const name of markerNames) {
+  assert.match(markerHtml, new RegExp(`<markdown-${name}\\b`, "u"));
+}
+
+const componentMarkdown = new MarkdownIt({ html: true });
+componentMarkdown
+  .use(alertPlugin)
+  .use(chatHeaderPlugin)
+  .use(chatContainerPlugin)
+  .use(momentsPlugin)
+  .use(codePlugin)
+  .use(footnotePlugin)
+  .use(taskStatusPlugin)
+  .use(mermaidPlugin)
+  .use(linkIconPlugin);
+const componentHtml = sanitizeMarkdownHtml(
+  componentMarkdown.render(`
+> [!note] Safe alert
+> alert body
+
+> [!chat] **Mori** · online
+>
+> > **Mori** 10:30 · sent
+> > safe chat
+
+> [!moment] **Mori** · now · Kunming
+>
+> safe moment
+>
+> ![safe](https://example.com/image.png)
+>
+> ❤️ 1 · 💬 2 · 🔁 3
+
+[external](https://example.com)
+
+- [x] task
+
+footnote[^1]
+
+[^1]: safe footnote
+
+\`\`\`js title="safe.js"
+const safe = true;
+\`\`\`
+
+\`\`\`mermaid
+flowchart TD
+  A --> B
+\`\`\`
+`),
+);
+const componentFragment = parseHtmlFragment(componentHtml);
+const projectedMarkerNames = new Set();
+let projectedCodeProps;
+const visitMarker = (node) => {
+  if (node.tagName?.startsWith("markdown-")) {
+    const encoded = node.attrs?.find(
+      (attribute) => attribute.name === "data-markdown-props",
+    )?.value;
+    const projectedProps = projectMarkdownComponentProps(node.tagName, encoded);
+    assert.ok(projectedProps, node.tagName);
+    if (node.tagName === "markdown-code") projectedCodeProps = projectedProps;
+    projectedMarkerNames.add(node.tagName.replace(/^markdown-/u, ""));
+  }
+  for (const child of node.childNodes || []) visitMarker(child);
+};
+visitMarker(componentFragment);
+assert.deepEqual([...projectedMarkerNames].sort(), [...markerNames].sort());
+assert.deepEqual(projectedCodeProps, {
+  code: "const safe = true;\n",
+  language: "js",
+  title: "safe.js",
+});
+assert.match(componentHtml, /data-task-status="x"/u);
+assert.match(componentHtml, /data-task-tone="success"/u);
+assert.match(componentHtml, /class="footnote-ref"/u);
+assert.match(componentHtml, /class="footnote-backref"/u);
+assert.match(componentHtml, /href="#fn1"/u);
+assert.match(componentHtml, /href="#fnref1"/u);
+
+const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
+const alertProps = projectMarkdownComponentProps(
+  "markdown-alert",
+  encodeProps({
+    type: "warning",
+    titleHtml: '<img src=x onerror="alert(1)">title',
+    foldable: true,
+    innerHTML: "<script>alert(1)</script>",
+    onclick: "alert(1)",
+    unknown: "discard",
+  }),
+);
+assert.deepEqual(Object.keys(alertProps).sort(), [
+  "collapsed",
+  "foldable",
+  "icon",
+  "titleHtml",
+  "type",
+]);
+assert.equal(alertProps.innerHTML, undefined);
+assert.equal(alertProps.onclick, undefined);
+assert.doesNotMatch(sanitizeMarkdownHtml(alertProps.titleHtml), blockedAttributes);
+
+const momentProps = projectMarkdownComponentProps(
+  "markdown-moment",
+  encodeProps({
+    username: "Mori",
+    images: [
+      { url: "https://example.com/safe.png", alt: "safe", onerror: "bad" },
+      { url: "javascript:alert(1)", alt: "bad" },
+      { url: "data:image/svg+xml,<svg onload=alert(1)>", alt: "bad" },
+    ],
+    stats: { like: "1", comment: "2", share: "3", constructor: "bad" },
+    comments: [],
+    innerHTML: "bad",
+  }),
+);
+assert.deepEqual(momentProps.images, [
+  { url: "https://example.com/safe.png", alt: "safe" },
+]);
+assert.deepEqual(momentProps.stats, { like: "1", comment: "2", share: "3" });
+assert.equal(momentProps.innerHTML, undefined);
+
+assert.equal(
+  projectMarkdownComponentProps(
+    "markdown-link-icon",
+    encodeProps({ src: "javascript:alert(1)", innerHTML: "bad" }),
+  ),
+  null,
+);
+assert.deepEqual(
+  projectMarkdownComponentProps(
+    "markdown-link-icon",
+    encodeProps({ src: "https://example.com/favicon.ico", innerHTML: "bad" }),
+  ),
+  { src: "https://example.com/favicon.ico" },
+);
+assert.equal(projectMarkdownComponentProps("markdown-code", "%E0%A4%A"), null);
+assert.equal(projectMarkdownComponentProps("markdown-unknown", encodeProps({})), null);
+
+const attrsMarkdown = new MarkdownIt({ html: true })
+  .use(MarkdownItBracketedSpans)
+  .use(MarkdownItAttrs, { allowedAttributes: ["id", "class", "data-tip"] })
+  .use(footnotePlugin)
+  .use(rubyPlugin);
+const attrsHtml = sanitizeMarkdownHtml(
+  attrsMarkdown.render(
+    '![image](/safe.png){#safe .wide onerror="alert(1)" style="color:red" src="javascript:alert(1)"}\n\n[text](/safe){#link .safe onclick="alert(1)" href="javascript:alert(1)"}',
+  ),
+);
+assert.match(attrsHtml, /id="safe"/u);
+assert.match(attrsHtml, /class="wide"/u);
+assert.match(attrsHtml, /src="\/safe.png"/u);
+assert.match(attrsHtml, /href="\/safe"/u);
+assert.doesNotMatch(attrsHtml, blockedAttributes);
+assert.doesNotMatch(attrsHtml, /style=/iu);
+assert.doesNotMatch(attrsHtml, /javascript:/iu);
+
+const inlineContainerHtml = sanitizeMarkdownHtml(attrsMarkdown.render(
+  '- [[ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි.]{.font-abhaya}\n  [标准 Unicode 文本 `Abhaya Libre`]{.tooltip-content}]{.tooltip}\n\nBefore [**bold** and *italic*]{#inline .one .two data-tip="Tooltip text with spaces" onclick="alert(1)" style="color:red" href="javascript:alert(1)" data-unknown="blocked"} after.',
+));
+assert.match(inlineContainerHtml, /<li><span class="tooltip"><span class="font-abhaya">ශ්‍රී ලංකාව ඉන්දියන් සාගරයේ පිහිටි දූපතකි\.<\/span>\n<span class="tooltip-content">标准 Unicode 文本 <code>Abhaya Libre<\/code><\/span><\/span><\/li>/u);
+assert.match(inlineContainerHtml, /Before <span id="inline" class="one two" data-tip="Tooltip text with spaces"><strong>bold<\/strong> and <em>italic<\/em><\/span> after\./u);
+assert.doesNotMatch(inlineContainerHtml, blockedAttributes);
+assert.doesNotMatch(inlineContainerHtml, /style=|href=|data-unknown=|javascript:/iu);
+
+const inlineCompatibilityHtml = attrsMarkdown.render(
+  '[link](/safe){.link} ![image](/safe.png){.image} [reference]{.reference} [named][reference]{.named} [reference][]{.collapsed} [^note]{.note}\n\n[reference]: /reference\n\n[^note]: footnote\n\n`[code]{.literal}` \\[escaped]{.escaped} [plain]\n\n[{漢字|かんじ}]{.ruby-wrapper}\n\n[adjacent]{.first}[containers]{.second}',
+);
+assert.match(inlineCompatibilityHtml, /<a href="\/safe" class="link">link<\/a>/u);
+assert.match(inlineCompatibilityHtml, /<img src="\/safe.png" alt="image" class="image">/u);
+for (const [name, label] of [["reference", "reference"], ["named", "named"], ["collapsed", "reference"]]) {
+  assert.match(inlineCompatibilityHtml, new RegExp(`<a href="/reference" class="${name}">${label}</a>`, "u"));
+}
+assert.match(inlineCompatibilityHtml, /<sup class="footnote-ref"><a href="#fn1"/u);
+assert.doesNotMatch(inlineCompatibilityHtml, /<span[^>]*class="note"/u);
+assert.match(inlineCompatibilityHtml, /<code>\[code\]\{\.literal\}<\/code>/u);
+assert.doesNotMatch(inlineCompatibilityHtml, /<span[^>]*class="(?:literal|escaped)"/u);
+assert.match(inlineCompatibilityHtml, /\[plain\]/u);
+assert.match(inlineCompatibilityHtml, /<span class="ruby-wrapper"><ruby>/u);
+assert.match(inlineCompatibilityHtml, /<span class="first">adjacent<\/span><span class="second">containers<\/span>/u);
+
+const rubyBoundaryTableHtml = sanitizeMarkdownHtml(attrsMarkdown.render(
+  String.raw`| FM | Unicode |
+| --- | --- |
+| [[\|]{.font-abhaya-legacy} = [\|]{.font-abhaya-legacy .group-[&:is(:hover,:active)]:font-mono}]{.group} | {漢字\|かんじ} |`,
+));
+assert.match(rubyBoundaryTableHtml, /<td><span class="group"><span class="font-abhaya-legacy">\|<\/span> = <span class="font-abhaya-legacy group-\[&amp;:is\(:hover,:active\)\]:font-mono">\|<\/span><\/span><\/td>/u);
+assert.match(rubyBoundaryTableHtml, /<td><ruby>漢字<rt>かんじ<\/rt><\/ruby><\/td>/u);
+assert.equal((rubyBoundaryTableHtml.match(/<ruby>/gu) || []).length, 1);
+assert.equal(
+  attrsMarkdown.render("{plain} | after {漢字|かんじ}"),
+  "<p>{plain} | after <ruby>漢字<rt>かんじ</rt></ruby></p>\n",
+);
+assert.equal(
+  attrsMarkdown.render(String.raw`{字\}|じ} {字\|形|じけい}`),
+  "<p><ruby>字}<rt>じ</rt></ruby> <ruby>字|形<rt>じけい</rt></ruby></p>\n",
+);
+const rubyWithFallback = new MarkdownIt().use(rubyPlugin, { rp: ["（", "）"] });
+assert.equal(
+  rubyWithFallback.render("{漢字|かん|じ}{**言葉**|ことば}"),
+  "<p><ruby>漢<rp>（</rp><rt>かん</rt><rp>）</rp>字<rp>（</rp><rt>じ</rt><rp>）</rp></ruby><ruby><strong>言葉</strong><rp>（</rp><rt>ことば</rt><rp>）</rp></ruby></p>\n",
+);
+
+const tooltipHtml = sanitizeMarkdownHtml(
+  attrsMarkdown.render(
+    '**Hover**{.tooltip .tooltip-bottom .tooltip-info data-tip="Tooltip text" onclick="alert(1)" data-unknown="blocked"}\n\n<span class="tooltip" data-tip="&lt;img src=x&gt;">Safe text</span>',
+  ),
+);
+assert.match(tooltipHtml, /<strong class="tooltip tooltip-bottom tooltip-info" data-tip="Tooltip text">Hover<\/strong>/u);
+const tooltipNodes = [];
+const collectTooltipNodes = (node) => {
+  if (node.tagName) tooltipNodes.push(node);
+  for (const child of node.childNodes || []) collectTooltipNodes(child);
+};
+collectTooltipNodes(parseHtmlFragment(tooltipHtml));
+assert.ok(tooltipNodes.some((node) => node.attrs.some(
+  ({ name, value }) => name === "data-tip" && value === "<img src=x>",
+)));
+assert.ok(tooltipNodes.every((node) =>
+  node.tagName !== "img" && node.attrs.every(
+    ({ name }) => !name.startsWith("on") && name !== "data-unknown",
+  ),
+));
+
+const renderInput = `${safeHtml}${mathJaxHtml}${tooltipHtml}${inlineContainerHtml}`;
+assert.equal(sanitizeMarkdownHtml(renderInput), renderInput);
+
+const ssrApp = createSSRApp({
+  render: () =>
+    h(
+      "article",
+      null,
+      renderHtmlFragment(parseHtmlFragment(renderInput)),
+    ),
+});
+const ssrHtml = await renderToString(ssrApp);
+assert.doesNotMatch(ssrHtml, blockedTags);
+assert.doesNotMatch(ssrHtml, blockedAttributes);
+assert.match(ssrHtml, /<mjx-container/u);
+assert.match(ssrHtml, /<details open/u);
+assert.match(ssrHtml, /data-tip="Tooltip text"/u);
+assert.match(ssrHtml, /<span class="tooltip-content">标准 Unicode 文本 <code>Abhaya Libre<\/code><\/span>/u);
+
+console.log("Markdown XSS checks passed: 15 payloads, variants, real markers, SSR and compatibility.");
