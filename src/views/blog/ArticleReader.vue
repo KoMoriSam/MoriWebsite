@@ -127,11 +127,17 @@
                   translate("blog.article.language")
                 }}</span>
                 <select
-                  class="select select-sm w-auto max-w-36 shadow-sm backdrop-blur-sm"
+                  class="select select-sm w-auto max-w-36 shadow-sm backdrop-blur-sm [appearance:base-select] [&::picker(select)]:[appearance:base-select] [&::picker(select)]:mt-1 [&::picker(select)]:rounded-lg [&::picker(select)]:border [&::picker(select)]:shadow-lg [&::picker(select)]:backdrop-blur-sm [&::picker(select)]:p-1 [&_option]:rounded-md"
                   :class="
                     hasVisibleBanner
-                      ? 'border-white/20 bg-white/15 text-white'
-                      : 'bg-base-100/90 text-base-content'
+                      ? `border-white/20 bg-white/15 text-white
+         [&::picker(select)]:border-white/20
+         [&::picker(select)]:bg-white/15
+         [&::picker(select)]:text-white`
+                      : `bg-base-100/90 text-base-content
+         [&::picker(select)]:border-base-300
+         [&::picker(select)]:bg-base-100/90
+         [&::picker(select)]:text-base-content`
                   "
                   :value="article.lang"
                   :disabled="loading"
@@ -142,6 +148,7 @@
                     :key="lang"
                     :value="lang"
                     :lang="lang"
+                    class="[&::checkmark]:font-mono"
                   >
                     {{ languageNames[lang] }}
                   </option>
