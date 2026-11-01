@@ -246,7 +246,7 @@ const downloads = [
     get label() {
       return translate("kaiming.openSourceLicense");
     },
-    icon: "ri-creative-commons-by-line",
+    icon: "ri-certificate-2-line",
     meta: "OFL 1.1",
     href: "https://raw.komori.cc/kaiming/LICENSE",
     external: true,

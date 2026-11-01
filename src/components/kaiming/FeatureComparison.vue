@@ -1,7 +1,6 @@
 <template>
   <div>
-    <template v-for="(feature, index) in features" :key="feature.index">
-      <div v-if="index" class="divider" aria-hidden="true"></div>
+    <template v-for="feature in features" :key="feature.index">
       <article
         class="grid min-w-0 items-center gap-5 py-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] lg:gap-10"
       >
@@ -18,7 +17,7 @@
         </div>
         <div class="card card-border min-w-0 bg-base-100">
           <div
-            class="card-body grid min-w-0 gap-5 p-5 sm:grid-cols-2 sm:gap-4 sm:p-6"
+            class="card-body grid min-w-0 gap-5 p-5 sm:grid-cols-[1fr_auto_1fr] sm:gap-4 sm:p-6"
           >
             <div class="min-w-0">
               <p class="mb-4 text-xs text-base-content/55">
@@ -32,6 +31,10 @@
                 {{ feature.sample }}
               </p>
             </div>
+            <div
+              class="divider divider-vertical sm:divider-horizontal m-0"
+              aria-hidden="true"
+            ></div>
             <div class="min-w-0">
               <p class="mb-4 text-xs text-primary">
                 {{ translate("kaiming.title") }}

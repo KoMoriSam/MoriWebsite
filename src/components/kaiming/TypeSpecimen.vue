@@ -12,12 +12,15 @@
             id="kaiming-family"
             v-model="family"
             class="select w-full"
+            :class="family === 'serif' ? 'font-serif' : 'font-sans'"
             :aria-label="translate('kaiming.family')"
           >
             <option
               v-for="option in familyOptions"
               :key="option.value"
               :value="option.value"
+              class="[&::checkmark]:font-mono"
+              :class="option.value === 'serif' ? 'font-serif' : 'font-sans'"
             >
               {{ option.label }}
             </option>
@@ -47,9 +50,8 @@
           />
         </fieldset>
       </div>
-      <div class="divider" aria-hidden="true"></div>
       <div
-        class="min-h-56 w-full wrap-break-word rounded-field p-2 text-[clamp(1.25rem,2.8vw,2.25rem)] leading-relaxed text-justify transition-colors hover:bg-base-200/30 focus-visible:bg-base-200/40 focus-visible:outline-2 focus-visible:outline-primary motion-reduce:transition-none sm:min-h-64 sm:p-4"
+        class="min-h-56 w-[round(down,100%,1em)] wrap-break-word rounded-field border border-dashed border-base-200 bg-base-200/10 p-2 text-[clamp(1.25rem,2.8vw,2.25rem)] leading-relaxed text-justify transition-colors hover:bg-base-200/25 focus-visible:bg-base-200/50 focus-visible:outline-2 focus-visible:outline-primary motion-reduce:transition-none sm:min-h-64 sm:p-4 my-4 sm:my-6"
         contenteditable="true"
         role="textbox"
         :aria-label="translate('kaiming.specimenLabel')"
@@ -61,7 +63,6 @@
         　　潋城，清晨。老街传来消息：“《重返地平线（克里斯·莫蒂著）》已出版，首批
         100 万册！”——真让人惊喜！但我想问：它会被更多人读到吗？
       </div>
-      <div class="divider" aria-hidden="true"></div>
       <div
         class="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 text-xs text-base-content/55"
       >
@@ -69,9 +70,12 @@
           <CatalogMeta icon="ri-edit-line">{{
             translate("kaiming.specimenHint")
           }}</CatalogMeta>
-          <CatalogMeta icon="ri-font-serif"
+          <CatalogMeta
+            :icon="family === 'serif' ? 'ri-font-serif' : 'ri-font-sans-serif'"
             >{{ translate("kaiming.currentFont")
-            }}{{ activeFamilyLabel }}</CatalogMeta
+            }}<span :class="family === 'serif' ? 'font-serif' : 'font-sans'">{{
+              activeFamilyLabel
+            }}</span></CatalogMeta
           >
         </div>
         <label class="label cursor-pointer gap-2 whitespace-normal text-xs">
