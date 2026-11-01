@@ -7,23 +7,23 @@ import { fetchContent } from "../lib/content-source.mjs";
 
 dotenv.config({
   path: ".env.production",
+  quiet: true,
 });
 
 const API_URL = process.env.VITE_BLOG_RAW;
 const NOVEL_API_URL = process.env.VITE_NOVEL_RAW;
 
 if (!API_URL) {
-  throw new Error("缺少 VITE_BLOG_RAW");
+  throw new Error("无法读取博客内容。请在 .env.production 中设置 VITE_BLOG_RAW。");
 }
 
 if (!NOVEL_API_URL) {
-  throw new Error("缺少 VITE_NOVEL_RAW");
+  throw new Error("无法读取小说内容。请在 .env.production 中设置 VITE_NOVEL_RAW。");
 }
 
 const BASE = API_URL.replace(/\/+$/, "");
 const NOVEL_BASE = NOVEL_API_URL.replace(/\/+$/, "");
 
-console.log("Article API:", BASE);
 
 /**
  * 获取文章索引
@@ -42,11 +42,10 @@ if (Array.isArray(raw)) {
   }
 }
 
-console.log(`Found ${articles.length} articles`);
 
 const generatedArticles = await createArticleSnapshot(articles, BASE);
 const finalIndex = await retryDownload(`${BASE}/index.json`, (response) => response.json());
-if (JSON.stringify(finalIndex) !== JSON.stringify(raw)) throw new Error("Article index changed during build; retry after publishing completes");
+if (JSON.stringify(finalIndex) !== JSON.stringify(raw)) throw new Error("博客正在更新。请等待内容发布完成后重新构建。");
 
 /*
 生成统一的 SSG 数据快照。
@@ -91,12 +90,4 @@ fs.writeFileSync(
   "utf-8",
 );
 
-console.log(
-  "Generated SSG data:",
-  generatedArticles.length,
-  "articles,",
-  changelog.items.length,
-  "changelog versions, and",
-  Object.keys(novelChapters || {}).length,
-  "novel volumes",
-);
+console.log(`静态阅读页面已准备完成：${generatedArticles.length} 个文章页面、${changelog.items.length} 个更新版本、${Object.keys(novelChapters || {}).length} 个小说卷目。`);

@@ -386,6 +386,17 @@
       "results": "{count} result | {count} results",
       "frames": "{count} frame | {count} frames",
       "aboutCharacters": "About {count} character | About {count} characters"
+    },
+    "contentRights": {
+      "author": "Author",
+      "publishedAt": "Published at",
+      "license": "License",
+      "blog": "Original blog content is licensed under this license. Please follow its terms when reusing it.",
+      "novel": "The author retains the rights to the original novel content.",
+      "reserved": "The author retains the rights to the original article content.",
+      "publicDomain": "Original content is offered under the CC0 1.0 public domain dedication, subject to its terms.",
+      "custom": "The terms for using this article follow the author’s declaration for this license.",
+      "thirdParty": "Third-party materials retain their own terms."
     }
   },
   "markdown": {
@@ -451,7 +462,9 @@
   },
   "reader": {
     "comments": {
-      "reply": "Reply to"
+      "reply": "Reply to",
+      "loading": "Loading comments…",
+      "slow": "Comments are taking longer to load. Please wait or try again."
     },
     "contextMenu": {
       "image": "Image"

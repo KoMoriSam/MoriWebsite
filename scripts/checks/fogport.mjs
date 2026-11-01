@@ -69,7 +69,7 @@ if(process.argv.includes('--map')) {
   const built=apply(state,'network',{links:['l24'],...(era==='rail'?{resources:['market']}:{})});
   eq(player(built).money,era==='canal'?97:94);eq(publicView(JSON.parse(JSON.stringify(built)),'a').boardVersion,BOARD_VERSION);
  }
- console.log('Fogport map: '+checks+' focused assertions passed.');process.exit(0);
+ console.log(`检查通过：雾港商纪地图与线路，共 ${checks} 项。`);process.exit(0);
 }
 eq(Object.values(TILES).map(v=>v.length),[11,7,4,11,5,7]);
 // Independent transcription of physical components; see PLAN.md's source audit.
@@ -468,4 +468,4 @@ for(const era of ['canal','rail']) for(const link of LINKS.filter(l=>l[era])) {
 }
 // End private liquidation checks.
 
-console.log(`Fogport: ${checks} assertions passed (data, every action, atomicity, resources, scoring, debt recovery, privacy, rooms and nine complete seeded games).`);
+console.log(`检查通过：雾港商纪规则、资源、结算与完整对局，共 ${checks} 项。`);

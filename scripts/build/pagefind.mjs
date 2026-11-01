@@ -11,7 +11,7 @@ import { fetchContent } from "../lib/content-source.mjs";
 // 小说索引按整章 Markdown 生成，不再使用固定字数分页。
 // import { splitMarkdown } from "../../src/utils/markdown/split-markdown.js";
 
-dotenv.config({ path: ".env.production" });
+dotenv.config({ path: ".env.production", quiet: true });
 
 const OUTPUT_PATH = resolve("dist", "pagefind");
 const NOVEL_BASE = String(process.env.VITE_NOVEL_RAW || "").replace(/\/+$/, "");
@@ -441,4 +441,4 @@ async function writeIndex(records, outputPath, novel) {
 }
 await writeIndex(publicRecords, OUTPUT_PATH, false);
 await writeIndex(novelRecords, resolve('dist', 'pagefind-novel'), true);
-console.log('Pagefind: '+publicRecords.length+' public records, '+novelRecords.length+' novel records in isolated bundles.');
+console.log(`全站搜索已生成：公开内容 ${publicRecords.length} 条、小说内容 ${novelRecords.length} 条。`);

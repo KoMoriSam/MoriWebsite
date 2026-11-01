@@ -412,4 +412,4 @@ for (const success of [true, false]) {
     );
   }
 }
-console.log(`Avalon knowledge and recruitment: ${checks} assertions passed.`);
+console.log(`检查通过：阿瓦隆身份信息与招募，共 ${checks} 项。`);

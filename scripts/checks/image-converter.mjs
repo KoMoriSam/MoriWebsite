@@ -218,4 +218,4 @@ await zipWriter.add("sample.txt", new BlobReader(new Blob(["ok"])), { level: 0 }
 const zipBytes = new Uint8Array(await (await zipWriter.close()).arrayBuffer());
 assert.deepEqual([...zipBytes.subarray(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
 
-console.log("image-converter checks passed");
+console.log("检查通过：图片转换、动画处理与水印。");

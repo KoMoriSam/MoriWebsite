@@ -420,12 +420,7 @@ try {
   });
   legacyApp.mount({ children: [] });
   legacyApp.unmount();
-  console.log(
-    "Game audio: enabled by default, room activity, Fogport actions/turns/eras/debt/results, Avalon cues, stage deduplication, reconnect baseline, mute and cleanup passed.",
-  );
-  console.log(
-    "Game room client: room entry, credential privacy, lost acknowledgement recovery, duplicate prevention, seat replacement, reclaim, kick credential cleanup and lobby departure passed.",
-  );
+  console.log("检查通过：游戏音效、房间加入、断线重连与席位恢复。");
 } finally {
   app?.unmount();
   for (const name of globals) {

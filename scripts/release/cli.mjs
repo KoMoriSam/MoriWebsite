@@ -8,25 +8,25 @@ import {
   verifyReleaseVersion,
 } from "./changelog.mjs";
 
-const helpText = `版本发布工具
+const helpText = `准备发布资料，并管理已经上线的更新日志与公告。
 
-用法：pnpm release <command> <version> [options]
+用法：pnpm release <命令> [版本] [选项]
 
 命令：
-  prepare <version> [--date YYYY-MM-DD] 准备正式版本；维护版本保留大版本公告供编辑，不自动追加正文
-  verify <version>                     校验 package.json、README 与更新日志版本
-  publish <version> [--dry-run] [--yes] 发布更新日志和公告 KV
+  prepare <version> [--date YYYY-MM-DD] 准备版本号、项目说明、更新日志和版本公告
+  verify <version>                     确认发布资料中的版本号一致
+  publish <version> [--dry-run] [--yes] 上线更新日志与公告
   changelog <command> [options]        管理更新日志
   announcement <command> [options]     管理公告
 
-发布步骤：
+网站上线：
   1. pnpm release prepare <version>
   2. 提交本地发布变更
   3. git tag -a v<version> -m "发布 v<version>"
   4. git push origin main --follow-tags
 
-标签校验通过后，GitHub Actions 将对应提交推进 production 分支，触发 Workers Builds。
-内容更新也从 production 分支构建，只使用已发布的网站代码。
+推送版本标签后，网站由 Workers Builds 构建部署。
+博客、小说和字体更新可自动上线；公告可在网站验收后单独发布。
 `;
 
 const parseOptions = (args) => {
@@ -55,11 +55,11 @@ const publishRelease = async (version, options) => {
     yes: options.has("--yes"),
   };
 
-  console.log("\n发布更新日志 KV");
+  console.log("\n正在发布更新日志…");
   const changelogResult = await publishAllReleases(publishOptions);
   if (!publishOptions.dryRun && !changelogResult.published) return;
 
-  console.log("\n发布公告 KV");
+  console.log("\n正在发布公告…");
   await publishAnnouncements(publishOptions);
 };
 
@@ -78,7 +78,7 @@ const main = async () => {
     case "verify": {
       if (!version) throw new Error("请提供版本号。");
       const result = await verifyReleaseVersion(version);
-      console.log(`发布版本校验通过：${result.version}`);
+      console.log(`发布资料已就绪：版本 ${result.version} 的项目说明与更新日志一致。`);
       break;
     }
     case "publish":

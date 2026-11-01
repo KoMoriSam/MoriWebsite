@@ -1,0 +1,18 @@
+{
+  "changelog": {
+    "current": "Version actuelle",
+    "remoteUnavailable": "Les dernières données distantes sont indisponibles",
+    "staticFallback": "La version statique fournie avec le site est affichée.",
+    "loadFailed": "Impossible de charger le journal des modifications",
+    "empty": "Aucune version pour le moment",
+    "emptyHint": "Les prochaines modifications apparaîtront ici.",
+    "latest": "Dernière version",
+    "retryHint": "Veuillez réessayer plus tard.",
+    "date": "{p2}/{p1}/{p0}",
+    "beforeUpgrading": "Avant la mise à niveau",
+    "releaseNotes": "Notes de version",
+    "releasesCount": "{count} publication | {count} publications",
+    "versionsCount": "{count} version | {count} versions",
+    "changesCount": "{count} modification | {count} modifications"
+  }
+}

@@ -1,3 +1,6 @@
+import { normalizeContentLicense } from "../content-license.js";
+import { getLocaleFallbacks } from "../../i18n/locale.js";
+
 export const ARTICLE_LOCALES = ["zh-CN", "en", "si"];
 
 export const getSourceLocale = (article) => article?.sourceLocale || "zh-CN";
@@ -19,8 +22,9 @@ export function resolveArticleVersion(article, locale, { explicit = false } = {}
   const sourceLocale = getSourceLocale(article);
   const requestedTranslation = article.translations?.[locale];
   if (locale !== sourceLocale && !requestedTranslation && explicit) return null;
-  const fallbackLocale = locale === "si" && article.translations?.en ? "en" : sourceLocale;
-  const lang = locale === sourceLocale || requestedTranslation ? locale : fallbackLocale;
+  const lang = [...getLocaleFallbacks(locale), sourceLocale].find(
+    (language) => language === sourceLocale || article.translations?.[language],
+  );
   const translation = lang === sourceLocale ? null : article.translations?.[lang];
   const localized = translation ? {
     summary: "", aliases: [], length: undefined, created: undefined,
@@ -28,8 +32,10 @@ export function resolveArticleVersion(article, locale, { explicit = false } = {}
     frontmatter: undefined, metadata: undefined, metadataText: "",
     ...translation,
   } : {};
+  const license = translation?.license ?? article.license;
   return {
     ...article, ...localized,
+    ...(license != null ? { license } : {}),
     id: article.id, date: article.date, sourceLocale, lang,
     machineTranslated: translation ? translation.machineTranslated === true : false,
     routePath: getArticlePath(article.id, lang),
@@ -52,6 +58,7 @@ export function validateArticleIndex(articles) {
       throw new Error(`Invalid or duplicate article: ${article.id}`);
     }
     ids.add(article.id);
+    normalizeContentLicense(article.license);
     checkPath(article.path, `${article.id}.md`);
     for (const [lang, translation] of Object.entries(article.translations || {})) {
       if (!ARTICLE_LOCALES.includes(lang) || lang === getSourceLocale(article) ||
@@ -62,6 +69,7 @@ export function validateArticleIndex(articles) {
         throw new Error(`Invalid translation: ${article.id}/${lang}`);
       }
       checkPath(translation.path, `${lang}/${article.id}.md`);
+      normalizeContentLicense(translation.license);
     }
   }
   return articles;

@@ -1551,6 +1551,4 @@ for (const options of [
   );
 }
 
-console.log(
-  `OK: ${FM_ABHAYA_MAPPINGS.length} canonical + ${FM_ABHAYA_DERIVED_MAPPINGS.length} derived mappings + regression cases.`,
-);
+console.log(`检查通过：僧伽罗语编码转换，覆盖 ${FM_ABHAYA_MAPPINGS.length} 项基础映射与 ${FM_ABHAYA_DERIVED_MAPPINGS.length} 项补充映射。`);

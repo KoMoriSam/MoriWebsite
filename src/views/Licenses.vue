@@ -7,18 +7,36 @@
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-puzzle-line"></i>
-        {{ translate('licenses.dependenciesCount', { count: licenseData.dependencyCount }, licenseData.dependencyCount) }}
+        {{
+          translate(
+            "licenses.dependenciesCount",
+            { count: licenseData.dependencyCount },
+            licenseData.dependencyCount,
+          )
+        }}
       </span>
       <span class="inline-flex items-center gap-1">
         <i class="ri-certificate-line"></i>
-        {{ translate('licenses.additionalLicensesCount', { count: licenseData.supplementalLicenses.length }, licenseData.supplementalLicenses.length) }}
+        {{
+          translate(
+            "licenses.additionalLicensesCount",
+            { count: licenseData.supplementalLicenses.length },
+            licenseData.supplementalLicenses.length,
+          )
+        }}
       </span>
       <span
         v-if="licenseData.missingLicenseFileCount"
         class="inline-flex items-center gap-1"
       >
         <i class="ri-certificate-2-line"></i>
-        {{ translate('licenses.missingLicensesCount', { count: licenseData.missingLicenseFileCount }, licenseData.missingLicenseFileCount) }}
+        {{
+          translate(
+            "licenses.missingLicensesCount",
+            { count: licenseData.missingLicenseFileCount },
+            licenseData.missingLicenseFileCount,
+          )
+        }}
       </span>
     </template>
 
@@ -28,7 +46,9 @@
       >
         <div>
           <p class="text-sm text-base-content/60">Original software source</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.projectLicense') }}</h2>
+          <h2 class="font-serif text-2xl font-semibold">
+            {{ translate("licenses.projectLicense") }}
+          </h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -36,7 +56,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ translate('licenses.downloadLicense') }}
+          {{ translate("licenses.downloadLicense") }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
@@ -48,12 +68,21 @@
         <summary class="collapse-title font-semibold">MIT License</summary>
         <div class="collapse-content">
           <ScrollableContainer>
-            <pre lang="en"
+            <pre
+              lang="en"
               class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
             ><code>{{ licenseData.projectLicense }}</code></pre>
           </ScrollableContainer>
         </div>
       </details>
+    </section>
+
+    <section id="content-rights" class="scroll-mt-24 my-8">
+      <h2 class="font-serif text-2xl font-semibold">
+        {{ translate("licenses.contentRights") }}
+      </h2>
+      <ContentRights kind="blog" class="mt-4" />
+      <ContentRights kind="novel" class="mt-3" />
     </section>
 
     <section id="notices" class="scroll-mt-24 my-8 min-w-0">
@@ -62,7 +91,9 @@
       >
         <div>
           <p class="text-sm text-base-content/60">Scope and attribution</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.thirdPartyNotices') }}</h2>
+          <h2 class="font-serif text-2xl font-semibold">
+            {{ translate("licenses.thirdPartyNotices") }}
+          </h2>
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <select
@@ -71,7 +102,7 @@
             :aria-label="translate('licenses.noticeLanguage')"
           >
             <option
-              v-for="language in LOCALES"
+              v-for="language in noticeLanguages"
               :key="language.code"
               :value="language.code"
               :lang="language.code"
@@ -86,7 +117,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            {{ translate('licenses.viewSource') }}
+            {{ translate("licenses.viewSource") }}
             <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
           </a>
         </div>
@@ -115,8 +146,12 @@
         class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <p class="text-sm text-base-content/60">Installed production dependency graph</p>
-          <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.dependencyLicenses') }}</h2>
+          <p class="text-sm text-base-content/60">
+            Installed production dependency graph
+          </p>
+          <h2 class="font-serif text-2xl font-semibold">
+            {{ translate("licenses.dependencyLicenses") }}
+          </h2>
         </div>
         <a
           class="link link-hover text-sm"
@@ -124,13 +159,13 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ translate('licenses.downloadAllNotices') }}
+          {{ translate("licenses.downloadAllNotices") }}
           <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
         </a>
       </div>
 
       <p class="mb-5 text-sm text-base-content/70">
-        {{ translate('licenses.noticesHint') }}
+        {{ translate("licenses.noticesHint") }}
       </p>
 
       <div class="grid gap-3">
@@ -154,9 +189,12 @@
             </span>
           </summary>
 
-          <div v-if="loadedLicenses.has(dependencyAnchor(dependency))" class="collapse-content">
+          <div
+            v-if="loadedLicenses.has(dependencyAnchor(dependency))"
+            class="collapse-content"
+          >
             <p class="mb-4 text-sm text-base-content/70">
-              {{ translate('licenses.upstream') }}
+              {{ translate("licenses.upstream") }}
               <a
                 v-if="sourceUrl(dependency.source)"
                 class="link link-hover break-all"
@@ -173,7 +211,7 @@
               v-if="!dependency.licenseFiles.length"
               class="rounded-box bg-base-200 p-4 text-sm text-base-content/70"
             >
-              {{ translate('licenses.missingLicenseHint') }}
+              {{ translate("licenses.missingLicenseHint") }}
             </p>
 
             <div v-else class="grid gap-4">
@@ -202,8 +240,12 @@
       data-pagefind-ignore="all"
     >
       <div class="mb-4">
-        <p class="text-sm text-base-content/60">Fonts, icons, and manual attributions</p>
-        <h2 class="font-serif text-2xl font-semibold">{{ translate('licenses.files') }}</h2>
+        <p class="text-sm text-base-content/60">
+          Fonts, icons, and manual attributions
+        </p>
+        <h2 class="font-serif text-2xl font-semibold">
+          {{ translate("licenses.files") }}
+        </h2>
       </div>
 
       <div class="grid gap-3">
@@ -217,7 +259,10 @@
           <summary class="collapse-title font-mono text-sm font-semibold">
             {{ license.name }}
           </summary>
-          <div v-if="loadedLicenses.has(supplementalAnchor(license))" class="collapse-content">
+          <div
+            v-if="loadedLicenses.has(supplementalAnchor(license))"
+            class="collapse-content"
+          >
             <ScrollableContainer>
               <pre
                 class="overflow-x-auto whitespace-pre-wrap break-words rounded-box bg-base-200 p-5 text-xs leading-relaxed"
@@ -232,29 +277,33 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { LOCALES, useLocale } from '@/i18n';
+import { LOCALES, useLocale } from "@/i18n";
 const { t: translate, locale } = useLocale();
 
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ContentPage from "@/components/layout/ContentPage.vue";
+import ContentRights from "@/components/reader/display/ContentRights.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
 import licenseData from "@/router/license-data";
 import { createLicenseAnchor } from "@/utils/create-license-anchor";
 
 const route = useRoute();
 
-const noticeLanguage = ref(locale.value);
-watch(locale, (language) => { noticeLanguage.value = language; });
-
 const noticesByLanguage = {
   "zh-CN": licenseData.noticesMarkdownZh,
   en: licenseData.noticesMarkdownEn,
   si: licenseData.noticesMarkdownSi,
 };
-const currentNoticesMarkdown = computed(() =>
-  noticesByLanguage[noticeLanguage.value] || "",
+const noticeLanguages = LOCALES.filter(({ code }) => Object.hasOwn(noticesByLanguage, code));
+const resolveNoticeLanguage = (language) => Object.hasOwn(noticesByLanguage, language) ? language : "en";
+const noticeLanguage = ref(resolveNoticeLanguage(locale.value));
+watch(locale, (language) => {
+  noticeLanguage.value = resolveNoticeLanguage(language);
+});
+const currentNoticesMarkdown = computed(
+  () => noticesByLanguage[noticeLanguage.value] || "",
 );
 
 const renderedNotices = computed(() =>
@@ -276,8 +325,9 @@ const renderedNotices = computed(() =>
     .replaceAll("(./licenses/", "(/legal/licenses/"),
 );
 
-const rawNoticeUrl = computed(() =>
-  `/legal/THIRD_PARTY_NOTICES${noticeLanguage.value === "en" ? "" : `.${noticeLanguage.value}`}.txt`,
+const rawNoticeUrl = computed(
+  () =>
+    `/legal/THIRD_PARTY_NOTICES${noticeLanguage.value === "en" ? "" : `.${noticeLanguage.value}`}.txt`,
 );
 
 const dependencyAnchor = (dependency) =>
@@ -294,7 +344,11 @@ const loadLicenseOnOpen = (event, anchor) => {
 const revealHashLicense = async (hash) => {
   if (!hash || typeof document === "undefined") return;
   let anchor = hash.slice(1);
-  try { anchor = decodeURIComponent(anchor); } catch { /* Preserve malformed hashes. */ }
+  try {
+    anchor = decodeURIComponent(anchor);
+  } catch {
+    /* Preserve malformed hashes. */
+  }
   loadedLicenses.value.add(anchor);
   await nextTick();
   const target = document.getElementById(anchor);
@@ -302,11 +356,7 @@ const revealHashLicense = async (hash) => {
 };
 
 onMounted(() => revealHashLicense(route.hash));
-watch(
-  () => route.hash,
-  revealHashLicense,
-  { flush: "sync" },
-);
+watch(() => route.hash, revealHashLicense, { flush: "sync" });
 
 const sourceUrl = (source) => {
   const value = String(source || "").trim();

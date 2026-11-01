@@ -1,0 +1,851 @@
+/*! Giscus 评论主题：四套网站配色共用一份样式，独立发布。 */
+
+/* 与 src/assets/theme.css 使用相同的尺寸和连续圆角。 */
+:root {
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --radius: calc(var(--radius-field) * 0.5);
+  --radius-sm: calc(var(--radius-selector) * 0.5);
+  --radius-md: calc(var(--radius-field) * 0.75);
+  --radius-lg: var(--radius-box);
+  --radius-xl: calc(var(--radius-box) * 1.5);
+  --corner-shape: superellipse(1.45);
+  background-color: var(--color-canvas-default);
+  color: var(--color-fg-default);
+}
+
+*,
+::before,
+::after,
+::file-selector-button {
+  corner-shape: var(--corner-shape, round);
+}
+
+/* 覆盖 Giscus 的 #__next 工具类，不依赖样式表加载顺序。 */
+:root #__next .rounded { border-radius: var(--radius); }
+:root #__next .rounded-sm { border-radius: var(--radius-sm); }
+:root #__next .rounded-md { border-radius: var(--radius-md); }
+:root #__next .rounded-lg { border-radius: var(--radius-lg); }
+:root #__next .rounded-xl { border-radius: var(--radius-xl); }
+:root #__next .rounded-t {
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+:root #__next .rounded-b-md {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+/* 容器、控件和选择器分别沿用网站对应的圆角参数。 */
+:root #__next .Box,
+:root #__next .flash,
+:root #__next .gsc-comment > .rounded-md,
+:root #__next .gsc-comment-box:not(.gsc-comment-box-is-reply),
+:root #__next .gsc-reactions-popover,
+:root #__next .markdown pre,
+:root #__next .markdown .highlight pre {
+  border-radius: var(--radius-box);
+}
+
+:root #__next .btn,
+:root #__next .form-control,
+:root #__next .gsc-pagination-button,
+:root #__next .gsc-comment-box-write,
+:root #__next .markdown kbd {
+  border-radius: var(--radius-field);
+}
+
+:root #__next .BtnGroup,
+:root #__next .BtnGroup-item,
+:root #__next .rounded-1,
+:root #__next .rounded-2,
+:root #__next .color-box-border-info.rounded-xl {
+  border-radius: var(--radius-selector);
+}
+
+:root #__next .markdown code:not(pre > code),
+:root #__next .markdown tt {
+  border-radius: var(--radius-sm);
+}
+
+/* 上下拼接的边不加圆角，回复编辑区不重复绘制卡片上沿。 */
+:root #__next .Box-header,
+:root #__next .gsc-comment-content,
+:root #__next .gsc-comment-box-tabs {
+  border-radius: var(--radius-box) var(--radius-box) 0 0;
+}
+
+:root #__next .blob-wrapper,
+:root #__next .gsc-reply-box {
+  border-radius: 0 0 var(--radius-box) var(--radius-box);
+}
+
+:root #__next .gsc-replies,
+:root #__next .gsc-comment .gsc-comment-box-tabs {
+  border-radius: 0;
+}
+
+:root #__next .gsc-replies.rounded-b-md {
+  border-bottom-left-radius: var(--radius-box);
+  border-bottom-right-radius: var(--radius-box);
+}
+
+:root #__next .gsc-comment-box-tabs .rounded-t,
+:root #__next .gsc-comment-box-textarea {
+  border-radius: var(--radius-field) var(--radius-field) 0 0;
+}
+
+:root #__next .gsc-comment-box-textarea-extras {
+  border-radius: 0 0 var(--radius-field) var(--radius-field);
+}
+
+:root #__next .rounded-none,
+:root #__next .gsc-emoji-button {
+  border-radius: 0;
+}
+
+:root #__next .rounded-full,
+:root #__next .gsc-social-reaction-summary-item {
+  border-radius: 9999px;
+  corner-shape: round;
+}
+
+:root #__next .rounded-full::before,
+:root #__next .rounded-full::after,
+:root #__next .gsc-social-reaction-summary-item::before,
+:root #__next .gsc-social-reaction-summary-item::after,
+input[type="radio"] {
+  corner-shape: round;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/latin-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/latin-ext-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/vietnamese-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+    U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+    U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/greek-ext-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range: U+1F00-1FFF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/greek-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/cyrillic-ext-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/cyrillic-wght-normal.woff2)
+    format("woff2-variations");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/latin-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/latin-ext-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/vietnamese-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+    U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+    U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/greek-ext-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range: U+1F00-1FFF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/greek-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/cyrillic-ext-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/inter:vf@5.3.0/cyrillic-wght-italic.woff2)
+    format("woff2-variations");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Kaiming Punctuation Sans";
+  src: url("https://raw.komori.cc/kaiming/Sans-VF.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range:
+    U+2014, U+2018-2019, U+201C-201D, U+2026, U+3001-3002, U+3008-300F,
+    U+3010-3011, U+3014-3017, U+FF01, U+FF08-FF09, U+FF0C, U+FF1A-FF1B, U+FF1F,
+    U+FF3B, U+FF3D, U+FF5B, U+FF5D;
+}
+
+main .gsc-loading-image {
+  background-image: url("./images/spin.gif");
+}
+
+.gsc-main {
+  padding: 0 1px;
+}
+
+/* 等待内容时由站点统一显示骨架，保留零高度作为就绪判断。 */
+#__next .gsc-loading {
+  display: none;
+}
+
+.markdown .markdown-alert {
+  padding-left: 1rem;
+  border-left: 0.25em solid var(--color-border-default);
+}
+
+.markdown .markdown-alert-note {
+  border-left-color: var(--color-info-emphasis);
+}
+
+.markdown .markdown-alert-note .markdown-alert-title {
+  color: var(--color-info-fg);
+}
+
+.markdown .markdown-alert-tip {
+  border-left-color: var(--color-success-emphasis);
+}
+
+.markdown .markdown-alert-tip .markdown-alert-title {
+  color: var(--color-success-fg);
+}
+
+.markdown .markdown-alert-important {
+  border-left-color: var(--color-done-emphasis);
+}
+
+.markdown .markdown-alert-important .markdown-alert-title {
+  color: var(--color-done-fg);
+}
+
+.markdown .markdown-alert-warning {
+  border-left-color: var(--color-attention-emphasis);
+}
+
+.markdown .markdown-alert-warning .markdown-alert-title {
+  color: var(--color-attention-fg);
+}
+
+.markdown .markdown-alert-caution {
+  border-left-color: var(--color-danger-emphasis);
+}
+
+.markdown .markdown-alert-caution .markdown-alert-title {
+  color: var(--color-danger-fg);
+}
+
+main {
+  font-family:
+    "Kaiming Punctuation Sans", "Inter Variable", "Inter",
+    "Noto Sans SC Variable", "Noto Sans SC", "Noto Sans Sinhala Variable",
+    "Noto Sans Sinhala", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* 初次加载用地址片段选择配色；站内换肤会提取选中的配色，
+ * 生成不依赖 link 状态的内存样式。 */
+/* lemonade */
+:root,
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#lemonade"]) {
+  color-scheme: light;
+  /* ========== 字体（与主站 daisyUI --default-font-family 风格一致） ========== */
+
+  /* ========== 语法高亮 ========== */
+  --color-prettylights-syntax-comment: oklch(55% 0.03 120);
+  --color-prettylights-syntax-constant: oklch(45% 0.18 250);
+  --color-prettylights-syntax-entity: oklch(50% 0.2 290);
+  --color-prettylights-syntax-storage-modifier-import: oklch(25% 0.02 120);
+  --color-prettylights-syntax-entity-tag: oklch(45% 0.18 145);
+  --color-prettylights-syntax-keyword: oklch(50% 0.22 25);
+  --color-prettylights-syntax-string: oklch(40% 0.12 250);
+  --color-prettylights-syntax-variable: oklch(50% 0.18 55);
+  --color-prettylights-syntax-brackethighlighter-unmatched: oklch(50% 0.22 15);
+  --color-prettylights-syntax-invalid-illegal-text: oklch(98% 0.01 120);
+  --color-prettylights-syntax-invalid-illegal-bg: oklch(50% 0.22 15);
+  --color-prettylights-syntax-carriage-return-text: oklch(98% 0.01 120);
+  --color-prettylights-syntax-carriage-return-bg: oklch(50% 0.22 25);
+  --color-prettylights-syntax-string-regexp: oklch(45% 0.18 145);
+  --color-prettylights-syntax-markup-list: oklch(35% 0.08 80);
+  --color-prettylights-syntax-markup-heading: oklch(45% 0.18 250);
+  --color-prettylights-syntax-markup-italic: oklch(25% 0.02 120);
+  --color-prettylights-syntax-markup-bold: oklch(25% 0.02 120);
+  --color-prettylights-syntax-markup-deleted-text: oklch(50% 0.22 15);
+  --color-prettylights-syntax-markup-deleted-bg: oklch(95% 0.04 15);
+  --color-prettylights-syntax-markup-inserted-text: oklch(45% 0.18 145);
+  --color-prettylights-syntax-markup-inserted-bg: oklch(92% 0.06 145);
+  --color-prettylights-syntax-markup-changed-text: oklch(50% 0.18 55);
+  --color-prettylights-syntax-markup-changed-bg: oklch(94% 0.06 70);
+  --color-prettylights-syntax-markup-ignored-text: oklch(90% 0.01 240);
+  --color-prettylights-syntax-markup-ignored-bg: oklch(45% 0.18 250);
+  --color-prettylights-syntax-meta-diff-range: oklch(50% 0.2 290);
+  --color-prettylights-syntax-brackethighlighter-angle: oklch(45% 0.03 120);
+  --color-prettylights-syntax-sublimelinter-gutter-mark: oklch(65% 0.03 120);
+  --color-prettylights-syntax-constant-other-reference-link: oklch(
+    40% 0.12 250
+  );
+
+  /* ========== 按钮 ========== */
+  --color-btn-text: oklch(19.742% 0.004 123.72);
+  --color-btn-bg: oklch(91.8% 0.018 123.72);
+  --color-btn-border: oklch(19.742% 0.004 123.72 / 15%);
+  --color-btn-shadow: 0 1px 0 oklch(19.742% 0.004 123.72 / 4%);
+  --color-btn-inset-shadow: inset 0 1px 0 oklch(100% 0 0 / 25%);
+  --color-btn-hover-bg: oklch(88% 0.017 123.72);
+  --color-btn-hover-border: oklch(19.742% 0.004 123.72 / 15%);
+  --color-btn-active-bg: oklch(84.89% 0.017 123.72);
+  --color-btn-active-border: oklch(19.742% 0.004 123.72 / 15%);
+  --color-btn-selected-bg: oklch(86% 0.017 123.72);
+  /* 主按钮（使用 primary 色） */
+  --color-btn-primary-text: oklch(11.784% 0.039 134.6);
+  --color-btn-primary-bg: oklch(58.92% 0.199 134.6);
+  --color-btn-primary-border: oklch(19.742% 0.004 123.72 / 15%);
+  --color-btn-primary-shadow: 0 1px 0 oklch(11.784% 0.039 134.6 / 10%);
+  --color-btn-primary-inset-shadow: inset 0 1px 0 oklch(100% 0 0 / 12%);
+  --color-btn-primary-hover-bg: oklch(63% 0.199 134.6);
+  --color-btn-primary-hover-border: oklch(19.742% 0.004 123.72 / 15%);
+  --color-btn-primary-selected-bg: oklch(55% 0.199 134.6);
+  --color-btn-primary-selected-shadow: inset 0 1px 0
+    oklch(11.784% 0.039 134.6 / 20%);
+  --color-btn-primary-disabled-text: oklch(11.784% 0.039 134.6 / 60%);
+  --color-btn-primary-disabled-bg: oklch(58.92% 0.199 134.6 / 50%);
+  --color-btn-primary-disabled-border: oklch(19.742% 0.004 123.72 / 15%);
+
+  /* ========== 控件/布局 ========== */
+  --color-action-list-item-default-hover-bg: oklch(19.742% 0.004 123.72 / 8%);
+  --color-segmented-control-bg: oklch(91.8% 0.018 123.72);
+  --color-segmented-control-button-bg: oklch(98.71% 0.02 123.72);
+  --color-segmented-control-button-selected-border: oklch(65% 0.03 120);
+
+  /* ========== 前景色（文字） ========== */
+  --color-fg-default: oklch(19.742% 0.004 123.72);
+  --color-fg-muted: oklch(40% 0.01 123.72);
+  --color-fg-subtle: oklch(55% 0.015 123.72);
+
+  /* ========== 画布/背景 ========== */
+  --color-canvas-default: oklch(98.71% 0.02 123.72);
+  --color-canvas-overlay: oklch(98.71% 0.02 123.72);
+  --color-canvas-inset: oklch(96.89% 0.017 123.72);
+  --color-canvas-subtle: oklch(91.8% 0.018 123.72);
+
+  /* ========== 边框 ========== */
+  --color-border-default: oklch(80% 0.016 123.72);
+  --color-border-muted: oklch(87% 0.017 123.72);
+  --color-neutral-muted: oklch(30.98% 0.075 108.6 / 15%);
+
+  /* ========== 强调色 (accent = primary) ========== */
+  --color-accent-fg: oklch(58.92% 0.199 134.6);
+  --color-accent-emphasis: oklch(55% 0.199 134.6);
+  --color-accent-muted: oklch(58.92% 0.199 134.6 / 35%);
+  --color-accent-subtle: oklch(58.92% 0.199 134.6 / 10%);
+
+  /* ========== 语义色 ========== */
+  --color-info-fg: oklch(60% 0.165 254.624);
+  --color-info-emphasis: oklch(70% 0.165 254.624);
+  --color-success-fg: oklch(59% 0.17 162.48);
+  --color-success-emphasis: oklch(69% 0.17 162.48);
+  --color-done-fg: oklch(40% 0.16 100.73);
+  --color-done-emphasis: oklch(50% 0.16 100.73);
+  --color-attention-fg: oklch(69% 0.184 86.047);
+  --color-attention-emphasis: oklch(79% 0.184 86.047);
+  --color-attention-muted: oklch(79% 0.184 86.047 / 40%);
+  --color-attention-subtle: oklch(79% 0.184 86.047 / 30%);
+  --color-danger-fg: oklch(41% 0.222 16.935);
+  --color-danger-emphasis: oklch(51% 0.222 16.935);
+  --color-danger-muted: oklch(51% 0.222 16.935 / 35%);
+  --color-danger-subtle: oklch(51% 0.222 16.935 / 40%);
+
+  /* ========== 阴影 ========== */
+  --color-primer-shadow-inset: inset 0 1px 0 oklch(19.742% 0.004 123.72 / 8%);
+  --color-scale-gray-7: oklch(30.98% 0.075 108.6);
+  --color-scale-blue-8: oklch(40% 0.12 240);
+
+  /* ========== 社交反馈 ========== */
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#lemonade"]) main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line.svg");
+}
+
+/* forest */
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#forest"]) {
+  color-scheme: dark;
+  /* ========== 字体（与主站 daisyUI --default-font-family 风格一致） ========== */
+
+  /* ========== 语法高亮 ========== */
+  --color-prettylights-syntax-comment: oklch(60% 0.02 160);
+  --color-prettylights-syntax-constant: oklch(75% 0.15 220);
+  --color-prettylights-syntax-entity: oklch(75% 0.13 290);
+  --color-prettylights-syntax-storage-modifier-import: oklch(86% 0.005 17.911);
+  --color-prettylights-syntax-entity-tag: oklch(70% 0.16 155);
+  --color-prettylights-syntax-keyword: oklch(72% 0.18 22);
+  --color-prettylights-syntax-string: oklch(73% 0.1 230);
+  --color-prettylights-syntax-variable: oklch(78% 0.16 75);
+  --color-prettylights-syntax-brackethighlighter-unmatched: oklch(72% 0.22 22);
+  --color-prettylights-syntax-invalid-illegal-text: oklch(90% 0.01 17.911);
+  --color-prettylights-syntax-invalid-illegal-bg: oklch(40% 0.15 22);
+  --color-prettylights-syntax-carriage-return-text: oklch(90% 0.01 17.911);
+  --color-prettylights-syntax-carriage-return-bg: oklch(45% 0.18 22);
+  --color-prettylights-syntax-string-regexp: oklch(70% 0.16 155);
+  --color-prettylights-syntax-markup-list: oklch(82% 0.15 85);
+  --color-prettylights-syntax-markup-heading: oklch(72% 0.18 230);
+  --color-prettylights-syntax-markup-italic: oklch(86% 0.005 17.911);
+  --color-prettylights-syntax-markup-bold: oklch(86% 0.005 17.911);
+  --color-prettylights-syntax-markup-deleted-text: oklch(85% 0.06 22);
+  --color-prettylights-syntax-markup-deleted-bg: oklch(30% 0.06 22);
+  --color-prettylights-syntax-markup-inserted-text: oklch(78% 0.15 155);
+  --color-prettylights-syntax-markup-inserted-bg: oklch(25% 0.08 155);
+  --color-prettylights-syntax-markup-changed-text: oklch(82% 0.14 70);
+  --color-prettylights-syntax-markup-changed-bg: oklch(28% 0.08 60);
+  --color-prettylights-syntax-markup-ignored-text: oklch(86% 0.005 17.911);
+  --color-prettylights-syntax-markup-ignored-bg: oklch(50% 0.12 230);
+  --color-prettylights-syntax-meta-diff-range: oklch(75% 0.13 290);
+  --color-prettylights-syntax-brackethighlighter-angle: oklch(60% 0.02 160);
+  --color-prettylights-syntax-sublimelinter-gutter-mark: oklch(40% 0.01 170);
+  --color-prettylights-syntax-constant-other-reference-link: oklch(73% 0.1 230);
+
+  /* ========== 按钮 ========== */
+  --color-btn-text: oklch(83.768% 0.001 17.911);
+  --color-btn-bg: oklch(25% 0.02 170);
+  --color-btn-border: oklch(83.768% 0.001 17.911 / 10%);
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: oklch(30% 0.025 170);
+  --color-btn-hover-border: oklch(60% 0.03 170);
+  --color-btn-active-bg: oklch(22% 0.018 170);
+  --color-btn-active-border: oklch(50% 0.03 170);
+  --color-btn-selected-bg: oklch(20% 0.015 170);
+  /* 主按钮（使用 primary 色） */
+  --color-btn-primary-text: oklch(0% 0 0);
+  --color-btn-primary-bg: oklch(68.628% 0.185 148.958);
+  --color-btn-primary-border: oklch(83.768% 0.001 17.911 / 10%);
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: oklch(73% 0.185 148.958);
+  --color-btn-primary-hover-border: oklch(83.768% 0.001 17.911 / 10%);
+  --color-btn-primary-selected-bg: oklch(64% 0.185 148.958);
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: oklch(0% 0 0 / 50%);
+  --color-btn-primary-disabled-bg: oklch(68.628% 0.185 148.958 / 60%);
+  --color-btn-primary-disabled-border: oklch(83.768% 0.001 17.911 / 10%);
+
+  /* ========== 控件/布局 ========== */
+  --color-action-list-item-default-hover-bg: oklch(83.768% 0.001 17.911 / 8%);
+  --color-segmented-control-bg: oklch(83.768% 0.001 17.911 / 8%);
+  --color-segmented-control-button-bg: oklch(20.84% 0.008 17.911);
+  --color-segmented-control-button-selected-border: oklch(50% 0.03 170);
+
+  /* ========== 前景色（文字） ========== */
+  --color-fg-default: oklch(83.768% 0.001 17.911);
+  --color-fg-muted: oklch(65% 0.005 17.911);
+  --color-fg-subtle: oklch(50% 0.005 17.911);
+
+  /* ========== 画布/背景 ========== */
+  --color-canvas-default: oklch(20.84% 0.008 17.911);
+  --color-canvas-overlay: oklch(18.522% 0.007 17.911);
+  --color-canvas-inset: oklch(19.703% 0.007 17.911);
+  --color-canvas-subtle: oklch(18.522% 0.007 17.911);
+
+  /* ========== 边框 ========== */
+  --color-border-default: oklch(30% 0.015 170);
+  --color-border-muted: oklch(25% 0.012 170);
+  --color-neutral-muted: oklch(30.698% 0.039 171.364 / 35%);
+
+  /* ========== 强调色 (accent = primary) ========== */
+  --color-accent-fg: oklch(68.628% 0.185 148.958);
+  --color-accent-emphasis: oklch(63% 0.185 148.958);
+  --color-accent-muted: oklch(68.628% 0.185 148.958 / 35%);
+  --color-accent-subtle: oklch(68.628% 0.185 148.958 / 12%);
+
+  /* ========== 语义色 ========== */
+  --color-info-fg: oklch(72.06% 0.191 231.6);
+  --color-info-emphasis: oklch(72.06% 0.191 231.6);
+  --color-success-fg: oklch(64.8% 0.15 160);
+  --color-success-emphasis: oklch(64.8% 0.15 160);
+  --color-done-fg: oklch(70.628% 0.119 185.713);
+  --color-done-emphasis: oklch(70.628% 0.119 185.713);
+  --color-attention-fg: oklch(84.71% 0.199 83.87);
+  --color-attention-emphasis: oklch(84.71% 0.199 83.87);
+  --color-attention-muted: oklch(84.71% 0.199 83.87 / 35%);
+  --color-attention-subtle: oklch(84.71% 0.199 83.87 / 12%);
+  --color-danger-fg: oklch(71.76% 0.221 22.18);
+  --color-danger-emphasis: oklch(71.76% 0.221 22.18);
+  --color-danger-muted: oklch(71.76% 0.221 22.18 / 35%);
+  --color-danger-subtle: oklch(71.76% 0.221 22.18 / 12%);
+
+  /* ========== 阴影 ========== */
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-7: oklch(25% 0.02 170);
+  --color-scale-blue-8: oklch(35% 0.1 230);
+
+  /* ========== 社交反馈 ========== */
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#forest"]) main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line-dark.svg");
+}
+
+/* corporate */
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#corporate"]) {
+  color-scheme: light;
+  /* ========== 字体 ========== */
+
+  /* ========== 语法高亮 ========== */
+  --color-prettylights-syntax-comment: oklch(55% 0.02 260);
+  --color-prettylights-syntax-constant: oklch(50% 0.16 245);
+  --color-prettylights-syntax-entity: oklch(52% 0.18 285);
+  --color-prettylights-syntax-storage-modifier-import: oklch(
+    22.389% 0.031 278.072
+  );
+  --color-prettylights-syntax-entity-tag: oklch(45% 0.15 150);
+  --color-prettylights-syntax-keyword: oklch(55% 0.2 20);
+  --color-prettylights-syntax-string: oklch(42% 0.1 230);
+  --color-prettylights-syntax-variable: oklch(50% 0.15 80);
+  --color-prettylights-syntax-brackethighlighter-unmatched: oklch(50% 0.22 15);
+  --color-prettylights-syntax-invalid-illegal-text: oklch(100% 0 0);
+  --color-prettylights-syntax-invalid-illegal-bg: oklch(50% 0.22 15);
+  --color-prettylights-syntax-carriage-return-text: oklch(100% 0 0);
+  --color-prettylights-syntax-carriage-return-bg: oklch(55% 0.2 20);
+  --color-prettylights-syntax-string-regexp: oklch(45% 0.15 150);
+  --color-prettylights-syntax-markup-list: oklch(40% 0.09 85);
+  --color-prettylights-syntax-markup-heading: oklch(50% 0.16 245);
+  --color-prettylights-syntax-markup-italic: oklch(22.389% 0.031 278.072);
+  --color-prettylights-syntax-markup-bold: oklch(22.389% 0.031 278.072);
+  --color-prettylights-syntax-markup-deleted-text: oklch(50% 0.22 15);
+  --color-prettylights-syntax-markup-deleted-bg: oklch(95% 0.04 15);
+  --color-prettylights-syntax-markup-inserted-text: oklch(45% 0.18 145);
+  --color-prettylights-syntax-markup-inserted-bg: oklch(92% 0.06 145);
+  --color-prettylights-syntax-markup-changed-text: oklch(50% 0.15 80);
+  --color-prettylights-syntax-markup-changed-bg: oklch(94% 0.05 75);
+  --color-prettylights-syntax-markup-ignored-text: oklch(93% 0 0);
+  --color-prettylights-syntax-markup-ignored-bg: oklch(50% 0.16 245);
+  --color-prettylights-syntax-meta-diff-range: oklch(52% 0.18 285);
+  --color-prettylights-syntax-brackethighlighter-angle: oklch(50% 0.02 270);
+  --color-prettylights-syntax-sublimelinter-gutter-mark: oklch(70% 0.01 270);
+  --color-prettylights-syntax-constant-other-reference-link: oklch(42% 0.1 230);
+
+  /* ========== 按钮 ========== */
+  --color-btn-text: oklch(22.389% 0.031 278.072);
+  --color-btn-bg: oklch(93% 0 0);
+  --color-btn-border: oklch(22.389% 0.031 278.072 / 12%);
+  --color-btn-shadow: 0 1px 0 oklch(22.389% 0.031 278.072 / 4%);
+  --color-btn-inset-shadow: inset 0 1px 0 oklch(100% 0 0 / 30%);
+  --color-btn-hover-bg: oklch(90% 0 0);
+  --color-btn-hover-border: oklch(22.389% 0.031 278.072 / 15%);
+  --color-btn-active-bg: oklch(86% 0 0);
+  --color-btn-active-border: oklch(22.389% 0.031 278.072 / 15%);
+  --color-btn-selected-bg: oklch(88% 0 0);
+  /* 主按钮（使用 primary 色） */
+  --color-btn-primary-text: oklch(100% 0 0);
+  --color-btn-primary-bg: oklch(58% 0.158 241.966);
+  --color-btn-primary-border: oklch(22.389% 0.031 278.072 / 12%);
+  --color-btn-primary-shadow: 0 1px 0 oklch(0% 0 0 / 8%);
+  --color-btn-primary-inset-shadow: inset 0 1px 0 oklch(100% 0 0 / 15%);
+  --color-btn-primary-hover-bg: oklch(53% 0.158 241.966);
+  --color-btn-primary-hover-border: oklch(22.389% 0.031 278.072 / 12%);
+  --color-btn-primary-selected-bg: oklch(50% 0.158 241.966);
+  --color-btn-primary-selected-shadow: inset 0 1px 0 oklch(0% 0 0 / 20%);
+  --color-btn-primary-disabled-text: oklch(100% 0 0 / 70%);
+  --color-btn-primary-disabled-bg: oklch(58% 0.158 241.966 / 50%);
+  --color-btn-primary-disabled-border: oklch(22.389% 0.031 278.072 / 12%);
+
+  /* ========== 控件/布局 ========== */
+  --color-action-list-item-default-hover-bg: oklch(22.389% 0.031 278.072 / 6%);
+  --color-segmented-control-bg: oklch(93% 0 0);
+  --color-segmented-control-button-bg: oklch(100% 0 0);
+  --color-segmented-control-button-selected-border: oklch(70% 0.01 270);
+
+  /* ========== 前景色（文字） ========== */
+  --color-fg-default: oklch(22.389% 0.031 278.072);
+  --color-fg-muted: oklch(45% 0.025 278.072);
+  --color-fg-subtle: oklch(58% 0.02 278.072);
+
+  /* ========== 画布/背景 ========== */
+  --color-canvas-default: oklch(100% 0 0);
+  --color-canvas-overlay: oklch(100% 0 0);
+  --color-canvas-inset: oklch(96% 0 0);
+  --color-canvas-subtle: oklch(93% 0 0);
+
+  /* ========== 边框 ========== */
+  --color-border-default: oklch(82% 0 0);
+  --color-border-muted: oklch(89% 0 0);
+  --color-neutral-muted: oklch(0% 0 0 / 10%);
+
+  /* ========== 强调色 (accent = primary) ========== */
+  --color-accent-fg: oklch(58% 0.158 241.966);
+  --color-accent-emphasis: oklch(50% 0.158 241.966);
+  --color-accent-muted: oklch(58% 0.158 241.966 / 35%);
+  --color-accent-subtle: oklch(58% 0.158 241.966 / 8%);
+
+  /* ========== 语义色 ========== */
+  --color-info-fg: oklch(50% 0.126 221.723);
+  --color-info-emphasis: oklch(60% 0.126 221.723);
+  --color-success-fg: oklch(50% 0.18 150);
+  --color-success-emphasis: oklch(62% 0.194 149.214);
+  --color-done-fg: oklch(50% 0.118 184.704);
+  --color-done-emphasis: oklch(60% 0.118 184.704);
+  --color-attention-fg: oklch(55% 0.18 90);
+  --color-attention-emphasis: oklch(85% 0.199 91.936);
+  --color-attention-muted: oklch(85% 0.199 91.936 / 40%);
+  --color-attention-subtle: oklch(85% 0.199 91.936 / 25%);
+  --color-danger-fg: oklch(55% 0.2 20);
+  --color-danger-emphasis: oklch(70% 0.191 22.216);
+  --color-danger-muted: oklch(70% 0.191 22.216 / 35%);
+  --color-danger-subtle: oklch(70% 0.191 22.216 / 10%);
+
+  /* ========== 阴影 ========== */
+  --color-primer-shadow-inset: inset 0 1px 0 oklch(22.389% 0.031 278.072 / 8%);
+  --color-scale-gray-7: oklch(55% 0.01 270);
+  --color-scale-blue-8: oklch(40% 0.12 245);
+
+  /* ========== 社交反馈 ========== */
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#corporate"]) main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line.svg");
+}
+
+/* dim */
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#dim"]) {
+  color-scheme: dark;
+  /* ========== 字体（与主站 daisyUI --default-font-family 风格一致） ========== */
+
+  /* ========== 语法高亮 ========== */
+  --color-prettylights-syntax-comment: oklch(55% 0.02 260);
+  --color-prettylights-syntax-constant: oklch(78% 0.12 210);
+  --color-prettylights-syntax-entity: oklch(76% 0.12 315);
+  --color-prettylights-syntax-storage-modifier-import: oklch(
+    82.901% 0.031 222.959
+  );
+  --color-prettylights-syntax-entity-tag: oklch(78% 0.12 145);
+  --color-prettylights-syntax-keyword: oklch(75% 0.14 35);
+  --color-prettylights-syntax-string: oklch(75% 0.08 220);
+  --color-prettylights-syntax-variable: oklch(80% 0.13 90);
+  --color-prettylights-syntax-brackethighlighter-unmatched: oklch(78% 0.12 30);
+  --color-prettylights-syntax-invalid-illegal-text: oklch(90% 0.02 230);
+  --color-prettylights-syntax-invalid-illegal-bg: oklch(45% 0.12 30);
+  --color-prettylights-syntax-carriage-return-text: oklch(90% 0.02 230);
+  --color-prettylights-syntax-carriage-return-bg: oklch(50% 0.14 30);
+  --color-prettylights-syntax-string-regexp: oklch(78% 0.12 145);
+  --color-prettylights-syntax-markup-list: oklch(83% 0.12 90);
+  --color-prettylights-syntax-markup-heading: oklch(75% 0.15 215);
+  --color-prettylights-syntax-markup-italic: oklch(82.901% 0.031 222.959);
+  --color-prettylights-syntax-markup-bold: oklch(82.901% 0.031 222.959);
+  --color-prettylights-syntax-markup-deleted-text: oklch(88% 0.06 30);
+  --color-prettylights-syntax-markup-deleted-bg: oklch(35% 0.06 30);
+  --color-prettylights-syntax-markup-inserted-text: oklch(82% 0.12 150);
+  --color-prettylights-syntax-markup-inserted-bg: oklch(28% 0.07 150);
+  --color-prettylights-syntax-markup-changed-text: oklch(84% 0.11 85);
+  --color-prettylights-syntax-markup-changed-bg: oklch(30% 0.07 80);
+  --color-prettylights-syntax-markup-ignored-text: oklch(82.901% 0.031 222.959);
+  --color-prettylights-syntax-markup-ignored-bg: oklch(50% 0.12 215);
+  --color-prettylights-syntax-meta-diff-range: oklch(76% 0.12 315);
+  --color-prettylights-syntax-brackethighlighter-angle: oklch(55% 0.02 260);
+  --color-prettylights-syntax-sublimelinter-gutter-mark: oklch(38% 0.018 260);
+  --color-prettylights-syntax-constant-other-reference-link: oklch(
+    75% 0.08 220
+  );
+
+  /* ========== 按钮 ========== */
+  --color-btn-text: oklch(82.901% 0.031 222.959);
+  --color-btn-bg: oklch(28.036% 0.019 264.182);
+  --color-btn-border: oklch(82.901% 0.031 222.959 / 10%);
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: oklch(32% 0.02 264);
+  --color-btn-hover-border: oklch(55% 0.025 260);
+  --color-btn-active-bg: oklch(26.346% 0.018 262.177);
+  --color-btn-active-border: oklch(48% 0.022 260);
+  --color-btn-selected-bg: oklch(24% 0.017 263);
+  /* 主按钮（使用 primary 色） */
+  --color-btn-primary-text: oklch(17.226% 0.028 139.549);
+  --color-btn-primary-bg: oklch(86.133% 0.141 139.549);
+  --color-btn-primary-border: oklch(82.901% 0.031 222.959 / 10%);
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: oklch(82% 0.14 139.549);
+  --color-btn-primary-hover-border: oklch(82.901% 0.031 222.959 / 10%);
+  --color-btn-primary-selected-bg: oklch(80% 0.14 139.549);
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: oklch(17.226% 0.028 139.549 / 50%);
+  --color-btn-primary-disabled-bg: oklch(86.133% 0.141 139.549 / 60%);
+  --color-btn-primary-disabled-border: oklch(82.901% 0.031 222.959 / 10%);
+
+  /* ========== 控件/布局 ========== */
+  --color-action-list-item-default-hover-bg: oklch(82.901% 0.031 222.959 / 8%);
+  --color-segmented-control-bg: oklch(82.901% 0.031 222.959 / 8%);
+  --color-segmented-control-button-bg: oklch(30.857% 0.023 264.149);
+  --color-segmented-control-button-selected-border: oklch(50% 0.025 260);
+
+  /* ========== 前景色（文字） ========== */
+  --color-fg-default: oklch(82.901% 0.031 222.959);
+  --color-fg-muted: oklch(65% 0.025 225);
+  --color-fg-subtle: oklch(52% 0.022 225);
+
+  /* ========== 画布/背景 ========== */
+  --color-canvas-default: oklch(30.857% 0.023 264.149);
+  --color-canvas-overlay: oklch(28.036% 0.019 264.182);
+  --color-canvas-inset: oklch(28.906% 0.018 262.177);
+  --color-canvas-subtle: oklch(28.036% 0.019 264.182);
+
+  /* ========== 边框 ========== */
+  --color-border-default: oklch(38% 0.02 263);
+  --color-border-muted: oklch(33% 0.019 264);
+  --color-neutral-muted: oklch(24.731% 0.02 264.094 / 40%);
+
+  /* ========== 强调色 (accent = primary) ========== */
+  --color-accent-fg: oklch(86.133% 0.141 139.549);
+  --color-accent-emphasis: oklch(80% 0.14 139.549);
+  --color-accent-muted: oklch(86.133% 0.141 139.549 / 35%);
+  --color-accent-subtle: oklch(86.133% 0.141 139.549 / 12%);
+
+  /* ========== 语义色 ========== */
+  --color-info-fg: oklch(86.078% 0.142 206.182);
+  --color-info-emphasis: oklch(86.078% 0.142 206.182);
+  --color-success-fg: oklch(86.171% 0.142 166.534);
+  --color-success-emphasis: oklch(86.171% 0.142 166.534);
+  --color-done-fg: oklch(74.229% 0.133 311.379);
+  --color-done-emphasis: oklch(74.229% 0.133 311.379);
+  --color-attention-fg: oklch(86.163% 0.142 94.818);
+  --color-attention-emphasis: oklch(86.163% 0.142 94.818);
+  --color-attention-muted: oklch(86.163% 0.142 94.818 / 35%);
+  --color-attention-subtle: oklch(86.163% 0.142 94.818 / 12%);
+  --color-danger-fg: oklch(82.418% 0.099 33.756);
+  --color-danger-emphasis: oklch(82.418% 0.099 33.756);
+  --color-danger-muted: oklch(82.418% 0.099 33.756 / 35%);
+  --color-danger-subtle: oklch(82.418% 0.099 33.756 / 12%);
+
+  /* ========== 阴影 ========== */
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-7: oklch(35% 0.02 264);
+  --color-scale-blue-8: oklch(40% 0.1 220);
+
+  /* ========== 社交反馈 ========== */
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-8);
+}
+
+:root:has(link:nth-last-child(1 of #giscus-theme, #giscus-theme-temp)[href$="#dim"]) main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line-dark.svg");
+}

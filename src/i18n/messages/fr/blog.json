@@ -1,0 +1,56 @@
+{
+  "blog": {
+    "notFound": "Article introuvable",
+    "loadFailed": "Impossible de charger le contenu de l’article",
+    "progressRestored": "Votre dernière position de lecture a été restaurée",
+    "list": {
+      "title": "Articles",
+      "loadingReads": "Chargement du total des lectures d’articles",
+      "loadingComments": "Chargement du total des commentaires d’articles",
+      "searchLabel": "Recherche d’articles",
+      "searchPlaceholder": "Rechercher des articles",
+      "tagHint": "pour filtrer les étiquettes ; saisissez",
+      "loading": "Chargement des articles",
+      "readMore": "Lire la suite",
+      "pagination": "Pagination des articles",
+      "noMatches": "Aucun article correspondant",
+      "noMatchesHint": "Essayez d’autres mots-clés, étiquettes ou années",
+      "clearFilters": "Effacer tous les filtres",
+      "empty": "Aucun article pour le moment",
+      "emptyHint": "Les articles publiés apparaîtront ici",
+      "noSummary": "Aucun résumé disponible",
+      "removeTag": "Retirer l’étiquette {p0}",
+      "chooseTags": "Choisir des étiquettes",
+      "tag": "Étiquette {p0}",
+      "summary": "{count} article. | {count} article (article {start} affiché). | {count} articles (articles {start}–{end} affichés).",
+      "filteredSummary": "{count} article trouvé. | {count} article trouvé (article {start} affiché). | {count} articles trouvés (articles {start}–{end} affichés).",
+      "keywordSummary": "Mots-clés : {keyword}"
+    },
+    "article": {
+      "language": "Langue de l’article",
+      "languages": {
+        "zh-CN": "Chinois simplifié",
+        "en": "Anglais",
+        "fr": "Français",
+        "si": "Cinghalais"
+      },
+      "fallbackNotice": "Cet article n’est pas disponible en {requestedLanguage}. La version en {currentLanguage} est affichée.",
+      "machineNotice": "Cet article a été traduit automatiquement et peut contenir des erreurs. En cas de doute, consultez {original}.",
+      "original": "le texte original",
+      "back": "Retour aux articles",
+      "loadingReads": "Chargement des lectures de l’article",
+      "loadingComments": "Chargement des commentaires de l’article",
+      "loading": "Chargement du contenu de l’article",
+      "navigation": "Navigation entre les articles",
+      "previous": "Article précédent",
+      "published": "Publié",
+      "next": "Article suivant",
+      "loadFailed": "Échec du chargement de l’article",
+      "loadFailedHint": "Article introuvable ou impossible à charger",
+      "blog": "远方之森 · Blog",
+      "refresh": "Actualiser l’article",
+      "previousTitle": "Article précédent : {p0}",
+      "nextTitle": "Article suivant : {p0}"
+    }
+  }
+}

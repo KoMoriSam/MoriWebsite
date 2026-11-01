@@ -69,7 +69,7 @@ export async function generateImageVariants({ root, exclude = [] }) {
       maxWidth = Math.min(width, 1920, 16383, Math.floor(16383 * width / height), Math.floor(Math.sqrt(MAX_ANIMATION_PIXELS * width / (height * pages))));
       while (maxWidth > 0 && maxWidth * Math.max(1, Math.round(height * maxWidth / width)) * pages > MAX_ANIMATION_PIXELS) maxWidth -= 1;
       if (maxWidth < 1) {
-        console.warn(`Animation exceeds the resized frame budget: ${relative}; using original.`);
+        console.warn(`动图将保留原始尺寸：${relative} 的帧数较多。`);
         continue;
       }
     }
@@ -108,7 +108,7 @@ export async function generateImageVariants({ root, exclude = [] }) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  if (!process.argv[2]) throw new Error("Usage: node scripts/lib/generate-image-variants.mjs <image-directory>");
+  if (!process.argv[2]) throw new Error("请提供图片文件夹。用法：node scripts/lib/generate-image-variants.mjs <图片目录>");
   const manifest = await generateImageVariants({ root: process.argv[2] });
-  console.log(`Generated variants for ${Object.keys(manifest.images).length} images.`);
+  console.log(`图片已准备完成：${Object.keys(manifest.images).length} 张图片可按屏幕尺寸加载。`);
 }

@@ -48,12 +48,17 @@
           <div
             class="col-span-full row-start-2 mt-6 flex min-w-0 items-start gap-3 @min-[30rem]/novel:mt-5 sm:block"
           >
-            <div ref="openingPanelSurface" class="min-w-0 flex-1 overflow-hidden sm:overflow-visible">
+            <div
+              ref="openingPanelSurface"
+              class="min-w-0 flex-1 overflow-hidden sm:overflow-visible"
+            >
               <p
                 v-if="isWideOpening || openingPanel === 'introduction'"
                 id="novel-introduction-panel"
                 :role="isWideOpening ? undefined : 'tabpanel'"
-                :aria-labelledby="isWideOpening ? undefined : 'novel-introduction-tab'"
+                :aria-labelledby="
+                  isWideOpening ? undefined : 'novel-introduction-tab'
+                "
                 :tabindex="isWideOpening ? undefined : 0"
                 class="max-w-2xl font-serif text-sm leading-7 text-pretty text-base-content/70 md:text-base md:leading-8"
                 lang="zh-CN"
@@ -78,7 +83,10 @@
               :aria-label="translate('novel.detail.aboutBook')"
               class="tabs tabs-box tabs-sm shrink-0 flex-nowrap [--tabs-direction:column] sm:hidden"
             >
-              <label class="tab size-10 p-0" :title="translate('novel.detail.introduction')">
+              <label
+                class="tab size-10 p-0"
+                :title="translate('novel.detail.introduction')"
+              >
                 <input
                   id="novel-introduction-tab"
                   v-model="openingPanel"
@@ -92,7 +100,10 @@
                 />
                 <i class="ri-book-open-line text-lg" aria-hidden="true"></i>
               </label>
-              <label class="tab size-10 p-0" :title="translate('novel.detail.authorNote')">
+              <label
+                class="tab size-10 p-0"
+                :title="translate('novel.detail.authorNote')"
+              >
                 <input
                   id="novel-author-tab"
                   v-model="openingPanel"
@@ -163,24 +174,38 @@
         class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-base-content/55 md:text-sm"
       >
         <client-only>
-          <CatalogMeta icon="ri-book-open-line"
-            >{{ translate("common.counts.chaptersRead", { count: formatNumber(readChapters.length) }, readChapters.length) }}</CatalogMeta
-          >
+          <CatalogMeta icon="ri-book-open-line">{{
+            translate(
+              "common.counts.chaptersRead",
+              { count: formatNumber(readChapters.length) },
+              readChapters.length,
+            )
+          }}</CatalogMeta>
         </client-only>
-        <CatalogMeta icon="ri-stack-line"
-          >{{ translate("common.counts.chapters", { count: formatNumber(flatChapters.length) }, flatChapters.length) }}</CatalogMeta
-        >
-        <CatalogMeta icon="ri-file-text-line"
-          >{{ translate("novel.detail.totalCharacters", { count: formatNumber(totalWordCount) }) }}</CatalogMeta
-        >
+        <CatalogMeta icon="ri-stack-line">{{
+          translate(
+            "common.counts.chapters",
+            { count: formatNumber(flatChapters.length) },
+            flatChapters.length,
+          )
+        }}</CatalogMeta>
+        <CatalogMeta icon="ri-file-text-line">{{
+          translate("novel.detail.totalCharacters", {
+            count: formatNumber(totalWordCount),
+          })
+        }}</CatalogMeta>
         <client-only v-if="analyticsAvailable || commentCountsAvailable">
           <CatalogMeta
             v-if="analyticsAvailable && novelReadsStatus !== 'error'"
             icon="ri-eye-line"
           >
-            <template v-if="Number.isFinite(novelTotalReads)"
-              >{{ translate("common.counts.reads", { count: formatReadCount(novelTotalReads) }, novelTotalReads) }}</template
-            >
+            <template v-if="Number.isFinite(novelTotalReads)">{{
+              translate(
+                "common.counts.reads",
+                { count: formatReadCount(novelTotalReads) },
+                novelTotalReads,
+              )
+            }}</template>
             <span
               v-else
               class="loading loading-dots loading-xs"
@@ -191,9 +216,13 @@
             v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
             icon="ri-chat-3-line"
           >
-            <template v-if="Number.isFinite(novelTotalComments)"
-              >{{ translate("common.counts.comments", { count: formatReadCount(novelTotalComments) }, novelTotalComments) }}</template
-            >
+            <template v-if="Number.isFinite(novelTotalComments)">{{
+              translate(
+                "common.counts.comments",
+                { count: formatReadCount(novelTotalComments) },
+                novelTotalComments,
+              )
+            }}</template>
             <span
               v-else
               class="loading loading-dots loading-xs"
@@ -205,54 +234,65 @@
     </section>
 
     <div class="divider" aria-hidden="true"></div>
-    <div id="novel-content" class="grid min-w-0 scroll-mt-(--navbar-scroll-offset) grid-cols-1 py-8 md:py-10 lg:grid-cols-[minmax(0,3fr)_auto_minmax(0,2fr)] xl:py-14">
-    <section
-      id="novel-chapters"
-      class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
-      :aria-label="translate('novel.detail.chapters')"
-    >
-      <ChapterList />
-    </section>
+    <ContentRights
+      kind="novel"
+      title="向远方"
+      url="https://komori.cc/novel"
+      author="KoMoriSam (Wishwa Luo)"
+      class="mt-5"
+    />
+    <div class="divider" aria-hidden="true"></div>
 
-    <div class="divider lg:divider-horizontal" aria-hidden="true"></div>
-    <section
-      id="novel-comments"
-      class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
-      aria-labelledby="novel-comments-title"
+    <div
+      id="novel-content"
+      class="grid min-w-0 scroll-mt-(--navbar-scroll-offset) grid-cols-1 py-8 md:py-10 lg:grid-cols-[minmax(0,3fr)_auto_minmax(0,2fr)] xl:py-14"
     >
-      <header class="mb-6">
-        <p
-          class="mb-2 font-sans text-xs font-semibold tracking-widest text-base-content/55 uppercase"
-          lang="en"
-        >
-          Between the lines
-        </p>
-        <h2
-          id="novel-comments-title"
-          class="font-serif text-2xl font-bold text-balance md:text-3xl"
-        >
-          {{ translate("novel.detail.bookComments") }}
-        </h2>
-      </header>
-      <div class="min-w-0">
-        <Giscus
-          :key="githubSession.revision"
-          :repo="GISCUS.novelRepo.name"
-          :repo-id="GISCUS.novelRepo.id"
-          :category="GISCUS.categories.general.name"
-          :category-id="GISCUS.categories.general.id"
-          mapping="specific"
-          :term="GISCUS.defaultTerm"
-          strict="0"
-          reactions-enabled="1"
-          emit-metadata="1"
-          input-position="top"
-          :theme="themeStore.giscusTheme"
-          :lang="commentLocale"
-          loading="lazy"
-        />
-      </div>
-    </section>
+      <section
+        id="novel-chapters"
+        class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
+        :aria-label="translate('novel.detail.chapters')"
+      >
+        <ChapterList />
+      </section>
+
+      <div class="divider lg:divider-horizontal" aria-hidden="true"></div>
+      <section
+        id="novel-comments"
+        class="min-w-0 scroll-mt-(--navbar-scroll-offset)"
+        aria-labelledby="novel-comments-title"
+      >
+        <header class="mb-6">
+          <p
+            class="mb-2 font-sans text-xs font-semibold tracking-widest text-base-content/55 uppercase"
+            lang="en"
+          >
+            Between the lines
+          </p>
+          <h2
+            id="novel-comments-title"
+            class="font-serif text-2xl font-bold text-balance md:text-3xl"
+          >
+            {{ translate("novel.detail.bookComments") }}
+          </h2>
+        </header>
+        <div class="min-w-0">
+          <Thread
+            :key="githubSession.revision"
+            :repo="GISCUS.novelRepo.name"
+            :repo-id="GISCUS.novelRepo.id"
+            :category="GISCUS.categories.general.name"
+            :category-id="GISCUS.categories.general.id"
+            mapping="specific"
+            :term="GISCUS.defaultTerm"
+            strict="0"
+            reactions-enabled="1"
+            emit-metadata="1"
+            input-position="top"
+            :theme="themeStore.giscusTheme"
+            :lang="commentLocale"
+          />
+        </div>
+      </section>
     </div>
     <SectionNavigation
       :label="translate('novel.detail.aboutBook')"
@@ -273,7 +313,8 @@ const { t: translate, commentLocale, number: formatNumber } = useLocale();
 import { computed, ref, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import { githubSession } from "@/composables/auth/useGithubSession";
-import Giscus from "@giscus/vue";
+import Thread from "@/components/comments/Thread.vue";
+import ContentRights from "@/components/reader/display/ContentRights.vue";
 
 import { useChapters } from "@/composables/novel/useChapters";
 import { useImageLoad } from "@/composables/useImageLoad";
@@ -374,7 +415,8 @@ const sections = [
   { id: "novel-chapters", titleKey: "novel.detail.chapters" },
   { id: "novel-comments", titleKey: "novel.detail.bookComments" },
 ];
-const { activeSection, sectionPosition, sectionSpan, scrollToSection } = useSectionNavigation(sections);
+const { activeSection, sectionPosition, sectionSpan, scrollToSection } =
+  useSectionNavigation(sections);
 const openingPanel = ref("introduction");
 const openingPanelSurface = ref(null);
 useHeightTransition(openingPanelSurface, openingPanel, {

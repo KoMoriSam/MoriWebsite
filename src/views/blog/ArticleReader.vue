@@ -95,9 +95,7 @@
                 >
                   <RouterLink
                     class="btn btn-sm btn-circle shrink-0"
-                    :aria-label="
-                      translate('blog.article.back')
-                    "
+                    :aria-label="translate('blog.article.back')"
                     :class="
                       hasVisibleBanner
                         ? 'border-white/20 bg-white/15 text-white backdrop-blur-sm'
@@ -237,7 +235,13 @@
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-file-text-line"></i>
-                  {{ translate("common.counts.aboutCharacters", { count: article.length }, article.length) }}
+                  {{
+                    translate(
+                      "common.counts.aboutCharacters",
+                      { count: article.length },
+                      article.length,
+                    )
+                  }}
                 </span>
 
                 <span
@@ -245,7 +249,13 @@
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-time-line"></i>
-                  {{ translate("common.counts.readingTime", { count: estimateReadingTime(article.length) }, estimateReadingTime(article.length)) }}
+                  {{
+                    translate(
+                      "common.counts.readingTime",
+                      { count: estimateReadingTime(article.length) },
+                      estimateReadingTime(article.length),
+                    )
+                  }}
                 </span>
 
                 <span
@@ -255,15 +265,19 @@
                   <i class="ri-eye-line" aria-hidden="true"></i>
 
                   <template v-if="Number.isFinite(articleReads)">
-                    {{ translate("common.counts.reads", { count: formatReadCount(articleReads) }, articleReads) }}
+                    {{
+                      translate(
+                        "common.counts.reads",
+                        { count: formatReadCount(articleReads) },
+                        articleReads,
+                      )
+                    }}
                   </template>
 
                   <span
                     v-else
                     class="loading loading-dots loading-xs"
-                    :aria-label="
-                      translate('blog.article.loadingReads')
-                    "
+                    :aria-label="translate('blog.article.loadingReads')"
                   ></span>
                 </span>
 
@@ -276,15 +290,19 @@
                   <i class="ri-chat-3-line" aria-hidden="true"></i>
 
                   <template v-if="Number.isFinite(articleComments)">
-                    {{ translate("common.counts.comments", { count: formatReadCount(articleComments) }, articleComments) }}
+                    {{
+                      translate(
+                        "common.counts.comments",
+                        { count: formatReadCount(articleComments) },
+                        articleComments,
+                      )
+                    }}
                   </template>
 
                   <span
                     v-else
                     class="loading loading-dots loading-xs"
-                    :aria-label="
-                      translate('blog.article.loadingComments')
-                    "
+                    :aria-label="translate('blog.article.loadingComments')"
                   ></span>
                 </span>
               </div>
@@ -336,9 +354,19 @@
       </template>
 
       <template #after>
+        <ContentRights
+          kind="blog"
+          :license="article.license"
+          :title="article.title"
+          :url="`https://komori.cc${getArticleRoute(article)}`"
+          author="KoMoriSam (Wishwa Luo)"
+          :published-at="publicationDate"
+          class="not-prose mt-8"
+        />
+        <div class="divider" aria-hidden="true"></div>
         <nav
           v-if="previousArticle || nextArticle"
-          class="not-prose font-sans mt-12 flex min-w-0 flex-col items-start gap-2 border-t border-base-300 pt-6 md:flex-row md:items-stretch md:justify-between"
+          class="not-prose font-sans flex min-w-0 flex-col items-start gap-2 md:flex-row md:items-stretch md:justify-between"
           :aria-label="translate('blog.article.navigation')"
         >
           <RouterLink
@@ -460,7 +488,7 @@
 
     <template #aside v-if="loading || (content && article?.id != null)">
       <CommentsPlaceholder v-if="loading" />
-      <Giscus
+      <Thread
         v-else
         :key="`article-comments-${article.id}-${githubSession.revision}`"
         :repo="GISCUS.blogRepo.name"
@@ -475,7 +503,6 @@
         input-position="bottom"
         :theme="giscusTheme"
         :lang="commentLocale"
-        loading="lazy"
       />
     </template>
   </ReadingLayout>
@@ -483,6 +510,7 @@
 
 <script setup>
 import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
+import ContentRights from "@/components/reader/display/ContentRights.vue";
 provideMarkdownAvatars(import.meta.env.VITE_BLOG_RAW);
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
@@ -500,7 +528,7 @@ import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { Translation as I18nT } from "vue-i18n";
 import { githubSession } from "@/composables/auth/useGithubSession";
-import Giscus from "@giscus/vue";
+import Thread from "@/components/comments/Thread.vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useDateFormat } from "@vueuse/core";
@@ -571,6 +599,7 @@ const languageNames = { "zh-CN": "中文（简体）", en: "English", si: "ස�
 const localizedLanguageNames = computed(() => ({
   "zh-CN": translate("blog.article.languages.zh-CN"),
   en: translate("blog.article.languages.en"),
+  fr: translate("blog.article.languages.fr"),
   si: translate("blog.article.languages.si"),
 }));
 
@@ -658,11 +687,10 @@ const openArticleContextSearch = (keyword) => {
   });
 };
 
-// 右栏评论区：SSG 预渲染时保留右栏空位作为宽屏下的左右边距
-// （Giscus 为客户端懒加载，预渲染 HTML 中右侧仅留空列充当边距）
+// 预渲染阶段保留右栏布局，评论内容由客户端载入。
 const showReaderAside = computed(
   () =>
-    typeof window === "undefined" || // 预渲染阶段保留右栏空位
+    typeof window === "undefined" ||
     props.loading ||
     (Boolean(props.content) && props.article?.id != null),
 );
@@ -763,7 +791,11 @@ const articleShareMeta = computed(() => {
       ? translate("common.counts.characters", { count: length }, length)
       : "";
   const readingTimeText = lengthText
-    ? translate("common.counts.readingTime", { count: estimateReadingTime(length) }, estimateReadingTime(length))
+    ? translate(
+        "common.counts.readingTime",
+        { count: estimateReadingTime(length) },
+        estimateReadingTime(length),
+      )
     : "";
   const aliasesText = aliasList.value.join(" ");
   const renderedMetadata = [displayDate, lengthText, readingTimeText].filter(
@@ -774,7 +806,11 @@ const articleShareMeta = computed(() => {
     : "";
   const contentInfo = [
     Number.isFinite(length) && length > 0
-      ? translate("common.counts.aboutCharacters", { count: length.toLocaleString(uiLocale.value) }, length)
+      ? translate(
+          "common.counts.aboutCharacters",
+          { count: length.toLocaleString(uiLocale.value) },
+          length,
+        )
       : "",
     tagsText ? tagsText : "",
   ]
@@ -782,10 +818,18 @@ const articleShareMeta = computed(() => {
     .join(" · ");
   const engagementItems = [
     analyticsAvailable.value && Number.isFinite(articleReads.value)
-      ? translate("common.counts.reads", { count: formatReadCount(articleReads.value) }, articleReads.value)
+      ? translate(
+          "common.counts.reads",
+          { count: formatReadCount(articleReads.value) },
+          articleReads.value,
+        )
       : "",
     commentCountsAvailable.value && Number.isFinite(articleComments.value)
-      ? translate("common.counts.comments", { count: formatReadCount(articleComments.value) }, articleComments.value)
+      ? translate(
+          "common.counts.comments",
+          { count: formatReadCount(articleComments.value) },
+          articleComments.value,
+        )
       : "",
   ].filter(Boolean);
   const engagementInfo = engagementItems.join(" · ");

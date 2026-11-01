@@ -3,42 +3,6 @@
     data-site-footer
     class="footer sm:footer-horizontal bg-base-200 text-base-content p-10"
   >
-    <nav>
-      <h6 class="footer-title">{{ translate("common.footer.about") }}</h6>
-      <router-link class="link link-hover" to="/changelog">
-        {{ translate("changelog.title") }}
-      </router-link>
-      <a
-        class="link link-hover"
-        href="https://github.com/KoMoriSam/MoriWebsite"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {{ translate("common.footer.source") }}
-        <i class="ri-external-link-line" aria-hidden="true"></i>
-      </a>
-      <a
-        class="link link-hover"
-        href="https://github.com/KoMoriSam/MoriWebsite/blob/main/LICENSE"
-      >
-        {{ translate("licenses.title") }}
-        <i class="ri-external-link-line" aria-hidden="true"></i>
-      </a>
-      <router-link class="link link-hover" to="/licenses">
-        {{ translate("licenses.statement") }}
-      </router-link>
-      <small class="mt-1 text-xs text-base-content/50">
-        {{ translate("common.footer.oldSiteHint") }}
-        <a
-          class="link link-primary link-hover"
-          href="/archive/home/index.html"
-          target="_blank"
-        >
-          {{ translate("common.footer.oldSiteLink") }}
-          <i class="ri-external-link-line" aria-hidden="true"></i>
-        </a>
-      </small>
-    </nav>
     <nav v-if="analyticsAvailable">
       <h6 class="footer-title">{{ translate("common.footer.statistics") }}</h6>
       <dl
@@ -85,6 +49,42 @@
         class="mt-1 text-xs text-base-content/50"
       >
         {{ translate("common.footer.unavailable") }}
+      </small>
+    </nav>
+    <nav>
+      <h6 class="footer-title">{{ translate("common.footer.about") }}</h6>
+      <router-link class="link link-hover" to="/changelog">
+        {{ translate("changelog.title") }}
+      </router-link>
+      <a
+        class="link link-hover"
+        href="https://github.com/KoMoriSam/MoriWebsite"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ translate("common.footer.source") }}
+        <i class="ri-external-link-line" aria-hidden="true"></i>
+      </a>
+      <a
+        class="link link-hover"
+        href="https://github.com/KoMoriSam/MoriWebsite/blob/main/LICENSE"
+      >
+        {{ translate("licenses.projectLicense") }}
+        <i class="ri-external-link-line" aria-hidden="true"></i>
+      </a>
+      <router-link class="link link-hover" to="/licenses">
+        {{ translate("licenses.title") }}
+      </router-link>
+      <small class="mt-1 text-xs text-base-content/50">
+        {{ translate("common.footer.oldSiteHint") }}
+        <a
+          class="link link-primary link-hover"
+          href="/archive/home/index.html"
+          target="_blank"
+        >
+          {{ translate("common.footer.oldSiteLink") }}
+          <i class="ri-external-link-line" aria-hidden="true"></i>
+        </a>
       </small>
     </nav>
     <nav>

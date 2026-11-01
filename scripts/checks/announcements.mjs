@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
+import { registerHooks } from "node:module";
 
-import worker from "../../workers/api.js";
 import {
   diffAnnouncements,
   findRevisionRollback,
@@ -22,6 +22,21 @@ import {
   MARKDOWN_MODE_STANDARD,
   renderMarkdown,
 } from "../../src/utils/markdown/render-markdown.js";
+
+// Announcement requests do not create game rooms. Their platform constructor
+// is covered by the game checks and must not be instantiated in this Node test.
+const platform = registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "cloudflare:workers") return {
+      url: 'data:text/javascript,export class DurableObject { constructor() { throw new Error("Game rooms are outside announcement checks"); } }',
+      shortCircuit: true,
+    };
+    return nextResolve(specifier, context);
+  },
+});
+let worker;
+try { ({ default: worker } = await import("../../workers/api.js")); }
+finally { platform.deregister(); }
 
 const ORIGIN = "https://komori.cc";
 const ENDPOINT = "https://api.komori.cc/announcements";
@@ -50,8 +65,18 @@ const validPayload = (items = []) => ({
 });
 
 const responseJson = async (request, env) => {
-  const response = await worker.fetch(request, env);
-  return { response, body: await response.json() };
+  const warnings = [];
+  const warn = console.warn;
+  console.warn = (...args) => warnings.push(args);
+  try {
+    const response = await worker.fetch(request, env);
+    return { response, body: await response.json(), warnings };
+  } catch (error) {
+    for (const args of warnings) warn(...args);
+    throw error;
+  } finally {
+    console.warn = warn;
+  }
 };
 
 {
@@ -408,4 +433,4 @@ const responseJson = async (request, env) => {
   });
 }
 
-console.log("Announcement checks passed.");
+console.log("检查通过：公告内容、展示时间与发布流程。");

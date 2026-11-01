@@ -20,24 +20,29 @@
       :data-mobile-toc-handle="mobile ? '' : undefined"
       :class="[
         mobile
-          ? 'relative rounded-box border transition-[padding,border-color,background-color,backdrop-filter] duration-300 ease-out motion-reduce:transition-none'
+          ? 'relative rounded-box border border-transparent'
           : 'mb-3',
         mobile && compact
-          ? 'rounded-none border-0 bg-transparent p-0 backdrop-blur-none'
+          ? 'rounded-none border-0 p-0'
           : mobile
-            ? 'border-base-300/90 bg-base-100/96 p-2 backdrop-blur-md supports-[backdrop-filter]:bg-base-100/88'
+            ? 'p-2'
             : '',
       ]"
     >
       <div
+        v-if="mobile"
+        data-mobile-toc-surface
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 rounded-box border border-base-300/90 bg-base-100 [contain:strict]"
+        :class="compact ? 'opacity-0' : 'opacity-100'"
+      ></div>
+      <div
+        :data-mobile-toc-label="mobile ? '' : undefined"
         :class="[
-          mobile
-            ? 'grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none'
-            : '',
           mobile && compact
-            ? 'grid-rows-[0fr] opacity-0'
+            ? 'pointer-events-none absolute inset-x-2 top-2 opacity-0'
             : mobile
-              ? 'grid-rows-[1fr] opacity-100'
+              ? 'relative opacity-100'
               : '',
         ]"
         :aria-hidden="mobile && compact ? 'true' : undefined"
@@ -102,8 +107,9 @@
       </div>
 
       <div
+        :data-mobile-toc-track="mobile ? '' : undefined"
         :class="[
-          'relative left-1/2 h-1.5 -translate-x-1/2 rounded-full transition-[margin,width,border-radius,background-color,box-shadow] duration-300 ease-out before:absolute before:inset-x-0 before:top-0 before:h-6 before:content-[\'\'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none',
+          'relative left-1/2 h-1.5 -translate-x-1/2 rounded-full before:absolute before:inset-x-0 before:top-0 before:h-6 before:content-[\'\'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
           mobile
             ? compact
               ? 'w-[calc(100%+var(--reader-page-gutter,0px)*2)] cursor-pointer rounded-none bg-base-300'
@@ -120,24 +126,25 @@
       >
         <div
           :class="[
-            'h-full bg-primary transition-[width,border-radius] duration-300 ease-out motion-reduce:transition-none',
+            'h-full w-full origin-left bg-primary transition-transform duration-150 ease-out motion-reduce:transition-none',
             mobile && compact ? 'rounded-none' : 'rounded-full',
           ]"
-          :style="{ width: `${normalizedProgress}%` }"
+          :style="{ transform: `scaleX(${normalizedProgress / 100})` }"
         ></div>
       </div>
     </div>
 
     <div
-      v-if="contentVisible"
+      v-if="contentMounted"
+      v-show="contentVisible"
       :id="mobile ? contentId : undefined"
       :class="
         embedded
           ? desktopContentClass
           : mobile
             ? popupOnly
-              ? 'fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-h-[min(70dvh,36rem)] max-w-lg overflow-hidden rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
-              : 'absolute inset-x-0 top-full z-30 mt-2 rounded-box border border-base-300 bg-base-100/98 p-3 shadow-xl backdrop-blur-md'
+              ? 'fixed inset-x-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-h-[min(70dvh,36rem)] max-w-lg overflow-hidden rounded-box border border-base-300 bg-base-100 p-3 shadow-xl'
+              : 'absolute inset-x-0 top-full z-30 mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow-xl'
             : desktopContentClass
       "
     >
@@ -188,6 +195,7 @@ const contentVisible = computed(
     !props.mobile ||
     (expanded.value && (props.popupOnly || !props.compact)),
 );
+const contentMounted = ref(false);
 const compactToggleLabel = computed(
   () => `${props.compact ? translate('reader.toc.expand') : translate('reader.toc.collapse')}${props.ariaLabel}`,
 );
@@ -203,9 +211,10 @@ watch(expanded, (open) => {
   if (props.mobile) emit("menu-open-change", open);
 });
 
-watch(contentVisible, (visible) => emit("visibility-change", visible), {
-  immediate: true,
-});
+watch(contentVisible, (visible) => {
+  if (visible) contentMounted.value = true;
+  emit("visibility-change", visible);
+}, { immediate: true });
 
 onClickOutside(rootElement, () => {
   if (props.mobile && !props.popupOnly && !props.embedded && expanded.value) {

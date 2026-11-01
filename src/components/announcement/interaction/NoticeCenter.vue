@@ -1,7 +1,10 @@
 <template>
   <section
     class="flex min-h-0 flex-1 flex-col [&_.animate-bounce]:[animation-play-state:var(--notice-animation-state)] [&_.skeleton]:[animation-play-state:var(--notice-animation-state)]"
-    :style="{ '--notice-animation-state': active && !layoutMotionActive ? 'running' : 'paused' }"
+    :style="{
+      '--notice-animation-state':
+        active && !layoutMotionActive ? 'running' : 'paused',
+    }"
     :aria-label="translate('common.notices.title')"
   >
     <ScrollableContainer class="flex-1">
@@ -9,9 +12,7 @@
         class="scrollbar-thin min-h-0 max-h-56 flex-1 overflow-y-auto overscroll-contain py-px"
       >
         <div v-if="loading && !loaded" role="status" aria-busy="true">
-          <span class="sr-only">{{
-            translate("common.notices.loading")
-          }}</span>
+          <span class="sr-only">{{ translate("common.notices.loading") }}</span>
           <ul class="grid gap-2 max-lg:gap-1.5" aria-hidden="true">
             <li
               v-for="index in 3"
@@ -44,11 +45,7 @@
           <i class="ri-error-warning-line" aria-hidden="true"></i>
           <div class="min-w-0">
             <p class="font-semibold">
-              {{
-                translate(
-                  "common.notices.loadFailed",
-                )
-              }}
+              {{ translate("common.notices.loadFailed") }}
             </p>
             <p class="mt-0.5 text-xs opacity-80">{{ error }}</p>
             <button
@@ -119,11 +116,7 @@
           role="status"
         >
           <i class="ri-error-warning-line" aria-hidden="true"></i>
-          {{
-            translate(
-              "announcements.refreshFailed",
-            )
-          }}
+          {{ translate("announcements.refreshFailed") }}
         </p>
       </div>
     </ScrollableContainer>
@@ -131,13 +124,13 @@
     <footer class="mt-2 shrink-0">
       <RouterLink
         to="/announcements"
-        class="flex min-h-10 items-center gap-2 rounded-field px-2 py-2 text-sm text-base-content/65 transition-colors hover:bg-base-200 hover:text-base-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="btn btn-ghost btn-block max-sm:btn-sm font-normal"
         @click="closePanel"
       >
-        <i class="ri-history-line shrink-0" aria-hidden="true"></i>
-        <span class="min-w-0 flex-1">{{
-          translate("common.notices.viewAll")
-        }}</span>
+        <span class="min-w-0 flex-1 flex gap-1">
+          <i class="ri-history-line" aria-hidden="true"></i>
+          <span>{{ translate("common.notices.viewAll") }}</span>
+        </span>
         <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
       </RouterLink>
     </footer>

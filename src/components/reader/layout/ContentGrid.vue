@@ -14,9 +14,10 @@
 
     <aside
       v-if="showToc"
+      ref="mobileTocElement"
       :aria-label="translate('reader.body.contents')"
       :class="[
-        'sticky z-10 xl:hidden transition-[top] duration-300 ease-out motion-reduce:transition-none',
+        'sticky z-10 xl:hidden',
         mobileTocCompact ? 'top-0' : 'top-2',
       ]"
       @pointerdown="handleMobileTocPointerDown"
@@ -26,27 +27,12 @@
       @click.capture="handleMobileTocClickCapture"
     >
       <div
+        data-mobile-toc-backdrop
         aria-hidden="true"
         :class="[
-          'pointer-events-none absolute -top-2 -bottom-4 -inset-x-(--reader-page-gutter,0px) z-0 bg-gradient-to-b from-base-100/90 via-base-100/45 to-transparent transition-[opacity,backdrop-filter] duration-300 ease-out motion-reduce:transition-none',
-          mobileTocCompact
-            ? 'opacity-0 backdrop-blur-none'
-            : 'opacity-100 backdrop-blur-lg',
+          'pointer-events-none absolute -top-2 -bottom-4 -inset-x-(--reader-page-gutter,0px) z-0 bg-gradient-to-b from-base-100 via-base-100/80 to-transparent [contain:strict]',
+          mobileTocCompact ? 'opacity-0' : 'opacity-100',
         ]"
-        style="
-          mask-image: linear-gradient(
-            to bottom,
-            black 0%,
-            black 42%,
-            transparent 100%
-          );
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            black 0%,
-            black 42%,
-            transparent 100%
-          );
-        "
       ></div>
 
       <div class="relative z-10">
@@ -64,13 +50,14 @@
       v-if="showToc"
       aria-hidden="true"
       :class="[
-        'xl:hidden transition-[height] duration-300 ease-out motion-reduce:transition-none',
+        'xl:hidden',
         mobileTocCompact ? 'h-1' : 'h-4',
       ]"
     ></div>
 
     <!-- 主阅读区 -->
     <div
+      ref="bodyElement"
       :class="[
         'grid min-w-0 w-full max-w-full grid-cols-1 items-start',
         gridClass,
@@ -132,7 +119,9 @@ import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { layoutMotionActive } from "@/composables/layout/useLayoutMotion";
+import { useMobileTocTransition } from "@/composables/reader/useMobileTocTransition";
 
 defineProps({
   containerClass: { type: [String, Array, Object], default: "" },
@@ -149,9 +138,12 @@ const emit = defineEmits(["content-ready"]);
 
 const contentElement = ref(null);
 const mobileTocBoundaryElement = ref(null);
+const mobileTocElement = ref(null);
+const bodyElement = ref(null);
 
 const mobileTocCompact = ref(false);
 const mobileTocMenuOpen = ref(false);
+useMobileTocTransition(mobileTocElement, bodyElement, mobileTocCompact);
 
 const mobileTocScrollDirectionThreshold = 24;
 const mobileTocAutoTransitionLockDuration = 400;
@@ -354,10 +346,11 @@ const scheduleMobileTocBoundaryUpdate = (event) => {
     mobileTocScrollPending = true;
   }
 
-  if (mobileTocBoundaryFrame) return;
+  if (mobileTocBoundaryFrame || layoutMotionActive.value) return;
 
   mobileTocBoundaryFrame = window.requestAnimationFrame(() => {
     mobileTocBoundaryFrame = 0;
+    if (layoutMotionActive.value) return;
 
     const trackScrollDirection = mobileTocScrollPending;
     mobileTocScrollPending = false;
@@ -365,6 +358,10 @@ const scheduleMobileTocBoundaryUpdate = (event) => {
     updateMobileTocAtBoundary(trackScrollDirection);
   });
 };
+
+watch(layoutMotionActive, (active) => {
+  if (!active) scheduleMobileTocBoundaryUpdate();
+});
 
 onMounted(() => {
   emit("content-ready", contentElement.value);

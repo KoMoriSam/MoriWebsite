@@ -279,7 +279,7 @@ useHead(() => {
           ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
           : "noindex, nofollow",
       },
-      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', si: 'si_LK' }[contentLocale.value] },
+      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', fr: 'fr_FR', si: 'si_LK' }[contentLocale.value] },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: pageTitle.value },
       { property: "og:description", content: pageDescription.value },

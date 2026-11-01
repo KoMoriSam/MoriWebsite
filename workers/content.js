@@ -14,7 +14,7 @@ export default {
     const url = new URL(request.url);
     const prefix = ["/post", "/novel", "/giscus", "/kaiming"].find(
       (path) => url.pathname === path || url.pathname.startsWith(`${path}/`),
-    ) || (url.pathname === "/images/spin.gif" ? "/images/spin.gif" : undefined);
+    );
     if (!prefix) return new Response("Not found", { status: 404, headers: corsHeaders });
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });

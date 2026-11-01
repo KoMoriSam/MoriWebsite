@@ -37,32 +37,32 @@ const BACKUP_DIR = join(PROJECT_ROOT, ".tmp", "changelog-backups");
 const TEMP_DIR = join(PROJECT_ROOT, ".tmp", "changelog");
 const ANNOUNCEMENTS_DIR = join(PROJECT_ROOT, "announcements");
 const PACKAGE_PATH = join(PROJECT_ROOT, "package.json");
-const README_PATHS = ["README.md", "README_en.md", "README_fr.md"].map((name) =>
+const README_PATHS = ["README.md", "README_en.md", "README_fr.md", "README_si.md"].map((name) =>
   join(PROJECT_ROOT, name),
 );
-const README_VERSION_PATTERN = /^([\t ]*(?:当前版本：|Current version:|Version actuelle :)[\t ]*<strong>)([^<\r\n]+)(<\/strong>)/gm;
+const README_VERSION_PATTERN = /^([\t ]*(?:当前版本：|Current version:|Version actuelle :|වත්මන් අනුවාදය:)[\t ]*<strong>)([^<\r\n]+)(<\/strong>)/gm;
 const DRAFT_INTRO = "请填写版本概述。";
 const DRAFT_CHANGE = "- 请填写更新内容。";
 const DRAFT_WARNING = "请说明破坏性变化和升级方式。";
 
-const helpText = `更新日志工具
+const helpText = `撰写版本更新日志，准备发布资料，并将更新内容展示到网站。
 
-用法：pnpm release changelog <command> [options]
+用法：pnpm release changelog <命令> [选项]
 
 命令：
-  new <major|minor|patch|version>       计算或校验下一版本，创建草稿并打开编辑器
+  new <major|minor|patch|version>       创建版本日志草稿并打开编辑器
   edit <version>                        编辑版本日志
   list                                  查看全部本地版本
-  check                                 校验全部版本文件
-  generate                              生成网站静态更新日志数据
-  prepare <version> [--date YYYY-MM-DD] 准备正式版本；大版本生成公告，维护版本保留原公告供编辑
-  publish [--dry-run] [--yes]           重新发布全部正式版本
-  announcement <version> [--update]     大版本生成公告；维护版本提示编辑所属大版本公告
+  check                                 检查版本内容与发布顺序
+  generate                              生成供网站展示的更新日志
+  prepare <version> [--date YYYY-MM-DD] 同步版本号、项目说明、更新日志和版本公告
+  publish [--dry-run] [--yes]           上线全部正式版本的更新记录
+  announcement <version> [--update]     准备该版本所属系列的公告
 
 选项：
-  --dry-run    仅校验并显示将执行的变更
+  --dry-run    预览版本准备或发布结果
   --yes        跳过远端发布确认
-  --update     更新已有公告并自动增加 revision
+  --update     更新本地公告并增加修订号
 `;
 
 const parseOptions = (args) => {
@@ -197,7 +197,7 @@ const printDiff = ({ added, changed, removed }) => {
   print("~", "修改", changed);
   print("-", "移除", removed);
   if (!added.length && !changed.length && !removed.length) {
-    console.log("本地与远端版本内容一致，仅刷新 updatedAt。");
+    console.log("更新日志已与网站一致。本次发布将更新同步时间。");
   }
 };
 
@@ -236,10 +236,10 @@ const publishReleases = async (releases, { dryRun = false, yes = false } = {}) =
   console.log(`本地正式版本：${localPayload.items.length} 个；远端版本：${remotePayload.items.length} 个。`);
   printDiff(diff);
   if (dryRun) {
-    console.log("\nDry run 完成，未写入本地文件或远端 KV。");
+    console.log("\n更新日志发布预览完成。确认以上内容后，移除 --dry-run 再次运行以正式发布。");
     return { published: false, payload: localPayload };
   }
-  if (!yes && !(await confirm("确认用本地正式版本覆盖远端 changelog:v1？"))) {
+  if (!yes && !(await confirm("确认将以上正式版本的更新日志发布到网站？已发布内容将备份后替换。"))) {
     console.log("已取消发布。");
     return { published: false, payload: localPayload };
   }
@@ -262,7 +262,7 @@ const publishReleases = async (releases, { dryRun = false, yes = false } = {}) =
   const publicVerified = await verifyPublicEndpoint(updatedAt);
   console.log(`\n发布成功：${localPayload.items.length} 个版本。`);
   console.log(`远端备份：${backupPath}`);
-  console.log(publicVerified ? "公开接口已返回本次数据。" : "KV 已验证写入；公开接口可能尚未部署或仍受边缘缓存影响。");
+  console.log(publicVerified ? "网站已可获取本次更新日志。" : "更新日志已保存到云端，网站接口尚未返回本次内容。请稍后查看网站。");
   return { published: true, payload: localPayload };
 };
 
@@ -428,9 +428,8 @@ const createAnnouncementDraft = async (release, { update = false, skipExisting =
   }
   if (baseVersion !== release.version) {
     if (!existing) throw new Error(`缺少所属大版本公告 release-${baseVersion}.md，请先准备大版本公告；维护版本不单独创建公告。`);
-    console.log(`已保留大版本公告：${path}`);
-    console.log(`请将 ${release.version} 的实际变化融入公告正文，面向读者说明最终结果；不要追加版本补丁段落或复制技术日志。`);
-    console.log(`完成正文修订后，使用 pnpm release announcement bump release-${baseVersion} 增加一次 revision；保留原 ID 和发布时间。`);
+    console.log(`版本公告：${path}`);
+    console.log(`请在公告正文中整合 ${release.version} 的使用体验，编辑完成后运行 pnpm release announcement bump release-${baseVersion} 更新修订号。`);
     return path;
   }
   if (existing && !update) {
@@ -516,7 +515,7 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
   if (dryRun) {
     console.log(`准备发布：${pkg.version} → ${version}`);
     console.log(`发布日期：${release.date}`);
-    console.log("将更新 package.json、三语 README 和静态更新日志；大版本新建公告，维护版本保留大版本公告供编辑，不会写入远端。");
+    console.log("准备结果预览：版本号、各语言项目说明、更新日志与版本公告将就绪。确认后移除 --dry-run 再次运行。");
     return;
   }
 
@@ -556,7 +555,7 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
     throw error;
   }
 
-  console.log(`\n${version} 已准备完成；请检查并提交这些本地变更。`);
+  console.log(`\n版本 ${version} 的发布资料已准备完成。请检查并提交本地变更。`);
   console.log(`提交后创建标签：git tag -a v${version} -m "发布 v${version}"`);
   console.log("推送提交和标签：git push origin main --follow-tags");
 };
@@ -590,7 +589,7 @@ const main = async () => {
       break;
     case "generate": {
       const payload = await writeStaticChangelog();
-      console.log(`Generated changelog data: ${payload.items.length} released versions.`);
+      console.log(`网站更新日志已生成：共 ${payload.items.length} 个正式版本。`);
       break;
     }
     case "prepare":

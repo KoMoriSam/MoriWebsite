@@ -9,6 +9,7 @@ import { createHash } from "node:crypto";
 import { Uint8ArrayReader, Uint8ArrayWriter, ZipWriter } from "@zip.js/zip.js";
 import worker from "../../workers/content.js";
 
+const root = path.resolve(".");
 const temp = path.resolve(".tmp");
 await mkdir(temp, { recursive: true });
 const fixture = await mkdtemp(path.join(temp, "content-build-check-"));
@@ -99,31 +100,48 @@ try {
   let response = await worker.fetch(new Request("https://raw.komori.cc/post/index.json"), env);
   assert.equal(response.headers.get("X-Source"), "assets");
   assert.equal(await response.text(), "/post/index.json");
-  for (const filename of ["/kaiming/Sans-VF.woff2", "/kaiming/Serif-VF.woff2", "/kaiming/index.css", "/images/spin.gif"]) {
+  for (const filename of ["/kaiming/Sans-VF.woff2", "/kaiming/Serif-VF.woff2", "/kaiming/index.css"]) {
     response = await worker.fetch(new Request(`https://raw.komori.cc${filename}`), env);
     assert.equal(response.headers.get("X-Source"), "assets");
     assert.equal(await response.text(), filename);
     assert.equal((await worker.fetch(new Request(`https://raw.komori.cc${filename}`, { method: "OPTIONS" }), env)).status, 204);
   }
   assert.equal((await worker.fetch(new Request("https://raw.komori.cc/images/other.gif"), env)).status, 404);
+  assert.equal((await worker.fetch(new Request("https://raw.komori.cc/images/spin.gif"), env)).status, 404);
   assert.equal((await worker.fetch(new Request("https://raw.komori.cc/poster/index.json"), env)).status, 404);
   response = await worker.fetch(new Request("https://raw.komori.cc/novel/index.json", { method: "OPTIONS" }), env);
   assert.equal(response.status, 204);
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url.href, "https://giscus.pages.dev/images/spin.gif");
+    assert.equal(options.method, "GET");
+    return new Response("animation", { headers: { "Content-Type": "image/gif" } });
+  };
+  response = await worker.fetch(new Request("https://raw.komori.cc/giscus/images/spin.gif"), env);
+  assert.equal(response.headers.get("Content-Type"), "image/gif");
+  assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
+  assert.equal(await response.text(), "animation");
+  const css = await readFile(path.join(root, "giscus/themes.css"), "utf8");
+  const resource = css.match(/url\(["']?([^"'()]*spin\.gif)["']?\)/)?.[1];
+  assert.ok(resource, "loading animation exists");
+  for (const base of ["https://giscus.pages.dev/", "https://raw.komori.cc/giscus/"]) {
+    assert.equal(new URL(resource, `${base}themes.css`).href, `${base}images/spin.gif`, "animation follows the theme origin");
+  }
+  assert.equal((await readFile(path.join(root, "giscus/images/spin.gif"))).subarray(0, 3).toString(), "GIF");
   assert.equal((await worker.fetch(new Request("https://raw.komori.cc/post/index.json", { method: "POST" }), env)).status, 405);
   globalThis.fetch = async (url, options) => {
-    assert.equal(url.href, "https://giscus.pages.dev/forest.css?v=2");
+    assert.equal(url.href, "https://giscus.pages.dev/themes.css?v=2");
     assert.equal(options.headers.get("Cookie"), null);
     assert.equal(options.headers.get("Authorization"), null);
     assert.equal(options.headers.get("If-None-Match"), '"theme-v1"');
-    return new Response(null, { status: 302, headers: { Location: "/dim.css?v=2" } });
+    return new Response(null, { status: 302, headers: { Location: "/themes.css?v=3" } });
   };
-  response = await worker.fetch(new Request("https://raw.komori.cc/giscus/forest.css?v=2", {
+  response = await worker.fetch(new Request("https://raw.komori.cc/giscus/themes.css?v=2", {
     headers: { Cookie: "session=private", Authorization: "Bearer private", "If-None-Match": '"theme-v1"' },
   }), env);
-  assert.equal(response.headers.get("Location"), "https://raw.komori.cc/giscus/dim.css?v=2");
+  assert.equal(response.headers.get("Location"), "https://raw.komori.cc/giscus/themes.css?v=3");
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
-  console.log("Content build checks passed: publish boundaries, translations, stable novel identities, local snapshots, static assets and independent Giscus routing.");
+  console.log("检查通过：博客、小说、字体与独立发布的 Giscus 资源。");
 } finally {
   globalThis.fetch = originalFetch;
   for (const [key, value] of Object.entries(savedEnv)) {

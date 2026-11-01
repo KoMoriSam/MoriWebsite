@@ -1,0 +1,178 @@
+{
+  "reader": {
+    "navigation": {
+      "label": "Navigation entre les chapitres",
+      "previous": "Chapitre précédent",
+      "next": "Chapitre suivant",
+      "pagedProgress": "Progression du livre {p0}, page du chapitre {p1} sur {p2}. Touchez pour ouvrir les commandes.",
+      "scrollProgress": "Progression du livre {p0}, mode défilement. Touchez pour ouvrir les commandes."
+    },
+    "header": {
+      "label": "Informations du chapitre",
+      "navigation": "Navigation",
+      "backToCover": "Retour à la couverture",
+      "backLabel": "Retour à la couverture du roman",
+      "statistics": "Statistiques du chapitre"
+    },
+    "chapters": {
+      "title": "Chapitres",
+      "refresh": "Actualiser les chapitres",
+      "clearHistory": "Effacer l’historique de lecture",
+      "loading": "Chargement des chapitres",
+      "empty": "Aucun chapitre disponible pour le moment",
+      "emptyHint": "Actualisez la liste des chapitres et réessayez",
+      "read": "Lu",
+      "unread": "Non lu",
+      "loadingReads": "Chargement des lectures de 《{p0}》",
+      "loadingComments": "Chargement des commentaires de 《{p0}》",
+      "summary": "Volumes : {volumes} · Chapitres : {chapters}"
+    },
+    "badges": {
+      "revisedHint": "Ce chapitre a été révisé",
+      "originalHint": "C’est la version originale du chapitre",
+      "original": "Original"
+    },
+    "toc": {
+      "progress": "Progression de lecture",
+      "latest": "Dernier chapitre",
+      "readCount": "Chapitres : {p0} ; lus : {p1}",
+      "expand": "Développer",
+      "collapse": "Réduire"
+    },
+    "search": {
+      "title": "Rechercher dans le roman",
+      "placeholder": "Rechercher dans les titres ou le texte des chapitres",
+      "clear": "Effacer la recherche",
+      "loading": "Chargement de l’index du roman…",
+      "hint": "Saisissez des mots-clés pour rechercher dans les titres et le texte",
+      "noMatches": "Aucun passage du roman ne correspond",
+      "results": "Résultats de recherche dans le roman",
+      "loadFailed": "Le contenu du roman est indisponible. Réessayez plus tard."
+    },
+    "comments": {
+      "open": "Ouvrir les commentaires du paragraphe",
+      "count": "Nombre de commentaires du paragraphe"
+    },
+    "contextMenu": {
+      "label": "Actions sur le texte",
+      "copyLatex": "Copier le LaTeX",
+      "copySvg": "Copier le SVG",
+      "textCopied": "Texte copié",
+      "copyTextFailed": "Échec de la copie. Sélectionnez le texte manuellement.",
+      "imageSaved": "Image enregistrée",
+      "imageOpened": "L’image originale est ouverte. Utilisez le navigateur pour l’enregistrer.",
+      "latexCopied": "Code source LaTeX copié",
+      "copyFormulaFailed": "Échec de la copie. Sélectionnez la formule manuellement.",
+      "svgCopied": "SVG copié",
+      "svgUnsupported": "Votre navigateur ne peut pas copier le SVG",
+      "shareFailed": "Impossible d’ouvrir la carte de partage pour le moment",
+      "copy": "Copier"
+    },
+    "format": {
+      "title": "Mise en page de lecture",
+      "previewHint": "Prévisualisez les changements ci-dessous pendant vos réglages",
+      "reset": "Rétablir les valeurs par défaut",
+      "previewText": "Le crépuscule se pose sur les pages, laissant respirer l’espace entre les lignes.",
+      "previewNext": "Tournez la page ; l’histoire se poursuit.",
+      "textFont": "Police du texte",
+      "sessionFontHint": "Les polices personnalisées et de l’appareil ne s’appliquent qu’à cette session et ne sont pas enregistrées",
+      "savedFontHint": "(Seules les polices du site peuvent être enregistrées dans les réglages)",
+      "readingColors": "Couleurs de lecture",
+      "customize": "Une autre envie ? Personnalisez-les",
+      "backgroundType": "Type de fond de lecture",
+      "textColor": "Couleur du texte",
+      "backgroundColor": "Couleur du fond",
+      "siteTheme": "Thème du site",
+      "presetsHint": "Préréglages intégrés et enregistrés",
+      "savePreset": "Enregistrer la mise en page actuelle comme préréglage",
+      "presetName": "Nom du préréglage de mise en page",
+      "save": "Enregistrer",
+      "solidColor": "Couleur unie",
+      "backgroundImage": "Image de fond",
+      "previewTitle": "Le crépuscule se pose sur les pages",
+      "preset": "Préréglage {p0}",
+      "mobilePreview": "Aperçu actuel sur mobile",
+      "desktopPreview": "Aperçu actuel sur ordinateur",
+      "chooseBackground": "Choisir le fond de lecture : {p0}",
+      "switchTheme": "Changer le thème du site : {p0}, {p1}",
+      "applyDefaultPreset": "Appliquer le préréglage intégré {p0} : {p1}",
+      "applySavedPreset": "Appliquer le préréglage enregistré {p0}",
+      "deletePreset": "Supprimer le préréglage {p0}"
+    },
+    "settings": {
+      "close": "Fermer les réglages de lecture",
+      "heading": "Titre {p0}",
+      "paged": "Pagination horizontale",
+      "followSite": "Suivre le site",
+      "softLight": "Lumière douce",
+      "naturalDark": "Obscurité naturelle",
+      "brightDay": "Jour lumineux",
+      "lowLightNight": "Nuit tamisée",
+      "kraftPaper": "Papier kraft",
+      "parchment": "Parchemin",
+      "quietNight": "Nuit calme",
+      "bambooShadows": "Ombres de bambou",
+      "menu": "Menu",
+      "default": "Par défaut",
+      "defaultHint": "Taille et espacement équilibrés pour une lecture prolongée",
+      "paper": "Papier",
+      "paperHint": "Texture de parchemin pour un fond plus doux",
+      "dim": "Tamisé",
+      "dimHint": "Une nuit calme dans la pénombre",
+      "night": "Nuit",
+      "nightHint": "Bambous au clair de lune en mode nuit",
+      "largeText": "Grand texte",
+      "largeTextHint": "Un contenu bien lisible, reposant pour les yeux",
+      "fontSize": "Taille de la police",
+      "size": "Taille",
+      "letterSpacing": "Espacement des lettres",
+      "letterGap": "Écart des lettres",
+      "lineHeight": "Hauteur de ligne",
+      "lineGap": "Interligne",
+      "multiplier": "×",
+      "paragraphSpacing": "Espacement des paragraphes",
+      "paragraphGap": "Écart des paragraphes",
+      "lines": "lignes",
+      "lineCount": "{count} ligne | {count} lignes"
+    },
+    "body": {
+      "contents": "Sommaire de lecture",
+      "aids": "Aides à la lecture"
+    },
+    "share": {
+      "shareImage": "Partager l’image",
+      "truncated": "La sélection est longue. Une partie du contenu a été omise de l’image.",
+      "close": "Fermer l’aperçu de la carte de partage",
+      "generating": "Mise en page de la carte de partage…",
+      "failed": "Échec de la création de la carte",
+      "retry": "Générer à nouveau",
+      "downloadImage": "Télécharger l’image",
+      "generateFailed": "Impossible de créer la carte de partage pour le moment",
+      "downloaded": "Carte de partage téléchargée",
+      "shareUnsupported": "Votre navigateur ne permet pas le partage d’images. La carte a été téléchargée.",
+      "shareFailed": "Impossible de partager l’image pour le moment",
+      "label": "Carte de partage de texte pour {p0}",
+      "saveImage": "Enregistrer l’image",
+      "errors": {
+        "imageUnsupported": "Votre navigateur ne peut pas valider les images du contenu",
+        "fontFailed": "Impossible de charger la police : {p0}",
+        "mermaidUnsupported": "Votre navigateur ne peut pas valider les images Mermaid",
+        "mermaidBlocked": "Votre navigateur a bloqué l’export des images Mermaid",
+        "mermaidFailed": "Impossible d’afficher le diagramme Mermaid",
+        "renderFailed": "Impossible de générer l’image de la carte de partage",
+        "empty": "Aucun texte à partager",
+        "unsupported": "Votre navigateur ne peut pas créer de cartes de partage"
+      },
+      "labels": {
+        "mermaid": "Diagramme Mermaid",
+        "chat": "Conversation",
+        "moment": "Publication",
+        "shareCard": "Carte de partage"
+      }
+    },
+    "styleMenu": {
+      "resetValue": "Rétablir la valeur",
+      "defaultValue": "Valeur par défaut"
+    }
+  }
+}

@@ -19,7 +19,7 @@ const sources = [
 
 async function assertWorkspace(directory) {
   const relative = path.relative(await realpath(PROJECT_ROOT), await realpath(directory));
-  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) throw new Error(`Build directory is outside workspace: ${directory}`);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) throw new Error(`构建目录不在项目内，已停止处理：${directory}`);
 }
 
 async function checkoutSource(source, scratch) {
@@ -27,7 +27,7 @@ async function checkoutSource(source, scratch) {
   const key = source.name.toUpperCase();
   const local = process.env[`CONTENT_${key}_DIR`];
   const ref = process.env[`CONTENT_${key}_REF`] || "main";
-  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) || ref.includes("..")) throw new Error(`Invalid content branch: ${ref}`);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) || ref.includes("..")) throw new Error(`内容分支“${ref}”无效。请检查 CONTENT_${key}_REF。`);
   let commit = "local";
   if (local) {
     for (const folder of source.folders) await copyTree(path.resolve(local, folder), path.join(directory, folder), { hidden: true });
@@ -74,13 +74,12 @@ export async function prepareContent() {
     await validateNovelSourceIdentities(novelPublic);
     await run(["node", "scripts/generate-index.mjs"], { cwd: novel.directory, env });
     if (before !== await novelMetadataFingerprint(novelPublic)) {
-      throw new Error("小说章节或卷的稳定元数据尚未回写；请等待 MyWritingVault 元数据自动化完成后重新构建，避免重新生成 UUID 和发布日期。");
+      throw new Error("小说目录尚未同步完成。请等待 MyWritingVault 自动更新目录后重新构建。");
     }
     await validateNovelExport(novelPublic);
     await copyTree(novelPublic, path.join(staged, "novel"));
     await generateImageVariants({ root: path.join(staged, "novel/images") });
     const kaiming = await prepareKaiming(path.join(staged, "kaiming"));
-    await copyTree(path.join(PROJECT_ROOT, "raw"), staged);
     await writeFile(path.join(staged, "404.html"), "Not found\n");
     await writeFile(path.join(staged, "_redirects"), "/kaiming https://komori.cc/kaiming 301\n/kaiming/ https://komori.cc/kaiming 301\n");
     await writeFile(path.join(staged, "_headers"), "/*\n  Access-Control-Allow-Origin: *\n  Access-Control-Expose-Headers: ETag, Content-Length, Content-Range, Accept-Ranges\n  Cross-Origin-Resource-Policy: cross-origin\n  X-Content-Type-Options: nosniff\n");
@@ -93,7 +92,7 @@ export async function prepareContent() {
     await removeBuildDirectory(CONTENT_DIRECTORY, path.dirname(CONTENT_DIRECTORY));
     await copyTree(staged, CONTENT_DIRECTORY, { hidden: true });
     await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
-    console.log("Prepared /post, /novel, /kaiming and /images/spin.gif.", manifest.sources);
+    console.log("博客、小说和开明字体已准备完成。发布后可通过 raw.komori.cc 访问。");
   } finally {
     await removeBuildDirectory(scratch, BUILD_DIRECTORY);
   }

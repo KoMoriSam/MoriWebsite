@@ -283,14 +283,13 @@ GEMUNU_SPECS: dict[str, FontSpec] = {
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description="生成可用于网页与传统编码预览的僧伽罗字体。")
     parser.add_argument(
         "--abhaya-source-dir",
         type=Path,
         default=ROOT / "scripts" / "sinhala" / "font-sources" / "abhaya-libre",
         help=(
-            "Directory containing the local Abhaya Libre variable font "
-            "(AbhayaLibre[wght].ttf)."
+            "Abhaya Libre 字体源目录，需包含 AbhayaLibre[wght].ttf。"
         ),
     )
     parser.add_argument(
@@ -298,20 +297,19 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "scripts" / "sinhala" / "font-sources" / "gemunu-libre",
         help=(
-            "Directory containing the local Gemunu Libre variable font "
-            "(GemunuLibre[wght].ttf)."
+            "Gemunu Libre 字体源目录，需包含 GemunuLibre[wght].ttf。"
         ),
     )
     parser.add_argument(
         "--stix-source-dir",
         type=Path,
         default=ROOT / "scripts" / "sinhala" / "font-sources" / "stix-two-text",
-        help="Directory containing the native STIXTwoText[wght].ttf variable font.",
+        help="STIX Two Text 字体源目录，需包含 STIXTwoText[wght].ttf。",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        help="Override the output directory for the generated WOFF2 files.",
+        help="生成的 WOFF2 字体保存目录。",
     )
     return parser.parse_args()
 
@@ -1739,7 +1737,7 @@ def make_variable_family(specs, source_dir, stix_source, author_source, output):
         saved = io.BytesIO()
         font.save(saved)
         masters.append(TTFont(io.BytesIO(saved.getvalue()), recalcTimestamp=False))
-        print(f"{spec.family}: prepared weight {weight}", flush=True)
+        print(f"{spec.family} 的 {weight} 字重已准备完成。", flush=True)
     order = masters[0].getGlyphOrder()
     if any(
         font.getGlyphOrder() != order
@@ -1815,7 +1813,7 @@ def make_variable_family(specs, source_dir, stix_source, author_source, output):
     variable.flavor = "woff2"
     variable.save(output)
     print(
-        f"{regular.family}: {minimum}–{maximum} → {output}",
+        f"可变字体已生成：{regular.family}，字重 {minimum}–{maximum}。文件：{output}",
         flush=True,
     )
     return mappings, composites, sequences
@@ -1898,8 +1896,8 @@ def main() -> None:
             )
         spec.license_output.write_text(output_license, encoding="utf-8")
         print(
-            f"Generated {output} with {mapping_count} FM code points "
-            f"({composite_count} composite glyphs, {sequence_count} sequence rules)."
+            f"传统编码预览字体已生成：{output}。"
+            f"包含 {mapping_count} 个编码、{composite_count} 个组合字形和 {sequence_count} 条组合规则。"
         )
 
 

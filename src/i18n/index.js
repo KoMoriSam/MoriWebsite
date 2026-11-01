@@ -4,6 +4,8 @@ import zh from "./messages/zh-CN/common.json";
 import { messageLoaders, getRouteMessageGroups } from "./message-groups.js";
 import {
   DEFAULT_LOCALE,
+  LOCALES,
+  getLocaleFallbacks,
   detectLocale,
   readLocalePreference,
   writeLocalePreference,
@@ -35,11 +37,23 @@ function createSourcePatterns(sourceKeys) {
     });
 }
 
+const frenchPluralRules = new Intl.PluralRules("fr");
+
 export function createLocaleService({ loaders = messageLoaders } = {}) {
   const i18n = createI18n({
     legacy: false,
     locale: DEFAULT_LOCALE,
-    fallbackLocale: DEFAULT_LOCALE,
+    fallbackLocale: {
+      ...Object.fromEntries(LOCALES.map(({ code }) => [code, getLocaleFallbacks(code).slice(1)])),
+      default: [DEFAULT_LOCALE],
+    },
+    pluralRules: {
+      fr: (choice, length) => {
+        if (length === 3 && choice === 0) return 0;
+        const singular = frenchPluralRules.select(choice) === "one";
+        return length === 2 ? Number(!singular) : singular ? 1 : 2;
+      },
+    },
     messages: { [DEFAULT_LOCALE]: structuredClone(zh) },
   });
   const { t, locale } = i18n.global;
@@ -70,7 +84,11 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     if (loaded.has(id)) return;
     if (!pending.has(id)) {
       const loader = loaders[`./messages/${id}.json`];
-      if (!loader) throw new Error(`Unknown locale message group: ${id}`);
+      if (!loader) {
+        if (code === DEFAULT_LOCALE) throw new Error(`Unknown locale message group: ${id}`);
+        loaded.add(id);
+        return;
+      }
       pending.set(
         id,
         Promise.resolve()
@@ -93,7 +111,7 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     let sequence;
     do {
       sequence = groupSequence;
-      const codes = [...new Set([DEFAULT_LOCALE, code])];
+      const codes = getLocaleFallbacks(code);
       await Promise.all(
         codes.flatMap((language) =>
           activeGroups.map((group) => loadGroup(language, group)),
@@ -183,7 +201,7 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     },
     message: (key, params = {}) => ({ key, params }),
     commentLocale: computed(() =>
-      locale.value === DEFAULT_LOCALE ? "zh-CN" : "en",
+      locale.value === DEFAULT_LOCALE ? "zh-CN" : locale.value === "fr" ? "fr" : "en",
     ),
     async restoreLocale(info = null) {
       globalInfo = info;

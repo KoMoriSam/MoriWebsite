@@ -1,0 +1,542 @@
+{
+  "site": {
+    "title": "远方之森 {'|'} Blog personnel et développement indépendant",
+    "description": "Le site personnel de KoMori : technologie, essais, notes de lecture, fiction et outils pratiques dans le navigateur.",
+    "keywords": "远方之森,blog personnel,technologie,développement indépendant,roman original,向远方",
+    "licensesDescription": "Licences et mentions de droits du logiciel original, des dépendances, polices, icônes et contenus tiers.",
+    "blogDescription": "Découvrez les explorations techniques, essais et notes de lecture de KoMori.",
+    "articleDescription": "Lisez les articles du blog de KoMori.",
+    "changelogDescription": "Fonctionnalités, corrections et versions du site de KoMori.",
+    "announcementsDescription": "Annonces actuelles et passées du site.",
+    "novelDescription": "Lisez en ligne le roman original de KoMori, 《向远方》.",
+    "chapterDescription": "Lisez en ligne le roman original de KoMori, 《向远方》.",
+    "toolsDescription": "Outils en ligne et services de consultation de KoMori.",
+    "serverDescription": "Consultez l’état et les informations des serveurs Minecraft Java ou Bedrock.",
+    "sinhalaDescription": "Convertissez entre Unicode standard et les encodages ASCII des polices traditionnelles.",
+    "kaimingDescription": "Essayez la ponctuation chinoise Kaiming avec ou sans empattements et des graisses variables de 100 à 900.",
+    "notFoundDescription": "La page demandée est introuvable.",
+    "avatar": "Avatar de KoMoriSam",
+    "blogPageTitle": "Blog {'|'} 远方之森 {'|'} p. {p0}",
+    "blogPageDescription": "Découvrez les explorations techniques, essais et notes de lecture de KoMori. Page {p0}."
+  },
+  "announcements": {
+    "reload": "Recharger",
+    "refreshFailed": "Échec de l’actualisation. Les annonces déjà chargées sont affichées.",
+    "retry": "Réessayer",
+    "requestFailed": "Échec de la requête des annonces : {p0}"
+  },
+  "changelog": {
+    "title": "Journal des modifications",
+    "other": "Autres",
+    "requestFailed": "Échec de la requête du journal : {p0}"
+  },
+  "home": {
+    "rss": "Abonnement RSS",
+    "openNovel": "Lire le roman"
+  },
+  "tools": {
+    "title": "Outils",
+    "info": "Informations sur l’outil"
+  },
+  "image": {
+    "title": "Convertisseur d’images",
+    "watermarkLabel": "Filigrane",
+    "worker": {
+      "decoding": "Décodage",
+      "encoding": "Encodage",
+      "processingFrame": "Traitement de l’image {p0}/{p1}",
+      "encodingFrame": "Encodage de l’image {p0}/{p1}",
+      "memoryLimit": "La mémoire de décodage estimée, {p0}, dépasse la limite sûre de cet appareil, {p1}",
+      "invalidSignature": "La signature du fichier ne correspond pas à son format",
+      "decodeFailed": "Votre navigateur ne peut pas décoder ce fichier {p0} : {p1}",
+      "webpDecodeFailed": "Impossible de décoder le WebP animé",
+      "emptyGif": "Le GIF ne contient aucune image utilisable",
+      "encoderSignature": "L’encodeur {p0} a renvoyé une signature de fichier invalide",
+      "unsupportedFormat": "Format de sortie statique non pris en charge",
+      "webpEncodeFailed": "Échec de l’encodage WebP",
+      "firstFrameOnly": "Seule la première image de l’animation a été exportée",
+      "avifFrames": "L’animation AVIF n’est pas prise en charge ; les images ont été exportées séparément",
+      "avifFirstFrame": "L’animation AVIF n’est pas prise en charge ; la première image a été exportée",
+      "avifInputFrame": "Seule la première image des AVIF animés est actuellement traitée"
+    }
+  },
+  "sinhala": {
+    "title": "Convertisseur d’encodage de polices cinghalaises",
+    "unicodeText": "Texte Unicode",
+    "legacyText": "Texte en encodage traditionnel",
+    "reducedForms": "Conserver les formes réduites des consonnes",
+    "conjunctForms": "Conserver les formes conjointes",
+    "unjoinedForms": "Formes conjointes non liées",
+    "ligatedForms": "Formes conjointes liées",
+    "compactDaLabel": "Formes compactes de « ද »"
+  },
+  "licenses": {
+    "title": "Licence",
+    "statement": "Licences libres et mentions relatives aux tiers",
+    "viewEnglishSource": "Voir la source en anglais"
+  },
+  "server": {
+    "title": "État d’un serveur Minecraft",
+    "logoLabel": "Logo du serveur"
+  },
+  "blog": {
+    "article": {
+      "toBottom": "Aller en bas",
+      "toTop": "Aller en haut",
+      "publishDate": "Publié le {p0}"
+    },
+    "errors": {
+      "listFailed": "Impossible de récupérer les articles : {p0}",
+      "articleFailed": "Impossible de récupérer le contenu de l’article : {p0}",
+      "invalidIndex": "Format index.json invalide"
+    }
+  },
+  "common": {
+    "chat": {
+      "sending": "Envoi en cours",
+      "delivered": "Distribué",
+      "read": "Lu"
+    },
+    "actions": {
+      "paste": "Coller depuis le presse-papiers",
+      "confirm": "Confirmer"
+    },
+    "localOnly": "Traité dans votre navigateur",
+    "moreSettings": "Plus de réglages",
+    "text": "Texte",
+    "documents": "Documents",
+    "dropHint": "Déposez les fichiers ici",
+    "navigationStatus": {
+      "loading": "Chargement de la page…",
+      "failed": "Impossible d’ouvrir la page. Vérifiez votre connexion et réessayez.",
+      "retry": "Réessayer",
+      "reload": "Recharger"
+    },
+    "badges": {
+      "pinned": "Épinglé",
+      "important": "Important",
+      "ended": "Terminé",
+      "revised": "Révisé"
+    },
+    "modal": {
+      "backToList": "Retour aux annonces importantes",
+      "announcements": "Annonces importantes",
+      "hint": "Veuillez prendre connaissance des informations suivantes",
+      "published": "Publié",
+      "ends": "Fin",
+      "to": "à",
+      "listLabel": "Liste des annonces importantes",
+      "view": "Voir",
+      "markRead": "Tout marquer comme lu",
+      "close": "Fermer",
+      "gotIt": "Compris",
+      "defaultDescription": "Ceci est la description par défaut.",
+      "cancel": "Annuler",
+      "back": "Retour"
+    },
+    "notices": {
+      "title": "Notifications",
+      "loading": "Chargement des annonces",
+      "loadFailed": "Les annonces sont temporairement indisponibles",
+      "empty": "Aucune annonce active",
+      "viewAll": "Voir toutes les annonces et les archives",
+      "open": "Ouvrir les annonces",
+      "unread": "Ouvrir les annonces, {p0} non lues"
+    },
+    "pagination": {
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "choose": "Choisir une page",
+      "first": "Première page",
+      "last": "Dernière page",
+      "previousItem": "Élément précédent",
+      "nextItem": "Élément suivant",
+      "position": "Page {p0} sur {p1}"
+    },
+    "toTop": {
+      "label": "Retour en haut"
+    },
+    "page": {
+      "breadcrumb": "Fil d’Ariane",
+      "actions": "Actions de la page"
+    },
+    "footer": {
+      "about": "À propos du site",
+      "statistics": "Statistiques du site",
+      "visitsToday": "Visites aujourd’hui",
+      "totalVisits": "Total des visites",
+      "totalReads": "Total des lectures",
+      "trackedSince": "Suivi depuis",
+      "unavailable": "Statistiques indisponibles",
+      "source": "Dépôt du code du site",
+      "other": "Abonnements et retours",
+      "issues": "GitHub Issues",
+      "discussions": "GitHub Discussions",
+      "email": "Retour par e-mail",
+      "social": "Réseaux sociaux",
+      "oldSiteHint": "Vous cherchez l’ancien site ?",
+      "oldSiteLink": "Le visiter ici",
+      "welcome": "Bienvenue !"
+    },
+    "mobileNav": {
+      "label": "Navigation mobile",
+      "projects": "Projets",
+      "repositories": "Voir tous les dépôts",
+      "close": "Fermer le menu de navigation",
+      "open": "Ouvrir le menu de navigation"
+    },
+    "nav": {
+      "openSearch": "Ouvrir la recherche du site",
+      "search": "Rechercher"
+    },
+    "projectNav": {
+      "label": "Navigation des projets",
+      "title": "Mes projets",
+      "repositories": "Tous les dépôts"
+    },
+    "search": {
+      "title": "Recherche sur le site",
+      "placeholder": "Rechercher du contenu. Utilisez {'@'} pour les types, # pour les catégories et / pour les années.",
+      "label": "Rechercher sur ce site",
+      "clearFilters": "Effacer tous les filtres de recherche",
+      "selectHint": "Sélectionner ·",
+      "confirmHint": "Confirmer ·",
+      "enter": "Entrée",
+      "typeHint": "pour filtrer les types,",
+      "categoryHint": "pour filtrer les étiquettes, volumes du roman ou types de modification,",
+      "yearHint": "pour filtrer les années. Les filtres peuvent être combinés.",
+      "searching": "Recherche en cours",
+      "indexUnavailable": "L’index de recherche est temporairement indisponible",
+      "resultsLabel": "Résultats de recherche du site",
+      "noMatches": "Aucun contenu correspondant",
+      "noMatchesHint": "Essayez des mots-clés plus courts ou retirez des filtres",
+      "select": "Sélectionner",
+      "open": "Ouvrir",
+      "blogTags": "Étiquettes du blog",
+      "novelVolumes": "Volumes du roman",
+      "changeTypes": "Types de modification",
+      "licenseTypes": "Types de licence",
+      "untitled": "Contenu sans titre",
+      "noIndex": "Aucun index de recherche disponible",
+      "retryHint": "Actualisez la page et réessayez.",
+      "loadFailed": "Impossible de lire les résultats. Réessayez plus tard.",
+      "removeType": "Retirer le type {p0}",
+      "removeFilter": "Retirer le filtre {p0}",
+      "removeYear": "Retirer l’année {p0}",
+      "tagSuggestions": "Suggestions d’étiquettes",
+      "yearSuggestions": "Suggestions d’années",
+      "typeSuggestions": "Suggestions de types de contenu",
+      "chooseCategory": "Choisir une catégorie de contenu",
+      "chooseYear": "Choisir l’année de publication",
+      "chooseType": "Choisir un type de contenu",
+      "year": "Année {p0}",
+      "type": "Type de contenu {p0}",
+      "noOptions": "Aucune option ne correspond à « {p0} »",
+      "noFilters": "Aucun autre filtre disponible"
+    },
+    "sidebar": {
+      "close": "Fermer le panneau latéral",
+      "open": "Ouvrir le panneau latéral"
+    },
+    "fontSelect": {
+      "search": "Rechercher des polices",
+      "defaultFallback": "Police de repli par défaut",
+      "fallback": "Repli",
+      "custom": "Polices personnalisées",
+      "noMatches": "Aucune police correspondante",
+      "font": "Police",
+      "localOnly": "Traité localement",
+      "upload": "Importer une police",
+      "site": "Polices du site",
+      "device": "Polices de l’appareil",
+      "choose": "Choisir une police",
+      "deviceUnsupported": "Votre navigateur ne peut pas lire les polices de l’appareil",
+      "readingDevice": "Lecture des polices de l’appareil",
+      "readDevice": "Lire les polices de l’appareil",
+      "noDeviceFonts": "Aucune police disponible sur l’appareil",
+      "loadFailed": "Impossible de charger la police",
+      "unnamed": "Police sans nom",
+      "noUsableFonts": "Aucune police utilisable trouvée sur l’appareil",
+      "accessDenied": "L’accès aux polices de l’appareil n’a pas été autorisé",
+      "readFailed": "Impossible de lire les polices de l’appareil",
+      "customUnavailable": "La police personnalisée n’est plus disponible. Sélectionnez-la à nouveau.",
+      "loadProgress": "Polices de l’appareil chargées : {p0}/{p1}",
+      "deviceLoaded": "Polices de l’appareil lues : {p0}",
+      "setFallback": "Définir la police de repli par défaut : {p0}",
+      "loadingLabel": "Chargement de la police",
+      "loading": "Chargement de {p0}",
+      "loadMore": "Faites défiler pour charger la suite"
+    },
+    "imagePreview": {
+      "loading": "Chargement de l’image",
+      "close": "Fermer l’aperçu de l’image",
+      "previousLabel": "Image précédente",
+      "previous": "Précédent",
+      "nextLabel": "Image suivante",
+      "next": "Suivant",
+      "controls": "Commandes de l’aperçu de l’image",
+      "zoomOut": "Réduire l’image",
+      "fit": "Adapter à l’écran",
+      "zoomIn": "Agrandir l’image",
+      "title": "Aperçu de l’image",
+      "moduleFailed": "Impossible de charger le module d’aperçu des images",
+      "loadFailed": "Échec du chargement de l’aperçu",
+      "imageFailed": "Échec du chargement de l’image",
+      "openFailed": "Impossible d’ouvrir l’aperçu de l’image",
+      "position": "Image {p0} sur {p1}",
+      "zoomHint": "Zoom {p0} %. Cliquez pour adapter à l’écran."
+    },
+    "fab": {
+      "actions": "Actions"
+    },
+    "theme": {
+      "choose": "Choisir un thème",
+      "theme": "Thème",
+      "label": "Sélection du thème",
+      "title": "Thème",
+      "system": "Suivre le système",
+      "names": {
+        "defaultDay": "Jour par défaut",
+        "defaultNight": "Nuit par défaut",
+        "businessLight": "Clair professionnel",
+        "softDark": "Sombre doux"
+      }
+    },
+    "navigation": {
+      "home": "Accueil",
+      "blog": "Blog",
+      "novel": "Roman",
+      "tools": "Outils"
+    },
+    "projects": {
+      "fontTitle": "Projet de polices",
+      "fontDescription": "Ponctuation Kaiming pour la typographie chinoise, avec et sans empattements et à graisse variable.",
+      "websiteTitle": "Projet du site",
+      "websiteDescription": "Code de ce site, construit avec Vue, Vite, Tailwind CSS et daisyUI."
+    },
+    "changeTypes": {
+      "features": "Fonctionnalités",
+      "fixes": "Corrections",
+      "improvements": "Améliorations",
+      "performance": "Performances",
+      "refactoring": "Refactorisation",
+      "maintenance": "Maintenance"
+    },
+    "searchContent": {
+      "licenses": "Licences libres",
+      "aliases": "Alias",
+      "author": "Auteur",
+      "category": "Catégorie",
+      "created": "Création",
+      "description": "Description",
+      "modified": "Modification",
+      "status": "État",
+      "yes": "Oui",
+      "no": "Non",
+      "untitledArticle": "Article sans titre",
+      "untitledChapter": "Chapitre sans titre",
+      "licensesDescription": "Portée des licences et droits des bibliothèques, polices, icônes, images et autres contenus tiers.",
+      "projectLicense": "Licence MIT du projet",
+      "projectDescription": "Licence MIT du code source logiciel original de ce dépôt.",
+      "license": "Licence",
+      "additionalDescription": "Fichiers de licence complémentaires des polices, icônes et autres contenus tiers.",
+      "additionalLicenses": "Licences complémentaires",
+      "empty": "Aucun contenu disponible pour la recherche"
+    },
+    "document": {
+      "noBody": "Le document DOCX ne contient pas de corps de texte",
+      "readFailed": "Impossible de lire le contenu DOCX",
+      "unsupportedFormat": "Seuls les fichiers DOCX, PPTX et PDF sont pris en charge"
+    },
+    "announcements": {
+      "information": "Information",
+      "reminder": "Rappel",
+      "incident": "Incident"
+    },
+    "language": "Langue",
+    "languageLoadFailed": "Impossible de charger la langue. Réessayez.",
+    "errors": {
+      "rateLimit": "Trop d’actions. Patientez avant de réessayer !",
+      "unknown": "Erreur inconnue"
+    },
+    "default": "Par défaut",
+    "breadcrumb": {
+      "home": "Accueil",
+      "blog": "Blog",
+      "blog-article": "Article",
+      "page": "Page",
+      "novel": "Roman",
+      "novel-reader": "Chapitre",
+      "tools": "Outils",
+      "image-converter": "Convertisseur d’images",
+      "server-status": "État du serveur",
+      "sinhala-font-converter": "Convertisseur de polices cinghalaises",
+      "changelog": "Journal des modifications",
+      "announcements": "Annonces",
+      "licenses": "Licences",
+      "kaiming": "Ponctuation Kaiming",
+      "NotFound": "Page introuvable"
+    },
+    "counts": {
+      "articles": "{count} article | {count} articles",
+      "reads": "{count} lecture | {count} lectures",
+      "comments": "{count} commentaire | {count} commentaires",
+      "characters": "{count} caractère | {count} caractères",
+      "minutes": "{count} minute | {count} minutes",
+      "readingTime": "{count} min de lecture",
+      "chapters": "{count} chapitre | {count} chapitres",
+      "chaptersRead": "{count} chapitre lu | {count} chapitres lus",
+      "items": "{count} élément | {count} éléments",
+      "results": "{count} résultat | {count} résultats",
+      "frames": "{count} image | {count} images",
+      "aboutCharacters": "Environ {count} caractère | Environ {count} caractères"
+    },
+    "contentRights": {
+      "author": "Auteur",
+      "publishedAt": "Date de publication",
+      "license": "Licence",
+      "blog": "Le contenu original du blog est publié sous cette licence. Veuillez en respecter les conditions lors de sa réutilisation.",
+      "novel": "L’auteur conserve les droits sur le contenu original du roman.",
+      "reserved": "L’auteur conserve les droits sur le contenu original de l’article.",
+      "publicDomain": "Le contenu original est proposé selon la déclaration de mise à disposition dans le domaine public CC0 1.0 et ses conditions.",
+      "custom": "Les conditions d’utilisation de cet article suivent la déclaration de l’auteur concernant cette licence.",
+      "thirdParty": "Les éléments tiers restent soumis à leurs propres conditions."
+    }
+  },
+  "markdown": {
+    "alert": {
+      "note": "Note",
+      "tip": "Astuce",
+      "warning": "Avertissement",
+      "success": "Réussite",
+      "error": "Erreur",
+      "danger": "Danger",
+      "quote": "Citation",
+      "summary": "Résumé"
+    },
+    "chat": {
+      "placeholder": "Saisissez un message…",
+      "holdToSpeak": "Maintenir pour parler",
+      "send": "Envoyer",
+      "user": "Utilisateur",
+      "keyboard": "Passer à la saisie au clavier",
+      "voice": "Passer à la saisie vocale"
+    },
+    "content": {
+      "loadFailed": "Échec du chargement. Réessayez plus tard.",
+      "preview": "Aperçu de l’image",
+      "previewLabel": "Aperçu de l’image : {p0}"
+    },
+    "mermaid": {
+      "tools": "Outils de diagramme Mermaid",
+      "switchView": "Changer la vue Mermaid",
+      "sourceLabel": "Voir le code source Mermaid",
+      "code": "Code",
+      "previewLabel": "Voir l’aperçu Mermaid",
+      "preview": "Aperçu",
+      "loading": "Chargement du diagramme Mermaid…",
+      "invalid": "Diagramme invalide ou non pris en charge",
+      "diagramLabel": "Aperçu du diagramme Mermaid",
+      "zoom": "Zoom du diagramme",
+      "zoomInLabel": "Agrandir le diagramme",
+      "zoomIn": "Agrandir",
+      "zoomOutLabel": "Réduire le diagramme",
+      "zoomOut": "Réduire",
+      "invalidSvg": "Mermaid n’a pas renvoyé de SVG valide",
+      "exitFullscreen": "Quitter le plein écran",
+      "fullscreen": "Plein écran",
+      "copyCode": "Copier le code",
+      "fullscreenLabel": "Afficher le diagramme en plein écran",
+      "copied": "Code source Mermaid copié",
+      "copyLabel": "Copier le code source Mermaid"
+    },
+    "moment": {
+      "moreActions": "Autres actions",
+      "comments": "Commentaires",
+      "me": "Moi",
+      "like": "J’aime",
+      "share": "Partager",
+      "postLabel": "Publication de {p0}",
+      "avatarLabel": "Avatar de {p0}"
+    },
+    "codeBlock": {
+      "copied": "Copié avec succès",
+      "copy": "Copier dans le presse-papiers"
+    }
+  },
+  "reader": {
+    "comments": {
+      "reply": "Répondre à",
+      "loading": "Chargement des commentaires…",
+      "slow": "Le chargement des commentaires prend plus de temps. Veuillez patienter ou réessayer."
+    },
+    "contextMenu": {
+      "image": "Image"
+    },
+    "format": {
+      "system": "Valeur du système",
+      "systemHint": "Suivre l’apparence claire ou sombre de votre système"
+    }
+  },
+  "novel": {
+    "notice": {
+      "firstChapter": "C’est le premier chapitre !",
+      "currentPosition": "Vous êtes déjà à votre position de lecture !",
+      "currentChapter": "C’est le chapitre actuel !",
+      "latestChapter": "C’est le dernier chapitre !",
+      "chaptersLoading": "Chargement de la liste des chapitres…",
+      "chaptersRefreshed": "Liste des chapitres actualisée !",
+      "chaptersLoaded": "Liste des chapitres chargée !",
+      "chaptersFailed": "Impossible de charger la liste des chapitres !",
+      "historyCleared": "Historique de lecture effacé !",
+      "chapterLoading": "Chargement du contenu du chapitre…",
+      "chapterRefreshed": "Contenu du chapitre actualisé !",
+      "chapterLoaded": "Contenu du chapitre chargé !",
+      "chapterFailed": "Impossible de charger le contenu du chapitre !",
+      "refreshFailed": "Échec de l’actualisation du contenu !"
+    }
+  },
+  "notFound": {
+    "title": "Oh, oh !",
+    "description": "404 Introuvable :("
+  },
+  "games": {
+    "title": "Jeux",
+    "description": "Choisissez un jeu, créez une salle et invitez vos amis."
+  },
+  "auth": {
+    "login": "Se connecter avec GitHub",
+    "logout": "Se déconnecter",
+    "retry": "Revérifier",
+    "guest": "Invité",
+    "loadingProfile": "Chargement du profil GitHub",
+    "checking": "Vérification de la session GitHub…",
+    "novelGate": "Connectez-vous pour lire les chapitres et rechercher dans le roman.",
+    "fallback": "Se connecter via les commentaires Giscus",
+    "close": "Fermer",
+    "githubProfile": "Utiliser l’avatar GitHub",
+    "customProfile": "Nom personnalisé et avatar par défaut",
+    "saveProfile": "Enregistrer le profil de joueur",
+    "profileError": "Profil GitHub indisponible. Réessayez ou utilisez un nom personnalisé.",
+    "nickname": "Nom personnalisé",
+    "avatar": "Avatar du joueur",
+    "account": "Compte et réglages",
+    "loginTitle": "Connectez-vous pour poursuivre la lecture",
+    "editProfile": "Modifier le profil de joueur",
+    "errors": {
+      "profile": "Profil GitHub indisponible. Les informations de compte confirmées sont utilisées.",
+      "token-missing": "Aucun identifiant de connexion trouvé. Reconnectez-vous.",
+      "token-invalid": "L’identifiant GitHub est invalide. Reconnectez-vous.",
+      "token-expired": "La session Giscus a expiré. Reconnectez-vous.",
+      "session-invalid": "Impossible de décoder l’identifiant de connexion. Reconnectez-vous.",
+      "session-mismatch": "La session et l’état de connexion reçu ne correspondent pas. Revérifiez ou reconnectez-vous.",
+      "rate-limit": "GitHub limite les requêtes. Revérifiez plus tard.",
+      "forbidden": "GitHub a refusé la requête (403). Vérifiez l’autorisation et réessayez.",
+      "network": "Échec de la requête réseau. L’état de connexion est inconnu. Revérifiez.",
+      "discussion": "La discussion utilisée pour confirmer la connexion est indisponible. Réessayez.",
+      "api": "Le service de vérification de connexion est indisponible. Revérifiez.",
+      "timeout": "La vérification de connexion a expiré. L’état est inconnu. Revérifiez.",
+      "storage": "Impossible de lire ou d’effacer les données de connexion. Autorisez le stockage du navigateur et réessayez."
+    }
+  }
+}

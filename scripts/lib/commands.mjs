@@ -20,10 +20,10 @@ export async function run([tool, ...args], { cwd = PROJECT_ROOT, env = process.e
     const child = spawn(executable, args, { cwd, env, stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit" });
     let output = "";
     if (capture) child.stdout.setEncoding("utf8").on("data", (data) => { output += data; });
-    child.once("error", reject);
+    child.once("error", (error) => reject(new Error(`无法启动 ${tool}。请检查依赖和运行环境：${error.message}`, { cause: error })));
     child.once("close", (code, signal) => {
       if (code === 0) resolve(output.trim());
-      else reject(Object.assign(new Error(`${tool} 执行失败：${signal || code}`), { exitCode: code || 1 }));
+      else reject(Object.assign(new Error(`命令未完成（${tool}，${signal ? `终止信号 ${signal}` : `退出码 ${code}`}）。请查看上方错误说明。`), { exitCode: code || 1 }));
     });
   });
 }

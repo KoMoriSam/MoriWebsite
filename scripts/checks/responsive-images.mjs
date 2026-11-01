@@ -149,7 +149,7 @@ try {
     await loadImageManifest("https://missing.example");
     assert.equal(fetches, 2);
   } finally { globalThis.fetch = originalFetch; }
-  console.log("Responsive image checks passed: sizing, orientation, animated GIF/WebP timing, loop, alpha, large-frame budgets, cache, cleanup, SSR, original fallback and manifest safety.");
+  console.log("检查通过：图片尺寸、动图播放、资源缓存与原图回退。");
 } finally {
   if (path.dirname(fixture) !== tempRoot || !path.basename(fixture).startsWith("responsive-images-")) throw new Error("Unsafe fixture cleanup path");
   await rm(fixture, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });

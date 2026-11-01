@@ -72,7 +72,7 @@ export async function generateStaticAssets() {
   await writeFile(path.join(root, "src/games/fogport/art-manifest.generated.json"), `${JSON.stringify(files)}\n`);
   await writeFile(path.join(root, "src/assets/font/remixicon.generated.css"), css);
   await writeFile(path.join(root, "src/assets/font/zhi-mang-xing.generated.css"), scriptFont);
-  console.log(`Generated ${files.length} Fogport asset paths and WOFF2-only Remix Icon / Zhi Mang Xing styles.`);
+  console.log(`网站图片与字体资源已就绪，包含 ${files.length} 项游戏图片。`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

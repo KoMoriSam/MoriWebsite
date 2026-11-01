@@ -9,6 +9,7 @@ import { renderToString } from "@vue/server-renderer";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { createHead } from "@unhead/vue/server";
 import { parse } from "vue/compiler-sfc";
+import { LOCALES } from "../../src/i18n/locale.js";
 
 // Catch the original failure even when a quantity and its label use separate
 // interpolations: searching message placeholders alone cannot detect it.
@@ -46,7 +47,7 @@ const server = await createServer({
   define: { "import.meta.env.VITE_ANALYTICS_API": JSON.stringify("http://localhost/quantity-check") },
   optimizeDeps: { noDiscovery: true, include: [] },
   resolve: { alias: { "@": path.resolve("src") } },
-  server: { middlewareMode: true, watch: null },
+  server: { middlewareMode: true, watch: null, hmr: false },
   appType: "custom",
 });
 const text = (html) => html.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
@@ -70,7 +71,7 @@ try {
     id: `sample-${i}`, uuid: `sample-${i}`, title: `Sample ${i}`, date: "2026-09-25", uploadDate: "2026-09-25",
     length: 1, tags: [], volumeTitle: "Sample volume", permalink: `sample-${i}`,
   }));
-  for (const lang of ["zh-CN", "en", "si"]) {
+  for (const { code: lang } of LOCALES) {
     const locale = createLocaleService();
     await locale.loadRoute({ meta: { localeGroups: ["blog", "reader", "novel", "home", "tools", "games", "avalon", "fogport", "image-converter", "sinhala-font-converter", "licenses"] } });
     await locale.switchLocale(lang, { save: false });
@@ -78,6 +79,7 @@ try {
       const rendered = locale.t("common.counts.articles", { count: locale.number(n) }, n);
       if (lang === "si") assert.equal(rendered, `ලිපි ${locale.number(n)}ක්`);
       if (lang === "en") assert.equal(rendered, `${locale.number(n)} ${n === 1 ? "article" : "articles"}`);
+      if (lang === "fr") assert.equal(rendered, `${locale.number(n)} ${n <= 1 ? "article" : "articles"}`);
     }
     for (const n of [0, 1, 14]) {
       const chapters = samples(n);
@@ -175,7 +177,12 @@ try {
         await render("tools", {}, "/tools");
         const failedImages = await render("images", {}, "/tools/image-converter", true);
         const converter = await render("sinhala", {}, "/tools/sinhala-font-converter");
-        await render("licenses", {}, "/licenses");
+        const licenses = await render("licenses", {}, "/licenses");
+        if (lang === "fr") {
+          assert.ok(licenses.html.includes('href="/legal/THIRD_PARTY_NOTICES.txt"'), 'French UI uses available English legal source');
+          assert.ok(!licenses.html.includes('THIRD_PARTY_NOTICES.fr.txt'));
+          assert.ok(!licenses.html.includes('value="fr"'), 'Only available legal translations can be selected');
+        }
         const games = await render("games", {}, "/games");
         const rulebook = await render("rulebook", { playerCount: 5 }, "/games/avalon");
         if (lang === "si") {
@@ -188,7 +195,7 @@ try {
       }
     }
   }
-  console.log(`i18n quantities: ${renders} actual component renders passed across zh-CN/en/si, with 0/1/many and formatted counts.`);
+  console.log(`检查通过：${LOCALES.length} 种语言的数量表达与许可原文回退，完成 ${renders} 次组件渲染。`);
 } finally {
   await server.close();
 }

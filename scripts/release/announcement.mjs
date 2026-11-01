@@ -34,24 +34,24 @@ const TEXT_LIMITS = {
   body: 20000,
 };
 
-const helpText = `公告发布工具
+const helpText = `撰写网站公告，安排展示时间，并将公告发布到网站。
 
-用法：pnpm release announcement <command> [options]
+用法：pnpm release announcement <命令> [选项]
 
 命令：
   new                         交互式创建公告并打开 Markdown 编辑器
   list                        查看本地公告
   edit <id>                   编辑公告
-  bump <id>                   将公告 revision 加一
-  expire <id>                 将公告结束时间设为现在
+  bump <id>                   标记本地公告修订，发布后提示读者
+  expire <id>                 立即结束公告展示
   check                       校验全部本地公告
   import <json-file>          将现有公告 JSON 转换为 Markdown
-  pull                        从远端 KV 导入 Markdown
-  publish [--dry-run] [--yes] 校验、备份并发布到远端 KV
+  pull                        下载已发布的公告供本地编辑
+  publish [--dry-run] [--yes] 校验并上线公告，同时备份已发布内容
 
 选项：
   --force                     import/pull 时覆盖同 ID 的本地文件
-  --dry-run                   仅显示发布差异，不写入 KV
+  --dry-run                   预览公告发布结果
   --yes                       跳过发布确认
 `;
 
@@ -394,7 +394,7 @@ const bumpAnnouncement = async (id) => {
     revision: entry.announcement.revision + 1,
   };
   await writeAnnouncementFile(announcement, entry.path);
-  console.log(`${id} revision：${entry.announcement.revision} → ${announcement.revision}`);
+  console.log(`公告 ${id} 的本地修订号已更新：${entry.announcement.revision} → ${announcement.revision}。运行 pnpm release announcement publish 上线修订内容。`);
 };
 
 const expireAnnouncement = async (id) => {
@@ -565,7 +565,7 @@ const printDiff = ({ added, changed, removed }) => {
   printGroup("~", "修改", changed);
   printGroup("-", "移除", removed);
   if (!added.length && !changed.length && !removed.length) {
-    console.log("本地与远端公告内容一致。仅 updatedAt 会刷新。");
+    console.log("公告内容已与网站一致。本次发布将更新同步时间。");
   }
 };
 
@@ -618,15 +618,15 @@ export const publishAnnouncements = async ({ dryRun = false, yes = false } = {})
 
   console.log(`本地公告：${localItems.length} 条；远端公告：${remoteItems.length} 条。`);
   if (remote.hasBom) {
-    console.log("远端 JSON 包含 UTF-8 BOM；本次发布会自动清除。");
+    console.log("已发布数据的文本格式将统一为 UTF-8。");
   }
   printDiff(diff);
   if (dryRun) {
-    console.log("\nDry run 完成，未写入远端 KV。");
+    console.log("\n公告发布预览完成。确认以上内容后，移除 --dry-run 再次运行以正式发布。");
     return { published: false };
   }
 
-  if (!yes && !(await confirm("确认用本地 Markdown 公告覆盖远端 announcements:v1？"))) {
+  if (!yes && !(await confirm("确认将以上本地公告发布到网站？已发布内容将备份后替换。"))) {
     console.log("已取消发布。");
     return { published: false };
   }
@@ -660,8 +660,8 @@ export const publishAnnouncements = async ({ dryRun = false, yes = false } = {})
   console.log(`远端备份：${backupPath}`);
   console.log(
     publicVerified
-      ? "公开接口已返回本次数据。"
-      : "KV 已验证写入；公开接口仍可能受边缘缓存或传播延迟影响。",
+      ? "网站已可获取本次公告。"
+      : "公告已保存到云端，网站接口尚未返回本次内容。请稍后查看网站。",
   );
   return { published: true, payload };
 };

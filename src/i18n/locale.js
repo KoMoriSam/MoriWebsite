@@ -2,6 +2,7 @@ export const DEFAULT_LOCALE = "zh-CN";
 export const LOCALES = Object.freeze([
   { code: "zh-CN", name: "中文（简体）" },
   { code: "en", name: "English" },
+  { code: "fr", name: "Français" },
   { code: "si", name: "සිංහල" },
 ]);
 
@@ -13,7 +14,14 @@ export function normalizeLocale(value) {
     .replaceAll("_", "-")
     .split("-")[0];
   if (language === "zh") return "zh-CN";
-  return language === "en" || language === "si" ? language : null;
+  return LOCALES.some(({ code }) => code === language) ? language : null;
+}
+
+export function getLocaleFallbacks(value = DEFAULT_LOCALE) {
+  const locale = normalizeLocale(value) || DEFAULT_LOCALE;
+  return locale === DEFAULT_LOCALE
+    ? [DEFAULT_LOCALE]
+    : [...new Set([locale, "en", DEFAULT_LOCALE])];
 }
 
 export function detectLocale(languages = []) {

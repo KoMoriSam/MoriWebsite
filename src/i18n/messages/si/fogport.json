@@ -377,7 +377,7 @@
       "railway": "දුම්රිය මාර්ගය"
     },
     "actionPoints": "ක්‍රියා",
-    "actionPointsCount": "{name}ගේ ක්‍රියා ලකුණු: {n}",
+    "actionPointsCount": "ක්‍රීඩකයා: {name} · ක්‍රියා ලකුණු: {n}",
     "actionPointsHint": "සෑම ක්‍රියාවකටම එක් ක්‍රියා ලකුණක් වැය වේ. ඔබේ වාරය අවසානයේ අත නැවත පුරවන්න.",
     "actingPlayer": "{name} ක්‍රියා කරයි",
     "liquidationDetails": "ඉදිකිරීමේ වියදම {cost} · ලැබෙන මුදල {amount} · විකිණීමෙන් පසු තව අවශ්‍ය මුදල {remaining}",

@@ -43,4 +43,4 @@ for (const entry of snapshot.articles) {
 const sourceCount = new Set(snapshot.articles.map((entry) => entry.id)).size;
 const feedCount = (fs.readFileSync("dist/rss.xml", "utf8").match(/<item>/g) || []).length;
 assert.ok(feedCount <= sourceCount, "translations must not duplicate RSS entries");
-console.log(`Blog build: ${snapshot.articles.length} static article pages, ${sourceCount} source identities, canonical/hreflang/schema/language, sitemap, Pagefind and body isolation passed.`);
+console.log(`检查通过：${snapshot.articles.length} 个文章页面与 ${sourceCount} 篇原文的页面信息、搜索和内容访问。`);

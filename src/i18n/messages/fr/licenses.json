@@ -1,0 +1,22 @@
+{
+  "licenses": {
+    "scope": "La licence MIT du projet s’applique uniquement au code source logiciel original. Les composants tiers et les autres contenus restent soumis à leurs propres conditions.",
+    "projectLicense": "Licence",
+    "downloadLicense": "Télécharger LICENSE",
+    "thirdPartyNotices": "Mentions relatives aux tiers",
+    "noticeLanguage": "Langue des mentions",
+    "chinese": "Chinois",
+    "dependencyLicenses": "Licences des dépendances de production",
+    "downloadAllNotices": "Télécharger toutes les mentions",
+    "noticesHint": "Ces mentions proviennent des paquets installés lors du build. Les paquets sans fichier de licence à la racine indiquent leur licence déclarée et leur adresse d’origine, avec le fichier manquant signalé.",
+    "upstream": "Source d’origine :",
+    "missingLicenseHint": "La version installée de ce paquet ne comprend pas de fichier de licence à la racine.",
+    "files": "Fichiers de licence complémentaires",
+    "viewChineseSource": "Voir la source en chinois",
+    "viewSource": "Voir le texte source",
+    "dependenciesCount": "{count} version de dépendance | {count} versions de dépendances",
+    "additionalLicensesCount": "{count} licence complémentaire | {count} licences complémentaires",
+    "missingLicensesCount": "{count} paquet sans licence à la racine | {count} paquets sans licence à la racine",
+    "contentRights": "Droits des contenus du blog et du roman"
+  }
+}

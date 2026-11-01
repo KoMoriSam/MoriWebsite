@@ -24,6 +24,19 @@ assert.equal(resolveArticleVersion(source, "si").lang, "si", "prefer Sinhala whe
 assert.equal(resolveArticleVersion(englishOnly, "si").lang, "en", "prefer English over the Chinese source");
 assert.equal(resolveArticleVersion(englishOnly, "si").title, source.translations.en.title);
 assert.equal(resolveArticleVersion(englishOnly, "si").routePath, "/blog/2026-09-25/en");
+assert.equal(resolveArticleVersion(source, "fr").lang, "en", "French prefers English over the Chinese source");
+assert.equal(resolveArticleVersion(englishOnly, "fr").title, source.translations.en.title);
+assert.equal(resolveArticleVersion(englishOnly, "fr").routePath, "/blog/2026-09-25/en");
+assert.equal(resolveArticleVersion(englishOnly, "fr", { explicit: true }), null, "do not create a fake French URL");
+assert.equal(resolveArticleVersion(legacy, "fr").lang, "zh-CN", "Chinese is the final fallback when English is absent");
+const sinhalaSource = {
+  ...legacy, sourceLocale: "si", translations: {
+    "zh-CN": { title: "中文译文" }, en: { title: "English version" },
+  },
+};
+assert.equal(resolveArticleVersion(sinhalaSource, "fr").lang, "en");
+assert.equal(resolveArticleVersion({ ...sinhalaSource, translations: { "zh-CN": sinhalaSource.translations["zh-CN"] } }, "fr").lang, "zh-CN");
+assert.equal(resolveArticleVersion({ ...legacy, sourceLocale: "si" }, "fr").lang, "si", "keep the original if neither fallback language exists");
 assert.equal(resolveArticleVersion(englishOnly, "si", { explicit: true }), null, "do not create a fake Sinhala URL");
 assert.equal(resolveArticleVersion(englishOnly, "zh-CN").lang, "zh-CN");
 assert.equal(resolveArticleVersion(legacy, "si").lang, "zh-CN", "use the source when neither translation exists");
@@ -112,4 +125,4 @@ try {
   const languages = JSON.parse(Buffer.from(entry.content).toString('utf8')).languages;
   assert.deepEqual(Object.keys(languages).sort(), ['en', 'si', 'zh']);
 } finally { await index.deleteIndex(); }
-console.log("Blog translations: version selection, metadata inheritance, validation, per-language SSG hydration, RSS identity, hashes and retries passed.");
+console.log("检查通过：文章语言选择、静态页面、RSS 与内容一致性。");

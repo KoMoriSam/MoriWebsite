@@ -59,5 +59,5 @@ try {
   assert.equal(fetches, 4);
   const defaultHtml = await renderToString(createSSRApp(Child));
   assert.ok(defaultHtml.includes(DEFAULT_AVATAR));
-  console.log("Markdown avatar checks passed: repository isolation, reactive maps, provider inheritance, srcset, fallback, safe URLs, request deduplication and retries.");
+  console.log("检查通过：正文头像、资源地址与加载失败后的显示。");
 } finally { globalThis.fetch = originalFetch; }

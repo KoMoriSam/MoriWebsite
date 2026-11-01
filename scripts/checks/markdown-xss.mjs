@@ -424,4 +424,4 @@ assert.match(ssrHtml, /<details open/u);
 assert.match(ssrHtml, /data-tip="Tooltip text"/u);
 assert.match(ssrHtml, /<span class="tooltip-content">标准 Unicode 文本 <code>Abhaya Libre<\/code><\/span>/u);
 
-console.log("Markdown XSS checks passed: 15 payloads, variants, real markers, SSR and compatibility.");
+console.log("检查通过：正文中的不安全内容已被拦截，常规内容可正常渲染。");

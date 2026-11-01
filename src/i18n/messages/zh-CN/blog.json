@@ -31,6 +31,7 @@
       "languages": {
         "zh-CN": "中文（简体）",
         "en": "英语",
+        "fr": "法语",
         "si": "僧伽罗语"
       },
       "fallbackNotice": "本文暂无{requestedLanguage}版本，当前显示{currentLanguage}版本。",

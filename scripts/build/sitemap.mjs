@@ -13,4 +13,4 @@ paths.push(...snapshot.articles.filter((entry) => !entry.legacy).map((entry) => 
 const escape = (value) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const urls = [...new Set(paths)].sort().map((path) => `<url><loc>${escape(new URL(path, "https://komori.cc").href)}</loc></url>`);
 await writeFile(resolve(root, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`);
-console.log(`Sitemap: ${urls.length} canonical pages`);
+console.log(`站点地图已生成：${urls.length} 个页面。`);

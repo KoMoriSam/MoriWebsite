@@ -51,5 +51,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const relative = path.relative(await realpath(root), dist);
   if (relative.startsWith("..") || path.isAbsolute(relative)) throw new Error("Build directory is outside the workspace");
   const result = await pruneBuildAssets(dist);
-  console.log(`Removed ${result.removed.length} unused build files (${(result.bytes / 1048576).toFixed(2)} MiB).`);
+  console.log(`发布资源已整理：清理 ${result.removed.length} 个未使用文件，减少 ${(result.bytes / 1048576).toFixed(2)} MiB。`);
 }

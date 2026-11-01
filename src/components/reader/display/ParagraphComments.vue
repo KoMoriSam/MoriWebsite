@@ -1,5 +1,5 @@
 <template>
-  <Giscus
+  <Thread
     :key="`${paragraphId}-${githubSession.revision}`"
     :repo="currentRepo.name"
     :repo-id="currentRepo.id"
@@ -13,7 +13,6 @@
     input-position="bottom"
     :theme="giscusTheme"
     :lang="commentLocale"
-    loading="lazy"
   />
 </template>
 
@@ -23,7 +22,7 @@ const { commentLocale } = useLocale();
 import { computed, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 import { githubSession } from '@/composables/auth/useGithubSession';
-import Giscus from "@giscus/vue";
+import Thread from "@/components/comments/Thread.vue";
 import { useThemeStore } from "@/stores/themeStore";
 
 import CONFIG from "@/constants/config";

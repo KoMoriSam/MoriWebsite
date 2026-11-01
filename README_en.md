@@ -1,21 +1,21 @@
 <p align="center">
   <a href="https://komori.cc/">
-    <img src="https://komori.cc/favicon.webp" alt="KoMoriSam Logo" width="80" height="80">
+    <img src="https://komori.cc/favicon.webp" alt="远方之森" width="80" height="80">
   </a>
 </p>
 
-<h1 align="center">MoriWebsite</h1>
+<h1 align="center">MoriWebsite · 远方之森</h1>
 
 <p align="center">
-  A personal digital garden "远方之森" built with Vue 3, Vite SSG, Tailwind CSS, and daisyUI, featuring a blog, novel reader, games, site-wide search, and online tools.
+  Read articles and original fiction, work with images and Sinhala documents, and play board games with friends.
 </p>
 
 <p align="center">
-  <a href="https://komori.cc/">Live Site</a>
+  <a href="https://komori.cc/">Visit the site</a>
   ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite">Source Code</a>
+  <a href="https://komori.cc/rss.xml">Subscribe to the blog</a>
   ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Issues</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Report an issue</a>
 </p>
 
 <p align="center">
@@ -24,262 +24,126 @@
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
 
----
+## Start here
 
-## Overview
+远方之森 is Mori's personal website, bringing together technical explorations, essays, reading notes, original fiction, everyday tools, and multiplayer board games. Open the site on a desktop or phone to get started.
 
-MoriWebsite is KoMoriSam's personal website project. Its static frontend handles reading, tools, and game interfaces, while a Cloudflare Worker serves announcements, changelogs, game rooms, and other APIs. Blog posts and novel content live in separate repositories; production builds fetch a content snapshot and use `vite-ssg` to generate indexable HTML for the main pages and blog posts.
+| What you want to do | Where to go |
+| --- | --- |
+| Read articles | [Blog](https://komori.cc/blog): find posts by keyword, tag, and year, and switch between published language versions |
+| Follow the novel | [The Horizon /《向远方》](https://komori.cc/novel): browse volumes and chapters, resume reading, and adjust the reader layout |
+| Convert images | [Image converter](https://komori.cc/tools/image-converter): batch conversion, compression, resizing, watermarks, and animation processing |
+| Work with Sinhala text | [Font encoding converter](https://komori.cc/tools/sinhala-font-converter): convert between Unicode and legacy font encodings, including documents |
+| Check a server | [Minecraft server status](https://komori.cc/tools/server-status): check connectivity and online information |
+| Play with friends | [Avalon](https://komori.cc/games/avalon) offers social deduction for 5–10 players; [Fogport](https://komori.cc/games/fogport) offers an economic board game for 2–4 players |
+| Explore the font project | [Kaiming](https://komori.cc/kaiming): learn about the project and its font resources |
 
-The site currently includes:
+## Reading and discussion
 
-- a responsive profile homepage with dynamic backgrounds and contact links
-- a blog with keyword, tag, and year filters, plus language switching where translations are available
-- volumes, chapter navigation, and a paginated reader for the original novel _Toward the Distance_
-- site-wide search across blog posts, novel chapters, changelogs, and open-source licenses
-- Giscus comments at article, chapter, and paragraph level
-- browser-based image conversion, Sinhala Unicode/legacy-font conversion, and Minecraft server-status tools
-- online Avalon games for 5–10 players
-- Chinese, English, and Sinhala interfaces, plus themes, reading progress, and local reader preferences
-- announcements, changelogs, and a blog RSS feed
-- a license page for project dependencies, fonts, icons, and other third-party content
+The blog and novel provide contents navigation, reading progress, and layout settings. Your theme, reading position, and preferences are saved in the current browser so you can pick up where you left off. Articles can include code, equations, diagrams, footnotes, and ruby annotations; code blocks support copying.
 
-Production routes:
+Press `Ctrl + K` (`Cmd + K` on macOS) to search article sections, novel chapters, release notes, and license entries. Filters for content type, tags, volumes, and years help you jump to relevant content.
 
-```text
-/
-/blog
-/blog/:articleId
-/blog/:articleId/:locale
-/novel
-/novel/:volumeSlug/:chapterSlug?
-/tools
-/tools/image-converter
-/tools/sinhala-font-converter
-/tools/server-status
-/games
-/games/avalon
-/changelog
-/announcements
-/licenses
-/kaiming
-```
+The interface supports Chinese, English, French, and Sinhala. Articles offer their available translations and show language notices when your selected language is unavailable.
 
-Development also exposes `/test` for component testing. Unknown URLs use the in-app 404 view, and production builds generate a `404.html` suitable for static hosting.
+The novel's catalog is public; reading its chapters requires GitHub sign-in. Giscus supports discussions on articles, chapters, and individual paragraphs, with a GitHub account required to post. Blog and novel discussions live in [theWake](https://github.com/KoMoriSam/theWake) and [theHorizon](https://github.com/KoMoriSam/theHorizon), respectively.
 
-## Tech Stack
+Follow new posts through [RSS](https://komori.cc/rss.xml), and check the [changelog](https://komori.cc/changelog) and [announcements](https://komori.cc/announcements) for site updates.
 
-- Vue 3, Vue Router, Pinia
-- Vite 6, vite-ssg
-- Tailwind CSS 4, daisyUI 5
-- Pagefind 1.5
-- Unhead, VueUse
-- Markdown-it, MathJax, Mermaid, highlight.js
-- Vue I18n, Cloudflare Workers, Durable Objects, KV, D1
-- Sharp
-- Giscus
+## Tools and games
 
-## Features
+**The image converter** processes images in your browser. Use it to prepare batches of assets, reduce file sizes, standardize dimensions, add text or image watermarks, and process animated images.
 
-### Content and Reading
+**The Sinhala font encoding converter** converts between Unicode and legacy font encodings. You can paste text or work with DOCX, PPTX, and PDFs containing selectable text, then export editable DOCX or PPTX files.
 
-- blog list and detail views with combined keyword, tag, and year filtering; articles can switch between published Chinese, English, and Sinhala versions
-- novel volumes, chapter navigation, total word counts, persisted reading position, and reader settings
-- Markdown code highlighting, footnotes, task lists, math, callouts, custom dialogue blocks, attributes, and ruby annotations
-- Obsidian-style image references, banner resolution, lazy image loading, and code copying
-- responsive typography, table of contents, sidebars, and reading progress on desktop and mobile
-- a GitHub sign-in state for the novel-reading gate; the novel catalog remains public
+**Multiplayer board games** let friends join the same room using a room code or invitation link. Avalon includes role configuration, team votes, missions, and game history. Fogport centers on industries, transport links, resources, and sales; it is a test version with development on hold and some features unfinished.
 
-### Search and Discovery
+## Using the content
 
-- open global search with `Ctrl/Cmd + K`
-- production builds generate a custom Pagefind index; development can build a local index from the content APIs
-- search blog sections, novel chapters, changelog releases, and individual license notices
-- combine filters for content type, tag or volume, and year
-- synchronize search state with the URL and link directly to document headings or license anchors
+| Content | Terms |
+| --- | --- |
+| Original software source code in this repository | [MIT License](./LICENSE) |
+| Original blog articles | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) by default; check the license shown on each article |
+| Original novel The Horizon /《向远方》 | All Rights Reserved |
+| Third-party libraries, fonts, icons, images, and other materials | Their respective licenses or rights notices |
+| Reader comments | Rights remain with their authors, subject to their rights notices |
 
-### Comments and Local State
+Each article's attribution card lists its title, link, author, publication date, and license so you can identify the source and applicable terms. Third-party information is available on the [licenses page](https://komori.cc/licenses), in the [English notices](./THIRD_PARTY_NOTICES.md), and in the [Chinese notices](./THIRD_PARTY_NOTICES.zh-CN.md).
 
-- Giscus comments for blog posts and novel chapters
-- discussions attached to individual paragraphs
-- optional batch API for paragraph-comment counts
-- browser-local theme, reader settings, and reading position
-- built-in migration and cleanup for older local-storage formats
+## Run locally
 
-### Tools, Games, and Languages
-
-- an in-browser image converter for batch conversion, compression, resizing, watermarks, and animated images
-- a Sinhala font-encoding converter for Unicode and legacy encodings; document mode handles DOCX, PPTX, and PDFs with selectable text, with editable DOCX or PPTX output
-- Avalon rooms joined by code or invitation link, with role configuration, game records, and reconnection
-- Chinese, English, and Sinhala interface text loaded by page, with the language preference saved locally
-- responsive WebP variants for local images and optional variant manifests from the blog and novel sources
-
-### SSG, SEO, and License Data
-
-- fetches posts, the novel catalog, and changelogs before the build to create a shared SSG snapshot
-- generates static blog routes while keeping server-rendered and hydration data consistent
-- emits canonical links, Open Graph, Twitter Card, and JSON-LD metadata through Unhead
-- collects production dependencies and supplemental license files into the in-app license page and `dist/legal/`
-- creates the Pagefind index and a static-hosting-friendly 404 page after rendering
-- generates blog RSS; announcements are published separately to KV, while release tags publish changelogs
-- configures `dist/` as Cloudflare static assets through `wrangler.jsonc`
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 24.15 or later in the 24.x line, or version 26 and later
-- pnpm (the release workflow uses 12.3.4)
-- reachable blog and novel sources, or local mirrors under `mock/`
-
-The repository ignores `.env.development`, `.env.production`, and `mock/`. A fresh clone must create its own environment files and either synchronize the local content mirrors or point the variables to reachable remote sources.
-
-### Install dependencies
+The project uses Vue 3, Vite SSG, Tailwind CSS, daisyUI, and Pagefind, with server APIs running on Cloudflare Workers. Use Node.js 24.15 or a later 24.x release, or Node.js 26 or later, with pnpm 12.3.4.
 
 ```bash
+git clone https://github.com/KoMoriSam/MoriWebsite.git
+cd MoriWebsite
 pnpm install
 ```
 
-### Start the development server
+Create `.env.development` in the project root and set the content and comment-theme URLs:
+
+```dotenv
+VITE_BLOG_RAW=https://raw.komori.cc/post
+VITE_NOVEL_RAW=https://raw.komori.cc/novel
+VITE_GISCUS_CSS_RAW=https://raw.komori.cc/giscus
+```
 
 ```bash
 pnpm dev
 ```
 
-`pnpm dev` first generates local responsive images, changelog data, and license data. Vite listens on `0.0.0.0` by default. To test game-room APIs locally, run `pnpm dev games` in another terminal.
+Open the address printed in the terminal. You can also point the content URLs to your own local mirrors; `mock/` and `.env*` files are ignored by Git. To develop multiplayer rooms, run `pnpm dev games` in another terminal.
 
-### Build for production
+Configure additional services as needed:
 
-```bash
-pnpm build
-```
+| Environment variable | Purpose |
+| --- | --- |
+| `VITE_SERVER_ADDRESS` | Default Minecraft server to query |
+| `VITE_RANDOM_HERO_API` | Random homepage background service |
+| `VITE_COMMENT_COUNTS_API` | Paragraph comment counts |
+| `VITE_GAMES_API` | Multiplayer room service |
+| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Changelog and announcement services |
+| `VITE_ANALYTICS_API` | Traffic analytics service |
 
-The complete build pipeline:
+Variables prefixed with `VITE_` are included in client code and should contain public configuration only. Store private repository tokens and deployment credentials in build-environment Secrets.
 
-1. generates responsive variants of local images and loads available blog and novel image manifests;
-2. generates the changelog, content SSG snapshot, and blog RSS feed;
-3. collects dependency and supplemental license data;
-4. prerenders the site and generates `404.html`;
-5. creates the Pagefind index for blog, novel, changelog, and license content, then copies license files into `dist/legal/`.
+## Build and publish
 
-Production builds fetch the private ObsidianVault and MyWritingVault repositories, reuse their existing exporters, and generate SSG, RSS, and search indexes from the same local content snapshot without reading the live content site.
+Workers Builds builds the site and content together, and Workers Static Assets hosts the results. A complete production build requires access to the two private content repositories, or local Vaults supplied through `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR`. Exporters work in temporary copies, and the website, RSS feed, and search index share the same content snapshot.
 
-### Preview the production build
+| Source or resource | How it is published |
+| --- | --- |
+| Website code | After validation, a `v<version>` tag advances `production` and triggers Workers Builds; ordinary `main` commits go live with a release |
+| Blog and novel | Private `ObsidianVault` and `MyWritingVault` repositories hold the source content; each uses its `WORKERS_BUILD_HOOK` to rebuild `production` after updates |
+| Kaiming fonts | Assets come from a GitHub Release in `KoMoriSam/Kaiming` and are verified before publication; font releases trigger a build through their Hook |
+| Giscus comment assets | Themes and the loading animation are maintained in `giscus/` and published independently from a local terminal with `pnpm run deploy giscus` |
+| Images and other content resources | Published with the content Worker; R2 is optional and currently disabled |
 
-```bash
-pnpm preview
-```
+Content resources use `raw.komori.cc`: `/post` for the blog, `/novel` for the novel, `/giscus` for comment themes, `/kaiming` for fonts, and `/giscus/images/spin.gif` for the loading animation. `theWake` and `theHorizon` host discussions; the private content sources supply the published texts.
 
-## Environment Variables
+Workers Builds watches `production`, runs `pnpm build`, and deploys with `pnpm run deploy website`. Its `CONTENT_GITHUB_TOKEN` build Secret needs read-only Contents access to both private content repositories. Content Hooks also target `production`, so content updates use the released website code. GitHub Actions handles release validation, build triggers, and other automation.
 
-Create `.env.development` and `.env.production` in the project root and provide the client-side values needed by each environment:
+| Command | Result |
+| --- | --- |
+| `pnpm build` | Generate the website in `dist/`, content assets in `.output/content/`, RSS, the search index, and license files |
+| `pnpm preview` | Preview the production website build |
+| `pnpm check <target>` | Run focused checks; omit the target to list options |
+| `pnpm generate <target>` | Generate selected resources; omit the target to list options |
+| `pnpm release prepare <version>` | Prepare the version number, release notes, and announcement draft |
+| `pnpm release verify <version>` | Check that the package, README, and release-note versions agree |
+| `pnpm run deploy <target>` | Publish the website, content, API, or Giscus; omit the target to list options |
+| `pnpm release announcement publish` | Publish announcements independently |
 
-```bash
-VITE_BLOG_RAW=
-VITE_NOVEL_RAW=
-VITE_SERVER_ADDRESS=
-VITE_RANDOM_HERO_API=
-VITE_COMMENT_COUNTS_API=
-VITE_GISCUS_CSS_RAW=
-VITE_GAMES_API=
-VITE_CHANGELOG_API=
-VITE_ANNOUNCEMENTS_API=
-VITE_ANALYTICS_API=
-```
+Announcements are grouped under `x.y.0`. Maintenance, optimization, and fixes are incorporated into the same announcement so readers can find the version's full experience in one place. Blog front matter can set an article's `license`; the default is `CC BY-NC-SA 4.0`, and translations inherit the source article's license unless overridden.
 
-| Variable                  | Purpose                                                                                  |
-| ------------------------- | ---------------------------------------------------------------------------------------- |
-| `VITE_BLOG_RAW`           | Base URL for the blog `index.json`, Markdown, and images; required for production builds |
-| `VITE_NOVEL_RAW`          | Base URL for the novel `index.json` and chapter Markdown; required for production builds |
-| `VITE_SERVER_ADDRESS`     | Default Minecraft server queried by the tools page                                       |
-| `VITE_RANDOM_HERO_API`    | Random homepage-background endpoint                                                      |
-| `VITE_COMMENT_COUNTS_API` | Optional batch endpoint for paragraph-comment counts                                     |
-| `VITE_GISCUS_CSS_RAW`     | Base URL for custom Giscus theme assets                                                  |
-| `VITE_GAMES_API`          | Optional game-room API URL; production has a default                                     |
-| `VITE_CHANGELOG_API`      | Optional changelog API URL; production has a default                                     |
-| `VITE_ANNOUNCEMENTS_API`  | Optional announcements API URL; production has a default                                 |
-| `VITE_ANALYTICS_API`      | Optional site-analytics API URL; production has a default                                |
+Start with `src/views/` for pages, and find related implementations in `src/components/`, `src/composables/`, and `src/utils/`. Build and release commands live in `scripts/`; Cloudflare services live in `workers/`.
 
-All of these variables use the `VITE_` prefix and are exposed to client code. Do not store secrets or private credentials in them. Both `scripts/build/routes.mjs` and `scripts/build/pagefind.mjs` read `.env.production`.
+## Feedback and participation
 
-Set CONTENT_GITHUB_TOKEN as a Workers Builds build secret with Contents read-only access to the two private repositories; never prefix it with VITE_. Use production as the production branch and disable preview builds. Only the version-tag release workflow advances this branch; ordinary main pushes do not deploy website code. Deployment credentials must cover both Workers and the raw.komori.cc routes. Pin Node.js 24.15.0 and pnpm 12.3.4. For local builds, set CONTENT_BLOG_DIR and CONTENT_NOVEL_DIR to the two Vault directories; exporters run only in temporary copies.
-
-## Available Scripts
-
-| Command                          | Purpose                                                            |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `pnpm dev`                       | Generate license data and start the development server             |
-| `pnpm build`                     | Generate the SSG site, search index, and distributed license files |
-| `pnpm preview`                   | Preview `dist/` locally                                            |
-| `pnpm check <target>` | Run focused checks; omit the target to list choices |
-| `pnpm generate <target>` | Generate selected assets; omit the target to list choices |
-| `pnpm run deploy <target>` | Publish the website and content together, or the API/Giscus independently |
-| `pnpm release prepare <version>` | Prepare the changelog, snapshots, and announcement                 |
-| `pnpm dev games`            | Start the local game-room API                                        |
-| `pnpm release announcement publish`     | Publish announcements separately to KV                              |
-
-Workers Builds watches MoriWebsite/production, runs `pnpm build`, then `pnpm run deploy website` to publish content and website Static Assets Workers in that order. The raw.komori.cc/post, /novel, /giscus, /kaiming and /images/spin.gif paths remain available. Kaiming web fonts, CSS and license come from its latest GitHub Release with SHA-256 verification; CONTENT_KAIMING_RELEASE optionally pins a tag. Each private repository uses a WORKERS_BUILD_HOOK secret to trigger builds; novel Actions first persist stable metadata, while blog Actions only trigger. Kaiming uses its own WORKERS_BUILD_HOOK after publishing a font release. Website version tags verify releases and publish changelogs, then fast-forward production to the exact tagged commit. All content hooks target production, so content updates rebuild the released website code without including later main commits. Giscus is uploaded manually with `pnpm run deploy giscus`. R2 is not enabled; images remain in content static assets. Manage announcements separately with `pnpm release announcement publish`.
-
-## Project Structure
-
-```text
-src/
-  assets/          # global, theme, reading, and font styles
-  components/
-    novel/         # novel catalog, chapter information, and reader
-    markdown/      # Markdown rendering and extensions
-    games/         # game rooms, Avalon, and Fogport interfaces
-    tools/         # tool-specific components
-    layout/        # navigation and shared page shells
-  games/           # game catalog and routes
-  i18n/            # page-split text in three languages
-  composables/     # reading, games, account, and other behavior
-  services/        # content, search, announcements, and API requests
-  stores/          # theme, novel, and reading state
-  router/          # routes and build-generated SSG/license data
-  utils/           # Markdown extensions, storage, asset resolution, and updates
-  views/           # route-level pages
-
-scripts/
-  build/           # assets, prerender data, search indexes, and licenses
-  checks/          # focused regression checks
-  release/         # versions, changelogs, and announcements
-  sinhala/         # font, glyph, and lexicon tools with font sources
-  lib/             # shared script logic
-  run.mjs          # shared command entry point
-
-workers/           # Cloudflare API, game rooms, and content routing
-giscus/            # manually maintained styles uploaded separately
-
-licenses/          # supplemental license texts for fonts, icons, and other assets
-mock/              # Git-ignored local mirrors of blog and novel content
-public/
-  assets/          # images, fonts, and icons
-  archive/         # archived legacy static pages
-  changelog.json   # current-schema data for API fallback and prerendering
-```
-
-## Content and Build Notes
-
-- Blog sources are private ObsidianVault/notes; only public/publish notes and their assets are exported. Novels publish only MyWritingVault/public/, preserving volume/chapter paths, UUIDs, and route codes. Public mirror repositories are no longer used for publishing content; Giscus remains separate.
-- `src/router/ssg-data.generated.js` and `src/router/license-data.generated.js` are generated, ignored by Git, and should not be edited manually.
-- Public Giscus repository and category settings are centralized in `src/constants/config.js`.
-- Blog, novel, and global-search logic lives in `src/services/api-articles.js`, `src/services/api-chapters.js`, and `src/services/search-content.js`.
-- Markdown extensions live under `src/utils/markdown/`; `src/utils/resolve-article-assets.js` resolves article images and banners.
-- Changelog sources live under `changelog/releases/` and generate only `public/changelog.json` using the current schema; local announcement sources under `announcements/` are ignored by Git.
-- Release announcements are grouped by `x.y.0`. Integrate maintenance, optimization and fix outcomes into the existing reader-facing prose; do not append per-version patch sections or copy technical logs. Preserve the ID and publication time, then bump revision once after editing.
-- The website's static assets and API Worker use `wrangler.jsonc` and `wrangler.api.jsonc`, respectively.
-
-## Browser Support
-
-The project primarily targets recent versions of Chrome, Firefox, Microsoft Edge, and mainstream mobile browsers. The build also enables Vite's legacy plugin to emit additional compatibility assets for older browsers.
-
-## License
-
-Unless otherwise stated, original software source code in this repository is available under the [MIT License](./LICENSE). Third-party libraries, fonts, icons, images, articles, and other non-software content remain subject to their respective licenses or rights notices and are not relicensed under MIT. See the [third-party notices](./THIRD_PARTY_NOTICES.md), the [Chinese notices](./THIRD_PARTY_NOTICES.zh-CN.md), and the in-app [`/licenses`](https://komori.cc/licenses) page.
-
-Production builds include runtime dependency license texts, the project license, third-party notices, and supplemental license files under `dist/legal/`.
+[Open an issue](https://github.com/KoMoriSam/MoriWebsite/issues) to report a problem or suggest an improvement. Include the page, steps to reproduce, expected and actual behavior, and browser version. For conversations about the writing, use the comments on the article or novel page.
 
 ## Languages
 
 - [中文](./README.md)
 - [Français](./README_fr.md)
+- [සිංහල](./README_si.md)

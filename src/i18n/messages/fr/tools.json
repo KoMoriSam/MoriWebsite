@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "count": "Outils : {count}",
+    "description": "Choisissez un outil pour ouvrir sa page. Ajoutez son adresse aux favoris ou partagez-la.",
+    "available": "Outils disponibles",
+    "open": "Ouvrir l’outil",
+    "imageDescription": "Convertissez des images par lot dans le navigateur avec compression, redimensionnement, animation et filigranes.",
+    "imageProcessing": "Traitement d’images",
+    "serverLookup": "Consultation de serveurs",
+    "textEncoding": "Conversion d’encodage de texte"
+  }
+}

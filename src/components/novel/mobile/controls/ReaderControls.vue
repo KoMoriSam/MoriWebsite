@@ -260,7 +260,8 @@
         </ReaderDialogHeader>
         <ScrollableContainer class="flex-1">
           <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
-            <Giscus
+            <Thread
+              v-if="commentsStarted"
               :key="giscusKey"
               :repo="GISCUS.novelRepo.name"
               :repo-id="GISCUS.novelRepo.id"
@@ -274,7 +275,6 @@
               input-position="bottom"
               :theme="giscusTheme"
               :lang="commentLocale"
-              loading="lazy"
             />
           </section>
         </ScrollableContainer>
@@ -299,7 +299,7 @@ const { t: translate, commentLocale } = useLocale();
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import Giscus from "@giscus/vue";
+import Thread from "@/components/comments/Thread.vue";
 import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -352,6 +352,7 @@ const tocDialogRef = ref(null);
 const formatDialogRef = ref(null);
 const moreDialogRef = ref(null);
 const commentsDialogRef = ref(null);
+const commentsStarted = ref(false);
 const tapZoneEditorOpen = ref(false);
 const safeTotalPages = computed(() =>
   Math.max(1, Math.trunc(props.totalPages || 1)),
@@ -415,6 +416,7 @@ const openDialog = async (name) => {
   }
 
   activeDialog.value = name;
+  if (name === "comments") commentsStarted.value = true;
   await nextTick();
   const dialog = dialogRefs[name].value;
   if (!dialog || dialog.open) return;

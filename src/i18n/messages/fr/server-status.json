@@ -1,0 +1,33 @@
+{
+  "server": {
+    "lookupTitle": "Consulter l’état du serveur",
+    "addressHint": "Saisissez une adresse de serveur valide, par exemple mc.example.com:25565",
+    "addressRequired": "Saisissez une adresse de serveur",
+    "portHint": "Port par défaut : 25565",
+    "invalidAddress": "Veuillez saisir une adresse de serveur valide !",
+    "placeholder": "Exemple : mc.example.com:25565",
+    "check": "Vérifier",
+    "cardLabel": "Fiche d’informations du serveur",
+    "server": "Serveur",
+    "logo": "Logo du serveur",
+    "offline": "Serveur hors ligne",
+    "status": "État",
+    "offlineHint": "Contactez l’administrateur ou vérifiez l’adresse",
+    "players": "Joueurs en ligne",
+    "busy": "Très fréquenté",
+    "active": "Actif",
+    "quiet": "Calme",
+    "latency": "Latence",
+    "high": "Élevée",
+    "medium": "Moyenne",
+    "low": "Faible",
+    "clipboardEmpty": "Le presse-papiers est vide",
+    "pasteFailed": "Impossible de lire le presse-papiers. Saisissez le texte manuellement.",
+    "noData": "Aucune donnée de serveur reçue",
+    "lookupFailed": "Échec de la consultation. Vérifiez l’adresse.",
+    "offlineOrNotFound": "Hors ligne ou introuvable",
+    "online": "En ligne",
+    "liveLookup": "Consultation en direct",
+    "summary": "État · Joueurs · Latence"
+  }
+}

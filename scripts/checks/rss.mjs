@@ -131,4 +131,4 @@ assert.throws(() =>
   ),
 );
 
-console.log("RSS checks passed.");
+console.log("检查通过：博客 RSS 订阅内容与链接。");

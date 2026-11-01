@@ -18,10 +18,10 @@ await Promise.all(remoteBases.map(async (base) => {
     if (manifest.version !== 1 || !manifest.images) throw new Error("Invalid manifest");
     sources.push({ base, manifest });
   } catch (error) {
-    console.warn(`Image manifest unavailable at ${base}: ${error.message}; using original images.`);
+    console.warn(`图片将使用原图：无法读取 ${base} 的尺寸信息（${error.message}）。`);
   }
 }));
 sources.sort((a, b) => a.base.localeCompare(b.base));
 await mkdir("src/utils/images", { recursive: true });
 await writeFile(path.resolve("src/utils/images/image-manifests.generated.json"), `${JSON.stringify(sources)}\n`);
-console.log(`Generated variants for ${Object.keys(local.images).length} local images.`);
+console.log(`网站图片已准备完成：${Object.keys(local.images).length} 张图片可按屏幕尺寸加载。`);

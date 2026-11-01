@@ -193,7 +193,7 @@
         </button>
       </section>
 
-      <Giscus
+      <Thread
         :key="giscusKey"
         :repo="GISCUS.novelRepo.name"
         :repo-id="GISCUS.novelRepo.id"
@@ -207,7 +207,6 @@
         input-position="bottom"
         :theme="giscusTheme"
         :lang="commentLocale"
-        loading="lazy"
       />
     </template>
 
@@ -246,7 +245,8 @@
       </header>
       <ScrollableContainer class="flex-1">
         <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
-          <Giscus
+          <Thread
+            v-if="chapterCommentsStarted"
             :key="`chapter-comments-dialog-${giscusKey}`"
             :repo="GISCUS.novelRepo.name"
             :repo-id="GISCUS.novelRepo.id"
@@ -260,7 +260,6 @@
             input-position="bottom"
             :theme="giscusTheme"
             :lang="commentLocale"
-            loading="lazy"
           />
         </section>
       </ScrollableContainer>
@@ -291,7 +290,7 @@ import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
 import { useThemeStore } from "@/stores/themeStore";
 
-import Giscus from "@giscus/vue";
+import Thread from "@/components/comments/Thread.vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
 import LoadingPlaceholder from "@/components/reader/feedback/LoadingPlaceholder.vue";
 import {
@@ -422,6 +421,7 @@ const textContext = ref({});
 const activeMobileReaderRef = ref(null);
 const mobileReaderControlsRef = ref(null);
 const chapterCommentsDialogRef = ref(null);
+const chapterCommentsStarted = ref(false);
 const restoreMobileScrollToChapterStart = ref(false);
 let mobileControlOpenTimer = 0;
 const mobileControllerState = ref({
@@ -468,6 +468,7 @@ const openDesktopChapterComments = async () => {
   const dialog = chapterCommentsDialogRef.value;
   if (!dialog || dialog.open) return;
 
+  chapterCommentsStarted.value = true;
   chapterCommentsModal.activate();
   dialog.showModal();
 };

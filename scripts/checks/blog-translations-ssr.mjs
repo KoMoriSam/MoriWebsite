@@ -71,9 +71,10 @@ try {
     const names = {
       'zh-CN': {'zh-CN':'中文（简体）', en:'英语', si:'僧伽罗语'},
       en: {'zh-CN':'Chinese (Simplified)', en:'English', si:'Sinhala'},
-      si: {'zh-CN':'චීන භාෂාව (සරල)', en:'ඉංග්‍රීසි භාෂාව', si:'සිංහල භාෂාව'},
+      fr: {'zh-CN':'Chinois simplifié', en:'Anglais', fr:'Français', si:'Cinghalais'},
+      si: {'zh-CN':'සරල චීන', en:'ඉංග්‍රීසි', si:'සිංහල'},
     };
-    for (const uiLocale of ['zh-CN', 'en', 'si']) {
+    for (const uiLocale of ['zh-CN', 'en', 'fr', 'si']) {
       const locale = createLocaleService();
       await locale.loadRoute({meta:{localeGroups:['blog','reader']}});
       await locale.switchLocale(uiLocale, {save:false});
@@ -92,9 +93,13 @@ try {
           const expected = {
             'zh-CN': `本文暂无${requested}版本，当前显示${current}版本。`,
             en: `This article is not available in ${requested}. Showing ${current} instead.`,
+            fr: `Cet article n’est pas disponible en ${requested}. La version en ${current} est affichée.`,
             si: `මෙම ලිපිය ${requested} භාෂාවෙන් නොමැත. ඒ වෙනුවට ${current} අනුවාදය පෙන්වයි.`,
           }[uiLocale];
           assert.ok(html.includes(expected), `${uiLocale}/${lang}: localize both language names in the notice`);
+          if (uiLocale === 'si' && lang === 'en') {
+            assert.ok(html.includes('මෙම ලිපිය සිංහල භාෂාවෙන් නොමැත. ඒ වෙනුවට ඉංග්‍රීසි අනුවාදය පෙන්වයි.'), 'Sinhala language names fit their grammatical context');
+          }
         }
         if (uiLocale === 'en') assert.ok(html.includes('aria-label="Back to articles"'), 'return control remains available without tags');
         assert.ok(!html.includes('<select'), 'do not offer unavailable article languages');
@@ -111,13 +116,11 @@ try {
         const html = await renderToString(app);
         const notice = html.match(/<p role="note"[^>]*>([\s\S]*?)<\/p>/)?.[1];
         assert.ok(notice?.includes(`href="/blog/sample/${sourceLocale}"`), `${uiLocale}/${sourceLocale}: machine notice links to the source language`);
-        const label = {'zh-CN':'原文', en:'the original', si:'මුල් ලිපිය'}[uiLocale];
+        const label = {'zh-CN':'原文', en:'the original', fr:'le texte original', si:'මුල් ලිපිය'}[uiLocale];
         assert.match(notice, new RegExp(`<a[^>]*>\\s*${label}\\s*</a>`));
         assert.ok(!notice.includes('{original}'));
       }
     }
-    console.log('Fallback notices: all nine UI/content language combinations use localized language names.');
-    console.log('Machine notices: all nine UI/source language combinations link to the original article.');
   }
   if (fs.existsSync('mock/article/index.json')) {
     const { default: Renderer } = await server.ssrLoadModule('/src/components/markdown/Renderer.vue');
@@ -137,7 +140,6 @@ try {
         else assert.deepEqual(ids, originalIds, `${version.path}: mock translations preserve paragraph discussions`);
       }
     }
-    console.log('Mock translations: source and translated Markdown produce identical paragraph discussion IDs.');
   }
-  console.log("Blog SSR: real reader renders Chinese, English and Sinhala bodies, machine notices, canonical, hreflang, JSON-LD, Open Graph and shared paragraph IDs independently of UI locale.");
+  console.log("检查通过：多语言文章页面、回退提示、原文链接与评论定位。");
 } finally { await server.close(); }

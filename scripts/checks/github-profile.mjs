@@ -136,7 +136,7 @@ try {
   assert.equal(response.status, 404);
   assert.equal(entries.has("https://api.komori.cc/__cache/github-profile/v1/komorisam"), false);
 
-  console.log("GitHub profile: authenticated lookup, username cache, ETag/304, stale fallback, cooldown and field filtering passed.");
+  console.log("检查通过：GitHub 资料读取、缓存与请求失败后的恢复。");
 } finally {
   globalThis.fetch = originalFetch;
   globalThis.caches = originalCaches;

@@ -1,19 +1,19 @@
 <p align="center">
   <a href="https://komori.cc/">
-    <img src="https://komori.cc/favicon.webp" alt="Logo KoMoriSam" width="80" height="80">
+    <img src="https://komori.cc/favicon.webp" alt="远方之森" width="80" height="80">
   </a>
 </p>
 
-<h1 align="center">MoriWebsite</h1>
+<h1 align="center">MoriWebsite · 远方之森</h1>
 
 <p align="center">
-  Un jardin numérique personnel « 远方之森 » construit avec Vue 3, Vite SSG, Tailwind CSS et daisyUI, réunissant blog, lecteur de roman, jeux, recherche globale et outils en ligne.
+  Lire des articles et un roman original, traiter des images et des documents cinghalais, et jouer entre amis.
 </p>
 
 <p align="center">
-  <a href="https://komori.cc/">Site en ligne</a>
+  <a href="https://komori.cc/">Visiter le site</a>
   ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite">Code source</a>
+  <a href="https://komori.cc/rss.xml">S'abonner au blog</a>
   ·
   <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Signaler un problème</a>
 </p>
@@ -24,262 +24,126 @@
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
 
----
+## Pour commencer
 
-## Vue d'ensemble
+远方之森 est le site personnel de Mori. Il rassemble des explorations techniques, des essais, des notes de lecture, un roman original, des outils du quotidien et des jeux de société multijoueurs. Il est accessible directement sur ordinateur ou téléphone.
 
-MoriWebsite est le projet de site personnel de KoMoriSam. Son interface statique gère la lecture, les outils et les jeux ; un Worker Cloudflare fournit les annonces, le journal des modifications, les salles de jeu et d'autres API. Les articles et le roman sont conservés dans des dépôts séparés ; le build récupère un instantané du contenu, puis `vite-ssg` génère du HTML indexable pour les pages principales et les articles.
+| Votre objectif | Où aller |
+| --- | --- |
+| Lire des articles | [Blog](https://komori.cc/blog) : rechercher par mot-clé, étiquette et année, puis choisir parmi les versions linguistiques publiées |
+| Suivre le roman | [Vers le lointain /《向远方》](https://komori.cc/novel) : parcourir les volumes et chapitres, reprendre la lecture et régler la mise en page |
+| Convertir des images | [Convertisseur d'images](https://komori.cc/tools/image-converter) : conversion par lot, compression, redimensionnement, filigranes et traitement d'animations |
+| Traiter du texte cinghalais | [Convertisseur d'encodage de polices](https://komori.cc/tools/sinhala-font-converter) : convertir entre Unicode et encodages traditionnels, y compris dans des documents |
+| Consulter un serveur | [État d'un serveur Minecraft](https://komori.cc/tools/server-status) : vérifier sa connexion et ses informations en ligne |
+| Jouer entre amis | [Avalon](https://komori.cc/games/avalon), déduction sociale pour 5 à 10 joueurs ; [Fogport](https://komori.cc/games/fogport), jeu de gestion pour 2 à 4 joueurs |
+| Découvrir le projet de polices | [Kaiming](https://komori.cc/kaiming) : présentation du projet et ressources typographiques |
 
-Le site comprend actuellement :
+## Lecture et discussions
 
-- une page d'accueil responsive avec profil, arrière-plan dynamique et liens de contact
-- un blog filtrable par mot-clé, étiquette et année, avec changement de langue lorsque des traductions existent
-- les volumes, la navigation entre chapitres et un lecteur paginé pour le roman original _Vers le lointain_ (`《向远方》`)
-- une recherche globale couvrant articles, chapitres, versions du site et licences open source
-- des commentaires Giscus au niveau des articles, chapitres et paragraphes
-- des outils de conversion d'images, de conversion entre Unicode et anciens encodages de polices cinghalaises, et de consultation d'un serveur Minecraft
-- des parties d'Avalon en ligne pour 5 à 10 joueurs
-- des interfaces en chinois, anglais et cinghalais, ainsi que les thèmes, la progression de lecture et les préférences locales
-- les annonces, le journal des modifications et un flux RSS du blog
-- une page présentant les licences des dépendances, polices, icônes et autres contenus tiers
+Le blog et le roman proposent un sommaire, un suivi de progression et des réglages de mise en page. Le thème, la position de lecture et les préférences sont conservés dans le navigateur utilisé pour faciliter la reprise. Les articles peuvent contenir du code, des formules, des diagrammes, des notes de bas de page et des annotations ruby ; les blocs de code peuvent être copiés.
 
-Routes de production :
+Appuyez sur `Ctrl + K` (`Cmd + K` sur macOS) pour rechercher des passages d'articles, des chapitres, des notes de version et des mentions de licence. Les filtres par type, étiquette, volume ou année permettent d'accéder directement au contenu pertinent.
 
-```text
-/
-/blog
-/blog/:articleId
-/blog/:articleId/:locale
-/novel
-/novel/:volumeSlug/:chapterSlug?
-/tools
-/tools/image-converter
-/tools/sinhala-font-converter
-/tools/server-status
-/games
-/games/avalon
-/changelog
-/announcements
-/licenses
-/kaiming
-```
+L'interface est disponible en chinois, anglais, français et cinghalais. Les articles proposent leurs traductions disponibles et signalent la langue affichée lorsque la langue choisie n'est pas disponible.
 
-En développement, `/test` permet également de tester les composants. Les URL inconnues utilisent la vue 404 de l'application et le build de production génère un fichier `404.html` adapté à l'hébergement statique.
+Le catalogue du roman est public ; la lecture des chapitres nécessite une connexion GitHub. Giscus permet de discuter des articles, des chapitres et de paragraphes précis. Un compte GitHub est nécessaire pour publier un commentaire. Les discussions du blog et du roman sont hébergées respectivement dans [theWake](https://github.com/KoMoriSam/theWake) et [theHorizon](https://github.com/KoMoriSam/theHorizon).
 
-## Stack technique
+Abonnez-vous au [flux RSS](https://komori.cc/rss.xml) pour suivre le blog. Les évolutions du site sont présentées dans le [journal des modifications](https://komori.cc/changelog) et les [annonces](https://komori.cc/announcements).
 
-- Vue 3, Vue Router, Pinia
-- Vite 6, vite-ssg
-- Tailwind CSS 4, daisyUI 5
-- Pagefind 1.5
-- Unhead, VueUse
-- Markdown-it, MathJax, Mermaid, highlight.js
-- Vue I18n, Cloudflare Workers, Durable Objects, KV, D1
-- Sharp
-- Giscus
+## Outils et jeux
 
-## Fonctionnalités
+**Le convertisseur d'images** traite les images dans le navigateur. Il permet de préparer des lots, réduire la taille des fichiers, uniformiser les dimensions, ajouter des filigranes textuels ou graphiques et traiter des images animées.
 
-### Contenu et lecture
+**Le convertisseur d'encodage de polices cinghalaises** convertit entre Unicode et encodages traditionnels. Vous pouvez coller du texte ou traiter des fichiers DOCX, PPTX et PDF contenant du texte sélectionnable, puis exporter un DOCX ou un PPTX modifiable.
 
-- liste et détail des articles avec filtres combinés par mot-clé, étiquette et année ; les articles peuvent passer entre leurs versions publiées en chinois, anglais et cinghalais
-- volumes, navigation entre chapitres, nombre total de caractères, position de lecture et réglages persistants
-- coloration du code Markdown, notes de bas de page, tâches, formules, encadrés, dialogues personnalisés, attributs et annotations ruby
-- références d'images de style Obsidian, résolution des bannières, chargement différé et copie du code
-- typographie, sommaire, barres latérales et progression adaptés aux ordinateurs et mobiles
-- état de connexion GitHub utilisé pour l'accès à la lecture du roman ; son catalogue reste public
+**Les jeux de société multijoueurs** permettent de rejoindre une même salle avec un code ou un lien d'invitation. Avalon propose la configuration des rôles, les votes d'équipe, les missions et l'historique des parties. Fogport repose sur les industries, les liaisons, les ressources et les ventes ; il s'agit d'une version de test dont le développement est suspendu et certaines fonctions restent inachevées.
 
-### Recherche et découverte
+## Utilisation des contenus
 
-- ouverture de la recherche globale avec `Ctrl/Cmd + K`
-- index Pagefind personnalisé lors du build de production ; en développement, un index local peut être créé à partir des API de contenu
-- recherche dans les sections d'articles, chapitres, versions du site et notices de licence
-- filtres combinables par type de contenu, étiquette ou volume, et année
-- état de recherche synchronisé avec l'URL et liens directs vers les titres ou ancres de licence
+| Contenu | Conditions |
+| --- | --- |
+| Code source logiciel original de ce dépôt | [Licence MIT](./LICENSE) |
+| Articles originaux du blog | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) par défaut ; consulter la licence indiquée sur chaque article |
+| Roman original Vers le lointain /《向远方》 | Tous droits réservés (All Rights Reserved) |
+| Bibliothèques, polices, icônes, images et autres éléments tiers | Leurs licences ou mentions de droits respectives |
+| Commentaires des lecteurs | Les droits restent à leurs auteurs, selon leurs mentions de droits |
 
-### Commentaires et état local
+La fiche d'attribution de chaque article présente son titre, son lien, son auteur, sa date de publication et sa licence pour identifier la source et les conditions applicables. Les licences tierces sont consultables sur la [page des licences](https://komori.cc/licenses), dans les [mentions en anglais](./THIRD_PARTY_NOTICES.md) et les [mentions en chinois](./THIRD_PARTY_NOTICES.zh-CN.md).
 
-- commentaires Giscus pour les articles et chapitres
-- discussions attachées à des paragraphes précis
-- API facultative de comptage groupé des commentaires de paragraphe
-- thème, réglages et position de lecture conservés dans le navigateur
-- migration et nettoyage intégrés des anciens formats de stockage local
+## Exécuter en local
 
-### Outils, jeux et langues
-
-- conversion, compression et redimensionnement d'images par lot dans le navigateur, avec filigranes et prise en charge des animations
-- conversion entre Unicode et anciens encodages de polices cinghalaises ; le mode document traite DOCX, PPTX et les PDF à texte sélectionnable, puis exporte en DOCX ou PPTX modifiable
-- salles d'Avalon accessibles par code ou lien d'invitation, avec configuration des rôles, historique et reconnexion
-- textes de l'interface en chinois, anglais et cinghalais chargés selon la page, avec préférence linguistique locale
-- variantes WebP des images locales et, si disponibles, manifestes de variantes des sources du blog et du roman
-
-### SSG, SEO et données de licence
-
-- récupération des articles, du catalogue du roman et du journal avant le build pour créer un instantané SSG commun
-- routes statiques pour les articles avec des données identiques lors du rendu serveur et de l'hydratation
-- liens canonical, métadonnées Open Graph, Twitter Card et JSON-LD générés avec Unhead
-- collecte des dépendances de production et des licences complémentaires pour la page intégrée et `dist/legal/`
-- génération de l'index Pagefind et d'une page 404 adaptée à l'hébergement statique après le rendu
-- génération du flux RSS du blog ; annonces publiées séparément dans KV et journal publié par les balises de version
-- configuration de `dist/` comme répertoire de ressources statiques Cloudflare dans `wrangler.jsonc`
-
-## Démarrage rapide
-
-### Prérequis
-
-- Node.js 24.15 ou version ultérieure de la série 24.x, ou version 26 et ultérieure
-- pnpm (le flux de publication utilise la version 12.3.4)
-- des sources de blog et de roman accessibles, ou des copies locales dans `mock/`
-
-Le dépôt ignore `.env.development`, `.env.production` et `mock/`. Après un nouveau clonage, créez vos propres fichiers d'environnement, puis synchronisez les copies locales du contenu ou utilisez des sources distantes accessibles.
-
-### Installer les dépendances
+Le projet utilise Vue 3, Vite SSG, Tailwind CSS, daisyUI et Pagefind. Les API serveur fonctionnent sur Cloudflare Workers. Utilisez Node.js 24.15 ou une version ultérieure de la série 24.x, ou Node.js 26 et ultérieur, avec pnpm 12.3.4.
 
 ```bash
+git clone https://github.com/KoMoriSam/MoriWebsite.git
+cd MoriWebsite
 pnpm install
 ```
 
-### Lancer le serveur de développement
+Créez `.env.development` à la racine du projet pour définir les adresses des contenus et des thèmes de commentaires :
+
+```dotenv
+VITE_BLOG_RAW=https://raw.komori.cc/post
+VITE_NOVEL_RAW=https://raw.komori.cc/novel
+VITE_GISCUS_CSS_RAW=https://raw.komori.cc/giscus
+```
 
 ```bash
 pnpm dev
 ```
 
-`pnpm dev` génère d’abord les variantes d'images locales, les données du journal et celles des licences. Vite écoute par défaut sur `0.0.0.0`. Pour tester l'API des salles de jeu en local, lancez `pnpm dev games` dans un autre terminal.
+Ouvrez l'adresse affichée dans le terminal. Les adresses de contenu peuvent aussi pointer vers vos propres copies locales ; `mock/` et les fichiers `.env*` sont ignorés par Git. Pour développer les salles multijoueurs, lancez `pnpm dev games` dans un autre terminal.
 
-### Construire pour la production
+Configurez les autres services selon vos besoins :
 
-```bash
-pnpm build
-```
+| Variable d'environnement | Utilisation |
+| --- | --- |
+| `VITE_SERVER_ADDRESS` | Serveur Minecraft interrogé par défaut |
+| `VITE_RANDOM_HERO_API` | Service d'arrière-plan aléatoire de l'accueil |
+| `VITE_COMMENT_COUNTS_API` | Nombre de commentaires par paragraphe |
+| `VITE_GAMES_API` | Service des salles multijoueurs |
+| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Services du journal et des annonces |
+| `VITE_ANALYTICS_API` | Service de statistiques de fréquentation |
 
-Le flux de build complet :
+Les variables `VITE_` sont intégrées au code client et doivent contenir uniquement une configuration publique. Conservez les jetons des dépôts privés et les identifiants de déploiement dans les Secrets de l'environnement de build.
 
-1. génère les variantes des images locales et lit les manifestes d'images disponibles pour le blog et le roman ;
-2. génère le journal, l'instantané SSG du contenu et le flux RSS du blog ;
-3. collecte les dépendances et licences complémentaires ;
-4. prérend le site et génère `404.html` ;
-5. crée l'index Pagefind pour le blog, le roman, le journal et les licences, puis copie les fichiers de licence dans `dist/legal/`.
+## Construire et publier
 
-Le build récupère les dépôts privés ObsidianVault et MyWritingVault, utilise leurs exporteurs existants et génère le SSG, le RSS et les index depuis le même instantané local, sans lire le site de contenu en production.
+Workers Builds construit le site et les contenus ensemble, puis Workers Static Assets les héberge. Un build de production complet nécessite l'accès aux deux dépôts privés de contenu, ou des Vaults locaux indiqués par `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`. Les exporteurs travaillent sur des copies temporaires ; le site, le RSS et l'index de recherche utilisent le même instantané de contenu.
 
-### Prévisualiser le build
+| Source ou ressource | Publication |
+| --- | --- |
+| Code du site | Après validation, une balise `v<version>` avance `production` et déclenche Workers Builds ; les commits ordinaires de `main` sont mis en ligne lors d'une version |
+| Blog et roman | Les dépôts privés `ObsidianVault` et `MyWritingVault` conservent les sources ; chacun utilise son `WORKERS_BUILD_HOOK` pour reconstruire `production` après une mise à jour |
+| Polices Kaiming | Les ressources proviennent d'une GitHub Release de `KoMoriSam/Kaiming` et sont vérifiées avant publication ; une version des polices déclenche le build par son Hook |
+| Ressources Giscus | Thèmes et animation de chargement sont maintenus dans `giscus/` et publiés séparément depuis un terminal local avec `pnpm run deploy giscus` |
+| Images et autres ressources de contenu | Publiées avec le Worker de contenu ; R2 est facultatif et actuellement désactivé |
 
-```bash
-pnpm preview
-```
+Les ressources utilisent `raw.komori.cc` : `/post` pour le blog, `/novel` pour le roman, `/giscus` pour les thèmes de commentaires, `/kaiming` pour les polices et `/giscus/images/spin.gif` pour l'animation de chargement. `theWake` et `theHorizon` hébergent les discussions ; les sources privées fournissent les textes publiés.
 
-## Variables d'environnement
+Workers Builds surveille `production`, exécute `pnpm build`, puis déploie avec `pnpm run deploy website`. Son Secret de build `CONTENT_GITHUB_TOKEN` doit disposer d'un accès Contents en lecture seule aux deux dépôts privés. Les Hooks de contenu ciblent également `production` : leurs mises à jour utilisent donc le code du site déjà publié. GitHub Actions assure la validation des versions, le déclenchement des builds et les autres automatisations.
 
-Créez `.env.development` et `.env.production` à la racine du projet, puis renseignez les valeurs côté client nécessaires à chaque environnement :
+| Commande | Résultat |
+| --- | --- |
+| `pnpm build` | Générer le site dans `dist/`, les ressources dans `.output/content/`, le RSS, l'index de recherche et les licences |
+| `pnpm preview` | Prévisualiser le site construit pour la production |
+| `pnpm check <cible>` | Exécuter les vérifications ciblées ; sans cible, afficher les options |
+| `pnpm generate <cible>` | Générer les ressources choisies ; sans cible, afficher les options |
+| `pnpm release prepare <version>` | Préparer le numéro de version, les notes et le brouillon d'annonce |
+| `pnpm release verify <version>` | Vérifier la cohérence des versions du paquet, des README et du journal |
+| `pnpm run deploy <cible>` | Publier le site, les contenus, l'API ou Giscus ; sans cible, afficher les options |
+| `pnpm release announcement publish` | Publier les annonces séparément |
 
-```bash
-VITE_BLOG_RAW=
-VITE_NOVEL_RAW=
-VITE_SERVER_ADDRESS=
-VITE_RANDOM_HERO_API=
-VITE_COMMENT_COUNTS_API=
-VITE_GISCUS_CSS_RAW=
-VITE_GAMES_API=
-VITE_CHANGELOG_API=
-VITE_ANNOUNCEMENTS_API=
-VITE_ANALYTICS_API=
-```
+Les annonces sont regroupées sous `x.y.0`. Maintenance, optimisations et corrections sont intégrées à la même annonce pour présenter l'expérience complète d'une version en un seul endroit. Le front matter des articles peut préciser une `license` ; la valeur par défaut est `CC BY-NC-SA 4.0`, et les traductions héritent de la licence originale sauf indication contraire.
 
-| Variable                  | Utilisation                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `VITE_BLOG_RAW`           | URL de base du fichier `index.json`, du Markdown et des images du blog ; requise pour le build de production |
-| `VITE_NOVEL_RAW`          | URL de base du fichier `index.json` et des chapitres du roman ; requise pour le build de production          |
-| `VITE_SERVER_ADDRESS`     | Serveur Minecraft interrogé par défaut sur la page des outils                                                |
-| `VITE_RANDOM_HERO_API`    | Endpoint de l'arrière-plan aléatoire de l'accueil                                                            |
-| `VITE_COMMENT_COUNTS_API` | Endpoint groupé facultatif pour le nombre de commentaires de paragraphe                                      |
-| `VITE_GISCUS_CSS_RAW`     | URL de base des thèmes Giscus personnalisés                                                                  |
-| `VITE_GAMES_API`          | URL facultative de l'API des salles de jeu ; une valeur par défaut existe en production                      |
-| `VITE_CHANGELOG_API`      | URL facultative de l'API du journal ; une valeur par défaut existe en production                              |
-| `VITE_ANNOUNCEMENTS_API`  | URL facultative de l'API des annonces ; une valeur par défaut existe en production                            |
-| `VITE_ANALYTICS_API`      | URL facultative de l'API de statistiques ; une valeur par défaut existe en production                         |
+Les pages se trouvent dans `src/views/`, leurs composants et leur logique dans `src/components/`, `src/composables/` et `src/utils/`. Les commandes de build et de publication se trouvent dans `scripts/`, les services Cloudflare dans `workers/`.
 
-Toutes ces variables utilisent le préfixe `VITE_` et sont exposées au code client. N'y placez aucun secret ni identifiant privé. `scripts/build/routes.mjs` et `scripts/build/pagefind.mjs` lisent tous deux `.env.production`.
+## Retours et participation
 
-Configurez CONTENT_GITHUB_TOKEN comme secret de build Workers Builds avec un accès Contents en lecture seule aux deux dépôts privés, sans préfixe VITE_. Utilisez production comme branche de production et désactivez les builds des autres branches. Seul le workflow des balises de version avance cette branche ; les push ordinaires sur main ne déploient pas le code du site. Les droits de déploiement doivent couvrir les deux Workers et les routes raw.komori.cc. Fixez Node.js 24.15.0 et pnpm 12.3.4. En local, CONTENT_BLOG_DIR et CONTENT_NOVEL_DIR peuvent désigner les deux Vaults ; les exporteurs travaillent uniquement dans des copies temporaires.
-
-## Scripts disponibles
-
-| Commande                         | Utilisation                                                           |
-| -------------------------------- | --------------------------------------------------------------------- |
-| `pnpm dev`                       | Générer les données de licence et lancer le serveur de développement  |
-| `pnpm build`                     | Générer le site SSG, l'index de recherche et les licences distribuées |
-| `pnpm preview`                   | Prévisualiser localement `dist/`                                      |
-| `pnpm check <cible>` | Exécuter les vérifications ciblées ; sans cible, afficher la liste |
-| `pnpm generate <cible>` | Générer les ressources choisies ; sans cible, afficher la liste |
-| `pnpm run deploy <cible>` | Publier le site et le contenu ensemble, ou l’API/Giscus séparément |
-| `pnpm release prepare <version>` | Préparer le journal, les instantanés et l'annonce                     |
-| `pnpm dev games`            | Démarrer l'API locale des salles de jeu                              |
-| `pnpm release announcement publish`     | Publier séparément les annonces dans KV                              |
-
-Workers Builds surveille MoriWebsite/production, exécute `pnpm build`, puis `pnpm run deploy website` pour publier successivement les Workers Static Assets du contenu et du site. Les chemins raw.komori.cc/post, /novel, /giscus, /kaiming et /images/spin.gif sont conservés. Les polices web, le CSS et la licence Kaiming proviennent de sa dernière GitHub Release, avec vérification SHA-256 ; CONTENT_KAIMING_RELEASE permet de fixer une version. Chaque dépôt privé déclenche le build avec le secret WORKERS_BUILD_HOOK ; les Actions du roman enregistrent d’abord les métadonnées stables, celles du blog déclenchent uniquement le build. Kaiming utilise son propre WORKERS_BUILD_HOOK après publication d’une version des polices. Les balises de version du site vérifient la publication et publient le journal, puis avancent production au commit exact de la balise, sans réécriture. Tous les hooks de contenu ciblent production : les mises à jour reconstruisent le code publié sans intégrer les commits ultérieurs de main. Giscus reste envoyé manuellement avec `pnpm run deploy giscus`. R2 est désactivé et les images restent dans les ressources statiques. Les annonces se gèrent séparément avec `pnpm release announcement publish`.
-
-## Structure du projet
-
-```text
-src/
-  assets/          # styles globaux, thèmes, lecture et polices
-  components/
-    novel/         # catalogue, informations de chapitre et lecteur
-    markdown/      # rendu Markdown et extensions
-    games/         # salles de jeu, Avalon et interface de Fogport
-    tools/         # composants des outils
-    layout/        # navigation et structure des pages
-  games/           # catalogue et routes des jeux
-  i18n/            # textes des trois langues chargés par page
-  composables/     # logique de lecture, de jeu et de compte
-  services/        # contenu, recherche, annonces et requêtes API
-  stores/          # thème, roman et état de lecture
-  router/          # routes et données SSG/licences générées au build
-  utils/           # extensions Markdown, stockage, ressources et mises à jour
-  views/           # pages associées aux routes
-
-scripts/
-  build/           # ressources, prérendu, index de recherche et licences
-  checks/          # vérifications de régression ciblées
-  release/         # versions, journaux et annonces
-  sinhala/         # outils de polices, glyphes et lexiques avec les sources
-  lib/             # logique partagée des scripts
-  run.mjs          # point d’entrée commun des commandes
-
-workers/           # API Cloudflare, salles de jeu et routage du contenu
-giscus/            # styles maintenus et envoyés séparément
-
-licenses/          # licences complémentaires des polices, icônes et autres ressources
-mock/              # copies locales ignorées par Git du blog et du roman
-public/
-  assets/          # images, polices et icônes
-  archive/         # anciennes pages statiques archivées
-  changelog.json   # données au format actuel pour le secours de l'API et le prérendu
-```
-
-## Notes sur le contenu et le build
-
-- Le blog exporte uniquement les notes public/publish et leurs ressources depuis ObsidianVault/notes. Le roman publie uniquement MyWritingVault/public/, en conservant les chemins, UUID et codes de route. Les miroirs publics ne servent plus à publier le contenu ; Giscus reste indépendant.
-- `src/router/ssg-data.generated.js` et `src/router/license-data.generated.js` sont générés automatiquement, ignorés par Git et ne doivent pas être modifiés manuellement.
-- La configuration publique des dépôts et catégories Giscus est centralisée dans `src/constants/config.js`.
-- La logique du blog, du roman et de la recherche globale se trouve dans `src/services/api-articles.js`, `src/services/api-chapters.js` et `src/services/search-content.js`.
-- Les extensions Markdown se trouvent dans `src/utils/markdown/` ; `src/utils/resolve-article-assets.js` résout les images et bannières des articles.
-- Les sources du journal se trouvent dans `changelog/releases/` et génèrent uniquement `public/changelog.json` au format actuel ; les annonces locales dans `announcements/` sont ignorées par Git.
-- Les annonces sont regroupées par `x.y.0`. Intégrer les résultats des maintenances, optimisations et corrections au texte existant destiné aux lecteurs, sans ajouter de sections par correctif ni copier les journaux techniques. Conserver l’ID et la date de publication, puis augmenter revision une fois le texte révisé.
-- Les ressources statiques du site et l'API Worker sont configurés respectivement dans `wrangler.jsonc` et `wrangler.api.jsonc`.
-
-## Compatibilité
-
-Le projet vise principalement les versions récentes de Chrome, Firefox, Microsoft Edge et des navigateurs mobiles courants. Le build active également le plugin legacy de Vite pour produire des ressources de compatibilité supplémentaires destinées aux anciens navigateurs.
-
-## Licence
-
-Sauf indication contraire, le code source logiciel original de ce dépôt est distribué sous [licence MIT](./LICENSE). Les bibliothèques, polices, icônes, images, articles et autres contenus non logiciels de tiers restent soumis à leurs licences ou mentions de droits respectives et ne sont pas placés sous licence MIT. Consultez les [mentions relatives aux tiers](./THIRD_PARTY_NOTICES.md), leur [version chinoise](./THIRD_PARTY_NOTICES.zh-CN.md) et la page intégrée [`/licenses`](https://komori.cc/licenses).
-
-Les builds de production incluent les licences des dépendances d'exécution, la licence du projet, les mentions tierces et les licences complémentaires dans `dist/legal/`.
+[Ouvrez une issue](https://github.com/KoMoriSam/MoriWebsite/issues) pour signaler un problème ou proposer une amélioration. Précisez la page, les étapes, le résultat attendu, le comportement observé et la version du navigateur. Pour échanger sur les textes, utilisez les commentaires de l'article ou du roman.
 
 ## Langues
 
 - [中文](./README.md)
 - [English](./README_en.md)
+- [සිංහල](./README_si.md)

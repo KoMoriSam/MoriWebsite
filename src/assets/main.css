@@ -75,7 +75,7 @@
     --navbar-scroll-offset: calc(var(--navbar-height) + 2rem);
   }
 
-  :where(html[lang="en"], html[lang="si"]) .btn {
+  :where(html[lang="en"], html[lang="fr"], html[lang="si"]) .btn {
     white-space: normal;
   }
 

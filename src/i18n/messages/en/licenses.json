@@ -16,6 +16,7 @@
     "viewSource": "View source text",
     "dependenciesCount": "{count} dependency version | {count} dependency versions",
     "additionalLicensesCount": "{count} additional license | {count} additional licenses",
-    "missingLicensesCount": "{count} package without a top-level license file | {count} packages without a top-level license file"
+    "missingLicensesCount": "{count} package without a top-level license file | {count} packages without a top-level license file",
+    "contentRights": "Blog and novel content rights"
   }
 }

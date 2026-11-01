@@ -145,6 +145,17 @@ try {
   assert.equal(router.currentRoute.value.path, '/blog/english-only/en');
   await resolveLatest('en/english-only.md', 'English after UI switch');
   assert.equal(state.props.content, 'English after UI switch');
+  await locale.switchLocale('fr', {save:false}); await flush();
+  assert.equal(router.currentRoute.value.path, '/blog/english-only/en', 'French UI retains the available English version');
+  assert.equal(state.props.content, 'English after UI switch');
+  await router.push('/blog/sample?reader=1#section'); await flush();
+  assert.equal(router.currentRoute.value.fullPath, '/blog/sample/en?reader=1#section', 'French automatic entry prefers English over Chinese');
+  await resolveLatest('en/sample.md', 'English for French UI');
+  assert.equal(state.props.article.lang, 'en');
+  assert.equal(state.props.content, 'English for French UI');
+  await router.push('/blog/other'); await flush();
+  assert.equal(router.currentRoute.value.path, '/blog/other/zh-CN', 'French uses Chinese when there is no English version');
+  await resolveLatest('other.md', 'Chinese fallback for French UI');
   app.unmount(); app = null;
   const originalFetch = globalThis.fetch;
   const requests = [];
@@ -205,7 +216,7 @@ try {
   assert.equal(restoredLocale.locale.value, 'en');
   assert.equal(freshRouter.currentRoute.value.path, '/blog/sample/zh-CN');
   app.unmount(); app = null;
-  console.log("Blog runtime: explicit URL restoration, site/article language synchronization, legacy replace, async races, missing versions, source fallback and hash navigation passed.");
+  console.log("检查通过：文章语言切换、阅读位置、内容加载与导航。");
 } finally {
   app?.unmount(); await server.close(); delete globalThis.__blogTranslationCheck;
 }

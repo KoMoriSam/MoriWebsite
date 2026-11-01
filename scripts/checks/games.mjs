@@ -1393,9 +1393,7 @@ try {
     fogRecovered.events.state.players.every((p) => !p.ready),
     true,
   );
-  console.log(
-    `Games: ${checks} integration assertions passed, including SQLite persistence, hibernation, WebSockets, seat recovery, duplicate commands, host transfer, expiry, CORS and rate limits.`,
-  );
+  console.log(`检查通过：多人对局、房间连接与数据保存，共 ${checks} 项。`);
 } finally {
   for (const ws of sockets) {
     try {

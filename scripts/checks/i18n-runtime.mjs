@@ -303,5 +303,5 @@ try {
     else delete globalThis.window;
   }
   mainApp.unmount();
-  console.log(`i18n runtime: instance isolation, lazy loading, preferences, denied storage, auxiliary app disposal, preserved input, local notes isolation/restore/reset, card click/drag/mode/reset checks, and ${cases.length} bilingual renders passed.`);
+  console.log(`检查通过：语言偏好、输入保留与交互状态，共 ${cases.length} 个组件场景。`);
 } finally { await server.close(); }

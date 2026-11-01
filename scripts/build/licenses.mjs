@@ -237,9 +237,7 @@ const main = async () => {
     await writeDistributionFiles({ dependencyNotices, supplementalLicenses });
   }
 
-  console.log(
-    `Collected license data for ${dependencies.length} installed runtime dependency versions.`,
-  );
+  console.log(sourceOnly ? `站内许可信息已生成：${dependencies.length} 项依赖版本。` : distributionOnly ? "发布许可文件已准备完成：dist/legal/。" : `许可信息与发布文件已准备完成：${dependencies.length} 项依赖版本，文件位于 dist/legal/。`);
 };
 
 await main();

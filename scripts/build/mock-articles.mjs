@@ -52,5 +52,5 @@ if (fs.existsSync(root)) {
   index.sort((a, b) => Date.parse(b.date) - Date.parse(a.date) || b.id.localeCompare(a.id));
   fs.writeFileSync(indexPath, `${JSON.stringify(index, null, 2)}\n`);
   const translations = index.reduce((count, article) => count + Object.keys(article.translations).length, 0);
-  console.log(`Mock blog index: ${index.length} articles, ${translations} translations`);
+  console.log(`本地博客目录已更新：${index.length} 篇文章、${translations} 份译文。`);
 }

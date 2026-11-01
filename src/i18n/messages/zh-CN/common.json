@@ -71,8 +71,8 @@
     "compactDaLabel": "紧凑“ද”形式"
   },
   "licenses": {
-    "title": "许可证",
-    "statement": "开源许可与第三方声明",
+    "title": "开源许可与第三方声明",
+    "projectLicense": "项目许可证",
     "viewEnglishSource": "查看英文原文"
   },
   "server": {
@@ -386,6 +386,17 @@
       "results": "{count} 条结果",
       "frames": "{count} 帧",
       "aboutCharacters": "约 {count} 字"
+    },
+    "contentRights": {
+      "author": "作者",
+      "publishedAt": "发布日期",
+      "license": "协议",
+      "blog": "原创博客内容依照本协议授权，使用时请遵循协议条款。",
+      "novel": "小说原创内容的权利由作者保留。",
+      "reserved": "文章原创内容的权利由作者保留。",
+      "publicDomain": "原创内容采用 CC0 1.0 公共领域贡献声明，具体条件以声明正文为准。",
+      "custom": "文章的具体使用条件以作者对该协议的声明为准。",
+      "thirdParty": "第三方素材遵循各自的权利声明。"
     }
   },
   "markdown": {
@@ -451,7 +462,9 @@
   },
   "reader": {
     "comments": {
-      "reply": "回复"
+      "reply": "回复",
+      "loading": "评论加载中…",
+      "slow": "评论加载较慢，请稍候或重试。"
     },
     "contextMenu": {
       "image": "图片"

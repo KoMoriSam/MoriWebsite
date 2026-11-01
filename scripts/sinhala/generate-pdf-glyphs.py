@@ -96,10 +96,10 @@ def font_mappings(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("fonts", nargs="*", type=Path)
+    parser = argparse.ArgumentParser(description="生成用于恢复 PDF 僧伽罗语文字的字形映射。")
+    parser.add_argument("fonts", nargs="*", type=Path, help="用于识别 PDF 字形的字体文件；默认使用 Windows 僧伽罗字体。")
     parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[2] /
-                        "src/utils/sinhala/pdf-unicode-glyphs.generated.js")
+                        "src/utils/sinhala/pdf-unicode-glyphs.generated.js", help="生成的文字识别映射保存位置。")
     args = parser.parse_args()
     directory = Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts"
     fonts = args.fonts or [directory / name for name in (
@@ -121,7 +121,7 @@ def main():
         "export default " + json.dumps(mappings, ensure_ascii=False, indent=2) + ";\n",
         encoding="utf-8",
     )
-    print(f"Generated {len(mappings)} glyph mappings; omitted {len(ambiguous)} ambiguous fingerprints.")
+    print(f"PDF 文字识别映射已生成：{len(mappings)} 项。另有 {len(ambiguous)} 项无法唯一识别，已跳过。")
 
 
 if __name__ == "__main__":

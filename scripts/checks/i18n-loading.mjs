@@ -3,13 +3,14 @@ import path from 'node:path';
 import { createServer } from 'vite';
 import { createSSRApp, h } from 'vue';
 import { renderToString } from '@vue/server-renderer';
+import { LOCALES } from '../../src/i18n/locale.js';
 
 const server = await createServer({
   configFile: false,
   cacheDir: 'node_modules/.cache/i18n-loading',
   optimizeDeps: { noDiscovery: true, include: [] },
   resolve: { alias: { '@': path.resolve('src') } },
-  server: { middlewareMode: true, watch: null },
+  server: { middlewareMode: true, watch: null, hmr: false },
   appType: 'custom',
 });
 
@@ -58,6 +59,36 @@ try {
   await service.loadRoute(home);
   assert.equal(calls.length, count, 'Revisiting a page uses cached messages');
 
+  // Cold non-Chinese sessions must preload English, including missing groups.
+  const chineseHome = await messageLoaders[id('zh-CN', 'home')]();
+  for (const code of ['fr', 'si']) {
+    const fallbackCalls = [];
+    const fallbackLoaders = Object.fromEntries(Object.entries(messageLoaders).map(([key, loader]) => [key, async () => {
+      fallbackCalls.push(key);
+      const messages = structuredClone(await loader());
+      if ([id(code, 'home'), id('en', 'home')].includes(key)) {
+        delete messages.home.hero.explore;
+        if (key === id(code, 'home')) delete messages.home.hero.read;
+      }
+      return messages;
+    }]));
+    delete fallbackLoaders[id(code, 'tools')];
+    const fallback = createLocaleService({ loaders: fallbackLoaders });
+    fallback.i18n.global.missingWarn = false;
+    fallback.i18n.global.fallbackWarn = false;
+    await fallback.loadRoute(home);
+    await fallback.switchLocale(code, { save: false });
+    assert.equal(fallback.locale.value, code);
+    assert.equal(fallback.t('home.hero.read'), 'Read the blog', `${code}: prefer English for a missing key`);
+    assert.equal(fallback.text('阅读博客'), 'Read the blog', `${code}: source-text lookups share the fallback`);
+    assert.equal(fallback.t('home.hero.explore'), chineseHome.home.hero.explore, `${code}: Chinese is the final fallback`);
+    assert.equal(fallback.t('tools.count', { count: 2 }), 'Tools: 2', `${code}: missing groups use English`);
+    assert.equal(fallbackCalls.filter(key => key === id('en', 'home')).length, 1, `${code}: English loads once without an earlier English session`);
+    await fallback.switchLocale('zh-CN', { save: false });
+    assert.equal(fallback.t('home.hero.read'), chineseHome.home.hero.read, 'Chinese stays preferred after visiting another language');
+    fallback.i18n.dispose();
+  }
+
   // Each SSG app receives its own catalog, including its source-text index.
   const isolated = createLocaleService();
   assert.equal(isolated.locale.value, 'zh-CN');
@@ -72,6 +103,16 @@ try {
   assert.ok((await render()).includes('阅读博客'));
   await isolated.switchLocale('en', { save: false });
   assert.ok((await render()).includes('Read the blog'));
+  await isolated.switchLocale('fr-CA', { save: false });
+  assert.equal(isolated.locale.value, 'fr');
+  assert.equal(isolated.commentLocale.value, 'fr');
+  assert.ok((await render()).includes('Lire le blog'));
+  assert.equal(isolated.i18n.global.te('image.outputFormat', 'fr'), false, 'French tool messages stay lazy');
+  await isolated.loadRoute(image);
+  assert.equal(isolated.t('image.outputFormat'), 'Format de sortie');
+  assert.equal(isolated.number(1234.5), new Intl.NumberFormat('fr').format(1234.5));
+  await isolated.loadRoute(router.resolve('/licenses'));
+  assert.equal(isolated.t('licenses.noticeLanguage'), 'Langue des mentions');
 
   // A switch in flight must also load the page selected during that switch.
   let releaseHome;
@@ -103,7 +144,7 @@ try {
   for (const route of routes.filter(route => !route.redirect)) {
     assert.ok(route.meta.localeGroups?.length, `${route.path}: missing locale groups`);
     for (const group of route.meta.localeGroups) {
-      for (const code of ['zh-CN', 'en', 'si']) {
+      for (const { code } of LOCALES) {
         assert.ok(messageLoaders[id(code, group)], `${route.path}: missing ${code}/${group}`);
       }
     }
@@ -112,7 +153,7 @@ try {
   service.i18n.dispose();
   isolated.i18n.dispose();
   racing.i18n.dispose();
-  console.log('i18n loading: page isolation, cache, request deduplication, retry, navigation/switch races, SSG isolation, and bilingual SSR passed.');
+  console.log("检查通过：按页加载语言、英文优先回退、语言切换与显示格式。");
 } finally {
   await server.close();
 }

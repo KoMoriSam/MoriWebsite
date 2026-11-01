@@ -219,9 +219,7 @@ try {
       tables: [],
     });
   }
-  console.log(
-    "Room dissolution: host permissions, stale commands, lobby/playing/finished, storage/alarm deletion, closed sockets, expired credentials and recreation passed.",
-  );
+  console.log("检查通过：房间关闭、玩家退出与席位清理。");
 } finally {
   for (const ws of sockets) {
     try {

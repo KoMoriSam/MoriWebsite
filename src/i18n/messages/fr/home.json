@@ -1,0 +1,141 @@
+{
+  "home": {
+    "navigation": {
+      "label": "Sections de la page",
+      "about": "À propos de moi"
+    },
+    "hero": {
+      "title": "远方之森",
+      "description": "Écrire quelques mots, créer quelques outils et réinventer ce qui éveille ma curiosité.",
+      "read": "Lire le blog",
+      "explore": "Se promener",
+      "note": "Toujours en train de bricoler.",
+      "photos": {
+        "ginkgo": {
+          "location": "Kunming, Yunnan",
+          "description": "Feuilles dorées de ginkgo le long de la route Qinglai"
+        },
+        "bellTower": {
+          "location": "Kunming, Yunnan",
+          "description": "Le clocher de l’université du Yunnan et ses lavandes sous un ciel bleu"
+        },
+        "pavilion": {
+          "location": "Kunming, Yunnan",
+          "description": "Les avant-toits d’un pavillon parmi les feuilles vertes de Yunshan"
+        },
+        "observatory": {
+          "location": "Kunming, Yunnan",
+          "description": "Le radiotélescope de l’observatoire de Yunshan"
+        },
+        "lakeSide": {
+          "location": "Kunming, Yunnan",
+          "description": "Le lac Ze et ses marches de pierre au soleil"
+        },
+        "playgroundLawn": {
+          "location": "Kunming, Yunnan",
+          "description": "La pelouse du stade Chengdong de l’université du Yunnan"
+        },
+        "universityRoad": {
+          "location": "Kunming, Yunnan",
+          "description": "Le soleil à travers les arbres de la route Qinglai Ouest"
+        },
+        "zhongshanPark": {
+          "location": "Dongcheng, Pékin",
+          "description": "Les rives et leurs reflets dans le parc Zhongshan"
+        },
+        "beijingHutong": {
+          "location": "Dongcheng, Pékin",
+          "description": "La vie quotidienne dans un hutong de Pékin"
+        },
+        "bfsuLibrary": {
+          "location": "Haidian, Pékin",
+          "description": "Le mur multilingue de la bibliothèque de l’Université des langues étrangères de Pékin"
+        },
+        "beihaiBoating": {
+          "location": "Xicheng, Pékin",
+          "description": "Une barque sur les eaux scintillantes du parc Beihai"
+        },
+        "jingshanPavilion": {
+          "location": "Xicheng, Pékin",
+          "description": "Les avant-toits d’un pavillon parmi les arbres du parc Jingshan"
+        },
+        "tiananmenSlogans": {
+          "location": "Dongcheng, Pékin",
+          "description": "La porte Tian’anmen et ses slogans à l’aube"
+        },
+        "beihaiPagoda": {
+          "location": "Xicheng, Pékin",
+          "description": "La pagode blanche du parc Beihai encadrée de branches de saule"
+        }
+      },
+      "time": {
+        "now": "Maintenant",
+        "today": "Aujourd’hui",
+        "yesterday": "Hier",
+        "tomorrow": "Demain"
+      },
+      "characterAlt": "Personnage de KoMori en pixel art",
+      "highlights": "Commencer l’exploration",
+      "latest": "Dernières publications"
+    },
+    "writing": {
+      "allArticles": "Tous les articles",
+      "rss": "S’abonner au flux RSS",
+      "novelTitle": "向远方",
+      "openNovel": "Ouvrir ce livre",
+      "title": "Publications récentes",
+      "refresh": "Actualiser l’index du blog et les chapitres du roman",
+      "refreshing": "Actualisation des publications récentes",
+      "refreshed": "Publications récentes actualisées.",
+      "refreshFailed": "Certains contenus n’ont pas pu être actualisés. Réessayez plus tard.",
+      "intro": "Des découvertes en technologie et en langues, et quelques réflexions du quotidien.",
+      "read": "Continuer la lecture",
+      "loading": "Chargement des publications récentes",
+      "emptyTitle": "Commencez par un article.",
+      "novelDescription": "De son enfance dans la cour familiale à ses études loin de chez lui, Fang Yuanluo découvre le sens du foyer et des horizons lointains, entre rencontres et séparations."
+    },
+    "workshop": {
+      "title": "Mes petits bricolages",
+      "allTools": "Tous les outils",
+      "viewMore": "Voir plus"
+    },
+    "games": {
+      "intro": "Tout le monde est là ? Commençons une partie.",
+      "allGames": "Tous les jeux"
+    },
+    "about": {
+      "title": "Bonjour, moi c’est {name}.",
+      "intro": "On m’appelle aussi විශ්ව (Wishwa). J’aime les mots, les langues et donner vie aux idées.",
+      "note": "Un développeur indépendant qui aime bricoler toutes sortes de choses. Enfin, je crois.",
+      "contact": "Me retrouver ailleurs",
+      "wechatQr": "Code QR de contact WeChat",
+      "source": "Explorer le code du site",
+      "colophon": "Écrire un peu, créer un peu. Merci de vous être promené dans cette forêt."
+    },
+    "sourcePixabay": "Source · Pixabay",
+    "contactHint": "Je suis rarement sur WeChat ou QQ, miaou. Je ne promets pas de vous ajouter en retour.",
+    "weibo": "Weibo",
+    "wechat": "WeChat",
+    "greeting": {
+      "default": "Bonjour !",
+      "welcome": "Bienvenue sur mon site personnel !",
+      "dawn": "Bonjour, lève-tôt !",
+      "dawnHint": "Il est tard. Reposez-vous !",
+      "morning": "Bonjour !",
+      "morningHint": "Pensez à prendre votre petit déjeuner !",
+      "noon": "Bon après-midi !",
+      "noonHint": "C’est l’heure du déjeuner. Faites une pause !",
+      "afternoon": "Bon après-midi !",
+      "afternoonHint": "Soufflez un peu et prenez une tasse de thé !",
+      "evening": "Bonsoir !",
+      "eveningHint": "Comment s’est passée votre journée ?",
+      "night": "Bonsoir, oiseau de nuit !",
+      "nightHint": "Pensez à prendre soin de vous !"
+    },
+    "explore": {
+      "writing": "Technologie, langues et quotidien",
+      "tools": "Textes, images et serveurs",
+      "games": "Un navigateur, des amis, une partie"
+    }
+  }
+}

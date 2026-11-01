@@ -31,6 +31,7 @@
       "languages": {
         "zh-CN": "Chinese (Simplified)",
         "en": "English",
+        "fr": "French",
         "si": "Sinhala"
       },
       "fallbackNotice": "This article is not available in {requestedLanguage}. Showing {currentLanguage} instead.",

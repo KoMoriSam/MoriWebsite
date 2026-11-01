@@ -427,7 +427,6 @@ try {
 }
 
 if (process.argv.includes("--session-only")) {
-  console.log("GitHub session: identity fallback, profile errors, retry cooldown and lifecycle checks passed.");
   process.exit(0);
 }
 
@@ -603,11 +602,6 @@ try {
 } finally {
   await server.close();
 }
-console.log(
-  "GitHub access: reauthentication, cleanup, stale iframe isolation, transient errors, retry, cross-tab, profile races, Pagefind and local fallback checks passed (" +
-    profileCalls +
-    " initial profile requests).",
-);
 
 if (process.argv.includes("--indexes")) {
   globalThis.fetch = async (url) => {
@@ -647,5 +641,5 @@ if (process.argv.includes("--indexes")) {
       await engine.destroy();
     }
   }
-  console.log("Pagefind runtime: public and novel bundles are isolated.");
+  console.log("检查通过：GitHub 登录、账号恢复与公开和小说搜索的访问范围。");
 }

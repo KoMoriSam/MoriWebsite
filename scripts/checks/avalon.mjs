@@ -1438,4 +1438,4 @@ for (const role of LANCELOTS)
   );
 
 // The switching variant, Lady and Trickster are exercised together in check-avalon-extensions.mjs.
-console.log(`Avalon rules: ${checks} assertions passed.`);
+console.log(`检查通过：阿瓦隆规则，共 ${checks} 项。`);

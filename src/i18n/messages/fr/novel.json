@@ -1,0 +1,99 @@
+{
+  "novel": {
+    "detail": {
+      "aboutBook": "À propos du livre",
+      "introduction": "Synopsis",
+      "authorNote": "Le mot de l’auteur",
+      "greeting": {
+        "long": "Bienvenue dans mon roman😋",
+        "short": "Un peu timide😫"
+      },
+      "cover": "Couverture de 《向远方》",
+      "loadingReads": "Chargement du total des lectures du roman",
+      "loadingComments": "Chargement du total des commentaires du roman",
+      "chapters": "Chapitres du roman",
+      "bookComments": "Commentaires du livre",
+      "continueReading": "Continuer la lecture",
+      "startReading": "Commencer la lecture",
+      "readLatest": "Lire le dernier chapitre",
+      "rereadLatest": "Relire le dernier chapitre",
+      "readChapter": "Lire ce chapitre",
+      "rereadChapter": "Relire ce chapitre",
+      "loading": "Chargement…",
+      "totalCharacters": "Total de caractères : {count}"
+    },
+    "reader": {
+      "loadingLabel": "Chargement du chapitre",
+      "loading": "Chargement du chapitre…",
+      "chapterComments": "Commentaires du chapitre",
+      "closeComments": "Fermer les commentaires du chapitre",
+      "refreshContent": "Actualiser le contenu",
+      "cover": "Couverture",
+      "bookComments": "Commentaires du livre",
+      "showBookComments": "Afficher les commentaires du livre",
+      "showChapterComments": "Afficher les commentaires du chapitre"
+    }
+  },
+  "reader": {
+    "paged": {
+      "label": "Lecteur paginé",
+      "help": "Aide : touchez une zone pour agir, balayez horizontalement pour tourner les pages et touchez cette indication pour la fermer",
+      "controls": "Commandes de lecture",
+      "dismissHint": "Touchez cette indication pour la fermer",
+      "tapActions": "Actions tactiles personnalisables",
+      "centerHint": "Touchez le centre pour ouvrir le menu",
+      "edgeHint": "Touchez les bords pour tourner les pages",
+      "swipe": "Balayez pour tourner les pages",
+      "textArea": "Zone de texte",
+      "swipeHint": "Balayez vers la gauche ou la droite",
+      "moreControls": "Autres commandes",
+      "zonesHint": "Associez les zones au menu, aux chapitres précédent ou suivant, au sommaire, à la recherche, à l’aide et à d’autres actions"
+    },
+    "footnotes": {
+      "title": "Notes de cette page"
+    },
+    "controls": {
+      "dismissHint": "Les commandes sont ouvertes. Touchez à l’extérieur pour les fermer.",
+      "search": "Rechercher dans le livre",
+      "helpLabel": "Aide",
+      "help": "Aide",
+      "refresh": "Actualiser",
+      "label": "Commandes de lecture mobiles",
+      "bookProgress": "Progression du livre : {progress}",
+      "position": "Ajuster la position de lecture dans le chapitre",
+      "backToCover": "Retour à la couverture",
+      "comments": "Commentaires",
+      "layout": "Mise en page",
+      "back": "Retour aux commandes de lecture",
+      "chapterPage": "Page du chapitre {p0} / {p1}",
+      "chapterProgress": "Progression du chapitre {p0}"
+    },
+    "more": {
+      "wheel": "Tourner les pages à la molette",
+      "wheelHint": "Utiliser la molette pour tourner les pages en mode paginé",
+      "volumeKeys": "Tourner les pages avec les touches de volume",
+      "tapZones": "Réglage des zones tactiles",
+      "tapZonesHint": "Afficher les zones ; touchez chaque zone pour changer son action",
+      "keyboardHint": "Les claviers externes sont pris en charge ; les conteneurs natifs peuvent utiliser la passerelle du lecteur",
+      "volumeKeysHint": "Dans ce navigateur, le système gère les touches physiques de volume ; la page ne peut pas les détecter"
+    },
+    "status": {
+      "label": "Informations de lecture"
+    },
+    "scroll": {
+      "label": "Lecteur à défilement",
+      "help": "Aide : touchez une zone pour agir, balayez verticalement pour défiler et touchez pour fermer",
+      "scroll": "Défilement vertical",
+      "swipeHint": "Balayez verticalement pour lire"
+    },
+    "tapZones": {
+      "label": "Réglage des neuf zones tactiles",
+      "hint": "Touchez une zone pour choisir son action",
+      "done": "Terminé",
+      "zones": "Zones tactiles du texte",
+      "chooseAction": "Choisir l’action de la zone",
+      "noAction": "Aucune action",
+      "currentAction": "Action actuelle : {p0}. Touchez pour ouvrir le menu des actions."
+    }
+  }
+}

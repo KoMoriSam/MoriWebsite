@@ -129,6 +129,4 @@ ${formatBase64(sinhala.data)}
 `;
 
 await writeFile(OUTPUT, generated, "utf8");
-console.log(
-  `Generated ${english.wordCount} English and ${sinhala.wordCount} Sinhala lexemes at ${OUTPUT}`,
-);
+console.log(`语言识别词库已生成：英文 ${english.wordCount} 条、僧语 ${sinhala.wordCount} 条。文件：${OUTPUT}`);

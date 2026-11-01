@@ -236,4 +236,4 @@ for (const file of components) {
   const result = compileTemplate({ source: descriptor.template.content, filename: file, id: file, compilerOptions: { bindingMetadata: bindings } });
   assert.deepEqual(result.errors, [], file);
 }
-console.log(`Site performance: asset inventory, full icon mappings, page isolation, initial rendering, state escaping and ${components.length} Vue components passed.`);
+console.log(`检查通过：网站资源加载、首屏显示与 ${components.length} 个组件。`);

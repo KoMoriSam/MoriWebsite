@@ -139,11 +139,11 @@ try {
     assert.ok(html.includes("/legal/THIRD_PARTY_LICENSES.txt"));
     for (const dependency of data.dependencyNotices) assert.ok(dependenciesHtml.includes(`${dependency.name}@${dependency.version}`));
     assert.ok(data.dependencyNotices.some((dependency) => dependency.licenseFiles.some((file) => file.text.length > 2000)), "Full license texts remain available to the page and index generator");
-    console.log(`License page SSR: ${(Buffer.byteLength(html) / 1024).toFixed(1)} KiB; all ${data.dependencyCount} dependency summaries retained.`);
+    console.log(`许可页面可正常阅读：保留 ${data.dependencyCount} 项依赖信息，页面 ${(Buffer.byteLength(html) / 1024).toFixed(1)} KiB。`);
   } finally {
     await server.close();
   }
-  console.log(`Build assets: codec round trips and worker bundles passed; ${(sizes[0] / 1048576).toFixed(2)} → ${(sizes[1] / 1048576).toFixed(2)} MiB. Cleanup preserves search engines, indices and distinct HTML.`);
+  console.log(`检查通过：图片转换资源与发布文件。资源体积 ${(sizes[0] / 1048576).toFixed(2)} → ${(sizes[1] / 1048576).toFixed(2)} MiB。`);
 } finally {
   assert.equal(path.dirname(fixture), tempRoot);
   assert.ok(path.basename(fixture).startsWith("build-assets-"));

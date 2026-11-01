@@ -16,6 +16,7 @@
     "viewSource": "මුල් පෙළ බලන්න",
     "dependenciesCount": "යැපීම් අනුවාද {count}ක්",
     "additionalLicensesCount": "අතිරේක බලපත්‍ර {count}ක්",
-    "missingLicensesCount": "ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ ගණන {count}කි"
+    "missingLicensesCount": "ඉහළ මට්ටමේ බලපත්‍ර ගොනුවක් නැති පැකේජ ගණන {count}කි",
+    "contentRights": "බ්ලොග් සහ නවකතා අන්තර්ගතයේ හිමිකම්"
   }
 }

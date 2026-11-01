@@ -5,11 +5,11 @@ import { createI18n } from 'vue-i18n';
 import MarkdownIt from 'markdown-it';
 import { alertPlugin } from '../../src/utils/markdown/markdown-it-alert.js';
 import { describeImageMessage } from '../../src/utils/image/messages.js';
-import { normalizeLocale, detectLocale, readLocalePreference, writeLocalePreference, createLocaleSwitcher } from '../../src/i18n/locale.js';
+import { LOCALES, getLocaleFallbacks, normalizeLocale, detectLocale, readLocalePreference, writeLocalePreference, createLocaleSwitcher } from '../../src/i18n/locale.js';
 
 const require = createRequire(import.meta.url);
 const { parse, compileScript, compileTemplate } = require('vue/compiler-sfc');
-const codes = ['zh-CN', 'en', 'si'];
+const codes = LOCALES.map(({ code }) => code);
 const flatten = (tree, prefix = '') => Object.entries(tree).flatMap(([key, value]) => typeof value === 'string' ? [[prefix + key, value]] : flatten(value, prefix + key + '.'));
 const groups = fs.readdirSync('src/i18n/messages/zh-CN').filter(file => file.endsWith('.json')).sort();
 const messages = Object.fromEntries(codes.map(code => {
@@ -53,8 +53,36 @@ try {
   }
 } finally { console.error = oldError; }
 assert.deepEqual(compilationErrors, [], 'Message compilation errors');
+const sinhala = createI18n({ legacy: false, locale: 'si', messages });
+try {
+  const t = sinhala.global.t;
+  const names = messages.si.blog.article.languages;
+  for (const requestedLanguage of Object.values(names)) {
+    for (const currentLanguage of Object.values(names)) {
+      const notice = t('blog.article.fallbackNotice', { requestedLanguage, currentLanguage });
+      assert.ok(!/භාෂාව භාෂාවෙන්|භාෂාව අනුවාදය/.test(notice), 'Do not insert a standalone language noun into an adjective slot');
+    }
+  }
+  for (const choice of [t('avalon.approve'), t('avalon.reject')]) {
+    assert.ok(t('avalon.ballot.confirm', { choice }).includes(`“${choice}”`), 'Predicate vote labels must be quoted rather than used as noun modifiers');
+  }
+  for (const side of [t('avalon.night.good'), t('avalon.night.evil')]) {
+    const changed = t('avalon.lancelot.changed', { side });
+    assert.ok(changed.includes(`වත්මන් පාර්ශ්වය: ${side}`), 'Name the player’s allegiance without saying the player is a faction');
+    assert.ok(!changed.includes(`ඔබ දැන් ${side} වේ`));
+  }
+  // Role and player names can have different endings; never manufacture their
+  // case forms by attaching a fixed Sinhala suffix to the interpolated value.
+  for (const [key, message] of catalogs.si) {
+    assert.ok(!/\{(?:name|target|partner|leader|role|side|choice)\}\s*(?:ගේ|යි(?=[\s.,!?]|$)|වේ(?=[\s.,!?]|$))/u.test(message), `${key}: inflect a contextual noun, not an arbitrary label`);
+  }
+  for (const role of Object.values(messages.si.avalon.roles)) {
+    const vision = t('avalon.night.roleVision', { name: 'Mori', role });
+    assert.ok(vision.includes(`චරිතය: ${role}`), 'Role names of different forms remain complete');
+  }
+} finally { sinhala.dispose(); }
 if (process.argv.includes('--messages-only')) {
-  console.log(`i18n messages: ${keys.length} messages × ${codes.length} languages in ${groups.length} groups; keys, parameters, and compilation passed.`);
+  console.log(`文案检查通过：${codes.length} 种语言、${groups.length} 组词库、${keys.length} 条文案。`);
   process.exit(0);
 }
 
@@ -94,8 +122,13 @@ for (const file of fs.readdirSync('src', { recursive: true }).filter(file => fil
 assert.equal(normalizeLocale('zh-TW'), 'zh-CN');
 assert.equal(normalizeLocale(' en_GB '), 'en');
 assert.equal(normalizeLocale('si-LK'), 'si');
-for (const value of ['fr', '', '__proto__', 'constructor', null, {}]) assert.equal(normalizeLocale(value), null);
-assert.equal(detectLocale(['fr-FR', 'si-LK', 'en-US']), 'si');
+assert.equal(normalizeLocale('fr-CA'), 'fr');
+assert.deepEqual(getLocaleFallbacks('fr-CA'), ['fr', 'en', 'zh-CN']);
+assert.deepEqual(getLocaleFallbacks('si'), ['si', 'en', 'zh-CN']);
+assert.deepEqual(getLocaleFallbacks('en'), ['en', 'zh-CN']);
+assert.deepEqual(getLocaleFallbacks('zh-CN'), ['zh-CN']);
+for (const value of ['', '__proto__', 'constructor', null, {}]) assert.equal(normalizeLocale(value), null);
+assert.equal(detectLocale(['fr-FR', 'si-LK', 'en-US']), 'fr');
 assert.equal(detectLocale(['de']), 'zh-CN');
 const storage = { value: '{"SET_THEME":"forest","SET_LOCALE":"en"}', getItem() { return this.value; }, setItem(key, value) { this.value = value; } };
 assert.equal(readLocalePreference(storage), 'en');
@@ -132,7 +165,12 @@ loads.get('en').resolve();
 assert.equal(await retry, true);
 assert.equal(current, 'en');
 assert.deepEqual(saved, ['si']);
-assert.equal(await switchLocale('fr'), false);
+const french = switchLocale('fr');
+loads.get('fr').resolve();
+assert.equal(await french, true);
+assert.equal(current, 'fr');
+assert.deepEqual(saved, ['si', 'fr']);
+assert.equal(await switchLocale('de'), false);
 const workerMessage = describeImageMessage('正在处理 2/10 帧');
 assert.deepEqual(workerMessage, { key: 'image.worker.processingFrame', params: { p0: '2', p1: '10' } });
 assert.equal(describeImageMessage('Unrecognized native error'), null);
@@ -140,5 +178,5 @@ const md = new MarkdownIt().use(alertPlugin, { translateTitle: title => title ==
 const decodeAlert = text => JSON.parse(decodeURIComponent(md.render(text).match(/data-markdown-props="([^"]+)"/)[1]));
 assert.equal(decodeAlert('> [!TIP]\n> 正文').titleHtml, 'Tip');
 assert.equal(decodeAlert('> [!TIP] 提示\n> 正文').titleHtml, '提示');
-console.log(`i18n: ${keys.length} messages × 3 languages in ${groups.length} groups; ${components} Vue components; locale, storage, and loading checks passed.`);
+console.log(`界面检查通过：${codes.length} 种语言、${components} 个组件，语言设置与文案可正常使用。`);
 if (!process.argv.includes('--static-only')) await import('./i18n-runtime.mjs');

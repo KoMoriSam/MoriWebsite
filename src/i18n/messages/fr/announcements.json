@@ -1,0 +1,12 @@
+{
+  "announcements": {
+    "title": "Annonces",
+    "updated": "Mis à jour",
+    "loadFailed": "Impossible de charger les annonces",
+    "loading": "Chargement",
+    "current": "Annonces actuelles",
+    "empty": "Il n’y a aucune annonce active.",
+    "past": "Annonces passées",
+    "pastEmpty": "Il n’y a pas encore d’annonces passées."
+  }
+}

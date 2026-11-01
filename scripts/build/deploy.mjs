@@ -14,13 +14,13 @@ export function contentDeploymentEnvironment(source = process.env) {
 }
 
 async function deploy(target, args) {
-  if (!["website", "content"].includes(target)) throw new Error(`Unknown deployment: ${target}`);
+  if (!["website", "content"].includes(target)) throw new Error(`无法发布“${target}”。请选择 website 或 content。`);
   const [manifest, receipt] = await Promise.all([MANIFEST_PATH, SITE_RECEIPT_PATH].map(async (file) => {
     try { return JSON.parse(await readFile(file, "utf8")); }
-    catch { throw new Error("缺少完整的统一构建产物，请先运行 pnpm build。"); }
+    catch { throw new Error("发布文件尚未准备完整，请先运行 pnpm build。"); }
   }));
   if (!manifest.buildId || manifest.buildId !== receipt.buildId || manifest.websiteCommit !== receipt.websiteCommit) {
-    throw new Error("网站和内容不属于同一次成功构建，请重新运行 pnpm build。");
+    throw new Error("网站与内容版本不一致。请运行 pnpm build 重新生成发布文件。");
   }
   // Publish content before the site starts referencing its new index and image manifest.
   await run(["wrangler", "deploy", "--config", "wrangler.content.jsonc", "--keep-vars", ...args], { env: contentDeploymentEnvironment() });

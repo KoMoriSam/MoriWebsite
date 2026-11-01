@@ -618,4 +618,4 @@ rejects(
   check(playerKnowledge(view(game, observer))[good].roles, ["good_lancelot"]);
   check(playerKnowledge(view(game, observer))[good].current, "good");
 }
-console.log(`Avalon private variants: ${checks} assertions passed.`);
+console.log(`检查通过：阿瓦隆扩展角色，共 ${checks} 项。`);

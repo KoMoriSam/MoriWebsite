@@ -174,7 +174,7 @@
                 </button>
               </summary>
               <div
-                class="collapse-content flex min-h-0 flex-col overflow-hidden px-3"
+                class="collapse-content flex min-h-0 flex-col overflow-hidden px-3 pb-0"
               >
                 <div
                   data-accordion-window
@@ -203,7 +203,7 @@
                 }}</span>
               </summary>
               <div
-                class="collapse-content flex min-h-0 flex-col overflow-hidden px-3"
+                class="collapse-content flex min-h-0 flex-col overflow-hidden px-3 pb-0"
               >
                 <div
                   data-accordion-window

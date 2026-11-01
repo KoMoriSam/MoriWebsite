@@ -23,8 +23,8 @@
       "emptyHint": "පරිච්ඡේද ලැයිස්තුව යළි පූරණය කර උත්සාහ කරන්න",
       "read": "කියවූ",
       "unread": "නොකියවූ",
-      "loadingReads": "《{p0}》 කියවීම් පූරණය වෙමින්",
-      "loadingComments": "《{p0}》 අදහස් පූරණය වෙමින්",
+      "loadingReads": "කියවීම් පූරණය වෙමින්: 《{p0}》",
+      "loadingComments": "අදහස් පූරණය වෙමින්: 《{p0}》",
       "summary": "වෙළුම් ගණන {volumes}කි · පරිච්ඡේද ගණන {chapters}කි"
     },
     "badges": {
@@ -95,9 +95,9 @@
       "desktopPreview": "වත්මන් ඩෙස්ක්ටොප් සැකැස්ම් පෙරදසුන",
       "chooseBackground": "කියවීම් පසුබිම තෝරන්න: {p0}",
       "switchTheme": "අඩවි තේමාව මාරු කරන්න: {p0}, {p1}",
-      "applyDefaultPreset": "පද්ධති පෙරසැකසුම යොදන්න {p0}: {p1}",
-      "applySavedPreset": "සුරැකි පෙරසැකසුම {p0} යොදන්න",
-      "deletePreset": "පෙරසැකසුම {p0} මකන්න"
+      "applyDefaultPreset": "පද්ධති පෙරසැකසුම යොදන්න: {p0} — {p1}",
+      "applySavedPreset": "සුරැකි පෙරසැකසුම යොදන්න: {p0}",
+      "deletePreset": "පෙරසැකසුම මකන්න: {p0}"
     },
     "settings": {
       "close": "කියවීමේ සැකැස්ම් සැකසුම් වසන්න",

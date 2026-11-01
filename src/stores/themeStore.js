@@ -6,8 +6,7 @@ import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 const isDark = usePreferredDark();
 
 /**
- * giscus 自定义主题 CSS 文件 URL
- * 四套配色分别对应 daisyUI 的四个内置主题：
+ * giscus 共用样式中的四套配色对应 daisyUI 的四个内置主题：
  *   lemonade  (默认日间) — 温暖黄绿色调
  *   forest    (默认夜间) — 深绿色自然色调
  *   corporate (日间模式) — 专业蓝色商务色调
@@ -104,10 +103,16 @@ export const useThemeStore = defineStore("theme", () => {
   const resolvedTheme = computed(() =>
     followSystem.value ? (isDark.value ? "forest" : "lemonade") : theme.value,
   );
+  // 评论配色随页面实际应用主题，在过渡回调中一同更新。
+  const appliedTheme = ref(resolvedTheme.value);
+
+  function applyTheme(value) {
+    if (manualThemeValues.has(value)) appliedTheme.value = value;
+  }
 
   /**
    * giscus 评论组件主题
-   * 根据当前 daisyUI 主题返回对应的 giscus 自定义 CSS 文件 URL
+   * URL 片段选择配色；样式只加载一份，iframe 收到配置即可切换。
    *
    * 映射关系：
    *   default + 系统浅色 → lemonade (daisyUI 默认日间)
@@ -116,8 +121,8 @@ export const useThemeStore = defineStore("theme", () => {
    *   dim                → dim       (daisyUI 低调夜间)
    */
   const giscusTheme = computed(() => {
-    return manualThemeValues.has(resolvedTheme.value)
-      ? `${GISCUS_THEME_BASE}/${resolvedTheme.value}.css`
+    return manualThemeValues.has(appliedTheme.value)
+      ? `${GISCUS_THEME_BASE}/themes.css#${appliedTheme.value}`
       : "preferred_color_scheme";
   });
 
@@ -133,6 +138,7 @@ export const useThemeStore = defineStore("theme", () => {
     resolvedTheme,
     followSystem,
     giscusTheme,
+    applyTheme,
     setTheme,
   };
 });

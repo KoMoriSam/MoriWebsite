@@ -89,4 +89,4 @@ registry = readMarkdownStyleRegistry({ styleSheets: [applicationSheet] });
 assert.deepEqual(registry.classes, ["updated"], "HMR invalidates cached inline sheets");
 assert.deepEqual(readMarkdownStyleRegistry({ styleSheets: [] }), emptyRegistry());
 
-console.log("Markdown style checks passed: dynamic utilities, daisyUI, variants, shared definitions, class/property/keyframe deduplication, stylesheet takeover, extraction and CSSOM caching.");
+console.log("检查通过：正文样式、主题与动态内容显示。");
