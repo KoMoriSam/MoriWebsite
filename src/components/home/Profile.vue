@@ -43,7 +43,7 @@
               })
             "
             :style="{ '--count': aboutTitleUnits.length - 1 }"
-            class="w-max animate-typing whitespace-nowrap pr-2 font-serif text-2xl font-bold leading-snug [--type-color:color-mix(in_oklab,var(--color-neutral-content)_70%,transparent)] motion-reduce:animate-none motion-reduce:[--typed:var(--count)]"
+            class="w-max animate-typing whitespace-nowrap pr-2 font-serif text-2xl font-bold leading-snug motion-reduce:animate-none motion-reduce:[--typed:var(--count)]"
           >
             <span
               v-for="(unit, index) in aboutTitleUnits"
@@ -56,7 +56,7 @@
                 class="pointer-events-none absolute bottom-1 left-0 opacity-[clamp(0,1-max(var(--typed)-var(--i),var(--i)-var(--typed)),1)] motion-reduce:hidden"
               >
                 <span
-                  class="block h-[1em] w-1 animate-cursor-blink bg-(--type-color) lg:w-2"
+                  class="block h-[1em] w-[0.25em] animate-cursor-blink bg-base-content/50"
                 ></span>
               </span>
 
