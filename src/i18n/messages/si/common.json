@@ -381,6 +381,8 @@
       "articles": "ලිපි {count}ක්",
       "reads": "කියවීම් {count}ක්",
       "comments": "අදහස් {count}ක්",
+      "compactReads": "කියවීම් {count}ක්",
+      "compactComments": "අදහස් {count}ක්",
       "characters": "අක්ෂර {count}ක්",
       "minutes": "මිනිත්තු {count}ක්",
       "readingTime": "කියවීමට මිනිත්තු {count}ක්",

@@ -12,14 +12,20 @@
     cover-sizes="(min-width: 1280px) 600px, (min-width: 768px) 50vw, calc(100vw - 3rem)"
   >
     <template #meta>
-      <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-        <CatalogMeta v-if="publishedDate" tag="time" :datetime="publishedDate" icon="ri-calendar-line">{{
-          date(publishedDate)
-        }}</CatalogMeta>
-        <CatalogMeta v-if="chapter?.length != null" icon="ri-file-text-line"
-          >{{ translate("common.counts.characters", { count: number(chapter.length) }, chapter.length) }}</CatalogMeta
-        >
-      </div>
+      <CatalogMeta
+        v-if="publishedDate"
+        tag="time"
+        :datetime="publishedDate"
+        icon="ri-calendar-line"
+        >{{ date(publishedDate) }}</CatalogMeta
+      >
+      <CatalogMeta v-if="chapter?.length != null" icon="ri-file-text-line">{{
+        translate(
+          "common.counts.characters",
+          { count: number(chapter.length) },
+          chapter.length,
+        )
+      }}</CatalogMeta>
     </template>
   </CatalogCard>
 </template>

@@ -377,6 +377,8 @@
       "articles": "{count} article | {count} articles",
       "reads": "{count} read | {count} reads",
       "comments": "{count} comment | {count} comments",
+      "compactReads": "{count} read | {count} reads",
+      "compactComments": "{count} comment | {count} comments",
       "characters": "{count} character | {count} characters",
       "minutes": "{count} minute | {count} minutes",
       "readingTime": "{count} minute read",

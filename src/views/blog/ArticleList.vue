@@ -3,7 +3,13 @@
     <template #meta>
       <span class="inline-flex items-center gap-1">
         <i class="ri-stack-line"></i>
-        {{ translate("common.counts.articles", { count: articles.length }, articles.length) }}
+        {{
+          translate(
+            "common.counts.articles",
+            { count: articles.length },
+            articles.length,
+          )
+        }}
       </span>
       <client-only>
         <span
@@ -12,7 +18,13 @@
         >
           <i class="ri-eye-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalReads)">
-            {{ translate("common.counts.reads", { count: formatReadCount(articleTotalReads) }, articleTotalReads) }}
+            {{
+              translate(
+                "common.counts.reads",
+                { count: formatReadCount(articleTotalReads) },
+                articleTotalReads,
+              )
+            }}
           </template>
           <span
             v-else
@@ -28,7 +40,13 @@
         >
           <i class="ri-chat-3-line" aria-hidden="true"></i>
           <template v-if="Number.isFinite(articleTotalComments)">
-            {{ translate("common.counts.comments", { count: formatReadCount(articleTotalComments) }, articleTotalComments) }}
+            {{
+              translate(
+                "common.counts.comments",
+                { count: formatReadCount(articleTotalComments) },
+                articleTotalComments,
+              )
+            }}
           </template>
           <span
             v-else
@@ -205,7 +223,13 @@
                       {{ group.label }}
                     </span>
                     <span class="shrink-0 font-normal text-base-content/40">
-                      {{ translate("common.counts.articles", { count: group.count }, group.count) }}
+                      {{
+                        translate(
+                          "common.counts.articles",
+                          { count: group.count },
+                          group.count,
+                        )
+                      }}
                     </span>
                   </div>
                   <ul
@@ -261,7 +285,13 @@
                           {{ option.label }}
                         </span>
                         <span class="text-xs text-base-content/40">
-                          {{ translate("common.counts.articles", { count: option.count }, option.count) }}
+                          {{
+                            translate(
+                              "common.counts.articles",
+                              { count: option.count },
+                              option.count,
+                            )
+                          }}
                         </span>
                       </button>
                     </li>
@@ -303,23 +333,52 @@
         <!-- 左侧：一句话概括全部关键信息 -->
         <p class="flex flex-wrap items-center gap-x-1 gap-y-0">
           <I18nT
-            :keypath="hasFilter ? 'blog.list.filteredSummary' : 'blog.list.summary'"
+            :keypath="
+              hasFilter ? 'blog.list.filteredSummary' : 'blog.list.summary'
+            "
             :plural="filteredArticles.length"
             tag="span"
             scope="global"
           >
-            <template #count><strong class="font-semibold text-base-content">{{ formatNumber(filteredArticles.length) }}</strong></template>
-            <template #start><span class="text-base-content/50">{{ formatNumber(pageStart) }}</span></template>
-            <template #end><span class="text-base-content/50">{{ formatNumber(pageEnd) }}</span></template>
+            <template #count
+              ><strong class="font-semibold text-base-content">{{
+                formatNumber(filteredArticles.length)
+              }}</strong></template
+            >
+            <template #start
+              ><span class="text-base-content/50">{{
+                formatNumber(pageStart)
+              }}</span></template
+            >
+            <template #end
+              ><span class="text-base-content/50">{{
+                formatNumber(pageEnd)
+              }}</span></template
+            >
           </I18nT>
-          <I18nT v-if="keyword.trim()" keypath="blog.list.keywordSummary" tag="span" scope="global" class="ml-2">
-            <template #keyword><span class="badge badge-primary badge-soft badge-xs">{{ keyword.trim() }}</span></template>
+          <I18nT
+            v-if="keyword.trim()"
+            keypath="blog.list.keywordSummary"
+            tag="span"
+            scope="global"
+            class="ml-2"
+          >
+            <template #keyword
+              ><span class="badge badge-primary badge-soft badge-xs">{{
+                keyword.trim()
+              }}</span></template
+            >
           </I18nT>
         </p>
 
         <p class="text-xs text-base-content/50">
           <template v-if="filteredArticles.length">
-            {{ translate("common.pagination.position", { p0: formatNumber(currentPage), p1: formatNumber(totalPages) }) }}
+            {{
+              translate("common.pagination.position", {
+                p0: formatNumber(currentPage),
+                p1: formatNumber(totalPages),
+              })
+            }}
           </template>
         </p>
       </div>
@@ -343,16 +402,18 @@
             <article
               v-for="index in BLOG_PAGE_SIZE"
               :key="index"
-              class="card card-border min-w-0 overflow-hidden bg-base-100"
+              class="catalog-compact-preview card card-border relative min-w-0 overflow-hidden bg-base-100 max-md:min-h-24 max-md:pl-(--preview-width)"
             >
-              <div class="skeleton h-48 w-full rounded-none sm:h-52"></div>
+              <div
+                class="skeleton rounded-none max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:w-(--preview-width) md:h-52 md:w-full"
+              ></div>
 
-              <div class="card-body min-w-0 gap-0 p-5 sm:p-6">
+              <div class="card-body min-w-0 gap-0 p-3 md:p-6">
                 <div class="skeleton mt-2 h-4 w-full"></div>
                 <div class="skeleton mt-2 h-4 w-11/12"></div>
                 <div class="skeleton mt-2 h-4 w-3/5"></div>
 
-                <div class="mt-6 flex items-center gap-3">
+                <div class="mt-3 flex flex-wrap items-center gap-3 sm:mt-6">
                   <div class="skeleton h-4 w-20"></div>
                   <div class="skeleton h-4 w-16"></div>
                   <div class="skeleton ml-auto h-4 w-20"></div>
@@ -367,251 +428,235 @@
           <div
             class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
           >
-            <RouterLink
+            <CatalogCard
               v-for="item in paginatedArticles"
               :key="getArticleKey(item)"
               :to="getArticleRoute(item)"
-              class="group card card-border min-w-0 cursor-pointer overflow-hidden bg-base-100 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              :title="item.title"
+              :cover="item.banner || ''"
+              :action="translate('blog.list.readMore')"
+              action-class="max-md:[&>span]:sr-only"
+              cover-class="min-h-52 flex-1"
+              compact-on-mobile
             >
-              <!-- 封面 -->
-              <div
-                class="relative h-48 shrink-0 overflow-hidden bg-base-200 sm:h-52"
-                :aria-busy="hasBanner(item) && !isBannerLoaded(item)"
-              >
-                <!-- 有封面图片 -->
-                <template v-if="hasBanner(item)">
-                  <!-- daisyUI 骨架背景始终放在图片下方 -->
-                  <div
-                    class="skeleton absolute inset-0 rounded-none"
-                    aria-hidden="true"
-                  ></div>
-
-                  <!-- 使用 img 才能准确监听加载状态 -->
-                  <img
-                    v-fade-in
-                    :key="getBannerKey(item)"
-                    :ref="(element) => setBannerImageRef(item, element)"
-                    v-bind="
-                      getImageAttrs(
-                        resolveBannerUrl(item.banner),
-                        '(min-width: 1280px) 400px, (min-width: 768px) 50vw, calc(100vw - 2rem)',
-                      )
-                    "
-                    :alt="item.title"
-                    loading="lazy"
-                    decoding="async"
-                    draggable="false"
-                    class="absolute inset-0 size-full object-cover object-center transition-[opacity,transform,scale] duration-500 ease-out motion-reduce:transition-none group-hover:scale-105"
-                    @load="handleBannerLoad(item)"
-                    @error="handleBannerError(item)"
-                  />
-
-                  <!-- 图片加载完成后再显示遮罩 -->
-                  <div
-                    class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-500"
-                    :class="isBannerLoaded(item) ? 'opacity-100' : 'opacity-0'"
-                  ></div>
-                </template>
-
-                <!-- 无封面或封面加载失败 -->
-                <template v-else>
-                  <div
-                    class="absolute -right-10 -top-14 size-40 rounded-full bg-primary/10 blur-2xl transition-transform duration-500 group-hover:scale-125"
-                  ></div>
-
-                  <div
-                    class="absolute -bottom-16 -left-10 size-44 rounded-full bg-accent/15 blur-2xl transition-transform duration-500 group-hover:scale-125"
-                  ></div>
-
-                  <i
-                    class="ri-article-line absolute right-5 top-4 text-7xl text-base-content/5 transition-all duration-500 group-hover:-rotate-6 group-hover:scale-110"
-                  ></i>
-
-                  <div
-                    class="absolute inset-0 opacity-[0.04]"
-                    style="
-                      background-image: radial-gradient(
-                        currentColor 1px,
-                        transparent 1px
-                      );
-                      background-size: 16px 16px;
-                    "
-                  ></div>
-                </template>
-
-                <!-- 文章信息 -->
-                <div
-                  class="absolute inset-x-0 bottom-0 z-10 p-4 transition-colors duration-300 sm:p-5"
-                  :class="
-                    hasBanner(item) && isBannerLoaded(item)
-                      ? 'text-white'
-                      : 'text-base-content'
-                  "
+              <template v-if="item.tags?.length" #tags="{ coverLoaded }">
+                <CatalogBadge
+                  v-for="tag in item.tags"
+                  :key="tag"
+                  :overlay="coverLoaded"
                 >
-                  <div
-                    v-if="item.tags?.length"
-                    class="flex max-h-12 flex-wrap gap-1.5 overflow-hidden"
-                  >
-                    <span
-                      v-for="tag in item.tags"
-                      :key="tag"
-                      class="badge badge-sm max-w-full transition-colors duration-300"
-                      :class="
-                        hasBanner(item) && isBannerLoaded(item)
-                          ? 'border-white/20 bg-black/20 text-white backdrop-blur-sm'
-                          : 'badge-primary badge-soft'
-                      "
-                    >
-                      <span class="truncate">
-                        <template
-                          v-for="(part, partIndex) in highlightParts(
-                            formatTag(tag),
-                          )"
-                          :key="`${part.text}-${partIndex}`"
-                        >
-                          <mark
-                            v-if="part.match"
-                            class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
-                          >
-                            {{ part.text }}
-                          </mark>
-                          <template v-else>{{ part.text }}</template>
-                        </template>
-                      </span>
-                    </span>
-                  </div>
-
-                  <h2
-                    class="mt-3 line-clamp-2 text-balance font-serif text-xl leading-snug font-bold sm:text-2xl"
-                    :class="
-                      hasBanner(item) && isBannerLoaded(item)
-                        ? 'drop-shadow-sm'
-                        : ''
-                    "
-                  >
-                    <template
-                      v-for="(part, partIndex) in highlightParts(item.title)"
-                      :key="`${part.text}-${partIndex}`"
-                    >
-                      <mark
-                        v-if="part.match"
-                        class="rounded-sm bg-primary/80 px-0.5 text-primary-content"
-                      >
-                        {{ part.text }}
-                      </mark>
-                      <template v-else>{{ part.text }}</template>
-                    </template>
-                  </h2>
-                </div>
-              </div>
-
-              <!-- 内容 -->
-              <div class="card-body not-prose min-w-0 gap-0 p-5 sm:p-6">
-                <p class="line-clamp-3 leading-relaxed text-base-content/65">
                   <template
-                    v-for="(part, partIndex) in highlightParts(
-                      getResultSummary(item),
-                    )"
+                    v-for="(part, partIndex) in highlightParts(formatTag(tag))"
                     :key="`${part.text}-${partIndex}`"
                   >
                     <mark
                       v-if="part.match"
-                      class="rounded-sm bg-primary/65 px-0.5 text-primary-content"
+                      class="rounded-sm bg-primary/75 px-0.5 text-primary-content"
                     >
                       {{ part.text }}
                     </mark>
                     <template v-else>{{ part.text }}</template>
                   </template>
-                </p>
+                </CatalogBadge>
+              </template>
 
-                <div
-                  class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-5 text-sm text-base-content/50"
+              <template #title>
+                <template
+                  v-for="(part, partIndex) in highlightParts(item.title)"
+                  :key="`${part.text}-${partIndex}`"
                 >
-                  <time class="flex items-center gap-1.5">
-                    <i class="ri-calendar-line"></i>
-                    {{ formatLocalizedDate(item.date) }}
-                  </time>
+                  <mark
+                    v-if="part.match"
+                    class="rounded-sm bg-primary/80 px-0.5 text-primary-content"
+                  >
+                    {{ part.text }}
+                  </mark>
+                  <template v-else>{{ part.text }}</template>
+                </template>
+              </template>
 
-                  <span class="flex items-center gap-1.5">
-                    <i class="ri-time-line"></i>
-                    {{ translate("common.counts.minutes", { count: estimateReadingTime(item.length) }, estimateReadingTime(item.length)) }}
-                  </span>
+              <template #description>
+                <template
+                  v-for="(part, partIndex) in highlightParts(
+                    getResultSummary(item),
+                  )"
+                  :key="`${part.text}-${partIndex}`"
+                >
+                  <mark
+                    v-if="part.match"
+                    class="rounded-sm bg-primary/65 px-0.5 text-primary-content"
+                  >
+                    {{ part.text }}
+                  </mark>
+                  <template v-else>{{ part.text }}</template>
+                </template>
+              </template>
 
-                  <span class="flex items-center gap-1.5">
-                    <i class="ri-file-text-line"></i>
-                    {{ translate("common.counts.characters", { count: item.length || 0 }, item.length || 0) }}
-                  </span>
+              <template #meta>
+                <time
+                  class="flex min-w-0 items-center gap-1 md:gap-1.5"
+                  :title="formatLocalizedDate(item.date)"
+                >
+                  <i
+                    class="ri-calendar-line hidden md:inline-block"
+                    aria-hidden="true"
+                  ></i>
+                  <span class="whitespace-nowrap md:hidden">{{
+                    formatLocalizedDate(item.date, { dateStyle: "short" })
+                  }}</span>
+                  <span class="hidden md:inline">{{
+                    formatLocalizedDate(item.date)
+                  }}</span>
+                </time>
 
-                  <client-only>
-                    <span
-                      v-if="
-                        analyticsAvailable &&
-                        getArticleReadStatus(item) !== 'error'
-                      "
-                      class="flex items-center gap-1.5"
-                    >
-                      <i class="ri-eye-line" aria-hidden="true"></i>
-                      <template v-if="Number.isFinite(getArticleReads(item))">
-                        {{ translate("common.counts.reads", { count: formatReadCount(getArticleReads(item)) }, getArticleReads(item)) }}
-                      </template>
+                <span
+                  class="flex shrink-0 items-center gap-1 whitespace-nowrap md:gap-1.5"
+                >
+                  <i
+                    class="ri-t-box-line hidden md:inline-block"
+                    aria-hidden="true"
+                  ></i>
+                  <span aria-hidden="true" class="md:hidden">{{
+                    translate(
+                      "common.counts.characters",
+                      { count: formatCompactCount(item.length || 0) },
+                      item.length || 0,
+                    )
+                  }}</span>
+                  <span class="max-md:sr-only">{{
+                    translate(
+                      "common.counts.characters",
+                      { count: formatNumber(item.length || 0) },
+                      item.length || 0,
+                    )
+                  }}</span>
+                </span>
+
+                <span
+                  class="flex shrink-0 items-center gap-1 whitespace-nowrap md:gap-1.5"
+                >
+                  <i
+                    class="ri-time-line hidden md:inline-block"
+                    aria-hidden="true"
+                  ></i>
+                  <span aria-hidden="true" class="md:hidden">{{
+                    formatCompactReadingTime(estimateReadingTime(item.length))
+                  }}</span>
+                  <span class="max-md:sr-only">{{
+                    translate(
+                      "common.counts.minutes",
+                      { count: estimateReadingTime(item.length) },
+                      estimateReadingTime(item.length),
+                    )
+                  }}</span>
+                </span>
+
+                <client-only>
+                  <span
+                    v-if="
+                      analyticsAvailable &&
+                      getArticleReadStatus(item) !== 'error'
+                    "
+                    class="flex min-w-0 items-center gap-1 md:gap-1.5"
+                  >
+                    <i
+                      class="ri-eye-line hidden md:inline-block"
+                      aria-hidden="true"
+                    ></i>
+                    <template v-if="Number.isFinite(getArticleReads(item))">
                       <span
-                        v-else
-                        class="loading loading-dots loading-xs"
-                        :aria-label="
-                          translate('reader.chapters.loadingReads', {
-                            p0: item.title,
-                          })
-                        "
-                      ></span>
-                    </span>
-                  </client-only>
-
-                  <client-only>
-                    <span
-                      v-if="
-                        commentCountsAvailable &&
-                        getArticleCommentStatus(item) !== 'error'
-                      "
-                      class="flex items-center gap-1.5"
-                    >
-                      <i class="ri-chat-3-line" aria-hidden="true"></i>
-                      <template
-                        v-if="Number.isFinite(getArticleComments(item))"
+                        aria-hidden="true"
+                        class="whitespace-nowrap md:hidden"
+                        >{{
+                          translate(
+                            "common.counts.compactReads",
+                            {
+                              count: formatCompactCount(getArticleReads(item)),
+                            },
+                            getArticleReads(item),
+                          )
+                        }}</span
                       >
-                        {{ translate("common.counts.comments", { count: formatReadCount(getArticleComments(item)) }, getArticleComments(item)) }}
-                      </template>
+                      <span class="max-md:sr-only">{{
+                        translate(
+                          "common.counts.reads",
+                          { count: formatReadCount(getArticleReads(item)) },
+                          getArticleReads(item),
+                        )
+                      }}</span>
+                    </template>
+                    <span
+                      v-else
+                      class="loading loading-dots loading-xs max-md:hidden"
+                      :aria-label="
+                        translate('reader.chapters.loadingReads', {
+                          p0: item.title,
+                        })
+                      "
+                    ></span>
+                  </span>
+                </client-only>
+
+                <client-only>
+                  <span
+                    v-if="
+                      commentCountsAvailable &&
+                      getArticleCommentStatus(item) !== 'error'
+                    "
+                    class="flex min-w-0 items-center gap-1 md:gap-1.5"
+                  >
+                    <i
+                      class="ri-chat-3-line hidden md:inline-block"
+                      aria-hidden="true"
+                    ></i>
+                    <template v-if="Number.isFinite(getArticleComments(item))">
                       <span
-                        v-else
-                        class="loading loading-dots loading-xs"
-                        :aria-label="
-                          translate('reader.chapters.loadingComments', {
-                            p0: item.title,
-                          })
-                        "
-                      ></span>
-                    </span>
-                  </client-only>
-
-                  <span
-                    v-for="meta in getAdditionalMetadata(item)"
-                    :key="`${item.id}-${meta.key}`"
-                    class="flex min-w-0 max-w-full items-center gap-1.5"
-                    :title="`${meta.label}：${meta.value}`"
-                  >
-                    <i class="shrink-0" :class="meta.icon"></i>
-                    <span class="shrink-0">{{ meta.label }}</span>
-                    <span class="max-w-48 truncate">{{ meta.value }}</span>
+                        aria-hidden="true"
+                        class="whitespace-nowrap md:hidden"
+                        >{{
+                          translate(
+                            "common.counts.compactComments",
+                            {
+                              count: formatCompactCount(
+                                getArticleComments(item),
+                              ),
+                            },
+                            getArticleComments(item),
+                          )
+                        }}</span
+                      >
+                      <span class="max-md:sr-only">{{
+                        translate(
+                          "common.counts.comments",
+                          { count: formatReadCount(getArticleComments(item)) },
+                          getArticleComments(item),
+                        )
+                      }}</span>
+                    </template>
+                    <span
+                      v-else
+                      class="loading loading-dots loading-xs max-md:hidden"
+                      :aria-label="
+                        translate('reader.chapters.loadingComments', {
+                          p0: item.title,
+                        })
+                      "
+                    ></span>
                   </span>
+                </client-only>
 
-                  <span
-                    class="ml-auto flex items-center gap-1 font-medium text-primary transition-transform duration-200 group-hover:translate-x-0.5"
-                  >
-                    {{ translate("blog.list.readMore") }}
-                    <i class="ri-arrow-right-line"></i>
-                  </span>
-                </div>
-              </div>
-            </RouterLink>
+                <span
+                  v-for="meta in getAdditionalMetadata(item)"
+                  :key="`${item.id}-${meta.key}`"
+                  class="hidden min-w-0 max-w-full items-center gap-1.5 md:flex"
+                  :title="`${meta.label}：${meta.value}`"
+                >
+                  <i class="shrink-0" :class="meta.icon"></i>
+                  <span class="shrink-0">{{ meta.label }}</span>
+                  <span class="max-w-48 truncate">{{ meta.value }}</span>
+                </span>
+              </template>
+            </CatalogCard>
           </div>
 
           <Pagination
@@ -671,11 +716,13 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { getImageAttrs } from "@/utils/images/responsive-images";
+import CatalogBadge from "@/components/interaction/navigation/CatalogBadge.vue";
+import CatalogCard from "@/components/interaction/navigation/CatalogCard.vue";
 import { getNavbarScrollOffset } from "@/utils/layout/navbar";
 import { useLocale } from "@/i18n";
 const {
   t: translate,
+  locale: uiLocale,
   number: formatNumber,
   date: formatLocalizedDate,
 } = useLocale();
@@ -685,7 +732,6 @@ import {
   nextTick,
   onBeforeUnmount,
   onMounted,
-  reactive,
   ref,
   toRef,
   watch,
@@ -748,6 +794,18 @@ const { analyticsAvailable } = storeToRefs(analyticsStore);
 const { commentCountsAvailable } = storeToRefs(commentCountsStore);
 const readCountFormatter = { format: (value) => formatNumber(value) };
 const formatReadCount = (value) => readCountFormatter.format(Number(value));
+const formatCompactCount = (value) =>
+  uiLocale.value === "si"
+    ? formatNumber(value)
+    : formatNumber(value, { notation: "compact", maximumFractionDigits: 1 });
+const formatCompactReadingTime = (count) =>
+  uiLocale.value === "en" || uiLocale.value === "fr"
+    ? formatNumber(count, {
+        style: "unit",
+        unit: "minute",
+        unitDisplay: "short",
+      })
+    : translate("common.counts.minutes", { count }, count);
 const articleTotalReads = computed(() =>
   analyticsStore.getContentTypeReads("article"),
 );
@@ -1206,71 +1264,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("pointerdown", handleOutsidePointerDown);
 });
-
-const resolveBannerUrl = (banner) => {
-  if (!banner) return "";
-  return banner;
-};
-
-const loadedBanners = reactive(new Set());
-const failedBanners = reactive(new Set());
-const bannerImages = new Map();
-
-function getBannerKey(item) {
-  // URL 变化时必须使用新的加载状态，不能沿用旧地址的失败记录。
-  return String(item.banner ?? item.id ?? item.slug ?? item.path ?? "");
-}
-
-function hasBanner(item) {
-  if (!item.banner) return false;
-
-  return !failedBanners.has(getBannerKey(item));
-}
-
-function isBannerLoaded(item) {
-  // SSG 预渲染阶段视为已加载，确保预渲染 HTML 中遮罩默认可见
-  if (typeof window === "undefined") return true;
-
-  return loadedBanners.has(getBannerKey(item));
-}
-
-function handleBannerLoad(item) {
-  const key = getBannerKey(item);
-
-  failedBanners.delete(key);
-  loadedBanners.add(key);
-}
-
-function handleBannerError(item) {
-  const key = getBannerKey(item);
-
-  loadedBanners.delete(key);
-  failedBanners.add(key);
-}
-
-function syncBannerImageState(item, image) {
-  if (!image?.complete) return;
-
-  if (image.naturalWidth > 0) {
-    handleBannerLoad(item);
-  } else {
-    handleBannerError(item);
-  }
-}
-
-function setBannerImageRef(item, element) {
-  const key = getBannerKey(item);
-
-  if (!element) {
-    bannerImages.delete(key);
-    return;
-  }
-
-  bannerImages.set(key, element);
-
-  // SSG 页面 hydration 前图片可能已经完成加载，此时不会再次触发 load。
-  syncBannerImageState(item, element);
-}
 
 const estimateReadingTime = (length = 0) => {
   return Math.max(1, Math.ceil(Number(length || 0) / 300));

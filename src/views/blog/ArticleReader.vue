@@ -241,11 +241,11 @@
                   v-if="article?.length"
                   class="inline-flex items-center gap-1"
                 >
-                  <i class="ri-file-text-line"></i>
+                  <i class="ri-font-size-2" aria-hidden="true"></i>
                   {{
                     translate(
                       "common.counts.aboutCharacters",
-                      { count: article.length },
+                      { count: formatNumber(article.length) },
                       article.length,
                     )
                   }}
@@ -538,7 +538,6 @@ import { githubSession } from "@/composables/auth/useGithubSession";
 import Thread from "@/components/comments/Thread.vue";
 import { useRoute, useRouter } from "vue-router";
 
-
 import { useReaderStore } from "@/stores/readerStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useThemeStore } from "@/stores/themeStore";
@@ -794,7 +793,11 @@ const articleShareMeta = computed(() => {
   const displayDate = date ? formatLocalizedDate(props.article?.date) : "";
   const lengthText =
     Number.isFinite(length) && length > 0
-      ? translate("common.counts.characters", { count: length }, length)
+      ? translate(
+          "common.counts.characters",
+          { count: formatNumber(length) },
+          length,
+        )
       : "";
   const readingTimeText = lengthText
     ? translate(
@@ -814,7 +817,7 @@ const articleShareMeta = computed(() => {
     Number.isFinite(length) && length > 0
       ? translate(
           "common.counts.aboutCharacters",
-          { count: length.toLocaleString(uiLocale.value) },
+          { count: formatNumber(length) },
           length,
         )
       : "",

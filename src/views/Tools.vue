@@ -23,6 +23,8 @@
         :description="translate(tool.descriptionKey)"
         :icon="tool.icon"
         :cover="tool.cover"
+        cover-class="min-h-44 flex-1 sm:min-h-56"
+        compact-on-mobile
         :action="translate('tools.open')"
       >
         <template #tags="{ coverLoaded }">

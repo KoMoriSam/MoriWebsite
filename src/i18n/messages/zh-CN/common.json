@@ -377,6 +377,8 @@
       "articles": "{count} 篇文章",
       "reads": "{count} 次阅读",
       "comments": "{count} 条评论",
+      "compactReads": "阅读 {count}",
+      "compactComments": "评论 {count}",
       "characters": "{count} 字",
       "minutes": "{count} 分钟",
       "readingTime": "{count} 分钟阅读",

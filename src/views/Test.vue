@@ -26,6 +26,8 @@
         :title="item.title"
         :description="item.description"
         :cover="item.cover"
+        cover-class="min-h-44 flex-1 sm:min-h-56"
+        compact-on-mobile
         icon="ri-test-tube-line"
         action="打开测试"
       >
