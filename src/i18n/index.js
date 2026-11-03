@@ -1,5 +1,6 @@
 import { inject, computed, ref } from "vue";
 import { createI18n } from "vue-i18n";
+import { formatDate, FULL_DATE_OPTIONS } from "./format-date.js";
 import zh from "./messages/zh-CN/common.json";
 import { messageLoaders, getRouteMessageGroups } from "./message-groups.js";
 import {
@@ -44,7 +45,9 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     legacy: false,
     locale: DEFAULT_LOCALE,
     fallbackLocale: {
-      ...Object.fromEntries(LOCALES.map(({ code }) => [code, getLocaleFallbacks(code).slice(1)])),
+      ...Object.fromEntries(
+        LOCALES.map(({ code }) => [code, getLocaleFallbacks(code).slice(1)]),
+      ),
       default: [DEFAULT_LOCALE],
     },
     pluralRules: {
@@ -67,7 +70,10 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     sourceKeys.clear();
     // Shared labels stay available when previously visited pages are not loaded
     // in the newly selected language.
-    for (const group of [...activeGroups.filter((group) => group !== "common"), "common"]) {
+    for (const group of [
+      ...activeGroups.filter((group) => group !== "common"),
+      "common",
+    ]) {
       const messages = sourceMessages.get(group);
       if (messages) indexSources(messages, sourceKeys);
     }
@@ -85,7 +91,8 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     if (!pending.has(id)) {
       const loader = loaders[`./messages/${id}.json`];
       if (!loader) {
-        if (code === DEFAULT_LOCALE) throw new Error(`Unknown locale message group: ${id}`);
+        if (code === DEFAULT_LOCALE)
+          throw new Error(`Unknown locale message group: ${id}`);
         loaded.add(id);
         return;
       }
@@ -177,12 +184,12 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
     new Intl.NumberFormat(locale.value, options).format(value);
   const date = (
     value,
-    options = { year: "numeric", month: "long", day: "numeric" },
+    options = FULL_DATE_OPTIONS,
   ) => {
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime())
       ? String(value || "")
-      : new Intl.DateTimeFormat(locale.value, options).format(parsed);
+      : formatDate(parsed, locale.value, options);
   };
   return {
     i18n,
@@ -197,11 +204,17 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
       activeGroups = getRouteMessageGroups(route);
       refreshSources();
       groupSequence++;
-      await Promise.all([...new Set([locale.value, requestedLocale])].map(load));
+      await Promise.all(
+        [...new Set([locale.value, requestedLocale])].map(load),
+      );
     },
     message: (key, params = {}) => ({ key, params }),
     commentLocale: computed(() =>
-      locale.value === DEFAULT_LOCALE ? "zh-CN" : locale.value === "fr" ? "fr" : "en",
+      locale.value === DEFAULT_LOCALE
+        ? "zh-CN"
+        : locale.value === "fr"
+          ? "fr"
+          : "en",
     ),
     async restoreLocale(info = null) {
       globalInfo = info;

@@ -97,7 +97,7 @@
             </span>
             <span
               class="font-serif text-[0.625rem] leading-relaxed tracking-wide text-white/80 italic @min-[30rem]/entrance:text-xs"
-              >{{ localClock.date }}, {{ localClock.year }}</span
+              >{{ localClock.date }}</span
             >
           </time>
         </div>
@@ -168,7 +168,7 @@ import {
 import { useLocale } from "@/i18n";
 import { getImageAttrs } from "@/utils/images/responsive-images";
 
-const { t: translate } = useLocale();
+const { t: translate, date: formatLocalizedDate } = useLocale();
 const slideshow = ref(null);
 const current = ref(0);
 const localNow = ref(null);
@@ -278,27 +278,12 @@ const slides = [
     year: 2024,
   },
 ];
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 const pad = (value) => String(value).padStart(2, "0");
 const localClock = computed(() => {
   const now = localNow.value;
   if (!now)
     return {
       datetime: undefined,
-      year: "----",
       date: "—",
       time: "--:--:--",
       hours: 0,
@@ -316,8 +301,7 @@ const localClock = computed(() => {
   const zone = `${offset < 0 ? "-" : "+"}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
   return {
     datetime: `${year}-${pad(month + 1)}-${day}T${time}${zone}`,
-    year,
-    date: `${months[month]} ${day}`,
+    date: formatLocalizedDate(now),
     time: `${pad(hours)}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${period}`,
     hours,
     period,

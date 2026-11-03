@@ -467,11 +467,12 @@
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
+import { FULL_DATE_OPTIONS } from '@/i18n/format-date.js';
 const { t: translate, text: localizeText, message: localeMessage, date: formatLocalizedDate, number: formatNumber, locale: uiLocale } = useLocale();
 
 const metadataValue = (meta) => {
   if (meta.rawValue != null && /^(date|created|updated|modified|modifiedDate|uploadDate)$/.test(meta.key)) {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options = { ...FULL_DATE_OPTIONS };
     if (/[T\s]\d{1,2}:\d{2}/.test(String(meta.rawValue))) Object.assign(options, { hour: '2-digit', minute: '2-digit' });
     return formatLocalizedDate(meta.rawValue, options);
   }

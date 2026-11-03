@@ -1,3 +1,5 @@
+import { formatDate, FULL_DATE_OPTIONS } from "../../i18n/format-date.js";
+
 export const announcementToneLabel = {
   info: "信息",
   warning: "提醒",
@@ -8,11 +10,9 @@ export const formatAnnouncementDate = (value, includeTime = false, locale = "zh-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value || "");
 
-  return new Intl.DateTimeFormat(locale, {
+  return formatDate(date, locale, {
+    ...FULL_DATE_OPTIONS,
     timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
     ...(includeTime
       ? {
           hour: "2-digit",
@@ -20,5 +20,5 @@ export const formatAnnouncementDate = (value, includeTime = false, locale = "zh-
           hour12: false,
         }
       : {}),
-  }).format(date);
+  });
 };

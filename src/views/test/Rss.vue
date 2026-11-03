@@ -170,6 +170,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useLocale } from "@/i18n";
+import { FULL_DATE_OPTIONS } from "@/i18n/format-date.js";
 
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import { sanitizeMarkdownHtml } from "@/utils/markdown/sanitize-html";
@@ -264,16 +266,15 @@ const loadFeed = async () => {
   }
 };
 
+const { date: formatLocalizedDate } = useLocale();
 const formatDate = (value) => {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return "未知时间";
-  return new Intl.DateTimeFormat("zh-CN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+  return formatLocalizedDate(date, {
+    ...FULL_DATE_OPTIONS,
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
+  });
 };
 
 onMounted(loadFeed);

@@ -277,6 +277,7 @@ import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatar
 provideMarkdownAvatars(import.meta.env.VITE_NOVEL_RAW);
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from "@/i18n";
+import { FULL_DATE_OPTIONS } from "@/i18n/format-date.js";
 const {
   t: translate,
   commentLocale,
@@ -827,9 +828,7 @@ const chapterStats = computed(() => {
       text: currentChapter.value?.uploadDate
         ? translate("blog.article.publishDate", {
             p0: formatLocalizedDate(currentChapter.value.uploadDate, {
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
+              ...FULL_DATE_OPTIONS,
               hour: "2-digit",
               minute: "2-digit",
             }),

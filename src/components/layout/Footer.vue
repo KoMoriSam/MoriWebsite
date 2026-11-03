@@ -165,6 +165,7 @@
 <script setup>
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
+import { formatDate, FULL_DATE_OPTIONS } from "@/i18n/format-date.js";
 const { t: translate, locale: uiLocale, number: formatNumber } = useLocale();
 
 import { computed } from "vue";
@@ -194,11 +195,9 @@ const startedAtLabel = computed(() => {
   const date = new Date(startedAt.value);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat(uiLocale.value, {
+  return formatDate(date, uiLocale.value, {
+    ...FULL_DATE_OPTIONS,
     timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  }).format(date);
+  });
 });
 </script>

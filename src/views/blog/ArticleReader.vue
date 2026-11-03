@@ -201,7 +201,7 @@
                 data-pagefind-sort="date"
                 class="sr-only"
               >
-                {{ publicationDate }}
+                {{ formatLocalizedDate(publicationDate) }}
               </time>
 
               <p
@@ -538,7 +538,6 @@ import { githubSession } from "@/composables/auth/useGithubSession";
 import Thread from "@/components/comments/Thread.vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { useDateFormat } from "@vueuse/core";
 
 import { useReaderStore } from "@/stores/readerStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
@@ -948,7 +947,7 @@ const getArticleRoute = (article) => {
 };
 
 const formatArticleDate = (article) => {
-  return getArticleDate(article).replaceAll("-", "/");
+  return formatLocalizedDate(getArticleDate(article));
 };
 
 const handleArticleNavigation = (article, event) => {

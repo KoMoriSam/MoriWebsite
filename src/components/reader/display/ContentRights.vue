@@ -46,7 +46,7 @@
             {{ translate("common.contentRights.publishedAt") }}
           </dt>
           <dd class="mt-0.5 text-sm leading-relaxed font-mono">
-            <time :datetime="publishedAt">{{ publishedAt }}</time>
+            <time :datetime="publishedAt">{{ formatLocalizedDate(publishedAt) }}</time>
           </dd>
         </div>
         <div class="min-w-0 max-w-full">
@@ -97,7 +97,7 @@ const props = defineProps({
   author: { type: String, default: "" },
   publishedAt: { type: String, default: "" },
 });
-const { t: translate } = useLocale();
+const { t: translate, date: formatLocalizedDate } = useLocale();
 const licenseInfo = computed(() =>
   resolveContentLicense(
     props.license,
