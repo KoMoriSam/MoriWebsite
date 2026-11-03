@@ -1,17 +1,11 @@
 import {
-  articleRoutes,
-  generatedArticleList,
-  generatedBlogTotalPages,
-} from "./ssg-data";
-
-import {
   createRouter,
   createWebHistory,
   createMemoryHistory,
 } from "vue-router";
-import { gameRoutes } from '@/games/catalog';
-import { getBlogListScroll } from '@/utils/blog/list-scroll';
-import { getNavbarScrollOffset } from '@/utils/layout/navbar';
+import { gameRoutes } from "@/games/catalog";
+import { getBlogListScroll } from "@/utils/blog/list-scroll";
+import { getNavbarScrollOffset } from "@/utils/layout/navbar";
 
 const testRoutes = import.meta.env.DEV
   ? (await import("./test-routes")).testRoutes
@@ -41,7 +35,11 @@ export const routes = [
     path: "/",
     name: "home",
     component: () => import("@/views/Home.vue"),
-    meta: { title: "主页 | 远方之森", navName: "home", localeGroups: ["home", "tools", "games", "kaiming", "novel", "reader"] },
+    meta: {
+      title: "主页 | 远方之森",
+      navName: "home",
+      localeGroups: ["home", "tools", "games", "kaiming", "novel", "reader"],
+    },
   },
   {
     path: "/home",
@@ -49,9 +47,6 @@ export const routes = [
       name: "home",
     }),
   },
-  // 生产构建时由统一的 SSG 数据快照提供具体文章路径。
-  // 开发环境该数组为空，不依赖 generated 文件。
-  ...articleRoutes,
   {
     path: "/blog",
     name: "blog",
@@ -61,8 +56,6 @@ export const routes = [
       navName: "blog",
       blogList: true,
       localeGroups: ["blog", "reader"],
-      blogTotalPages: generatedBlogTotalPages,
-      articles: generatedArticleList,
     },
   },
   {
@@ -74,8 +67,6 @@ export const routes = [
       navName: "blog",
       blogList: true,
       localeGroups: ["blog", "reader"],
-      blogTotalPages: generatedBlogTotalPages,
-      articles: generatedArticleList,
     },
   },
   {
@@ -94,16 +85,20 @@ export const routes = [
     path: "/licenses",
     name: "licenses",
     component: () => import("@/views/Licenses.vue"),
-    meta: { title: "开源许可与第三方声明 | 远方之森", localeGroups: ["licenses"] },
+    meta: {
+      title: "开源许可与第三方声明 | 远方之森",
+      localeGroups: ["licenses"],
+    },
   },
   {
     path: "/blog/:articleId/:locale",
     name: "blog-article-locale",
     component: () => import("@/views/Blog.vue"),
     meta: {
-      title: "博客 | 远方之森", navName: "blog", hideToTop: true,
+      title: "博客 | 远方之森",
+      navName: "blog",
+      hideToTop: true,
       localeGroups: ["blog", "reader"],
-      articles: generatedArticleList,
     },
   },
   {
@@ -121,7 +116,11 @@ export const routes = [
     path: "/novel",
     name: "novel",
     component: () => import("@/views/Novel.vue"),
-    meta: { title: "《向远方》 | 远方之森", navName: "novel", localeGroups: ["novel", "reader"] },
+    meta: {
+      title: "《向远方》 | 远方之森",
+      navName: "novel",
+      localeGroups: ["novel", "reader"],
+    },
   },
   {
     path: "/novel/:volumeSlug/:chapterSlug?",
@@ -138,32 +137,52 @@ export const routes = [
     path: "/tools",
     name: "tools",
     component: () => import("@/views/Tools.vue"),
-    meta: { title: "工具集 | 远方之森", navName: "tools", localeGroups: ["tools"] },
+    meta: {
+      title: "工具集 | 远方之森",
+      navName: "tools",
+      localeGroups: ["tools"],
+    },
   },
   {
     path: "/games",
     name: "games",
     component: () => import("@/views/Games.vue"),
-    meta: { title: "游戏 | 远方之森", navName: "games", localeGroups: ["games"] },
+    meta: {
+      title: "游戏 | 远方之森",
+      navName: "games",
+      localeGroups: ["games"],
+    },
   },
   ...gameRoutes,
   {
     path: "/tools/server-status",
     name: "server-status",
     component: () => import("@/views/tools/ServerStatus.vue"),
-    meta: { title: "Minecraft 服务器状态 | 远方之森", navName: "tools", localeGroups: ["server-status"] },
+    meta: {
+      title: "Minecraft 服务器状态 | 远方之森",
+      navName: "tools",
+      localeGroups: ["server-status"],
+    },
   },
   {
     path: "/tools/sinhala-font-converter",
     name: "sinhala-font-converter",
     component: () => import("@/views/tools/SinhalaFontConverter.vue"),
-    meta: { title: "僧伽罗字体编码转换器 | 远方之森", navName: "tools", localeGroups: ["sinhala-font-converter"] },
+    meta: {
+      title: "僧伽罗字体编码转换器 | 远方之森",
+      navName: "tools",
+      localeGroups: ["sinhala-font-converter"],
+    },
   },
   {
     path: "/tools/image-converter",
     name: "image-converter",
     component: () => import("@/views/tools/ImageConverter.vue"),
-    meta: { title: "图片格式转换 | 远方之森", navName: "tools", localeGroups: ["image-converter"] },
+    meta: {
+      title: "图片格式转换 | 远方之森",
+      navName: "tools",
+      localeGroups: ["image-converter"],
+    },
   },
   {
     path: "/kaiming",
@@ -187,7 +206,11 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     if (globalThis.__moriModalFallbackRestoring) return false;
     if (savedPosition) return savedPosition;
-    if (to.meta.blogList && !to.hash && (from.params.articleId || from.meta.article)) {
+    if (
+      to.meta.blogList &&
+      !to.hash &&
+      (from.params.articleId || from.meta.article)
+    ) {
       const position = getBlogListScroll(to);
       if (position) return position;
     }
@@ -201,10 +224,12 @@ const router = createRouter({
         // 非法转义交给原始 ID 尝试匹配。
       }
 
-      const target = document.getElementById(anchorId) || document.getElementById(rawHash);
+      const target =
+        document.getElementById(anchorId) || document.getElementById(rawHash);
       if (target) return { el: target, top: getNavbarScrollOffset() };
     }
-    const articleId = (route) => String(route.params.articleId || route.meta.article?.id || "");
+    const articleId = (route) =>
+      String(route.params.articleId || route.meta.article?.id || "");
     if (articleId(to) && articleId(to) === articleId(from)) return false;
     if (to.path !== from.path) return { top: 0 };
     return false;

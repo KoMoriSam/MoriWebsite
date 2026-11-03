@@ -40,7 +40,7 @@ export function restorePageData(data, route) {
   ) {
     payload = { changelog: data.changelog };
   } else if (
-    ["home", "novel", "novel-reader"].includes(route.name) &&
+    ["home", "novel"].includes(route.name) &&
     data.novelChapters &&
     typeof data.novelChapters === "object"
   ) {
@@ -70,7 +70,7 @@ export function createPageData(snapshot, route) {
     };
   } else if (route.name === "changelog") {
     payload = { changelog: snapshot.changelog };
-  } else if (["home", "novel", "novel-reader"].includes(route.name)) {
+  } else if (["home", "novel"].includes(route.name)) {
     payload = { novelChapters: snapshot.novelChapters };
   } else {
     return null;

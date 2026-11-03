@@ -545,6 +545,7 @@ import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
 import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
 import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
+import { sortArticleNavigation } from "@/utils/blog/article-navigation";
 import CONFIG from "@/constants/config";
 import {
   getArticleLocales,
@@ -889,35 +890,12 @@ const publicationYear = computed(() => {
 
 const getArticleDate = (article) => normalizeArticleDate(article?.date);
 
-const getArticleTimestamp = (article) => {
-  const date = getArticleDate(article);
-  if (!date) return null;
-
-  const timestamp = Date.parse(`${date}T00:00:00.000Z`);
-  return Number.isNaN(timestamp) ? null : timestamp;
-};
-
-const chronologicalArticles = computed(() => {
-  const sourceArticles = Array.isArray(props.articles) ? props.articles : [];
-
-  return sourceArticles
-    .map((article, index) => ({
-      article,
-      index,
-      timestamp: getArticleTimestamp(article),
-    }))
-    .filter(({ article }) => article?.id != null)
-    .sort((a, b) => {
-      if (a.timestamp === null && b.timestamp === null) {
-        return a.index - b.index;
-      }
-      if (a.timestamp === null) return 1;
-      if (b.timestamp === null) return -1;
-
-      return a.timestamp - b.timestamp || a.index - b.index;
-    })
-    .map(({ article }) => article);
-});
+const chronologicalArticles = computed(() =>
+  sortArticleNavigation(
+    Array.isArray(props.articles) ? props.articles : [],
+    normalizeArticleDate,
+  ),
+);
 
 const currentArticleIndex = computed(() => {
   const currentId = String(props.article?.id ?? "");

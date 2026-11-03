@@ -1,10 +1,11 @@
-import { access, mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import dotenv from "dotenv";
 
 import { createRssFeed } from "../lib/rss-content.mjs";
+import { digest } from "../lib/build-cache.mjs";
 
 dotenv.config({ path: ".env.production", quiet: true });
 
@@ -13,19 +14,39 @@ const outputPath = resolve("public/rss.xml");
 const contentBaseUrl = String(process.env.VITE_BLOG_RAW || "").trim();
 
 if (!contentBaseUrl) {
-  throw new Error("无法生成博客订阅源。请在 .env.production 中设置 VITE_BLOG_RAW。");
+  throw new Error(
+    "无法生成博客订阅源。请在 .env.production 中设置 VITE_BLOG_RAW。",
+  );
 }
 
 try {
   await access(snapshotPath);
 } catch {
-  throw new Error("博客内容尚未准备完成。请先运行 pnpm generate routes，再生成订阅源。");
+  throw new Error(
+    "博客内容尚未准备完成。请先运行 pnpm generate routes，再生成订阅源。",
+  );
 }
 
 const snapshotUrl = pathToFileURL(snapshotPath);
 snapshotUrl.searchParams.set("rss", String(Date.now()));
 const snapshot = (await import(snapshotUrl.href)).default;
-const { xml, items } = createRssFeed(snapshot?.articles, { contentBaseUrl });
+const version = process.env.SSG_CONTENT_CACHE_VERSION;
+const cacheFile = resolve(".tmp/site-search-cache/rss.json");
+const previous = version
+  ? await readFile(cacheFile, "utf8")
+      .then(JSON.parse)
+      .catch(() => ({}))
+  : {};
+const current = {};
+const { xml, items } = createRssFeed(snapshot?.articles, {
+  contentBaseUrl,
+  renderContent(input, render) {
+    if (!version) return render();
+    const key = digest(JSON.stringify([version, contentBaseUrl, input]));
+    return (current[key] = previous[key] ?? render());
+  },
+});
+if (version) await writeFile(cacheFile, JSON.stringify(current));
 
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, xml, "utf8");

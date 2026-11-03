@@ -24,8 +24,8 @@ import { useHead } from "@unhead/vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
-import SessionProbe from '@/components/auth/SessionProbe.vue';
-import { useGithubSession } from '@/composables/auth/useGithubSession';
+import SessionProbe from "@/components/auth/SessionProbe.vue";
+import { useGithubSession } from "@/composables/auth/useGithubSession";
 import NavBar from "@/components/layout/NavBar.vue";
 import NavigationFeedback from "@/components/feedback/NavigationFeedback.vue";
 import NoticeDialog from "@/components/announcement/interaction/NoticeDialog.vue";
@@ -43,9 +43,12 @@ import { useLocale } from "@/i18n";
 import { useThemeTransition } from "@/composables/layout/useThemeTransition";
 import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
 import { useToast } from "@/composables/useToast";
-import { findRouteGame } from '@/games/catalog';
-import { getArticleLocales, getArticlePath } from '@/utils/blog/article-versions';
-import { useArticlePageStore } from '@/stores/article-page';
+import { findRouteGame } from "@/games/catalog";
+import {
+  getArticleLocales,
+  getArticlePath,
+} from "@/utils/blog/article-versions";
+import { useArticlePageStore } from "@/stores/article-page";
 
 const { t: translate, locale, text: localizeText, restoreLocale } = useLocale();
 const { GLOBAL_INFO } = useGlobalStorage();
@@ -78,28 +81,60 @@ const SOCIAL_IMAGE = `${SITE_URL}/assets/images/profile/me0.webp`;
 const KEYWORDS = "远方之森,个人博客,技术博客,独立开发,原创小说,向远方";
 
 const PAGE_DESCRIPTIONS = {
-  get games() { return translate('games.description'); },
-  get licenses() { return translate('site.licensesDescription'); },
-  get blog() { return translate('site.blogDescription'); },
-  get "blog-article"() { return translate('site.articleDescription'); },
-  get changelog() { return translate('site.changelogDescription'); },
-  get announcements() { return translate('site.announcementsDescription'); },
-  get novel() { return translate('site.novelDescription'); },
-  get "novel-reader"() { return translate('site.chapterDescription'); },
-  get tools() { return translate('site.toolsDescription'); },
-  get "server-status"() { return translate('site.serverDescription'); },
-  get "sinhala-font-converter"() { return translate('site.sinhalaDescription'); },
-  get kaiming() { return translate('site.kaimingDescription'); },
-  get NotFound() { return translate('site.notFoundDescription'); },
+  get games() {
+    return translate("games.description");
+  },
+  get licenses() {
+    return translate("site.licensesDescription");
+  },
+  get blog() {
+    return translate("site.blogDescription");
+  },
+  get "blog-article"() {
+    return translate("site.articleDescription");
+  },
+  get changelog() {
+    return translate("site.changelogDescription");
+  },
+  get announcements() {
+    return translate("site.announcementsDescription");
+  },
+  get novel() {
+    return translate("site.novelDescription");
+  },
+  get "novel-reader"() {
+    return translate("site.chapterDescription");
+  },
+  get tools() {
+    return translate("site.toolsDescription");
+  },
+  get "server-status"() {
+    return translate("site.serverDescription");
+  },
+  get "sinhala-font-converter"() {
+    return translate("site.sinhalaDescription");
+  },
+  get kaiming() {
+    return translate("site.kaimingDescription");
+  },
+  get NotFound() {
+    return translate("site.notFoundDescription");
+  },
   test: "远方之森网站的组件测试页面。",
 };
 
 const routeName = computed(() => String(route.name || ""));
 const articlePageStore = useArticlePageStore();
-const articlePage = computed(() => articlePageStore.page?.path === route.path ? articlePageStore.page : null);
-const article = computed(() => articlePage.value ? articlePage.value.article : route.meta.article || null);
+const articlePage = computed(() =>
+  articlePageStore.page?.path === route.path ? articlePageStore.page : null,
+);
+const article = computed(() =>
+  articlePage.value ? articlePage.value.article : route.meta.article || null,
+);
 const isArticle = computed(() => Boolean(article.value));
-const contentLocale = computed(() => article.value?.lang || article.value?.sourceLocale || locale.value);
+const contentLocale = computed(
+  () => article.value?.lang || article.value?.sourceLocale || locale.value,
+);
 const blogPageNumber = computed(() => {
   if (!route.meta.blogList) return 1;
 
@@ -118,18 +153,23 @@ const hasBlogFilters = computed(() => {
   });
 });
 const isIndexable = computed(
-  () => !["NotFound", "test"].includes(routeName.value) && !articlePage.value?.unavailable &&
-    (!/^\/blog\/[^/]+(?:\/[^/]+)?$/.test(route.path) || route.meta.blogList || Boolean(article.value)),
+  () =>
+    !["NotFound", "test", "novel-reader"].includes(routeName.value) &&
+    !articlePage.value?.unavailable &&
+    (!/^\/blog\/[^/]+(?:\/[^/]+)?$/.test(route.path) ||
+      route.meta.blogList ||
+      Boolean(article.value)),
 );
 
 const pageTitle = computed(() => {
   const game = findRouteGame(routeName.value);
   if (game) return `${translate(game.titleKey)} | ${SITE_NAME}`;
-  if (routeName.value === 'games') return `${translate('games.title')} | ${SITE_NAME}`;
+  if (routeName.value === "games")
+    return `${translate("games.title")} | ${SITE_NAME}`;
   if (routeName.value === "home") return localizeText(DEFAULT_TITLE);
   if (routeName.value === "novel-reader") return novelTitle.value;
   if (route.meta.blogList) {
-    return translate('site.blogPageTitle', { p0: blogPageNumber.value });
+    return translate("site.blogPageTitle", { p0: blogPageNumber.value });
   }
   return article.value?.title
     ? `${article.value.title} | ${SITE_NAME}`
@@ -138,12 +178,14 @@ const pageTitle = computed(() => {
 
 const pageDescription = computed(() => {
   if (route.meta.blogList && blogPageNumber.value > 1) {
-    return translate('site.blogPageDescription', { p0: blogPageNumber.value });
+    return translate("site.blogPageDescription", { p0: blogPageNumber.value });
   }
 
   const description =
     article.value?.summary ||
-    (findRouteGame(routeName.value) ? translate(findRouteGame(routeName.value).descriptionKey) : '') ||
+    (findRouteGame(routeName.value)
+      ? translate(findRouteGame(routeName.value).descriptionKey)
+      : "") ||
     PAGE_DESCRIPTIONS[routeName.value] ||
     localizeText(DEFAULT_DESCRIPTION);
 
@@ -151,7 +193,14 @@ const pageDescription = computed(() => {
 });
 
 const canonicalUrl = computed(() => {
-  if (article.value) return new URL(getArticlePath(article.value.id, article.value.lang || article.value.sourceLocale || 'zh-CN'), `${SITE_URL}/`).href;
+  if (article.value)
+    return new URL(
+      getArticlePath(
+        article.value.id,
+        article.value.lang || article.value.sourceLocale || "zh-CN",
+      ),
+      `${SITE_URL}/`,
+    ).href;
   const path = routeName.value === "home" ? "/" : route.path;
   return new URL(path, `${SITE_URL}/`).href;
 });
@@ -162,7 +211,12 @@ const headLinks = computed(() => {
   const links = [{ rel: "canonical", href: canonicalUrl.value }];
   if (article.value) {
     for (const lang of getArticleLocales(article.value)) {
-      links.push({ rel: 'alternate', hreflang: lang, href: new URL(getArticlePath(article.value.id, lang), `${SITE_URL}/`).href });
+      links.push({
+        rel: "alternate",
+        hreflang: lang,
+        href: new URL(getArticlePath(article.value.id, lang), `${SITE_URL}/`)
+          .href,
+      });
     }
   }
 
@@ -279,7 +333,12 @@ useHead(() => {
           ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
           : "noindex, nofollow",
       },
-      { property: "og:locale", content: { 'zh-CN': 'zh_CN', en: 'en_US', fr: 'fr_FR', si: 'si_LK' }[contentLocale.value] },
+      {
+        property: "og:locale",
+        content: { "zh-CN": "zh_CN", en: "en_US", fr: "fr_FR", si: "si_LK" }[
+          contentLocale.value
+        ],
+      },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: pageTitle.value },
       { property: "og:description", content: pageDescription.value },
@@ -291,7 +350,9 @@ useHead(() => {
       { property: "og:image", content: SOCIAL_IMAGE },
       {
         property: "og:image:alt",
-        get content() { return translate('site.avatar'); },
+        get content() {
+          return translate("site.avatar");
+        },
       },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: pageTitle.value },
@@ -324,7 +385,9 @@ onMounted(() => {
     return;
   }
 
-  void restoreLocale(GLOBAL_INFO).catch(() => localeToast.error(translate('common.languageLoadFailed')));
+  void restoreLocale(GLOBAL_INFO).catch(() =>
+    localeToast.error(translate("common.languageLoadFailed")),
+  );
 
   const { migrateStorage } = useStorageMigration();
 

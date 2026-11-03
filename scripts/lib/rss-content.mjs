@@ -112,13 +112,18 @@ const bannerFileName = (banner) => {
   const value = normalizeText(banner);
   if (!value) return "";
   try {
-    return decodeURIComponent(new URL(value, RSS_SITE_URL).pathname.split("/").at(-1) || "");
+    return decodeURIComponent(
+      new URL(value, RSS_SITE_URL).pathname.split("/").at(-1) || "",
+    );
   } catch {
     return value.split("|")[0].split("/").at(-1) || "";
   }
 };
 
-const normalizeArticle = (entry, { assetResolver, now, siteUrl }) => {
+const normalizeArticle = (
+  entry,
+  { assetResolver, now, siteUrl, renderContent },
+) => {
   const article = entry?.article || {};
   const id = normalizeText(entry?.id || article.id);
   if (!id) throw new Error("RSS 文章缺少 id。");
@@ -140,16 +145,17 @@ const normalizeArticle = (entry, { assetResolver, now, siteUrl }) => {
     `${siteUrl}/`,
   ).href;
   const resolvedBannerName = bannerFileName(article.banner);
-  const markdown = assetResolver.normalizeMarkdown(content, {
-    bannerName: resolvedBannerName,
-    output: "markdown",
+  const html = renderContent([content, articleUrl, resolvedBannerName], () => {
+    const markdown = assetResolver.normalizeMarkdown(content, {
+      bannerName: resolvedBannerName,
+      output: "markdown",
+    });
+    const rendered = renderMarkdown(markdown, { mode: MARKDOWN_MODE_STANDARD });
+    return makeHtmlUrlsAbsolute(sanitizeMarkdownHtml(rendered), articleUrl, {
+      assetResolver,
+      bannerName: resolvedBannerName,
+    });
   });
-  const rendered = renderMarkdown(markdown, { mode: MARKDOWN_MODE_STANDARD });
-  const html = makeHtmlUrlsAbsolute(
-    sanitizeMarkdownHtml(rendered),
-    articleUrl,
-    { assetResolver, bannerName: resolvedBannerName },
-  );
   const summary = truncateText(article.summary || extractPlainText(html));
   const tags = [
     ...new Set(
@@ -198,10 +204,12 @@ export const createRssFeed = (
     now = new Date(),
     siteUrl = RSS_SITE_URL,
     limit = RSS_ITEM_LIMIT,
+    renderContent = (_input, render) => render(),
   } = {},
 ) => {
   if (!Array.isArray(entries)) throw new Error("RSS 文章数据必须是数组。");
-  if (!normalizeText(contentBaseUrl)) throw new Error("RSS 缺少博客资源基础地址。");
+  if (!normalizeText(contentBaseUrl))
+    throw new Error("RSS 缺少博客资源基础地址。");
   if (!(now instanceof Date) || !Number.isFinite(now.getTime())) {
     throw new Error("RSS 生成时间无效。");
   }
@@ -221,6 +229,7 @@ export const createRssFeed = (
       assetResolver,
       now,
       siteUrl: normalizedSiteUrl,
+      renderContent,
     });
     if (!item) continue;
     if (seenIds.has(item.id)) throw new Error(`RSS 文章 id 重复：${item.id}`);
