@@ -4,13 +4,13 @@
   >
     <button
       class="tab flex-nowrap whitespace-nowrap"
-      :class="isKaimingActive || projectsOpen ? 'tab-active' : ''"
+      :class="isKaimingActive || projectsOpen ? 'tab-active font-bold' : ''"
       :aria-expanded="projectsOpen"
       popovertarget="projects-megamenu"
       type="button"
     >
       <i
-        class="shrink-0 text-lg"
+        class="shrink-0 text-lg font-normal"
         :class="isKaimingActive ? 'ri-shapes-fill' : 'ri-shapes-line'"
       ></i>
       {{ translate("common.mobileNav.projects") }}

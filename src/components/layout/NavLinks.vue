@@ -3,7 +3,7 @@
     v-for="link in navLinks"
     :key="link.to.name"
     :to="link.to"
-    class="tab flex-nowrap whitespace-nowrap lg:max-xl:[--tab-p:0.5rem] xl:gap-2"
+    class="tab flex-nowrap whitespace-nowrap"
     :class="isLinkActive(link) ? 'tab-active font-bold' : ''"
     :aria-current="isLinkActive(link) ? 'page' : undefined"
   >

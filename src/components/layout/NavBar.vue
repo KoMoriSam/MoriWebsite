@@ -42,7 +42,7 @@
     </nav>
     <nav class="navbar-center h-full max-lg:min-w-0 max-lg:shrink">
       <SiteLogo class="lg:hidden" />
-      <div class="hidden h-full items-center lg:flex">
+      <div class="hidden h-full items-center lg:flex [&>.tabs>.tab]:gap-2">
         <div
           class="tabs tabs-border h-full flex-nowrap [--tab-height:var(--navbar-height)]"
         >
