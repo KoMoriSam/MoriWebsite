@@ -59,21 +59,30 @@
             class="skeleton absolute inset-0 rounded-none"
             aria-hidden="true"
           ></div>
-          <img
-            v-fade-in
-            :key="cover"
-            :ref="syncCoverImage"
-            v-bind="coverAttrs"
-            :data-cover-src="cover"
-            :alt="title"
-            loading="lazy"
-            decoding="async"
-            draggable="false"
-            class="absolute inset-0 size-full object-center transition-[opacity,transform,scale] duration-500 ease-out group-hover:scale-105 motion-reduce:transform-none motion-reduce:scale-none motion-reduce:transition-none"
-            :class="contain ? 'object-contain' : 'object-cover'"
-            @load="handleCoverLoad"
-            @error="handleCoverError"
-          />
+          <div
+            class="absolute inset-0 transition-[scale] duration-500 ease-out group-hover:scale-105 motion-reduce:scale-none motion-reduce:transition-none"
+          >
+            <img
+              v-fade-in
+              :key="cover"
+              :ref="syncCoverImage"
+              v-bind="coverAttrs"
+              :data-cover-src="cover"
+              :alt="title"
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+              class="absolute inset-0 size-full object-center transition-opacity duration-500 ease-out motion-reduce:transition-none"
+              :class="contain ? 'object-contain' : 'object-cover'"
+              @load="handleCoverLoad"
+              @error="handleCoverError"
+            />
+            <div
+              class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-200 motion-reduce:transition-none"
+              :class="overlayTitle ? 'opacity-100' : 'opacity-0'"
+              aria-hidden="true"
+            ></div>
+          </div>
         </template>
         <template v-else>
           <div
@@ -94,11 +103,6 @@
             aria-hidden="true"
           ></div>
         </template>
-        <div
-          class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-200 motion-reduce:transition-none"
-          :class="overlayTitle ? 'opacity-100' : 'opacity-0'"
-          aria-hidden="true"
-        ></div>
       </div>
 
       <div
