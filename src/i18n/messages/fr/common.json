@@ -71,8 +71,8 @@
     "compactDaLabel": "Formes compactes de « ද »"
   },
   "licenses": {
-    "title": "Licence",
-    "statement": "Licences libres et mentions relatives aux tiers",
+    "title": "Licences libres et mentions relatives aux tiers",
+    "projectLicense": "Licence",
     "viewEnglishSource": "Voir la source en anglais"
   },
   "server": {

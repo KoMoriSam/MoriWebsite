@@ -71,8 +71,8 @@
     "compactDaLabel": "Compact “ද” forms"
   },
   "licenses": {
-    "title": "License",
-    "statement": "Open-source licenses & third-party notices",
+    "title": "Open-source licenses & third-party notices",
+    "projectLicense": "License",
     "viewEnglishSource": "View English source"
   },
   "server": {
