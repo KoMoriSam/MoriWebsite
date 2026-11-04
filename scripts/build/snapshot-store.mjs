@@ -2,26 +2,50 @@ import { spawn } from "node:child_process";
 import { copyFile, mkdir, open, rename, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 
+const r2Settings = {
+  SSG_R2_ENDPOINT: {
+    pattern: /^https:\/\/[a-f0-9]+(?:\.(?:eu|fedramp|us))?\.r2\.cloudflarestorage\.com\/?$/u,
+    expected: "the account S3 API endpoint, without a bucket path",
+  },
+  SSG_R2_BUCKET: {
+    pattern: /^[a-z0-9-]+$/u,
+    expected: "the bucket name",
+  },
+  SSG_R2_ACCESS_KEY: {
+    pattern: /^[a-zA-Z0-9]+$/u,
+    expected: "the R2 S3 Access Key ID",
+  },
+  SSG_R2_SECRET_KEY: {
+    pattern: /^[a-zA-Z0-9]+$/u,
+    expected: "the R2 S3 Secret Access Key",
+  },
+  SSG_SNAPSHOT_NAMESPACE: {
+    pattern: /^[a-z0-9-]+$/u,
+    expected: "a lowercase prefix such as production",
+  },
+};
+
 export function snapshotStore() {
+  const settings = Object.fromEntries(
+    Object.keys(r2Settings).map((name) => [name, process.env[name]?.trim() || ""]),
+  );
+  if (!Object.values(settings).some(Boolean)) return null;
+  const invalid = [];
+  for (const [name, { pattern, expected }] of Object.entries(r2Settings)) {
+    if (!settings[name]) invalid.push(`${name} is missing`);
+    else if (!pattern.test(settings[name])) invalid.push(`${name} must be ${expected}`);
+  }
+  if (invalid.length)
+    throw new Error(`Invalid R2 snapshot configuration: ${invalid.join(", ")}`);
+
   const {
-    SSG_R2_ENDPOINT: endpoint,
+    SSG_R2_ENDPOINT: endpointSetting,
     SSG_R2_BUCKET: bucket,
     SSG_R2_ACCESS_KEY: key,
     SSG_R2_SECRET_KEY: secret,
     SSG_SNAPSHOT_NAMESPACE: namespace,
-  } = process.env;
-  if (![endpoint, bucket, key, secret, namespace].some(Boolean)) return null;
-  if (
-    !/^https:\/\/[a-f0-9]+\.r2\.cloudflarestorage\.com$/u.test(
-      endpoint || "",
-    ) ||
-    !/^[a-z0-9-]+$/u.test(bucket || "") ||
-    !/^[a-z0-9-]+$/u.test(namespace || "") ||
-    !/^[a-zA-Z0-9]+$/u.test(key || "") ||
-    !/^[a-zA-Z0-9]+$/u.test(secret || "")
-  ) {
-    throw new Error("Invalid R2 snapshot configuration");
-  }
+  } = settings;
+  const endpoint = endpointSetting.replace(/\/$/u, "");
   async function request(method, name, { input, output, create } = {}) {
     const args = [
       "--silent",
