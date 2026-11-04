@@ -411,6 +411,8 @@ try {
     await phase("indexes", async () => {
       if (full || blogChanged) await copyFile("public/rss.xml", "dist/rss.xml");
       if (full || blogChanged || novelChanged) {
+        // Incremental builds skip frontend compilation, which generates this Pagefind input.
+        if (!full) await step("build/licenses", "--source");
         for (const directory of [
           ...(full || blogChanged ? ["pagefind"] : []),
           ...(full || novelChanged ? ["pagefind-novel"] : []),
