@@ -16,6 +16,8 @@
   <a href="https://komori.cc/rss.xml">S'abonner au blog</a>
   ·
   <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Signaler un problème</a>
+  ·
+  <a href="#langues">Other languages</a>
 </p>
 
 <p align="center">
@@ -28,15 +30,15 @@
 
 远方之森 est le site personnel de Mori. Il rassemble des explorations techniques, des essais, des notes de lecture, un roman original, des outils du quotidien et des jeux de société multijoueurs. Il est accessible directement sur ordinateur ou téléphone.
 
-| Votre objectif | Où aller |
-| --- | --- |
-| Lire des articles | [Blog](https://komori.cc/blog) : rechercher par mot-clé, étiquette et année, puis choisir parmi les versions linguistiques publiées |
-| Suivre le roman | [Vers le lointain /《向远方》](https://komori.cc/novel) : parcourir les volumes et chapitres, reprendre la lecture et régler la mise en page |
-| Convertir des images | [Convertisseur d'images](https://komori.cc/tools/image-converter) : conversion par lot, compression, redimensionnement, filigranes et traitement d'animations |
-| Traiter du texte cinghalais | [Convertisseur d'encodage de polices](https://komori.cc/tools/sinhala-font-converter) : convertir entre Unicode et encodages traditionnels, y compris dans des documents |
-| Consulter un serveur | [État d'un serveur Minecraft](https://komori.cc/tools/server-status) : vérifier sa connexion et ses informations en ligne |
-| Jouer entre amis | [Avalon](https://komori.cc/games/avalon), déduction sociale pour 5 à 10 joueurs ; [Fogport](https://komori.cc/games/fogport), jeu de gestion pour 2 à 4 joueurs |
-| Découvrir le projet de polices | [Kaiming](https://komori.cc/kaiming) : présentation du projet et ressources typographiques |
+| Votre objectif                 | Où aller                                                                                                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Lire des articles              | [Blog](https://komori.cc/blog) : rechercher par mot-clé, étiquette et année, puis choisir parmi les versions linguistiques publiées                                      |
+| Suivre le roman                | [Vers le lointain /《向远方》](https://komori.cc/novel) : parcourir les volumes et chapitres, reprendre la lecture et régler la mise en page                             |
+| Convertir des images           | [Convertisseur d'images](https://komori.cc/tools/image-converter) : conversion par lot, compression, redimensionnement, filigranes et traitement d'animations            |
+| Traiter du texte cinghalais    | [Convertisseur d'encodage de polices](https://komori.cc/tools/sinhala-font-converter) : convertir entre Unicode et encodages traditionnels, y compris dans des documents |
+| Consulter un serveur           | [État d'un serveur Minecraft](https://komori.cc/tools/server-status) : vérifier sa connexion et ses informations en ligne                                                |
+| Jouer entre amis               | [Avalon](https://komori.cc/games/avalon), déduction sociale pour 5 à 10 joueurs ; [Fogport](https://komori.cc/games/fogport), jeu de gestion pour 2 à 4 joueurs          |
+| Découvrir le projet de polices | [Kaiming](https://komori.cc/kaiming) : présentation du projet et ressources typographiques                                                                               |
 
 ## Lecture et discussions
 
@@ -54,19 +56,19 @@ Abonnez-vous au [flux RSS](https://komori.cc/rss.xml) pour suivre le blog. Les �
 
 **Le convertisseur d'images** traite les images dans le navigateur. Il permet de préparer des lots, réduire la taille des fichiers, uniformiser les dimensions, ajouter des filigranes textuels ou graphiques et traiter des images animées.
 
-**Le convertisseur d'encodage de polices cinghalaises** convertit entre Unicode et encodages traditionnels. Vous pouvez coller du texte ou traiter des fichiers DOCX, PPTX et PDF contenant du texte sélectionnable, puis exporter un DOCX ou un PPTX modifiable.
+**Le convertisseur d'encodage de polices cinghalaises** convertit entre Unicode et encodages traditionnels. Vous pouvez coller du texte ou traiter des fichiers DOCX et PPTX. Pour un PDF contenant du texte sélectionnable, vous pouvez exporter le contenu dans un DOCX modifiable ou la mise en page dans un PPTX modifiable.
 
 **Les jeux de société multijoueurs** permettent de rejoindre une même salle avec un code ou un lien d'invitation. Avalon propose la configuration des rôles, les votes d'équipe, les missions et l'historique des parties. Fogport repose sur les industries, les liaisons, les ressources et les ventes ; il s'agit d'une version de test dont le développement est suspendu et certaines fonctions restent inachevées.
 
 ## Utilisation des contenus
 
-| Contenu | Conditions |
-| --- | --- |
-| Code source logiciel original de ce dépôt | [Licence MIT](./LICENSE) |
-| Articles originaux du blog | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) par défaut ; consulter la licence indiquée sur chaque article |
-| Roman original Vers le lointain /《向远方》 | Tous droits réservés (All Rights Reserved) |
-| Bibliothèques, polices, icônes, images et autres éléments tiers | Leurs licences ou mentions de droits respectives |
-| Commentaires des lecteurs | Les droits restent à leurs auteurs, selon leurs mentions de droits |
+| Contenu                                                         | Conditions                                                                                                                          |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Code source logiciel original de ce dépôt                       | [Licence MIT](./LICENSE)                                                                                                            |
+| Articles originaux du blog                                      | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) par défaut ; consulter la licence indiquée sur chaque article |
+| Roman original Vers le lointain /《向远方》                     | Tous droits réservés (All Rights Reserved)                                                                                          |
+| Bibliothèques, polices, icônes, images et autres éléments tiers | Leurs licences ou mentions de droits respectives                                                                                    |
+| Commentaires des lecteurs                                       | Les droits restent à leurs auteurs, selon leurs mentions de droits                                                                  |
 
 La fiche d'attribution de chaque article présente son titre, son lien, son auteur, sa date de publication et sa licence pour identifier la source et les conditions applicables. Les licences tierces sont consultables sur la [page des licences](https://komori.cc/licenses), dans les [mentions en anglais](./THIRD_PARTY_NOTICES.md) et les [mentions en chinois](./THIRD_PARTY_NOTICES.zh-CN.md).
 
@@ -96,43 +98,56 @@ Ouvrez l'adresse affichée dans le terminal. Les adresses de contenu peuvent aus
 
 Configurez les autres services selon vos besoins :
 
-| Variable d'environnement | Utilisation |
-| --- | --- |
-| `VITE_SERVER_ADDRESS` | Serveur Minecraft interrogé par défaut |
-| `VITE_RANDOM_HERO_API` | Service d'arrière-plan aléatoire de l'accueil |
-| `VITE_COMMENT_COUNTS_API` | Nombre de commentaires par paragraphe |
-| `VITE_GAMES_API` | Service des salles multijoueurs |
-| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Services du journal et des annonces |
-| `VITE_ANALYTICS_API` | Service de statistiques de fréquentation |
+| Variable d'environnement                       | Utilisation                                   |
+| ---------------------------------------------- | --------------------------------------------- |
+| `VITE_SERVER_ADDRESS`                          | Serveur Minecraft interrogé par défaut        |
+| `VITE_RANDOM_HERO_API`                         | Service d'arrière-plan aléatoire de l'accueil |
+| `VITE_COMMENT_COUNTS_API`                      | Nombre de commentaires par paragraphe         |
+| `VITE_GAMES_API`                               | Service des salles multijoueurs               |
+| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Services du journal et des annonces           |
+| `VITE_ANALYTICS_API`                           | Service de statistiques de fréquentation      |
 
 Les variables `VITE_` sont intégrées au code client et doivent contenir uniquement une configuration publique. Conservez les jetons des dépôts privés et les identifiants de déploiement dans les Secrets de l'environnement de build.
 
 ## Construire et publier
 
-Workers Builds construit le site et les contenus ensemble, puis Workers Static Assets les héberge. Un build de production complet nécessite l'accès aux deux dépôts privés de contenu, ou des Vaults locaux indiqués par `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`. Les exporteurs travaillent sur des copies temporaires ; le site, le RSS et l'index de recherche utilisent le même instantané de contenu.
+### Construire en local
 
-| Source ou ressource | Publication |
-| --- | --- |
-| Code du site | Après validation, une balise `v<version>` avance `production` et déclenche Workers Builds ; les commits ordinaires de `main` sont mis en ligne lors d'une version |
-| Blog et roman | Les dépôts privés `ObsidianVault` et `MyWritingVault` conservent les sources ; chacun utilise son `WORKERS_BUILD_HOOK` pour reconstruire `production` après une mise à jour |
-| Polices Kaiming | Les ressources proviennent d'une GitHub Release de `KoMoriSam/Kaiming` et sont vérifiées avant publication ; une version des polices déclenche le build par son Hook |
-| Ressources Giscus | Thèmes et animation de chargement sont maintenus dans `giscus/` et publiés séparément depuis un terminal local avec `pnpm run deploy giscus` |
-| Images et autres ressources de contenu | Publiées avec le Worker de contenu ; R2 est facultatif et actuellement désactivé |
+Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou utilisez `CONTENT_GITHUB_TOKEN` pour lire les deux dépôts privés de contenu. Le site, le flux RSS et l'index de recherche utilisent le même export.
 
-Les ressources utilisent `raw.komori.cc` : `/post` pour le blog, `/novel` pour le roman, `/giscus` pour les thèmes de commentaires, `/kaiming` pour les polices et `/giscus/images/spin.gif` pour l'animation de chargement. `theWake` et `theHorizon` hébergent les discussions ; les sources privées fournissent les textes publiés.
+| Commande                            | Résultat                                                                                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm build`                        | Effectuer un build complet du site dans `dist/` et des ressources dans `.output/content/`                                               |
+| `pnpm run build:smart`              | Utiliser l'instantané local pour choisir entre un build incrémental et un build complet ; ajouter `--full` pour forcer un build complet |
+| `pnpm run build:smart --dry-run`    | Voir le mode de build et les changements prévus sans déployer                                                                           |
+| `pnpm preview`                      | Prévisualiser le site généré                                                                                                            |
+| `pnpm check <cible>`                | Exécuter les vérifications ciblées ; sans cible, afficher les options                                                                   |
+| `pnpm generate <cible>`             | Générer les ressources choisies ; sans cible, afficher les options                                                                      |
+| `pnpm release prepare <version>`    | Préparer le numéro de version, les notes et le brouillon d'annonce                                                                      |
+| `pnpm release verify <version>`     | Vérifier la cohérence des versions du paquet, des README et du journal                                                                  |
+| `pnpm run deploy <cible>`           | Publier le site, les contenus, l'API ou Giscus ; sans cible, afficher les options                                                       |
+| `pnpm release announcement publish` | Publier les annonces séparément                                                                                                         |
 
-Workers Builds surveille `production`, exécute `pnpm build`, puis déploie avec `pnpm run deploy website`. Son Secret de build `CONTENT_GITHUB_TOKEN` doit disposer d'un accès Contents en lecture seule aux deux dépôts privés. Les Hooks de contenu ciblent également `production` : leurs mises à jour utilisent donc le code du site déjà publié. GitHub Actions assure la validation des versions, le déclenchement des builds et les autres automatisations.
+### Publier en production
 
-| Commande | Résultat |
-| --- | --- |
-| `pnpm build` | Générer le site dans `dist/`, les ressources dans `.output/content/`, le RSS, l'index de recherche et les licences |
-| `pnpm preview` | Prévisualiser le site construit pour la production |
-| `pnpm check <cible>` | Exécuter les vérifications ciblées ; sans cible, afficher les options |
-| `pnpm generate <cible>` | Générer les ressources choisies ; sans cible, afficher les options |
-| `pnpm release prepare <version>` | Préparer le numéro de version, les notes et le brouillon d'annonce |
-| `pnpm release verify <version>` | Vérifier la cohérence des versions du paquet, des README et du journal |
-| `pnpm run deploy <cible>` | Publier le site, les contenus, l'API ou Giscus ; sans cible, afficher les options |
-| `pnpm release announcement publish` | Publier les annonces séparément |
+| Source de la mise à jour                 | Mise en ligne                                                                                                                                                                    |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code du site                             | GitHub Actions valide la balise `v<version>` et met à jour `production`, ce qui déclenche Workers Builds. Les commits ordinaires de `main` sont mis en ligne lors d'une version. |
+| Blog et roman                            | Une mise à jour dans l'un des dépôts privés `ObsidianVault` ou `MyWritingVault` déclenche son `WORKERS_BUILD_HOOK` et utilise le code du site déjà publié sur `production`.      |
+| Polices Kaiming                          | Une nouvelle version déclenche un Deploy Hook. Le build télécharge et vérifie les ressources de la GitHub Release de `KoMoriSam/Kaiming`.                                        |
+| Thèmes Giscus et animation de chargement | Maintenus dans `giscus/` et publiés séparément avec `pnpm run deploy giscus`.                                                                                                    |
+
+Workers Builds restaure l'instantané du dernier déploiement réussi. Si seul le contenu change et que l'instantané est compatible, la génération statique incrémentale reconstruit les pages et les ressources concernées et réutilise le code du site déjà compilé. Le build est complet si le code du site ou la configuration de build change, ou si l'instantané est inutilisable. S'il n'y a rien à publier, le déploiement est ignoré. Les deux modes réutilisent les variantes d'image valides déjà en cache. Le journal de build indique `INCREMENTAL`, `FULL` ou `SKIPPED`.
+
+Une publication incrémentale ne déploie que les Workers dont les fichiers générés ont changé. Workers Static Assets sert le site et ses contenus. Le compartiment R2 privé conserve les instantanés de build. Les textes et images du blog et du roman restent accessibles via `raw.komori.cc/post` et `raw.komori.cc/novel`. Sur le même domaine, `/kaiming` sert les polices et `/giscus` les thèmes de commentaires, avec l'animation à l'adresse `/giscus/images/spin.gif`.
+
+Dans les paramètres Workers Builds de `website`, choisissez `production` comme branche de production, laissez la commande de build vide et définissez la commande de déploiement sur `pnpm run build:smart --deploy`. Configurez les variables suivantes dans l'environnement de build de production :
+
+| Paramètre                                                    | Valeur                                                                                                                                                                                                                       |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONTENT_GITHUB_TOKEN` (secret)                              | Jeton GitHub avec accès Contents en lecture seule aux deux dépôts privés de contenu                                                                                                                                          |
+| `SSG_R2_ENDPOINT`, `SSG_R2_BUCKET`, `SSG_SNAPSHOT_NAMESPACE` | Point de terminaison de l'API S3 de R2 sans le chemin du compartiment, nom du compartiment privé des instantanés et `production`, respectivement                                                                             |
+| `SSG_R2_ACCESS_KEY`, `SSG_R2_SECRET_KEY` (secrets)           | Identifiant de clé d'accès et clé secrète issus des mêmes [identifiants S3 de R2](https://developers.cloudflare.com/r2/get-started/s3/), avec l'autorisation **Object Read & Write** limitée au compartiment des instantanés |
 
 Les annonces sont regroupées sous `x.y.0`. Maintenance, optimisations et corrections sont intégrées à la même annonce pour présenter l'expérience complète d'une version en un seul endroit. Le front matter des articles peut préciser une `license` ; la valeur par défaut est `CC BY-NC-SA 4.0`, et les traductions héritent de la licence originale sauf indication contraire.
 
