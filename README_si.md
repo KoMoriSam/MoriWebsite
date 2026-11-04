@@ -16,8 +16,14 @@
   <a href="https://komori.cc/rss.xml">බ්ලොග් යාවත්කාලීන ලබාගන්න</a>
   ·
   <a href="https://github.com/KoMoriSam/MoriWebsite/issues">ගැටලුවක් දන්වන්න</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README.md">中文</a>
   ·
-  <a href="#වෙනත්-භාෂා">Other languages</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_en.md">English</a>
+  ·
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_fr.md">Français</a>
 </p>
 
 <p align="center">
@@ -156,9 +162,3 @@ Workers Builds අවසන් වරට සාර්ථකව ප්‍රක�
 ## ප්‍රතිචාර සහ සහභාගීත්වය
 
 ගැටලුවක් හෝ යෝජනාවක් සඳහා [Issue එකක් විවෘත කරන්න](https://github.com/KoMoriSam/MoriWebsite/issues). අදාළ පිටුව, නැවත ඇති කරන පියවර, අපේක්ෂිත හා සැබෑ ප්‍රතිඵල, බ්‍රව්සරය සහ එහි අනුවාදය සඳහන් කිරීම ගැටලුව හඳුනාගැනීමට උපකාරී වේ. ලිපි සහ නවකතාව ගැන සාකච්ඡා කිරීමට අදාළ පිටුවේ අදහස් කොටස භාවිත කරන්න.
-
-## වෙනත් භාෂා
-
-- [中文](./README.md)
-- [English](./README_en.md)
-- [Français](./README_fr.md)

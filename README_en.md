@@ -16,8 +16,14 @@
   <a href="https://komori.cc/rss.xml">Subscribe to the blog</a>
   ·
   <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Report an issue</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README.md">中文</a>
   ·
-  <a href="#languages">Other languages</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_fr.md">Français</a>
+  ·
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_si.md">සිංහල</a>
 </p>
 
 <p align="center">
@@ -156,9 +162,3 @@ Start with `src/views/` for pages, and find related implementations in `src/comp
 ## Feedback and participation
 
 [Open an issue](https://github.com/KoMoriSam/MoriWebsite/issues) to report a problem or suggest an improvement. Include the page, steps to reproduce, expected and actual behavior, and browser version. For conversations about the writing, use the comments on the article or novel page.
-
-## Languages
-
-- [中文](./README.md)
-- [Français](./README_fr.md)
-- [සිංහල](./README_si.md)

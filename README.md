@@ -16,8 +16,14 @@
   <a href="https://komori.cc/rss.xml">订阅博客</a>
   ·
   <a href="https://github.com/KoMoriSam/MoriWebsite/issues">反馈问题</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_en.md">English</a>
   ·
-  <a href="#其他语言">Other languages</a>
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_fr.md">Français</a>
+  ·
+  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_si.md">සිංහල</a>
 </p>
 
 <p align="center">
@@ -156,9 +162,3 @@ Workers Builds 恢复上次成功发布的快照。仅内容变化且快照兼�
 ## 反馈与参与
 
 遇到问题或有改进建议，可以[提交 Issue](https://github.com/KoMoriSam/MoriWebsite/issues)。描述所在页面、操作步骤、预期结果、实际表现与浏览器版本，有助于复现问题。阅读交流可直接使用文章或小说页面的评论区。
-
-## 其他语言
-
-- [English](./README_en.md)
-- [Français](./README_fr.md)
-- [සිංහල](./README_si.md)
