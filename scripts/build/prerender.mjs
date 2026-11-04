@@ -11,6 +11,8 @@ import {
   resolveArticleVersion,
 } from "../../src/utils/blog/article-versions.js";
 import { sortArticleNavigation } from "../../src/utils/blog/article-navigation.js";
+import { createArticleWikiLinkResolver } from "../../src/utils/blog/article-wiki-links.js";
+import { wikiLinkDependencies } from "../../src/utils/markdown/markdown-it-wikilink.js";
 import { fileInside } from "../lib/content-files.mjs";
 
 const require = createRequire(import.meta.url);
@@ -103,6 +105,9 @@ const list = articles.filter(
       entry.article.lang === (entry.article.sourceLocale || "zh-CN")),
 );
 const listHash = hash(list);
+const resolveArticleWikiLink = createArticleWikiLinkResolver(
+  list.map(({ article }) => article),
+);
 const homeArticles = list
   .filter(({ article }) => article.public !== false)
   .map(({ article }) => {
@@ -206,6 +211,7 @@ const pages = Object.fromEntries(
         input: hash([
           article,
           article && neighbors.get(article.id),
+          article && wikiLinkDependencies(article.content, resolveArticleWikiLink),
           blogList && listHash,
           home && homeBlogHash,
           route === "/tools/sinhala-font-converter" && guideRoutes,

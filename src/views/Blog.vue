@@ -36,6 +36,7 @@ import {
   defineAsyncComponent,
   computed,
   nextTick,
+  provide,
   ref,
   onBeforeUnmount,
   onMounted,
@@ -45,6 +46,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
 import { useArticlePageStore } from "@/stores/article-page";
 import { getArticlePath, getSourceLocale, resolveArticleVersion } from "@/utils/blog/article-versions";
+import { createArticleWikiLinkResolver } from "@/utils/blog/article-wiki-links";
+import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 import { captureTrackedPosition, restoreTrackedPosition } from "@/composables/usePosTracker";
 import { fetchBlogSearchArticles } from "@/services/search-content";
 
@@ -87,6 +90,10 @@ const initialArticles = Array.isArray(route.meta.articles)
   ? route.meta.articles
   : [];
 const articles = ref(initialArticles);
+provide(
+  WIKI_LINK_RESOLVER,
+  computed(() => createArticleWikiLinkResolver(articles.value)),
+);
 const localizedArticles = computed(() => articles.value.map((article) => resolveArticleVersion(article, uiLocale.value)));
 const loadingList = ref(initialArticles.length === 0);
 

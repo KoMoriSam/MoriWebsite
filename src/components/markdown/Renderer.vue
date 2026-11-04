@@ -50,7 +50,7 @@
 import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 
-import { computed, h, nextTick, onMounted, ref, watch } from "vue";
+import { computed, h, inject, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import LoadingIndicator from "@/components/feedback/LoadingIndicator.vue";
@@ -72,6 +72,7 @@ import {
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
+import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 
 const props = defineProps({
   lang: { type: String, default: "" },
@@ -157,6 +158,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["refresh", "render-ready"]);
+const wikiLinkResolver = inject(WIKI_LINK_RESOLVER, null);
 const isReaderMode = computed(() => props.mode === MARKDOWN_MODE_READER);
 const isStandardMode = computed(() => props.mode === MARKDOWN_MODE_STANDARD);
 const PROSE_SIZE_CLASSES = {
@@ -789,7 +791,11 @@ const renderedPages = computed(() => {
 
     return {
       ...page,
-      html: renderMarkdown(page.source, { mode: props.mode, plugins }),
+      html: renderMarkdown(page.source, {
+        mode: props.mode,
+        plugins,
+        resolveWikiLink: wikiLinkResolver?.value,
+      }),
     };
   });
 });

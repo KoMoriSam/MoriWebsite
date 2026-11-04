@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it";
+import { wikiLinkPlugin } from "./markdown-it-wikilink.js";
 
 export const MARKDOWN_MODE_READER = "reader";
 export const MARKDOWN_MODE_STANDARD = "standard";
@@ -21,7 +22,7 @@ const MARKDOWN_OPTIONS = {
 
 export const renderMarkdown = (
   source = "",
-  { mode = MARKDOWN_MODE_READER, plugins = [] } = {},
+  { mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink } = {},
 ) => {
   const md = new MarkdownIt(
     MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER],
@@ -31,6 +32,7 @@ export const renderMarkdown = (
     if (Array.isArray(plugin)) md.use(plugin[0], plugin[1]);
     else md.use(plugin);
   });
+  md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
 
   return md.render(String(source || ""));
 };
