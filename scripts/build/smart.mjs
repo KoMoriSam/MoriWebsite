@@ -235,6 +235,12 @@ try {
           file.startsWith("scripts/lib/"),
       ),
     ]);
+    const contentWorkerFingerprint = hash(
+      inputs.filter(
+        ([file]) =>
+          file === "wrangler.content.jsonc" || file === "workers/content.js",
+      ),
+    );
     process.env.SSG_CONTENT_CACHE_VERSION = fingerprint;
     let previous;
     let snapshotHit = false;
@@ -465,12 +471,22 @@ try {
       id,
       fingerprint,
       contentFingerprint,
+      contentWorkerFingerprint,
       ...source,
       site,
       content,
       documents,
       rendererPages: await readJson(resolve(".tmp/site-renderer/pages.json")),
       renderer: await inventory(resolve(".tmp/site-renderer")),
+    };
+    const deployment = {
+      contentChanged:
+        flags.has("--full") ||
+        pending ||
+        previous?.contentWorkerFingerprint !== contentWorkerFingerprint ||
+        deployed?.content !== previous?.versions?.content ||
+        delta.total > 0,
+      siteChanged: full || siteDelta.total > 0,
     };
     await phase("snapshot", async () => {
       await run([
@@ -512,10 +528,7 @@ try {
       await store.put("pending", marker);
       await phase("deploy", async () => {
         try {
-          await deploy("website", [], {
-            contentChanged: full || delta.total > 0,
-            siteChanged: full || siteDelta.total > 0,
-          });
+          await deploy("website", [], deployment);
           state.versions = await activeVersions();
         } catch (error) {
           await restoreVersions(deployed).catch((rollback) => {
@@ -540,6 +553,7 @@ try {
     console.log(
       JSON.stringify({
         ...summary,
+        ...(publish && { deployment }),
         archiveBytes: state.archiveBytes,
         durationMs: Math.round(performance.now() - started),
         assets: {
