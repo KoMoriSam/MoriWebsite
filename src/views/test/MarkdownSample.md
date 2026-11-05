@@ -123,13 +123,23 @@ _[CSS]: Cascading Style Sheets
 
 ## 链接
 
-[站内首页](/)、[GitHub](https://github.com) 与自动链接 <https://komori.cc/>。
-
-这是一个带标题的链接：[Markdown 指南](https://www.markdownguide.org/ "打开 Markdown 指南")。
+[站内首页](/)、[GitHub](https://github.com) 、自动链接 <https://komori.cc/>与带标题的链接[Markdown 指南](https://www.markdownguide.org/ "打开 Markdown 指南")。
 
 [引用式链接][docs]
 
+链接边界空格：前文 [ GitHub docs ](https://github.com) 后文；前文 [ **Git**Hub 文档 ](https://github.com) 后文。
+
+复制文本中的不换行空格：前文&nbsp;[GitHub docs](https://github.com)&nbsp;后文；前文&nbsp;[&nbsp;**Git**Hub 文档&nbsp;](https://github.com)&nbsp;后文。
+
 [docs]: https://www.markdownguide.org/
+
+### 链接卡片
+
+https://github.com/vuejs/core
+
+[[关于僧伽罗语传统字体编码]]
+
+行内对照：[Vue 仓库](https://github.com/vuejs/core) 和 [[关于僧伽罗语传统字体编码|僧伽罗语字体文章]]。
 
 - [google.com](https://google.com)
 - [github.com](https://github.com)

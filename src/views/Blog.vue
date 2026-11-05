@@ -160,7 +160,7 @@ const setupBlogPosTracker = () => {
   stopBlogPosTracker.value = usePosTracker(router, undefined, {
     ...readingProgress.getOptions(articleId),
     getContextId: () => String(currentArticle.value?.id || getRouteArticleId()),
-    posSelector: "#markdown :is(h1, h2, h3, h4, h5, h6, p)[id]",
+    posSelector: "#markdown :is(h1, h2, h3, h4, h5, h6, p, div[data-reader-paragraph-id])[id]",
     onStoredRestore: () => {
       if (restoredArticleId === articleId) return;
       restoredArticleId = articleId;

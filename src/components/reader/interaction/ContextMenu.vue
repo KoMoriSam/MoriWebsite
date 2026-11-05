@@ -34,7 +34,7 @@
             <li v-else>
               <button
                 type="button"
-                :disabled="context.image ? !context.image.src : !context.text"
+                :disabled="context.image ? !context.image.src : !context.link && !context.text"
                 @click="handlePrimaryAction"
               >
                 <i
@@ -45,6 +45,17 @@
                 ></i>
                 <span>{{ context.image ? translate('reader.format.save') : translate('reader.contextMenu.copy') }}</span>
               </button>
+            </li>
+            <li v-if="context.link">
+              <a
+                :href="context.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                @click="close"
+              >
+                <i class="ri-external-link-line" aria-hidden="true"></i>
+                <span>{{ translate('reader.contextMenu.open') }}</span>
+              </a>
             </li>
             <li>
               <button type="button" :disabled="!context.text" @click="searchText">
@@ -192,10 +203,10 @@ const copyToClipboard = async (text) => {
 
 const copyText = async () => {
   try {
-    await copyToClipboard(props.context.text);
-    toast.success(translate('reader.contextMenu.textCopied'));
+    await copyToClipboard(props.context.link || props.context.text);
+    toast.success(translate(props.context.link ? 'reader.contextMenu.linkCopied' : 'reader.contextMenu.textCopied'));
   } catch {
-    toast.error(translate('reader.contextMenu.copyTextFailed'));
+    toast.error(translate(props.context.link ? 'reader.contextMenu.copyLinkFailed' : 'reader.contextMenu.copyTextFailed'));
   }
   close();
 };

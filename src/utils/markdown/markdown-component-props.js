@@ -1,4 +1,5 @@
 import { sanitizeMarkdownResourceUrl } from "./sanitize-html.js";
+import { getGithubRepository } from "./github-repository-link.js";
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -106,6 +107,22 @@ const PROJECTORS = {
   "markdown-link-icon": (value) => {
     const src = sanitizeMarkdownResourceUrl(value.src);
     return src ? { src } : null;
+  },
+  "markdown-link-card": (value) => {
+    const { kind, href } = value;
+    const label = stringValue(value.label);
+    if (kind === "github") {
+      const repository = getGithubRepository(href);
+      return repository ? { kind, href, label, repository } : null;
+    }
+    if (
+      kind === "article" &&
+      typeof href === "string" &&
+      /^\/blog\/[^/?#\\\s\p{Cc}]+\/(?:zh-CN|en|si)(?:#[^\s\p{Cc}]*)?$/u.test(href)
+    ) {
+      return { kind, href, label };
+    }
+    return null;
   },
   "markdown-mermaid": (value) => ({
     source: stringValue(value.source),

@@ -65,10 +65,6 @@ const GISCUS = {
       },
     },
   },
-  paragraphCountsApi: {
-    endpoint: import.meta.env.VITE_COMMENT_COUNTS_API || "",
-    timeout: 8000,
-  },
   // 小说书评
   defaultTerm: "《向远方》 | 远方之森",
 };

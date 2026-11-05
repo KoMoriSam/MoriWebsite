@@ -48,6 +48,7 @@
     "gifenc": "^1.0.3",
     "gifuct-js": "^2.1.2",
     "highlight.js": "^11.11.1",
+    "html-to-image": "^1.11.13",
     "isomorphic-dompurify": "^3.22.0",
     "js-yaml": "^4.1.0",
     "lunar-javascript": "^1.7.7",

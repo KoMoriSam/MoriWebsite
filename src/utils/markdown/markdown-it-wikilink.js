@@ -15,8 +15,9 @@ function parseWikiLink(raw) {
   const target = (pipe < 0 ? raw : raw.slice(0, pipe)).trim();
   const [note, ...sections] = target.split("#").map((part) => part.trim());
   const fragment = sections.at(-1) || "";
+  const alias = pipe < 0 ? "" : raw.slice(pipe + 1).trim();
   const label =
-    (pipe >= 0 && raw.slice(pipe + 1).trim()) ||
+    alias ||
     [note.split("/").at(-1)?.replace(/\.md$/iu, ""), fragment]
       .filter(Boolean)
       .join(" › ");
@@ -26,6 +27,7 @@ function parseWikiLink(raw) {
   return {
     note,
     label,
+    cardLabel: alias || (fragment ? label : ""),
     id: block ? fragment : headingId(sections.map(slugify)),
     heading: Boolean(fragment) && !block,
   };
@@ -39,7 +41,11 @@ export function wikiLinkDependencies(source, resolveNote) {
     if (link?.note && !dependencies.has(link.note))
       dependencies.set(link.note, resolveNote(link.note) || null);
   }
-  return [...dependencies];
+  return [...dependencies].map(([note, path]) => [
+    note,
+    path,
+    path ? resolveNote.articleForPath?.(path) : null,
+  ]);
 }
 
 export function wikiLinkPlugin(md, { resolveNote } = {}) {
@@ -67,7 +73,8 @@ export function wikiLinkPlugin(md, { resolveNote } = {}) {
       const { id } = link;
       const token = state.push("link_open", "a", 1);
       token.attrSet("href", path + (id ? `#${encodeURIComponent(id)}` : ""));
-      if (!path && link.heading) token.meta = { wikiHeading: id };
+      if (path) token.meta = { wikiArticleLabel: link.cardLabel };
+      else if (link.heading) token.meta = { wikiHeading: id };
     }
     state.push("text", "", 0).content = link.label;
     if (canLink) state.push("link_close", "a", -1);

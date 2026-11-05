@@ -48,7 +48,12 @@
 
 <script setup>
 import { useLocale } from "@/i18n";
-const { t: translate, text: localizeText } = useLocale();
+const {
+  t: translate,
+  text: localizeText,
+  date: formatDate,
+  number: formatNumber,
+} = useLocale();
 
 import { computed, h, inject, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
@@ -56,11 +61,15 @@ import { useRoute } from "vue-router";
 import LoadingIndicator from "@/components/feedback/LoadingIndicator.vue";
 import Alert from "@/components/markdown/blocks/Alert.vue";
 import Chat from "@/components/markdown/blocks/Chat.vue";
+import GithubRepositoryCard from "@/components/markdown/blocks/GithubRepositoryCard.vue";
 import CodeBlock from "@/components/markdown/code/CodeBlock.vue";
 import LinkIcon from "@/components/markdown/blocks/LinkIcon.vue";
 import Mermaid from "@/components/markdown/blocks/Mermaid.vue";
 import Moment from "@/components/markdown/blocks/Moment.vue";
 import ImagePreview from "@/components/interaction/overlay/ImagePreview.vue";
+import CatalogCard from "@/components/interaction/navigation/CatalogCard.vue";
+import CatalogMeta from "@/components/interaction/navigation/CatalogMeta.vue";
+import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
@@ -72,6 +81,7 @@ import {
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
+import { sanitizeMarkdownResourceUrl } from "@/utils/markdown/sanitize-html";
 import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 
 const props = defineProps({
@@ -241,13 +251,16 @@ import {
   hasParagraphCountsApi,
 } from "@/services/api-paragraph-comments";
 
-const paragraphPlugin = useParagraphComments();
+const paragraphPlugin = useParagraphComments({
+  resolver: (context) => resolveMarkdownComponent(context),
+});
 const route = useRoute();
 const articleRef = ref(null);
 const imagePreviewRef = ref(null);
 const latestBatchToken = ref(0);
 const markdownRenderVersion = ref(0);
 const markdownPreparing = ref(false);
+const markdownFeaturesReady = ref(false);
 const mathJaxPlugin = ref(null);
 let markdownFeatureRequestId = 0;
 const headerParagraphId = computed(() => {
@@ -420,7 +433,7 @@ let renderReadyCycle = 0;
 let emittedRenderReadyCycle = -1;
 
 const syncRenderReady = async (cycle = renderReadyCycle) => {
-  if (import.meta.env.SSR || props.isLoading) return;
+  if (import.meta.env.SSR || props.isLoading || !markdownFeaturesReady.value) return;
 
   await nextTick();
   if (cycle !== renderReadyCycle || emittedRenderReadyCycle === cycle) return;
@@ -517,6 +530,67 @@ const resolveMarkdownComponent = ({
   if (tagName === "markdown-link-icon") {
     return h(LinkIcon, { ...componentProps, key });
   }
+  if (tagName === "markdown-link-card") {
+    const { kind, href, label, repository } = componentProps;
+    if (kind === "github") {
+      return h(GithubRepositoryCard, { key, href, label, repository });
+    }
+    const article = wikiLinkResolver?.value?.articleForPath?.(href.split("#", 1)[0]);
+    if (!article) return false;
+    const publishedDate = normalizeArticleDate(article.date);
+    const length = Number(article.length);
+    const hasLength = article.length != null && Number.isFinite(length) && length >= 0;
+    const readingTime = Math.max(1, Math.ceil(length / 300));
+    return h(CatalogCard, {
+      key,
+      to: href,
+      title: label || article.title,
+      titleTag: "div",
+      description: article.summary || "",
+      cover: sanitizeMarkdownResourceUrl(article.banner),
+      lang: article.lang,
+      compact: true,
+      class: "not-prose @container/article-card font-sans",
+    }, {
+      meta: () => h("span", {
+        class: "grid w-full min-w-0 grid-cols-2 gap-x-1.5 gap-y-0.5 @min-[30rem]/article-card:grid-cols-[minmax(0,1fr)_auto_auto]",
+      }, [
+        publishedDate
+          ? h(CatalogMeta, {
+              tag: "time",
+              datetime: publishedDate,
+              icon: "ri-calendar-line",
+              class: "col-span-2 @min-[30rem]/article-card:col-span-1 [&>span]:truncate",
+              title: formatDate(publishedDate),
+            }, { default: () => formatDate(publishedDate) })
+          : null,
+        hasLength
+          ? h(CatalogMeta, {
+              icon: "ri-t-box-line",
+              class: "col-start-1 tabular-nums @min-[30rem]/article-card:col-start-2 [&>span]:truncate",
+            }, {
+              default: () => translate(
+                "common.counts.characters",
+                { count: formatNumber(length) },
+                length,
+              ),
+            })
+          : null,
+        hasLength
+          ? h(CatalogMeta, {
+              icon: "ri-time-line",
+              class: "col-start-2 tabular-nums @min-[30rem]/article-card:col-start-3 [&>span]:truncate",
+            }, {
+              default: () => translate(
+                "common.counts.minutes",
+                { count: formatNumber(readingTime) },
+                readingTime,
+              ),
+            })
+          : null,
+      ]),
+    });
+  }
   if (tagName === "markdown-mermaid") {
     return h(Mermaid, {
       ...componentProps,
@@ -564,6 +638,7 @@ watch(
     props.isLoading,
     props.headerData.uuid,
     markdownRenderVersion.value,
+    markdownFeaturesReady.value,
     props.mode,
   ],
   beginRenderReadyCycle,
@@ -805,20 +880,24 @@ watch(
   () => [combinedContent.value, props.mode],
   async ([content]) => {
     const requestId = ++markdownFeatureRequestId;
+    markdownFeaturesReady.value = false;
 
     if (!content) {
       markdownPreparing.value = false;
+      markdownFeaturesReady.value = true;
       return;
     }
 
     if (!isReaderMode.value) {
       markdownPreparing.value = false;
+      markdownFeaturesReady.value = true;
       return;
     }
 
     // SSG 构建时无法执行异步加载，直接渲染基础 Markdown
     if (import.meta.env.SSR) {
       markdownPreparing.value = false;
+      markdownFeaturesReady.value = true;
       return;
     }
 
@@ -828,6 +907,7 @@ watch(
       loadMarkdownFeaturePlugins(content).then(() => {
         if (requestId !== markdownFeatureRequestId) return;
         markdownRenderVersion.value += 1;
+        markdownFeaturesReady.value = true;
       });
       return;
     }
@@ -843,6 +923,7 @@ watch(
     // 异步插件加载完成后重建 MarkdownIt 输出。
     markdownRenderVersion.value += 1;
     markdownPreparing.value = false;
+    markdownFeaturesReady.value = true;
   },
   { immediate: true },
 );

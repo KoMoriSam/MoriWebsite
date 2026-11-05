@@ -295,13 +295,15 @@ export const createReaderTextContext = ({
 }) => {
   if (!root || !(target instanceof Element)) return null;
 
+  const link = target.closest("a[href]");
   const pointTarget = {
     formula: getLatexFormulaAtPoint({ root, target, clientX, clientY }),
     image: getImageAtPoint({ root, target, clientX, clientY }),
     mermaid: getMermaidViewerAtPoint({ root, target, clientX, clientY }),
+    link: link && root.contains(link) ? link : null,
   };
   const hasPointTarget = Boolean(
-    pointTarget.formula || pointTarget.image || pointTarget.mermaid,
+    pointTarget.formula || pointTarget.image || pointTarget.mermaid || pointTarget.link,
   );
   if (requirePointTarget && !hasPointTarget) return null;
 
@@ -314,6 +316,7 @@ export const createReaderTextContext = ({
   const pointedMermaid = selectionDetails ? selectedMermaid : pointTarget.mermaid;
   const pointedFormula = selectionDetails ? null : pointTarget.formula;
   const pointedImage = selectionDetails ? null : pointTarget.image;
+  const pointedLink = selectionDetails ? null : pointTarget.link;
   const activeRange =
     selectionDetails?.range ||
     createNodeRange(pointedFormula?.element || pointedImage?.rangeElement);
@@ -321,6 +324,7 @@ export const createReaderTextContext = ({
     selectionElement ||
     pointedFormula?.element ||
     pointedImage?.element ||
+    pointedLink ||
     target
   ).closest("[data-reader-paragraph-id]");
   const paragraphId =
@@ -337,18 +341,19 @@ export const createReaderTextContext = ({
           pointedImage.image.getAttribute("alt"),
       )
     : "";
-  const text = selectedText || pointedFormula?.text || imageText || paragraphText;
+  const text = selectedText || pointedFormula?.text || imageText || paragraphText ||
+    normalizeReaderText(pointedLink?.textContent || "");
   const shareContent = createReaderShareContent({
     range: activeRange,
     element:
       selectedMermaid ||
       pointedMermaid ||
       pointedImage?.element ||
-      paragraph,
+      paragraph || pointedLink,
   });
   const hasShareContent = Boolean(shareContent.blocks.length);
 
-  if (!text && !paragraphId && !hasShareContent) return null;
+  if (!text && !paragraphId && !hasShareContent && !pointedLink) return null;
 
   return {
     clientX,
@@ -366,6 +371,7 @@ export const createReaderTextContext = ({
     sourceType: paragraph?.dataset.sourceType || "novel",
     commentScope: paragraph?.dataset.readerCommentScope || "paragraph",
     latex,
+    link: pointedLink?.href || "",
     mermaid: Boolean(selectedMermaid || pointedMermaid),
     image: pointedImage
       ? {

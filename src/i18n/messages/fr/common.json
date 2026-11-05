@@ -429,6 +429,10 @@
       "preview": "Aperçu de l’image",
       "previewLabel": "Aperçu de l’image : {p0}"
     },
+    "repository": {
+      "stars": "Étoiles",
+      "forks": "Dépôts dérivés"
+    },
     "mermaid": {
       "tools": "Outils de diagramme Mermaid",
       "switchView": "Changer la vue Mermaid",

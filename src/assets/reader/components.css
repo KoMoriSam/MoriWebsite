@@ -61,6 +61,25 @@
     font-sans font-bold z-10;
   }
 
+  .markdown-content.prose
+    :deep(.markdown-link-card > .card [data-card-motion="title"]) {
+    @apply pe-12;
+  }
+
+  .markdown-content.prose
+    :deep(.markdown-link-card > button.comment-trigger) {
+    @apply absolute top-4 right-3 z-10 m-0 translate-y-0
+    transition-[translate] duration-200 motion-reduce:transition-none;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .markdown-content.prose :deep(.markdown-link-card:hover > .card),
+    .markdown-content.prose
+      :deep(.markdown-link-card:hover > button.comment-trigger) {
+      translate: 0 -0.25rem;
+    }
+  }
+
   /* 包裹元素与标题锚点 (.heading-wrapper) */
   .markdown-content.prose :deep(.heading-wrapper) {
     @apply flex items-center gap-2;

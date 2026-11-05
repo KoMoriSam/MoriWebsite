@@ -425,6 +425,10 @@
       "preview": "Preview image",
       "previewLabel": "Preview image: {p0}"
     },
+    "repository": {
+      "stars": "Stars",
+      "forks": "Forks"
+    },
     "mermaid": {
       "tools": "Mermaid diagram tools",
       "switchView": "Switch Mermaid view",

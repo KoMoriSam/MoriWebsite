@@ -429,6 +429,10 @@
       "preview": "රූපය පෙරදසුන් කරන්න",
       "previewLabel": "රූප පෙරදසුන: {p0}"
     },
+    "repository": {
+      "stars": "තරු",
+      "forks": "අනුපිටපත්"
+    },
     "mermaid": {
       "tools": "Mermaid රූපසටහන් මෙවලම්",
       "switchView": "Mermaid දසුන මාරු කරන්න",

@@ -1,4 +1,5 @@
 import { createLatexSvg, loadLatexSvgImage } from "@/utils/reader/latex";
+import { prepareReaderShareSnapshot, yieldReaderShareTask } from './share-snapshot.js';
 
 export const READER_SHARE_CARD_WIDTH = 1080;
 export const READER_SHARE_CARD_HEIGHT = 1350;
@@ -26,6 +27,8 @@ const BLOCK_TYPES = new Set([
   "table",
   "mermaid",
   "image",
+  "link-card",
+  "separator",
 ]);
 const SYNTAX_COLOR_KEYS = [
   "keyword",
@@ -63,6 +66,7 @@ const WORD_CONNECTOR = /^[\u0026'\u002b,\-./:=?@_\u2019%#]$/u;
 
 let faviconPromise;
 const fontDataUrlPromises = new Map();
+const embeddedFontRulePromises = new Map();
 const linkIconPromises = new Map();
 const contentImagePromises = new Map();
 
@@ -122,9 +126,10 @@ const getSpacedWordStart = (items, nextValue, getValue) => {
 };
 
 const takeLineCarry = (items, nextValue, getValue, applyKinsoku = true) => {
+  const wordBoundary = items.length && /^\s+$/u.test(getValue(items.at(-1)));
   while (items.length && /^\s+$/u.test(getValue(items.at(-1)))) items.pop();
   const carry = [];
-  const wordStart = getSpacedWordStart(items, nextValue, getValue);
+  const wordStart = wordBoundary ? items.length : getSpacedWordStart(items, nextValue, getValue);
   if (wordStart > 0 && wordStart < items.length) {
     carry.unshift(...items.splice(wordStart));
   }
@@ -307,10 +312,11 @@ const loadLinkIcon = (src) => {
   if (linkIconPromises.has(src)) return linkIconPromises.get(src);
   const promise = new Promise((resolve) => {
     const image = new Image();
+    const timer = window.setTimeout(() => { image.onload = image.onerror = null; image.src = ''; resolve(null); }, 8000);
     image.crossOrigin = "anonymous";
     image.referrerPolicy = "no-referrer";
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
+    image.onload = () => { window.clearTimeout(timer); resolve(image); };
+    image.onerror = () => { window.clearTimeout(timer); resolve(null); };
     image.src = src;
   });
   linkIconPromises.set(src, promise);
@@ -322,8 +328,10 @@ const loadContentImage = (src) => {
   if (contentImagePromises.has(src)) return contentImagePromises.get(src);
   const promise = new Promise((resolve) => {
     const image = new Image();
+    const timer = window.setTimeout(() => { image.onload = image.onerror = null; image.src = ''; resolve(null); }, 8000);
     image.crossOrigin = "anonymous";
     image.onload = () => {
+      window.clearTimeout(timer);
       try {
         const probe = document.createElement("canvas");
         probe.width = 1;
@@ -337,7 +345,7 @@ const loadContentImage = (src) => {
         resolve(null);
       }
     };
-    image.onerror = () => resolve(null);
+    image.onerror = () => { window.clearTimeout(timer); resolve(null); };
     image.src = src;
   });
   contentImagePromises.set(src, promise);
@@ -362,6 +370,7 @@ const normalizeRuns = (runs = []) =>
       fontFamily: String(run?.fontFamily || ""),
       fontWeight: String(run?.fontWeight || ""),
       fontStyle: String(run?.fontStyle || ""),
+      fontScale: Math.max(0.5, Math.min(2, Number(run?.fontScale) || 1)),
       textDecoration: String(run?.textDecoration || ""),
       latex: String(run?.latex || ""),
       mathml: String(run?.mathml || ""),
@@ -378,6 +387,8 @@ const normalizeRuns = (runs = []) =>
       mathAsset: null,
       mathAssets: [],
       linkIconSrc: String(run?.linkIconSrc || ""),
+      linkHref: String(run?.linkHref || ""),
+      externalLinkIcon: Boolean(run?.externalLinkIcon),
       linkIconAsset: null,
       inlineImageSrc: String(run?.inlineImageSrc || ""),
       inlineImageSvg: Boolean(run?.inlineImageSvg),
@@ -432,6 +443,7 @@ const normalizeShareContent = (
             ? block.taskTone
             : "muted",
           label: normalizeText(block?.label),
+          coverIcon: block?.coverIcon?.glyph ? { glyph: String(block.coverIcon.glyph), fontFamily: String(block.coverIcon.fontFamily || 'remixicon') } : null,
           systemLabel: block?.systemLabel === true,
           language: normalizeText(block?.language),
           tone: ["info", "success", "warning", "error", "accent"].includes(
@@ -446,18 +458,36 @@ const normalizeShareContent = (
           width: Math.max(1, Number(block?.width) || 1),
           height: Math.max(1, Number(block?.height) || 1),
           imageAsset: null,
+          snapshot: typeof block?.snapshot?.html === 'string' ? block.snapshot : null,
+          snapshotAsset: null,
           style: {
             fontFamily: String(block?.style?.fontFamily || ""),
             fontWeight: String(block?.style?.fontWeight || ""),
             fontStyle: String(block?.style?.fontStyle || ""),
             textDecoration: String(block?.style?.textDecoration || ""),
+            textAlign: String(block?.style?.textAlign || ""),
           },
           runs: normalizeRuns(block?.runs),
+          rows: Array.isArray(block?.rows) ? block.rows.map(row => ({
+            cells: (row.cells || []).map(cell => ({
+              runs: normalizeRuns(cell.runs),
+              header: Boolean(cell.header),
+              align: ['left', 'right', 'center', 'start', 'end'].includes(cell.align) ? cell.align : 'left',
+              colSpan: Math.max(1, Number(cell.colSpan) || 1),
+            })),
+          })) : [],
         }))
+        .map(block => {
+          if (block.rows.length) block.runs = block.rows.flatMap(row => row.cells.flatMap(cell => cell.runs));
+          return block;
+        })
         .filter(
-          ({ type, svg, src, runs }) =>
+          ({ type, svg, src, runs, label, snapshot }) =>
+            Boolean(snapshot) ||
+            type === 'separator' ||
+            (type === 'link-card' && label) ||
             (type === "mermaid" && svg) ||
-            (type === "image" && src) ||
+            (["image", "link-card"].includes(type) && src) ||
             runs.some(({ text }) => text.trim()),
         )
         .filter(
@@ -472,14 +502,17 @@ const normalizeShareContent = (
   if (blocks.length || hasSerializedContent) return blocks;
   const text = String(fallbackText || "").trim();
   return text && !excludedContent.has(normalizeContentKey(text))
-    ? [{ type: "paragraph", runs: [{ text }] }]
+    ? [{ type: "paragraph", runs: normalizeRuns([{ text }]) }]
     : [];
 };
 
 const getRunFont = (run, config, appearance, size = config.fontSize) => {
+  size *= run.fontScale || 1;
   const inlineCode = run.code && !config.codeBlock;
   return {
-    size: run.baseline
+    size: run.externalLinkIcon
+      ? Math.round(size * 0.625)
+      : run.baseline
       ? Math.round(size * 0.68)
       : inlineCode
         ? Math.round(size * 0.875)
@@ -502,7 +535,7 @@ const getRunFont = (run, config, appearance, size = config.fontSize) => {
 };
 
 const prepareLatexRuns = async (blocks, appearance) => {
-  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  const runs = blocks.filter(block => !block.snapshot).flatMap(({ runs: blockRuns }) => blockRuns);
   await Promise.all(
     runs.map(async (run) => {
       if (!run.latex || !run.svg) return;
@@ -542,7 +575,7 @@ const prepareLatexRuns = async (blocks, appearance) => {
 };
 
 const prepareLinkIconRuns = async (blocks) => {
-  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  const runs = blocks.filter(block => !block.snapshot).flatMap(({ runs: blockRuns }) => blockRuns);
   await Promise.all(
     runs.map(async (run) => {
       if (!run.linkIconSrc) return;
@@ -552,7 +585,7 @@ const prepareLinkIconRuns = async (blocks) => {
 };
 
 const prepareInlineImageRuns = async (blocks, localize) => {
-  const runs = blocks.flatMap(({ runs: blockRuns }) => blockRuns);
+  const runs = blocks.filter(block => !block.snapshot).flatMap(({ runs: blockRuns }) => blockRuns);
   await Promise.all(
     runs.map(async (run) => {
       if (!run.inlineImageSrc) return;
@@ -562,6 +595,7 @@ const prepareInlineImageRuns = async (blocks, localize) => {
         return;
       }
       run.text = run.inlineImageAlt || localize("图片");
+      run.assetWarning = run.inlineImageSrc;
       run.inlineImageSrc = "";
     }),
   );
@@ -706,7 +740,7 @@ const loadFontDataUrl = (url) => {
   return fontDataUrlPromises.get(url);
 };
 
-const embedFontRuleSources = async ({ rule, baseUrl }) => {
+const buildEmbeddedFontRule = async ({ rule, baseUrl }) => {
   const cssText = rule.cssText;
   const matches = [
     ...cssText.matchAll(/url\(\s*(?:(["'])(.*?)\1|([^"')]+))\s*\)/giu),
@@ -735,6 +769,17 @@ const embedFontRuleSources = async ({ rule, baseUrl }) => {
     )}`;
   }
   return embedded;
+};
+
+const embedFontRuleSources = (entry) => {
+  const key = entry.baseUrl + ':' + entry.rule.cssText;
+  if (!embeddedFontRulePromises.has(key)) {
+    const embedding = buildEmbeddedFontRule(entry);
+    embeddedFontRulePromises.set(key, embedding);
+    while (embeddedFontRulePromises.size > 128) embeddedFontRulePromises.delete(embeddedFontRulePromises.keys().next().value);
+    embedding.catch(() => { if (embeddedFontRulePromises.get(key) === embedding) embeddedFontRulePromises.delete(key); });
+  }
+  return embeddedFontRulePromises.get(key);
 };
 
 const embedMermaidFonts = async (svg) => {
@@ -797,7 +842,7 @@ const prepareMermaidBlocks = async (blocks) => {
 const prepareImageBlocks = async (blocks, localize) => {
   await Promise.all(
     blocks.map(async (block) => {
-      if (block.type !== "image" || !block.src) return;
+      if (!["image", "link-card"].includes(block.type) || !block.src) return;
       const image = await loadContentImage(block.src);
       if (image) {
         block.imageAsset = {
@@ -826,8 +871,11 @@ const getBlockConfig = (block, baseSize, appearance) => {
     paddingTop: 0,
     paddingBottom: 0,
     gap: Math.round(baseSize * 0.45),
-    justify: true,
+    align: block.style?.textAlign || 'start',
+    justify: !['center', 'right', 'end'].includes(block.style?.textAlign),
   };
+
+  if (block.snapshotAsset) return { ...common, justify: false };
 
   if (block.type === "heading") {
     const fontSize = Math.round(baseSize * (block.level <= 2 ? 1.16 : 1.08));
@@ -850,13 +898,16 @@ const getBlockConfig = (block, baseSize, appearance) => {
     };
   }
   if (block.type === "quote") {
+    const quoteDepth = Math.max(1, Math.min(4, block.depth));
+    const indent = 34 + (quoteDepth - 1) * 24;
     return {
       ...common,
-      x: CARD_PADDING + 34,
-      width: TEXT_WIDTH - 34,
+      x: CARD_PADDING + indent,
+      width: TEXT_WIDTH - indent,
       fontSize: Math.round(baseSize * 0.96),
       lineHeight: Math.round(baseSize * 1.48),
       quoteBarX: CARD_PADDING,
+      quoteDepth,
     };
   }
   if (block.type === "code") {
@@ -877,21 +928,24 @@ const getBlockConfig = (block, baseSize, appearance) => {
       labelHeight,
     };
   }
-  if (["callout", "chat", "moment"].includes(block.type)) {
-    const fontSize = Math.round(baseSize * 0.9);
+  if (["callout", "chat", "moment", "link-card"].includes(block.type)) {
+    const fontSize = Math.round(baseSize * (block.type === 'link-card' ? 0.72 : 0.9));
     const labelHeight = block.label ? Math.round(fontSize * 0.82) : 0;
+    const coverWidth = block.type === 'link-card' ? Math.round(baseSize * 4) : 0;
     return {
       ...common,
-      x: CARD_PADDING + 28,
-      width: TEXT_WIDTH - 56,
+      x: CARD_PADDING + 28 + (coverWidth ? coverWidth + 24 : 0),
+      width: TEXT_WIDTH - 56 - (coverWidth ? coverWidth + 24 : 0),
+      coverWidth,
       fontSize,
       lineHeight: Math.round(fontSize * 1.48),
       paddingTop: 20 + labelHeight,
       paddingBottom: 20,
       gap: Math.round(baseSize * 0.45),
       labelHeight,
+      labelFontSize: block.type === 'link-card' ? Math.round(baseSize * 0.85) : Math.max(22, Math.round(fontSize * 0.5)),
       panel: block.type,
-      justify: block.type === "callout",
+      justify: block.type === "callout" && common.justify,
     };
   }
   if (block.type === "table") {
@@ -905,7 +959,6 @@ const getBlockConfig = (block, baseSize, appearance) => {
       paddingTop: 20,
       paddingBottom: 20,
       gap: Math.round(baseSize * 0.45),
-      panel: "table",
       justify: false,
     };
   }
@@ -1046,7 +1099,7 @@ const createToken = (context, grapheme, run, config, appearance) => {
     style,
     textWidth,
     rubyWidth,
-    width: Math.max(textWidth, rubyWidth),
+    width: Math.max(textWidth, rubyWidth) + (style.externalLinkIcon ? config.fontSize * 0.15625 : 0),
   };
 };
 
@@ -1130,6 +1183,10 @@ const wrapRuns = (context, runs, config, appearance) => {
         ({ text }) => text,
         !config.codeBlock,
       );
+      if (token.style.externalLinkIcon && !carry.length && tokens.length > 1) {
+        const start = getSpacedWordStart(tokens, tokens.at(-1).text, ({ text }) => text);
+        carry.unshift(...tokens.splice(start > 0 ? start : tokens.length - 1));
+      }
       if (tokens.at(-1)?.style.linkIcon) {
         carry.unshift(tokens.pop());
       }
@@ -1177,6 +1234,23 @@ const wrapRuns = (context, runs, config, appearance) => {
       pushToken(token);
       return;
     }
+    if (!config.codeBlock && (/[\u0d80-\u0dff]/u.test(run.text) || /abhaya|sinhala/iu.test(run.fontFamily))) {
+      for (const word of run.text.match(/\n|[^\S\n]+|\S+/gu) || []) {
+        if (word === '\n') { commitLine(true); continue; }
+        const token = createToken(context, word, run, config, appearance);
+        if (token.width <= config.width) { pushToken(token); continue; }
+        let part = '';
+        for (const grapheme of getGraphemes(word)) {
+          if (part && createToken(context, part + grapheme, run, config, appearance).width > config.width) {
+            pushToken(createToken(context, part, run, config, appearance));
+            part = '';
+          }
+          part += grapheme;
+        }
+        if (part) pushToken(createToken(context, part, run, config, appearance));
+      }
+      return;
+    }
     getGraphemes(run.text).forEach((grapheme) => {
       if (grapheme === "\n") {
         commitLine(true);
@@ -1200,35 +1274,32 @@ const isCjkDominant = (block) => {
   return han > 0 && han >= latin;
 };
 
-const appendEllipsis = (context, line, config, appearance) => {
-  const tokens = trimLineEnd(line.tokens);
-  const fallbackStyle = { ...config, text: "" };
-  const previousStyle = tokens.at(-1)?.style || fallbackStyle;
-  const style = previousStyle.mathAsset
-    ? {
-        ...previousStyle,
-        latex: "",
-        svg: "",
-        mathAsset: null,
-        mathDisplay: false,
-      }
-    : previousStyle;
-  const ellipsis = createToken(context, "…", style, config, appearance);
-  let width = tokens.reduce((total, token) => total + token.width, 0);
-  while (tokens.length && width + ellipsis.width > config.width) {
-    width -= tokens.pop().width;
-  }
-  while (tokens.length && isKinsokuLineEnd(tokens.at(-1).text)) {
-    width -= tokens.pop().width;
-  }
-  tokens.push(ellipsis);
-  const truncated = createLine(tokens, config);
-  truncated.isLast = true;
-  return truncated;
-};
-
 const createBlockLayout = (context, block, baseSize, appearance) => {
   const config = getBlockConfig(block, baseSize, appearance);
+  if (block.snapshotAsset) return { block, config, lines: [], height: block.snapshotAsset.fullHeight, cjkDominant: false };
+  if (block.type === 'link-card' && block.label) {
+    setFont(context, { size: config.labelFontSize, family: config.family, weight: '700' });
+    config.labelLines = wrapPlainText(context, block.label, config.width, 2);
+    config.labelHeight = config.labelLines.length * Math.round(config.labelFontSize * 1.2);
+    config.paddingTop = 30 + config.labelHeight;
+  }
+  if (block.type === 'separator') return { block, config, lines: [], height: Math.round(baseSize * 0.65), cjkDominant: false };
+  if (block.type === 'table' && block.rows.length) {
+    const columns = Math.max(...block.rows.map(row => row.cells.reduce((sum, cell) => sum + cell.colSpan, 0)));
+    const columnWidth = config.width / columns;
+    const padding = Math.round(config.fontSize * 0.35);
+    const tableRows = block.rows.map(row => {
+      let column = 0;
+      const cells = row.cells.map(cell => {
+        const width = columnWidth * cell.colSpan;
+        const cellConfig = { ...config, x: config.x + column * columnWidth + padding, width: width - padding * 2, paddingTop: 0, paddingBottom: 0, bold: cell.header };
+        column += cell.colSpan;
+        return { ...cell, config: cellConfig, width, lines: wrapRuns(context, cell.runs, cellConfig, appearance) };
+      });
+      return { cells, height: padding * 2 + Math.max(...cells.map(cell => cell.lines.reduce((height, line) => height + line.height, 0))) };
+    });
+    return { block, config, lines: [], tableRows, cellPadding: padding, height: config.paddingTop + config.paddingBottom + tableRows.reduce((sum, row) => sum + row.height, 0), cjkDominant: false };
+  }
   if (block.type === "mermaid" && block.imageAsset) {
     return {
       block,
@@ -1248,12 +1319,12 @@ const createBlockLayout = (context, block, baseSize, appearance) => {
     block,
     config,
     lines,
-    height:
+    height: Math.max(config.coverWidth ? config.coverWidth + 40 : 0,
       config.paddingTop +
       config.paddingBottom +
       imageHeight +
       imageGap +
-      lines.reduce((height, line) => height + line.height, 0),
+      lines.reduce((height, line) => height + line.height, 0)),
     cjkDominant: isCjkDominant(block),
   };
 };
@@ -1271,6 +1342,34 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
       layouts.push(layout);
       usedHeight += gap + layout.height;
       continue;
+    }
+
+    if (block.snapshotAsset) {
+      if (available > 48) {
+        layout.height = available;
+        layouts.push(layout);
+        usedHeight += gap + available;
+      }
+      truncated = true;
+      break;
+    }
+
+    if (layout.tableRows) {
+      let height = layout.config.paddingTop + layout.config.paddingBottom;
+      const rows = [];
+      for (const row of layout.tableRows) {
+        if (height + row.height > available) break;
+        rows.push(row);
+        height += row.height;
+      }
+      if (rows.length) {
+        layout.tableRows = rows;
+        layout.height = height;
+        layouts.push(layout);
+        usedHeight += gap + height;
+      }
+      truncated = true;
+      break;
     }
 
     if (
@@ -1346,12 +1445,7 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
     }
     if (lineRoom > 0) {
       layout.lines = layout.lines.slice(0, lineRoom);
-      layout.lines[layout.lines.length - 1] = appendEllipsis(
-        context,
-        layout.lines.at(-1),
-        layout.config,
-        appearance,
-      );
+      layout.lines.at(-1).isLast = true;
       layout.height =
         layout.config.paddingTop +
         layout.config.paddingBottom +
@@ -1360,15 +1454,6 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
         layout.lines.reduce((height, line) => height + line.height, 0);
       layouts.push(layout);
       usedHeight += gap + layout.height;
-    } else if (layouts.length) {
-      const previous = [...layouts].reverse().find(({ lines }) => lines.length);
-      if (!previous) break;
-      previous.lines[previous.lines.length - 1] = appendEllipsis(
-        context,
-        previous.lines.at(-1),
-        previous.config,
-        appearance,
-      );
     }
     break;
   }
@@ -1377,23 +1462,64 @@ const layoutBlocks = (context, blocks, baseSize, appearance, maxHeight) => {
   return { layouts, usedHeight, truncated };
 };
 
-const resolveBodyLayout = (context, blocks, appearance) => {
+const getReaderSnapshotFontCSS = async (root, fontFaces, include) => {
+  const elements = [root, ...root.querySelectorAll('*')].filter(include);
+  const styles = elements.flatMap(element => [getComputedStyle(element), getComputedStyle(element, '::before'), getComputedStyle(element, '::after')]);
+  const text = elements.flatMap(element => [...element.childNodes].filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent)).join('') + styles.map(style => style.content || '').join('');
+  const fontContext = {
+    familyValues: [...new Set(styles.map(style => style.fontFamily.toLowerCase()))],
+    fontStyles: new Set(styles.map(style => style.fontStyle || 'normal')),
+    codePoints: new Set(Array.from(text, character => character.codePointAt(0))),
+  };
+  return (await Promise.all(fontFaces.filter(({ rule }) => fontRuleMatchesContext(rule, fontContext)).map(embedFontRuleSources))).join('\n');
+};
+
+const assertShareActive = (signal) => {
+  if (signal?.aborted) throw new DOMException('分享生成已取消', 'AbortError');
+};
+
+const resolveBodyLayout = async (context, blocks, appearance, signal) => {
   const maxHeight = TEXT_BOTTOM - TEXT_TOP;
-  for (const fontSize of BODY_FONT_SIZES) {
-    const full = layoutBlocks(context, blocks, fontSize, appearance, Infinity);
-    if (full.usedHeight <= maxHeight) return full;
+  const snapshots = new Map();
+  let fontFaces;
+  const fontCSS = (root, include) => getReaderSnapshotFontCSS(root, fontFaces ||= collectFontFaceRules(), include);
+  try {
+    for (const block of blocks.filter(block => block.snapshot)) {
+      snapshots.set(block, prepareReaderShareSnapshot(block.snapshot, {
+        width: TEXT_WIDTH, maxHeight, loadImage: loadContentImage, fontCSS,
+      }));
+    }
+    let selectedSize = BODY_FONT_SIZES.at(-1);
+    let result;
+    for (const fontSize of BODY_FONT_SIZES) {
+      for (const [block, snapshot] of snapshots) block.snapshotAsset = snapshot.measure(fontSize);
+      const full = layoutBlocks(context, blocks, fontSize, appearance, Infinity);
+      if (full.usedHeight <= maxHeight) {
+        selectedSize = fontSize;
+        result = full;
+        break;
+      }
+    }
+    result ||= layoutBlocks(context, blocks, selectedSize, appearance, maxHeight);
+    // Trial layouts only measure DOM; rasterize the visible blocks once, at the
+    // chosen size, yielding between captures rather than cloning them in parallel.
+    for (const { block } of result.layouts) {
+      const snapshot = snapshots.get(block);
+      if (!snapshot) continue;
+      await yieldReaderShareTask();
+      assertShareActive(signal);
+      block.snapshotAsset = await snapshot.render(selectedSize);
+      assertShareActive(signal);
+    }
+    return result;
+  } finally {
+    for (const snapshot of snapshots.values()) snapshot.dispose();
   }
-  return layoutBlocks(
-    context,
-    blocks,
-    BODY_FONT_SIZES.at(-1),
-    appearance,
-    maxHeight,
-  );
 };
 
 const isJustifyGap = (left, right) => {
   if (!left || !right) return false;
+  if (left.style.linkIcon || right.style.linkIcon || left.style.externalLinkIcon || right.style.externalLinkIcon) return false;
   if (left.style.inlineImageAsset || right.style.inlineImageAsset) return false;
   if (/^\s+$/u.test(left.text) || /^\s+$/u.test(right.text)) return false;
   return /[\p{Script=Han}\u3000-\u303f\uff01-\uff60]/u.test(
@@ -1416,7 +1542,9 @@ const getTokenPositions = (line, config, justify) => {
   let x =
     line.tokens.length === 1 && line.tokens[0].style.mathDisplay
       ? config.x + Math.max(0, config.width - line.width) / 2
-      : config.x;
+      : config.x + (config.align === 'center'
+        ? Math.max(0, config.width - line.width) / 2
+        : ['right', 'end'].includes(config.align) ? Math.max(0, config.width - line.width) : 0);
   return line.tokens.map((token, index) => {
     const position = { token, x };
     x += token.width + (gaps.has(index) ? extra : 0);
@@ -1485,7 +1613,7 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
   const positions = getTokenPositions(line, config, shouldJustify);
   drawTokenBackgrounds(context, positions, baseline, config, appearance);
 
-  positions.forEach(({ token, x }) => {
+  positions.forEach(({ token, x }, positionIndex) => {
     if (token.style.inlineImageAsset) {
       context.save();
       if (token.style.inlineImageSvg) {
@@ -1554,7 +1682,7 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
       : token.style.link
         ? appearance.accent
         : syntaxColor || appearance.foreground;
-    const textX = x + (token.width - token.textWidth) / 2;
+    const textX = x + (token.width - token.textWidth) / (token.style.externalLinkIcon ? 1 : 2);
     const textY =
       token.style.baseline === "sup"
         ? baseline - config.fontSize * 0.38
@@ -1597,7 +1725,9 @@ const drawRichLine = (context, line, baseline, layout, appearance) => {
         : textY + config.fontSize * 0.12;
       context.beginPath();
       context.moveTo(textX, y);
-      context.lineTo(textX + token.textWidth, y);
+      const next = positions[positionIndex + 1];
+      const continues = next && ((token.style.link && next.token.style.link && token.style.linkHref === next.token.style.linkHref) || (token.style.underline && next.token.style.underline));
+      context.lineTo(continues ? next.x : textX + token.textWidth, y);
       context.stroke();
       context.restore();
     }
@@ -1625,9 +1755,10 @@ const drawTaskMarker = (context, block, config, baseline, appearance) => {
       family: block.markerFontFamily,
     });
     context.fillStyle = withAlpha(color, opacity);
-    context.textAlign = "center";
+    context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillText(block.markerGlyph, centerX, centerY + 1);
+    const bounds = context.measureText(block.markerGlyph);
+    context.fillText(block.markerGlyph, config.markerX + 3 + Math.max(0, bounds.actualBoundingBoxLeft || 0), centerY + 1);
     context.restore();
     return;
   }
@@ -1674,6 +1805,22 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
   bodyLayout.layouts.forEach((layout, blockIndex) => {
     const { block, config, lines } = layout;
     if (blockIndex) y += config.gap;
+    if (block.snapshotAsset) {
+      const image = block.snapshotAsset.image;
+      const scale = TEXT_WIDTH / image.width;
+      context.drawImage(image, 0, 0, image.width, Math.min(image.height, layout.height / scale), CARD_PADDING, y, TEXT_WIDTH, layout.height);
+      y += layout.height;
+      return;
+    }
+    if (block.type === 'separator') {
+      context.save();
+      context.strokeStyle = appearance.base300;
+      context.lineWidth = 2;
+      context.beginPath(); context.moveTo(CARD_PADDING, y + layout.height / 2); context.lineTo(CARD_PADDING + TEXT_WIDTH, y + layout.height / 2); context.stroke();
+      context.restore();
+      y += layout.height;
+      return;
+    }
 
     if (config.codeBlock) {
       context.fillStyle = appearance.base200;
@@ -1699,8 +1846,10 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
     }
     if (config.quoteBarX !== undefined) {
       context.fillStyle = withAlpha(appearance.accent, 0.72);
-      drawRoundedRect(context, config.quoteBarX, y, 7, layout.height, 4);
-      context.fill();
+      for (let depth = 0; depth < (config.quoteDepth || 1); depth++) {
+        drawRoundedRect(context, config.quoteBarX + depth * 24, y, 7, layout.height, 4);
+        context.fill();
+      }
     }
 
     if (config.labelHeight && (block.label || block.language)) {
@@ -1710,12 +1859,35 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
           ? appearance[block.tone] || appearance.accent
           : appearance.accent;
       setFont(context, {
-        size: Math.max(22, Math.round(config.fontSize * 0.5)),
+        size: config.labelFontSize || Math.max(22, Math.round(config.fontSize * 0.5)),
         family: config.family,
         weight: "700",
       });
       context.fillStyle = labelColor;
-      context.fillText(label, config.x, y + 20 + config.fontSize * 0.48);
+      if (config.labelLines) {
+        config.labelLines.forEach((line, index) => context.fillText(line, config.x, y + 20 + config.labelFontSize * (1 + index * 1.2)));
+      } else {
+        context.fillText(fitEllipsis(context, label, config.width), config.x, y + 20 + config.fontSize * 0.48);
+      }
+    }
+
+    if (config.coverWidth) {
+      const size = config.coverWidth;
+      const left = CARD_PADDING + 20;
+      const top = y + 20;
+      context.save();
+      context.fillStyle = appearance.base300;
+      drawRoundedRect(context, left, top, size, size, 12); context.fill(); context.clip();
+      if (block.imageAsset) {
+        const asset = block.imageAsset;
+        const scale = Math.max(size / asset.width, size / asset.height);
+        context.drawImage(asset.image, left + (size - asset.width * scale) / 2, top + (size - asset.height * scale) / 2, asset.width * scale, asset.height * scale);
+      } else if (block.coverIcon) {
+        setFont(context, { size: size * 0.45, family: block.coverIcon.fontFamily });
+        context.fillStyle = appearance.accent;
+        context.fillText(block.coverIcon.glyph, left + size * 0.275, top + size * 0.65);
+      }
+      context.restore();
     }
 
     if (block.type === "mermaid" && block.imageAsset) {
@@ -1731,6 +1903,29 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
     }
 
     let lineY = y + config.paddingTop;
+    if (layout.tableRows) {
+      for (const [rowIndex, row] of layout.tableRows.entries()) {
+        for (const cell of row.cells) {
+          const left = cell.config.x - layout.cellPadding;
+          if (cell.header || rowIndex % 2) {
+            context.fillStyle = withAlpha(appearance.base300, cell.header ? 0.75 : 0.3);
+            context.fillRect(left, lineY, cell.width, row.height);
+          }
+          context.strokeStyle = appearance.base300;
+          context.lineWidth = 1.5;
+          context.strokeRect(left, lineY, cell.width, row.height);
+          let cellY = lineY + layout.cellPadding;
+          for (const line of cell.lines) {
+            const shift = ['right', 'end'].includes(cell.align) ? cell.config.width - line.width : cell.align === 'center' ? (cell.config.width - line.width) / 2 : 0;
+            drawRichLine(context, line, cellY + line.ascent, { config: { ...cell.config, x: cell.config.x + Math.max(0, shift), justify: false }, cjkDominant: false }, appearance);
+            cellY += line.height;
+          }
+        }
+        lineY += row.height;
+      }
+      y += layout.height;
+      return;
+    }
     if (block.type === "image" && block.imageAsset) {
       context.save();
       if (block.svgImage) context.filter = appearance.markdownSvgFilter;
@@ -1780,6 +1975,7 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
                 ...config,
                 x: config.x + Math.max(0, config.width - line.width) / 2,
                 justify: false,
+                align: 'start',
               },
             }
           : layout;
@@ -1793,7 +1989,8 @@ const drawBodyLayout = (context, bodyLayout, appearance) => {
   });
 };
 
-const fitEllipsis = (context, value, maxWidth) => {
+const fitEllipsis = (context, value, maxWidth, force = false) => {
+  if (!force && context.measureText(value).width <= maxWidth) return value;
   const graphemes = getGraphemes(value.trimEnd());
   while (
     graphemes.length &&
@@ -1838,7 +2035,7 @@ const wrapPlainText = (context, value, maxWidth, maxLines) => {
     lines.push(line.join("").trimEnd());
   }
   if (consumed < graphemes.length && lines.length) {
-    lines[lines.length - 1] = fitEllipsis(context, lines.at(-1), maxWidth);
+    lines[lines.length - 1] = fitEllipsis(context, lines.at(-1), maxWidth, true);
   }
   return lines;
 };
@@ -1974,7 +2171,8 @@ export const createReaderShareCard = async ({
   shareContent,
   paragraphId,
   meta = {},
-}, { localize = (value) => value } = {}) => {
+}, { localize = (value) => value, signal } = {}) => {
+  assertShareActive(signal);
   const blocks = normalizeShareContent(
     shareContent,
     text,
@@ -1987,6 +2185,7 @@ export const createReaderShareCard = async ({
   }
 
   await document.fonts?.ready;
+  assertShareActive(signal);
   const [appearance, favicon] = await Promise.all([
     Promise.resolve(resolveAppearance()),
     loadFavicon(),
@@ -2004,6 +2203,7 @@ export const createReaderShareCard = async ({
     prepareMermaidBlocks(blocks),
     prepareImageBlocks(blocks, localize),
   ]);
+  assertShareActive(signal);
 
   context.textBaseline = "alphabetic";
   context.fillStyle = appearance.background;
@@ -2047,8 +2247,22 @@ export const createReaderShareCard = async ({
   context.fillText("“", 70, 258);
   context.restore();
 
-  const bodyLayout = resolveBodyLayout(context, blocks, appearance);
+  const bodyLayout = await resolveBodyLayout(context, blocks, appearance, signal);
+  assertShareActive(signal);
+  context.save();
+  context.beginPath(); context.rect(CARD_PADDING - 12, TEXT_TOP, TEXT_WIDTH + 24, TEXT_HEIGHT); context.clip();
   drawBodyLayout(context, bodyLayout, appearance);
+  if (bodyLayout.truncated && bodyLayout.usedHeight > 0) {
+    const visibleHeight = Math.min(TEXT_HEIGHT, bodyLayout.usedHeight);
+    const bottom = TEXT_TOP + visibleHeight;
+    const fadeHeight = Math.min(72, visibleHeight / 2);
+    const gradient = context.createLinearGradient(0, bottom - fadeHeight, 0, bottom);
+    gradient.addColorStop(0, withAlpha(appearance.background, 0));
+    gradient.addColorStop(1, appearance.background);
+    context.fillStyle = gradient;
+    context.fillRect(CARD_PADDING - 12, bottom - fadeHeight, TEXT_WIDTH + 24, fadeHeight);
+  }
+  context.restore();
 
   context.save();
   context.globalAlpha = 0.2;
@@ -2099,5 +2313,10 @@ export const createReaderShareCard = async ({
     fileName: `${fileBase}-${localize("分享卡片")}.png`,
     shareUrl,
     truncated: bodyLayout.truncated,
+    warnings: [
+      ...blocks.flatMap(block => block.snapshotAsset?.warnings || []),
+      ...blocks.filter(block => ['image', 'mermaid'].includes(block.type) && !block.imageAsset).map(block => `${block.type}: ${block.src || 'SVG 无法转换'}`),
+      ...blocks.flatMap(block => block.runs.filter(run => run.assetWarning).map(run => `image: ${run.assetWarning}`)),
+    ],
   };
 };

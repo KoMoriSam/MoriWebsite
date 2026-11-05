@@ -50,6 +50,7 @@
       "loadFailed": "暂时无法读取小说内容，请稍后再试。"
     },
     "comments": {
+      "current": "当前段评",
       "open": "打开段评",
       "count": "当前段评评论数"
     },
@@ -58,6 +59,9 @@
       "copyLatex": "复制 LaTeX",
       "copySvg": "复制 SVG",
       "textCopied": "已复制正文",
+      "open": "打开",
+      "linkCopied": "链接已复制",
+      "copyLinkFailed": "链接复制失败，请重试。",
       "copyTextFailed": "复制失败，请手动选择文字",
       "imageSaved": "图片已保存",
       "imageOpened": "已打开原图，请使用浏览器另存为",

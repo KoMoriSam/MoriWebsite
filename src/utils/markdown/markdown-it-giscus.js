@@ -1,12 +1,14 @@
 import ParagraphComments from "@/components/reader/display/ParagraphComments.vue";
-import RenderedContent from "@/components/markdown/RenderedContent.vue";
+import ParagraphQuote from "@/components/reader/display/ParagraphQuote.vue";
 import { h } from "vue";
 import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
 import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
+import { useLocale } from "@/i18n";
 
-export const useParagraphComments = () => {
+export const useParagraphComments = ({ resolver } = {}) => {
   const modal = useModal();
+  const { t: translate, locale } = useLocale();
   const MAX_TITLE_LENGTH = 36;
   const { getCount, setCount } = useParagraphCommentsStorage();
 
@@ -105,7 +107,7 @@ export const useParagraphComments = () => {
   };
 
   const getParagraphTitleHtml = (paragraphElement) => {
-    if (!paragraphElement) return "当前段评";
+    if (!paragraphElement) return escapeHtml(translate("reader.comments.current"));
 
     if (paragraphElement.dataset.readerFullParagraphText) {
       const paragraphText = normalizeParagraphText(
@@ -115,12 +117,30 @@ export const useParagraphComments = () => {
         paragraphText.length > MAX_TITLE_LENGTH
           ? `${paragraphText.slice(0, MAX_TITLE_LENGTH)}...`
           : paragraphText;
-      return escapeHtml(truncatedText || "当前段评");
+      return escapeHtml(truncatedText || translate("reader.comments.current"));
     }
 
     const clonedElement = paragraphElement.cloneNode(true);
     removeIgnoredTitleNodes(clonedElement);
     removeLiteralFootnoteMarkers(clonedElement);
+
+    if (clonedElement.matches(".markdown-link-card")) {
+      const cardTitle = clonedElement.querySelector("[data-card-motion='title']");
+      if (cardTitle) {
+        truncateTitleContent(cardTitle);
+        const titleText = normalizeParagraphText(cardTitle.textContent) || translate("reader.comments.current");
+        const cardLink = cardTitle.closest("a[href]");
+        if (!cardLink) return escapeHtml(titleText);
+
+        const titleLink = document.createElement("a");
+        for (const attribute of ["href", "target", "rel"]) {
+          const value = cardLink.getAttribute(attribute);
+          if (value) titleLink.setAttribute(attribute, value);
+        }
+        titleLink.textContent = titleText;
+        return titleLink.outerHTML;
+      }
+    }
 
     const isFigure = clonedElement.matches("figure.markdown-figure");
     if (isFigure) {
@@ -139,7 +159,7 @@ export const useParagraphComments = () => {
 
     return normalizeParagraphText(titleContent.textContent || "")
       ? titleContent.innerHTML
-      : "当前段评";
+      : escapeHtml(translate("reader.comments.current"));
   };
 
   const findParagraphElement = (paragraphId) => {
@@ -161,13 +181,13 @@ export const useParagraphComments = () => {
     trigger.className = "comment-trigger";
     trigger.dataset.paragraphId = paragraphId;
     trigger.dataset.sourceType = sourceType;
-    trigger.setAttribute("aria-label", "打开段评");
+    trigger.setAttribute("aria-label", translate("reader.comments.open"));
 
     const indicator = document.createElement("span");
     indicator.className = "paragraph-comment-count";
     indicator.dataset.paragraphId = paragraphId;
     indicator.dataset.sourceType = sourceType;
-    indicator.setAttribute("aria-label", "当前段评评论数");
+    indicator.setAttribute("aria-label", translate("reader.comments.count"));
     indicator.textContent = getCommentCountLabel(count);
 
     trigger.append(indicator);
@@ -240,16 +260,14 @@ export const useParagraphComments = () => {
 
     const paragraphElement = findParagraphElement(paragraphId);
     const titleHtml = getParagraphTitleHtml(paragraphElement);
+    const reader = paragraphElement?.closest(".markdown-content");
     const titleNode = h("hgroup", { class: "space-y-1" }, [
-      h("h3", { class: "text-base" }, "当前段评"),
-      h(
-        "blockquote",
-        {
-          class:
-            "paragraph-comment-title prose prose-sm max-w-none text-base-content text-sm font-sans font-normal leading-snug text-justify text-pretty border-s-3 border-s-base-content/25 ps-1.5 [&_figure]:m-0 [&_figure]:max-w-full [&_img]:m-0 [&_img]:block [&_img]:h-auto [&_img]:max-h-40 [&_img]:w-full [&_img]:object-contain [&_img]:object-left [&_figcaption]:mt-1 [&_figcaption]:mb-0 [&_figcaption]:text-start",
-        },
-        [h(RenderedContent, { html: titleHtml })],
-      ),
+      h("h3", { class: "text-base" }, translate("reader.comments.current")),
+      h(ParagraphQuote, {
+        html: titleHtml,
+        lang: reader?.lang || locale.value,
+        resolver,
+      }),
     ]);
 
     modal.info(titleNode, h(ParagraphComments, { paragraphId, sourceType }), {
@@ -371,7 +389,7 @@ export const useParagraphComments = () => {
         const count = getCount(paragraphId, sourceType);
         if (count <= 0) return "";
 
-        return `<button type="button" class="comment-trigger" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="打开段评"><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="当前段评评论数">${getCommentCountLabel(count)}</span></button>`;
+        return `<button type="button" class="comment-trigger" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.comments.open"))}"><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.comments.count"))}">${getCommentCountLabel(count)}</span></button>`;
       };
 
       const assignCommentableAttributes = (

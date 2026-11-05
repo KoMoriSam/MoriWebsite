@@ -7,6 +7,7 @@ const MARKDOWN_COMPONENT_TAGS = [
   "markdown-moment",
   "markdown-code",
   "markdown-link-icon",
+  "markdown-link-card",
   "markdown-mermaid",
 ];
 
@@ -123,6 +124,7 @@ const DATA_ATTRIBUTES = [
   "data-paragraph-id",
   "data-reader-comment-scope",
   "data-reader-latex-source",
+  "data-reader-link-icon",
   "data-reader-math-display",
   "data-reader-paragraph-id",
   "data-source-type",

@@ -155,6 +155,9 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
   };
 
   const handleContextMenu = (event) => {
+    const isLink = event.target instanceof Element &&
+      Boolean(event.target.closest("a[href]")) &&
+      !isLongPressBlockedEvent(event);
     const isTouchContext =
       event.pointerType === "touch" ||
       touchPointer.id !== null ||
@@ -162,6 +165,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     if (
       isReaderInteractiveEvent(event) &&
       !isReaderImageEvent(event) &&
+      !isLink &&
       (!isTouchContext || isLongPressBlockedEvent(event))
     ) {
       return;
@@ -172,7 +176,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     activeRoot = root;
     event.preventDefault();
     window.requestAnimationFrame(() => {
-      if (isTouchContext && emitPointTargetContext(event, root)) {
+      if ((isLink || isTouchContext) && emitPointTargetContext(event, root)) {
         releasePointTargetContext();
         return;
       }

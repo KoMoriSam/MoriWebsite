@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it";
+import { linkCardPlugin } from "./markdown-it-link-card.js";
 import { wikiLinkPlugin } from "./markdown-it-wikilink.js";
 
 export const MARKDOWN_MODE_READER = "reader";
@@ -33,6 +34,9 @@ export const renderMarkdown = (
     else md.use(plugin);
   });
   md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
+  if (mode === MARKDOWN_MODE_READER) {
+    md.use(linkCardPlugin, { articleForPath: resolveWikiLink?.articleForPath });
+  }
 
   return md.render(String(source || ""));
 };

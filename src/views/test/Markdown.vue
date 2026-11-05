@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, defineAsyncComponent, provide, ref, shallowRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useReaderStore } from "@/stores/readerStore";
 import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
@@ -90,6 +90,9 @@ import Renderer from "@/components/markdown/Renderer.vue";
 import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
 import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
+import { useArticleApi } from "@/services/api-articles";
+import { createArticleWikiLinkResolver } from "@/utils/blog/article-wiki-links";
+import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 
 import PageShell from "./PageShell.vue";
 import { MARKDOWN_SAMPLES as markdownSamples } from "./markdown-samples";
@@ -145,6 +148,27 @@ const currentSample = computed(
     markdownSamples.find((sample) => sample.slug === route.name) ||
     markdownSamples[0],
 );
+const { fetchArticleList } = useArticleApi();
+const wikiLinkResolver = shallowRef(null);
+provide(WIKI_LINK_RESOLVER, wikiLinkResolver);
+
+let loadingWikiLinks = false;
+watch(
+  () => currentSample.value.slug === "links",
+  async (showLinks) => {
+    if (!showLinks || wikiLinkResolver.value || loadingWikiLinks) return;
+    loadingWikiLinks = true;
+    try {
+      wikiLinkResolver.value = createArticleWikiLinkResolver(await fetchArticleList());
+    } catch (error) {
+      console.warn("加载 Wikilink 示例文章失败", error);
+    } finally {
+      loadingWikiLinks = false;
+    }
+  },
+  { immediate: true },
+);
+
 const markdownContent = computed(() => currentSample.value?.content || "");
 const markdownHeaderData = computed(() => ({
   title: `Markdown 渲染测试：${currentSample.value?.name || ""}`,

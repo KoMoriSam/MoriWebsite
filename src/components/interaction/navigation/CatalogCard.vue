@@ -213,7 +213,11 @@
           <span v-if="action" class="min-w-0 wrap-break-word">{{
             action
           }}</span>
-          <i class="ri-arrow-right-line shrink-0" aria-hidden="true"></i>
+          <i
+            :class="href && !to ? 'ri-external-link-line' : 'ri-arrow-right-line'"
+            class="shrink-0"
+            aria-hidden="true"
+          ></i>
         </span>
       </div>
     </div>
@@ -253,7 +257,7 @@ const props = defineProps({
   titleTag: {
     type: String,
     default: "h2",
-    validator: (value) => ["h2", "h3", "h4"].includes(value),
+    validator: (value) => ["h2", "h3", "h4", "div"].includes(value),
   },
   description: { type: String, default: "" },
   icon: { type: String, default: "ri-article-line" },

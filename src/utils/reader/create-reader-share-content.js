@@ -1,4 +1,5 @@
 import { getLatexFormula } from "@/utils/reader/latex";
+import { captureReaderShareSnapshot, READER_SHARE_SNAPSHOT_SELECTOR } from './share-snapshot.js';
 
 const IGNORED_CONTENT_SELECTOR = [
   ".comment-trigger",
@@ -9,6 +10,11 @@ const IGNORED_CONTENT_SELECTOR = [
   ".alert-title",
   ".chat-bar",
   ".chat-header",
+  ".chat-image",
+  ".chat-footer",
+  ".chat-input",
+  ".moments-author",
+  ".moments-actions",
   ".sr-only",
   ".chapter-header-volume",
   ".chapter-header-stats",
@@ -41,6 +47,9 @@ const BLOCK_SELECTOR = [
   "table",
   "figure.markdown-figure",
   "blockquote",
+  "summary",
+  "div",
+  ".markdown-link-card",
   "[data-markdown-alert]",
   "[data-markdown-chat]",
   "[data-markdown-moment]",
@@ -135,6 +144,7 @@ const getComputedTextStyle = (element) => {
     fontWeight: computed.fontWeight || "",
     fontStyle: computed.fontStyle || "",
     textDecoration: computed.textDecorationLine || "",
+    textAlign: computed.textAlign || "",
   };
 };
 
@@ -174,6 +184,7 @@ const createInlineStyle = (element, inherited = {}) => {
     underline: inherited.underline || decoration.includes("underline"),
     mark: inherited.mark || tag === "MARK",
     link: inherited.link || tag === "A",
+    linkHref: tag === "A" ? element.getAttribute("href") || "" : inherited.linkHref || "",
     code: inherited.code || tag === "CODE",
     abbr: inherited.abbr || tag === "ABBR",
     baseline:
@@ -182,6 +193,7 @@ const createInlineStyle = (element, inherited = {}) => {
     fontFamily: computed.fontFamily || inherited.fontFamily || "",
     fontWeight: computed.fontWeight || inherited.fontWeight || "",
     fontStyle: computed.fontStyle || inherited.fontStyle || "",
+    fontScale: tag === 'SMALL' ? Math.min(inherited.fontScale || 1, 0.833333) : inherited.fontScale || 1,
     textDecoration: decoration,
   };
 };
@@ -201,12 +213,15 @@ const RUN_STYLE_KEYS = [
   "fontFamily",
   "fontWeight",
   "fontStyle",
+  "fontScale",
   "textDecoration",
   "latex",
   "mathml",
   "svg",
   "mathDisplay",
   "linkIconSrc",
+  "linkHref",
+  "externalLinkIcon",
   "inlineImageSrc",
   "inlineImageSvg",
   "inlineImageAlt",
@@ -235,6 +250,7 @@ const appendRun = (runs, text, style = {}) => {
     fontFamily: style.fontFamily || "",
     fontWeight: style.fontWeight || "",
     fontStyle: style.fontStyle || "",
+    fontScale: Number(style.fontScale) || 1,
     textDecoration: style.textDecoration || "",
     latex: style.latex || "",
     mathml: style.mathml || "",
@@ -247,6 +263,8 @@ const appendRun = (runs, text, style = {}) => {
       : [],
     mathDisplay: Boolean(style.mathDisplay),
     linkIconSrc: style.linkIconSrc || "",
+    linkHref: style.linkHref || "",
+    externalLinkIcon: Boolean(style.externalLinkIcon),
     inlineImageSrc: style.inlineImageSrc || "",
     inlineImageSvg: Boolean(style.inlineImageSvg),
     inlineImageAlt: style.inlineImageAlt || "",
@@ -340,7 +358,7 @@ function serializeInlineNode(
     return;
   }
   if (tag === "IMG") {
-    if (node.matches("img.markdown-inline-image[src]")) {
+    if (node.matches("img[src]")) {
       const bounds = node.getBoundingClientRect();
       const computed = getComputedStyle(node);
       const parentFontSize = node.parentElement
@@ -362,7 +380,7 @@ function serializeInlineNode(
         fontSize;
       appendRun(runs, "\ufffc", {
         ...inherited,
-        inlineImageSrc: node.getAttribute("data-original-src") || node.currentSrc || node.getAttribute("src") || "",
+        inlineImageSrc: node.currentSrc || node.getAttribute("src") || node.getAttribute("data-original-src") || "",
         inlineImageSvg: node.classList.contains("markdown-svg-image"),
         inlineImageAlt: normalizeLabel(node.getAttribute("alt")),
         inlineImageWidthEm: width / fontSize,
@@ -378,31 +396,39 @@ function serializeInlineNode(
     return;
   }
   if (tag === "RT" || tag === "RP") return;
-  if (["UL", "OL"].includes(tag)) return;
+  if (["UL", "OL"].includes(tag)) {
+    appendSeparatedRuns(runs, serializeAlertList(node, range));
+    return;
+  }
   if (tag === "INPUT") return;
 
-  const linkIcon =
-    tag === "A"
-      ? node.querySelector(":scope > [data-reader-link-icon] img[src]")
-      : null;
-  const linkIconSrc =
-    linkIcon?.currentSrc || linkIcon?.getAttribute("src") || "";
-  const style = {
-    ...createInlineStyle(node, inherited),
-    linkIconSrc,
-  };
-  const runStart = runs.length;
+  const style = createInlineStyle(node, inherited);
+  if (tag === "A") {
+    const linkRuns = [];
+    node.childNodes.forEach(child => serializeInlineNode(child, linkRuns, style, range, preserveWhitespace));
+    const first = linkRuns.find(run => run.text.trim());
+    if (first) {
+      const icon = node.querySelector("[data-reader-link-icon] img[src]");
+      if (icon && rangeIntersectsNode(range, icon)) first.linkIconSrc = icon.currentSrc || icon.getAttribute("src") || "";
+    }
+    linkRuns.forEach(run => appendRun(runs, run.text, run));
+    const externalIcon = node.querySelector("i.ri-external-link-line");
+    if (first && externalIcon && rangeIntersectsNode(range, externalIcon)) {
+      const icon = getGeneratedIcon(externalIcon);
+      appendRun(runs, icon?.glyph || "↗", {
+        externalLinkIcon: true,
+        linkHref: style.linkHref,
+        fontFamily: icon?.fontFamily || style.fontFamily,
+      });
+    }
+    return;
+  }
+  const separate = ["P", "DIV", "BLOCKQUOTE", "SUMMARY", "SECTION", "ARTICLE", "H1", "H2", "H3", "H4", "H5", "H6"].includes(tag);
+  if (separate && runs.length && !runs.at(-1).text.endsWith("\n")) appendRun(runs, "\n", inherited);
   node.childNodes.forEach((child) =>
     serializeInlineNode(child, runs, style, range, preserveWhitespace),
   );
-  if (linkIconSrc) {
-    const linkRuns = runs
-      .slice(runStart)
-      .filter(({ link, text }) => link && text.trim());
-    linkRuns.slice(1).forEach((run) => {
-      run.linkIconSrc = "";
-    });
-  }
+  if (separate && runs.length && !runs.at(-1).text.endsWith("\n")) appendRun(runs, "\n", inherited);
 }
 
 const serializeNodes = (
@@ -604,12 +630,11 @@ const getContextMeta = (block) => {
 
   const moment = block.closest("[data-markdown-moment], .moments-card");
   if (moment) {
+    const author = block.closest('.comment-body')?.querySelector('.comments-info')?.textContent || moment.querySelector('.header-title')?.textContent;
     return {
       type: "moment",
-      systemLabel: !moment.querySelector(".header-title")?.textContent,
-      label:
-        normalizeLabel(moment.querySelector(".header-title")?.textContent) ||
-        "动态",
+      systemLabel: !author,
+      label: normalizeLabel(author) || "动态",
     };
   }
 
@@ -628,7 +653,11 @@ const getContextMeta = (block) => {
       markerFontFamily: task?.markerFontFamily || "",
     };
   }
-  if (block.closest("blockquote")) return { type: "quote" };
+  if (block.closest("blockquote")) {
+    let depth = 0;
+    for (let quote = block.closest('blockquote'); quote; quote = quote.parentElement?.closest('blockquote')) depth++;
+    return { type: "quote", depth };
+  }
   return { type: "paragraph" };
 };
 
@@ -682,24 +711,29 @@ const serializeCodeBlock = (block, range) => {
 
 const serializeTable = (table, range) => {
   const runs = [];
+  const rows = [];
   Array.from(table.querySelectorAll("tr")).forEach((row) => {
-    const cells = Array.from(row.querySelectorAll(":scope > th, :scope > td"))
-      .map((cell) =>
-        serializeNodes(Array.from(cell.childNodes), {
+    const sourceCells = Array.from(row.querySelectorAll(":scope > th, :scope > td"));
+    if (!sourceCells.some(cell => rangeIntersectsNode(range, cell))) return;
+    const cells = sourceCells.map(cell => ({
+      runs: serializeNodes(Array.from(cell.childNodes), {
           inherited: getComputedTextStyle(cell),
           range,
         }),
-      )
-      .filter((cellRuns) => cellRuns.some(({ text }) => text.trim()));
-    if (!cells.length) return;
+      align: getComputedStyle(cell).textAlign,
+      header: cell.tagName === "TH",
+      colSpan: cell.colSpan || 1,
+    }));
+    rows.push({ cells });
     if (runs.length) appendRun(runs, "\n", runs.at(-1));
-    cells.forEach((cellRuns, index) => {
-      if (index) appendRun(runs, " · ", cellRuns[0]);
-      cellRuns.forEach((run) => appendRun(runs, run.text, run));
+    cells.forEach((cell, index) => {
+      if (index) appendRun(runs, " · ", cell.runs[0]);
+      cell.runs.forEach((run) => appendRun(runs, run.text, run));
     });
   });
   return {
     type: "table",
+    rows,
     style: getComputedTextStyle(table),
     runs: trimRuns(runs),
   };
@@ -815,7 +849,12 @@ const serializeMermaidBlock = (viewer) => {
   const svg = viewer.querySelector(
     "[data-mermaid-preview] .mermaid-svg-wrapper > svg, [data-mermaid-preview] pre.mermaid > svg",
   );
-  if (!svg) return null;
+  if (!svg) {
+    const code = viewer.querySelector('[data-markdown-code-block]');
+    return code ? serializeCodeBlock(code) : {
+      type: "code", language: "mermaid", runs: [{ text: viewer.querySelector('pre')?.textContent || 'Mermaid 图表无法渲染' }],
+    };
+  }
 
   const viewport = svg.querySelector("[data-mermaid-viewport]");
   const bounds = getMermaidCaptureBounds(svg, viewport);
@@ -875,7 +914,7 @@ const getImageDimensions = (image) => {
 };
 
 const serializeImageBlock = (figure, range) => {
-  const image = figure.querySelector(":scope > img[src]");
+  const image = figure.matches("img[src]") ? figure : figure.querySelector(":scope > img[src]");
   if (!image) return null;
 
   const caption = figure.querySelector(":scope > figcaption");
@@ -883,7 +922,7 @@ const serializeImageBlock = (figure, range) => {
   const dimensions = getImageDimensions(image);
   return {
     type: "image",
-    src: image.getAttribute("data-original-src") || image.currentSrc || image.getAttribute("src") || "",
+    src: image.currentSrc || image.getAttribute("src") || image.getAttribute("data-original-src") || "",
     svgImage: image.classList.contains("markdown-svg-image"),
     alt: normalizeLabel(image.getAttribute("alt")),
     width: dimensions.width,
@@ -899,10 +938,25 @@ const serializeImageBlock = (figure, range) => {
 };
 
 const serializeBlock = (block, range) => {
+  const nativeBlock = block.closest('[data-markdown-chat], [data-markdown-moment]') ||
+    (block.matches('table') ? block.closest('.markdown-table-wrapper') || block : block);
+  if (block.matches(READER_SHARE_SNAPSHOT_SELECTOR) || nativeBlock.matches('[data-markdown-chat], [data-markdown-moment]')) {
+    const meta = block.matches('table') ? serializeTable(block, range) : getContextMeta(block);
+    const type = block.matches('.markdown-link-card') ? 'link-card' : meta.type;
+    return {
+      ...meta, type,
+      snapshot: captureReaderShareSnapshot(nativeBlock, range),
+      runs: meta.runs || serializeNodes(Array.from(block.childNodes), { range }),
+    };
+  }
+  if (/[\u0d80-\u0dff]/u.test(block.textContent) || /abhaya.*legacy|legacy.*abhaya/iu.test(block.className || '') || block.querySelector('[class*="abhaya-legacy"]')) {
+    return { ...getContextMeta(block), snapshot: captureReaderShareSnapshot(block, range), runs: serializeNodes(Array.from(block.childNodes), { range }) };
+  }
+  if (block.tagName === 'HR') return { type: 'separator', runs: [] };
   if (block.matches("[data-mermaid-viewer]")) {
     return serializeMermaidBlock(block);
   }
-  if (block.matches("figure.markdown-figure")) {
+  if (block.matches("figure.markdown-figure, .moments-images > img[src]")) {
     return serializeImageBlock(block, range);
   }
   const blockFormula = getLatexFormula(block);
@@ -974,18 +1028,17 @@ const getSemanticBlock = (node, fallback) => {
   const element = toElement(node);
   if (!element) return fallback;
   const closestListItem = element.closest("li");
-  const priorityListItem = closestListItem?.matches(
-    "[data-task-status], .footnote-item",
-  )
-    ? closestListItem
-    : null;
+  const priorityListItem = closestListItem;
   return (
     element.closest("[data-mermaid-viewer]") ||
+    element.closest('[data-markdown-chat], [data-markdown-moment]') ||
+    element.closest(".markdown-link-card") ||
     element.closest("figure.markdown-figure") ||
+    element.closest(".moments-images > img[src]") ||
     element.closest("[data-markdown-code-block]") ||
     element.closest("[data-markdown-alert]") ||
     priorityListItem ||
-    getOutermostQuote(element) ||
+    (element.closest('blockquote') ? element.closest('p, li, h1, h2, h3, h4, h5, h6') || getOutermostQuote(element) : null) ||
     element.closest(BLOCK_SELECTOR) ||
     fallback
   );
@@ -997,7 +1050,7 @@ const collectRangeBlocks = (range, fallback) => {
   const blocks = [];
   const seen = new Set();
   const addTextNode = (node) => {
-    if (!selectedTextForNode(node, range, true)) return;
+    if (!selectedTextForNode(node, range, true).trim()) return;
     const block = getSemanticBlock(node, fallback);
     const isAlertTitle = Boolean(
       node.parentElement?.closest("[data-markdown-alert] > .alert-title"),
@@ -1021,7 +1074,7 @@ const collectRangeBlocks = (range, fallback) => {
     blocks.push(viewer);
   };
   const addImage = (element) => {
-    const figure = element.closest?.("figure.markdown-figure");
+    const figure = element.closest?.("figure.markdown-figure, .moments-images > img[src]");
     if (!figure || !rangeIntersectsNode(range, figure) || seen.has(figure)) {
       return;
     }
@@ -1044,7 +1097,12 @@ const collectRangeBlocks = (range, fallback) => {
   if (containingMermaid) addMermaid(containingMermaid);
   common.querySelectorAll?.("[data-mermaid-viewer]").forEach(addMermaid);
   addImage(common);
-  common.querySelectorAll?.("figure.markdown-figure").forEach(addImage);
+  common.querySelectorAll?.("figure.markdown-figure, .moments-images > img[src]").forEach(addImage);
+  const addRule = rule => {
+    if (rangeIntersectsNode(range, rule) && !seen.has(rule)) { seen.add(rule); blocks.push(rule); }
+  };
+  if (common.matches('hr')) addRule(common);
+  common.querySelectorAll?.('hr').forEach(addRule);
   if (!blocks.length) return fallback ? [fallback] : [];
 
   blocks.sort((left, right) => {
@@ -1060,11 +1118,11 @@ const collectRangeBlocks = (range, fallback) => {
       !blocks.some(
         (container) =>
           container !== block &&
-          container.matches("[data-markdown-alert], [data-mermaid-viewer]") &&
+          container.matches("[data-markdown-alert], [data-mermaid-viewer], .markdown-link-card, [data-markdown-chat], [data-markdown-moment]") &&
           container.contains(block),
       ) &&
       (!block.matches(
-        "[data-markdown-chat], [data-markdown-moment], blockquote",
+        "blockquote",
       ) ||
         !blocks.some(
           (nestedBlock) => nestedBlock !== block && block.contains(nestedBlock),
@@ -1075,8 +1133,13 @@ const collectRangeBlocks = (range, fallback) => {
 export const createReaderShareContent = ({ range, element } = {}) => {
   const activeRange = range instanceof Range && !range.collapsed ? range : null;
   const fallback = element instanceof Element ? element : null;
+  const containerRange = !activeRange && fallback?.matches('[data-markdown-chat], [data-markdown-moment], blockquote')
+    ? document.createRange() : null;
+  containerRange?.selectNodeContents(fallback);
   const blocks = activeRange
     ? collectRangeBlocks(activeRange, fallback)
+    : containerRange
+      ? collectRangeBlocks(containerRange, fallback)
     : fallback
       ? [fallback]
       : [];
@@ -1086,7 +1149,10 @@ export const createReaderShareContent = ({ range, element } = {}) => {
     .filter(
       (block) =>
         (block.type === "mermaid" && block.svg) ||
+        Boolean(block.snapshot) ||
         (block.type === "image" && block.src) ||
+        block.type === "separator" ||
+        (block.type === "link-card" && block.label) ||
         block.runs?.some(({ text }) => text.trim()),
     );
   return { blocks: serialized };

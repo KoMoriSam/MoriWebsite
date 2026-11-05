@@ -50,6 +50,7 @@
       "loadFailed": "Le contenu du roman est indisponible. Réessayez plus tard."
     },
     "comments": {
+      "current": "Passage sélectionné",
       "open": "Ouvrir les commentaires du paragraphe",
       "count": "Nombre de commentaires du paragraphe"
     },
@@ -58,6 +59,9 @@
       "copyLatex": "Copier le LaTeX",
       "copySvg": "Copier le SVG",
       "textCopied": "Texte copié",
+      "open": "Ouvrir",
+      "linkCopied": "Lien copié",
+      "copyLinkFailed": "Impossible de copier le lien. Réessayez.",
       "copyTextFailed": "Échec de la copie. Sélectionnez le texte manuellement.",
       "imageSaved": "Image enregistrée",
       "imageOpened": "L’image originale est ouverte. Utilisez le navigateur pour l’enregistrer.",

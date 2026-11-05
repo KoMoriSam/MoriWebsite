@@ -510,7 +510,7 @@ const server = await createServer({
   cacheDir: "node_modules/.cache/github-access",
   optimizeDeps: { noDiscovery: true, include: [] },
   resolve: { alias: { "@": path.resolve("src") } },
-  server: { middlewareMode: true, watch: null },
+  server: { middlewareMode: true, watch: null, hmr: false },
   appType: "custom",
 });
 try {
@@ -560,8 +560,10 @@ try {
   let contentReads = 0;
   let resolveContent;
   globalThis.fetch = async (url) => {
-    if (String(url).includes("api.github.com/users/"))
+    if (/\/github\/users\/reader$/.test(String(url)))
       return new Response(JSON.stringify({ name: "Search reader" }));
+    if (String(url).endsWith("/_optimized/manifest.json"))
+      return Response.json({ version: 1, images: {} });
     if (String(url).endsWith("/index.json"))
       return new Response(
         JSON.stringify({

@@ -1,11 +1,151 @@
-import { h } from "vue";
+import { cloneVNode, h } from "vue";
+import { RouterLink } from "vue-router";
 import { parseFragment } from "parse5";
 import { sanitizeMarkdownHtml } from "./sanitize-html.js";
-import { getImageAttrs, restoreOriginalImage } from "../images/responsive-images.js";
+import {
+  getImageAttrs,
+  restoreOriginalImage,
+} from "../images/responsive-images.js";
 
 export const MARKDOWN_COMPONENT_RESOLVER = Symbol(
   "markdown-component-resolver",
 );
+
+const SITE_ORIGIN = "https://komori.cc";
+const EXTERNAL_ICON_LAYOUT = "ms-[0.25em] inline-block align-middle leading-none tracking-normal no-underline";
+const graphemeSegmenter = typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+  : null;
+const wordSegmenter = typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter(undefined, { granularity: "word" })
+  : null;
+
+function hasExternalIcon(node) {
+  return node.tagName === "i" && node.attrs?.some((attribute) =>
+    attribute.name === "class" && attribute.value.split(/\s+/).includes("ri-external-link-line"),
+  ) || getChildNodes(node).some(hasExternalIcon);
+}
+
+function getLinkText(child) {
+  if (typeof child === "string") return child;
+  if (typeof child?.type === "string" && Array.isArray(child.children) &&
+      !["svg", "img", "br"].includes(child.type)) {
+    return child.children.map(getLinkText).join("");
+  }
+  return "\uFFFC";
+}
+
+function normalizeLinkSpaceNodes(children) {
+  return children.map((child) => {
+    if (typeof child === "string") return child.replace(/[\u00a0\u202f]/gu, " ");
+    if (typeof child?.type !== "string" || !Array.isArray(child.children)) return child;
+    const normalized = cloneVNode(child);
+    normalized.children = normalizeLinkSpaceNodes(child.children);
+    return normalized;
+  });
+}
+
+function decorateLinkText(children) {
+  return children.flatMap((child) => {
+    if (typeof child === "string") {
+      return child ? [h("span", { class: "markdown-link-text" }, [child])] : [];
+    }
+    if (typeof child?.type !== "string" || !Array.isArray(child.children) ||
+        child.props?.["aria-hidden"] === "true" ||
+        ["svg", "img"].includes(child.type)) return [child];
+    const decorated = cloneVNode(child);
+    decorated.children = decorateLinkText(child.children);
+    return [decorated];
+  });
+}
+
+function splitLinkChildren(children, offset) {
+  const before = [];
+  const ending = [];
+  for (const child of children) {
+    const length = getLinkText(child).length;
+    if (offset >= length) {
+      before.push(child);
+      offset -= length;
+    } else if (offset === 0) {
+      ending.push(child);
+    } else if (typeof child === "string") {
+      before.push(child.slice(0, offset));
+      ending.push(child.slice(offset));
+      offset = 0;
+    } else {
+      const split = splitLinkChildren(child.children, offset);
+      const prefix = cloneVNode(child);
+      prefix.children = split.before;
+      before.push(prefix);
+      const suffix = cloneVNode(child);
+      suffix.props = { ...suffix.props };
+      delete suffix.props.id;
+      suffix.children = split.ending;
+      ending.push(suffix);
+      offset = 0;
+    }
+  }
+  return { before, ending };
+}
+
+function getLinkBoundary(text, fromEnd) {
+  const words = wordSegmenter ? [...wordSegmenter.segment(text)] : [];
+  let wordIndex = fromEnd ? words.length - 1 : 0;
+  while (words[wordIndex] && /^\p{P}+$/u.test(words[wordIndex].segment)) {
+    wordIndex += fromEnd ? -1 : 1;
+  }
+  const word = words[wordIndex];
+  const unitText = word?.isWordLike ? word.segment : text;
+  const graphemes = graphemeSegmenter
+    ? [...graphemeSegmenter.segment(unitText)].map(({ segment }) => segment)
+    : Array.from(unitText);
+  // CJK text breaks by character; alphabetic scripts keep the final word intact.
+  if (word?.isWordLike && !/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(word.segment)) {
+    return word.index + (fromEnd ? 0 : word.segment.length);
+  }
+  return fromEnd
+    ? (word?.isWordLike ? word.index + word.segment.length : text.length) - graphemes.at(-1).length
+    : (word?.isWordLike ? word.index : 0) + graphemes[0].length;
+}
+
+function groupLinkIcons(children, favicon, externalIcon) {
+  const content = favicon ? children.slice(1) : children;
+  const rawText = content.map(getLinkText).join("");
+  // Copied link labels can contain NBSP. At link boundaries these should behave
+  // like ordinary spaces, outside the atomic icon groups.
+  const leadingLength = rawText.match(/^[\t\n\f\r \u00a0\u202f]*/u)[0].length;
+  const trailingLength = rawText.slice(leadingLength).match(/[\t\n\f\r \u00a0\u202f]*$/u)[0].length;
+  const text = rawText.slice(leadingLength, rawText.length - trailingLength);
+  const group = (nodes) => h("span", {
+    class: "inline-block whitespace-nowrap align-baseline text-start indent-0",
+  }, nodes);
+  if (!text) return [...children, ...(externalIcon ? [externalIcon] : [])];
+
+  const leading = splitLinkChildren(content, leadingLength);
+  const trailing = splitLinkChildren(leading.ending, text.length);
+  leading.before = normalizeLinkSpaceNodes(leading.before);
+  trailing.ending = normalizeLinkSpaceNodes(trailing.ending);
+  const trimmed = trailing.before;
+  const withBoundarySpaces = (nodes) => [
+    ...leading.before,
+    ...decorateLinkText(nodes),
+    ...trailing.ending,
+  ];
+  const headEnd = favicon ? getLinkBoundary(text, false) : 0;
+  const tailStart = externalIcon ? getLinkBoundary(text, true) : text.length;
+  // A one-word link shares both icons in one group; longer labels remain inline.
+  if (favicon && externalIcon && headEnd > tailStart) {
+    return withBoundarySpaces([group([favicon, ...trimmed, externalIcon])]);
+  }
+  const head = splitLinkChildren(trimmed, headEnd);
+  const tail = splitLinkChildren(head.ending, tailStart - headEnd);
+  return withBoundarySpaces([
+    ...(favicon ? [group([favicon, ...head.before])] : head.before),
+    ...tail.before,
+    ...(externalIcon ? [group([...tail.ending, externalIcon])] : tail.ending),
+  ]);
+}
 
 const BOOLEAN_ATTRIBUTES = new Set([
   "allowfullscreen",
@@ -40,6 +180,20 @@ const getChildNodes = (node) =>
     ? node.content?.childNodes || []
     : node.childNodes || [];
 
+function getLinkType(href) {
+  if (!href) return null;
+  const currentOrigin = globalThis.location?.origin || SITE_ORIGIN;
+  try {
+    const url = new URL(href, currentOrigin);
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+    return url.origin === currentOrigin || url.origin === SITE_ORIGIN
+      ? "internal"
+      : "external";
+  } catch {
+    return null;
+  }
+}
+
 const getAttributeName = (attribute) =>
   attribute.prefix ? `${attribute.prefix}:${attribute.name}` : attribute.name;
 
@@ -54,10 +208,22 @@ const getVNodeProps = (node) => {
       : attribute.value;
   }
 
+  if (props.class?.split(/\s+/).includes("ri-external-link-line")) {
+    props.class += ` ${EXTERNAL_ICON_LAYOUT}`;
+  }
+
   if (node.tagName === "img" && props.src) {
-    const inline = /(?:^|\s)markdown-inline-image(?:\s|$)/u.test(props.class || "");
-    const fixedWidth = String(props.style || "").match(/(?:^|;)\s*width:\s*(\d+(?:\.\d+)?)px/iu)?.[1];
-    const sizes = fixedWidth ? `(max-width: ${Number(fixedWidth) + 32}px) calc(100vw - 2rem), ${fixedWidth}px` : inline ? "32px" : undefined;
+    const inline = /(?:^|\s)markdown-inline-image(?:\s|$)/u.test(
+      props.class || "",
+    );
+    const fixedWidth = String(props.style || "").match(
+      /(?:^|;)\s*width:\s*(\d+(?:\.\d+)?)px/iu,
+    )?.[1];
+    const sizes = fixedWidth
+      ? `(max-width: ${Number(fixedWidth) + 32}px) calc(100vw - 2rem), ${fixedWidth}px`
+      : inline
+        ? "32px"
+        : undefined;
     Object.assign(props, getImageAttrs(props.src, sizes));
     if (props["data-original-src"]) {
       props.width ||= props["data-original-width"];
@@ -73,30 +239,91 @@ const getVNodeProps = (node) => {
 export const parseHtmlFragment = (html = "") =>
   parseFragment(sanitizeMarkdownHtml(html));
 
-const renderNode = (node, resolver, key, parent) => {
-  if (node.nodeName === "#text") return node.value || "";
+const renderNode = (node, resolver, key, parent, router) => {
+  if (node.nodeName === "#text") {
+    let value = node.value || "";
+    if (/[\u00a0\u202f]/u.test(value)) {
+      const siblings = getChildNodes(parent);
+      const index = siblings.indexOf(node);
+      const isLink = (sibling) => sibling?.tagName === "a" &&
+        sibling.attrs?.some(({ name }) => name === "href");
+      if (isLink(siblings[index - 1])) {
+        value = value.replace(/^[\t\n\f\r \u00a0\u202f]+/u, (spaces) => spaces.replace(/[\u00a0\u202f]/gu, " "));
+      }
+      if (isLink(siblings[index + 1])) {
+        value = value.replace(/[\t\n\f\r \u00a0\u202f]+$/u, (spaces) => spaces.replace(/[\u00a0\u202f]/gu, " "));
+      }
+    }
+    return value;
+  }
   if (node.nodeName === "#comment") return null;
   if (!node.tagName) return null;
 
   const props = getVNodeProps(node);
-  const children = getChildNodes(node)
-    .map((child, index) => renderNode(child, resolver, `${key}-${index}`, node))
+  const linkType =
+    node.tagName === "a" && node.namespaceURI === "http://www.w3.org/1999/xhtml"
+      ? getLinkType(props.href)
+      : null;
+  if (linkType === "external") {
+    props.target = "_blank";
+    props.rel = [
+      ...new Set([
+        ...String(props.rel || "")
+          .split(/\s+/)
+          .filter(Boolean),
+        "noopener",
+        "noreferrer",
+      ]),
+    ].join(" ");
+  } else if (linkType === "internal") {
+    delete props.target;
+  }
+  let children = getChildNodes(node)
+    .map((child, index) => renderNode(child, resolver, `${key}-${index}`, node, router))
     .filter((child) => child !== null);
+  const firstChild = getChildNodes(node)[0];
+  const favicon = linkType && (
+    firstChild?.tagName === "markdown-link-icon" ||
+    firstChild?.attrs?.some(({ name }) => name === "data-reader-link-icon")
+  ) ? children[0] : null;
+  const externalIcon = linkType === "external" &&
+    !getChildNodes(node).some(hasExternalIcon)
+    ? h("i", {
+      class: `ri-external-link-line text-[0.625em] text-base-content/25 font-normal ${EXTERNAL_ICON_LAYOUT}`,
+      "aria-hidden": "true",
+    }) : null;
+  if (favicon || externalIcon) {
+    children = groupLinkIcons(children, favicon, externalIcon);
+    props.class = `${props.class || ""} markdown-inline-link`.trim();
+  }
   const resolved = resolver?.({
     tagName: node.tagName,
     props,
     children,
     key,
-    parentClass: parent?.attrs?.find((attribute) => attribute.name === "class")?.value || "",
+    parentClass:
+      parent?.attrs?.find((attribute) => attribute.name === "class")?.value ||
+      "",
   });
 
   if (resolved === false) return null;
   if (resolved !== undefined && resolved !== null) return resolved;
 
+  if (linkType === "internal" && router && props.download == null) {
+    const { href, ...linkProps } = props;
+    const base = new URL(router.currentRoute.value.fullPath, SITE_ORIGIN);
+    const url = new URL(href, base);
+    return h(RouterLink, {
+      ...linkProps,
+      key,
+      to: url.pathname + url.search + url.hash,
+    }, { default: () => children });
+  }
+
   return h(node.tagName, { ...props, key }, children);
 };
 
-export const renderHtmlFragment = (fragment, resolver) =>
+export const renderHtmlFragment = (fragment, resolver, router) =>
   (fragment?.childNodes || [])
-    .map((node, index) => renderNode(node, resolver, `markdown-node-${index}`))
+    .map((node, index) => renderNode(node, resolver, `markdown-node-${index}`, fragment, router))
     .filter((node) => node !== null);

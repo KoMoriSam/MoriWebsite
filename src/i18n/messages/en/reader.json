@@ -50,6 +50,7 @@
       "loadFailed": "Novel content is unavailable. Please try again later."
     },
     "comments": {
+      "current": "Selected passage",
       "open": "Open paragraph comments",
       "count": "Paragraph comment count"
     },
@@ -58,6 +59,9 @@
       "copyLatex": "Copy LaTeX",
       "copySvg": "Copy SVG",
       "textCopied": "Text copied",
+      "open": "Open",
+      "linkCopied": "Link copied",
+      "copyLinkFailed": "Cannot copy the link. Please try again.",
       "copyTextFailed": "Copy failed. Please select the text manually.",
       "imageSaved": "Image saved",
       "imageOpened": "Original image opened. Use your browser to save it.",

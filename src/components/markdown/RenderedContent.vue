@@ -1,5 +1,6 @@
 <script>
 import { computed, Fragment, h, inject, onMounted, provide, watch } from "vue";
+import { routerKey } from "vue-router";
 import { ensureMarkdownStyles } from "@/utils/markdown/load-markdown-styles";
 
 import {
@@ -10,6 +11,7 @@ import {
 
 export default {
   name: "RenderedContent",
+  inheritAttrs: false,
   props: {
     html: {
       type: String,
@@ -25,6 +27,7 @@ export default {
     },
   },
   setup(props) {
+    const router = inject(routerKey, null);
     const inheritedResolver = inject(MARKDOWN_COMPONENT_RESOLVER, null);
     const activeResolver = computed(
       () => props.resolver || inheritedResolver || null,
@@ -42,7 +45,7 @@ export default {
       h(
         Fragment,
         null,
-        renderHtmlFragment(fragment.value, activeResolver.value),
+        renderHtmlFragment(fragment.value, activeResolver.value, router),
       );
   },
 };

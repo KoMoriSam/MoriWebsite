@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { handleGithubProfile } from "../../workers/auth/github-profile.js";
+import { handleGithubProfile } from "../../workers/github/profile.js";
 
 const originalFetch = globalThis.fetch;
 const originalCaches = globalThis.caches;

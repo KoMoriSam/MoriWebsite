@@ -35,7 +35,7 @@ export default defineConfig({
   base: "/",
   server: {
     proxy: {
-      "/api/github/users": {
+      "/api/github/": {
         target: "https://api.komori.cc",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),

@@ -1,14 +1,7 @@
-import CONFIG from "@/constants/config";
+import { fetchGithubDiscussionCounts, hasGithubDiscussionCountsApi } from "./api-github.js";
 
-const { GISCUS } = CONFIG;
-const { paragraphCountsApi } = GISCUS;
-
-const normalizeEndpoint = (value = "") => String(value || "").trim();
-
-const ENDPOINT = normalizeEndpoint(paragraphCountsApi.endpoint);
-const TIMEOUT = Number(paragraphCountsApi.timeout || 8000);
-
-export const hasParagraphCountsApi = Boolean(ENDPOINT);
+const TIMEOUT = 8000;
+export const hasParagraphCountsApi = hasGithubDiscussionCountsApi;
 
 async function fetchCountsBatch({ body, identifiers = [] }) {
   if (!hasParagraphCountsApi) {
@@ -26,14 +19,7 @@ async function fetchCountsBatch({ body, identifiers = [] }) {
   }, TIMEOUT);
 
   try {
-    const response = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body(ids)),
-      signal: controller.signal,
-    });
+    const response = await fetchGithubDiscussionCounts(body(ids), controller.signal);
 
     if (!response.ok) {
       throw new Error(`评论批量接口请求失败：${response.status}`);
@@ -46,13 +32,10 @@ async function fetchCountsBatch({ body, identifiers = [] }) {
       return {};
     }
 
-    const normalized = {};
-    ids.forEach((id) => {
-      const count = Number(counts[id] ?? 0);
-      normalized[id] = Number.isFinite(count) ? Math.max(0, count) : 0;
-    });
-
-    return normalized;
+    return Object.fromEntries(ids.map((id) => {
+      const count = Number(Object.hasOwn(counts, id) ? counts[id] : 0);
+      return [id, Number.isFinite(count) ? Math.max(0, count) : 0];
+    }));
   } finally {
     clearTimeout(timeout);
   }

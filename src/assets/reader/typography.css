@@ -215,6 +215,16 @@
     @apply no-underline text-primary hover:font-bold hover:underline;
   }
 
+  /* Atomic icon groups do not inherit the anchor's text decoration. */
+  .markdown-content.prose :deep(a.markdown-inline-link) {
+    @apply no-underline;
+  }
+
+  .markdown-content.prose
+    :deep(a.markdown-inline-link:hover .markdown-link-text) {
+    @apply underline;
+  }
+
   .markdown-content.prose
     :deep(
       :not(pre) code:not(:where([class~="not-prose"], [class~="not-prose"] *))

@@ -1,13 +1,11 @@
 import { computed, reactive, readonly } from "vue";
+import { fetchGithubProfile } from "../../services/api-github.js";
 
 const SESSION_KEY = "giscus-session";
 const PROFILE_KEY = "mori:github:profile";
 const RETURN_KEY = "mori:github:return";
 const RECHECK_AFTER = 5 * 60 * 1000;
 export const GISCUS_ORIGIN = "https://giscus.app";
-const PROFILE_API = String(import.meta.env?.VITE_GITHUB_PROFILE_API
-  || (import.meta.env?.DEV ? "/api/github/users" : "https://api.komori.cc/github/users"))
-  .trim().replace(/\/+$/, "");
 
 const classifyError = (message) => {
   if (/State has expired/i.test(message)) return "token-expired";
@@ -176,15 +174,7 @@ export function createGithubSession() {
     state.checking = true;
     const timer = window.setTimeout(() => controller.abort(), 15000);
     try {
-      const response = await fetch(
-        `${PROFILE_API}/${encodeURIComponent(login)}`,
-        {
-          headers: { Accept: "application/vnd.github+json" },
-          credentials: "omit",
-          cache: "no-cache",
-          signal: controller.signal,
-        },
-      );
+      const response = await fetchGithubProfile(login, controller.signal);
       if (!response.ok) {
         const error = new Error("profile");
         error.status = response.status;

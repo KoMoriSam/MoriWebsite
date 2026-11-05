@@ -1,4 +1,5 @@
-import { createApp, ref, h, onBeforeUnmount } from "vue";
+import { createApp, inject, ref, h, onBeforeUnmount } from "vue";
+import { routerKey } from "vue-router";
 import Modal from "@/components/interaction/overlay/Modal.vue";
 import { useLocale } from "@/i18n";
 import {
@@ -306,6 +307,7 @@ const modal = {
       buttonText = "关闭",
       cancelText = "取消",
       localeService,
+      router,
       buttonMode = "footer",
       variant = "default",
       scrollContent = false,
@@ -378,6 +380,7 @@ const modal = {
     });
 
     localeService.provide(modalApp);
+    if (router) modalApp.use(router);
     modalApp.mount(container);
 
     return {
@@ -403,11 +406,12 @@ const modal = {
 
 export function useModal() {
   const localeService = useLocale();
+  const router = inject(routerKey, null);
   return {
-    show: (options) => modal.show({ ...options, localeService }),
-    info: (title, description, options = {}) => modal.show({ title, description, ...options, localeService }),
+    show: (options) => modal.show({ ...options, localeService, router }),
+    info: (title, description, options = {}) => modal.show({ title, description, ...options, localeService, router }),
     confirm: (title, description, options = {}) => modal.show({
-      title, description, ...options, localeService, variant: "confirm",
+      title, description, ...options, localeService, router, variant: "confirm",
       buttonText: options.buttonText || "确认",
       cancelText: options.cancelText || "取消",
     }),

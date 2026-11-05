@@ -425,6 +425,10 @@
       "preview": "预览图片",
       "previewLabel": "预览图片：{p0}"
     },
+    "repository": {
+      "stars": "星标",
+      "forks": "派生仓库"
+    },
     "mermaid": {
       "tools": "Mermaid 图表工具",
       "switchView": "Mermaid 视图切换",

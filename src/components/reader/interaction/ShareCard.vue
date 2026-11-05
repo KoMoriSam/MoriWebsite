@@ -133,6 +133,7 @@ const fileName = ref("远方之森-分享卡片.png");
 const truncated = ref(false);
 const payload = ref(null);
 let generationToken = 0;
+let generationController;
 let hasRenderedClosedState = false;
 let closeCleanupTimer = 0;
 
@@ -172,12 +173,15 @@ const generate = async () => {
   if (!payload.value) return;
 
   const token = ++generationToken;
+  generationController?.abort();
+  const controller = new AbortController();
+  generationController = controller;
   clearOutput();
   loading.value = true;
   errorMessage.value = "";
 
   try {
-    const result = await createReaderShareCard(payload.value, { localize: localizeText });
+    const result = await createReaderShareCard(payload.value, { localize: localizeText, signal: controller.signal });
     if (token !== generationToken) return;
     imageBlob.value = result.blob;
     fileName.value = result.fileName;
@@ -188,6 +192,7 @@ const generate = async () => {
     errorMessage.value = error?.message || localeMessage('reader.share.generateFailed');
   } finally {
     if (token === generationToken) loading.value = false;
+    if (generationController === controller) generationController = null;
   }
 };
 
@@ -226,6 +231,7 @@ const clearClosedState = () => {
 
 const handleClosed = () => {
   generationToken += 1;
+  generationController?.abort();
   window.clearTimeout(closeCleanupTimer);
   closeCleanupTimer = window.setTimeout(clearClosedState, CLOSE_ANIMATION_MS);
 };
@@ -270,6 +276,7 @@ const shareImage = async () => {
 
 onBeforeUnmount(() => {
   generationToken += 1;
+  generationController?.abort();
   window.clearTimeout(closeCleanupTimer);
   revokePreviewUrl();
 });
