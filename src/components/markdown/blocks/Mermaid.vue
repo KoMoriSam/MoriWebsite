@@ -226,7 +226,7 @@ const DESKTOP_MEDIA_QUERY = "(min-width: 48rem)";
 const PAN_BOUNDARY_SPACE = 48;
 const MOBILE_DIAGRAM_EDGE_INSET = 12;
 const DESKTOP_DIAGRAM_EDGE_INSET = 24;
-const viewMode = ref(import.meta.env.SSR ? "code" : "preview");
+const viewMode = ref("code");
 const zoom = ref(MIN_ZOOM);
 const defaultZoom = ref(MIN_ZOOM);
 const panX = ref(0);
@@ -238,7 +238,7 @@ const diagramHost = ref(null);
 const diagramElement = ref(null);
 const isFullscreen = ref(false);
 const canFullscreen = ref(false);
-const renderStatus = ref(import.meta.env.SSR ? "idle" : "loading");
+const renderStatus = ref("idle");
 let panStart = null;
 let pinchStart = null;
 let resizeObserver = null;
@@ -797,6 +797,7 @@ const toggleFullscreen = async () => {
 };
 
 onMounted(() => {
+  viewMode.value = "preview";
   desktopMediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
   desktopMediaQuery.addEventListener("change", syncResponsiveLabelScale);
 

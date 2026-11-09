@@ -30,7 +30,7 @@
     <template v-else>
       <RenderedContent
         v-for="page in renderedPages"
-        :key="`${headerData.uuid}-v${markdownRenderVersion}`"
+        :key="headerData.uuid"
         :html="page.html"
         :resolver="markdownComponentResolver"
       />

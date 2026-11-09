@@ -1,8 +1,5 @@
 import "@/assets/main.css";
-
-if (!import.meta.env.SSR) {
-  void import("@/assets/font/core-fonts.css");
-}
+import "@/assets/font/core-fonts.css";
 
 import { ViteSSG } from "vite-ssg";
 import { createPinia } from "pinia";
@@ -80,6 +77,11 @@ function configureApp(articles, snapshot) {
       app.use(lazyPlugin);
 
       app.directive("fade-in", fadeIn);
+    },
+    {
+      hydration:
+        !import.meta.env.SSR &&
+        document.getElementById("app")?.hasAttribute("data-server-rendered"),
     },
   );
 }

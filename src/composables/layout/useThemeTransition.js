@@ -1,4 +1,4 @@
-import { nextTick, onScopeDispose, watch } from "vue";
+import { nextTick, onMounted, onScopeDispose, watch } from "vue";
 import { useThemeStore } from "@/stores/themeStore";
 
 export function useThemeTransition() {
@@ -6,7 +6,9 @@ export function useThemeTransition() {
   let transition;
   let revision = 0;
 
-  watch(() => themes.resolvedTheme, (theme, previous) => {
+  // Storage restores before this hook. Keep the head script's first-paint theme
+  // until the real preference is ready, without animating initialization.
+  onMounted(() => watch(() => themes.resolvedTheme, (theme, previous) => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
     const currentRevision = ++revision;
@@ -40,7 +42,7 @@ export function useThemeTransition() {
       transition = undefined;
       delete root.dataset.themeTransition;
     });
-  }, { immediate: true, flush: "post" });
+  }, { immediate: true, flush: "post" }));
 
   onScopeDispose(() => {
     revision++;

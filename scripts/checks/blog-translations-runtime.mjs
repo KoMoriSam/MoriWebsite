@@ -216,6 +216,20 @@ try {
   assert.equal(restoredLocale.locale.value, 'en');
   assert.equal(freshRouter.currentRoute.value.path, '/blog/sample/zh-CN');
   app.unmount(); app = null;
+
+  state.listRequests = [];
+  const listRouter = createRouter({ history: createMemoryHistory(), routes: [{
+    path: '/blog', component: Blog, meta: { blogList: true, articles: state.articles },
+  }] });
+  await listRouter.push('/blog');
+  app = renderer.createApp({ render: () => h(RouterView) });
+  app.use(listRouter); app.use(createPinia()); restoredLocale.install(app);
+  app.mount({ children: [] }); await flush();
+  assert.equal(state.listRequests.length, 1, 'refresh the prerendered catalog in the background');
+  assert.equal(state.props.loading, false, 'do not replace the prerendered list with skeletons');
+  assert.ok(state.props.articles.length, 'keep articles visible while the index is pending');
+  state.listRequests[0](state.articles); await flush();
+  app.unmount(); app = null;
   console.log("检查通过：文章语言切换、阅读位置、内容加载与导航。");
 } finally {
   app?.unmount(); await server.close(); delete globalThis.__blogTranslationCheck;

@@ -187,6 +187,22 @@ const paths = [
     "/404",
   ]),
 ];
+// These pages depend on half-width punctuation for their first line breaks.
+// Deliver the existing small fonts with HTML to avoid a late punctuation reflow.
+const inlineFontRoutes = new Set(["/novel", "/kaiming", ...entries.keys()]);
+const kaimingDirectory = resolve(
+  process.env.CONTENT_BUILD_DIR || ".output/content",
+  "kaiming",
+);
+let openingFontStyles = await readFile(resolve(kaimingDirectory, "index.css"), "utf8");
+for (const name of ["Sans-VF.woff2", "Serif-VF.woff2"]) {
+  const font = await readFile(resolve(kaimingDirectory, name));
+  openingFontStyles = openingFontStyles.replaceAll(
+    `https://raw.komori.cc/kaiming/${name}`,
+    `data:font/woff2;base64,${font.toString("base64")}`,
+  );
+}
+const openingFontHash = hash(openingFontStyles);
 const pages = Object.fromEntries(
   paths.map((route) => {
     if (
@@ -218,6 +234,7 @@ const pages = Object.fromEntries(
           (route === "/novel" || home) && novelsHash,
           chapter && [chapter, chapterRevisions.get(chapter.path)],
           route === "/changelog" && snapshot.changelog,
+          inlineFontRoutes.has(route) && openingFontHash,
         ]),
         images: previous[route]?.images || [],
       },
@@ -309,6 +326,12 @@ if (!dryRun) {
         document.head.append(link);
       }
       await renderDOMHead(head, { document });
+      if (inlineFontRoutes.has(route)) {
+        const style = document.createElement("style");
+        style.id = "opening-punctuation-fonts";
+        style.textContent = openingFontStyles;
+        document.head.append(style);
+      }
       const file = fileFor(route);
       await mkdir(dirname(file), { recursive: true });
       await writeFile(file, dom.serialize());

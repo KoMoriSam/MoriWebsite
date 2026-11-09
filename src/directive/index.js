@@ -97,7 +97,8 @@ const queueImageReveal = (el, sourceKey = el.__fadeInSourceKey) => {
 const prepareImage = (el) => {
   el.__fadeInMode = "image";
   el.__fadeInSourceKey = getImageSourceKey(el);
-  hideElement(el);
+  const preserve = el.__fadeInHydrating;
+  if (!preserve) hideElement(el);
 
   if (!el.classList.contains("motion-reduce:transition-none")) {
     el.classList.add("motion-reduce:transition-none");
@@ -110,12 +111,12 @@ const prepareImage = (el) => {
     el.__fadeInAddedTransition = true;
   }
 
-  const handleLoad = () => queueImageReveal(el);
+  const handleLoad = () => preserve ? showElement(el) : queueImageReveal(el);
   el.__fadeInHandleLoad = handleLoad;
   el.addEventListener("load", handleLoad);
   el.addEventListener("error", handleLoad);
 
-  if (el.complete) {
+  if (preserve || el.complete) {
     handleLoad();
   }
 };
@@ -157,6 +158,12 @@ const hideBackground = (el) => {
 const loadBackground = (el, url) => {
   const loadId = Symbol();
   el.__fadeInLoadId = loadId;
+  if (el.__fadeInHydrating) {
+    el.style.setProperty(BACKGROUND_IMAGE_PROPERTY, url ? toCssUrl(url) : "none");
+    showBackground(el);
+    el.style.backgroundImage = "none";
+    return;
+  }
   hideBackground(el);
 
   if (!url) {
@@ -189,24 +196,31 @@ const loadBackground = (el, url) => {
 };
 
 export const fadeIn = {
+  beforeMount(el) {
+    // Existing SSG nodes are already connected before hydration mounts them.
+    el.__fadeInHydrating = el.isConnected;
+  },
   mounted(el, binding) {
     // 传入图片地址的非 img 元素使用独立背景伪元素
     if (binding.value && el.tagName !== "IMG") {
       el.__fadeInMode = "background";
       el.classList.add(BACKGROUND_CLASS);
-      el.style.backgroundImage = "none";
+      if (!el.__fadeInHydrating) el.style.backgroundImage = "none";
       loadBackground(el, binding.value);
+      delete el.__fadeInHydrating;
       return;
     }
 
     if (el.tagName === "IMG") {
       prepareImage(el);
+      delete el.__fadeInHydrating;
       return;
     }
 
     // 普通元素保持原有兼容行为
     el.classList.add("opacity-0", "transition-opacity", "duration-500");
     showElement(el);
+    delete el.__fadeInHydrating;
   },
 
   updated(el, binding) {
@@ -253,5 +267,6 @@ export const fadeIn = {
     delete el.__fadeInHandleLoad;
     delete el.__fadeInLoadId;
     delete el.__fadeInSourceKey;
+    delete el.__fadeInHydrating;
   },
 };

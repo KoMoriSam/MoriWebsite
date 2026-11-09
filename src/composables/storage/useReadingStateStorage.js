@@ -1,7 +1,7 @@
-import { useStorage } from "@vueuse/core";
+import { useHydratedStorage } from "./useHydratedStorage";
 
 export function useReadingStateStorage() {
-  const READING_STATE = useStorage("READING_STATE", {});
+  const { storage: READING_STATE, ready } = useHydratedStorage("READING_STATE", {});
 
   const keyMapping = {
     CHAPTER_LIST: "CHAPTER_LIST",
@@ -20,6 +20,7 @@ export function useReadingStateStorage() {
     if (READING_STATE.value[newKey] !== undefined) {
       return READING_STATE.value[newKey];
     }
+    if (!ready.value) return defaultValue;
 
     // 尝试从旧键名获取（带类型转换，与 migrateReadingState 保持一致；SSG 构建时跳过 localStorage）
     let oldValue = null;

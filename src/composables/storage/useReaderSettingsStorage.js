@@ -1,7 +1,7 @@
-import { useStorage } from "@vueuse/core";
+import { useHydratedStorage } from "./useHydratedStorage";
 
 export function useReaderSettingsStorage() {
-  const READER_SETTINGS = useStorage("READER_SETTINGS", {});
+  const { storage: READER_SETTINGS, ready } = useHydratedStorage("READER_SETTINGS", {});
 
   // 旧键名到新键名的映射（包含重命名）
   const keyMapping = {
@@ -33,6 +33,7 @@ export function useReaderSettingsStorage() {
     if (READER_SETTINGS.value[newKey] !== undefined) {
       return READER_SETTINGS.value[newKey];
     }
+    if (!ready.value) return defaultValue;
 
     // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
     let oldValue = null;

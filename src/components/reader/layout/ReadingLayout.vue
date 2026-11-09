@@ -205,10 +205,7 @@ const formatSettingModal = useModalClose({
 const showToc = computed(() => props.toc);
 
 const showAside = computed(
-  () =>
-    // SSR 预渲染阶段保留右栏空位作为宽屏下的右边距
-    (typeof window === "undefined" && props.aside) ||
-    (props.aside && Boolean(slots.aside)),
+  () => props.aside && Boolean(slots.aside),
 );
 
 const readingProgress = computed(() => readingProgressValue.value);
@@ -240,8 +237,10 @@ const getHeadingText = (element, index) => {
   return heading.textContent?.trim() || translate('reader.settings.heading', { p0: index + 1 });
 };
 
+const getHeadingId = (element) => element.dataset.readerHeadingId || element.id;
+
 const createHeadingId = (element, index, text) => {
-  if (element.id) return element.id;
+  if (getHeadingId(element)) return getHeadingId(element);
 
   const base =
     text
@@ -281,14 +280,14 @@ const observeHeadings = (elements) => {
       }
 
       if (visible.length) {
-        activeHeadingId.value = visible[0].target.id;
+        activeHeadingId.value = getHeadingId(visible[0].target);
         return;
       }
 
       const passed = elements.filter(
         (element) => element.getBoundingClientRect().top < navbarOffset + 24,
       );
-      activeHeadingId.value = passed.at(-1)?.id || elements[0].id;
+      activeHeadingId.value = getHeadingId(passed.at(-1) || elements[0]);
     },
     {
       rootMargin: `-${navbarOffset}px 0px -70% 0px`,
@@ -297,7 +296,7 @@ const observeHeadings = (elements) => {
   );
 
   elements.forEach((element) => intersectionObserver.observe(element));
-  activeHeadingId.value = pendingHeadingId || elements[0].id;
+  activeHeadingId.value = pendingHeadingId || getHeadingId(elements[0]);
 };
 
 const updateReadingProgress = () => {

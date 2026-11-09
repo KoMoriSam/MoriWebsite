@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { usePreferredDark } from "@vueuse/core";
 import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
+import { DEFAULT_THEME, SITE_THEME_NAMES } from "@/utils/layout/site-theme";
 
 const isDark = usePreferredDark();
 
@@ -13,15 +14,13 @@ const isDark = usePreferredDark();
  *   dim       (夜间模式) — 低调蓝灰色调
  */
 const GISCUS_THEME_BASE = import.meta.env.VITE_GISCUS_CSS_RAW;
-const DEFAULT_THEME = "default";
-const MANUAL_THEME_VALUES = ["lemonade", "forest", "corporate", "dim"];
-const manualThemeValues = new Set(MANUAL_THEME_VALUES);
+const manualThemeValues = new Set(SITE_THEME_NAMES);
 
 export const useThemeStore = defineStore("theme", () => {
-  const { GLOBAL_INFO } = useGlobalStorage();
+  const { GLOBAL_INFO, getInfo } = useGlobalStorage();
   const theme = computed({
     get: () => {
-      const storedTheme = GLOBAL_INFO.value.SET_THEME;
+      const storedTheme = getInfo("SET_THEME", DEFAULT_THEME);
       return storedTheme === DEFAULT_THEME || manualThemeValues.has(storedTheme)
         ? storedTheme
         : DEFAULT_THEME;

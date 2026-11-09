@@ -6,7 +6,7 @@
     <section
       id="novel-opening"
       ref="opening"
-      class="@container/novel viewport-section relative flex scroll-mt-(--navbar-scroll-offset) flex-col justify-center md:my-6"
+      class="@container/novel viewport-section relative flex scroll-mt-(--navbar-scroll-offset) flex-col justify-center md:my-6 [--viewport-section-offset:calc(var(--navbar-height)+0.75rem)] md:[--viewport-section-offset:calc(var(--navbar-height)+4rem)]"
       aria-labelledby="novel-title"
     >
       <div
@@ -185,15 +185,13 @@
       <div
         class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-base-content/55 md:text-sm"
       >
-        <client-only>
-          <CatalogMeta icon="ri-book-open-line">{{
-            translate(
-              "common.counts.chaptersRead",
-              { count: formatNumber(readChapters.length) },
-              readChapters.length,
-            )
-          }}</CatalogMeta>
-        </client-only>
+        <CatalogMeta icon="ri-book-open-line">{{
+          translate(
+            "common.counts.chaptersRead",
+            { count: formatNumber(readChapters.length) },
+            readChapters.length,
+          )
+        }}</CatalogMeta>
         <CatalogMeta icon="ri-stack-line">{{
           translate(
             "common.counts.chapters",
@@ -206,42 +204,42 @@
             count: formatNumber(totalWordCount),
           })
         }}</CatalogMeta>
-        <client-only v-if="analyticsAvailable || commentCountsAvailable">
+        <template v-if="analyticsAvailable || commentCountsAvailable">
           <CatalogMeta
-            v-if="analyticsAvailable && novelReadsStatus !== 'error'"
+            v-if="analyticsAvailable"
             icon="ri-eye-line"
           >
-            <template v-if="Number.isFinite(novelTotalReads)">{{
-              translate(
-                "common.counts.reads",
-                { count: formatReadCount(novelTotalReads) },
-                novelTotalReads,
-              )
-            }}</template>
-            <span
-              v-else
-              class="loading loading-dots loading-xs"
-              :aria-label="translate('novel.detail.loadingReads')"
-            ></span>
+            <I18nT
+              keypath="common.counts.reads"
+              :plural="Number.isFinite(novelTotalReads) ? novelTotalReads : 2"
+              tag="span"
+              scope="global"
+            >
+              <template #count>
+                <template v-if="Number.isFinite(novelTotalReads)">{{ formatReadCount(novelTotalReads) }}</template>
+                <template v-else-if="novelReadsStatus === 'error'">—</template>
+                <span v-else class="loading loading-dots loading-xs align-middle" :aria-label="translate('novel.detail.loadingReads')"></span>
+              </template>
+            </I18nT>
           </CatalogMeta>
           <CatalogMeta
-            v-if="commentCountsAvailable && novelCommentsStatus !== 'error'"
+            v-if="commentCountsAvailable"
             icon="ri-chat-3-line"
           >
-            <template v-if="Number.isFinite(novelTotalComments)">{{
-              translate(
-                "common.counts.comments",
-                { count: formatReadCount(novelTotalComments) },
-                novelTotalComments,
-              )
-            }}</template>
-            <span
-              v-else
-              class="loading loading-dots loading-xs"
-              :aria-label="translate('novel.detail.loadingComments')"
-            ></span>
+            <I18nT
+              keypath="common.counts.comments"
+              :plural="Number.isFinite(novelTotalComments) ? novelTotalComments : 2"
+              tag="span"
+              scope="global"
+            >
+              <template #count>
+                <template v-if="Number.isFinite(novelTotalComments)">{{ formatReadCount(novelTotalComments) }}</template>
+                <template v-else-if="novelCommentsStatus === 'error'">—</template>
+                <span v-else class="loading loading-dots loading-xs align-middle" :aria-label="translate('novel.detail.loadingComments')"></span>
+              </template>
+            </I18nT>
           </CatalogMeta>
-        </client-only>
+        </template>
       </div>
     </section>
 
@@ -320,6 +318,7 @@
 <script setup>
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
+import { I18nT } from "vue-i18n";
 const { t: translate, commentLocale, number: formatNumber } = useLocale();
 
 import { computed, ref, watch } from "vue";

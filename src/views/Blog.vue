@@ -5,20 +5,24 @@
       :articles="localizedArticles"
       :loading="loadingList"
     />
-    <ArticleDetail
-      v-else
-      :article="currentArticle"
-      :articles="localizedArticles"
-      :content="articleContent"
-      :list-route="lastListRoute"
-      :loading="loadingContent"
-      :error="localizeText(errorContent)"
-      @navigate="prepareArticleNavigation"
-      @ready="handleArticleReady"
-      @refresh="refreshCurrentArticle"
-      @back="goToList"
-      @language="switchArticleLanguage"
-    />
+    <Suspense v-else>
+      <ArticleDetail
+        :article="currentArticle"
+        :articles="localizedArticles"
+        :content="articleContent"
+        :list-route="lastListRoute"
+        :loading="loadingContent"
+        :error="localizeText(errorContent)"
+        @navigate="prepareArticleNavigation"
+        @ready="handleArticleReady"
+        @refresh="refreshCurrentArticle"
+        @back="goToList"
+        @language="switchArticleLanguage"
+      />
+      <template #fallback>
+        <LoadingPlaceholder />
+      </template>
+    </Suspense>
   </KeepAlive>
 </template>
 
@@ -160,7 +164,7 @@ const setupBlogPosTracker = () => {
   stopBlogPosTracker.value = usePosTracker(router, undefined, {
     ...readingProgress.getOptions(articleId),
     getContextId: () => String(currentArticle.value?.id || getRouteArticleId()),
-    posSelector: "#markdown :is(h1, h2, h3, h4, h5, h6, p, div[data-reader-paragraph-id])[id]",
+    posSelector: "#markdown :is(h1, h2, h3, h4, h5, h6, p, div[data-reader-paragraph-id], [data-reader-top-anchor])[id]",
     onStoredRestore: () => {
       if (restoredArticleId === articleId) return;
       restoredArticleId = articleId;
@@ -176,7 +180,8 @@ const setupBlogPosTracker = () => {
 
 const loadArticles = async () => {
   const request = ++listRequestId;
-  loadingList.value = true;
+  // Revalidate the index without replacing the prerendered list with skeletons.
+  loadingList.value = articles.value.length === 0;
 
   try {
     const result = await fetchBlogSearchArticles(uiLocale.value);

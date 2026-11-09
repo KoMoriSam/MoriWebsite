@@ -8,6 +8,7 @@
         ? 'border-primary bg-primary text-primary-content hover:border-primary'
         : 'bg-base-100 hover:border-primary/30',
       compact && !textOnly ? 'catalog-compact-preview min-h-24' : '',
+      responsiveCompact && !textOnly ? 'catalog-compact-preview catalog-responsive-compact max-md:min-h-24' : '',
       expandable ? 'cursor-pointer' : '',
       to || href
         ? 'cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary'
@@ -17,14 +18,15 @@
     :data-card-motion="expandable ? 'card' : undefined"
   >
     <div
-      :class="
+      :class="[
+        responsiveCompact ? 'max-md:contents' : '',
         compact || textOnly
           ? 'contents'
           : [
               'relative flex items-end overflow-hidden bg-base-200',
               coverClass || 'h-48 min-h-48 flex-1 sm:h-64 sm:min-h-64',
             ]
-      "
+      ]"
     >
       <input
         v-if="expandable"
@@ -43,11 +45,12 @@
         v-if="!textOnly"
         data-card-motion="cover"
         class="overflow-hidden bg-base-200"
-        :class="
+        :class="[
           compact
             ? 'absolute inset-y-0 left-0 w-(--preview-width)'
-            : 'absolute inset-0'
-        "
+            : 'absolute inset-0',
+          responsiveCompact ? 'max-md:right-auto max-md:w-(--preview-width)' : '',
+        ]"
         :aria-busy="hasCover && !isCoverLoaded"
       >
         <div v-if="$slots.cover" class="size-full" aria-hidden="true">
@@ -79,7 +82,7 @@
             />
             <div
               class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/5 transition-opacity duration-200 motion-reduce:transition-none"
-              :class="overlayTitle ? 'opacity-100' : 'opacity-0'"
+              :class="[overlayTitle ? 'opacity-100' : 'opacity-0', responsiveCompact ? 'max-md:opacity-0' : '']"
               aria-hidden="true"
             ></div>
           </div>
@@ -113,6 +116,8 @@
           headingClass,
           compact ? 'px-3 pt-3' : 'w-full p-4 sm:p-5',
           compact && !textOnly ? 'ml-(--preview-width)' : '',
+          responsiveCompact ? 'max-md:w-auto max-md:px-3 max-md:pt-3 max-md:pb-0 max-md:ml-(--preview-width)' : '',
+          responsiveCompact ? (primary ? 'max-md:text-primary-content' : 'max-md:text-base-content') : '',
           overlayTitle
             ? 'text-white'
             : primary
@@ -138,7 +143,7 @@
         <component
           :is="titleTag"
           class="wrap-break-word text-balance font-bold"
-          :class="['line-clamp-2', overlayTitle ? 'drop-shadow-sm' : '']"
+          :class="['line-clamp-2', overlayTitle ? 'drop-shadow-sm' : '', responsiveCompact ? 'max-md:drop-shadow-none' : '']"
           ><slot name="title">{{ title }}</slot></component
         >
       </div>
@@ -150,6 +155,7 @@
       :class="[
         compact ? 'px-3 pt-2 pb-3' : 'flex-none p-5 sm:p-6',
         compact && !textOnly ? 'ml-(--preview-width)' : '',
+        responsiveCompact ? 'max-md:px-3 max-md:pt-2 max-md:pb-3 max-md:ml-(--preview-width)' : '',
       ]"
     >
       <div v-if="titleInBody && !compact" class="mb-3">
@@ -179,6 +185,7 @@
             ? 'line-clamp-2 text-xs leading-5'
             : 'h-18 line-clamp-3 text-sm leading-6',
           primary ? 'text-primary-content/75' : 'text-base-content/65',
+          responsiveCompact ? 'max-md:h-auto max-md:line-clamp-2 max-md:text-xs max-md:leading-5' : '',
         ]"
       >
         <slot name="description">{{ description }}</slot>
@@ -190,15 +197,17 @@
         :class="[
           compact ? 'pt-2 text-xs' : 'min-h-10 pt-5 text-sm',
           primary ? 'text-primary-content/75' : 'text-base-content/50',
+          responsiveCompact ? 'max-md:min-h-0 max-md:pt-2 max-md:text-xs' : '',
         ]"
       >
         <div
           v-if="$slots.meta"
-          :class="
+          :class="[
             compact
               ? 'flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-0.5 leading-4 empty:hidden'
-              : 'contents'
-          "
+              : 'contents',
+            responsiveCompact ? 'max-md:flex max-md:min-w-0 max-md:flex-1 max-md:flex-wrap max-md:items-center max-md:gap-x-1.5 max-md:gap-y-0.5 max-md:leading-4 empty:hidden' : '',
+          ]"
         >
           <slot name="meta"></slot>
         </div>
@@ -207,6 +216,7 @@
           :class="[
             primary ? 'text-primary-content' : 'text-primary',
             compact ? 'self-end' : '',
+            responsiveCompact ? 'max-md:self-end' : '',
             actionClass,
           ]"
         >
@@ -232,7 +242,6 @@
 
 <script setup>
 import { computed, ref, useId, useSlots, watch } from "vue";
-import { useMediaQuery, useMounted } from "@vueuse/core";
 import { RouterLink } from "vue-router";
 import CatalogBadge from "./CatalogBadge.vue";
 import {
@@ -275,18 +284,15 @@ const props = defineProps({
 defineEmits(["select"]);
 
 const detailsId = `catalog-details-${useId()}`;
-const coverLoaded = ref(false);
+const coverLoaded = ref(true);
 const coverFailed = ref(false);
 const slots = useSlots();
-const mounted = useMounted();
-const isMobile = useMediaQuery("(width < 48rem)");
-const compact = computed(
-  () =>
-    props.compact || (props.compactOnMobile && mounted.value && isMobile.value),
-);
+const compact = computed(() => props.compact);
+const responsiveCompact = computed(() => props.compactOnMobile && !props.compact);
 const titleInBody = computed(() => props.textOnly || Boolean(slots.cover));
 const headingClass = computed(() =>
-  compact.value ? "text-base" : props.titleClass || "text-xl sm:text-2xl",
+  [compact.value ? "text-base" : props.titleClass || "text-xl sm:text-2xl",
+    responsiveCompact.value ? "max-md:text-base" : ""],
 );
 const linkAttrs = computed(() =>
   props.to
@@ -298,15 +304,17 @@ const linkAttrs = computed(() =>
 const hasCover = computed(
   () => !slots.cover && Boolean(props.cover) && !coverFailed.value,
 );
-const isCoverLoaded = computed(() => import.meta.env.SSR || coverLoaded.value);
+const isCoverLoaded = computed(() => coverLoaded.value);
 const overlayTitle = computed(
   () =>
     !props.textOnly && !compact.value && hasCover.value && isCoverLoaded.value,
 );
 const coverAttrs = computed(() => {
   const sizes =
-    compact.value && !props.expandable
-      ? "(min-width: 360px) 144px, 40vw"
+    (compact.value || responsiveCompact.value) && !props.expandable
+      ? responsiveCompact.value
+        ? `(max-width: 359px) 40vw, (max-width: 767px) 144px, ${props.coverSizes}`
+        : "(min-width: 360px) 144px, 40vw"
       : props.coverSizes;
   const attrs = getImageAttrs(props.cover, sizes);
   delete attrs.onError;
@@ -350,5 +358,14 @@ function syncCoverImage(image) {
 <style>
 .catalog-compact-preview {
   --preview-width: min(40%, 9rem);
+}
+
+@media (width < 48rem) {
+  .catalog-responsive-compact .badge {
+    border-color: transparent;
+    background-color: color-mix(in oklab, var(--color-primary) 8%, transparent);
+    color: var(--color-primary);
+    backdrop-filter: none;
+  }
 }
 </style>

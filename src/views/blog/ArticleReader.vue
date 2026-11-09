@@ -18,6 +18,12 @@
       @contextmenu.capture="handleArticleContextMenu"
     >
       <template #before>
+        <span
+          :id="`article-title-${articleId}`"
+          data-reader-top-anchor
+          aria-hidden="true"
+          class="pointer-events-none absolute top-0 left-0 size-0"
+        ></span>
         <header
           id="blog-reading-start"
           class="not-prose font-sans relative mb-8 min-h-72 overflow-hidden rounded-lg bg-base-200 shadow-lg sm:min-h-80"
@@ -158,7 +164,7 @@
 
             <div class="mt-auto">
               <h1
-                :id="`article-title-${articleId}`"
+                :data-reader-heading-id="`article-title-${articleId}`"
                 data-pagefind-body
                 data-pagefind-meta="localizeText(title)"
                 data-pagefind-weight="10"
@@ -266,51 +272,55 @@
                 </span>
 
                 <span
-                  v-if="analyticsAvailable && articleReadStatus !== 'error'"
+                  v-if="analyticsAvailable"
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-eye-line" aria-hidden="true"></i>
 
-                  <template v-if="Number.isFinite(articleReads)">
-                    {{
-                      translate(
-                        "common.counts.reads",
-                        { count: formatReadCount(articleReads) },
-                        articleReads,
-                      )
-                    }}
-                  </template>
-
-                  <span
-                    v-else
-                    class="loading loading-dots loading-xs"
-                    :aria-label="translate('blog.article.loadingReads')"
-                  ></span>
+                  <I18nT
+                    keypath="common.counts.reads"
+                    :plural="Number.isFinite(articleReads) ? articleReads : 2"
+                    tag="span"
+                    scope="global"
+                  >
+                    <template #count>
+                      <template v-if="Number.isFinite(articleReads)">
+                        {{ formatReadCount(articleReads) }}
+                      </template>
+                      <span
+                        v-else-if="articleReadStatus !== 'error'"
+                        class="loading loading-dots w-[1ch] align-middle"
+                        :aria-label="translate('blog.article.loadingReads')"
+                      ></span>
+                      <template v-else>–</template>
+                    </template>
+                  </I18nT>
                 </span>
 
                 <span
-                  v-if="
-                    commentCountsAvailable && articleCommentStatus !== 'error'
-                  "
+                  v-if="commentCountsAvailable"
                   class="inline-flex items-center gap-1"
                 >
                   <i class="ri-chat-3-line" aria-hidden="true"></i>
 
-                  <template v-if="Number.isFinite(articleComments)">
-                    {{
-                      translate(
-                        "common.counts.comments",
-                        { count: formatReadCount(articleComments) },
-                        articleComments,
-                      )
-                    }}
-                  </template>
-
-                  <span
-                    v-else
-                    class="loading loading-dots loading-xs"
-                    :aria-label="translate('blog.article.loadingComments')"
-                  ></span>
+                  <I18nT
+                    keypath="common.counts.comments"
+                    :plural="Number.isFinite(articleComments) ? articleComments : 2"
+                    tag="span"
+                    scope="global"
+                  >
+                    <template #count>
+                      <template v-if="Number.isFinite(articleComments)">
+                        {{ formatReadCount(articleComments) }}
+                      </template>
+                      <span
+                        v-else-if="articleCommentStatus !== 'error'"
+                        class="loading loading-dots w-[1ch] align-middle"
+                        :aria-label="translate('blog.article.loadingComments')"
+                      ></span>
+                      <template v-else>–</template>
+                    </template>
+                  </I18nT>
                 </span>
               </div>
             </div>
@@ -693,18 +703,16 @@ const openArticleContextSearch = (keyword) => {
   });
 };
 
-// 预渲染阶段保留右栏布局，评论内容由客户端载入。
 const showReaderAside = computed(
   () =>
-    typeof window === "undefined" ||
     props.loading ||
     (Boolean(props.content) && props.article?.id != null),
 );
 
 const bannerUrl = computed(() => String(props.article?.banner || "").trim());
 const bannerImageRef = ref(null);
-// SSG 预渲染阶段视为已加载，确保预渲染 HTML 中遮罩默认可见
-const bannerLoaded = ref(typeof window === "undefined");
+// Keep the prerendered overlay visible during hydration, including cached images.
+const bannerLoaded = ref(true);
 const bannerFailed = ref(false);
 const hasVisibleBanner = computed(
   () => Boolean(bannerUrl.value) && !bannerFailed.value,
@@ -744,16 +752,13 @@ function setBannerImageRef(element) {
 watch(
   bannerUrl,
   async () => {
-    // SSR 预渲染阶段保持 bannerLoaded 初始值，遮罩默认可见
-    if (typeof window === "undefined") return;
-
     bannerLoaded.value = false;
     bannerFailed.value = false;
 
     await nextTick();
     syncBannerImageState();
   },
-  { immediate: true, flush: "post" },
+  { flush: "post" },
 );
 
 const estimateReadingTime = (length) => {

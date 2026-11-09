@@ -6,6 +6,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import tailwindcss from "@tailwindcss/vite";
 
 import { singleThreadCodecs } from "./scripts/build/single-thread-codecs.mjs";
+import { initializeSiteTheme, SITE_THEME_NAMES } from "./src/utils/layout/site-theme.js";
 
 const outputPaths = {
   entryFileNames: "js/[name]-[hash].js",
@@ -71,6 +72,17 @@ export default defineConfig({
     rollupOptions: { output: { ...outputPaths } },
   },
   plugins: [
+    {
+      name: "initial-site-theme",
+      transformIndexHtml: {
+        order: "pre",
+        handler: () => [{
+          tag: "script",
+          children: `(${initializeSiteTheme.toString()})(${JSON.stringify(SITE_THEME_NAMES)});`,
+          injectTo: "head-prepend",
+        }],
+      },
+    },
     singleThreadCodecs(),
     vue(),
     vueDevTools(),

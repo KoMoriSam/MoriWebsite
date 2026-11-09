@@ -1,7 +1,7 @@
-import { useStorage } from "@vueuse/core";
+import { useHydratedStorage } from "./useHydratedStorage";
 
 export function useGlobalStorage() {
-  const GLOBAL_INFO = useStorage("GLOBAL_INFO", {});
+  const { storage: GLOBAL_INFO, ready } = useHydratedStorage("GLOBAL_INFO", {});
 
   const ensureInfo = () => {
     if (!GLOBAL_INFO.value || typeof GLOBAL_INFO.value !== "object" || Array.isArray(GLOBAL_INFO.value)) {
@@ -26,6 +26,7 @@ export function useGlobalStorage() {
     if (info[newKey] !== undefined) {
       return info[newKey];
     }
+    if (!ready.value) return defaultValue;
 
     // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
     let oldValue = null;

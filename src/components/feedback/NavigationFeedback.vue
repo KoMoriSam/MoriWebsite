@@ -4,32 +4,12 @@
     class="pointer-events-none fixed inset-x-0 top-0 z-80 h-1 animate-pulse bg-primary motion-reduce:animate-none"
     aria-hidden="true"
   />
-  <div
+  <NavigationFailure
     v-if="failedRoute"
-    class="pointer-events-none fixed inset-x-0 top-20 z-80 flex justify-center px-3"
-  >
-    <div
-      role="alert"
-      class="alert pointer-events-auto max-w-xl sm:alert-horizontal"
-    >
-      <span>{{ translate("common.navigationStatus.failed") }}</span>
-      <div class="flex flex-wrap items-center gap-2">
-        <button type="button" class="btn btn-sm" @click="retry">
-          {{ translate("common.navigationStatus.retry") }}
-        </button>
-        <a :href="reloadHref" class="btn btn-sm btn-ghost">
-          {{ translate("common.navigationStatus.reload") }}
-        </a>
-        <button
-          type="button"
-          class="btn btn-sm btn-ghost"
-          @click="dismissError"
-        >
-          {{ translate("common.modal.close") }}
-        </button>
-      </div>
-    </div>
-  </div>
+    :reload-href="reloadHref"
+    @retry="retry"
+    @dismiss="dismissError"
+  />
 </template>
 
 <script setup>
@@ -37,6 +17,7 @@ import { onBeforeUnmount, watch } from "vue";
 import { useNavigationFeedback } from "@/composables/useNavigationFeedback";
 import { useToast } from "@/composables/useToast";
 import { useLocale } from "@/i18n";
+import NavigationFailure from "@/components/feedback/NavigationFailure.vue";
 
 const { t: translate } = useLocale();
 const { isLoading, failedRoute, reloadHref, retry, dismissError } =

@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { useLocale } from "@/i18n";
 import ChatMessageTransition from "@/components/interaction/feedback/ChatMessageTransition.vue";
 
@@ -128,6 +128,11 @@ function markSending() {
     }, 1000);
   }, props.delay + 1500);
 }
+
+onMounted(() => {
+  // Hydration reuses the visible greeting without running an appear transition.
+  if (!messageRevision) markSending();
+});
 
 onBeforeUnmount(() => {
   messageRevision++;

@@ -15,7 +15,7 @@ export const TEST_SECTIONS = [
     id: "toast",
     label: "Toast",
     title: "Toast 通知",
-    description: "检查当前通知类型、预设位置、手动关闭与持续加载状态。",
+    description: "检查通知类型、位置、持续加载，以及路由加载与打开失败提示。",
   },
   {
     id: "modal",

@@ -6,7 +6,7 @@
     <section
       id="kaiming-opening"
       ref="opening"
-      class="viewport-section relative isolate flex scroll-mt-(--navbar-scroll-offset) flex-col justify-center py-8 md:my-6 md:py-10"
+      class="viewport-section relative isolate flex scroll-mt-(--navbar-scroll-offset) flex-col justify-center py-8 md:my-6 md:py-10 [--viewport-section-offset:calc(var(--navbar-height)+0.75rem)] md:[--viewport-section-offset:calc(var(--navbar-height)+4rem)]"
       aria-labelledby="kaiming-title"
     >
       <PunctuationBackdrop />

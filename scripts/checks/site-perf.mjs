@@ -427,6 +427,12 @@ assert.deepEqual(serializer.d(JSON.parse(serialized)), serverA.initialState);
 
 const { parse, compileScript, compileTemplate } = require("vue/compiler-sfc");
 const components = [
+  "src/components/display/AmbientCanvas.vue",
+  "src/components/home/Entrance.vue",
+  "src/components/interaction/feedback/GreetingMessage.vue",
+  "src/components/interaction/navigation/CatalogCard.vue",
+  "src/views/Home.vue",
+  "src/views/blog/ArticleList.vue",
   "src/components/home/Profile.vue",
   "src/components/announcement/interaction/NoticeDialog.vue",
   "src/components/interaction/controls/FontSelect.vue",
@@ -659,6 +665,15 @@ try {
   image.listeners.get("load")();
   fadeIn.unmounted(image);
   assert.equal(frames.size, 0, "Unmount cancels pending image reveals");
+
+  classes.clear();
+  image.isConnected = true;
+  fadeIn.beforeMount(image);
+  fadeIn.mounted(image, {});
+  assert.ok(classes.has("opacity-100"), "Hydration preserves visible SSG images");
+  assert.ok(!classes.has("opacity-0"), "Hydration must not hide painted images");
+  assert.equal(frames.size, 0, "Hydrated images need no delayed reveal");
+  fadeIn.unmounted(image);
 } finally {
   probe?.unmount();
   await runtime.close();

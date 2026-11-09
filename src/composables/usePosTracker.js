@@ -591,7 +591,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
     readPos.value = persistedPosToken;
     syncRouteHash(shortToken, 2);
     const resolvedViewportTop = viewportTop == null ? NaN : Number(viewportTop);
-    const targetTop = Math.max(
+    const targetTop = el.hasAttribute("data-reader-top-anchor") ? 0 : Math.max(
       0,
       window.scrollY +
         el.getBoundingClientRect().top -
