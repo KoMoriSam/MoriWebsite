@@ -426,7 +426,7 @@
         <!-- 文章列表 -->
         <template v-else-if="filteredArticles.length">
           <div
-            class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
+            class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-6"
           >
             <CatalogCard
               v-for="item in paginatedArticles"
