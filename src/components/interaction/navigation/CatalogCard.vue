@@ -179,7 +179,7 @@
       <p
         v-if="description || $slots.description"
         data-card-motion="description"
-        class="wrap-break-word text-pretty"
+        class="flex-none wrap-break-word text-pretty"
         :class="[
           compact
             ? 'line-clamp-2 text-xs leading-5'
