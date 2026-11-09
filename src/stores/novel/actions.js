@@ -232,20 +232,19 @@ export const useNovelActions = (state, getters) => {
       flatList(data);
       if (forceUpdate) {
         console.log("setChapters: Force update");
-        toast.success("章节目录已刷新！");
+        loadingToast.success("章节目录已刷新！");
       } else {
         console.log("setChapters: First loading");
-        toast.success("章节目录加载完成！");
+        loadingToast.success("章节目录加载完成！");
       }
       if (state.currentChapterContent.value.length === 0) {
         await loadChapterContent();
       }
     } catch (error) {
       console.error("章节目录加载失败:", error);
-      toast.error("章节目录加载失败！");
+      loadingToast.error("章节目录加载失败！");
     } finally {
       state.isLoadingList.value = false;
-      toast.remove(loadingToast.id, loadingToast.position);
     }
   }, 500);
 
@@ -323,19 +322,19 @@ export const useNovelActions = (state, getters) => {
         state.currentChapterContent.value = parsedContent;
         if (forceUpdate) {
           console.log("loadChapterContent: Force update");
-          toast.success("章节内容已刷新！");
+          loadingToast.success("章节内容已刷新！");
         } else {
           console.log("loadChapterContent: First loading");
-          toast.success("章节内容加载完成！");
+          loadingToast.success("章节内容加载完成！");
         }
         setRead();
       }
     } catch (error) {
       console.error("章节内容加载失败:", error);
-      if (isCurrentRequest()) toast.error("章节内容加载失败！");
+      if (isCurrentRequest()) loadingToast.error("章节内容加载失败！");
     } finally {
       if (isCurrentRequest()) state.isLoadingContent.value = false;
-      toast.remove(loadingToast.id, loadingToast.position);
+      if (!isCurrentRequest()) toast.remove(loadingToast.id, loadingToast.position);
     }
   };
 

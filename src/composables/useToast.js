@@ -11,6 +11,15 @@ import {
 // 容器和状态管理
 const containerMap = new Map();
 const toastGroups = new Map();
+const dismissTimers = new Map();
+const removalTimers = new Map();
+
+const clearToastTimers = (id) => {
+  clearTimeout(dismissTimers.get(id));
+  clearTimeout(removalTimers.get(id));
+  dismissTimers.delete(id);
+  removalTimers.delete(id);
+};
 
 // 初始化所有预设位置的响应式数组
 const initToastGroups = () => {
@@ -98,29 +107,63 @@ export function useToast(defaultOptions = {}) {
 
     // 自动关闭
     if (duration > 0) {
-      setTimeout(() => removeToast(id, normalizedPos), duration);
+      dismissTimers.set(id, setTimeout(() => removeToast(id, normalizedPos), duration));
     }
 
-    return { id, position: normalizedPos };
+    const handle = {
+      id,
+      position: normalizedPos,
+      update: (message, options) => updateToast(id, normalizedPos, message, options),
+    };
+    for (const type of ["card", "info", "success", "error", "warning", "loading"]) {
+      handle[type] = (message, options) => handle.update(message, { ...options, type });
+    }
+    return handle;
+  };
+
+  // 保留同一条通知，在加载结束时恢复普通通知的关闭方式和停留时间。
+  const updateToast = (id, position, message, options = {}) => {
+    const toast = toastGroups.get(position)?.value.find((item) => item.id === id);
+    if (!toast) return false;
+
+    const type = options.type ?? toast.type;
+    const changedType = type !== toast.type;
+    const defaults = type === "loading"
+      ? { duration: 0, closable: false }
+      : { duration: defaultOptions.duration ?? 1500, closable: defaultOptions.closable ?? true };
+
+    clearToastTimers(id);
+    Object.assign(toast, {
+      message: localeService.text(message),
+      type,
+      icon: options.icon ?? (changedType ? defaultOptions.icon || TOAST_ICONS[type] : toast.icon),
+      duration: options.duration ?? (changedType ? defaults.duration : toast.duration),
+      closable: options.closable ?? (changedType ? defaults.closable : toast.closable),
+      soft: options.soft ?? toast.soft,
+      fading: false,
+    });
+    if (toast.duration > 0) {
+      dismissTimers.set(id, setTimeout(() => removeToast(id, position), toast.duration));
+    }
+    return true;
   };
 
   // 移除 Toast
   const removeToast = (id, position) => {
     const toastList = toastGroups.get(position);
-    if (!toastList || !toastList.value) return;
+    const toast = toastList?.value.find((item) => item.id === id);
+    if (!toast || toast.fading) return;
+
+    clearToastTimers(id);
 
     // 淡出动画
-    toastList.value = toastList.value.map((toast) => {
-      if (toast.id === id) {
-        return { ...toast, fading: true };
-      }
-      return toast;
-    });
+    toast.fading = true;
 
     // 完全移除
-    setTimeout(() => {
+    removalTimers.set(id, setTimeout(() => {
       toastList.value = toastList.value.filter((toast) => toast.id !== id);
-    }, 300);
+      removalTimers.delete(id);
+    }, 300));
   };
 
   // 快捷方法

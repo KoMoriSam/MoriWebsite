@@ -17,13 +17,13 @@ export const TOAST_POSITIONS = {
   end: "toast-end",
 };
 
-export const DEFAULT_POSITION = "end-bottom";
+export const DEFAULT_POSITION = "toast-center toast-bottom lg:toast-top";
 
 export const TOAST_ICONS = {
   info: "ri-information-fill",
   success: "ri-checkbox-circle-fill",
   error: "ri-close-circle-fill",
   warning: "ri-alert-fill",
-  loading: "loading loading-spinner loading-xs",
+  loading: "loading loading-spinner",
   star: "ri-star-smile-fill",
 };

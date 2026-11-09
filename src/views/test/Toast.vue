@@ -31,12 +31,32 @@
         </button>
         <button
           class="btn btn-sm btn-ghost"
-          @click="loadingToast ? finishLoading() : startLoading()"
+          :disabled="!!loadingToast"
+          @click="startLoading"
         >
-          {{ loadingToast ? "结束 Loading" : "Loading" }}
+          {{ loadingToast ? "Loading…" : "Loading" }}
         </button>
         <button class="btn btn-sm" @click="showCustomToast">
           自定义图标
+        </button>
+      </div>
+      <p class="mb-2 text-xs font-semibold opacity-60">Loading 结果（先点击 Loading）</p>
+      <div class="mb-4 flex flex-wrap gap-2">
+        <button
+          class="btn btn-sm btn-outline"
+          :disabled="!!loadingToast"
+          @click="startFastLoading"
+        >
+          快速完成（入场中切换）
+        </button>
+        <button
+          v-for="result in loadingResults"
+          :key="result.type"
+          :class="['btn btn-sm', result.className]"
+          :disabled="!loadingToast"
+          @click="finishLoading(result.type, result.message)"
+        >
+          {{ result.label }}
         </button>
       </div>
       <p class="mb-2 text-xs font-semibold opacity-60">不同位置</p>
@@ -62,7 +82,6 @@ import { TOAST_ICONS, TOAST_POSITIONS } from "@/constants/toast";
 import PageShell from "./PageShell.vue";
 
 const toast = useToast({
-  position: "center-top",
   duration: 2000,
   closable: false,
 });
@@ -71,16 +90,31 @@ const toastPositions = Object.keys(TOAST_POSITIONS).filter((position) =>
   position.includes("-"),
 );
 const loadingToast = ref(null);
+let loadingTimer;
+const loadingResults = [
+  { type: "success", label: "成功", className: "btn-success", message: "加载完成，所有内容已更新。" },
+  { type: "error", label: "失败", className: "btn-error", message: "加载失败，请稍后重试。" },
+  { type: "warning", label: "警告", className: "btn-warning", message: "部分内容未能加载，请检查后重试。" },
+  { type: "info", label: "信息", className: "btn-info", message: "加载已取消。" },
+  { type: "card", label: "卡片", className: "", message: "加载已结束。" },
+];
 
 function startLoading() {
-  loadingToast.value = toast.loading("加载中…");
+  if (loadingToast.value) return;
+  loadingToast.value = toast.loading("正在加载内容，请稍候…");
 }
 
-function finishLoading() {
+function startFastLoading() {
+  if (loadingToast.value) return;
+  loadingToast.value = toast.loading("章节内容加载中……");
+  loadingTimer = setTimeout(() => finishLoading("success", "章节内容加载完成！"), 80);
+}
+
+function finishLoading(type, message) {
+  clearTimeout(loadingTimer);
   if (!loadingToast.value) return;
-  toast.remove(loadingToast.value.id, loadingToast.value.position);
+  loadingToast.value[type](message, { duration: 4000 });
   loadingToast.value = null;
-  toast.success("加载完成");
 }
 
 function showCustomToast() {
@@ -95,6 +129,7 @@ function testToastPos(position) {
 }
 
 onBeforeUnmount(() => {
+  clearTimeout(loadingTimer);
   if (!loadingToast.value) return;
   toast.remove(loadingToast.value.id, loadingToast.value.position);
 });
