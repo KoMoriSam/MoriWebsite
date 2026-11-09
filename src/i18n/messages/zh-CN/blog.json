@@ -22,8 +22,8 @@
       "removeTag": "移除标签 {p0}",
       "chooseTags": "选择标签",
       "tag": "标签 {p0}",
-      "summary": "共 {count} 篇文章。 | 共 {count} 篇文章（当前展示第 {start} 篇）。 | 共 {count} 篇文章（当前展示第 {start}–{end} 篇）。",
-      "filteredSummary": "找到 {count} 篇文章。 | 找到 {count} 篇文章（当前展示第 {start} 篇）。 | 找到 {count} 篇文章（当前展示第 {start}–{end} 篇）。",
+      "summary": "共 {count} 篇文章。 | 共 {count} 篇文章（当前展示第 {start} 篇） | 共 {count} 篇文章（当前展示第 {start}–{end} 篇）",
+      "filteredSummary": "找到 {count} 篇文章。 | 找到 {count} 篇文章（当前展示第 {start} 篇） | 找到 {count} 篇文章（当前展示第 {start}–{end} 篇）",
       "keywordSummary": "关键词：{keyword}"
     },
     "article": {
