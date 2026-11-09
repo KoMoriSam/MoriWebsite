@@ -28,16 +28,14 @@
         >{{ url }}</a
       >
       <dl
-        class="flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8"
+        class="flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8 font-mono"
         :class="{ 'mt-3': title || url }"
       >
         <div v-if="author" class="min-w-0 max-w-full">
           <dt class="text-xs leading-relaxed text-base-content/55">
             {{ translate("common.contentRights.author") }}
           </dt>
-          <dd
-            class="mt-0.5 text-sm leading-relaxed font-mono italic wrap-anywhere"
-          >
+          <dd class="mt-0.5 text-sm leading-relaxed italic">
             {{ author }}
           </dd>
         </div>
@@ -45,15 +43,17 @@
           <dt class="text-xs leading-relaxed text-base-content/55">
             {{ translate("common.contentRights.publishedAt") }}
           </dt>
-          <dd class="mt-0.5 text-sm leading-relaxed font-mono">
-            <time :datetime="publishedAt">{{ formatLocalizedDate(publishedAt) }}</time>
+          <dd class="mt-0.5 text-sm leading-relaxed">
+            <time :datetime="publishedAt">{{
+              formatLocalizedDate(publishedAt)
+            }}</time>
           </dd>
         </div>
         <div class="min-w-0 max-w-full">
           <dt class="text-xs leading-relaxed text-base-content/55">
             {{ translate("common.contentRights.license") }}
           </dt>
-          <dd class="mt-0.5 text-sm leading-relaxed wrap-anywhere">
+          <dd class="mt-0.5 text-sm leading-relaxed">
             <a
               v-if="licenseInfo.url"
               :href="licenseInfo.url"
