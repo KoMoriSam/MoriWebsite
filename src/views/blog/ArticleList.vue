@@ -431,12 +431,13 @@
             <CatalogCard
               v-for="item in paginatedArticles"
               :key="getArticleKey(item)"
+              class="md:[&>.card-body]:flex-1"
               :to="getArticleRoute(item)"
               :title="item.title"
               :cover="item.banner || ''"
               :action="translate('blog.list.readMore')"
               action-class="max-md:[&>span]:sr-only"
-              cover-class="min-h-52 flex-1"
+              cover-class="h-52 min-h-52 flex-none"
               compact-on-mobile
             >
               <template v-if="item.tags?.length" #tags="{ coverLoaded }">
