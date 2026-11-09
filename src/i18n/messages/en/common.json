@@ -106,7 +106,9 @@
       "loading": "Loading page…",
       "failed": "The page could not be opened. Check your connection and try again.",
       "retry": "Retry",
-      "reload": "Reload"
+      "retryHint": "Retry opening the target page without refreshing the webpage.",
+      "reload": "Reload and retry",
+      "reloadHint": "Reload the webpage at the target address."
     },
     "badges": {
       "pinned": "Pinned",

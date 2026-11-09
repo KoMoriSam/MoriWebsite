@@ -71,13 +71,32 @@
         </button>
       </div>
     </section>
+
+    <section class="mt-8" title="路由加载与失败提示">
+      <h2 class="mb-2 text-lg font-semibold">路由加载与失败提示</h2>
+      <p class="mb-4 text-sm text-base-content/60">
+        加载中与打开失败共用同一条 Toast。“重试”不刷新整个网页，演示中会在 1.2 秒后再次显示失败；“刷新并重试”会完整刷新本测试页。
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-sm" :disabled="navigationLoading" @click="startNavigationLoading">
+          路由加载中
+        </button>
+        <button class="btn btn-sm" @click="showNavigationFailure">页面未能打开</button>
+        <button class="btn btn-sm" :disabled="!navigationLoading" @click="clearNavigationFeedback">
+          加载成功
+        </button>
+        <button class="btn btn-sm btn-ghost" @click="clearNavigationFeedback">清除路由提示</button>
+      </div>
+    </section>
   </PageShell>
 </template>
 
 <script setup>
-import { onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
+import { useRoute } from "vue-router";
 import { useToast } from "@/composables/useToast";
 import { TOAST_ICONS, TOAST_POSITIONS } from "@/constants/toast";
+import { useNavigationToast } from "@/composables/useNavigationToast";
 
 import PageShell from "./PageShell.vue";
 
@@ -85,6 +104,40 @@ const toast = useToast({
   duration: 2000,
   closable: false,
 });
+const route = useRoute();
+const navigationLoading = ref(false);
+const navigationFailed = ref(false);
+let navigationTimer;
+useNavigationToast({
+  isLoading: navigationLoading,
+  failedRoute: navigationFailed,
+  reloadHref: computed(() => route.fullPath),
+  retry: retryNavigation,
+  dismissError: clearNavigationFeedback,
+});
+
+function clearNavigationFeedback() {
+  clearTimeout(navigationTimer);
+  navigationLoading.value = false;
+  navigationFailed.value = false;
+}
+
+function startNavigationLoading() {
+  clearNavigationFeedback();
+  navigationLoading.value = true;
+}
+
+function showNavigationFailure() {
+  clearNavigationFeedback();
+  navigationFailed.value = true;
+}
+
+function retryNavigation() {
+  startNavigationLoading();
+  navigationTimer = setTimeout(showNavigationFailure, 1200);
+}
+
+onBeforeUnmount(clearNavigationFeedback);
 
 const toastPositions = Object.keys(TOAST_POSITIONS).filter((position) =>
   position.includes("-"),

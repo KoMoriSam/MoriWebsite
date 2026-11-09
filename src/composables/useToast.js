@@ -47,7 +47,10 @@ export function useToast(defaultOptions = {}) {
       const app = createApp({
         setup() {
           const onRemove = (id, pos) => {
+            const toast = toastGroups.get(pos)?.value.find((item) => item.id === id);
+            if (!toast || toast.fading) return;
             removeToast(id, pos);
+            toast.onDismiss?.();
           };
 
           return () =>
@@ -78,7 +81,7 @@ export function useToast(defaultOptions = {}) {
       ...options, // 最高优先级（调用时传入的 options）
     };
 
-    const { type, duration, icon, closable, position, soft } = mergedOptions;
+    const { type, duration, icon, closable, position, soft, actions = [], onDismiss = null } = mergedOptions;
 
     // 标准化位置
     const normalizedPos = TOAST_POSITIONS[position] || position;
@@ -101,6 +104,8 @@ export function useToast(defaultOptions = {}) {
       icon: icon || TOAST_ICONS[type],
       closable,
       soft,
+      actions,
+      onDismiss,
       duration,
       fading: false, // 初始状态为不淡出
     });
@@ -140,6 +145,8 @@ export function useToast(defaultOptions = {}) {
       duration: options.duration ?? (changedType ? defaults.duration : toast.duration),
       closable: options.closable ?? (changedType ? defaults.closable : toast.closable),
       soft: options.soft ?? toast.soft,
+      actions: options.actions ?? toast.actions,
+      onDismiss: Object.hasOwn(options, "onDismiss") ? options.onDismiss : toast.onDismiss,
       fading: false,
     });
     if (toast.duration > 0) {
