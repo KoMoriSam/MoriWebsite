@@ -160,6 +160,8 @@ export function useSearchResultHighlight() {
   let isMounted = false;
   let observer = null;
   let observerTimeout = 0;
+  let observerFrame = 0;
+  let searchActive = false;
   let highlightRunId = 0;
 
   const scrollToHighlight = (target, runId) => {
@@ -186,6 +188,8 @@ export function useSearchResultHighlight() {
     observer = null;
     window.clearTimeout(observerTimeout);
     observerTimeout = 0;
+    window.cancelAnimationFrame(observerFrame);
+    observerFrame = 0;
   };
 
   const clearObserverTimeout = () => {
@@ -234,16 +238,22 @@ export function useSearchResultHighlight() {
 
   const observeHighlightLifecycle = ({ waiting = false } = {}) => {
     observer = new MutationObserver(() => {
-      if (document.querySelector(HIGHLIGHT_SELECTOR)) return;
+      if (observerFrame) return;
+      observerFrame = window.requestAnimationFrame(() => {
+        observerFrame = 0;
+        if (document.querySelector(HIGHLIGHT_SELECTOR)) return;
 
-      observer.disconnect();
-      const result = tryHighlight();
-      observer.observe(document.body, { childList: true, subtree: true });
+        observer.disconnect();
+        const result = tryHighlight();
+        observer.observe(document.body, { childList: true, subtree: true });
 
-      if (result.highlighted) {
-        clearObserverTimeout();
-        scrollToHighlight(result.target, highlightRunId);
-      }
+        if (result.highlighted) {
+          clearObserverTimeout();
+          scrollToHighlight(result.target, highlightRunId);
+        } else if (!observerTimeout) {
+          observerTimeout = window.setTimeout(stopWaiting, 15000);
+        }
+      });
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -257,7 +267,9 @@ export function useSearchResultHighlight() {
 
     const runId = ++highlightRunId;
     stopWaiting();
-    clearSearchHighlights();
+    if (searchActive) clearSearchHighlights();
+    searchActive = Boolean(queryText(route.query.q));
+    if (!searchActive) return;
     await nextTick();
 
     if (runId !== highlightRunId) return;
@@ -268,10 +280,12 @@ export function useSearchResultHighlight() {
   };
 
   const handleDocumentPointerDown = (event) => {
+    if (!searchActive) return;
     if (event.target?.closest?.(HIGHLIGHT_SELECTOR)) return;
     highlightRunId += 1;
     stopWaiting();
     clearSearchHighlights();
+    searchActive = false;
   };
 
   watch(
@@ -291,7 +305,7 @@ export function useSearchResultHighlight() {
     isMounted = false;
     highlightRunId += 1;
     stopWaiting();
-    clearSearchHighlights();
+    if (searchActive) clearSearchHighlights();
     document.removeEventListener(
       "pointerdown",
       handleDocumentPointerDown,

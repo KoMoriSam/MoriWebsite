@@ -14,12 +14,13 @@ import { pathToFileURL } from "node:url";
 import postcss from "postcss";
 import { build, createServer } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import { createSSRApp, h } from "vue";
+import { createRenderer, createSSRApp, h, nextTick, reactive, shallowRef } from "vue";
 import { renderToString } from "vue/server-renderer";
 import {
   createMemoryHistory,
   createRouter,
   RouterView,
+  routeLocationKey,
   useRoute,
 } from "vue-router";
 import {
@@ -152,6 +153,7 @@ try {
     configFile: false,
     publicDir: false,
     plugins: [tailwindcss()],
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "error",
     server: { middlewareMode: true, hmr: false },
   });
@@ -425,6 +427,7 @@ assert.deepEqual(serializer.d(JSON.parse(serialized)), serverA.initialState);
 
 const { parse, compileScript, compileTemplate } = require("vue/compiler-sfc");
 const components = [
+  "src/components/home/Profile.vue",
   "src/components/announcement/interaction/NoticeDialog.vue",
   "src/components/interaction/controls/FontSelect.vue",
   "src/components/markdown/Renderer.vue",
@@ -447,4 +450,221 @@ for (const file of components) {
   });
   assert.deepEqual(result.errors, [], file);
 }
-console.log(`检查通过：网站资源加载、首屏显示与 ${components.length} 个组件。`);
+
+// Exercise scheduling and cleanup with real Vue lifecycles and controlled frames.
+const frames = new Map();
+const timers = new Map();
+let nextId = 0;
+const target = () => ({
+  listeners: new Map(),
+  addEventListener(type, listener) { this.listeners.set(type, listener); },
+  removeEventListener(type) { this.listeners.delete(type); },
+});
+class Observer {
+  static all = [];
+  targets = new Set();
+  constructor(callback) { this.callback = callback; this.constructor.all.push(this); }
+  observe(node) { this.targets.add(node); }
+  unobserve(node) { this.targets.delete(node); }
+  disconnect() { this.targets.clear(); }
+  emit(entries) { this.callback(entries); }
+}
+class VisibilityObserver extends Observer { static all = []; }
+class SizeObserver extends Observer { static all = []; }
+class ContentObserver extends Observer { static all = []; }
+const media = Object.assign(target(), { matches: false });
+let queries = 0;
+const browserGlobals = {
+  IntersectionObserver: VisibilityObserver,
+  ResizeObserver: SizeObserver,
+  MutationObserver: ContentObserver,
+  requestAnimationFrame(callback) { const id = ++nextId; frames.set(id, callback); return id; },
+  cancelAnimationFrame(id) { frames.delete(id); },
+  getComputedStyle(node) { return node.computedStyle; },
+  document: Object.assign(target(), {
+    body: {}, hidden: false,
+    querySelector() { queries++; return null; },
+    querySelectorAll() { queries++; return []; },
+  }),
+};
+browserGlobals.window = Object.assign(target(), {
+  requestAnimationFrame: browserGlobals.requestAnimationFrame,
+  cancelAnimationFrame: browserGlobals.cancelAnimationFrame,
+  matchMedia: () => media,
+  setTimeout(callback) { const id = ++nextId; timers.set(id, callback); return id; },
+  clearTimeout(id) { timers.delete(id); },
+});
+const originals = Object.fromEntries(Object.keys(browserGlobals).map((key) =>
+  [key, Object.getOwnPropertyDescriptor(globalThis, key)],
+));
+const runtime = await createServer({
+  configFile: false,
+  appType: "custom",
+  optimizeDeps: { noDiscovery: true, include: [] },
+  resolve: { alias: { "@": path.resolve("src") } },
+  server: { middlewareMode: true, watch: null, hmr: false },
+  plugins: [{
+    name: "performance-state-fixtures",
+    load(id) {
+      if (id.endsWith("/src/stores/themeStore.js"))
+        return 'export const useThemeStore = () => ({ resolvedTheme: "lemonade" });';
+      if (id.endsWith("/src/composables/auth/useGithubSession.js"))
+        return 'export const githubSession = { authenticated: false };';
+    },
+  }],
+});
+const renderer = createRenderer({
+  createComment: () => ({}), insert() {}, remove() {},
+  parentNode: () => null, nextSibling: () => null,
+});
+const flushFrame = () => {
+  const callbacks = [...frames.values()];
+  frames.clear();
+  callbacks.forEach((callback) => callback());
+};
+const mount = (setup, route) => {
+  const app = renderer.createApp({ setup() { setup(); return () => null; } });
+  if (route) app.provide(routeLocationKey, route);
+  app.mount({});
+  return app;
+};
+let probe;
+try {
+  for (const [key, value] of Object.entries(browserGlobals))
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  const { useTypingCursor } = await runtime.ssrLoadModule("/src/composables/home/useTypingCursor.js");
+  const viewport = { clientWidth: 100, scrollWidth: 200, scrollLeft: 0,
+    getBoundingClientRect: () => ({ left: 0 }) };
+  const heading = { style: { removeProperty() {} },
+    computedStyle: { getPropertyValue: () => "1" },
+    children: { item: () => ({ getBoundingClientRect: () => ({ left: 150 }) }) } };
+  const headingRef = shallowRef(heading);
+  probe = mount(() => useTypingCursor(shallowRef({ viewport }), headingRef));
+  const visibility = VisibilityObserver.all.at(-1);
+  assert.equal(frames.size, 0, "Offscreen titles do not poll styles");
+  visibility.emit([{ target: heading, isIntersecting: true }]);
+  flushFrame();
+  assert.equal(viewport.scrollLeft, 75, "The visible cursor still scrolls into view");
+  assert.equal(frames.size, 1);
+  document.hidden = true;
+  document.listeners.get("visibilitychange")();
+  assert.equal(frames.size, 0, "Background tabs stop tracking");
+  document.hidden = false;
+  document.listeners.get("visibilitychange")();
+  visibility.emit([{ target: heading, isIntersecting: false }]);
+  assert.equal(frames.size, 0, "Leaving the viewport cancels tracking");
+  viewport.scrollWidth = 100;
+  visibility.emit([{ target: heading, isIntersecting: true }]);
+  assert.equal(frames.size, 0, "Titles that fit do not need cursor tracking");
+  viewport.scrollWidth = 200;
+  media.matches = true;
+  media.listeners.get("change")();
+  assert.equal(frames.size, 0);
+  assert.equal(viewport.scrollLeft, 0, "Reduced motion resets horizontal scroll");
+  media.matches = false;
+  media.listeners.get("change")();
+  headingRef.value = { ...heading, style: { removeProperty() {} } };
+  await nextTick();
+  assert.equal(frames.size, 0, "Replacing a translated title waits for its visibility");
+  probe.unmount();
+  assert.equal(visibility.targets.size, 0);
+  assert.equal(document.listeners.size, 0);
+
+  const { useSearchResultHighlight } = await runtime.ssrLoadModule("/src/composables/useSearchResultHighlight.js");
+  const route = reactive({ path: "/", hash: "", query: {} });
+  const observersBefore = ContentObserver.all.length;
+  queries = 0;
+  probe = mount(useSearchResultHighlight, route);
+  await nextTick();
+  document.listeners.get("pointerdown")({ target: {} });
+  assert.equal(ContentObserver.all.length, observersBefore, "No search means no body observer");
+  assert.equal(queries, 0, "Ordinary navigation and clicks do not scan search marks");
+  route.query = { q: "needle" };
+  await nextTick();
+  await nextTick();
+  const searchObserver = ContentObserver.all.at(-1);
+  assert.ok(searchObserver.targets.has(document.body));
+  searchObserver.emit([]);
+  searchObserver.emit([]);
+  assert.equal(frames.size, 1, "Search mutations are batched into one frame");
+  flushFrame();
+  assert.equal(timers.size, 1, "Missing content has a bounded wait");
+  searchObserver.emit([]);
+  route.query = {};
+  await nextTick();
+  assert.equal(frames.size, 0, "Route changes cancel queued search work");
+  assert.equal(timers.size, 0);
+  assert.equal(searchObserver.targets.size, 0);
+  probe.unmount();
+
+  const { useScrollEdges } = await runtime.ssrLoadModule("/src/composables/useScrollEdges.js");
+  let scans = 0;
+  const host = { parentElement: null, computedStyle: { backgroundColor: "rgb(255, 255, 255)" } };
+  const scroll = Object.assign(target(), {
+    parentElement: host, isConnected: true, clientWidth: 100, clientHeight: 50,
+    scrollWidth: 200, scrollHeight: 300, scrollTop: 0, scrollLeft: 0,
+    offsetLeft: 0, offsetTop: 0, clientLeft: 0, clientTop: 0,
+    closest: () => null,
+    querySelectorAll() { scans++; return []; },
+    computedStyle: { direction: "ltr", overflowY: "auto", overflowX: "auto",
+      backgroundColor: "transparent", borderRadius: "0px", getPropertyValue: () => "" },
+  });
+  let scrollState;
+  probe = mount(() => { scrollState = useScrollEdges(shallowRef(scroll), shallowRef(host)); });
+  const content = ContentObserver.all.at(-2);
+  const scrollVisibility = VisibilityObserver.all.at(-1);
+  content.emit([{ type: "childList" }]);
+  assert.equal(scans, 0, "Hidden containers do not scan descendants");
+  scrollVisibility.emit([{ isIntersecting: true }]);
+  flushFrame();
+  assert.equal(scans, 1);
+  assert.deepEqual(scrollState.edges.value, { top: false, bottom: true, left: false, right: true });
+  content.emit([{ type: "childList" }]);
+  content.emit([{ type: "childList" }]);
+  assert.equal(scans, 1);
+  flushFrame();
+  assert.equal(scans, 2, "Repeated content changes share one descendant scan");
+  scroll.scrollTop = 250;
+  scroll.listeners.get("scroll")();
+  flushFrame();
+  assert.equal(scrollState.edges.value.bottom, false);
+  assert.equal(scrollState.edges.value.top, true);
+  scrollVisibility.emit([{ isIntersecting: false }]);
+  content.emit([{ type: "childList" }]);
+  assert.equal(frames.size, 0);
+  probe.unmount();
+  assert.equal(scrollVisibility.targets.size, 0);
+
+  const { fadeIn } = await runtime.ssrLoadModule("/src/directive/index.js");
+  const classes = new Set();
+  const image = Object.assign(target(), {
+    tagName: "IMG", complete: true,
+    getAttribute: () => "image.webp",
+    classList: {
+      add: (...values) => values.forEach((value) => classes.add(value)),
+      remove: (...values) => values.forEach((value) => classes.delete(value)),
+      contains: (value) => classes.has(value),
+    },
+    style: { removeProperty() {} },
+    computedStyle: { transitionProperty: "opacity", transitionDuration: "0.5s" },
+  });
+  Object.defineProperty(image, "offsetWidth", {
+    get() { throw new Error("Image reveal must not force layout"); },
+  });
+  fadeIn.mounted(image, {});
+  flushFrame();
+  assert.ok(classes.has("opacity-0"), "Cached images retain their initial hidden frame");
+  flushFrame();
+  assert.ok(classes.has("opacity-100"));
+  image.listeners.get("load")();
+  fadeIn.unmounted(image);
+  assert.equal(frames.size, 0, "Unmount cancels pending image reveals");
+} finally {
+  probe?.unmount();
+  await runtime.close();
+  for (const [key, descriptor] of Object.entries(originals)) {
+    if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+    else delete globalThis[key];
+  }
+}
+console.log(`检查通过：网站资源加载、首屏显示、运行时调度与 ${components.length} 个组件。`);

@@ -80,16 +80,17 @@ const queueImageReveal = (el, sourceKey = el.__fadeInSourceKey) => {
     cancelAnimationFrame(el.__fadeInFrameId);
   }
 
-  // Commit the hidden state first so cached images also animate on mount.
-  void el.offsetWidth;
-
+  // Let the browser paint the hidden state without forcing layout per image.
   el.__fadeInFrameId = requestAnimationFrame(() => {
-    if (
-      el.__fadeInMode === "image" &&
-      el.__fadeInSourceKey === sourceKey
-    ) {
-      showElement(el);
-    }
+    el.__fadeInFrameId = requestAnimationFrame(() => {
+      el.__fadeInFrameId = 0;
+      if (
+        el.__fadeInMode === "image" &&
+        el.__fadeInSourceKey === sourceKey
+      ) {
+        showElement(el);
+      }
+    });
   });
 };
 
@@ -126,9 +127,11 @@ const updateImage = (el) => {
 
   el.__fadeInSourceKey = sourceKey;
   hideElement(el);
+  cancelAnimationFrame(el.__fadeInFrameId);
 
   // 缓存图片在 src 更新后可能不会经历可见的加载阶段
   el.__fadeInFrameId = requestAnimationFrame(() => {
+    el.__fadeInFrameId = 0;
     if (el.__fadeInSourceKey === sourceKey && el.complete) {
       queueImageReveal(el, sourceKey);
     }

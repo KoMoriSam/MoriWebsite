@@ -198,6 +198,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useLocale } from "@/i18n";
 import { layoutMotionActive } from "@/composables/layout/useLayoutMotion";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
+import { useTypingCursor } from "@/composables/home/useTypingCursor";
 
 const { t: translate, locale } = useLocale();
 
@@ -208,59 +209,7 @@ const typingScroll = ref(null);
 const typingHeading = ref(null);
 
 let socialObserver;
-let typingFrame;
-let previousHeading = null;
-let previousTyped = -1;
-let previousViewportWidth = 0;
-
-const followTypingCursor = () => {
-  const viewport = typingScroll.value?.viewport;
-  const heading = typingHeading.value;
-
-  if (viewport && heading) {
-    if (heading !== previousHeading) {
-      previousHeading = heading;
-      previousTyped = -1;
-      previousViewportWidth = 0;
-      viewport.scrollLeft = 0;
-    }
-
-    const typed = Number.parseInt(
-      getComputedStyle(heading).getPropertyValue("--typed"),
-      10,
-    );
-
-    const viewportWidth = viewport.clientWidth;
-
-    if (
-      Number.isFinite(typed) &&
-      (typed !== previousTyped || viewportWidth !== previousViewportWidth)
-    ) {
-      previousTyped = typed;
-      previousViewportWidth = viewportWidth;
-
-      if (
-        typed === 0 ||
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        viewport.scrollLeft = 0;
-      } else {
-        const cursorUnit = heading.children.item(typed);
-
-        if (cursorUnit) {
-          const cursorX =
-            cursorUnit.getBoundingClientRect().left -
-            viewport.getBoundingClientRect().left +
-            viewport.scrollLeft;
-
-          viewport.scrollLeft = Math.max(0, cursorX - viewportWidth * 0.75);
-        }
-      }
-    }
-  }
-
-  typingFrame = requestAnimationFrame(followTypingCursor);
-};
+useTypingCursor(typingScroll, typingHeading);
 
 onMounted(() => {
   socialObserver = new IntersectionObserver(([entry]) => {
@@ -268,13 +217,10 @@ onMounted(() => {
   });
 
   socialObserver.observe(socialNav.value);
-
-  typingFrame = requestAnimationFrame(followTypingCursor);
 });
 
 onBeforeUnmount(() => {
   socialObserver?.disconnect();
-  cancelAnimationFrame(typingFrame);
 });
 
 const aboutTitleUnits = computed(() => {

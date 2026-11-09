@@ -24,6 +24,8 @@ export const useScrollEdges = (viewportRef, hostRef) => {
 
     let frame = 0;
     let disposed = false;
+    let inView = false;
+    let resizeTargetsDirty = true;
     let appearanceDirty = true;
     let backgroundImage = "";
     const resizeTargets = new Set();
@@ -44,7 +46,12 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     };
 
     const update = () => {
-      if (layoutMotionActive.value) return;
+      if (!inView || layoutMotionActive.value) return;
+      if (resizeTargetsDirty) {
+        syncResizeTargets();
+        syncAncestors();
+        resizeTargetsDirty = false;
+      }
       if (!viewport.isConnected || viewport.closest('details:not([open]), .collapse-close') || !viewport.clientWidth || !viewport.clientHeight) {
         if (Object.values(edges.value).some(Boolean)) edges.value = emptyEdges();
         return;
@@ -97,7 +104,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     };
 
     const schedule = () => {
-      if (disposed || frame || layoutMotionActive.value) return;
+      if (disposed || !inView || frame || layoutMotionActive.value) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
         update();
@@ -125,12 +132,9 @@ export const useScrollEdges = (viewportRef, hostRef) => {
         }
       }
     };
-    syncResizeTargets();
-
     const contentObserver = new MutationObserver((records) => {
       if (records.some((record) => record.type === "childList")) {
-        syncResizeTargets();
-        syncAncestors();
+        resizeTargetsDirty = true;
       }
       if (records.some((record) => record.type === "attributes" && record.target === viewport)) {
         appearanceDirty = true;
@@ -142,6 +146,15 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       attributeFilter: ["class", "style", "hidden", "open", "dir", "lang", "src", "width", "height", "data-theme"],
     });
     const appearanceObserver = new MutationObserver(refresh);
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (inView) refresh();
+      else {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    });
+    visibilityObserver.observe(viewport);
     const stopThemeWatch = watch(() => themes.resolvedTheme, refresh, { flush: "post" });
     const syncThemeAppearance = () => {
       window.cancelAnimationFrame(frame);
@@ -178,6 +191,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       refreshViewport = () => {};
       window.cancelAnimationFrame(frame);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
       contentObserver.disconnect();
       appearanceObserver.disconnect();
       viewport.removeEventListener("scroll", schedule);
