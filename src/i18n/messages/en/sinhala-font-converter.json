@@ -60,6 +60,7 @@
     "noSelectableText": "No text found. Scanned PDFs are not supported yet.",
     "noConvertibleText": "No convertible text was found",
     "readFailed": "Failed to read file",
+    "legacyDocumentUnsupported": "Legacy {p0} documents are not supported. Use Save As in your office application to save the file as {p1}, then upload it again. Renaming the file extension is not enough.",
     "docxDownloaded": "Converted DOCX downloaded",
     "documentFailed": "Document conversion failed. Please retry.",
     "exportFailed": "Document generation failed. Please retry.",

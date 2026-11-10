@@ -60,6 +60,7 @@
     "noSelectableText": "未读取到文字；扫描版 PDF 暂不支持",
     "noConvertibleText": "未读取到可转换的文字",
     "readFailed": "文件读取失败",
+    "legacyDocumentUnsupported": "暂不支持旧版 {p0} 文档。请在办公软件中将文件“另存为” {p1} 格式后重新上传；仅修改文件扩展名无效。",
     "docxDownloaded": "转换后的 DOCX 文档已下载",
     "documentFailed": "文档转换失败，请重试",
     "exportFailed": "文档生成失败，请重试",

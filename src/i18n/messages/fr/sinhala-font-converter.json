@@ -60,6 +60,7 @@
     "noSelectableText": "Aucun texte trouvé. Les PDF numérisés ne sont pas encore pris en charge.",
     "noConvertibleText": "Aucun texte convertible trouvé",
     "readFailed": "Impossible de lire le fichier",
+    "legacyDocumentUnsupported": "Les anciens documents {p0} ne sont pas pris en charge. Utilisez « Enregistrer sous » dans votre logiciel bureautique pour enregistrer le fichier au format {p1}, puis importez-le à nouveau. Modifier simplement l’extension du fichier ne suffit pas.",
     "docxDownloaded": "DOCX converti téléchargé",
     "documentFailed": "Échec de la conversion du document. Réessayez.",
     "exportFailed": "Échec de la génération du document. Réessayez.",

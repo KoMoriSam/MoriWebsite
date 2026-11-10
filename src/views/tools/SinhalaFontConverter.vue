@@ -345,7 +345,7 @@
               id="sinhala-document-upload"
               ref="documentUploadInput"
               type="file"
-              accept=".docx,.pptx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              accept=".doc,.ppt,.docx,.pptx,.pdf,application/msword,application/vnd.ms-powerpoint,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               class="sr-only"
               :disabled="documentBusy"
               tabindex="-1"
@@ -2674,6 +2674,15 @@ async function setDocumentFile(file) {
   documentReading.value = Boolean(file);
   if (!file) return;
   try {
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (extension === "doc" || extension === "ppt") {
+      throw new Error(
+        translate("sinhala.legacyDocumentUnsupported", {
+          p0: extension.toUpperCase(),
+          p1: `${extension}x`.toUpperCase(),
+        }),
+      );
+    }
     await nextTick();
     if (request !== documentReadRequest) return;
     const { text, sourceDocx, pdfPages, pdfSuggestedFormat } =
