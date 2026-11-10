@@ -1,5 +1,6 @@
 import {
   convertDocumentText,
+  convertDocumentRuns,
   isIntrinsicBoldFont,
   isLegacyFont,
 } from "./convert-docx.js";
@@ -246,52 +247,64 @@ function convertPart(xml, resolveStyle, settings, hasLegacyFonts) {
       next?.namespaceURI === DRAWING_NS &&
       next.localName === "r" &&
       child(next, "t") &&
-      signature(next) === signature(run)
+      (settings.target === "unicode" || signature(next) === signature(run))
     ) {
       group.push(next);
       next = next.nextElementSibling;
     }
     group.forEach((node) => handled.add(node));
-    const text = group.map((node) => child(node, "t").textContent).join("");
-    const effective = resolveStyle(run);
-    // Wingdings/Symbol runs are artwork, not legacy Sinhala source text.
-    if (/^(?:Wingdings|Webdings|Symbol)/iu.test(effective.sourceFont)) continue;
-    const segments = convertDocumentText(
-      text,
-      effective.sourceFont,
-      settings,
-      hasLegacyFonts,
-    );
-    if (
-      !segments.some((segment) => segment.text !== segment.source) &&
-      !(
-        settings.target === "unicode" &&
-        isLegacyFont(effective.sourceFont) &&
-        text.trim()
+    const sources = group.map((node) => ({
+      text: child(node, "t").textContent,
+      ...resolveStyle(node),
+    }));
+    const converted = settings.target === "unicode"
+      ? convertDocumentRuns(sources, settings, hasLegacyFonts)
+      : [
+          convertDocumentText(
+            sources.map(({ text }) => text).join(""),
+            sources[0].sourceFont,
+            settings,
+            hasLegacyFonts,
+          ),
+          ...sources.slice(1).map(() => []),
+        ];
+    for (const [index, item] of group.entries()) {
+      const effective = sources[index];
+      const { text } = effective;
+      // Wingdings/Symbol runs are artwork, not legacy Sinhala source text.
+      if (/^(?:Wingdings|Webdings|Symbol)/iu.test(effective.sourceFont)) continue;
+      const segments = converted[index];
+      if (
+        segments.map((segment) => segment.text).join("") === text &&
+        !segments.some((segment) => segment.useLegacyFont) &&
+        !(
+          settings.target === "unicode" &&
+          isLegacyFont(effective.sourceFont) &&
+          text.trim()
+        )
       )
-    )
-      continue;
-    if (run.localName === "fld") {
-      child(run, "t").textContent = segments
-        .map((segment) => segment.text)
-        .join("");
-      if (segments.some((segment) => segment.useLegacyFont))
-        applyFont(run, effective, settings);
-    } else {
-      const fragment = xml.createDocumentFragment();
-      for (const segment of segments) {
-        if (!segment.text) continue;
-        const replacement = run.cloneNode(true);
-        const textNode = child(replacement, "t");
-        textNode.textContent = segment.text;
-        textNode.setAttributeNS(XML_NS, "xml:space", "preserve");
-        if (segment.useLegacyFont) applyFont(replacement, effective, settings);
-        fragment.appendChild(replacement);
+        continue;
+      if (item.localName === "fld") {
+        child(item, "t").textContent = segments
+          .map((segment) => segment.text)
+          .join("");
+        if (segments.some((segment) => segment.useLegacyFont))
+          applyFont(item, effective, settings);
+      } else {
+        const fragment = xml.createDocumentFragment();
+        for (const segment of segments) {
+          if (!segment.text) continue;
+          const replacement = item.cloneNode(true);
+          const textNode = child(replacement, "t");
+          textNode.textContent = segment.text;
+          textNode.setAttributeNS(XML_NS, "xml:space", "preserve");
+          if (segment.useLegacyFont) applyFont(replacement, effective, settings);
+          fragment.appendChild(replacement);
+        }
+        item.replaceWith(fragment);
       }
-      run.replaceWith(fragment);
-      group.slice(1).forEach((node) => node.remove());
+      changed = true;
     }
-    changed = true;
   }
   return changed;
 }

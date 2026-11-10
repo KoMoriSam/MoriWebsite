@@ -445,7 +445,7 @@ function buildTrie(entries) {
   return root;
 }
 
-function convertLongest(input, trie, omitUnmappedSinhalaJoiners = false) {
+function convertLongest(input, trie, omitUnmappedSinhalaJoiners = false, onMatch) {
   const characters = Array.from(String(input ?? ""));
   let output = "";
 
@@ -466,9 +466,11 @@ function convertLongest(input, trie, omitUnmappedSinhalaJoiners = false) {
     }
 
     if (matchedValue !== undefined) {
+      onMatch?.(characters.slice(index, matchedEnd).join(""), matchedValue);
       output += matchedValue;
       index = matchedEnd;
     } else {
+      onMatch?.(characters[index], characters[index]);
       if (
         !omitUnmappedSinhalaJoiners ||
         characters[index] !== ZERO_WIDTH_JOINER ||
@@ -1225,6 +1227,32 @@ export function fmToUnicode(input = "", options = {}) {
     : output;
   output = applyPaliSpellingOptions(output, options);
   return applyReducedFormOptions(output, options);
+}
+
+// Document runs may end inside a visually ordered FM syllable. Keep each trie
+// match and the combining marks/reph attached to it in one formatting run.
+export function splitFmSourceClusters(input = "", options = {}) {
+  const matches = [];
+  const trie = normalizesConjunctCategory(options, "rare")
+    ? rareLegacyTrie
+    : legacyTrie;
+  convertLongest(input, trie, false, (source, text) => {
+    matches.push({ source, text });
+  });
+  const clusters = [];
+  let previous = "";
+  for (const { source, text } of matches) {
+    if (
+      clusters.length &&
+      (/^[\p{M}\u200c\u200d]/u.test(text) ||
+        text.includes(LEGACY_REPAYA_MARKER) ||
+        /[්\u200c\u200d]$/u.test(previous))
+    ) {
+      clusters[clusters.length - 1] += source;
+    } else clusters.push(source);
+    previous = text;
+  }
+  return clusters;
 }
 
 const SINHALA_BLOCK_RE = /[\u0d80-\u0dff]/u;

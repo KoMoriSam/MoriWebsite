@@ -1,6 +1,7 @@
 import {
   fmToUnicode,
   fmToUnicodeSegments,
+  splitFmSourceClusters,
   unicodeToFmSegments,
 } from "./converter.js";
 
@@ -48,6 +49,88 @@ export function convertDocumentText(
   if (hasLegacyFonts && sourceFont)
     return [{ source: text, text, useLegacyFont: false }];
   return fmToUnicodeSegments(text, settings.options);
+}
+
+export function convertDocumentRuns(runs, settings, hasLegacyFonts = false) {
+  if (settings.target !== "unicode") {
+    return runs.map(({ text, sourceFont }) =>
+      convertDocumentText(text, sourceFont, settings, hasLegacyFonts),
+    );
+  }
+  const result = runs.map(() => []);
+  for (let start = 0; start < runs.length; ) {
+    const legacy = isLegacyFont(runs[start].sourceFont);
+    let end = start + 1;
+    while (
+      end < runs.length &&
+      (legacy
+        ? isLegacyFont(runs[end].sourceFont)
+        : runs[end].sourceFont === runs[start].sourceFont)
+    )
+      end += 1;
+    const group = runs.slice(start, end);
+    const original = group.map(({ text }) => text).join("");
+    const encoded = group
+      .map(({ text, sourceFont }) =>
+        /^Bu_?Nisansala$/iu.test((sourceFont || "").replace(/\s/gu, ""))
+          ? text.replace(/”/gu, '"')
+          : text,
+      )
+      .join("");
+    const segments = convertDocumentText(
+      encoded,
+      legacy ? "FMAbhaya" : runs[start].sourceFont,
+      settings,
+      hasLegacyFonts,
+    );
+    let offset = 0;
+    let owner = start;
+    let ownerEnd = runs[owner].text.length;
+    const append = (source, text, useLegacyFont) => {
+      const output = result[owner];
+      const previous = output.at(-1);
+      if (previous?.useLegacyFont === useLegacyFont) {
+        previous.source += source;
+        previous.text += text;
+      } else output.push({ source, text, useLegacyFont });
+    };
+    for (const segment of segments) {
+      // Classify complete words first, then distribute whole syllables to their
+      // source runs. Style changes must never become encoding boundaries.
+      const pieces = segment.useLegacyFont
+        ? splitFmSourceClusters(segment.source, settings.options)
+        : [segment.source];
+      let segmentOffset = 0;
+      for (const piece of pieces) {
+        let remaining = piece;
+        while (remaining) {
+          while (offset >= ownerEnd && owner + 1 < end) {
+            owner += 1;
+            ownerEnd += runs[owner].text.length;
+          }
+          const length = segment.useLegacyFont
+            ? remaining.length
+            : Math.min(remaining.length, ownerEnd - offset);
+          const source = original.slice(offset, offset + length);
+          const part = remaining.slice(0, length);
+          append(
+            source,
+            segment.useLegacyFont
+              ? pieces.length === 1
+                ? segment.text
+                : fmToUnicode(part, settings.options)
+              : segment.text.slice(segmentOffset, segmentOffset + length),
+            segment.useLegacyFont,
+          );
+          offset += length;
+          segmentOffset += length;
+          remaining = remaining.slice(length);
+        }
+      }
+    }
+    start = end;
+  }
+  return result;
 }
 
 function parseXml(source) {
@@ -242,66 +325,73 @@ function textOnly(run) {
 function convertTextPart(xml, resolveStyle, settings, hasLegacyFonts) {
   separateTextRuns(xml);
   const serializer = new XMLSerializer();
+  const signature = (run) =>
+    child(run, "rPr") ? serializer.serializeToString(child(run, "rPr")) : "";
   const handled = new Set();
   let changed = false;
   for (const run of [...xml.getElementsByTagNameNS(WORD_NS, "r")]) {
     if (handled.has(run) || !run.parentNode || !textOnly(run)) continue;
-    const signature = child(run, "rPr")
-      ? serializer.serializeToString(child(run, "rPr"))
-      : "";
     const group = [run];
     let next = run.nextElementSibling;
     while (
       next?.namespaceURI === WORD_NS &&
       next.localName === "r" &&
       textOnly(next) &&
-      (child(next, "rPr")
-        ? serializer.serializeToString(child(next, "rPr"))
-        : "") === signature
+      (settings.target === "unicode" || signature(next) === signature(run))
     ) {
       group.push(next);
       next = next.nextElementSibling;
     }
     for (const item of group) handled.add(item);
-    const text = group
-      .map((item) =>
-        [...item.children]
+    const sources = group.map((item) => {
+      const effective = resolveStyle(item);
+      return {
+        text: [...item.children]
           .filter((node) => node.localName === "t")
           .map((node) => node.textContent)
           .join(""),
+        sourceFont: effective.fonts.hAnsi || effective.fonts.ascii || "",
+        effective,
+      };
+    });
+    const converted = settings.target === "unicode"
+      ? convertDocumentRuns(sources, settings, hasLegacyFonts)
+      : [
+          convertDocumentText(
+            sources.map(({ text }) => text).join(""),
+            sources[0].sourceFont,
+            settings,
+            hasLegacyFonts,
+          ),
+          ...sources.slice(1).map(() => []),
+        ];
+    for (const [index, item] of group.entries()) {
+      const { text, sourceFont, effective } = sources[index];
+      const segments = converted[index];
+      const explicitLegacy = isLegacyFont(sourceFont);
+      if (
+        segments.map((segment) => segment.text).join("") === text &&
+        !segments.some((segment) => segment.useLegacyFont) &&
+        !(settings.target === "unicode" && explicitLegacy && text.trim())
       )
-      .join("");
-    const effective = resolveStyle(run);
-    const sourceFont = effective.fonts.hAnsi || effective.fonts.ascii || "";
-    const explicitLegacy = isLegacyFont(sourceFont);
-    const segments = convertDocumentText(
-      text,
-      sourceFont,
-      settings,
-      hasLegacyFonts,
-    );
-    if (
-      !segments.some((segment) => segment.text !== segment.source) &&
-      !(settings.target === "unicode" && explicitLegacy && text.trim())
-    )
-      continue;
-    const fragment = xml.createDocumentFragment();
-    for (const segment of segments) {
-      if (!segment.text) continue;
-      const replacement = run.cloneNode(false);
-      const properties = child(run, "rPr");
-      if (properties) replacement.appendChild(properties.cloneNode(true));
-      const textNode = xml.createElementNS(WORD_NS, "w:t");
-      textNode.setAttributeNS(XML_NS, "xml:space", "preserve");
-      textNode.textContent = segment.text;
-      replacement.appendChild(textNode);
-      if (segment.useLegacyFont)
-        applyConvertedFont(replacement, settings.target, settings, effective);
-      fragment.appendChild(replacement);
+        continue;
+      const fragment = xml.createDocumentFragment();
+      for (const segment of segments) {
+        if (!segment.text) continue;
+        const replacement = item.cloneNode(false);
+        const properties = child(item, "rPr");
+        if (properties) replacement.appendChild(properties.cloneNode(true));
+        const textNode = xml.createElementNS(WORD_NS, "w:t");
+        textNode.setAttributeNS(XML_NS, "xml:space", "preserve");
+        textNode.textContent = segment.text;
+        replacement.appendChild(textNode);
+        if (segment.useLegacyFont)
+          applyConvertedFont(replacement, settings.target, settings, effective);
+        fragment.appendChild(replacement);
+      }
+      item.replaceWith(fragment);
+      changed = true;
     }
-    run.replaceWith(fragment);
-    for (const extra of group.slice(1)) extra.remove();
-    changed = true;
   }
   return changed;
 }

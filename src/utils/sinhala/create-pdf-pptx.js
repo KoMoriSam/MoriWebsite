@@ -1,6 +1,6 @@
 import { escapeXml } from "./create-docx.js";
 import {
-  convertDocumentText,
+  convertDocumentRuns,
   isLegacyFont,
   isIntrinsicBoldFont,
 } from "./convert-docx.js";
@@ -24,13 +24,8 @@ const group =
 const relationships = (items) =>
   `${HEADER}<Relationships xmlns="${PACKAGE_R}">${items.map(([id, type, target]) => `<Relationship Id="${id}" Type="${R}/${type}" Target="${target}"/>`).join("")}</Relationships>`;
 
-function textRuns(span, settings, hasLegacyFonts, scale) {
-  return convertDocumentText(
-    span.text,
-    span.fontFamily,
-    settings,
-    hasLegacyFonts,
-  )
+function textRuns(span, settings, scale, segments) {
+  return segments
     .map((segment) => {
       let family = span.fontFamily;
       let fonts;
@@ -65,6 +60,20 @@ function textRuns(span, settings, hasLegacyFonts, scale) {
     .join("");
 }
 
+function lineTextRuns(spans, settings, hasLegacyFonts, scale) {
+  const merged = mergedSpans(spans);
+  const converted = convertDocumentRuns(
+    merged.map((span) => ({ ...span, sourceFont: span.fontFamily })),
+    settings,
+    hasLegacyFonts,
+  );
+  return merged
+    .map((span, index) =>
+      textRuns(span, settings, scale, converted[index]),
+    )
+    .join("");
+}
+
 function textBox(
   paragraph,
   id,
@@ -85,9 +94,7 @@ function textBox(
         : "horz";
   const content = paragraph.lines
     .map(({ spans }) =>
-      mergedSpans(spans)
-        .map((span) => textRuns(span, settings, hasLegacyFonts, scale))
-        .join(""),
+      lineTextRuns(spans, settings, hasLegacyFonts, scale),
     )
     .join("<a:br/>");
   const properties = `<a:pPr marL="${emus(paragraph.leftIndent * scale)}" indent="${emus(paragraph.firstLineIndent * scale)}" algn="${align}"><a:lnSpc><a:spcPts val="${Math.round(paragraph.leading * scale * 100)}"/></a:lnSpc><a:spcBef><a:spcPts val="0"/></a:spcBef><a:spcAft><a:spcPts val="0"/></a:spcAft><a:buNone/></a:pPr>`;
@@ -297,11 +304,7 @@ function editableTextLayout(
       }
       const content = unit.lines
         .map((line) =>
-          mergedSpans(line.spans)
-            .map((span) =>
-              textRuns(span, settings, hasLegacyFonts, transform.scale),
-            )
-            .join(""),
+          lineTextRuns(line.spans, settings, hasLegacyFonts, transform.scale),
         )
         .join("<a:br/>");
       const alignment = { left: "l", center: "ctr", right: "r", both: "just" }[
