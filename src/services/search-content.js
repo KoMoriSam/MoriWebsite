@@ -84,6 +84,8 @@ const INTERNAL_FRONTMATTER_KEYS = new Set([
   "public",
   "routeCode",
   "summary",
+  "slug",
+  "timelinessType",
   "tags",
   "title",
   "uuid",
@@ -257,11 +259,11 @@ const createBlogMetadata = (frontmatter) => {
     "modified",
     "length",
     "aliases",
-  ]);
+  ]).filter((item) => item.key !== "type");
 
   return {
     metadata: searchableMetadata.filter(
-      (item) => !["created", "modified", "aliases"].includes(item.key),
+      (item) => !["created", "modified", "aliases", "license"].includes(item.key),
     ),
     metadataText: metadataSearchText(searchableMetadata),
   };

@@ -10,6 +10,18 @@ node_modules
 !.env.example
 dist
 mock
+# Track only the reusable blog fixtures in the local mock directory.
+!/mock/
+/mock/*
+!/mock/article/
+/mock/article/*
+!/mock/article/blog-demo-*.md
+!/mock/article/en/
+/mock/article/en/*
+!/mock/article/en/blog-demo-*.md
+!/mock/article/si/
+/mock/article/si/*
+!/mock/article/si/blog-demo-*.md
 .output
 *.old*
 /public/rss.xml

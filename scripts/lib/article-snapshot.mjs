@@ -1,11 +1,14 @@
 import fm from "front-matter";
 import {
   getArticleLocales,
+  getArticlePath,
+  getArticleSlug,
   getSourceLocale,
   resolveArticleVersion,
   validateArticleIndex,
 } from "../../src/utils/blog/article-versions.js";
 import { createArticleAssetResolver } from "../../src/utils/resolve-article-assets.js";
+import { createArticleReferenceResolver } from "../../src/utils/blog/article-references.js";
 import { fetchContent } from "./content-source.mjs";
 import { buildCache, digest } from "./build-cache.mjs";
 
@@ -106,13 +109,23 @@ export async function createArticleSnapshot(
         fetcher,
       );
       entries.push(entry);
-      if (lang === getSourceLocale(source))
-        entries.push({
-          ...entry,
-          path: `/blog/${encodeURIComponent(source.id)}`,
-          legacy: true,
-        });
+      if (getArticleSlug(source) === source.id && lang === getSourceLocale(source)) {
+        entries.push({ ...entry, path: getArticlePath(source.id, null), legacy: true });
+      }
     }
   }
-  return entries;
+  const resolveReferences = createArticleReferenceResolver(articles);
+  const references = new Map(entries.filter((entry) => !entry.legacy).map((entry) => [
+    entry.path, resolveReferences(entry.content, entry.article),
+  ]));
+  return entries.map((entry) => ({
+    ...entry,
+    article: {
+      ...entry.article,
+      references: references.get(entry.article.routePath) || [],
+      translations: Object.fromEntries(Object.entries(entry.article.translations || {}).map(([lang, translation]) => [
+        lang, { ...translation, references: references.get(getArticlePath(entry.article, lang)) || [] },
+      ])),
+    },
+  }));
 }

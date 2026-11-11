@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { createRssFeed, wrapCdata } from "../lib/rss-content.mjs";
+import { loadMathJaxPlugin } from "../../src/utils/markdown/mathjax-svg.js";
 import { createArticleAssetResolver } from "../../src/utils/resolve-article-assets.js";
 
 const now = new Date("2026-09-13T12:00:00+08:00");
@@ -101,6 +102,7 @@ const makeEntry = (index, overrides = {}) => {
   assert.match(xml, /https:\/\/komori\.cc\/blog/);
   assert.match(xml, /https:\/\/komori\.cc\/blog\/special#%E6%A0%87%E9%A2%98/);
   assert.match(xml, /language-mermaid/);
+  assert.match(xml, /在原文查看图表/);
   assert.match(xml, /保留文字/);
   assert.doesNotMatch(xml, /<script|markdown-alert/i);
   assert.doesNotMatch(xml, /\]\]> CDATA/);
@@ -109,6 +111,80 @@ const makeEntry = (index, overrides = {}) => {
     "<![CDATA[before]]]]><![CDATA[>after]]>",
   );
   assert.ok(items[0].summary.startsWith("标题 & 内容"));
+}
+
+{
+  const target = makeEntry(1, {
+    id: "2026-07-26",
+    article: { title: "站内文章", slug: "site-notes", path: "2026-07-26.md" },
+  });
+  const source = makeEntry(2, {
+    content: [
+      "[[2026-07-26|前篇]]、[[未发布|只显示别名]]、{汉字|かんじ}、==高亮==、H~2~O、x^2^、:tada:",
+      "",
+      "[带说明]{.tooltip data-tip=\"这是一条提示\"} 和脚注[^note]。",
+      "",
+      "[^note]: 这里是脚注正文",
+      "",
+      "> [!IMPORTANT]- **注意事项**",
+      "> 提示正文。",
+      "",
+      "> [!chat]",
+      ">",
+      "> > **Mori** 10:30",
+      "> > 聊天里的 **粗体** 和 [链接](/blog)。",
+      "> > <img src=\"safe.png\" onerror=\"alert(1)\">",
+      "",
+      "> [!moment] **Mori** · 10:45",
+      ">",
+      "> 动态正文",
+      ">",
+      "> ![配图](moment.png)",
+      "> ❤️ 12",
+      "",
+      "- [x] 已处理",
+      "- [/] 正在处理",
+      "",
+      "公式 $x^2$。",
+      "",
+      "```markdown title=\"源语法示例\"",
+      "[[2026-07-26]]",
+      "```",
+    ].join("\n"),
+  });
+  const options = {
+    contentBaseUrl: "https://raw.example.com/blog",
+    now,
+    mathPlugin: await loadMathJaxPlugin(),
+  };
+  const { items: [item] } = createRssFeed([source, target], options);
+  assert.match(item.html, /<a href="https:\/\/komori\.cc\/blog\/site-notes\/zh-CN">前篇<\/a>、只显示别名/u);
+  assert.match(item.html, /<ruby>汉字<rp>（<\/rp><rt>かんじ<\/rt>/u);
+  assert.match(item.html, /<mark>高亮<\/mark>、H<sub>2<\/sub>O、x<sup>2<\/sup>、🎉/u);
+  assert.match(item.html, /带说明（这是一条提示）/u);
+  assert.match(item.html, /<a href="#fn1" id="fnref1">1<\/a>/u);
+  assert.match(item.html, /这里是脚注正文 <a href="#fnref1"/u);
+  assert.match(item.html, /<blockquote><p><strong>注意事项<\/strong>/u);
+  assert.match(item.html, /<strong>Mori · 10:30<\/strong>/u);
+  assert.match(item.html, /聊天里的 <strong>粗体<\/strong> 和 <a href="https:\/\/komori\.cc\/blog">链接<\/a>/u);
+  assert.match(item.html, /动态正文[\s\S]*moment\.png[\s\S]*❤️ 12/u);
+  assert.match(item.html, /\[已完成\] <span[^>]*>已处理/u);
+  assert.match(item.html, /\[进行中\] <span[^>]*>正在处理/u);
+  assert.match(item.html, /<mjx-container[^>]*data-reader-latex-source="x\^2"[^>]*><svg/u);
+  assert.match(item.html, /<strong>源语法示例<\/strong>[\s\S]*<code[^>]*>\[\[2026-07-26\]\]/u);
+  assert.doesNotMatch(item.html, /onerror|<markdown-|\[!|\[\^note\]/u);
+
+  const cacheInputs = [];
+  for (const slug of ["site-notes", "updated-notes"]) {
+    createRssFeed([source, { ...target, article: { ...target.article, slug } }], {
+      ...options,
+      renderContent(input) {
+        cacheInputs.push(JSON.stringify(input));
+        return "";
+      },
+    });
+  }
+  assert.notEqual(cacheInputs[0], cacheInputs[2], "the referrer cache depends on the target's slug");
 }
 
 for (const entry of [

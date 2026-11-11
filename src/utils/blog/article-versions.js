@@ -12,8 +12,29 @@ export function getArticleLocales(article) {
   )];
 }
 
-export function getArticlePath(id, locale = "zh-CN") {
-  return `/blog/${encodeURIComponent(String(id))}/${locale}`;
+export const getArticleSlug = (article) => article.slug || article.id;
+
+export const normalizeArticleRouteKey = (key) =>
+  String(key || "").normalize("NFC").toLowerCase();
+
+export function getArticlePath(articleOrId, locale = "zh-CN") {
+  const key = typeof articleOrId === "object" ? getArticleSlug(articleOrId) : articleOrId;
+  const base = `/blog/${encodeURIComponent(String(key))}`;
+  return locale ? `${base}/${locale}` : base;
+}
+
+export function getArticleRedirects(articles) {
+  const redirects = new Map();
+  for (const article of articles) {
+    if (getArticleSlug(article) === article.id) continue;
+    const sourcePath = getArticlePath(article, getSourceLocale(article));
+    redirects.set(getArticlePath(article.id, null), sourcePath);
+    redirects.set(getArticlePath(article, null), sourcePath);
+    for (const locale of getArticleLocales(article)) {
+      redirects.set(getArticlePath(article.id, locale), getArticlePath(article, locale));
+    }
+  }
+  return redirects;
 }
 
 // Explicit URLs never silently fall back. Automatic entry points and lists do.
@@ -36,15 +57,16 @@ export function resolveArticleVersion(article, locale, { explicit = false } = {}
   return {
     ...article, ...localized,
     ...(license != null ? { license } : {}),
-    id: article.id, date: article.date, sourceLocale, lang,
+    id: article.id, slug: article.slug, date: article.date, sourceLocale, lang,
     machineTranslated: translation ? translation.machineTranslated === true : false,
-    routePath: getArticlePath(article.id, lang),
+    routePath: getArticlePath(article, lang),
   };
 }
 
 export function validateArticleIndex(articles) {
   const ids = new Set();
   const paths = new Set();
+  const routeKeys = new Set();
   const safeId = (value) => typeof value === "string" && /^[\p{L}\p{N}_-]+$/u.test(value);
   const checkPath = (value, expected) => {
     if (typeof value !== "string" || value !== expected || paths.has(value)) {
@@ -58,12 +80,19 @@ export function validateArticleIndex(articles) {
       throw new Error(`Invalid or duplicate article: ${article.id}`);
     }
     ids.add(article.id);
+    if (article.slug != null && !safeId(article.slug)) {
+      throw new Error(`Invalid article slug: ${article.slug}`);
+    }
+    for (const key of new Set([article.id, getArticleSlug(article)].map(normalizeArticleRouteKey))) {
+      if (routeKeys.has(key)) throw new Error(`Duplicate article URL key: ${key}`);
+      routeKeys.add(key);
+    }
     normalizeContentLicense(article.license);
     checkPath(article.path, `${article.id}.md`);
     for (const [lang, translation] of Object.entries(article.translations || {})) {
       if (!ARTICLE_LOCALES.includes(lang) || lang === getSourceLocale(article) ||
           !translation?.title || typeof translation.machineTranslated !== "boolean" ||
-          translation.public === false ||
+          translation.public === false || translation.slug != null ||
           (translation.lang && translation.lang !== lang) ||
           (translation.translationOf && translation.translationOf !== article.id)) {
         throw new Error(`Invalid translation: ${article.id}/${lang}`);

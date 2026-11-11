@@ -355,7 +355,7 @@
             >
               <template #original>
                 <RouterLink
-                  :to="getArticlePath(article.id, getSourceLocale(article))"
+                  :to="getArticlePath(article, getSourceLocale(article))"
                   class="link link-primary link-hover"
                 >
                   {{ translate("blog.article.original") }}
@@ -379,6 +379,11 @@
           author="KoMoriSam (Wishwa Luo)"
           :published-at="publicationDate"
           class="not-prose mt-8"
+        />
+        <ModificationAge
+          v-if="!loading"
+          :modified-at="article.modified || article.modifiedDate"
+          :notice-after-days="timelinessNoticeAfterDays"
         />
         <div class="divider" aria-hidden="true"></div>
         <nav
@@ -460,6 +465,13 @@
             <i class="ri-arrow-right-s-line shrink-0 text-lg md:text-xl"></i>
           </RouterLink>
         </nav>
+        <RelatedArticles
+          v-if="!loading"
+          :article="article"
+          :articles="sourceArticles"
+          :content="content"
+          @navigate="handleArticleNavigation"
+        />
       </template>
     </Renderer>
 
@@ -528,6 +540,8 @@
 <script setup>
 import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
 import ContentRights from "@/components/reader/display/ContentRights.vue";
+import RelatedArticles from "@/components/blog/RelatedArticles.vue";
+import ModificationAge from "@/components/blog/ModificationAge.vue";
 provideMarkdownAvatars(import.meta.env.VITE_BLOG_RAW);
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
@@ -556,6 +570,7 @@ import { useReaderTextContext } from "@/composables/reader/useReaderTextContext"
 import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
 import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
 import { sortArticleNavigation } from "@/utils/blog/article-navigation";
+import { getArticleTimelinessDays } from "@/utils/blog/article-timeliness";
 import CONFIG from "@/constants/config";
 import {
   getArticleLocales,
@@ -582,6 +597,10 @@ const props = defineProps({
     default: null,
   },
   articles: {
+    type: Array,
+    default: () => [],
+  },
+  sourceArticles: {
     type: Array,
     default: () => [],
   },
@@ -620,6 +639,10 @@ const localizedLanguageNames = computed(() => ({
 }));
 
 const articleId = computed(() => String(props.article?.id || "").trim());
+const timelinessNoticeAfterDays = computed(() => {
+  const source = props.sourceArticles.find((article) => String(article.id) === articleId.value);
+  return getArticleTimelinessDays(source || props.article || {});
+});
 const commentCountsStore = useCommentCountsStore();
 const { commentCountsAvailable } = storeToRefs(commentCountsStore);
 const articleComments = computed(() =>
@@ -928,7 +951,7 @@ const getArticleRoute = (article) => {
 
   const articleId = String(article?.id || "").trim();
   return articleId
-    ? getArticlePath(articleId, article.lang || article.sourceLocale || "zh-CN")
+    ? getArticlePath(article, article.lang || article.sourceLocale || "zh-CN")
     : "/blog";
 };
 

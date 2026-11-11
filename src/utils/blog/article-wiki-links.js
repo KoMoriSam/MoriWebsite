@@ -1,5 +1,6 @@
 import {
   getArticleLocales,
+  getArticleSlug,
   getSourceLocale,
   resolveArticleVersion,
 } from "./article-versions.js";
@@ -30,7 +31,7 @@ export function createArticleWikiLinkResolver(articles = []) {
       const { routePath, title, aliases, path, summary, banner, lang, date, length } = version;
       previews.set(routePath, { title, summary, banner, lang, date, length });
       if (path) add(paths, path.replace(/\.md$/iu, ""), routePath);
-      if (locale === getSourceLocale(article)) add(paths, article.id, routePath);
+      if (locale === getSourceLocale(article)) add(paths, getArticleSlug(article), routePath);
       const allAliases = Array.isArray(aliases) ? aliases : [aliases];
       for (const name of [title, ...allAliases])
         add(names, name, routePath);

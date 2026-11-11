@@ -720,6 +720,7 @@ import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import CatalogBadge from "@/components/interaction/navigation/CatalogBadge.vue";
 import CatalogCard from "@/components/interaction/navigation/CatalogCard.vue";
 import { getNavbarScrollOffset } from "@/utils/layout/navbar";
+import { getArticlePath } from "@/utils/blog/article-versions";
 import { useLocale } from "@/i18n";
 const {
   t: translate,
@@ -1289,7 +1290,7 @@ const getArticleRoute = (article) => {
 
   const articleId = String(article?.id || "").trim();
   return articleId
-    ? `/blog/${encodeURIComponent(articleId)}/${article.lang || article.sourceLocale || "zh-CN"}`
+    ? getArticlePath(article, article.lang || article.sourceLocale || "zh-CN")
     : "/blog";
 };
 </script>

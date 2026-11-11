@@ -22,6 +22,9 @@ if (fs.existsSync(root)) {
     const id = path.basename(file, ".md");
     return [{
       ...previousById.get(id), ...attributes, id, path: file,
+      slug: attributes.slug,
+      type: attributes.type ?? attributes.timelinessType,
+      timelinessType: undefined,
       title: attributes.title || id, date: attributes.date || id,
       tags: Array.isArray(attributes.tags) ? attributes.tags : [],
       summary: attributes.summary || previousById.get(id)?.summary || body.trim().slice(0, 100),
@@ -41,7 +44,7 @@ if (fs.existsSync(root)) {
           !attributes.title || typeof attributes.machineTranslated !== "boolean") {
         throw new Error(`Invalid mock translation: ${relativePath}`);
       }
-      const { date, public: published, publish, ...metadata } = attributes;
+      const { date, public: published, publish, type, timelinessType, ...metadata } = attributes;
       source.translations[lang] = {
         ...metadata, path: relativePath, contentHash, length: countWords(body),
         summary: attributes.summary || body.trim().slice(0, 100),

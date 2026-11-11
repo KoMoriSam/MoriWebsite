@@ -8,9 +8,11 @@ import { renderToString } from "vue/server-renderer";
 import { build, mergeConfig } from "vite";
 import {
   ARTICLE_LOCALES,
+  getArticleRedirects,
   resolveArticleVersion,
 } from "../../src/utils/blog/article-versions.js";
 import { sortArticleNavigation } from "../../src/utils/blog/article-navigation.js";
+import { getRelatedArticles } from "../../src/utils/blog/related-articles.js";
 import { createArticleWikiLinkResolver } from "../../src/utils/blog/article-wiki-links.js";
 import { wikiLinkDependencies } from "../../src/utils/markdown/markdown-it-wikilink.js";
 import { fileInside } from "../lib/content-files.mjs";
@@ -105,6 +107,7 @@ const list = articles.filter(
       entry.article.lang === (entry.article.sourceLocale || "zh-CN")),
 );
 const listHash = hash(list);
+const articleRedirects = getArticleRedirects(list.map(({ article }) => article));
 const resolveArticleWikiLink = createArticleWikiLinkResolver(
   list.map(({ article }) => article),
 );
@@ -182,7 +185,9 @@ if (process.env.CONTENT_BUILD_DIR) {
 }
 const paths = [
   ...new Set([
-    ...(await includedRoutes(routes.map(({ path }) => path))),
+    ...(await includedRoutes(routes.map(({ path }) => path))).filter(
+      (path) => !articleRedirects.has(path),
+    ),
     ...novelRoutes.keys(),
     "/404",
   ]),
@@ -228,6 +233,7 @@ const pages = Object.fromEntries(
           article,
           article && neighbors.get(article.id),
           article && wikiLinkDependencies(article.content, resolveArticleWikiLink),
+          article && getRelatedArticles(article.article, list.map(({ article }) => article), article.content),
           blogList && listHash,
           home && homeBlogHash,
           route === "/tools/sinhala-font-converter" && guideRoutes,
@@ -349,5 +355,22 @@ if (!dryRun) {
       ),
     ),
   );
+  const staticRedirects = await readFile("public/_redirects", "utf8").catch(
+    (error) => {
+      if (error.code !== "ENOENT") throw error;
+      return "";
+    },
+  );
+  // The date URL must keep resolving after future slug changes.
+  const redirectRules = [...articleRedirects].flatMap(([from, to]) =>
+    [from, `${from}/`, `${from}.html`].map((path) => `${path} ${to} 302`),
+  );
+  const redirectFile = resolve(output, "_redirects");
+  const redirectLines = [staticRedirects.trimEnd(), ...redirectRules].filter(Boolean);
+  if (redirectLines.length) {
+    await writeFile(redirectFile, `${redirectLines.join("\n")}\n`);
+  } else {
+    await rm(redirectFile, { force: true });
+  }
   await writeJson(manifestFile, pages);
 }

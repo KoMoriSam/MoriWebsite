@@ -156,6 +156,18 @@ try {
   await router.push('/blog/other'); await flush();
   assert.equal(router.currentRoute.value.path, '/blog/other/zh-CN', 'French uses Chinese when there is no English version');
   await resolveLatest('other.md', 'Chinese fallback for French UI');
+  state.articles.push({ ...source, id: 'dated-note', slug: 'reader-guide', path: 'dated-note.md', translations: {
+    en: { ...source.translations.en, path: 'en/dated-note.md' },
+  } });
+  await locale.switchLocale('zh-CN', {save:false}); await flush();
+  await router.push('/blog/dated-note/en?reader=1#section'); await flush();
+  assert.equal(router.currentRoute.value.fullPath, '/blog/reader-guide/en?reader=1#section');
+  await resolveLatest('en/dated-note.md', 'English with a custom URL');
+  assert.equal(state.props.article.id, 'dated-note');
+  state.emit('language', 'zh-CN'); await flush();
+  assert.equal(router.currentRoute.value.fullPath, '/blog/reader-guide/zh-CN?reader=1#section');
+  await resolveLatest('dated-note.md', 'Original with a custom URL');
+  assert.equal(state.props.article.id, 'dated-note');
   app.unmount(); app = null;
   const originalFetch = globalThis.fetch;
   const requests = [];
@@ -184,13 +196,16 @@ try {
     assert.equal(requests.length, 5, 'failed requests never poison the cache');
     globalThis.fetch = async (url) => {
       const pathname = new URL(url, 'https://example.com').pathname;
-      if (pathname.endsWith('/index.json')) return Response.json([englishOnly]);
+      if (pathname.endsWith('/index.json')) return Response.json([{ ...englishOnly, type: 'technical', license: 'CC BY 4.0' }]);
       if (pathname.endsWith('/manifest.json')) return Response.json({version:1, images:{}});
       return new Response('---\npublic: true\n---\n' + (pathname.includes('/en/') ? 'Searchable English fallback' : 'Chinese source'));
     };
     const { fetchBlogSearchArticles } = await server.ssrLoadModule('/src/services/search-content.js');
     const searchCatalog = await fetchBlogSearchArticles('si');
     assert.equal(searchCatalog[0].translations.en.content, 'Searchable English fallback', 'Sinhala search loads the English fallback body');
+    assert.equal(searchCatalog[0].type, 'technical');
+    assert.equal(searchCatalog[0].license, 'CC BY 4.0');
+    assert.ok(searchCatalog[0].metadata.every(({ key }) => key !== 'type' && key !== 'license'));
   } finally { globalThis.fetch = originalFetch; }
   // A stored English UI preference can restore while the initial index is
   // still loading. The first catalog must remain usable by an explicit URL.

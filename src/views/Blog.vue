@@ -9,6 +9,7 @@
       <ArticleDetail
         :article="currentArticle"
         :articles="localizedArticles"
+        :source-articles="articles"
         :content="articleContent"
         :list-route="lastListRoute"
         :loading="loadingContent"
@@ -49,7 +50,7 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import { useArticleApi } from "@/services/api-articles";
 import { useArticlePageStore } from "@/stores/article-page";
-import { getArticlePath, getSourceLocale, resolveArticleVersion } from "@/utils/blog/article-versions";
+import { getArticlePath, getArticleSlug, getSourceLocale, normalizeArticleRouteKey, resolveArticleVersion } from "@/utils/blog/article-versions";
 import { createArticleWikiLinkResolver } from "@/utils/blog/article-wiki-links";
 import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 import { captureTrackedPosition, restoreTrackedPosition } from "@/composables/usePosTracker";
@@ -83,7 +84,7 @@ const initialArticle = route.meta.article || null;
 const initialContent = route.meta.pageData?.article?.content || "";
 articlePage.setPage(route.path, initialArticle);
 const initialArticleId = String(
-  route.params.articleId || initialArticle?.id || "",
+  initialArticle?.id || route.params.articleId || "",
 ).trim();
 
 const currentComponent = ref(
@@ -121,14 +122,26 @@ const getRouteLocale = () => String(route.params.locale ||
   (route.path.split("/").filter(Boolean).length === 3 ? route.meta.article?.lang : "") || "");
 
 const switchArticleLanguage = (lang, { replace = false } = {}) => {
-  const path = getArticlePath(getRouteArticleId(), lang);
+  const source = getRouteArticle();
+  if (!source) return;
+  const path = getArticlePath(source, lang);
   if (route.path === path) return;
   languagePosition = captureTrackedPosition();
   return router[replace ? 'replace' : 'push']({ path, query: route.query, hash: route.hash });
 };
 
+const getRouteArticle = () => {
+  const generated = route.meta.article;
+  if (generated) return articles.value.find((article) => article.id === generated.id) || generated;
+  const key = normalizeArticleRouteKey(route.params.articleId);
+  if (!key) return null;
+  return articles.value.find((article) =>
+    normalizeArticleRouteKey(article.id) === key || normalizeArticleRouteKey(getArticleSlug(article)) === key,
+  );
+};
+
 const getRouteArticleId = () =>
-  String(route.params.articleId || route.meta.article?.id || "").trim();
+  String(getRouteArticle()?.id || route.params.articleId || "").trim();
 
 const disposeBlogPosTracker = () => {
   if (typeof stopBlogPosTracker.value === "function") {
@@ -326,7 +339,7 @@ watch(
     pendingNavigationArticleId.value = route.hash || currentArticle.value?.id === articleId ? "" : articleId;
     loadingContent.value = true;
 
-    if (await redirectLegacyArticle()) return;
+    if (await redirectArticleRoute()) return;
     if (articles.value.length > 0) {
       await loadArticleContent(articleId);
     }
@@ -345,12 +358,15 @@ watch(
   { immediate: true },
 );
 
-const redirectLegacyArticle = async () => {
-  if (!localeRestored.value || getRouteLocale()) return false;
-  const articleId = getRouteArticleId();
-  const source = articles.value.find((article) => String(article.id) === articleId);
+const redirectArticleRoute = async () => {
+  const lang = getRouteLocale();
+  const source = getRouteArticle();
   if (!source) return false;
-  const version = resolveArticleVersion(source, uiLocale.value);
+  const usesSlugRoute = getArticleSlug(source) !== source.id;
+  if (!lang && !usesSlugRoute && !localeRestored.value) return false;
+  const preferredLocale = usesSlugRoute ? getSourceLocale(source) : uiLocale.value;
+  const version = resolveArticleVersion(source, lang || preferredLocale, { explicit: Boolean(lang) });
+  if (!version || version.routePath === route.path) return false;
   await router.replace({ path: version.routePath, query: route.query, hash: route.hash });
   return true;
 };
@@ -374,7 +390,7 @@ watch([uiLocale, localeRestored], ([lang, ready], [previousLang, previouslyReady
   if (articles.value.some((article) => String(article.id) === articleId)) synchronize();
   else void listRequest.then(synchronize);
 });
-watch(localeRestored, () => { if (mounted) void redirectLegacyArticle(); });
+watch(localeRestored, () => { if (mounted) void redirectArticleRoute(); });
 
 onMounted(async () => {
   mounted = true;
@@ -385,9 +401,10 @@ onMounted(async () => {
 
   const articleId = getRouteArticleId();
   if (!articleId) return;
-  if (await redirectLegacyArticle()) return;
+  if (await redirectArticleRoute()) return;
 
   currentComponent.value = "ArticleDetail";
+  if (pendingNavigationArticleId.value) pendingNavigationArticleId.value = articleId;
 
   // 刷新静态文章页时保留已经渲染出的 SSG 内容，后台请求最新数据后覆盖。
   await loadArticleContent(articleId, {

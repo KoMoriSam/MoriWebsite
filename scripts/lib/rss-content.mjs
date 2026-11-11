@@ -1,24 +1,14 @@
 import { parseFragment, serialize } from "parse5";
 
-import {
-  MARKDOWN_MODE_STANDARD,
-  renderMarkdown,
-} from "../../src/utils/markdown/render-markdown.js";
-import { sanitizeMarkdownHtml } from "../../src/utils/markdown/sanitize-html.js";
+import { wikiLinkDependencies } from "../../src/utils/markdown/markdown-it-wikilink.js";
+import { createArticleWikiLinkResolver } from "../../src/utils/blog/article-wiki-links.js";
 import { createArticleAssetResolver } from "../../src/utils/resolve-article-assets.js";
+import { getArticlePath, getSourceLocale } from "../../src/utils/blog/article-versions.js";
+import { renderRssMarkdown } from "./rss-markdown.mjs";
 
 export const RSS_ITEM_LIMIT = 20;
 export const RSS_SITE_URL = "https://komori.cc";
 export const RSS_PATH = "/rss.xml";
-
-const READER_COMPONENT_TAGS = new Set([
-  "markdown-alert",
-  "markdown-chat",
-  "markdown-code",
-  "markdown-link-icon",
-  "markdown-mermaid",
-  "markdown-moment",
-]);
 
 const normalizeText = (value) => String(value ?? "").trim();
 
@@ -49,37 +39,24 @@ const walkHtml = (node, visitor) => {
   }
 };
 
-const unwrapReaderComponents = (node) => {
-  if (!Array.isArray(node.childNodes)) return;
-
-  const children = [];
-  for (const child of node.childNodes) {
-    unwrapReaderComponents(child);
-    if (child.tagName && READER_COMPONENT_TAGS.has(child.tagName)) {
-      for (const nested of child.childNodes || []) {
-        nested.parentNode = node;
-        children.push(nested);
-      }
-    } else {
-      children.push(child);
-    }
-  }
-  node.childNodes = children;
-};
-
 const makeHtmlUrlsAbsolute = (
   html,
   articleUrl,
   { assetResolver, bannerName } = {},
 ) => {
   const fragment = parseFragment(html);
-  unwrapReaderComponents(fragment);
   walkHtml(fragment, (node) => {
     if (!node.tagName || !Array.isArray(node.attrs)) return;
+    const footnoteLink = node.attrs.some(({ name, value }) =>
+      name === "class" && value.split(/\s+/u).includes("footnote-backref"),
+    ) || node.parentNode?.attrs?.some(({ name, value }) =>
+      name === "class" && value.split(/\s+/u).includes("footnote-ref"),
+    );
     for (const attribute of node.attrs) {
       if (attribute.name !== "href" && attribute.name !== "src") continue;
       let value = normalizeText(attribute.value);
       if (!value || /^(?:data:|mailto:)/i.test(value)) continue;
+      if (value.startsWith("#") && (footnoteLink || node.tagName === "use")) continue;
       if (node.tagName === "img" && attribute.name === "src" && assetResolver) {
         value = assetResolver.normalizeImageSrc(value, { bannerName });
       }
@@ -122,7 +99,7 @@ const bannerFileName = (banner) => {
 
 const normalizeArticle = (
   entry,
-  { assetResolver, now, siteUrl, renderContent },
+  { assetResolver, now, siteUrl, renderContent, resolveWikiLink, mathPlugin },
 ) => {
   const article = entry?.article || {};
   const id = normalizeText(entry?.id || article.id);
@@ -140,18 +117,17 @@ const normalizeArticle = (
     : publishedAt;
   if (publishedAt.getTime() > now.getTime()) return null;
 
-  const articleUrl = new URL(
-    entry?.path || `/blog/${encodeURIComponent(id)}`,
-    `${siteUrl}/`,
-  ).href;
+  const identityPath = getArticlePath(id, null);
+  const guidPath = article.slug ? identityPath : entry?.path || identityPath;
+  const guid = new URL(guidPath, `${siteUrl}/`).href;
+  const articleUrl = article.slug
+    ? new URL(getArticlePath(article, getSourceLocale(article)), `${siteUrl}/`).href
+    : guid;
   const resolvedBannerName = bannerFileName(article.banner);
-  const html = renderContent([content, articleUrl, resolvedBannerName], () => {
-    const markdown = assetResolver.normalizeMarkdown(content, {
-      bannerName: resolvedBannerName,
-      output: "markdown",
-    });
-    const rendered = renderMarkdown(markdown, { mode: MARKDOWN_MODE_STANDARD });
-    return makeHtmlUrlsAbsolute(sanitizeMarkdownHtml(rendered), articleUrl, {
+  const dependencies = wikiLinkDependencies(content, resolveWikiLink);
+  const html = renderContent([content, articleUrl, resolvedBannerName, dependencies, Boolean(mathPlugin)], () => {
+    const rendered = renderRssMarkdown(content, { articleUrl, resolveWikiLink, mathPlugin });
+    return makeHtmlUrlsAbsolute(rendered, articleUrl, {
       assetResolver,
       bannerName: resolvedBannerName,
     });
@@ -170,6 +146,7 @@ const normalizeArticle = (
     title,
     summary,
     html,
+    guid,
     url: articleUrl,
     publishedAt,
     modifiedAt,
@@ -185,7 +162,7 @@ const renderItem = (item) => {
     "    <item>",
     `      <title>${escapeXml(item.title)}</title>`,
     `      <link>${escapeXml(item.url)}</link>`,
-    `      <guid isPermaLink="true">${escapeXml(item.url)}</guid>`,
+    `      <guid isPermaLink="${item.guid === item.url}">${escapeXml(item.guid)}</guid>`,
     `      <pubDate>${item.publishedAt.toUTCString()}</pubDate>`,
     "      <dc:creator>KoMoriSam</dc:creator>",
     `      <description>${escapeXml(item.summary)}</description>`,
@@ -205,6 +182,7 @@ export const createRssFeed = (
     siteUrl = RSS_SITE_URL,
     limit = RSS_ITEM_LIMIT,
     renderContent = (_input, render) => render(),
+    mathPlugin,
   } = {},
 ) => {
   if (!Array.isArray(entries)) throw new Error("RSS 文章数据必须是数组。");
@@ -219,17 +197,34 @@ export const createRssFeed = (
 
   const normalizedSiteUrl = normalizeText(siteUrl).replace(/\/+$/, "");
   const assetResolver = createArticleAssetResolver(contentBaseUrl);
+  const resolveNote = createArticleWikiLinkResolver(entries.flatMap((entry) => {
+    const article = entry?.article;
+    return !entry?.legacy && article?.public === true &&
+      (!article.lang || article.lang === getSourceLocale(article))
+      ? [article]
+      : [];
+  }));
+  const resolveWikiLink = (note) => resolveNote(note);
   const seenIds = new Set();
   const items = [];
 
   for (const entry of entries) {
-    // Retain the original feed identity and one Chinese item per article.
-    if (entry?.article?.lang && !entry.legacy) continue;
+    // Select one source-language entry per article.
+    const { article, legacy } = entry || {};
+    if (article?.lang) {
+      const usesSlugRoute = article.slug && article.slug !== (entry.id || article.id);
+      const isSourceEntry = usesSlugRoute
+        ? !legacy && article.lang === getSourceLocale(article)
+        : legacy;
+      if (!isSourceEntry) continue;
+    }
     const item = normalizeArticle(entry, {
       assetResolver,
       now,
       siteUrl: normalizedSiteUrl,
       renderContent,
+      resolveWikiLink,
+      mathPlugin,
     });
     if (!item) continue;
     if (seenIds.has(item.id)) throw new Error(`RSS 文章 id 重复：${item.id}`);

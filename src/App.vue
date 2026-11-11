@@ -198,7 +198,7 @@ const canonicalUrl = computed(() => {
   if (article.value)
     return new URL(
       getArticlePath(
-        article.value.id,
+        article.value,
         article.value.lang || article.value.sourceLocale || "zh-CN",
       ),
       `${SITE_URL}/`,
@@ -216,7 +216,7 @@ const headLinks = computed(() => {
       links.push({
         rel: "alternate",
         hreflang: lang,
-        href: new URL(getArticlePath(article.value.id, lang), `${SITE_URL}/`)
+        href: new URL(getArticlePath(article.value, lang), `${SITE_URL}/`)
           .href,
       });
     }

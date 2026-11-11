@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 
 import { createRssFeed } from "../lib/rss-content.mjs";
 import { digest } from "../lib/build-cache.mjs";
+import { hasMathSyntax } from "../../src/utils/markdown/load-markdown-features.js";
+import { loadMathJaxPlugin } from "../../src/utils/markdown/mathjax-svg.js";
 
 dotenv.config({ path: ".env.production", quiet: true });
 
@@ -38,8 +40,12 @@ const previous = version
       .catch(() => ({}))
   : {};
 const current = {};
+const mathPlugin = snapshot.articles.some(({ content }) => hasMathSyntax(content))
+  ? await loadMathJaxPlugin()
+  : undefined;
 const { xml, items } = createRssFeed(snapshot?.articles, {
   contentBaseUrl,
+  mathPlugin,
   renderContent(input, render) {
     if (!version) return render();
     const key = digest(JSON.stringify([version, contentBaseUrl, input]));

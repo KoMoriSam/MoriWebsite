@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { getArticleLocales, getArticlePath, resolveArticleVersion, validateArticleIndex } from "../../src/utils/blog/article-versions.js";
+import { getArticleLocales, getArticlePath, getArticleRedirects, resolveArticleVersion, validateArticleIndex } from "../../src/utils/blog/article-versions.js";
 import { createArticleSnapshot } from "../lib/article-snapshot.mjs";
 import { createArticleMetadata, createPageData, restorePageData } from "../../src/utils/ssg/page-data.js";
 import { createRssFeed } from "../lib/rss-content.mjs";
@@ -95,6 +95,26 @@ const feed = createRssFeed(snapshot.articles, { contentBaseUrl: "https://example
 assert.equal(feed.items.length, 1);
 assert.equal(feed.items[0].title, "中文原文");
 assert.ok(!feed.xml.includes("English translation"));
+const sluggedSource = { ...source, slug: "reader-guide" };
+const sluggedEntries = await createArticleSnapshot([sluggedSource], "https://example.com", fetcher);
+assert.deepEqual(sluggedEntries.map(({ path }) => path), [
+  "/blog/reader-guide/zh-CN", "/blog/reader-guide/en", "/blog/reader-guide/si",
+]);
+const redirects = getArticleRedirects([sluggedSource, legacy]);
+assert.deepEqual(Object.fromEntries(redirects), {
+  "/blog/2026-09-25": "/blog/reader-guide/zh-CN",
+  "/blog/reader-guide": "/blog/reader-guide/zh-CN",
+  "/blog/2026-09-25/zh-CN": "/blog/reader-guide/zh-CN",
+  "/blog/2026-09-25/en": "/blog/reader-guide/en",
+  "/blog/2026-09-25/si": "/blog/reader-guide/si",
+});
+assert.equal(getArticleRedirects([{ ...sluggedSource, slug: "updated-guide" }]).get("/blog/2026-09-25/en"), "/blog/updated-guide/en");
+const sluggedFeed = createRssFeed(sluggedEntries, { contentBaseUrl: "https://example.com", now: new Date("2026-10-17") });
+assert.equal(sluggedFeed.items.length, 1);
+assert.equal(sluggedFeed.items[0].guid, feed.items[0].guid);
+assert.equal(new URL(sluggedFeed.items[0].url).pathname, "/blog/reader-guide/zh-CN");
+assert.ok(sluggedFeed.xml.includes("<link>https://komori.cc/blog/reader-guide/zh-CN</link>"));
+assert.ok(sluggedFeed.xml.includes('<guid isPermaLink="false">https://komori.cc/blog/2026-09-25</guid>'));
 const hashed = structuredClone(source);
 hashed.translations.en.contentHash = createHash("sha256").update(documents.get(source.translations.en.path)).digest("hex");
 await createArticleSnapshot([hashed], "https://example.com", fetcher);

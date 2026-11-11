@@ -23,7 +23,7 @@ const MARKDOWN_OPTIONS = {
 
 export const renderMarkdown = (
   source = "",
-  { mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink } = {},
+  { mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink, env } = {},
 ) => {
   const md = new MarkdownIt(
     MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER],
@@ -38,5 +38,5 @@ export const renderMarkdown = (
     md.use(linkCardPlugin, { articleForPath: resolveWikiLink?.articleForPath });
   }
 
-  return md.render(String(source || ""));
+  return md.render(String(source || ""), env);
 };

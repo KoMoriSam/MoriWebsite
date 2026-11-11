@@ -16,7 +16,7 @@ const visit = (node, nodes = []) => {
 const attr = (node, key) => node?.attrs?.find((item) => item.name === key)?.value;
 for (const entry of snapshot.articles) {
   const lang = entry.article.lang || "zh-CN";
-  const canonical = `https://komori.cc${getArticlePath(entry.id, lang)}`;
+  const canonical = `https://komori.cc${getArticlePath(entry.article, lang)}`;
   const file = path.join("dist", `${entry.path}.html`);
   const raw = fs.readFileSync(file, "utf8");
   const nodes = visit(parse(raw));
@@ -31,7 +31,7 @@ for (const entry of snapshot.articles) {
   assert.equal(schema.url, canonical, file);
   assert.ok(find("h1", "id", `article-title-${entry.id}`), `missing static title: ${file}`);
   for (const locale of getArticleLocales(entry.article)) {
-    assert.equal(attr(find("link", "hreflang", locale), "href"), `https://komori.cc${getArticlePath(entry.id, locale)}`);
+    assert.equal(attr(find("link", "hreflang", locale), "href"), `https://komori.cc${getArticlePath(entry.article, locale)}`);
   }
   if (entry.legacy) assert.ok(!sitemap.includes(`<loc>https://komori.cc${entry.path}</loc>`));
   else {

@@ -42,6 +42,24 @@
       "loadingComments": "ලිපි අදහස් පූරණය වෙමින්",
       "loading": "ලිපි අන්තර්ගතය පූරණය වෙමින්",
       "navigation": "ලිපි සංචලනය",
+      "modifiedElapsed": "මෙම ලිපිය අවසන් වරට සංස්කරණය කර {elapsed} ගත වී ඇත.",
+      "timelinessNotice": "මෙම ලිපියේ සඳහන් තොරතුරු යල් පැන ගොස් තිබිය හැකිය. වත්මන් තත්ත්වය සැලකිල්ලට ගෙන කියවා නවතම තොරතුරු තහවුරු කරගන්න.",
+      "elapsedUnits": {
+        "days": "දින {count}ක්",
+        "hours": "පැය {count}ක්",
+        "minutes": "මිනිත්තු {count}ක්",
+        "seconds": "තත්පර {count}ක්"
+      },
+      "related": "අදාළ ලිපි",
+      "relatedExpand": "තවත් පෙන්වන්න",
+      "relatedCollapse": "අඩුවෙන් පෙන්වන්න",
+      "relatedReasons": {
+        "mutual": "අන්‍යෝන්‍ය යොමු",
+        "mentioned": "මෙම ලිපියේ සඳහන්",
+        "backlink": "මෙම ලිපියට සබැඳියක් ඇත",
+        "tag": "පොදු ටැග",
+        "similar": "සමාන මාතෘකා"
+      },
       "previous": "පෙර ලිපිය",
       "published": "පළ කළේ",
       "next": "ඊළඟ ලිපිය",

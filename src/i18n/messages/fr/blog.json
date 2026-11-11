@@ -42,6 +42,24 @@
       "loadingComments": "Chargement des commentaires de l’article",
       "loading": "Chargement du contenu de l’article",
       "navigation": "Navigation entre les articles",
+      "modifiedElapsed": "Cet article a été modifié pour la dernière fois il y a {elapsed}.",
+      "timelinessNotice": "Les informations mentionnées dans cet article peuvent être obsolètes. Tenez compte du contexte actuel et vérifiez les informations les plus récentes.",
+      "elapsedUnits": {
+        "days": "{count} jour | {count} jours",
+        "hours": "{count} heure | {count} heures",
+        "minutes": "{count} minute | {count} minutes",
+        "seconds": "{count} seconde | {count} secondes"
+      },
+      "related": "Articles connexes",
+      "relatedExpand": "Afficher plus",
+      "relatedCollapse": "Afficher moins",
+      "relatedReasons": {
+        "mutual": "Références réciproques",
+        "mentioned": "Mentionné dans cet article",
+        "backlink": "Fait référence à cet article",
+        "tag": "Étiquettes communes",
+        "similar": "Sujets similaires"
+      },
       "previous": "Article précédent",
       "published": "Publié",
       "next": "Article suivant",

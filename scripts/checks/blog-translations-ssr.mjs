@@ -28,14 +28,15 @@ try {
   const { default: Blog } = await server.ssrLoadModule("/src/views/Blog.vue");
   const { routes } = await server.ssrLoadModule("/src/router/index.js");
   const { createLocaleService } = await server.ssrLoadModule("/src/i18n/index.js");
+  const sluggedSource = { ...source, slug: "reader-guide" };
   const paragraphIds = [];
   for (const [lang, uiLocale, legacy] of [["en", "zh-CN", false], ["si", "zh-CN", false], ["zh-CN", "en", false], ["zh-CN", "zh-CN", true]]) {
-    const article = resolveArticleVersion(source, lang);
+    const article = resolveArticleVersion(sluggedSource, lang);
     const content = { en: "English body paragraph.", si: "සිංහල අන්තර්ගතය.", "zh-CN": "中文正文段落。" }[lang];
     const routePath = legacy ? "/blog/sample" : article.routePath;
     const router = createRouter({ history: createMemoryHistory(), routes: [{
       path: routePath, component: Blog,
-      meta: { article, articles: [source], legacyArticle: legacy, localeGroups: ["blog", "reader"], pageData: { article: { id: source.id, lang, content } } },
+      meta: { article, articles: [sluggedSource], legacyArticle: legacy, localeGroups: ["blog", "reader"], pageData: { article: { id: source.id, lang, content } } },
     }, ...routes] });
     await router.push(routePath); await router.isReady();
     const locale = createLocaleService(); await locale.loadRoute(router.currentRoute.value);
@@ -49,9 +50,9 @@ try {
     assert.ok(html.includes(content), `${lang}: SSR must contain translated body`);
     assert.ok(html.includes(article.title), `${lang}: SSR must contain translated title`);
     assert.ok(seo.headTags.includes(`<title>${article.title} | 远方之森</title>`));
-    assert.ok(seo.headTags.includes(`rel="canonical" href="https://komori.cc/blog/sample/${lang}"`));
+    assert.ok(seo.headTags.includes(`rel="canonical" href="https://komori.cc/blog/reader-guide/${lang}"`));
     for (const language of ["zh-CN", "en", "si"]) {
-      assert.ok(seo.headTags.includes(`hreflang="${language}" href="https://komori.cc/blog/sample/${language}"`));
+      assert.ok(seo.headTags.includes(`hreflang="${language}" href="https://komori.cc/blog/reader-guide/${language}"`));
     }
     assert.ok(seo.headTags.includes(`"inLanguage":"${lang}"`));
     assert.ok(seo.htmlAttrs.includes(`lang="${lang}"`));
@@ -86,7 +87,7 @@ try {
         app.component('ClientOnly',{render:()=>null});
         app.directive('fade-in',{getSSRProps:()=>({})});
         const html = await renderToString(app);
-        if (lang === uiLocale) assert.ok(!html.includes('role="status"'), 'available languages need no fallback notice');
+        if (lang === uiLocale) assert.ok(!/<p\b[^>]*\brole="status"/u.test(html), 'available languages need no fallback notice');
         else {
           const requested = names[uiLocale][uiLocale];
           const current = names[uiLocale][lang];
@@ -122,23 +123,23 @@ try {
       }
     }
   }
-  if (fs.existsSync('mock/article/index.json')) {
+  {
+    const fixtureId = 'blog-demo-locales';
     const { default: Renderer } = await server.ssrLoadModule('/src/components/markdown/Renderer.vue');
-    for (const article of JSON.parse(fs.readFileSync('mock/article/index.json', 'utf8')).filter((article) => Object.keys(article.translations || {}).length)) {
-      let originalIds;
-      for (const lang of [article.sourceLocale, ...Object.keys(article.translations)]) {
-        const version = resolveArticleVersion(article, lang);
-        const body = fm(fs.readFileSync(path.join('mock/article', version.path), 'utf8')).body;
-        const router = createRouter({ history: createMemoryHistory(), routes: [{path:'/reader',component:Renderer}] });
-        await router.push('/reader');
-        const service = createLocaleService(); await service.loadRoute({meta:{localeGroups:['blog','reader']}});
-        const app = createSSRApp(Renderer, {content:body, lang, headerData:{uuid:article.id,title:version.title,page:1,sourceType:'article'}});
-        app.use(router); app.use(createPinia()); service.install(app); app.directive('fade-in',{getSSRProps:()=>({})});
-        const html = await renderToString(app);
-        const ids = [...html.matchAll(/data-reader-paragraph-id="([^"]+)"/g)].map((match) => match[1]);
-        if (lang === article.sourceLocale) originalIds = ids;
-        else assert.deepEqual(ids, originalIds, `${version.path}: mock translations preserve paragraph discussions`);
-      }
+    const router = createRouter({ history: createMemoryHistory(), routes: [{path:'/reader',component:Renderer}] });
+    await router.push('/reader');
+    const service = createLocaleService(); await service.loadRoute({meta:{localeGroups:['blog','reader']}});
+    let originalIds;
+    for (const lang of ['zh-CN', 'en', 'si']) {
+      const filename = path.join('mock/article', lang === 'zh-CN' ? '' : lang, `${fixtureId}.md`);
+      const { body, attributes } = fm(fs.readFileSync(filename, 'utf8'));
+      const app = createSSRApp(Renderer, {content:body, lang, headerData:{uuid:fixtureId,title:attributes.title,page:1,sourceType:'article'}});
+      app.use(router); app.use(createPinia()); service.install(app); app.directive('fade-in',{getSSRProps:()=>({})});
+      const html = await renderToString(app);
+      const ids = [...html.matchAll(/data-reader-paragraph-id="([^"]+)"/g)].map((match) => match[1]);
+      assert.ok(ids.length, `${filename}: mock article must have paragraph discussions`);
+      if (lang === 'zh-CN') originalIds = ids;
+      else assert.deepEqual(ids, originalIds, `${filename}: mock translations preserve paragraph discussions`);
     }
   }
   console.log("检查通过：多语言文章页面、回退提示、原文链接与评论定位。");
