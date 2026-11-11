@@ -2,6 +2,7 @@
   <section
     ref="viewerRoot"
     data-mermaid-viewer
+    :data-mermaid-source="source"
     class="not-prose"
     :class="isFullscreen ? 'h-full min-h-0' : ''"
     :aria-busy="renderStatus === 'loading'"
@@ -207,7 +208,10 @@ import {
 } from "vue";
 import CodeHeader from "@/components/markdown/code/CodeHeader.vue";
 import CodeView from "@/components/markdown/code/CodeView.vue";
-import { renderMermaidSource } from "@/utils/markdown/markdown-it-mermaid";
+import {
+  styleMermaidSvg,
+  renderMermaidSource,
+} from "@/utils/markdown/markdown-it-mermaid";
 
 const props = defineProps({
   source: {
@@ -246,9 +250,11 @@ let svgElement = null;
 let diagramViewport = null;
 let initialViewBox = null;
 let defaultRenderScale = 1;
+let defaultPanX = 0;
 let sourceLabelFontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
 let desktopMediaQuery = null;
 let renderRequestId = 0;
+let requestedWidth = 0;
 const activePointers = new Map();
 
 const { copy, copied } = useClipboard({
@@ -382,12 +388,16 @@ const getDiagramEdgeInset = () =>
     ? DESKTOP_DIAGRAM_EDGE_INSET
     : MOBILE_DIAGRAM_EDGE_INSET;
 
+const getDiagramWidth = () =>
+  Math.max(0, (viewerRoot.value?.clientWidth ?? 0) - getDiagramEdgeInset() * 2);
+
 const resetRenderedDiagram = () => {
-  if (svgElement) resizeObserver?.unobserve(svgElement);
   svgElement = null;
   diagramViewport = null;
   initialViewBox = null;
+  requestedWidth = 0;
   defaultRenderScale = 1;
+  defaultPanX = 0;
   sourceLabelFontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
   zoom.value = MIN_ZOOM;
   defaultZoom.value = MIN_ZOOM;
@@ -404,17 +414,22 @@ const insertRenderedSvg = (svg) => {
 
   const wrapper = document.createElement("div");
   wrapper.className = "mermaid-svg-wrapper";
-  wrapper.appendChild(document.importNode(parsedSvg, true));
+  const diagram = document.importNode(parsedSvg, true);
+  wrapper.appendChild(diagram);
   diagramElement.value.replaceChildren(wrapper);
+  styleMermaidSvg(diagram, getComputedStyle(viewerRoot.value));
   return true;
 };
 
-const renderDiagram = async () => {
+const renderDiagram = async (reflowWidth) => {
   const requestId = ++renderRequestId;
   const source = props.source.trim();
-  renderStatus.value = "loading";
-  resetRenderedDiagram();
-  diagramElement.value?.replaceChildren();
+  const isReflow = reflowWidth !== undefined;
+  if (!isReflow) {
+    renderStatus.value = "loading";
+    resetRenderedDiagram();
+    diagramElement.value?.replaceChildren();
+  }
 
   if (!source) {
     renderStatus.value = "error";
@@ -426,18 +441,48 @@ const renderDiagram = async () => {
     const renderId = `mermaid-viewer-${Date.now()}-${Math.random()
       .toString(36)
       .slice(2)}`;
-    const { svg, bindFunctions } = await renderMermaidSource(renderId, source);
+    const fontFamily =
+      getComputedStyle(viewerRoot.value).getPropertyValue("--font-mono").trim() ||
+      "monospace";
+    const fontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
+    if (!isReflow) {
+      await document.fonts?.load(`${fontSize}px ${fontFamily}`, source).catch(() => {});
+      if (requestId !== renderRequestId || source !== props.source.trim()) return;
+    }
+
+    requestedWidth = reflowWidth ?? getDiagramWidth();
+    const { svg } = await renderMermaidSource(renderId, source, {
+      fontFamily,
+      fontSize,
+      maxWidth: requestedWidth || undefined,
+      autoDirection: true,
+    });
     if (requestId !== renderRequestId || source !== props.source.trim()) return;
+    if (isReflow && viewMode.value !== "preview") {
+      requestedWidth = 0;
+      return;
+    }
+    if (isReflow && reflowWidth !== getDiagramWidth()) {
+      syncResponsiveLayout();
+      return;
+    }
+    const view = isReflow ? getViewportOffsets() : undefined;
     if (!insertRenderedSvg(svg)) throw new Error(translate('markdown.mermaid.invalidSvg'));
 
-    bindFunctions?.(diagramElement.value);
+    if (isReflow) {
+      initializeSvgViewport(view);
+      return;
+    }
     renderStatus.value = "ready";
     await nextTick();
+    if (requestId !== renderRequestId || source !== props.source.trim()) return;
     initializeSvgViewport();
     emit("render-complete", { status: "ready" });
+    syncResponsiveLayout();
   } catch (error) {
     if (requestId !== renderRequestId || source !== props.source.trim()) return;
     console.warn("Mermaid 图表渲染失败", error);
+    if (isReflow) return;
     renderStatus.value = "error";
     emit("render-complete", { status: "error" });
   }
@@ -488,11 +533,9 @@ const syncSvgDimensions = () => {
   syncSvgCanvasWidth();
 };
 
-const initializeSvgViewport = () => {
+const initializeSvgViewport = (view) => {
   const nextSvg = diagramHost.value?.querySelector("svg");
   if (!nextSvg || nextSvg === svgElement) return;
-
-  if (svgElement) resizeObserver?.unobserve(svgElement);
 
   const viewBox = nextSvg.viewBox?.baseVal;
   if (!viewBox || viewBox.width <= 0 || viewBox.height <= 0) return;
@@ -530,14 +573,7 @@ const initializeSvgViewport = () => {
     .filter((child) => !staticElements.has(child.localName))
     .forEach((child) => diagramViewport.appendChild(child));
   nextSvg.appendChild(diagramViewport);
-  const baseScale = getBaseScale(nextSvg);
-  defaultZoom.value = Math.min(
-    MAX_ZOOM,
-    Math.max(MIN_ZOOM, baseScale > 0 ? defaultRenderScale / baseScale : 1),
-  );
-  zoom.value = defaultZoom.value;
-  resetDefaultPan();
-  resizeObserver?.observe(svgElement);
+  syncResponsiveViewport(view);
   syncSvgViewport();
 };
 
@@ -566,34 +602,37 @@ const getPanBounds = (targetZoom = zoom.value) => {
   };
 };
 
-const resetDefaultPan = () => {
-  panX.value = 0;
-  panY.value = 0;
-
+const getDefaultPanX = () => {
   if (
     (!isLeftToRightDiagram.value && !isRightToLeftDiagram.value) ||
     !svgElement ||
     !initialViewBox
   ) {
-    return;
+    return 0;
   }
 
   const contentWidth =
     initialViewBox.width * getBaseScale(svgElement) * defaultZoom.value;
-  if (contentWidth > svgElement.clientWidth) {
-    const horizontalOffset =
-      (contentWidth - svgElement.clientWidth) / 2 + getDiagramEdgeInset();
-    panX.value = isLeftToRightDiagram.value
-      ? horizontalOffset
-      : -horizontalOffset;
-  }
+  if (contentWidth <= svgElement.clientWidth) return 0;
+  const horizontalOffset =
+    (contentWidth - svgElement.clientWidth) / 2 + getDiagramEdgeInset();
+  return isLeftToRightDiagram.value ? horizontalOffset : -horizontalOffset;
 };
 
-const syncResponsiveViewport = () => {
-  if (!svgElement || !initialViewBox) return;
+const resetDefaultPan = () => {
+  defaultPanX = getDefaultPanX();
+  panX.value = defaultPanX;
+  panY.value = 0;
+};
 
-  const wasAtDefaultZoom =
-    Math.abs(zoom.value - defaultZoom.value) < Number.EPSILON;
+const getViewportOffsets = () => ({
+  zoomRatio: zoom.value / defaultZoom.value,
+  x: panX.value - defaultPanX,
+  y: panY.value,
+});
+
+const syncResponsiveViewport = (view = getViewportOffsets()) => {
+  if (!svgElement?.clientWidth || !svgElement.clientHeight || !initialViewBox) return;
   const baseScale = getBaseScale(svgElement);
   defaultZoom.value = Math.min(
     MAX_ZOOM,
@@ -603,17 +642,22 @@ const syncResponsiveViewport = () => {
     ),
   );
 
-  if (wasAtDefaultZoom) {
-    zoom.value = defaultZoom.value;
-    resetDefaultPan();
-  }
+  zoom.value = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, defaultZoom.value * view.zoomRatio));
+  defaultPanX = getDefaultPanX();
+  clampPan(defaultPanX + view.x, view.y);
+};
+
+const syncResponsiveLayout = () => {
+  if (viewMode.value !== "preview" || renderStatus.value !== "ready") return;
+  syncResponsiveViewport();
+  syncSvgViewport();
+  const width = getDiagramWidth();
+  if (width > 0 && width !== requestedWidth) renderDiagram(width);
 };
 
 const syncResponsiveLabelScale = () => {
   syncSvgDimensions();
-  syncResponsiveViewport();
-  clampPan();
-  syncSvgViewport();
+  syncResponsiveLayout();
 };
 
 const clampPan = (
@@ -776,13 +820,7 @@ const endPan = (event) => {
 
 const syncFullscreenState = () => {
   isFullscreen.value = document.fullscreenElement === viewerRoot.value;
-  nextTick(() => {
-    syncSvgCanvasWidth();
-    initializeSvgViewport();
-    syncResponsiveViewport();
-    clampPan();
-    syncSvgViewport();
-  });
+  nextTick(syncResponsiveLabelScale);
 };
 
 const toggleFullscreen = async () => {
@@ -802,12 +840,8 @@ onMounted(() => {
   desktopMediaQuery.addEventListener("change", syncResponsiveLabelScale);
 
   if (typeof ResizeObserver !== "undefined") {
-    resizeObserver = new ResizeObserver(() => {
-      syncResponsiveViewport();
-      clampPan();
-      syncSvgViewport();
-    });
-    if (previewCanvas.value) resizeObserver.observe(previewCanvas.value);
+    resizeObserver = new ResizeObserver(syncResponsiveLayout);
+    if (viewerRoot.value) resizeObserver.observe(viewerRoot.value);
   }
   canFullscreen.value = Boolean(
     viewerRoot.value?.requestFullscreen && document.exitFullscreen,
@@ -821,9 +855,9 @@ watch([zoom, panX, panY], syncSvgViewport, { flush: "post" });
 watch(
   viewMode,
   (mode) => {
-    if (mode === "preview" && renderStatus.value === "idle") {
-      renderDiagram();
-    }
+    if (mode !== "preview") return;
+    if (renderStatus.value === "idle") renderDiagram();
+    else syncResponsiveLayout();
   },
   { flush: "post" },
 );

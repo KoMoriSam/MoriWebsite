@@ -797,17 +797,56 @@ sequenceDiagram
   actor User as 读者
   participant Vue as Vue 组件
   participant MD as MarkdownIt
-  participant Mermaid as Mermaid
+  participant Pele as Pele
   User->>Vue: 打开文章
   Vue->>MD: 传入 Markdown 内容
   MD-->>Vue: 返回 Mermaid 占位节点
-  Vue->>Mermaid: DOM 更新后执行 renderAll
+  Vue->>Pele: 按容器宽度请求渲染
   alt 语法正确
-    Mermaid-->>Vue: 注入 SVG 图表
+    Pele-->>Vue: 返回 SVG 图表
     Vue-->>User: 显示正文与图表
   else 语法错误
-    Mermaid-->>Vue: 返回错误提示
+    Pele-->>Vue: 返回错误提示
   end
+```
+
+### 泳道图（Swimlane）
+
+```mermaid
+swimlane-beta LR
+  subgraph 作者
+    draft[提交草稿]
+    revise[修改草稿]
+  end
+  subgraph 编辑
+    review{审核通过？}
+  end
+  subgraph 网站
+    publish[发布文章]
+    index[更新索引]
+  end
+  draft --> review
+  review -->|退回| revise --> review
+  review -->|通过| publish --> index
+```
+
+### Agentflow
+
+```mermaid
+agentflow-beta TB
+  flow intake["接收请求"]
+    question["读者提问"]@{ shape: input }
+  end
+  flow lookup["查找资料"]
+    search["检索站内文章"]@{ shape: task }
+    verify["核对出处"]@{ shape: task }
+    search --> verify
+  end
+  flow output["输出答复"]
+    reply["附上原文链接"]@{ shape: action }
+  end
+  question --> search
+  verify --> reply
 ```
 
 ## 结构建模
@@ -872,6 +911,85 @@ erDiagram
   }
 ```
 
+### C4 组件图
+
+```mermaid
+C4Component
+  title 阅读器组件
+  Container(browser, "浏览器", "Vue")
+  ContainerDb(storage, "文章存储", "R2")
+  Container_Boundary(api, "内容服务") {
+    Component(route, "文章路由", "Worker")
+    Component(resolve, "语言版本解析", "JavaScript")
+    Rel(route, resolve, "查找对应语言")
+  }
+  Rel(browser, route, "请求文章", "HTTPS")
+  Rel(resolve, storage, "读取正文")
+```
+
+### 用例图（Use case）
+
+```mermaid
+usecase-beta
+direction LR
+actor Reader
+systemBoundary "阅读器"
+  Find("查找文章")
+  Open("阅读正文")
+  Export("导出分享卡片")
+end
+Reader --> Find
+Reader --> Open
+Reader --> Export
+Export ..> : include Open
+```
+
+### 需求图（Requirement）
+
+```mermaid
+requirementDiagram
+  requirement resume_reading {
+    id: R1
+    text: "重开文章时恢复上次阅读位置"
+    risk: medium
+    verifymethod: test
+  }
+  element reading_progress {
+    type: feature
+  }
+  reading_progress - satisfies -> resume_reading
+```
+
+### 事件建模（Event modeling）
+
+```mermaid
+eventmodeling
+
+timeframe 01 ui ArticlePage
+timeframe 02 command SaveBookmark [[Bookmark]]
+timeframe 03 event BookmarkSaved [[Bookmark]]
+timeframe 04 ui BookmarkList
+
+data Bookmark {
+  article: '山间观测日志'
+  paragraph: 12
+}
+```
+
+### 数据包结构图（Packet）
+
+```mermaid
+---
+title: "阅读进度记录（示例格式）"
+---
+packet
+  0-7: "格式版本"
+  8-15: "状态标记"
+  16-31: "文章编号"
+  32-47: "章节编号"
+  48-63: "段落偏移"
+```
+
 ## 计划与数据
 
 ### 甘特图
@@ -927,6 +1045,62 @@ xychart-beta
   y-axis "阅读次数" 0 --> 120
   bar [32, 48, 61, 78, 92, 108]
   line [28, 42, 58, 70, 88, 101]
+```
+
+### 桑基图（Sankey）
+
+```mermaid
+sankey
+
+首页,博客,45
+搜索,博客,30
+首页,小说,25
+博客,继续阅读,48
+博客,离开,27
+小说,继续阅读,20
+小说,离开,5
+```
+
+### 雷达图（Radar）
+
+```mermaid
+radar-beta
+  title 阅读模式对比
+  axis overview["全局浏览"], focus["专注阅读"], navigation["章节跳转"], continuity["连续阅读"]
+  curve scroll["滚动模式"]{5, 3, 4, 5}
+  curve pages["分页模式"]{3, 5, 4, 3}
+  graticule polygon
+  max 5
+```
+
+### 矩形树图（Treemap）
+
+```mermaid
+treemap-beta
+"站点资源大小（KB）"
+  "图片"
+    "封面": 180
+    "正文插图": 260
+  "字体"
+    "正文": 140
+    "代码": 80
+  "脚本"
+    "阅读器": 120
+    "站点导航": 60
+```
+
+### 韦恩图（Venn）
+
+```mermaid
+venn-beta
+  title 文章内容分类
+  set Code["代码"]
+  set Design["设计"]
+  set Writing["写作"]
+  union Code,Design["组件示例"]
+  union Design,Writing["排版随笔"]
+  union Code,Writing["开发笔记"]
+  union Code,Design,Writing["发布记录"]
 ```
 
 ## 项目视图
@@ -989,6 +1163,54 @@ journey
     保存进度: 5: 系统
 ```
 
+### Cynefin 框架图
+
+```mermaid
+cynefin-beta
+  title 站点问题分类
+  clear
+    "修正错别字"
+  complicated
+    "定位字体回退"
+  complex
+    "评估导航改版"
+  chaotic
+    "恢复页面访问"
+```
+
+### 鱼骨图（Ishikawa）
+
+```mermaid
+ishikawa-beta
+  首屏加载慢
+    资源
+      封面图体积大
+      字体文件过多
+    网络
+      缓存未命中
+    渲染
+      首屏脚本阻塞
+      加载了未使用的组件
+```
+
+### 沃德利地图（Wardley map）
+
+```mermaid
+wardley-beta
+title 阅读服务价值链
+
+anchor "读者" [0.94, 0.5]
+component "文章阅读" [0.78, 0.48]
+component "正文渲染" [0.60, 0.36]
+component "内容分发" [0.34, 0.70]
+component "对象存储" [0.16, 0.85]
+
+"读者" -> "文章阅读"
+"文章阅读" -> "正文渲染"
+"文章阅读" -> "内容分发"
+"内容分发" -> "对象存储"
+```
+
 ## 现代图表
 
 ### 架构图
@@ -1031,6 +1253,35 @@ kanban
   done[已完成]
     package[更换 Mermaid 插件]
     examples[补充测试示例]
+```
+
+### 目录树（Tree view）
+
+```mermaid
+treeView-beta
+  src/
+    components/
+      Renderer.vue
+    views/
+      MarkdownSample.md
+  public/
+    favicon.webp
+```
+
+### 语法铁路图（Railroad）
+
+```mermaid
+railroad-beta
+title 站内博客路径
+
+path = sequence(terminal("/blog/"), nonterminal("slug"), optional(sequence(terminal("/"), nonterminal("locale")))) ;
+```
+
+```mermaid
+railroad-ebnf-beta
+title "文章语言标记（EBNF）"
+
+locale = "zh-CN" | "en" | "fr" | "si" ;
 ```
 
 ## 渲染错误

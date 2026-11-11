@@ -55,35 +55,6 @@ const BLOCK_SELECTOR = [
   "[data-markdown-moment]",
 ].join(",");
 
-const MERMAID_STYLE_PROPERTIES = [
-  "color",
-  "fill",
-  "fill-opacity",
-  "stroke",
-  "stroke-opacity",
-  "stroke-width",
-  "stroke-dasharray",
-  "stroke-linecap",
-  "stroke-linejoin",
-  "opacity",
-  "font-family",
-  "font-size",
-  "font-style",
-  "font-weight",
-  "line-height",
-  "text-align",
-  "text-anchor",
-  "dominant-baseline",
-  "paint-order",
-  "shape-rendering",
-  "white-space",
-  "background-color",
-  "border-color",
-  "border-style",
-  "border-width",
-  "border-radius",
-];
-
 const TASK_STATUS_MARKERS = {
   " ": "○",
   x: "✓",
@@ -817,83 +788,19 @@ const getReaderFullParagraphText = (block) => {
   return source?.dataset.readerFullParagraphText || "";
 };
 
-const getMermaidCaptureBounds = (svg, viewport) => {
-  let bounds = null;
-  try {
-    bounds = (viewport || svg).getBBox();
-  } catch {
-    // 不支持 getBBox 时沿用 Mermaid 提供的 viewBox。
-  }
-  if (bounds?.width > 0 && bounds?.height > 0) return bounds;
-
-  const viewBox = svg.viewBox?.baseVal;
-  if (viewBox?.width > 0 && viewBox?.height > 0) return viewBox;
-  return null;
-};
-
-const inlineMermaidStyles = (sourceSvg, clonedSvg) => {
-  const sourceElements = [sourceSvg, ...sourceSvg.querySelectorAll("*")];
-  const clonedElements = [clonedSvg, ...clonedSvg.querySelectorAll("*")];
-  sourceElements.forEach((source, index) => {
-    const clone = clonedElements[index];
-    if (!clone) return;
-    const computed = getComputedStyle(source);
-    MERMAID_STYLE_PROPERTIES.forEach((property) => {
-      const value = computed.getPropertyValue(property);
-      if (value) clone.style.setProperty(property, value);
-    });
-  });
-};
-
 const serializeMermaidBlock = (viewer) => {
-  const svg = viewer.querySelector(
-    "[data-mermaid-preview] .mermaid-svg-wrapper > svg, [data-mermaid-preview] pre.mermaid > svg",
+  const source = viewer.dataset.mermaidSource?.trim();
+  if (!source) return null;
+
+  const style = getComputedStyle(viewer);
+  const theme = Object.fromEntries(
+    Array.from(style)
+      .filter((property) => property.startsWith("--pele-"))
+      .map((property) => [property, style.getPropertyValue(property)]),
   );
-  if (!svg) {
-    const code = viewer.querySelector('[data-markdown-code-block]');
-    return code ? serializeCodeBlock(code) : {
-      type: "code", language: "mermaid", runs: [{ text: viewer.querySelector('pre')?.textContent || 'Mermaid 图表无法渲染' }],
-    };
-  }
-
-  const viewport = svg.querySelector("[data-mermaid-viewport]");
-  const bounds = getMermaidCaptureBounds(svg, viewport);
-  if (!bounds) return null;
-
-  const clone = svg.cloneNode(true);
-  inlineMermaidStyles(svg, clone);
-  clone.querySelector("[data-mermaid-viewport]")?.removeAttribute("transform");
-  clone.querySelectorAll("script").forEach((node) => node.remove());
-  clone.querySelectorAll("*").forEach((node) => {
-    Array.from(node.attributes).forEach(({ name }) => {
-      if (/^on/iu.test(name)) node.removeAttribute(name);
-    });
-  });
-
-  const padding = Math.min(
-    24,
-    Math.max(8, Math.min(bounds.width, bounds.height) * 0.03),
-  );
-  const width = bounds.width + padding * 2;
-  const height = bounds.height + padding * 2;
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  clone.setAttribute(
-    "viewBox",
-    `${bounds.x - padding} ${bounds.y - padding} ${width} ${height}`,
-  );
-  clone.setAttribute("width", String(width));
-  clone.setAttribute("height", String(height));
-  clone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  clone.style.setProperty("width", `${width}px`);
-  clone.style.setProperty("height", `${height}px`);
-  clone.style.setProperty("max-width", "none");
-
   return {
     type: "mermaid",
-    width,
-    height,
-    svg: new XMLSerializer().serializeToString(clone),
-    runs: [{ text: "Mermaid 图表" }],
+    mermaid: { source, theme, cornerShape: style.getPropertyValue("--corner-shape") },
   };
 };
 
@@ -949,13 +856,13 @@ const serializeBlock = (block, range) => {
       runs: meta.runs || serializeNodes(Array.from(block.childNodes), { range }),
     };
   }
+  if (block.matches("[data-mermaid-viewer]")) {
+    return serializeMermaidBlock(block);
+  }
   if (/[\u0d80-\u0dff]/u.test(block.textContent) || /abhaya.*legacy|legacy.*abhaya/iu.test(block.className || '') || block.querySelector('[class*="abhaya-legacy"]')) {
     return { ...getContextMeta(block), snapshot: captureReaderShareSnapshot(block, range), runs: serializeNodes(Array.from(block.childNodes), { range }) };
   }
   if (block.tagName === 'HR') return { type: 'separator', runs: [] };
-  if (block.matches("[data-mermaid-viewer]")) {
-    return serializeMermaidBlock(block);
-  }
   if (block.matches("figure.markdown-figure, .moments-images > img[src]")) {
     return serializeImageBlock(block, range);
   }
@@ -1148,7 +1055,7 @@ export const createReaderShareContent = ({ range, element } = {}) => {
     .filter(Boolean)
     .filter(
       (block) =>
-        (block.type === "mermaid" && block.svg) ||
+        (block.type === "mermaid" && block.mermaid?.source) ||
         Boolean(block.snapshot) ||
         (block.type === "image" && block.src) ||
         block.type === "separator" ||

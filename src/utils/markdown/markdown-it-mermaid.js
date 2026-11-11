@@ -1,100 +1,74 @@
 const encodeProps = (value) => encodeURIComponent(JSON.stringify(value));
 
-const MERMAID_CONFIG = {
-  startOnLoad: false,
-  securityLevel: "strict",
-  fontFamily: "var(--font-mono)",
-  themeVariables: {
-    fontSize: "14px",
-  },
-  flowchart: {
-    diagramPadding: 8,
-    nodeSpacing: 50,
-    rankSpacing: 50,
-    padding: 15,
-    htmlLabels: false,
-    useMaxWidth: true,
-  },
-  class: {
-    diagramPadding: 8,
-    nodeSpacing: 50,
-    rankSpacing: 50,
-    padding: 8,
-    htmlLabels: false,
-  },
-  state: {
-    nodeSpacing: 50,
-    rankSpacing: 50,
-    padding: 8,
-    miniPadding: 4,
-    noteMargin: 10,
-  },
-  er: {
-    diagramPadding: 20,
-    entityPadding: 15,
-    nodeSpacing: 140,
-    rankSpacing: 80,
-  },
-  block: {
-    padding: 8,
-  },
-  kanban: {
-    padding: 8,
-  },
-  gantt: {
-    useMaxWidth: true,
-    useWidth: 720,
-  },
-  sequence: {
-    diagramMarginX: 8,
-    diagramMarginY: 8,
-    actorMargin: 50,
-    width: 150,
-    height: 65,
-    boxMargin: 10,
-    boxTextMargin: 5,
-    noteMargin: 10,
-    messageMargin: 35,
-    useMaxWidth: true,
-  },
+export const renderMermaidSource = async (
+  id,
+  source,
+  { fontFamily, fontSize, maxWidth, autoDirection = false, directionBreakpoint } = {},
+) => {
+  const { renderAsync } = await import("pele/lazy");
+  return renderAsync(source, {
+    idPrefix: id,
+    fontFamily,
+    fontFamilyMono: fontFamily,
+    fontSize,
+    maxWidth,
+    autoDirection,
+    directionBreakpoint,
+    links: false,
+    images: false,
+  });
 };
 
-let mermaidPromise = null;
-let renderQueue = Promise.resolve();
+const applyMermaidCorners = (svg, viewerStyle) => {
+  const cornerShape = viewerStyle.getPropertyValue("--corner-shape").trim();
+  const shape = /^superellipse\((\d+(?:\.\d+)?)\)$/u.exec(cornerShape);
+  if (!shape) return;
 
-const loadMermaid = async () => {
-  if (!mermaidPromise) {
-    mermaidPromise = import("mermaid").then((module) => {
-      const mermaid = module.default || module;
-      mermaid.initialize(MERMAID_CONFIG);
-      mermaid.registerIconPacks?.([
-        {
-          name: "logos",
-          loader: () =>
-            fetch("https://unpkg.com/@iconify-json/logos@1/icons.json").then(
-              (response) => response.json(),
-            ),
-        },
-      ]);
-      return mermaid;
-    });
-  }
-
-  return mermaidPromise;
-};
-
-export const renderMermaidSource = (id, source) => {
-  const renderTask = async () => {
-    const mermaid = await loadMermaid();
-    await mermaid.parse(source, { suppressErrors: false });
-    return mermaid.render(id, source);
-  };
-  const result = renderQueue.catch(() => undefined).then(renderTask);
-  renderQueue = result.then(
-    () => undefined,
-    () => undefined,
+  const rectangles = [...svg.querySelectorAll("rect[style]")].filter(
+    (rect) => rect.style.getPropertyValue("rx") === "var(--_r)",
   );
-  return result;
+  if (!rectangles.length) return;
+  const radius = Number.parseFloat(getComputedStyle(rectangles[0]).getPropertyValue("rx"));
+  if (!(radius > 0)) return;
+
+  // 以相同的对角中点和端点切线拟合 CSS superellipse。
+  const midpoint = 0.5 ** (1 / 2 ** Number(shape[1]));
+  const controlRatio = (8 * midpoint - 4) / 3;
+
+  for (const rect of rectangles) {
+    const left = Number(rect.getAttribute("x"));
+    const top = Number(rect.getAttribute("y"));
+    const width = Number(rect.getAttribute("width"));
+    const height = Number(rect.getAttribute("height"));
+    const right = left + width;
+    const bottom = top + height;
+    const r = Math.min(radius, width / 2, height / 2);
+    const control = r * controlRatio;
+    const offset = r - control;
+    const path = svg.ownerDocument.createElementNS(svg.namespaceURI, "path");
+    for (const { name, value } of rect.attributes) {
+      if (!["x", "y", "width", "height"].includes(name)) path.setAttribute(name, value);
+    }
+    path.style.removeProperty("rx");
+    path.setAttribute("d", [
+      `M ${left + r} ${top} H ${right - r}`,
+      `c ${control} 0 ${r} ${offset} ${r} ${r} V ${bottom - r}`,
+      `c 0 ${control} ${-offset} ${r} ${-r} ${r} H ${left + r}`,
+      `c ${-control} 0 ${-r} ${-offset} ${-r} ${-r} V ${top + r}`,
+      `c 0 ${-control} ${offset} ${-r} ${r} ${-r} Z`,
+    ].join(" "));
+    rect.replaceWith(path);
+  }
+};
+
+export const styleMermaidSvg = (svg, viewerStyle) => {
+  applyMermaidCorners(svg, viewerStyle);
+  for (const label of svg.querySelectorAll(".pele-slice-labels > text")) {
+    label.style.setProperty("stroke", "var(--pele-fg)");
+    label.style.setProperty("stroke-width", "2px");
+    label.style.setProperty("stroke-linejoin", "round");
+    label.style.setProperty("paint-order", "stroke");
+  }
 };
 
 export function mermaidPlugin(md) {

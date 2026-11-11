@@ -1,4 +1,5 @@
 import { createLatexSvg, loadLatexSvgImage } from "@/utils/reader/latex";
+import { renderMermaidSource, styleMermaidSvg } from "@/utils/markdown/markdown-it-mermaid";
 import { prepareReaderShareSnapshot, yieldReaderShareTask } from './share-snapshot.js';
 
 export const READER_SHARE_CARD_WIDTH = 1080;
@@ -9,6 +10,8 @@ const TEXT_TOP = 208;
 const TEXT_BOTTOM = 928;
 const TEXT_WIDTH = READER_SHARE_CARD_WIDTH - CARD_PADDING * 2;
 const TEXT_HEIGHT = TEXT_BOTTOM - TEXT_TOP;
+const MERMAID_MAX_HEIGHT = 640;
+const MERMAID_FONT_SIZE = 24;
 const BODY_FONT_SIZES = [48, 46, 44, 42, 40, 38, 36];
 const DEFAULT_BACKGROUND = "#ffffff";
 const DEFAULT_FOREGROUND = "#1f2937";
@@ -452,6 +455,7 @@ const normalizeShareContent = (
             ? block.tone
             : "accent",
           svg: String(block?.svg || ""),
+          mermaid: typeof block?.mermaid?.source === "string" ? block.mermaid : null,
           src: String(block?.src || ""),
           svgImage: Boolean(block?.svgImage),
           alt: normalizeText(block?.alt),
@@ -482,11 +486,11 @@ const normalizeShareContent = (
           return block;
         })
         .filter(
-          ({ type, svg, src, runs, label, snapshot }) =>
+          ({ type, svg, mermaid, src, runs, label, snapshot }) =>
             Boolean(snapshot) ||
             type === 'separator' ||
             (type === 'link-card' && label) ||
-            (type === "mermaid" && svg) ||
+            (type === "mermaid" && (mermaid?.source || svg)) ||
             (["image", "link-card"].includes(type) && src) ||
             runs.some(({ text }) => text.trim()),
         )
@@ -826,14 +830,61 @@ const loadShareSvgImage = async ({ svg, width, height }) => {
   });
 };
 
-const prepareMermaidBlocks = async (blocks) => {
+const getMermaidShareScale = ({ width, height }) =>
+  Math.min(TEXT_WIDTH / width, MERMAID_MAX_HEIGHT / height);
+
+const renderShareMermaid = async ({ source, theme, cornerShape }, fontFamily, index) => {
+  await document.fonts?.load(`${MERMAID_FONT_SIZE}px ${fontFamily}`, source).catch(() => {});
+  const options = { fontFamily, fontSize: MERMAID_FONT_SIZE, maxWidth: TEXT_WIDTH };
+  const id = `share-mermaid-${index}`;
+  let result = await renderMermaidSource(id, source, options);
+  if (result.width > TEXT_WIDTH) {
+    // 超宽时尝试纵向排版，保留在卡片内缩放比例较大的结果。
+    const reflowed = await renderMermaidSource(id, source, {
+      ...options,
+      autoDirection: true,
+      directionBreakpoint: TEXT_WIDTH + 1,
+    });
+    if (getMermaidShareScale(reflowed) > getMermaidShareScale(result)) result = reflowed;
+  }
+
+  const parsed = new DOMParser().parseFromString(result.svg, "image/svg+xml");
+  const svg = document.importNode(parsed.documentElement, true);
+  if (svg.localName !== "svg") throw new Error("无法渲染 Mermaid 图表");
+  for (const [property, value] of Object.entries(theme || {})) {
+    if (property.startsWith("--pele-")) svg.style.setProperty(property, value);
+  }
+  if (cornerShape) svg.style.setProperty("--corner-shape", cornerShape);
+  svg.style.fontFamily = fontFamily;
+
+  // 挂载后读取主题圆角的像素值，再将独立 SVG 交给画布。
+  const host = document.createElement("div");
+  host.hidden = true;
+  host.appendChild(svg);
+  document.body.appendChild(host);
+  try {
+    styleMermaidSvg(svg, getComputedStyle(svg));
+    return { ...result, svg: new XMLSerializer().serializeToString(svg) };
+  } finally {
+    host.remove();
+  }
+};
+
+const prepareMermaidBlocks = async (blocks, appearance) => {
   await Promise.all(
-    blocks.map(async (block) => {
-      if (block.type !== "mermaid" || !block.svg) return;
+    blocks.map(async (block, index) => {
+      if (block.type !== "mermaid") return;
       try {
-        block.imageAsset = await loadShareSvgImage(block);
+        const rendered = block.mermaid?.source
+          ? await renderShareMermaid(block.mermaid, appearance.monoFamily, index)
+          : block;
+        if (rendered.svg) block.imageAsset = await loadShareSvgImage(rendered);
       } catch {
-        block.imageAsset = null;
+        if (block.mermaid?.source) {
+          block.type = "code";
+          block.language = "mermaid";
+          block.runs = normalizeRuns([{ text: block.mermaid.source }]);
+        }
       }
     }),
   );
@@ -963,12 +1014,7 @@ const getBlockConfig = (block, baseSize, appearance) => {
     };
   }
   if (block.type === "mermaid" && block.imageAsset) {
-    const maxWidth = TEXT_WIDTH;
-    const maxHeight = 640;
-    const scale = Math.min(
-      maxWidth / block.imageAsset.width,
-      maxHeight / block.imageAsset.height,
-    );
+    const scale = getMermaidShareScale(block.imageAsset);
     const imageWidth = block.imageAsset.width * scale;
     const imageHeight = block.imageAsset.height * scale;
     return {
@@ -2200,7 +2246,7 @@ export const createReaderShareCard = async ({
     prepareLatexRuns(blocks, appearance),
     prepareLinkIconRuns(blocks),
     prepareInlineImageRuns(blocks, localize),
-    prepareMermaidBlocks(blocks),
+    prepareMermaidBlocks(blocks, appearance),
     prepareImageBlocks(blocks, localize),
   ]);
   assertShareActive(signal);
