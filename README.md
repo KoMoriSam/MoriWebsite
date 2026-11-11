@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  当前版本：<strong>2.20.2</strong>
+  当前版本：<strong>2.21.0</strong>
   ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
