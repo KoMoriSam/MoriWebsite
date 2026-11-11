@@ -1,42 +1,38 @@
-import { useFetch } from "@vueuse/core";
 import { loadImageManifest } from "@/utils/images/responsive-images";
 import { createArticleAssetResolver } from "@/utils/resolve-article-assets";
+import { moriSession } from "@/composables/auth/useMoriAuth";
+import { checkNovelResponse, encodeNovelPath, loadNovelRelease, novelBase } from "./novel-release";
 
-import { githubSession } from '@/composables/auth/useGithubSession';
-
-const BASE_URL = import.meta.env.VITE_NOVEL_RAW;
-const { normalizeMarkdown } = createArticleAssetResolver(BASE_URL);
+const publicBase = import.meta.env.VITE_NOVEL_RAW;
 
 export function useChapterApi() {
   const fetchChapters = async ({ force = false } = {}) => {
-    const images = loadImageManifest(BASE_URL);
-    const { data, error } = await useFetch(`${BASE_URL}/index.json`, {
-      cache: force ? "reload" : "default",
-    }).json();
-    if (error.value) {
-      throw new Error("获取章节列表失败");
+    const images = loadImageManifest(publicBase);
+    if (!import.meta.env.DEV) {
+      const [{ catalog }] = await Promise.all([loadNovelRelease({ force }), images]);
+      return catalog;
     }
+    const response = await fetch(`${publicBase}/index.json`, { cache: force ? "reload" : "default" });
+    if (!response.ok) throw new Error("获取章节列表失败");
     await images;
-    return data.value;
+    return response.json();
   };
 
   const fetchContent = async (path) => {
-    if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
-    const revision = githubSession.revision;
-    const images = loadImageManifest(BASE_URL);
-    const { data: markdownRaw, error } = await useFetch(
-      `${BASE_URL}/${path}`,
-    ).text();
-    if (error.value) {
-      throw new Error("获取内容失败");
-    }
-    await images;
-    if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
-    return normalizeMarkdown(markdownRaw.value.replaceAll("/assets/images/emotes/", "images/emotes/"));
+    const revision = moriSession.revision;
+    const base = await novelBase();
+    const assets = base + "/assets";
+    const [response] = await Promise.all([
+      fetch(`${base}/chapters/${encodeNovelPath(path)}`).then(checkNovelResponse),
+      loadImageManifest(assets),
+    ]);
+    const markdown = await response.text();
+    if (!moriSession.authenticated || revision !== moriSession.revision) throw new Error("LOGIN_REQUIRED");
+    return createArticleAssetResolver(assets).normalizeMarkdown(markdown
+      .replaceAll("/assets/images/emotes/", "images/emotes/")
+      .replaceAll(/https?:\/\/raw\.komori\.cc\/novel\//gu, assets + "/")
+      .replaceAll(/(?<![\w./-])\/novel\/images\//gu, assets + "/images/"));
   };
 
-  return {
-    fetchChapters,
-    fetchContent,
-  };
+  return { fetchChapters, fetchContent };
 }

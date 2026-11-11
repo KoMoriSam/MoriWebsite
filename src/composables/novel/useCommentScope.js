@@ -1,6 +1,6 @@
 import { ref } from "vue";
 
-export function useGiscus() {
+export function useCommentScope() {
   const currentMapping = ref("title");
 
   // 切换评论映射

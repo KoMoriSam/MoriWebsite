@@ -1,5 +1,5 @@
 <template>
-  <ReadingGate v-if="chapterIntent && !auth.authenticated.value" />
+  <ReadingGate v-if="chapterIntent && !auth.state.canReadNovel" />
   <KeepAlive v-else :key="auth.state.revision">
     <component :is="components[currentComponent]"></component>
   </KeepAlive>
@@ -11,8 +11,8 @@ import { computed, defineAsyncComponent, h, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ReadingGate from "@/components/novel/feedback/ReadingGate.vue";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
-const auth = useGithubSession();
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
+const auth = useMoriAuth();
 import NovelDetail from "@/views/novel/NovelDetail.vue";
 import LoadingPlaceholder from "@/components/reader/feedback/LoadingPlaceholder.vue";
 import { useNovelStore } from '@/stores/novel';

@@ -10,13 +10,13 @@
     </span>
     <h2 class="font-serif text-xl font-semibold">{{ t("auth.loginTitle") }}</h2>
     <p class="mt-2 text-sm text-base-content/65">
-      {{ state.checking ? t("auth.checking") : t("auth.novelGate") }}
+      {{ state.checking ? t("auth.checking") : t(state.authenticated ? "auth.novelForbidden" : "auth.novelGate") }}
     </p>
     <p v-if="state.error" class="mt-2 text-sm text-base-content/65">
       {{ t(`auth.errors.${state.error}`) }}
     </p>
     <div class="mt-5 flex flex-wrap justify-center gap-2">
-      <LoginButton />
+      <LoginButton v-if="!state.authenticated" :disabled="state.checking" />
       <button
         v-if="state.hasSession && !state.checking"
         type="button"
@@ -30,8 +30,8 @@
 </template>
 <script setup>
 import LoginButton from "./LoginButton.vue";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useLocale } from "@/i18n";
-const { state, retry } = useGithubSession();
+const { state, retry } = useMoriAuth();
 const { t } = useLocale();
 </script>

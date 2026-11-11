@@ -650,7 +650,7 @@ import { findGame } from "@/games/catalog";
 import Avatar from "@/components/auth/Avatar.vue";
 import PlayerAvatars from "@/components/games/display/PlayerAvatars.vue";
 import ProfileForm from "@/components/games/interaction/ProfileForm.vue";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useGameRoom } from "@/composables/games/useGameRoom";
 import { useEntryTransition } from "@/composables/games/useEntryTransition";
 import { useEntryFeedback } from "@/composables/games/useEntryFeedback";
@@ -853,7 +853,7 @@ const connectionIcon = computed(
       replaced: "ri-device-line",
     })[connection.value] || "ri-wifi-off-line",
 );
-const auth = useGithubSession();
+const auth = useMoriAuth();
 const entryDisabled = computed(() => busy.value || auth.state.checking);
 const entryLoading = computed(
   () => entryDisabled.value || connectionLoading.value,

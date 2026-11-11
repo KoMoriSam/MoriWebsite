@@ -1,64 +1,22 @@
+import { discussionScopes } from "../../shared/discussions.js";
+import { discussionGithub } from "./installation.js";
 import { deleteGithubCache, readGithubCache, writeGithubCache } from "./cache.js";
-import { createGithubClient, githubErrorHeaders } from "./client.js";
+import { githubErrorHeaders } from "./client.js";
 
 const FRESH_MS = 5 * 60_000;
 const RETAIN_MS = 60 * 60_000;
 
 function getSourceConfig(env, sourceType, scope = "paragraph") {
-  if (sourceType === "novel") {
-    if (scope === "chapter") {
-      return {
-        owner: env.NOVEL_REPO_OWNER,
-        repo: env.NOVEL_REPO_NAME,
-        categoryId: env.NOVEL_CHAPTER_CATEGORY_ID,
-        categorySlug: env.NOVEL_CHAPTER_CATEGORY_SLUG || "general",
-        maxPages: Number(env.NOVEL_CHAPTER_MAX_PAGES || env.MAX_PAGES || 20),
-      };
-    }
-
-    return {
-      owner: env.NOVEL_REPO_OWNER,
-      repo: env.NOVEL_REPO_NAME,
-      categoryId: env.NOVEL_CATEGORY_ID,
-      maxPages: Number(env.NOVEL_MAX_PAGES || env.MAX_PAGES || 20),
-    };
-  }
-
-  if (scope === "content") {
-    return {
-      owner: env.ARTICLE_REPO_OWNER,
-      repo: env.ARTICLE_REPO_NAME,
-      categoryId: env.ARTICLE_CONTENT_CATEGORY_ID,
-      categorySlug: env.ARTICLE_CONTENT_CATEGORY_SLUG || "announcements",
-      maxPages: Number(env.ARTICLE_CONTENT_MAX_PAGES || env.MAX_PAGES || 20),
-    };
-  }
-
+  const novel = sourceType === "novel";
+  const configuration = discussionScopes[scope === "paragraph"
+    ? (novel ? "novel-paragraph" : "article-paragraph") : (novel ? "chapter" : "article")];
+  const [owner, repo] = configuration.repo.name.split("/");
+  const variable = novel ? "NOVEL" : "ARTICLE";
+  const specific = scope === "paragraph" ? variable : `${variable}_${novel ? "CHAPTER" : "CONTENT"}`;
   return {
-    owner: env.ARTICLE_REPO_OWNER,
-    repo: env.ARTICLE_REPO_NAME,
-    categoryId: env.ARTICLE_CATEGORY_ID,
-    maxPages: Number(env.ARTICLE_MAX_PAGES || env.MAX_PAGES || 20),
+    owner, repo, categoryId: configuration.category.id,
+    maxPages: Number(env[`${specific}_MAX_PAGES`] || env[`${variable}_MAX_PAGES`] || env.MAX_PAGES || 20),
   };
-}
-
-async function fetchDiscussionCategoryId({ github, owner, repo, slug }) {
-  const query = `
-    query(
-      $owner: String!,
-      $repo: String!,
-      $slug: String!
-    ) {
-      repository(owner: $owner, name: $repo) {
-        discussionCategory(slug: $slug) {
-          id
-        }
-      }
-    }
-  `;
-
-  const data = await github.graphql(query, { owner, repo, slug });
-  return data.repository?.discussionCategory?.id || "";
 }
 
 async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) {
@@ -70,6 +28,7 @@ async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) 
       $cursor: String
     ) {
       repository(owner: $owner, name: $repo) {
+        isPrivate
         discussions(
           first: 100,
           after: $cursor,
@@ -105,6 +64,7 @@ async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) 
   `;
 
   const data = await github.graphql(query, { owner, repo, categoryId, cursor });
+  if (data.repository?.isPrivate !== false) throw Object.assign(new Error("Discussion repository is unavailable"), { status: 403 });
   const connection = data.repository?.discussions;
   if (!connection) throw new Error("GitHub 未返回讨论计数");
   return connection;
@@ -119,6 +79,7 @@ async function fetchDiscussionCommentPage({ github, discussionId, cursor }) {
       node(id: $discussionId) {
         ... on Discussion {
           comments(first: 100, after: $cursor) {
+            totalCount
             pageInfo {
               hasNextPage
               endCursor
@@ -223,24 +184,34 @@ async function fetchAllDiscussionCounts({
   return counts;
 }
 
-async function getCountsMap(request, env, github, sourceType, scope = "paragraph") {
-  const { owner, repo, categorySlug, maxPages, categoryId } = getSourceConfig(env, sourceType, scope);
-  if (!owner || !repo) throw new Error("缺少仓库配置");
-  if (!categoryId && !categorySlug) throw new Error("缺少讨论分类配置");
+function countsCacheKey(env, sourceType, scope) {
+  const { owner, repo, maxPages, categoryId } = getSourceConfig(env, sourceType, scope);
+  const identifier = encodeURIComponent(JSON.stringify([owner, repo, categoryId, maxPages]));
+  return new Request(`https://api.komori.cc/__cache/github-discussions/v2/${identifier}`);
+}
 
-  const identifier = encodeURIComponent(JSON.stringify([owner, repo, categoryId, categorySlug, maxPages]));
-  const key = new Request(new URL(`/__cache/github-discussions/v1/${identifier}`, request.url));
+export async function countDiscussion(github, discussionId) {
+  const comments = await fetchDiscussionCommentPage({ github, discussionId, cursor: null });
+  return comments.totalCount + await fetchDiscussionReplyCount({ github, discussionId, comments });
+}
+
+export async function updateDiscussionCount(env, target, title, count) {
+  const key = countsCacheKey(env, target.sourceType, target.countScope);
+  const cached = await readGithubCache(key);
+  if (!cached?.counts) return;
+  cached.counts = { ...cached.counts, [title]: count, [target.term]: count };
+  await writeGithubCache(key, cached, cached.retainUntil);
+}
+
+async function getCountsMap(env, github, sourceType, scope = "paragraph") {
+  const { owner, repo, maxPages, categoryId } = getSourceConfig(env, sourceType, scope);
+  const key = countsCacheKey(env, sourceType, scope);
   const cached = await readGithubCache(key);
   if (cached?.counts && cached.refreshAt > Date.now()) return cached.counts;
 
   try {
-    const resolvedCategoryId = categoryId ||
-      await fetchDiscussionCategoryId({ github, owner, repo, slug: categorySlug });
-    if (!resolvedCategoryId) {
-      throw Object.assign(new Error("缺少讨论分类配置"), { status: 404 });
-    }
     const counts = await fetchAllDiscussionCounts({
-      github, owner, repo, categoryId: resolvedCategoryId, maxPages,
+      github, owner, repo, categoryId, maxPages,
     });
     const now = Date.now();
     await writeGithubCache(key, {
@@ -284,11 +255,11 @@ function getParagraphContentId(paragraphTerm) {
   return term.slice(0, separatorIndex);
 }
 
-async function getContentCommentTotals(request, env, github, sourceType, contentItems) {
+async function getContentCommentTotals(env, github, sourceType, contentItems) {
   const primaryScope = sourceType === "novel" ? "chapter" : "content";
   const [primaryCounts, paragraphCounts] = await Promise.all([
-    getCountsMap(request, env, github, sourceType, primaryScope),
-    getCountsMap(request, env, github, sourceType, "paragraph"),
+    getCountsMap(env, github, sourceType, primaryScope),
+    getCountsMap(env, github, sourceType, "paragraph"),
   ]);
   const targetContentIds = new Set(
     contentItems.map(({ contentId }) => contentId),
@@ -365,11 +336,18 @@ export async function handleDiscussionCounts(request, env, corsHeaders) {
       return respond({ sourceType, scope, counts: {}, cachedAt: Date.now() });
     }
 
-    const github = createGithubClient(request, env);
+    const { owner, repo } = getSourceConfig(env, sourceType, scope);
+    let client;
+    const github = {
+      async graphql(query, variables) {
+        client ||= discussionGithub(env, `${owner}/${repo}`);
+        return (await client).graphql(query, variables);
+      },
+    };
     const allCounts =
       scope === "content-total"
-        ? await getContentCommentTotals(request, env, github, sourceType, contentItems)
-        : await getCountsMap(request, env, github, sourceType, scope);
+        ? await getContentCommentTotals(env, github, sourceType, contentItems)
+        : await getCountsMap(env, github, sourceType, scope);
     const counts = Object.fromEntries(identifiers.map((id) => {
       const value = Number(Object.hasOwn(allCounts, id) ? allCounts[id] : 0);
       return [id, Number.isFinite(value) ? Math.max(0, value) : 0];
@@ -382,7 +360,7 @@ export async function handleDiscussionCounts(request, env, corsHeaders) {
         error: "评论批量接口执行失败",
         message: String(error?.message || error),
       },
-      error?.reason === "rate-limit" ? 429 : 500,
+      error?.status === 429 || error?.reason === "rate-limit" ? 429 : error?.status || 500,
       githubErrorHeaders(error),
     );
   }

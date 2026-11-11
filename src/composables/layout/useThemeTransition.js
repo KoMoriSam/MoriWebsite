@@ -19,7 +19,6 @@ export function useThemeTransition() {
     const applyTheme = () => {
       if (currentRevision !== revision) return;
       root.dataset.theme = theme;
-      themes.applyTheme(theme);
     };
     if (!previous || document.hidden || !document.startViewTransition
       || matchMedia("(prefers-reduced-motion: reduce)").matches) {

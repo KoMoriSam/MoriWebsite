@@ -7,7 +7,7 @@ import { useReadingStateStorage } from "@/composables/storage/useReadingStateSto
 
 import { useNovelStore } from "@/stores/novel";
 import { getNavbarScrollOffset } from "@/utils/layout/navbar";
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { moriSession } from '@/composables/auth/useMoriAuth';
 
 export function useChapters() {
   const toast = useToast({ position: "center", closable: false });
@@ -56,7 +56,7 @@ export function useChapters() {
   };
 
   const scrollToReadingStart = async (uuid) => {
-    if (import.meta.env.SSR || typeof window === "undefined" || !githubSession.authenticated) return;
+    if (import.meta.env.SSR || typeof window === "undefined" || !moriSession.canReadNovel) return;
 
     await waitForChapterRender(uuid);
     await nextTick();

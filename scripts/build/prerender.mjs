@@ -15,7 +15,6 @@ import { sortArticleNavigation } from "../../src/utils/blog/article-navigation.j
 import { getRelatedArticles } from "../../src/utils/blog/related-articles.js";
 import { createArticleWikiLinkResolver } from "../../src/utils/blog/article-wiki-links.js";
 import { wikiLinkDependencies } from "../../src/utils/markdown/markdown-it-wikilink.js";
-import { fileInside } from "../lib/content-files.mjs";
 
 const require = createRequire(import.meta.url);
 const ssgRequire = createRequire(require.resolve("vite-ssg/node"));
@@ -168,21 +167,6 @@ const novelRoutes = new Map(
     chapter,
   ]),
 );
-const chapterRevisions = new Map();
-if (process.env.CONTENT_BUILD_DIR) {
-  for (const { path } of new Set(novelRoutes.values())) {
-    const filename = await fileInside(
-      resolve(process.env.CONTENT_BUILD_DIR, "novel"),
-      path,
-    );
-    chapterRevisions.set(
-      path,
-      createHash("sha256")
-        .update(await readFile(filename))
-        .digest("hex"),
-    );
-  }
-}
 const paths = [
   ...new Set([
     ...(await includedRoutes(routes.map(({ path }) => path))).filter(
@@ -196,7 +180,7 @@ const paths = [
 // Deliver the existing small fonts with HTML to avoid a late punctuation reflow.
 const inlineFontRoutes = new Set(["/novel", "/kaiming", ...entries.keys()]);
 const kaimingDirectory = resolve(
-  process.env.CONTENT_BUILD_DIR || ".output/content",
+  process.env.CONTENT_BUILD_DIR || ".output/content-build",
   "kaiming",
 );
 let openingFontStyles = await readFile(resolve(kaimingDirectory, "index.css"), "utf8");
@@ -238,7 +222,7 @@ const pages = Object.fromEntries(
           home && homeBlogHash,
           route === "/tools/sinhala-font-converter" && guideRoutes,
           (route === "/novel" || home) && novelsHash,
-          chapter && [chapter, chapterRevisions.get(chapter.path)],
+          chapter,
           route === "/changelog" && snapshot.changelog,
           inlineFontRoutes.has(route) && openingFontHash,
         ]),
@@ -293,6 +277,8 @@ if (!dryRun) {
     const imageReads = trackImageReads();
     const { app, head, initialState, triggerOnSSRAppRendered } =
       await createApp(route);
+    if (novelRoutes.has(route) && initialState.pageData)
+      throw new Error(`Unexpected hydration payload for novel chapter: ${route}`);
     const context = {};
     const html = await renderToString(app, context);
     await triggerOnSSRAppRendered();

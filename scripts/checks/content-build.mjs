@@ -14,7 +14,6 @@ const temp = path.resolve(".tmp");
 await mkdir(temp, { recursive: true });
 const fixture = await mkdtemp(path.join(temp, "content-build-check-"));
 const savedEnv = Object.fromEntries(["CONTENT_BUILD_DIR", "VITE_BLOG_RAW", "VITE_NOVEL_RAW"].map((key) => [key, process.env[key]]));
-const originalFetch = globalThis.fetch;
 async function put(relative, content) {
   const file = path.join(fixture, relative);
   await mkdir(path.dirname(file), { recursive: true });
@@ -94,7 +93,6 @@ try {
   assert.equal(networkCalls, 0, "builds must never silently fetch a previous published snapshot");
 
   const env = {
-    GISCUS_PAGES_ORIGIN: "https://giscus.pages.dev",
     ASSETS: { fetch: async (request) => new Response(new URL(request.url).pathname, { headers: { "X-Source": "assets" } }) },
   };
   let response = await worker.fetch(new Request("https://raw.komori.cc/post/index.json"), env);
@@ -112,38 +110,17 @@ try {
   response = await worker.fetch(new Request("https://raw.komori.cc/novel/index.json", { method: "OPTIONS" }), env);
   assert.equal(response.status, 204);
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
-  globalThis.fetch = async (url, options) => {
-    assert.equal(url.href, "https://giscus.pages.dev/images/spin.gif");
-    assert.equal(options.method, "GET");
-    return new Response("animation", { headers: { "Content-Type": "image/gif" } });
-  };
-  response = await worker.fetch(new Request("https://raw.komori.cc/giscus/images/spin.gif"), env);
-  assert.equal(response.headers.get("Content-Type"), "image/gif");
-  assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
-  assert.equal(await response.text(), "animation");
-  const css = await readFile(path.join(root, "giscus/themes.css"), "utf8");
-  const resource = css.match(/url\(["']?([^"'()]*spin\.gif)["']?\)/)?.[1];
-  assert.ok(resource, "loading animation exists");
-  for (const base of ["https://giscus.pages.dev/", "https://raw.komori.cc/giscus/"]) {
-    assert.equal(new URL(resource, `${base}themes.css`).href, `${base}images/spin.gif`, "animation follows the theme origin");
+  for (const filename of [
+    "/novel/1/chapter.md", "/novel/1/chapter%2emd", "/novel/images/avatar/name.webp",
+    "/novel/images/_optimized/private.webp", "/giscus/themes.css",
+  ]) {
+    response = await worker.fetch(new Request(`https://raw.komori.cc${filename}`), env);
+    assert.equal(response.status, 404, filename);
+    assert.match(response.headers.get("Cache-Control"), /no-store/);
   }
-  assert.equal((await readFile(path.join(root, "giscus/images/spin.gif"))).subarray(0, 3).toString(), "GIF");
   assert.equal((await worker.fetch(new Request("https://raw.komori.cc/post/index.json", { method: "POST" }), env)).status, 405);
-  globalThis.fetch = async (url, options) => {
-    assert.equal(url.href, "https://giscus.pages.dev/themes.css?v=2");
-    assert.equal(options.headers.get("Cookie"), null);
-    assert.equal(options.headers.get("Authorization"), null);
-    assert.equal(options.headers.get("If-None-Match"), '"theme-v1"');
-    return new Response(null, { status: 302, headers: { Location: "/themes.css?v=3" } });
-  };
-  response = await worker.fetch(new Request("https://raw.komori.cc/giscus/themes.css?v=2", {
-    headers: { Cookie: "session=private", Authorization: "Bearer private", "If-None-Match": '"theme-v1"' },
-  }), env);
-  assert.equal(response.headers.get("Location"), "https://raw.komori.cc/giscus/themes.css?v=3");
-  assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
-  console.log("检查通过：博客、小说、字体与独立发布的 Giscus 资源。");
+  console.log("检查通过：博客、小说公开目录、字体和旧小说路径拒绝规则。");
 } finally {
-  globalThis.fetch = originalFetch;
   for (const [key, value] of Object.entries(savedEnv)) {
     if (value === undefined) delete process.env[key]; else process.env[key] = value;
   }

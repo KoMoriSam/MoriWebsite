@@ -262,19 +262,10 @@
           <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
             <Thread
               v-if="commentsStarted"
-              :key="giscusKey"
-              :repo="GISCUS.novelRepo.name"
-              :repo-id="GISCUS.novelRepo.id"
-              :category="GISCUS.categories.general.name"
-              :category-id="GISCUS.categories.general.id"
-              :mapping="giscusMapping"
-              :term="giscusTerm"
-              strict="0"
-              reactions-enabled="1"
-              emit-metadata="0"
+              :key="commentKey"
               input-position="bottom"
-              :theme="giscusTheme"
-              :lang="commentLocale"
+              :scope="currentMapping === 'title' ? 'chapter' : 'book'"
+              :target="currentMapping === 'title' ? currentChapter?.uuid || '' : bookTerm"
             />
           </section>
         </ScrollableContainer>
@@ -292,9 +283,10 @@
 </template>
 
 <script setup>
+import { bookTerm } from "@/../shared/discussions.js";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
-const { t: translate, commentLocale } = useLocale();
+const { t: translate } = useLocale();
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
@@ -302,12 +294,10 @@ import { useRouter } from "vue-router";
 import Thread from "@/components/comments/Thread.vue";
 import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
-import { useThemeStore } from "@/stores/themeStore";
 import { useChapters } from "@/composables/novel/useChapters";
-import { useGiscus } from "@/composables/novel/useGiscus";
+import { useCommentScope } from "@/composables/novel/useCommentScope";
 import { useModalClose } from "@/composables/useModal";
 import { getChapterContextTitle } from "@/utils/novel/format-label";
-import CONFIG from "@/constants/config";
 import {
   MOBILE_READING_MODES,
   MOBILE_READER_NAVBAR_HIDE_EVENT,
@@ -319,7 +309,6 @@ import ReaderMoreSettings from "./ReaderMoreSettings.vue";
 import TapZoneEditor from "./TapZoneEditor.vue";
 import ReaderDialogHeader from "../display/ReaderDialogHeader.vue";
 
-const { GISCUS } = CONFIG;
 
 const props = defineProps({
   currentPage: { type: Number, default: 1 },
@@ -341,8 +330,6 @@ const novelStore = useNovelStore();
 const { currentChapter, isLoadingContent } = storeToRefs(novelStore);
 const readerStore = useReaderStore();
 const { isMobileLayoutDefault } = storeToRefs(readerStore);
-const themeStore = useThemeStore();
-const { giscusTheme } = storeToRefs(themeStore);
 const { hasPrevious, hasNext } = useChapters();
 const router = useRouter();
 const activeDialog = ref(null);
@@ -380,16 +367,15 @@ const progressValue = computed(() =>
   isPagedMode.value ? safeCurrentPage.value : Math.max(0, props.pageProgress),
 );
 const pageProgressLabel = computed(() => `${Math.round(props.pageProgress)}%`);
-const { currentMapping, commentToggle } = useGiscus();
-const giscusVersion = ref(0);
-const giscusMapping = "specific";
-const giscusTerm = computed(() =>
+const { currentMapping, commentToggle } = useCommentScope();
+const commentVersion = ref(0);
+const commentTerm = computed(() =>
   currentMapping.value === "title"
     ? getChapterContextTitle(currentChapter.value)
-    : GISCUS.defaultTerm,
+    : bookTerm,
 );
-const giscusKey = computed(
-  () => `${currentMapping.value}-${giscusTerm.value}-${giscusVersion.value}`,
+const commentKey = computed(
+  () => `${currentMapping.value}-${commentTerm.value}-${commentVersion.value}`,
 );
 const dialogRefs = {
   search: searchDialogRef,

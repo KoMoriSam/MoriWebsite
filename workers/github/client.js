@@ -61,8 +61,15 @@ async function fetchGithub(path, options) {
   throw new Error("Too many GitHub API redirects");
 }
 
-export function createGithubClient(request, env) {
-  const cooldownKey = (scope) => new Request(new URL(COOLDOWN_PATHS[scope], request.url));
+export function createGithubClient(request, env, { account } = {}) {
+  const accountKey = account && crypto.subtle.digest("SHA-256", new TextEncoder().encode(account));
+  const cooldownKey = async (scope) => {
+    const url = new URL(COOLDOWN_PATHS[scope], request.url);
+    if (accountKey && scope !== "secondary") {
+      url.pathname += "/" + Array.from(new Uint8Array(await accountKey), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    }
+    return new Request(url);
+  };
 
   async function send(protocol, path, { method, headers, body }) {
     if (!env.GITHUB_TOKEN) {
@@ -70,8 +77,8 @@ export function createGithubClient(request, env) {
     }
 
     const [primary, secondary] = await Promise.all([
-      readGithubCache(cooldownKey(protocol)),
-      readGithubCache(cooldownKey("secondary")),
+      cooldownKey(protocol).then(readGithubCache),
+      cooldownKey("secondary").then(readGithubCache),
     ]);
     const retryAt = Math.max(primary?.retryAt || 0, secondary?.retryAt || 0);
     if (retryAt > Date.now()) {
@@ -103,7 +110,7 @@ export function createGithubClient(request, env) {
       const rateLimit = readRateLimit(response, payload, errors);
       if (rateLimit) {
         const { retryAt, shared } = rateLimit;
-        await writeGithubCache(cooldownKey(shared ? "secondary" : protocol), { retryAt }, retryAt);
+        await writeGithubCache(await cooldownKey(shared ? "secondary" : protocol), { retryAt }, retryAt);
         throw githubError("GitHub API 请求受限", 429, "rate-limit", retryAt);
       }
       const forbidden = response.status === 403 || errors.some((error) => error?.type === "FORBIDDEN");

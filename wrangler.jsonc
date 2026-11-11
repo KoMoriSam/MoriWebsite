@@ -5,7 +5,17 @@
 
   "compatibility_date": "2026-07-20",
 
+  "main": "./workers/website.js",
+  "workers_dev": false,
+  "preview_urls": false,
+  "services": [
+    { "binding": "MORI_AUTH", "service": "mori-auth", "entrypoint": "SiteAuth" },
+    { "binding": "COMMENTS", "service": "api", "entrypoint": "CommentsInternal" }
+  ],
+  "r2_buckets": [{ "binding": "NOVEL_VAULT", "bucket_name": "novel-vault" }],
   "assets": {
+    "binding": "ASSETS",
+    "run_worker_first": ["/api", "/api/*", "/auth", "/auth/*", "/pagefind-novel", "/pagefind-novel/*", "/archive/article", "/archive/article/*"],
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"

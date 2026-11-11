@@ -15,7 +15,7 @@
         >{{ state.profile?.name || t("auth.loadingProfile") }}</span
       >
       <span
-        v-else
+        v-else-if="!state.checking"
         class="max-w-16 truncate text-sm sm:max-w-32"
         :title="state.profile?.name"
         >{{ t("auth.guest") }}</span
@@ -276,10 +276,10 @@ import ThemeController from "@/components/interaction/controls/ThemeController.v
 import NoticeCenter from "@/components/announcement/interaction/NoticeCenter.vue";
 import { useAnnouncementStore } from "@/stores/announcementStore";
 import { useThemeStore } from "@/stores/themeStore";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useAccordionTransition } from "@/composables/layout/useAccordionTransition";
 import { useLocale, LOCALES } from "@/i18n";
-const { state, logout, retry } = useGithubSession();
+const { state, logout, retry } = useMoriAuth();
 const { t, locale } = useLocale();
 const announcements = useAnnouncementStore();
 const themes = useThemeStore();

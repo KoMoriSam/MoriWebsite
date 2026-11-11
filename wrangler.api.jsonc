@@ -1,10 +1,17 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"name": "api",
-	"main": "./workers/api.js",
+	"main": "./workers/api-entry.js",
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"services": [
+		{ "binding": "MORI_COMMENT_AUTH", "service": "mori-auth", "entrypoint": "CommentAuth" }
+	],
+	"ratelimits": [
+		{ "name": "COMMENT_READ_LIMIT", "namespace_id": "1101", "simple": { "limit": 90, "period": 60 } },
+		{ "name": "COMMENT_WRITE_LIMIT", "namespace_id": "1102", "simple": { "limit": 12, "period": 60 } }
 	],
 	"durable_objects": {
 		"bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]

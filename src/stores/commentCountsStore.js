@@ -146,7 +146,13 @@ export const useCommentCountsStore = defineStore("commentCounts", () => {
     );
   };
 
+  const adjustContentCommentTotal = (sourceType, contentId, delta) => {
+    const key = getCountKey(sourceType, contentId);
+    if (Number.isFinite(counts[key])) counts[key] = Math.max(0, counts[key] + delta);
+  };
+
   return {
+    adjustContentCommentTotal,
     commentCountsAvailable,
     loadContentCommentTotals,
     getContentCommentTotal,

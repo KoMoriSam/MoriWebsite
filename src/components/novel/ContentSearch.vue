@@ -1,6 +1,6 @@
 <template>
   <section class="flex min-h-0 flex-col" :aria-label="translate('reader.search.title')">
-    <LoginGate v-if="!auth.authenticated.value" />
+    <LoginGate v-if="!auth.state.canReadNovel" />
     <template v-else>
     <label class="input flex w-full shrink-0 items-center gap-2">
       <i class="ri-search-line text-base-content/55" aria-hidden="true"></i>
@@ -98,16 +98,13 @@ import { useLocale } from '@/i18n';
 const { t: translate, text: localizeText, message: localeMessage } = useLocale();
 
 import LoginGate from '@/components/auth/LoginGate.vue';
-import { useGithubSession } from '@/composables/auth/useGithubSession';
-const auth = useGithubSession();
+import { useMoriAuth } from '@/composables/auth/useMoriAuth';
+const auth = useMoriAuth();
 import { computed, nextTick, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
-import { getArticleSearchScore } from "@/composables/blog/useArticleFilter";
-import {
-  createSearchExcerpt,
-  fetchNovelSearchIndex,
-} from "@/services/search-content";
+import { loadNovelPagefind } from "@/services/novel-release";
+import { searchPagefindBundle, segmentPagefindQuery } from "@/services/search-access";
 
 const props = defineProps({
   active: {
@@ -128,84 +125,45 @@ const emit = defineEmits(["select"]);
 const router = useRouter();
 const searchInputRef = ref(null);
 const keyword = ref("");
-const entries = ref([]);
+const results = ref([]);
 const isLoading = ref(false);
 const errorMessage = ref("");
-let initialized = false;
-let request = 0;
-watch(() => [auth.state.authenticated, auth.state.revision], () => {
-  request++; initialized = false; entries.value = []; keyword.value = ''; errorMessage.value = ''; isLoading.value = false;
-  if (auth.state.authenticated && props.active) void initialize();
-}, { flush: 'sync' });
-
 const normalizedKeyword = computed(() => keyword.value.trim());
+let request = 0;
 
-const results = computed(() => {
-  const query = normalizedKeyword.value;
-  if (!auth.state.authenticated || !query) return [];
-
-  return entries.value
-    .flatMap((entry) => {
-      const blockMatches = (
-        Array.isArray(entry.searchBlocks) ? entry.searchBlocks : []
-      )
-        .map((block, index) => {
-          const candidate = { ...entry, ...block };
-          return {
-            candidate,
-            index,
-            score: getArticleSearchScore(candidate, query),
-          };
-        })
-        .filter((match) => match.score !== Number.NEGATIVE_INFINITY)
-        .sort((a, b) => b.score - a.score || a.index - b.index);
-
-      const bestMatch = blockMatches[0];
-      const score = bestMatch
-        ? bestMatch.score
-        : getArticleSearchScore(entry, query);
-      if (score === Number.NEGATIVE_INFINITY) return [];
-
-      const result = bestMatch?.candidate || entry;
-      return [
-        {
-          ...result,
-          score,
-          excerpt: createSearchExcerpt(
-            result.content,
-            query,
-            result.summary,
-          ),
-        },
-      ];
-    })
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        Number(a.catalogOrder || 0) - Number(b.catalogOrder || 0),
-    )
-    .slice(0, 40);
-});
-
-const initialize = async () => {
-  if (!auth.state.authenticated || initialized || isLoading.value) return;
-  const id = ++request;
-  isLoading.value = true;
-  errorMessage.value = "";
-
-  try {
-    const value = await fetchNovelSearchIndex();
-    if (id !== request || !auth.state.authenticated) return;
-    entries.value = value;
-    initialized = true;
-  } catch (error) {
-    if (id !== request) return;
-    console.error("初始化小说搜索失败:", error);
-    errorMessage.value = localeMessage('reader.search.loadFailed');
-  } finally {
-    if (id === request) isLoading.value = false;
-  }
-};
+watch(
+  () => [props.active, normalizedKeyword.value, auth.state.revision],
+  ([active, query], _prior, onCleanup) => {
+    const id = ++request;
+    results.value = [];
+    errorMessage.value = "";
+    isLoading.value = false;
+    if (!active || !auth.state.canReadNovel || !query) return;
+    const current = () => request === id && auth.state.canReadNovel;
+    isLoading.value = true;
+    const timer = setTimeout(async () => {
+      try {
+        const engine = await loadNovelPagefind();
+        const hits = await searchPagefindBundle(engine, segmentPagefindQuery(query), { type: "novel" }, current);
+        const data = await Promise.all(hits.slice(0, 40).map((hit) => hit.data()));
+        if (current()) results.value = data.map((hit) => ({
+          url: hit.url,
+          title: hit.meta?.title || hit.url,
+          excerpt: /[\p{Script=Han}]/u.test(query) ? hit.meta?.summary : hit.plain_excerpt,
+        }));
+      } catch {
+        if (current()) errorMessage.value = localeMessage("reader.search.loadFailed");
+      } finally {
+        if (current()) isLoading.value = false;
+      }
+    }, 160);
+    onCleanup(() => {
+      ++request;
+      clearTimeout(timer);
+    });
+  },
+  { flush: "sync" },
+);
 
 const openResult = async (result) => {
   const navigationOptions = (await props.beforeNavigate?.()) || {};
@@ -221,7 +179,6 @@ watch(
   async (active) => {
     if (!active) return;
     if (props.initialKeyword) keyword.value = props.initialKeyword.trim();
-    await initialize();
     await nextTick();
     searchInputRef.value?.focus();
   },

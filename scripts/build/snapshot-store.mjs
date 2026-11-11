@@ -25,15 +25,21 @@ const r2Settings = {
   },
 };
 
-export function snapshotStore() {
+export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } = {}) {
   const settings = Object.fromEntries(
-    Object.keys(r2Settings).map((name) => [name, process.env[name]?.trim() || ""]),
+    Object.keys(r2Settings).map((name) => [
+      name,
+      name === "SSG_SNAPSHOT_NAMESPACE" && fixedNamespace
+        ? fixedNamespace
+        : process.env[name.replace("SSG_R2", prefix)]?.trim() || "",
+    ]),
   );
-  if (!Object.values(settings).some(Boolean)) return null;
+  if (!Object.keys(settings).some((name) => name.startsWith("SSG_R2") && settings[name]) &&
+      (fixedNamespace || !settings.SSG_SNAPSHOT_NAMESPACE)) return null;
   const invalid = [];
   for (const [name, { pattern, expected }] of Object.entries(r2Settings)) {
-    if (!settings[name]) invalid.push(`${name} is missing`);
-    else if (!pattern.test(settings[name])) invalid.push(`${name} must be ${expected}`);
+    if (!settings[name]) invalid.push(`${name.replace("SSG_R2", prefix)} is missing`);
+    else if (!pattern.test(settings[name])) invalid.push(`${name.replace("SSG_R2", prefix)} must be ${expected}`);
   }
   if (invalid.length)
     throw new Error(`Invalid R2 snapshot configuration: ${invalid.join(", ")}`);
@@ -63,6 +69,7 @@ export function snapshotStore() {
       "--write-out",
       "%{http_code}",
     ];
+    if (method === "HEAD") args.push("--head");
     if (input) args.push("--upload-file", input);
     if (create) args.push("--header", "If-None-Match: *");
     args.push(`${endpoint}/${bucket}/${namespace}/${name}`);
@@ -104,6 +111,12 @@ export function snapshotStore() {
     return new Error(`R2 ${method} ${name}: ${status}${code ? ` (${code})` : ""}`);
   }
   return {
+    async exists(name) {
+      const response = await request("HEAD", name);
+      if (response.status === 404) return false;
+      if (response.status !== 200) throw new Error(`R2 HEAD ${name}: ${response.status}`);
+      return true;
+    },
     async get(name, output) {
       const response = await request("GET", name, { output });
       if (response.status === 404) return false;

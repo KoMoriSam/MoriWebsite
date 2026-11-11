@@ -1,6 +1,6 @@
 import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { moriSession } from '@/composables/auth/useMoriAuth';
 
 const HIGHLIGHT_SELECTOR = "mark[data-global-search-highlight]";
 const SEARCH_ANCHOR_PREFIX = "search-content-";
@@ -289,7 +289,7 @@ export function useSearchResultHighlight() {
   };
 
   watch(
-    () => [route.path, route.hash, route.query.q, githubSession.authenticated],
+    () => [route.path, route.hash, route.query.q, moriSession.authenticated],
     scheduleHighlight,
     { flush: "post" },
   );

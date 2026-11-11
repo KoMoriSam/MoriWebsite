@@ -4,24 +4,20 @@
   "main": "./workers/content.js",
   "compatibility_date": "2026-11-01",
   "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "./.output/content",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/giscus", "/giscus/*"]
+    "run_worker_first": true
   },
   "routes": [
     { "pattern": "raw.komori.cc/post", "zone_name": "komori.cc" },
     { "pattern": "raw.komori.cc/post/*", "zone_name": "komori.cc" },
     { "pattern": "raw.komori.cc/novel", "zone_name": "komori.cc" },
     { "pattern": "raw.komori.cc/novel/*", "zone_name": "komori.cc" },
-    { "pattern": "raw.komori.cc/giscus", "zone_name": "komori.cc" },
-    { "pattern": "raw.komori.cc/giscus/*", "zone_name": "komori.cc" },
     { "pattern": "raw.komori.cc/kaiming", "zone_name": "komori.cc" },
     { "pattern": "raw.komori.cc/kaiming/*", "zone_name": "komori.cc" },
   ],
-  "vars": {
-    "GISCUS_PAGES_ORIGIN": "https://giscus-cla.pages.dev",
-  },
   "observability": { "enabled": true, "head_sampling_rate": 0.1 },
 }

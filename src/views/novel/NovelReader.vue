@@ -194,19 +194,10 @@
       </section>
 
       <Thread
-        :key="giscusKey"
-        :repo="GISCUS.novelRepo.name"
-        :repo-id="GISCUS.novelRepo.id"
-        :category="GISCUS.categories.general.name"
-        :category-id="GISCUS.categories.general.id"
-        :mapping="giscusMapping"
-        :term="giscusTerm"
-        strict="0"
-        reactions-enabled="1"
-        emit-metadata="0"
+        :key="commentKey"
         input-position="bottom"
-        :theme="giscusTheme"
-        :lang="commentLocale"
+        :scope="currentMapping === 'title' ? 'chapter' : 'book'"
+        :target="currentMapping === 'title' ? currentChapterUuid : bookTerm"
       />
     </template>
 
@@ -247,19 +238,10 @@
         <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
           <Thread
             v-if="chapterCommentsStarted"
-            :key="`chapter-comments-dialog-${giscusKey}`"
-            :repo="GISCUS.novelRepo.name"
-            :repo-id="GISCUS.novelRepo.id"
-            :category="GISCUS.categories.general.name"
-            :category-id="GISCUS.categories.general.id"
-            :mapping="giscusMapping"
-            :term="getChapterContextTitle(currentChapter)"
-            strict="0"
-            reactions-enabled="1"
-            emit-metadata="0"
+            :key="`chapter-comments-dialog-${commentKey}`"
             input-position="bottom"
-            :theme="giscusTheme"
-            :lang="commentLocale"
+            scope="chapter"
+            :target="currentChapterUuid"
           />
         </section>
       </ScrollableContainer>
@@ -273,14 +255,15 @@
 </template>
 
 <script setup>
+import { bookTerm } from "@/../shared/discussions.js";
 import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
-provideMarkdownAvatars(import.meta.env.VITE_NOVEL_RAW);
+import { novelAssetBase } from "@/services/novel-release";
+provideMarkdownAvatars(novelAssetBase);
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from "@/i18n";
 import { FULL_DATE_OPTIONS } from "@/i18n/format-date.js";
 const {
   t: translate,
-  commentLocale,
   number: formatNumber,
   date: formatLocalizedDate,
 } = useLocale();
@@ -289,7 +272,6 @@ import { storeToRefs } from "pinia";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
 import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
-import { useThemeStore } from "@/stores/themeStore";
 
 import Thread from "@/components/comments/Thread.vue";
 import ReadingLayout from "@/components/reader/layout/ReadingLayout.vue";
@@ -309,12 +291,10 @@ import FormatSetting from "@/components/reader/interaction/FormatSetting.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
 import FloatingActionButton from "@/components/interaction/controls/FloatingActionButton.vue";
 
-import CONFIG from "@/constants/config";
-const { GISCUS } = CONFIG;
 
 import { useMediaQuery } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
-import { useGiscus } from "@/composables/novel/useGiscus";
+import { useCommentScope } from "@/composables/novel/useCommentScope";
 import { usePosTracker } from "@/composables/usePosTracker";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
@@ -392,8 +372,6 @@ const {
   mobileVolumePagination,
 } = storeToRefs(readerStore);
 
-const themeStore = useThemeStore();
-const { giscusTheme } = storeToRefs(themeStore);
 
 import {
   computed,
@@ -785,28 +763,27 @@ onBeforeUnmount(() => {
   );
 });
 
-const { currentMapping, commentToggle } = useGiscus();
+const { currentMapping, commentToggle } = useCommentScope();
 
-const giscusVersion = ref(0);
-const giscusMapping = "specific";
+const commentVersion = ref(0);
 
-const giscusTerm = computed(() =>
+const commentTerm = computed(() =>
   currentMapping.value === "title"
     ? getChapterContextTitle(currentChapter.value)
-    : GISCUS.defaultTerm,
+    : bookTerm,
 );
-const giscusKey = computed(
-  () => `${currentMapping.value}-${giscusTerm.value}-${giscusVersion.value}`,
+const commentKey = computed(
+  () => `${currentMapping.value}-${commentTerm.value}-${commentVersion.value}`,
 );
 
-const remountGiscus = () => {
-  giscusVersion.value += 1;
+const remountComments = () => {
+  commentVersion.value += 1;
 };
 
 watch(
   () => [currentChapterUuid.value, currentMapping.value],
   () => {
-    remountGiscus();
+    remountComments();
   },
   { immediate: true },
 );
@@ -913,7 +890,7 @@ const textShareMeta = computed(() => {
 const handleRefreshContent = async () => {
   if (isLoadingContent.value) return;
   await novelStore.refreshChapters();
-  remountGiscus();
+  remountComments();
 };
 
 const fabActions = computed(() => [

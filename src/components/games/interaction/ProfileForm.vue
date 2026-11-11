@@ -67,7 +67,7 @@
 <script setup>
 import { computed, ref, useId } from "vue";
 import Avatar from "@/components/auth/Avatar.vue";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useLocale } from "@/i18n";
 const props = defineProps({
   nickname: { type: String, default: "" },
@@ -81,7 +81,7 @@ const emit = defineEmits([
   "blur",
   "commit",
 ]);
-const { profile, state, retry, login } = useGithubSession();
+const { profile, state, retry, login } = useMoriAuth();
 const { t } = useLocale();
 const inputId = `player-nickname-${useId()}`;
 const input = ref(null);

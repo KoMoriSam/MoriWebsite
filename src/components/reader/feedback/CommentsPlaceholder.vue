@@ -56,10 +56,10 @@
           </div>
         </div>
         <div class="m-2 flex h-8 items-center gap-3">
-          <div v-if="githubSession.authenticated" class="skeleton h-3 w-12 rounded-sm"></div>
+          <div v-if="moriSession.authenticated" class="skeleton h-3 w-12 rounded-sm"></div>
           <div
             class="skeleton ml-auto h-8 rounded-field"
-            :class="githubSession.authenticated ? 'w-16' : 'w-44'"
+            :class="moriSession.authenticated ? 'w-16' : 'w-44'"
           ></div>
         </div>
       </div>
@@ -84,7 +84,7 @@
             </div>
             <div class="skeleton h-3 w-14 rounded-sm"></div>
           </div>
-          <div v-if="githubSession.authenticated" class="border-t border-base-300 bg-base-200/50 px-4 py-2">
+          <div v-if="moriSession.authenticated" class="border-t border-base-300 bg-base-200/50 px-4 py-2">
             <div class="flex h-[30px] items-center rounded-field border border-base-300 bg-base-100 px-2">
               <div class="skeleton h-3 w-28 rounded-sm"></div>
             </div>
@@ -97,7 +97,7 @@
 
 <script setup>
 import { useLocale } from '@/i18n';
-import { githubSession } from '@/composables/auth/useGithubSession';
+import { moriSession } from '@/composables/auth/useMoriAuth';
 
 defineProps({
   novel: { type: Boolean, default: false },

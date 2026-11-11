@@ -287,19 +287,9 @@
         </header>
         <div class="min-w-0">
           <Thread
-            :key="githubSession.revision"
-            :repo="GISCUS.novelRepo.name"
-            :repo-id="GISCUS.novelRepo.id"
-            :category="GISCUS.categories.general.name"
-            :category-id="GISCUS.categories.general.id"
-            mapping="specific"
-            :term="GISCUS.defaultTerm"
-            strict="0"
-            reactions-enabled="1"
-            emit-metadata="1"
             input-position="top"
-            :theme="themeStore.giscusTheme"
-            :lang="commentLocale"
+            scope="book"
+            :target="bookTerm"
           />
         </div>
       </section>
@@ -316,14 +306,14 @@
   <Footer />
 </template>
 <script setup>
+import { bookTerm } from "@/../shared/discussions.js";
 import { getImageAttrs } from "@/utils/images/responsive-images";
 import { useLocale } from "@/i18n";
 import { I18nT } from "vue-i18n";
-const { t: translate, commentLocale, number: formatNumber } = useLocale();
+const { t: translate, number: formatNumber } = useLocale();
 
 import { computed, ref, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
-import { githubSession } from "@/composables/auth/useGithubSession";
 import Thread from "@/components/comments/Thread.vue";
 import ContentRights from "@/components/reader/display/ContentRights.vue";
 
@@ -337,15 +327,12 @@ import {
   getChapterDisplayTitle,
 } from "@/utils/novel/format-label";
 
-import CONFIG from "@/constants/config";
 import { NOVEL_COVER_URL as novelCoverUrl } from "@/constants/novel-assets";
-const { GISCUS } = CONFIG;
 
 import { storeToRefs } from "pinia";
 import { useNovelStore } from "@/stores/novel";
 import { useAnalyticsStore } from "@/stores/analyticsStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
-import { useThemeStore } from "@/stores/themeStore";
 
 import ChapterList from "@/components/novel/ChapterList.vue";
 import ForestBackdrop from "@/components/novel/ForestBackdrop.vue";
@@ -362,7 +349,6 @@ const {
   latestChapter,
   totalWordCount,
 } = storeToRefs(novelStore);
-const themeStore = useThemeStore();
 const analyticsStore = useAnalyticsStore();
 const commentCountsStore = useCommentCountsStore();
 const { analyticsAvailable } = storeToRefs(analyticsStore);

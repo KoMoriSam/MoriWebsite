@@ -60,7 +60,7 @@
 <script setup>
 import { useLocale } from "@/i18n";
 import { gameNavbarMode, useMobileNavbar } from "@/composables/useMobileNavbar";
-import { githubSession } from "@/composables/auth/useGithubSession";
+import { moriSession } from "@/composables/auth/useMoriAuth";
 const { t: translate } = useLocale();
 
 import {
@@ -89,7 +89,7 @@ import SiteLogo from "@/components/layout/SiteLogo.vue";
 const navbar = ref(null);
 const readerNavbarVisible = ref(false);
 const isNovelReaderRoute = computed(
-  () => route.name === "novel-reader" && githubSession.authenticated,
+  () => route.name === "novel-reader" && moriSession.authenticated,
 );
 const overlayNavbar = computed(
   () => gameNavbarMode.value || isNovelReaderRoute.value,

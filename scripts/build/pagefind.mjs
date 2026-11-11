@@ -1,3 +1,5 @@
+import { searchDirectory } from "./novel-release.mjs";
+import { rm } from "node:fs/promises";
 import dotenv from "dotenv";
 import fm from "front-matter";
 import { createIndex } from "pagefind";
@@ -292,6 +294,7 @@ const loadNovelRecords = async () => {
   if (!NOVEL_BASE)
     throw new Error("缺少 VITE_NOVEL_RAW，无法生成小说 Pagefind 索引");
 
+  if (!process.env.CONTENT_BUILD_DIR) throw new Error("小说索引需要本地私有构建输入");
   let catalogOrder = 0;
   const chapters = Object.values(ssgData.novelChapters || {}).flatMap(
     (volume) =>
@@ -498,8 +501,10 @@ async function writeIndex(records, outputPath, novel) {
   await index.deleteIndex();
 }
 if (buildPublic) await writeIndex(publicRecords, OUTPUT_PATH, false);
-if (buildNovel)
-  await writeIndex(novelRecords, resolve("dist", "pagefind-novel"), true);
+if (buildNovel) {
+  await rm(searchDirectory, { recursive: true, force: true });
+  await writeIndex(novelRecords, searchDirectory, true);
+}
 console.log(
   `全站搜索已生成：公开内容 ${publicRecords.length} 条、小说内容 ${novelRecords.length} 条。`,
 );

@@ -1,75 +1,45 @@
+import { publicCovers, resourcePath } from "../shared/novel-release.js";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
   "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
   "Access-Control-Expose-Headers": "ETag, Content-Length, Content-Range, Accept-Ranges",
 };
+const notFound = () => new Response("Not found", {
+  status: 404, headers: { ...corsHeaders, "Cache-Control": "no-store" },
+});
+const manifestPath = "/novel/images/_optimized/manifest.json";
 
-const forwardedHeaders = [
-  "Accept", "Accept-Encoding", "Range", "If-Range", "If-None-Match", "If-Modified-Since",
-];
+async function publicNovel(env, url) {
+  const path = url.pathname;
+  if (path === "/novel/index.json" || publicCovers.some((cover) => path === `/novel/images/${cover}`)) return true;
+  if (!path.startsWith("/novel/images/_optimized/")) return false;
+  const manifest = await env.ASSETS.fetch(new Request(new URL(manifestPath, url)));
+  if (!manifest.ok) return false;
+  const { version, images } = await manifest.json();
+  if (version !== 1 || !images || Object.keys(images).some((name) => !publicCovers.includes(name))) return false;
+  if (path === manifestPath) return true;
+  return Object.values(images).some((entry) => entry.variants.some(({ src }) =>
+    resourcePath(src) && /^_optimized\/[a-f0-9-]+\.(?:avif|webp)$/u.test(src) &&
+    path === `/novel/images/${src}`));
+}
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const prefix = ["/post", "/novel", "/giscus", "/kaiming"].find(
-      (path) => url.pathname === path || url.pathname.startsWith(`${path}/`),
-    );
-    if (!prefix) return new Response("Not found", { status: 404, headers: corsHeaders });
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders });
-    }
-    if (!["GET", "HEAD"].includes(request.method)) {
-      return new Response("Method not allowed", {
-        status: 405,
-        headers: { ...corsHeaders, Allow: "GET, HEAD, OPTIONS" },
-      });
-    }
-
-    if (prefix !== "/giscus") return env.ASSETS.fetch(request);
-
     try {
-      const origin = new URL(env.GISCUS_PAGES_ORIGIN);
-      if (origin.protocol !== "https:" || !origin.hostname.endsWith(".pages.dev") || origin.port || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) {
-        throw new Error("Content origin must be a Cloudflare Pages HTTPS origin");
+      if (url.pathname.startsWith("/novel/")) {
+        if (!await publicNovel(env, url)) return notFound();
+      } else if (!/^\/(?:post|kaiming)(?:\/|$)/.test(url.pathname)) {
+        return notFound();
       }
-      const upstream = new URL(origin);
-      upstream.pathname = url.pathname.slice(prefix.length) || "/";
-      upstream.search = url.search;
-      const headers = new Headers();
-      for (const name of forwardedHeaders) {
-        if (request.headers.has(name)) headers.set(name, request.headers.get(name));
-      }
-      const response = await fetch(upstream, {
-        method: request.method,
-        headers,
-        redirect: "manual",
-        signal: AbortSignal.timeout(15000),
-      });
-      const responseHeaders = new Headers(response.headers);
-      for (const [name, value] of Object.entries(corsHeaders)) responseHeaders.set(name, value);
-
-      const location = responseHeaders.get("Location");
-      if (location) {
-        const target = new URL(location, upstream);
-        if (target.origin === origin.origin) {
-          target.protocol = url.protocol;
-          target.host = url.host;
-          target.pathname = `${prefix}${target.pathname}`;
-          responseHeaders.set("Location", target.href);
-        }
-      }
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: responseHeaders,
-      });
-    } catch (error) {
-      console.error("Content proxy failed", { path: url.pathname, message: error.message });
-      return new Response("Content temporarily unavailable", {
-        status: 502,
-        headers: { ...corsHeaders, "Cache-Control": "no-store" },
-      });
+    } catch {
+      return notFound();
     }
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+    if (!["GET", "HEAD"].includes(request.method))
+      return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+    return env.ASSETS.fetch(request);
   },
 };

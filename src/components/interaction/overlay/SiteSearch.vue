@@ -500,13 +500,13 @@ import {
   CONTENT_TYPES,
   createSearchExcerpt,
   fetchGlobalSearchIndex,
-  fetchNovelSearchIndex,
   fetchNovelSearchCatalog,
 } from "@/services/search-content";
 
-import { useGithubSession } from '@/composables/auth/useGithubSession';
-import { searchPagefindBundle } from '@/services/search-access';
-const auth = useGithubSession();
+import { useMoriAuth } from '@/composables/auth/useMoriAuth';
+import { searchPagefindBundle, segmentPagefindQuery } from '@/services/search-access';
+import { loadNovelPagefind } from "@/services/novel-release";
+const auth = useMoriAuth();
 const route = useRoute();
 const router = useRouter();
 const emit = defineEmits(["restore-focus"]);
@@ -889,16 +889,16 @@ const normalizePagefindExcerpt = (value) =>
     .replace(/\s+([，。！？；：、）】》])/gu, "$1")
     .replace(/([（【《])\s+/gu, "$1");
 
-const loadPagefindEngine = async (novel = false) => {
+const loadPagefindEngine = async () => {
   if (typeof window === "undefined") return null;
 
   const baseUrl = String(import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
   const module = await import(
-    /* @vite-ignore */ `${baseUrl}${novel ? "pagefind-novel" : "pagefind"}/pagefind.js?isolation=2`
+    /* @vite-ignore */ `${baseUrl}pagefind/pagefind.js?isolation=2`
   );
 
-  const engine = module.createInstance({ basePath: `${baseUrl}${novel ? 'pagefind-novel' : 'pagefind'}/`, excerptLength: 42,
-    language: novel || uiLocale.value === 'zh-CN' ? 'zh' : uiLocale.value });
+  const engine = module.createInstance({ basePath: `${baseUrl}pagefind/`, excerptLength: 42,
+    language: uiLocale.value === 'zh-CN' ? 'zh' : uiLocale.value });
   try { await engine.init(); return engine; }
   catch (error) { await engine.destroy(); throw error; }
 };
@@ -947,23 +947,9 @@ const searchPagefindIndex = async () => {
   if (selectedTags.value.length) filters.tag = [...selectedTags.value];
   if (selectedYears.value.length) filters.year = [...selectedYears.value];
 
-  const encodeCjkToken = (value) =>
-    `z${Array.from(value, (character) =>
-      character.codePointAt(0).toString(16).padStart(6, "0"),
-    ).join("")}`;
-  const segmentedQuery = query
-    .replace(/[\p{Script=Han}]+/gu, (run) => {
-      const characters = Array.from(run);
-      if (characters.length === 1) return encodeCjkToken(run);
-
-      return Array.from({ length: characters.length - 1 }, (_, index) =>
-        encodeCjkToken(characters.slice(index, index + 2).join("")),
-      ).join(" ");
-    })
-    .replace(/\s+/g, " ")
-    .trim();
+  const segmentedQuery = segmentPagefindQuery(query);
   const revision = auth.state.revision;
-  const canReadNovel = () => auth.state.authenticated && auth.state.revision === revision;
+  const canReadNovel = () => auth.state.canReadNovel && auth.state.revision === revision;
   const selected = selectedTypes.value;
   const searchPublic = !selected.length || selected.some(type => type !== 'novel');
   const searchNovel = canReadNovel() && (!selected.length || selected.includes('novel'));
@@ -999,27 +985,22 @@ const searchPagefindIndex = async () => {
 const loadSearchEngine = async () => {
   const id = ++initializationId;
   const revision = auth.state.revision;
-  const includeNovel = auth.state.authenticated;
+  const includeNovel = auth.state.canReadNovel;
   const [entriesResult, pagefindResult, novelEntriesResult, novelPagefindResult] = await Promise.allSettled([
     fetchGlobalSearchIndex(uiLocale.value),
     loadPagefindEngine(),
     includeNovel ? fetchNovelSearchCatalog() : [],
-    includeNovel ? loadPagefindEngine(true) : null,
+    includeNovel ? loadNovelPagefind() : null,
   ]);
-  let novelEntries = novelEntriesResult.status === 'fulfilled' ? novelEntriesResult.value : [];
-  if (includeNovel && novelPagefindResult.status === 'rejected' && auth.state.authenticated && revision === auth.state.revision) {
-    try { novelEntries = await fetchNovelSearchIndex(); } catch { novelEntries = []; }
-  }
-  if (id !== initializationId || revision !== auth.state.revision || includeNovel !== auth.state.authenticated) {
+  const novelEntries = novelEntriesResult.status === 'fulfilled' ? novelEntriesResult.value : [];
+  if (id !== initializationId || revision !== auth.state.revision || includeNovel !== auth.state.canReadNovel) {
     if (pagefindResult.status === 'fulfilled') void pagefindResult.value?.destroy();
-    if (novelPagefindResult.status === 'fulfilled') void novelPagefindResult.value?.destroy();
     return false;
   }
 
   searchEntries =
     (entriesResult.status === "fulfilled" ? entriesResult.value : []).concat(novelEntries);
   void pagefindEngine?.destroy();
-  void novelPagefindEngine?.destroy();
   pagefindEngine =
     pagefindResult.status === "fulfilled" ? pagefindResult.value : null;
 
@@ -1600,7 +1581,6 @@ const handleOutsidePointerDown = (event) => {
 
 watch(() => [auth.state.authenticated, auth.state.revision], () => {
   initializationId++; searchRequestId++; window.clearTimeout(searchTimer);
-  void novelPagefindEngine?.destroy();
   novelPagefindEngine = null; searchEntries = searchEntries.filter(entry => entry.type !== 'novel');
   results.value = results.value.filter(entry => entry.type !== 'novel');
   selectedTags.value = selectedTags.value.filter(tag => !tag.startsWith('novel:'));
@@ -1684,7 +1664,6 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   initializationId++; searchRequestId++;
   void pagefindEngine?.destroy();
-  void novelPagefindEngine?.destroy();
   document.removeEventListener("pointerdown", handleOutsidePointerDown);
   window.clearTimeout(searchTimer);
   window.clearTimeout(urlSyncTimer);

@@ -237,7 +237,7 @@ import { mermaidPlugin } from "@/utils/markdown/markdown-it-mermaid";
 import { footnotePlugin } from "@/utils/markdown/markdown-it-footnote";
 import { rubyPlugin } from "@/utils/markdown/markdown-it-ruby";
 import { figurePlugin } from "@/utils/markdown/markdown-it-figure";
-import { useParagraphComments } from "@/utils/markdown/markdown-it-giscus";
+import { useParagraphComments } from "@/utils/markdown/markdown-it-paragraph-comments";
 import { taskStatusPlugin } from "@/utils/markdown/markdown-it-task-status";
 import {
   collectFenceLanguages,

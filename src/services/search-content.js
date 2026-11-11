@@ -1,6 +1,4 @@
-import { watch } from 'vue';
-import { githubSession } from '@/composables/auth/useGithubSession';
-import fm from "front-matter";
+import { moriSession } from '@/composables/auth/useMoriAuth';
 
 import {
   formatArticleTag,
@@ -103,9 +101,7 @@ const DATE_FRONTMATTER_KEYS = new Set([
 ]);
 
 const blogSearchPromises = new Map();
-let novelSearchPromise;
 const globalSearchPromises = new Map();
-watch(() => [githubSession.authenticated, githubSession.revision], () => { novelSearchPromise = null; }, { flush: 'sync' });
 
 const uniqueStrings = (values) => {
   return [
@@ -428,10 +424,10 @@ const fetchBlogEntries = async (locale) => {
   });
 };
 
-const fetchNovelEntries = async (includeContent = true) => {
-  const { fetchChapters, fetchContent } = useChapterApi();
+const fetchNovelEntries = async () => {
+  const { fetchChapters } = useChapterApi();
   const chaptersByVolume = await fetchChapters();
-  if (!githubSession.authenticated) throw new Error("LOGIN_REQUIRED");
+  if (!moriSession.canReadNovel) throw new Error("LOGIN_REQUIRED");
   let catalogOrder = 0;
   const chapters = Object.values(chaptersByVolume || {}).flatMap(
     (volume, volumeOrder) => {
@@ -448,25 +444,8 @@ const fetchNovelEntries = async (includeContent = true) => {
     },
   );
 
-  return Promise.all(
-    chapters.map(async (chapter) => {
-      let content = "";
-      let frontmatter = { ...chapter };
-
-      try {
-        const rawContent = includeContent && chapter?.path
-          ? await fetchContent(chapter.path)
-          : "";
-        const document = fm(String(rawContent || ""));
-        content = document.body;
-        frontmatter = {
-          ...chapter,
-          ...document.attributes,
-        };
-      } catch {
-        content = "";
-      }
-
+  return chapters.map((chapter) => {
+      const frontmatter = chapter;
       const uploadDate = normalizeArticleDate(
         frontmatter?.uploadDate || chapter?.uploadDate,
       );
@@ -493,12 +472,7 @@ const fetchNovelEntries = async (includeContent = true) => {
           url,
           title,
           summary: volumeTitle || "《向远方》",
-          content,
-          searchBlocks: createLocalMarkdownSearchBlocks({
-            content,
-            baseUrl: url,
-            title,
-          }),
+          content: "",
           tags: volumeTitle ? [volumeTitle] : [],
           filterTags: volumeFacet ? [volumeFacet] : [],
           metadata,
@@ -511,33 +485,14 @@ const fetchNovelEntries = async (includeContent = true) => {
         },
         "novel",
       );
-    }),
-  );
-};
-
-export const fetchNovelSearchIndex = async () => {
-  if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
-  if (novelSearchPromise) return novelSearchPromise;
-  const revision = githubSession.revision;
-  const pending = fetchNovelEntries().then(entries => {
-    if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
-    return entries;
   });
-  novelSearchPromise = pending;
-
-  try {
-    return await novelSearchPromise;
-  } catch (error) {
-    if (novelSearchPromise === pending) novelSearchPromise = null;
-    throw error;
-  }
 };
 
 export const fetchNovelSearchCatalog = async () => {
-  if (!githubSession.authenticated) throw new Error('LOGIN_REQUIRED');
-  const revision = githubSession.revision;
-  const entries = await fetchNovelEntries(false);
-  if (!githubSession.authenticated || revision !== githubSession.revision) throw new Error('LOGIN_REQUIRED');
+  if (!moriSession.canReadNovel) throw new Error('LOGIN_REQUIRED');
+  const revision = moriSession.revision;
+  const entries = await fetchNovelEntries();
+  if (!moriSession.canReadNovel || revision !== moriSession.revision) throw new Error('LOGIN_REQUIRED');
   return entries;
 };
 

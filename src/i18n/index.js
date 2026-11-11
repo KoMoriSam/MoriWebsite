@@ -1,4 +1,4 @@
-import { inject, computed, ref } from "vue";
+import { inject, ref } from "vue";
 import { createI18n } from "vue-i18n";
 import { formatDate, FULL_DATE_OPTIONS } from "./format-date.js";
 import zh from "./messages/zh-CN/common.json";
@@ -209,13 +209,6 @@ export function createLocaleService({ loaders = messageLoaders } = {}) {
       );
     },
     message: (key, params = {}) => ({ key, params }),
-    commentLocale: computed(() =>
-      locale.value === DEFAULT_LOCALE
-        ? "zh-CN"
-        : locale.value === "fr"
-          ? "fr"
-          : "en",
-    ),
     async restoreLocale(info = null) {
       globalInfo = info;
       let saved = null;

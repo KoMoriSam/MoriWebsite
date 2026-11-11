@@ -37,7 +37,6 @@ if (
 dotenv.config({ path: [".env.production", ".env"], quiet: true });
 process.env.VITE_BLOG_RAW ||= "https://raw.komori.cc/post";
 process.env.VITE_NOVEL_RAW ||= "https://raw.komori.cc/novel";
-process.env.VITE_GISCUS_CSS_RAW ||= "https://raw.komori.cc/giscus";
 process.env.CONTENT_BUILD_DIR = CONTENT_DIRECTORY;
 process.env.SSG_IMAGE_CACHE = resolve(".tmp/site-image-cache");
 const branch = process.env.SSG_PRODUCTION_BRANCH || "production";
@@ -192,6 +191,7 @@ try {
           "-z",
           "--",
           "src",
+          "shared",
           "scripts",
           "workers",
           "public",
@@ -238,7 +238,7 @@ try {
     const contentWorkerFingerprint = hash(
       inputs.filter(
         ([file]) =>
-          file === "wrangler.content.jsonc" || file === "workers/content.js",
+          file === "wrangler.content.jsonc" || file === "workers/content.js" || file === "shared/novel-release.js",
       ),
     );
     process.env.SSG_CONTENT_CACHE_VERSION = fingerprint;
@@ -253,7 +253,7 @@ try {
         if (!(await store.get("latest.json", stateFile))) return;
         const state = await readJson(stateFile);
         if (
-          state.schema !== 1 ||
+          state.schema !== 2 ||
           !/^[a-f0-9-]{36}$/u.test(state.id) ||
           !state.site ||
           !state.content ||
@@ -271,6 +271,8 @@ try {
         for (const directory of [
           "dist",
           ".output/content",
+          ".output/content-build",
+          ".output/novel-search",
           ".tmp/site-renderer",
           ".tmp/site-image-cache",
           ".tmp/site-search-cache",
@@ -421,7 +423,6 @@ try {
         if (!full) await step("build/licenses", "--source");
         for (const directory of [
           ...(full || blogChanged ? ["pagefind"] : []),
-          ...(full || novelChanged ? ["pagefind-novel"] : []),
         ]) {
           await removeBuildDirectory(
             resolve("dist", directory),
@@ -467,7 +468,7 @@ try {
       ),
     };
     const state = {
-      schema: 1,
+      schema: 2,
       id,
       fingerprint,
       contentFingerprint,
@@ -495,6 +496,8 @@ try {
         archive,
         "dist",
         ".output/content",
+        ".output/content-build",
+        ".output/novel-search",
         ".tmp/site-renderer",
         ".tmp/site-image-cache",
         ".tmp/site-search-cache",
@@ -531,7 +534,7 @@ try {
           await deploy("website", [], deployment);
           state.versions = await activeVersions();
         } catch (error) {
-          await restoreVersions(deployed).catch((rollback) => {
+          await restoreVersions(deployed, previous?.versions).catch((rollback) => {
             throw new AggregateError(
               [error, rollback],
               "Deployment and rollback failed",

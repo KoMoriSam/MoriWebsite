@@ -1,3 +1,4 @@
+import { assertNovelRelease, publishNovelRelease } from "./novel-release.mjs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,11 +46,12 @@ export async function activeVersions() {
   );
 }
 
-export async function restoreVersions(before) {
-  const current = await activeVersions();
+export async function restoreVersions(before, verified, { inspect = activeVersions, execute = run } = {}) {
+  if (!verified || deployments.some(({ name }) => !before[name] || before[name] !== verified[name])) return;
+  const current = await inspect();
   for (const { name, config, environment } of deployments) {
     if (current[name] === before[name]) continue;
-    await run(
+    await execute(
       ["wrangler", "rollback", before[name], "--config", config, "--yes"],
       { env: environment() },
     );
@@ -81,6 +83,9 @@ export async function deploy(
       "网站与内容版本不一致。请运行 pnpm build 重新生成发布文件。",
     );
   }
+  const novelVersion = await assertNovelRelease();
+  if (receipt.novelVersion !== novelVersion) throw new Error("Novel release receipt mismatch");
+  if (!args.includes("--dry-run")) await publishNovelRelease(novelVersion);
   // Publish content before the site starts referencing its new index and image manifest.
   if (contentChanged)
     await run(

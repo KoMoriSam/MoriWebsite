@@ -1,7 +1,6 @@
 <template>
   <NavigationFeedback />
   <NavBar />
-  <SessionProbe />
   <NoticeDialog
     :mode="overlayMode"
     :selected-announcement="selectedAnnouncement"
@@ -24,8 +23,7 @@ import { useHead } from "@unhead/vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
-import SessionProbe from "@/components/auth/SessionProbe.vue";
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import NavBar from "@/components/layout/NavBar.vue";
 import NavigationFeedback from "@/components/feedback/NavigationFeedback.vue";
 import NoticeDialog from "@/components/announcement/interaction/NoticeDialog.vue";
@@ -56,7 +54,7 @@ const localeToast = useToast();
 
 const route = useRoute();
 useThemeTransition();
-const auth = useGithubSession();
+const auth = useMoriAuth();
 const router = useRouter();
 let stopAuth;
 onMounted(() => { stopAuth = auth.start(router); });

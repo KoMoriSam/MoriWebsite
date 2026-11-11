@@ -24,7 +24,9 @@ import {
 import { PROJECT_ROOT, run } from "../lib/commands.mjs";
 import { prepareKaiming } from "../lib/kaiming-assets.mjs";
 
-export const CONTENT_DIRECTORY = path.join(PROJECT_ROOT, ".output/content");
+import { sealNovelRelease, sourceDirectory } from "./novel-release.mjs";
+
+export const CONTENT_DIRECTORY = sourceDirectory;
 export const BUILD_DIRECTORY = path.join(PROJECT_ROOT, ".tmp/content-build");
 export const MANIFEST_PATH = path.join(BUILD_DIRECTORY, "manifest.json");
 export const SITE_RECEIPT_PATH = path.join(BUILD_DIRECTORY, "site.json");
@@ -208,7 +210,7 @@ export async function prepareContent(previous) {
   delete env.CONTENT_GITHUB_TOKEN;
   delete env.CLOUDFLARE_API_TOKEN;
   for (const key of Object.keys(env))
-    if (key.startsWith("SSG_R2_")) delete env[key];
+    if (key.startsWith("SSG_R2_") || key.startsWith("NOVEL_R2_")) delete env[key];
   try {
     const checkedOut = [];
     for (const source of sources) {
@@ -297,7 +299,7 @@ export async function prepareContent(previous) {
     await copyTree(staged, CONTENT_DIRECTORY, { hidden: true });
     await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
     console.log(
-      "博客、小说和开明字体已准备完成。发布后可通过 raw.komori.cc 访问。",
+      "博客、小说和开明字体的构建输入已准备完成。",
     );
   } finally {
     await removeBuildDirectory(scratch, BUILD_DIRECTORY);
@@ -312,9 +314,10 @@ export async function sealContentBuild() {
     "sitemap.xml",
   ])
     await access(path.join(PROJECT_ROOT, "dist", file));
+  const novelVersion = await sealNovelRelease();
   await writeFile(
     SITE_RECEIPT_PATH,
-    `${JSON.stringify({ buildId: manifest.buildId, websiteCommit: manifest.websiteCommit })}\n`,
+    `${JSON.stringify({ buildId: manifest.buildId, websiteCommit: manifest.websiteCommit, novelVersion })}\n`,
   );
 }
 

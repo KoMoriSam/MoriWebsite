@@ -34,18 +34,7 @@ const deployments = {
     ["wrangler", "deploy", "--config", "wrangler.api.jsonc", "--keep-vars"],
   ],
   content: [script("build/deploy.mjs", "content")],
-  giscus: [
-    [
-      "wrangler",
-      "pages",
-      "deploy",
-      "giscus",
-      "--project-name",
-      "giscus",
-      "--branch",
-      "main",
-    ],
-  ],
+  auth: [["wrangler", "deploy", "--config", "wrangler.auth.jsonc"]],
 };
 
 const descriptions = {
@@ -67,7 +56,7 @@ const descriptions = {
     website: "发布网站与配套内容",
     content: "发布博客、小说和开明字体",
     api: "发布网站 API 服务",
-    giscus: "独立发布评论主题和加载动画",
+    auth: "发布 Mori Auth 认证服务",
   },
   check: {
     announcements: "公告内容与发布流程",
@@ -80,7 +69,7 @@ const descriptions = {
     "blog-translations-runtime": "文章语言切换与阅读导航",
     "blog-translations-ssr": "文章预渲染与语言提示",
     "build-assets": "构建资源与许可页面",
-    "content-build": "内容发布与评论资源访问",
+    "content-build": "内容发布与小说资源访问",
     "content-licenses": "文章版权协议",
     fogport: "雾港商纪规则与对局",
     "game-room-client": "游戏房间连接与音效",
@@ -166,7 +155,7 @@ async function main() {
   } else if (command === "build") {
     if (args.some((arg) => ["--help", "-h"].includes(arg))) {
       console.log(
-        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览，或运行 pnpm run deploy website 发布。\n评论主题和加载动画通过 pnpm run deploy giscus 独立发布。",
+        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览，或运行 pnpm run deploy website 发布。\n小说正文和全文索引由发布命令上传到私有 R2。",
       );
       return;
     }
@@ -175,9 +164,8 @@ async function main() {
     dotenv.config({ path: [".env.production", ".env"], quiet: true });
     process.env.VITE_BLOG_RAW ||= "https://raw.komori.cc/post";
     process.env.VITE_NOVEL_RAW ||= "https://raw.komori.cc/novel";
-    process.env.VITE_GISCUS_CSS_RAW ||= "https://raw.komori.cc/giscus";
     await run(script("build/content.mjs"));
-    process.env.CONTENT_BUILD_DIR = path.join(PROJECT_ROOT, ".output/content");
+    process.env.CONTENT_BUILD_DIR = path.join(PROJECT_ROOT, ".output/content-build");
     await sequence(prepare(true));
     await run(script("build/prerender.mjs", "--full", ...args));
     await sequence([

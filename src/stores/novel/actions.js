@@ -1,5 +1,5 @@
 import { watch } from "vue";
-import { githubSession } from "@/composables/auth/useGithubSession";
+import { moriSession } from "@/composables/auth/useMoriAuth";
 import { useTitle, useDebounceFn } from "@vueuse/core";
 
 import { useToast } from "@/composables/useToast";
@@ -19,7 +19,7 @@ export const useNovelActions = (state, getters) => {
 
   const toast = useToast({ position: "center-top", closable: false });
   let contentRequestToken = 0;
-  watch(() => [githubSession.authenticated, githubSession.revision], () => {
+  watch(() => [moriSession.canReadNovel, moriSession.revision], () => {
     contentRequestToken++;
     state.currentChapterContent.value = '';
     state.contentCache.value = {};
@@ -268,8 +268,8 @@ export const useNovelActions = (state, getters) => {
     forceUpdate = false,
     requestedUuid = state.currentChapterUuid.value,
   ) => {
-    if (!githubSession.authenticated) return;
-    const authRevision = githubSession.revision;
+    if (!moriSession.canReadNovel) return;
+    const authRevision = moriSession.revision;
     const chapterUuid = String(requestedUuid || "");
     const chapter = state.flatChapters.value.find(
       (item) => String(item.uuid) === chapterUuid,
@@ -278,7 +278,7 @@ export const useNovelActions = (state, getters) => {
 
     const requestToken = ++contentRequestToken;
     const isCurrentRequest = () =>
-      githubSession.authenticated && authRevision === githubSession.revision &&
+      moriSession.canReadNovel && authRevision === moriSession.revision &&
       requestToken === contentRequestToken &&
       String(state.currentChapterUuid.value || "") === chapterUuid;
     const cachedContent = normalizeChapterContent(
@@ -358,7 +358,7 @@ export const useNovelActions = (state, getters) => {
   }, 500);
 
   const getChapterPageCount = async (uuid) => {
-    if (!githubSession.authenticated) return 1;
+    if (!moriSession.canReadNovel) return 1;
     const chapterUuid = String(uuid || "");
     const cachedContent = normalizeChapterContent(
       state.contentCache.value[chapterUuid],

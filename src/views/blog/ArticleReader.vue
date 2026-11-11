@@ -519,19 +519,9 @@
       <CommentsPlaceholder v-if="loading" />
       <Thread
         v-else
-        :key="`article-comments-${article.id}-${githubSession.revision}`"
-        :repo="GISCUS.blogRepo.name"
-        :repo-id="GISCUS.blogRepo.id"
-        :category="GISCUS.categories.announcements.name"
-        :category-id="GISCUS.categories.announcements.id"
-        mapping="specific"
-        :term="String(article.id)"
-        strict="0"
-        reactions-enabled="1"
-        emit-metadata="1"
-        input-position="bottom"
-        :theme="giscusTheme"
-        :lang="commentLocale"
+        :key="article.id"
+        scope="article"
+        :target="String(article.id)"
       />
     </template>
   </ReadingLayout>
@@ -550,7 +540,6 @@ const {
   text: localizeText,
   locale: uiLocale,
   localeRestored,
-  commentLocale,
   number: formatNumber,
   date: formatLocalizedDate,
 } = useLocale();
@@ -558,20 +547,17 @@ const {
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { Translation as I18nT } from "vue-i18n";
-import { githubSession } from "@/composables/auth/useGithubSession";
 import Thread from "@/components/comments/Thread.vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useReaderStore } from "@/stores/readerStore";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
-import { useThemeStore } from "@/stores/themeStore";
 import { useScrollTo } from "@/composables/useScrollTo";
 import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
 import { useContentReadTracking } from "@/composables/reader/useContentReadTracking";
 import { normalizeArticleDate } from "@/composables/blog/useArticleFilter";
 import { sortArticleNavigation } from "@/utils/blog/article-navigation";
 import { getArticleTimelinessDays } from "@/utils/blog/article-timeliness";
-import CONFIG from "@/constants/config";
 import {
   getArticleLocales,
   getArticlePath,
@@ -681,15 +667,12 @@ watch(
   { immediate: true },
 );
 
-const { GISCUS } = CONFIG;
 const route = useRoute();
 const router = useRouter();
 
 const readerStore = useReaderStore();
 const { styleConfigs } = storeToRefs(readerStore);
 
-const themeStore = useThemeStore();
-const { giscusTheme } = storeToRefs(themeStore);
 
 const { scrollRef, scrollToTop, scrollToBottom } = useScrollTo();
 const articleTextContextMounted = ref(false);

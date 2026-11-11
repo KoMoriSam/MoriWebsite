@@ -1,11 +1,12 @@
 <template>
-  <button type="button" class="btn btn-primary" @click="login">
+  <button type="button" class="btn btn-primary" @click="login({ hash: returnHash })">
     <i class="ri-github-fill" aria-hidden="true"></i>{{ t("auth.login") }}
   </button>
 </template>
 <script setup>
-import { useGithubSession } from "@/composables/auth/useGithubSession";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useLocale } from "@/i18n";
-const { login } = useGithubSession();
+defineProps({ returnHash: String });
+const { login } = useMoriAuth();
 const { t } = useLocale();
 </script>

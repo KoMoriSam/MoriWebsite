@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { publicCatalog } from "./novel-release.mjs";
 import fs from "fs";
 import path from "path";
 import { createArticleMetadata } from "../../src/utils/ssg/page-data.js";
@@ -58,7 +59,7 @@ if (!novelIndexRes.ok) {
   throw new Error(`获取小说 index.json 失败: ${novelIndexRes.status}`);
 }
 
-const novelChapters = await novelIndexRes.json();
+const novelChapters = publicCatalog(await novelIndexRes.json());
 const changelog = JSON.parse(
   fs.readFileSync(path.resolve("public/changelog.json"), "utf-8"),
 );

@@ -1,0 +1,34 @@
+const article = { name: "KoMoriSam/theWake", id: "R_kgDOTElB5w" };
+const novel = { name: "KoMoriSam/theHorizon", id: "R_kgDOOWZUkw" };
+const general = { name: "General", id: "DIC_kwDOOWZUk84C_2_B" };
+export const bookTerm = "《向远方》 | 远方之森";
+export const discussionRegistry = "site-data/discussion-targets.json";
+
+export const discussionScopes = {
+  article: { repo: article, category: { name: "Announcements", id: "DIC_kwDOTElB584C_2-6" } },
+  chapter: { repo: novel, category: general },
+  book: { repo: novel, category: general },
+  "article-paragraph": { repo: article, category: { name: "Ideas", id: "DIC_kwDOTElB584C_2-9" } },
+  "novel-paragraph": { repo: novel, category: { name: "Ideas", id: "DIC_kwDOOWZUk84C_2_D" } },
+};
+
+export function discussionTarget(registry, scope, value) {
+  if (!Object.hasOwn(discussionScopes, scope) || typeof value !== "string" || value.length > 256) return null;
+  const paragraph = scope.endsWith("-paragraph");
+  const novel = ["book", "chapter", "novel-paragraph"].includes(scope);
+  const parent = paragraph ? value.match(/^(.+)-([1-9]\d{0,5})$/u)?.[1] : value;
+  const collection = novel ? registry.chapters : registry.articles;
+  const record = parent && Object.hasOwn(collection, parent) ? collection[parent] : null;
+  const term = scope === "book" ? bookTerm : scope === "chapter" ? record?.term : record && value;
+  const path = scope === "book" ? "/novel" : record?.path;
+  if (!term || !path || (scope === "book" && value !== bookTerm)) return null;
+  return {
+    ...discussionScopes[scope], term, sourceType: novel ? "novel" : "article",
+    countScope: paragraph ? "paragraph" : novel ? "chapter" : "content",
+    url: new URL(path + (paragraph ? "#" + encodeURIComponent(value) : ""), "https://komori.cc").href,
+  };
+}
+
+export function legacyDiscussionQuery(target) {
+  return `repo:${target.repo.name.toLowerCase()} category:${JSON.stringify(target.category.name)} in:title ${JSON.stringify(target.term)}`;
+}
