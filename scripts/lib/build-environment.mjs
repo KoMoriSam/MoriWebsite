@@ -23,3 +23,12 @@ export function assertPublicVite(source = process.env) {
       throw new Error(`Unsupported public build variable: ${key}`);
   }
 }
+
+
+export function sameOriginAssets() {
+  return { VITE_BLOG_RAW: "/content/post", VITE_NOVEL_RAW: "/content/novel",
+    VITE_COMMENT_COUNTS_API: "/api/github/discussions/counts", VITE_RANDOM_HERO_API: "/api/random-hero",
+    VITE_ANALYTICS_API: "/api/analytics", VITE_ANNOUNCEMENTS_API: "/api/announcements",
+    VITE_CHANGELOG_API: "/api/changelog", VITE_GAMES_API: "/api/games/rooms",
+    VITE_GITHUB_PROFILE_API: "/api/github/users", VITE_GITHUB_REPOSITORY_API: "/api/github/repos" };
+}

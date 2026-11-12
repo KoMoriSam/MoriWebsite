@@ -26,13 +26,17 @@ const r2Settings = {
   },
 };
 
-export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } = {}) {
+export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace, defaults = {} } = {}) {
   const settings = Object.fromEntries(
     Object.keys(r2Settings).map((name) => [
       name,
       name === "SSG_SNAPSHOT_NAMESPACE" && fixedNamespace
         ? fixedNamespace
-        : process.env[name.replace("SSG_R2", prefix)]?.trim() || "",
+        : process.env[name.replace("SSG_R2", prefix)]?.trim() || ({
+          SSG_R2_ENDPOINT: defaults.endpoint,
+          SSG_R2_BUCKET: defaults.bucket,
+          SSG_SNAPSHOT_NAMESPACE: defaults.namespace,
+        })[name] || "",
     ]),
   );
   if (!Object.keys(settings).some((name) => name.startsWith("SSG_R2") && settings[name]) &&
@@ -54,7 +58,7 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
   } = settings;
   const endpoint = endpointSetting.replace(/\/$/u, "");
   const objectPrefix = namespace + "/";
-  async function request(method, name, { input, output, create, query } = {}) {
+  async function request(method, name, { input, output, create } = {}) {
     const args = [
       "--silent",
       "--show-error",
@@ -74,8 +78,7 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
     if (method === "HEAD") args.push("--head");
     if (input) args.push("--upload-file", input);
     if (create) args.push("--header", "If-None-Match: *");
-    args.push(query ? `${endpoint}/${bucket}?${query}` :
-      `${endpoint}/${bucket}/${(objectPrefix + name).split("/").map(encodeURIComponent).join("/")}`);
+    args.push(`${endpoint}/${bucket}/${(objectPrefix + name).split("/").map(encodeURIComponent).join("/")}`);
     return new Promise((resolveRequest, reject) => {
       const child = spawn("curl", args, { env: buildEnvironment(), stdio: ["pipe", "pipe", "inherit"] });
       let response = "";
@@ -113,32 +116,7 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
     const code = body.match(/<Code>([A-Za-z][A-Za-z0-9]{0,63})<\/Code>/u)?.[1];
     return new Error(`R2 ${method} ${name}: ${status}${code ? ` (${code})` : ""}`);
   }
-  const xmlText = (value) => value.replace(/&(amp|lt|gt|quot|apos);/g, (_, entity) =>
-    ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" })[entity]);
   return {
-    async list(prefix = "") {
-      const objects = [];
-      let continuation;
-      do {
-        const query = new URLSearchParams({ "list-type": "2", prefix: objectPrefix + prefix });
-        if (continuation) query.set("continuation-token", continuation);
-        const response = await request("GET", "", { query });
-        if (response.status !== 200 || !response.body.includes("<ListBucketResult"))
-          throw await responseError("LIST", prefix, response);
-        for (const [, entry] of response.body.matchAll(/<Contents>([\s\S]+?)<\/Contents>/g)) {
-          const name = xmlText(entry.match(/<Key>(.*?)<\/Key>/s)?.[1] || "");
-          const bytes = Number(entry.match(/<Size>(\d+)<\/Size>/)?.[1]);
-          if (!name.startsWith(objectPrefix) || !Number.isSafeInteger(bytes))
-            throw new Error("Invalid R2 listing entry");
-          objects.push({ key: name.slice(objectPrefix.length), bytes, modifiedAt: entry.match(/<LastModified>(.*?)<\/LastModified>/)?.[1] });
-        }
-        const next = response.body.match(/<NextContinuationToken>(.*?)<\/NextContinuationToken>/s)?.[1];
-        if (response.body.includes("<IsTruncated>true</IsTruncated>") && (!next || xmlText(next) === continuation))
-          throw new Error("Incomplete R2 listing");
-        continuation = next && xmlText(next);
-      } while (continuation);
-      return objects;
-    },
     async exists(name) {
       const response = await request("HEAD", name);
       if (response.status === 404) return false;

@@ -1,5 +1,6 @@
 import { assertPublicVite, buildEnvironment } from "../lib/build-environment.mjs";
-import { artifactStore, sealArtifact } from "../release/artifact-store.mjs";
+import { includePublicContent } from "./novel-release.mjs";
+import { publishStores, readWorkerConfig } from "../lib/worker-config.mjs";
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
 import {
@@ -20,60 +21,38 @@ import {
   prepareContent,
   sealContentBuild,
 } from "./content.mjs";
-import { localSnapshotStore, snapshotStore } from "./snapshot-store.mjs";
+import { localSnapshotStore } from "./snapshot-store.mjs";
 import { removeBuildDirectory } from "../lib/content-files.mjs";
 import { run } from "../lib/commands.mjs";
 import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 
 const flags = new Set(process.argv.slice(2));
-const buildCandidate = flags.has("--deploy");
-const artifact = flags.has("--artifact");
+const upload = flags.has("--upload") || flags.has("--deploy");
 const dryRun = flags.has("--dry-run") || flags.has("--explain");
 const profile = flags.has("--profile");
-if (
-  [...flags].some(
-    (flag) => !["--deploy", "--dry-run", "--explain", "--full", "--profile", "--artifact"].includes(flag),
-  ) ||
-  (buildCandidate && (dryRun || artifact)) || (artifact && dryRun)
-) {
-  throw new Error("Usage: pnpm build:smart [--deploy | --dry-run | --explain] [--full] [--profile] [--artifact]");
+if ([...flags].some((flag) => !["--upload", "--deploy", "--dry-run", "--explain", "--full", "--profile"].includes(flag)) ||
+    upload && dryRun) {
+  throw new Error("Usage: pnpm build:smart [--upload | --dry-run | --explain] [--full] [--profile]");
 }
-if (buildCandidate) {
-  await run(["node", "scripts/release/candidate.mjs", ...(flags.has("--full") ? ["--full"] : [])]);
+if (upload) {
+  await run(["node", "scripts/build/version.mjs", ...(flags.has("--full") ? ["--full"] : [])]);
   process.exit(0);
 }
 dotenv.config({ path: [".env.production", ".env"], quiet: true });
 assertPublicVite();
-if (artifact) Object.assign(process.env, {
-  VITE_BLOG_RAW: "/content/post", VITE_NOVEL_RAW: "/content/novel",
-  VITE_COMMENT_COUNTS_API: "/api/github/discussions/counts", VITE_RANDOM_HERO_API: "/api/random-hero",
-  VITE_ANALYTICS_API: "/api/analytics", VITE_ANNOUNCEMENTS_API: "/api/announcements",
-  VITE_CHANGELOG_API: "/api/changelog", VITE_GAMES_API: "/api/games/rooms",
-  VITE_GITHUB_PROFILE_API: "/api/github/users", VITE_GITHUB_REPOSITORY_API: "/api/github/repos",
-});
-process.env.VITE_BLOG_RAW ||= "https://raw.komori.cc/post";
-process.env.VITE_NOVEL_RAW ||= "https://raw.komori.cc/novel";
+const versionBuild = Boolean(process.env.MORI_SMART_RESULT);
+const branch = process.env.SSG_PRODUCTION_BRANCH || "production";
+if (process.env.WORKERS_CI === "1" && process.env.WORKERS_CI_BRANCH !== branch && process.env.CONTENT_GITHUB_TOKEN)
+  throw new Error("Private source credentials must be scoped to the trusted Workers Builds branch");
+if (versionBuild && (process.env.WORKERS_CI !== "1" || process.env.WORKERS_CI_BRANCH !== branch))
+  throw new Error("Remote snapshot updates require the trusted Workers Builds branch");
+process.env.VITE_BLOG_RAW ||= "/content/post";
+process.env.VITE_NOVEL_RAW ||= "/content/novel";
 process.env.CONTENT_BUILD_DIR = CONTENT_DIRECTORY;
 process.env.SSG_IMAGE_CACHE = resolve(".tmp/site-image-cache");
-const branch = process.env.SSG_PRODUCTION_BRANCH || "production";
-const remote = artifact ? snapshotStore() : null;
-if (
-  process.env.WORKERS_CI === "1" &&
-  process.env.WORKERS_CI_BRANCH !== branch &&
-  process.env.CONTENT_GITHUB_TOKEN
-) {
-  throw new Error(
-    "Private source credentials must be scoped to the trusted production build",
-  );
-}
-if (artifact) {
-  artifactStore();
-  if (process.env.MORI_ARTIFACT_LOCAL !== "1" && !process.env.CONTENT_BLOG_DIR && !process.env.CONTENT_NOVEL_DIR) {
-    const pendingFiles = await run(["git", "status", "--porcelain", "--untracked-files=normal"], { capture: true, env: buildEnvironment() });
-    if (pendingFiles) throw new Error("A publishable release requires a clean website checkout");
-  }
-}
+const remote = versionBuild ? publishStores(await readWorkerConfig(), { snapshotOnly: true }).cache : null;
 const store = remote || (await localSnapshotStore());
+const saveBuildResult = (result) => versionBuild && writeFile(process.env.MORI_SMART_RESULT, JSON.stringify(result));
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 const hash = (value) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -146,7 +125,7 @@ const snapshotDirectories = [
   ".tmp/site-search-cache",
 ];
 await mkdir(".tmp", { recursive: true });
-if (!process.env.MORI_CANDIDATE_ID) delete process.env.SSG_BUILD_PROFILE;
+delete process.env.SSG_BUILD_PROFILE;
 if (profile) {
   const directory = resolve(".tmp/build-profiles");
   await mkdir(directory, { recursive: true });
@@ -156,7 +135,6 @@ if (profile) {
 const lock = resolve(".tmp/site-build.lock");
 class InvalidSnapshot extends Error {}
 let localLocked = false;
-let remoteLocked = false;
 let scratch;
 let result = "error";
 try {
@@ -167,18 +145,6 @@ try {
   scratch = await mkdtemp(resolve(".tmp/site-publish-"));
   const stateFile = join(scratch, "state.json");
   const archive = join(scratch, "snapshot.tar.gz");
-  const marker = join(scratch, "owner");
-  await writeFile(marker, process.env.WORKERS_CI_BUILD_UUID || randomUUID());
-  if (remote) await observeBuild("lock", "wait for R2 build lock", async () => {
-    const deadline = Date.now() + 8 * 60_000;
-    while (!(remoteLocked = await remote.put("publish.lock", marker, true))) {
-      if (Date.now() > deadline)
-        throw new Error(
-          "Timed out waiting for the candidate build lock",
-        );
-      await new Promise((next) => setTimeout(next, 5000));
-    }
-  });
   const websiteCommit = await observeBuild("inputs", "website commit", () =>
     run(["git", "rev-parse", "HEAD"], { capture: true }),
   );
@@ -265,12 +231,9 @@ try {
     let snapshotHit = false;
     let restoredBytes = 0;
     let reason = "missing snapshot";
-    let pending = false;
     const storage = remote ? "r2" : "local";
     await phase("restore", async () => {
       try {
-        pending = await observeBuild("restore", "read publication marker", () =>
-          store.get("pending", join(scratch, "pending")), { storage });
         if (!(await observeBuild("restore", "read snapshot metadata", async (update) => {
           const found = await store.get("latest.json", stateFile);
           update({ cache: found ? "hit" : "miss" });
@@ -344,11 +307,7 @@ try {
         });
         previous = state;
         snapshotHit = true;
-        reason = pending
-          ? "interrupted publication"
-          : state.fingerprint !== fingerprint
-            ? "application inputs changed"
-            : "";
+        reason = state.fingerprint !== fingerprint ? "application inputs changed" : "";
       } catch (error) {
         if (!(error instanceof InvalidSnapshot)) throw error;
         reason = error.message;
@@ -382,8 +341,11 @@ try {
       changedFiles: delta.total,
     });
     if (!full && !delta.total) {
-      if (!dryRun) await phase("seal unchanged build", sealContentBuild);
-      if (artifact) await sealArtifact(source, { mode: "SKIPPED", phases });
+      if (!dryRun) {
+        await phase("seal unchanged build", sealContentBuild);
+        if (!versionBuild) await phase("include public content", includePublicContent);
+      }
+      await saveBuildResult({ mode: "SKIPPED", snapshotId: previous.id });
       console.log(
         JSON.stringify({
           mode: "SKIPPED",
@@ -561,7 +523,7 @@ try {
         await rm(uploaded);
       }, { storage, bytes: state.archiveBytes });
     });
-    if (artifact) await sealArtifact(source, summary);
+
     await writeFile(stateFile, JSON.stringify(state));
     await observeBuild("snapshot", "store latest metadata", () =>
       store.put("latest.json", stateFile), { storage });
@@ -571,6 +533,8 @@ try {
         .catch((error) =>
           console.warn(`Previous snapshot cleanup failed: ${error.message}`),
         );
+    await saveBuildResult({ mode, snapshotId: id });
+    if (!versionBuild) await phase("include public content", includePublicContent);
     console.log(
       JSON.stringify({
         ...summary,
@@ -585,19 +549,9 @@ try {
   }
 } finally {
   try {
-    if (remoteLocked)
-      await observeBuild("lock", "release R2 build lock", () => remote.delete("publish.lock"));
-  } catch (error) {
-    result = "error";
-    throw error;
+    if (scratch) await removeBuildDirectory(scratch, resolve(".tmp"));
   } finally {
-    try {
-      if (scratch) await removeBuildDirectory(scratch, resolve(".tmp"));
-    } finally {
-      if (localLocked) await removeBuildDirectory(lock, resolve(".tmp"));
-      buildEvent("smart", "build", result, {
-        elapsedMs: Math.round(performance.now() - started),
-      });
-    }
+    if (localLocked) await removeBuildDirectory(lock, resolve(".tmp"));
+    buildEvent("smart", "build", result, { elapsedMs: Math.round(performance.now() - started) });
   }
 }

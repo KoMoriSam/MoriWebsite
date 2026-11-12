@@ -10,8 +10,7 @@ import { pathToFileURL } from "node:url";
 import { createIndex } from "pagefind";
 import { discussionScopes, discussionTarget, legacyDiscussionQuery, bookTerm, discussionRegistry } from "../../shared/discussions.js";
 import { publicCovers } from "../../shared/novel-release.js";
-import { assertNovelRelease, sealNovelRelease } from "../build/novel-release.mjs";
-import { restoreVersions } from "../build/deploy.mjs";
+import { assertNovelRelease, includePublicContent, sealNovelRelease } from "../build/novel-release.mjs";
 import { pruneBuildAssets } from "../build/prune-assets.mjs";
 import { COOKIE, returnPath } from "../../workers/auth/http.js";
 import { decrypt, hash, randomToken } from "../../workers/auth/crypto.js";
@@ -410,6 +409,13 @@ test("separate public and private release files, authenticated Pagefind and old 
     }
     await pruneBuildAssets(path.join(root, "dist"));
     const version = await sealNovelRelease(root);
+    assert.equal(await includePublicContent(root), version);
+    assert.equal(await assertNovelRelease(root), version);
+    assert.equal(await readFile(path.join(root, "dist/content/post/index.json"), "utf8"), "public");
+    await assert.rejects(readFile(path.join(root, "dist/content/novel/1/chap.md")), { code: "ENOENT" });
+    await write("dist/content/novel/index.json", "invalid");
+    await assert.rejects(assertNovelRelease(root), /Unverified bundled content/);
+    await includePublicContent(root);
     const base = "/api/novel/" + version;
     const manifest = await readFile(path.join(root, ".output/novel-vault.json"));
     objects.set("v1/versions/" + version + ".json", manifest);
@@ -499,18 +505,25 @@ test("separate public and private release files, authenticated Pagefind and old 
 });
 
 
-test("a failed deployment never rolls back to the legacy public asset versions", async () => {
-  const before = { site: "site-old", content: "content-old" };
-  const restored = [];
-  const inspect = async () => ({ site: "site-new", content: "content-new" });
-  const execute = async ([, command, id]) => {
-    assert.equal(command, "rollback");
-    restored.push(id);
+test("native website version previews only serve public assets", async () => {
+  const env = {
+    WEBSITE_VERSION: { id: "version-id" },
+    ASSETS: { fetch: async () => new Response("version content") },
+    PUBLIC_API: { fetch: async () => { throw new Error("Preview forwarded to production API"); } },
+    MORI_AUTH: { verify: async () => { throw new Error("Preview used production auth"); } },
   };
-  await restoreVersions(before, undefined, { inspect, execute });
-  assert.deepEqual(restored, []);
-  await restoreVersions(before, { ...before, content: "other-release" }, { inspect, execute });
-  assert.deepEqual(restored, []);
-  await restoreVersions(before, before, { inspect, execute });
-  assert.deepEqual(restored, ["content-old", "site-old"]);
+  for (const [origin, headers] of [
+    ["https://version-website.example.workers.dev", {}],
+    [start, { "Cloudflare-Workers-Version-Overrides": 'website="version-id"' }],
+  ]) {
+    const response = await website.fetch(new Request(origin + "/content/post/index.json", { headers }), env);
+    assert.equal(await response.text(), "version content");
+    assert.equal(response.headers.get("X-Robots-Tag"), "noindex, nofollow");
+    assert.match(response.headers.get("Content-Security-Policy"), /^sandbox/);
+    const version = await website.fetch(new Request(origin + "/api/version", { headers }), env);
+    assert.deepEqual(await version.json(), { version: "version-id" });
+    for (const path of ["/auth/login", "/api/auth/session", "/api/github/discussions/counts", "/api/novel/version/search/pagefind.js"])
+      assert.equal((await website.fetch(new Request(origin + path, { headers }), env)).status, 404);
+    assert.equal((await website.fetch(new Request(origin + "/api/comments", { method: "POST", headers }), env)).status, 404);
+  }
 });

@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { MANIFEST_PATH, SITE_RECEIPT_PATH } from "./content.mjs";
 import { run } from "../lib/commands.mjs";
+import { deployEnvironment } from "../lib/build-environment.mjs";
 import { observeBuild } from "../lib/build-report.mjs";
 
 export function contentDeploymentEnvironment(source = process.env) {
@@ -15,57 +16,11 @@ export function contentDeploymentEnvironment(source = process.env) {
   return env;
 }
 
-const deployments = [
-  {
-    name: "content",
-    config: "wrangler.content.jsonc",
-    environment: contentDeploymentEnvironment,
-  },
-  { name: "site", config: "wrangler.jsonc", environment: () => process.env },
-];
-
-export async function activeVersions() {
-  return Object.fromEntries(
-    await Promise.all(
-      deployments.map(async ({ name, config, environment }) => {
-        const result = JSON.parse(
-          await run(
-            ["wrangler", "deployments", "status", "--config", config, "--json"],
-            { env: environment(), capture: true },
-          ),
-        );
-        if (
-          result.versions?.length !== 1 ||
-          result.versions[0].percentage !== 100 ||
-          !result.versions[0].version_id
-        ) {
-          throw new Error(`Expected a single active deployment for ${name}`);
-        }
-        return [name, result.versions[0].version_id];
-      }),
-    ),
-  );
-}
-
-export async function restoreVersions(before, verified, { inspect = activeVersions, execute = run } = {}) {
-  if (!verified || deployments.some(({ name }) => !before[name] || before[name] !== verified[name])) return;
-  const current = await inspect();
-  for (const { name, config, environment } of deployments) {
-    if (current[name] === before[name]) continue;
-    await execute(
-      ["wrangler", "rollback", before[name], "--config", config, "--yes"],
-      { env: environment() },
-    );
-  }
-}
-
-export async function deploy(
-  target,
-  args,
-  { contentChanged = true, siteChanged = true } = {},
-) {
-  if (!["website", "content"].includes(target))
-    throw new Error(`无法发布“${target}”。请选择 website 或 content。`);
+async function deploy(target, args) {
+  const uploadContent = target === "content" && args.length === 1 && args[0] === "--upload";
+  const dryRun = args.length === 1 && args[0] === "--dry-run";
+  if (!["website", "content"].includes(target) || !uploadContent && !dryRun)
+    throw new Error("Use --dry-run to check a package, or content --upload to upload a legacy content Worker version");
   const [manifest, receipt] = await Promise.all(
     [MANIFEST_PATH, SITE_RECEIPT_PATH].map(async (file) => {
       try {
@@ -87,31 +42,13 @@ export async function deploy(
   const novelVersion = await observeBuild("deploy", "verify novel release", () => assertNovelRelease());
   if (receipt.novelVersion !== novelVersion) throw new Error("Novel release receipt mismatch");
 
-  // Publish content before the site starts referencing its new index and image manifest.
-  if (contentChanged)
-    await observeBuild("deploy", "upload content Worker and assets", () => run(
-      [
-        "wrangler",
-        "deploy",
-        "--config",
-        "wrangler.content.jsonc",
-        "--keep-vars",
-        ...args,
-      ],
-      { env: contentDeploymentEnvironment() },
-    ));
-  if (target === "website" && siteChanged)
-    await observeBuild("deploy", "upload website Worker and assets", () =>
-      run(["wrangler", "deploy", "--config", "wrangler.jsonc", ...args]),
-    );
+  const config = target === "website" ? "wrangler.jsonc" : "wrangler.content.jsonc";
+  const env = target === "website" ? deployEnvironment() : contentDeploymentEnvironment(deployEnvironment());
+  await observeBuild("deploy", uploadContent ? "upload legacy public content version" : "check Worker package", () =>
+    run(["wrangler", "versions", "upload", "--config", config, ...(dryRun ? ["--dry-run"] : [])], { env }));
 }
 
-if (
-  process.argv[1] &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [target = "website", ...args] = process.argv.slice(2);
-  if (!args.includes("--dry-run"))
-    throw new Error("Production website and content require pnpm release promote <Release ID>");
   await deploy(target, args);
 }

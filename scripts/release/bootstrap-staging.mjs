@@ -1,9 +1,10 @@
-import { cp, mkdir, rm, writeFile, readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { cp, mkdir, mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { setTimeout } from "node:timers/promises";
 import { resolve } from "node:path";
 import { deployEnvironment } from "../lib/build-environment.mjs";
 import { run } from "../lib/commands.mjs";
-import { hash, scratchDirectory } from "./artifact-store.mjs";
+
 import { preparePreviewData } from "../preview/data.mjs";
 import { getArticlePath } from "../../src/utils/blog/article-versions.js";
 import { deploymentConfigs, stagingOrigin } from "./environment.mjs";
@@ -34,7 +35,9 @@ async function initialize(args, root) {
     }
   }
 }
-const root = await scratchDirectory();
+const hash = (input) => createHash("sha256").update(input).digest("hex");
+await mkdir(".tmp", { recursive: true });
+const root = await mkdtemp(resolve(".tmp/staging-"));
 try {
   for (const name of ["workers", "shared", "migrations", "wrangler.auth.jsonc", "wrangler.api.jsonc", "wrangler.content.jsonc", "wrangler.jsonc"])
     await cp(name, resolve(root, name), { recursive: true });
@@ -83,7 +86,7 @@ try {
     await writeFile(resolve(root, "dist/site-data/release.json"), '{"id":"bootstrap"}');
   }
   await writeFile(resolve(root, ".output/content/404.html"), "Not found");
-  const configs = await deploymentConfigs(root, true, fixture || active?.id === "staging-fixture" ? "staging-fixture" : "bootstrap", { bootstrap: true });
+  const configs = await deploymentConfigs(root, fixture || active?.id === "staging-fixture" ? "staging-fixture" : "bootstrap");
   if (action !== "--dry-run" && !apiOnly && !siteOnly) {
     for (const [name, binding] of [["auth", "AUTH_DB"], ["api", "ANALYTICS_DB"]])
       await initialize(["d1", "migrations", "apply", binding, "--remote", "--config", configs[name]], root);

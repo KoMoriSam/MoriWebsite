@@ -60,11 +60,12 @@ const descriptions = {
   "run deploy": {
     staging: "更新 Staging 测试版（--site-only 仅更新网站 Worker）",
     website: "检查网站部署包（--dry-run）",
-    content: "检查公开内容部署包（--dry-run）",
+    content: "检查公开内容部署包（--dry-run）或上传兼容外链的新版本（--upload）",
     api: "发布网站 API 服务",
     auth: "发布 Mori Auth 认证服务",
   },
   check: {
+    env: "检查 Cloudflare Worker 绑定与构建凭证",
     dev: "本地认证、评论与小说访问",
     announcements: "公告内容与发布流程",
     avalon: "阿瓦隆规则与角色能力",
@@ -161,15 +162,15 @@ async function main() {
   } else if (command === "build") {
     if (args.some((arg) => ["--help", "-h"].includes(arg))) {
       console.log(
-        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览。正式发布使用 pnpm release promote <Release ID>。\n小说正文和全文索引由发布命令上传到私有 R2。",
+        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览。正式版本由 Cloudflare Workers Builds 上传，在 Deployments 切换。\n小说正文和全文索引由发布命令上传到私有 R2。",
       );
       return;
     }
     console.log("正在构建网站和内容资源…");
     const { default: dotenv } = await import("dotenv");
     dotenv.config({ path: [".env.production", ".env"], quiet: true });
-    process.env.VITE_BLOG_RAW ||= "https://raw.komori.cc/post";
-    process.env.VITE_NOVEL_RAW ||= "https://raw.komori.cc/novel";
+    process.env.VITE_BLOG_RAW ||= "/content/post";
+    process.env.VITE_NOVEL_RAW ||= "/content/novel";
     await run(script("build/content.mjs"));
     process.env.CONTENT_BUILD_DIR = path.join(PROJECT_ROOT, ".output/content-build");
     await sequence(prepare(true));
@@ -179,10 +180,10 @@ async function main() {
       script("build/sitemap.mjs"),
       script("build/licenses.mjs", "--dist"),
       script("build/prune-assets.mjs"),
-      script("build/content.mjs", "--seal"),
+      script("build/content.mjs", "--seal", "--include-public"),
     ]);
     console.log(
-      "构建完成。\n网站：dist/\n内容资源：.output/content/\n预览：pnpm preview\n发布：pnpm release promote <Release ID>",
+      "构建完成。\n网站：dist/\n内容资源：.output/content/\n预览：pnpm preview\n发布：Cloudflare Workers → website → Deployments",
     );
   } else if (command === "preview") {
     if (args.some((arg) => ["--help", "-h"].includes(arg))) {
@@ -194,12 +195,8 @@ async function main() {
     console.log("正在打开网站构建预览…");
     await run(["vite", "preview", "--host", "0.0.0.0", ...args]);
   } else if (command === "release") {
-    const artifactVerification = args[0] === "verify" && /^[0-9a-f-]{36}$/.test(args[1] || "");
-    const target = artifactVerification || ["changelog", "announcement", "build", "stage", "verify-artifact", "approve", "promote", "rollback", "report", "retention"].includes(args[0])
-      ? args.shift()
-      : "cli";
-    if (target === "retention") await run(script("release/retention.mjs", ...args));
-    else await run(["cli", "changelog", "announcement"].includes(target) ? script(`release/${target}.mjs`, ...args) : script("release/artifact.mjs", target, ...args));
+    const target = ["changelog", "announcement"].includes(args[0]) ? args.shift() : "cli";
+    await run(script(`release/${target}.mjs`, ...args));
   } else if (command === "check") {
     const names = (await readdir(new URL("./checks/", import.meta.url)))
       .filter((name) => name.endsWith(".mjs"))
@@ -242,7 +239,7 @@ async function main() {
     );
     if (steps && command === "deploy" && target === "staging" &&
         (args.length > 1 || (args.length === 1 && args[0] !== "--site-only")))
-      throw new Error("用法：pnpm run deploy staging [--site-only]。部署已有候选版本请使用 pnpm release stage <Release ID>。");
+      throw new Error("用法：pnpm run deploy staging [--site-only]。");
     if (steps) console.log(`正在${descriptions[name][target]}…`);
     if (steps) await sequence(steps, args);
     if (steps && command === "deploy")

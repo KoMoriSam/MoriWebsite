@@ -158,6 +158,13 @@ export async function assertNovelRelease(root = PROJECT_ROOT) {
     .filter(([name]) => name.startsWith("chapters/") || name.startsWith("search/") ||
       !permitted.has(name.slice("assets/".length))).map(([, digest]) => digest));
   for (const file of await files(dist)) {
+    if (file.startsWith("content/")) {
+      const name = file.slice("content/".length);
+      if (!/^(?:post|novel|kaiming)\//.test(name) ||
+          !(await readFile(path.join(dist, file))).equals(await readFile(path.join(publicDirectory, name))))
+        throw new Error(`Unverified bundled content asset: ${file}`);
+      continue;
+    }
     if (/^(?:pagefind-novel|archive\/article)(?:\/|$)|\.(?:map|md)$/i.test(file) ||
         (!file.startsWith("pagefind/") && /\.pf_(?:fragment|index|meta|filter)$/i.test(file))) {
       throw new Error(`Unexpected public archive, search or source map: ${file}`);
@@ -167,23 +174,29 @@ export async function assertNovelRelease(root = PROJECT_ROOT) {
       throw new Error(`Private novel file found in website assets: ${file}`);
     }
   }
-  const protectedDocuments = new Set(Object.entries(JSON.parse(body))
-    .filter(([name]) => name.startsWith("chapters/") || name.startsWith("search/"))
-    .map(([, digest]) => digest));
   for (const file of await files(publicDirectory)) {
-    if (protectedDocuments.has(sha(await readFile(path.join(publicDirectory, file))))) {
+    if (privateHashes.has(sha(await readFile(path.join(publicDirectory, file)))))
       throw new Error(`Private novel document found in public content assets: ${file}`);
-    }
   }
   return version;
 }
 
+export async function includePublicContent(root = PROJECT_ROOT) {
+  const { dist, publicDirectory } = directories(root);
+  const target = path.join(dist, "content");
+  await removeBuildDirectory(target, dist);
+  const novelVersion = await assertNovelRelease(root);
+  for (const name of ["post", "novel", "kaiming"])
+    await copyTree(path.join(publicDirectory, name), path.join(target, name));
+  return novelVersion;
+}
+
 export async function publishNovelRelease(version, {
   root = PROJECT_ROOT, prefix = "NOVEL_R2", bucket = "novel-vault",
+  store = snapshotStore({ prefix, namespace: "v1" }),
 } = {}) {
   const { privateManifest, source, searchDirectory } = directories(root);
-  const store = snapshotStore({ prefix, namespace: "v1" });
-  if (!store || process.env[prefix + "_BUCKET"] !== bucket) throw new Error("Configure the target private novel upload credentials");
+  if (!store || (process.env[prefix + "_BUCKET"] && process.env[prefix + "_BUCKET"] !== bucket)) throw new Error("Configure the target private novel upload credentials");
   const versionKey = `versions/${version}.json`;
   let manifestExists = false;
   const scratch = await mkdtemp(path.join(tmpdir(), "mori-novel-release-"));

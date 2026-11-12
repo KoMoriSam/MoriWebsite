@@ -27,7 +27,7 @@ import { PROJECT_ROOT, run } from "../lib/commands.mjs";
 import { readSourceHead, sourceGitEnvironment, sourceRef, sources } from "../lib/content-revisions.mjs";
 import { prepareKaiming } from "../lib/kaiming-assets.mjs";
 
-import { sealNovelRelease, sourceDirectory } from "./novel-release.mjs";
+import { includePublicContent, sealNovelRelease, sourceDirectory } from "./novel-release.mjs";
 
 export const CONTENT_DIRECTORY = sourceDirectory;
 export const BUILD_DIRECTORY = path.join(PROJECT_ROOT, ".tmp/content-build");
@@ -276,6 +276,8 @@ export async function sealContentBuild() {
     "sitemap.xml",
   ])
     await access(path.join(PROJECT_ROOT, "dist", file));
+  const dist = path.join(PROJECT_ROOT, "dist");
+  await removeBuildDirectory(path.join(dist, "content"), dist);
   const novelVersion = await sealNovelRelease();
   await writeFile(
     SITE_RECEIPT_PATH,
@@ -287,6 +289,9 @@ if (
   process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  if (process.argv.includes("--seal")) await sealContentBuild();
+  if (process.argv.includes("--seal")) {
+    await sealContentBuild();
+    if (process.argv.includes("--include-public")) await includePublicContent();
+  }
   else await prepareContent();
 }

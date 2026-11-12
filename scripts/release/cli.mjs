@@ -19,16 +19,7 @@ const helpText = `准备发布资料，并管理已经上线的更新日志与�
   changelog <command> [options]        管理更新日志
   announcement <command> [options]     管理公告
 
-网站产物：
-  build [--profile]                   生成唯一 Release ID
-  stage <Release ID>                  部署到隔离 Staging
-  verify <Release ID>                 验证 Staging 上的指定产物
-  verify-artifact <Release ID>        检查归档完整性
-  approve <Release ID>                签署验收过的产物
-  promote <Release ID>                晋升已批准产物
-  rollback <Release ID>               恢复已发布产物
-
-可信发布工作流处理站点与内容更新。Production 作业使用明确的 Release ID。
+网站版本在 Cloudflare Workers → website → Deployments 中切换和回滚。
 `;
 
 const parseOptions = (args) => {

@@ -9,19 +9,32 @@ export default {
     const path = url.pathname;
     const siteOrigin = env.MORI_SITE_ORIGIN || SITE;
     const authOrigin = env.MORI_AUTH_ORIGIN || AUTH;
+    const override = request.headers.get("Cloudflare-Workers-Version-Overrides");
+    const preview = url.origin !== siteOrigin || override !== null;
     if (/^\/(?:pagefind-novel|archive\/article)(?:\/|$)/i.test(path)) return json({ error: "NOT_FOUND" }, 404);
-    if (env.PUBLIC_CONTENT && path.startsWith("/content/")) {
-      url.pathname = path.slice("/content".length);
-      return env.PUBLIC_CONTENT.fetch(new Request(url, request));
-    }
+    const publicContent = /^\/content(?:\/|$)/.test(path);
+    if (publicContent && !["GET", "HEAD"].includes(request.method))
+      return json({ error: "NOT_FOUND" }, 404);
     if (!/^\/(?:api|auth)(?:\/|$)/.test(path)) {
       const response = await env.ASSETS.fetch(request);
-      if (env.MORI_ENV !== "staging") return response;
+      if (!publicContent && !preview && env.MORI_ENV !== "staging") return response;
       const headers = new Headers(response.headers);
-      headers.set("X-Robots-Tag", "noindex, nofollow");
+      if (publicContent) {
+        // Public attachments now share the site's origin. A direct navigation must not execute them as site code.
+        headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
+        headers.set("X-Content-Type-Options", "nosniff");
+      }
+      if (preview || env.MORI_ENV === "staging") headers.set("X-Robots-Tag", "noindex, nofollow");
       return new Response(response.body, { status: response.status, headers });
     }
-    if (url.origin !== siteOrigin) return json({ error: "NOT_FOUND" }, 404);
+    if (preview) {
+      const version = env.WEBSITE_VERSION?.id;
+      const worker = env.MORI_ENV === "staging" ? "website-staging" : "website";
+      if (path === "/api/version" && request.method === "GET" && version &&
+          (url.origin !== siteOrigin || override === `${worker}="${version}"`))
+        return json({ version });
+      return json({ error: "NOT_FOUND" }, 404);
+    }
     const token = readCookie(request, COOKIE.site);
     if (env.PUBLIC_API && /^\/api\/(?:github|games|analytics|announcements|changelog|random-hero)(?:\/|$)/.test(path)) {
       url.pathname = path.slice(4);
