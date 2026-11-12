@@ -20,8 +20,8 @@ const mutations = {
   add: ["addReaction", "AddReactionInput", "subject { id }"],
   remove: ["removeReaction", "RemoveReactionInput", "subject { id }"],
 };
-const replyPageSize = 12;
-const pageSize = 15;
+export const replyPageSize = 12;
+export const commentPageSize = 15;
 
 const error = (status, code, retryAt) => Object.assign(new Error(code), { status, code, retryAt });
 const nodeId = (value) => typeof value === "string" && /^[\w=+/\-]{1,120}$/.test(value);
@@ -31,7 +31,7 @@ const targetKey = (target) => JSON.stringify([target.repo.id, target.category.id
 const countsKey = (id) => new Request("https://api.komori.cc/__cache/thread-count/" + encodeURIComponent(id));
 
 async function discussionNode(github, id) {
-  const data = await github.graphql(`query($id: ID!) { node(id: $id) { ... on Discussion { ${discussionFields} } } }`, { id });
+  const data = await github.graphql(`query DiscussionById($id: ID!) { node(id: $id) { ... on Discussion { ${discussionFields} } } }`, { id });
   return data.node;
 }
 
@@ -45,7 +45,7 @@ export async function resolveDiscussion(github, auth, target) {
     if (validDiscussion(node, target)) return node;
   }
   const data = await github.graphql(`
-    query($query: String!) {
+    query SearchDiscussion($query: String!) {
       search(type: DISCUSSION, last: 1, query: $query) {
         nodes { ... on Discussion { ${discussionFields} } }
       }
@@ -56,13 +56,13 @@ export async function resolveDiscussion(github, auth, target) {
   return node || null;
 }
 
-async function createDiscussion(github, env, target) {
+async function createDiscussion(github, createClient, env, target) {
   // Search can lag behind writes, including writes from GitHub itself.
   const [owner, name] = target.repo.name.split("/");
   let after = null;
   for (let page = 0; page < 8; page++) {
     const { repository } = await github.graphql(`
-      query($owner: String!, $name: String!, $category: ID!, $after: String) {
+      query RecentDiscussions($owner: String!, $name: String!, $category: ID!, $after: String) {
         repository(owner: $owner, name: $name) {
           discussions(first: 100, after: $after, categoryId: $category,
             orderBy: { field: CREATED_AT, direction: DESC }) {
@@ -78,11 +78,11 @@ async function createDiscussion(github, env, target) {
     if (page === 7) throw error(503, "DISCUSSION_LOOKUP_INCOMPLETE");
     after = pageState.endCursor;
   }
-  const writer = await discussionGithub(env, target.repo.name, "write");
+  const writer = await createClient(env, target.repo.name, "write");
   const digest = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(target.term));
   const sha = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
   const { createDiscussion: created } = await writer.graphql(`
-    mutation($input: CreateDiscussionInput!) {
+    mutation CreateDiscussion($input: CreateDiscussionInput!) {
       createDiscussion(input: $input) { discussion { ${discussionFields} } }
     }
   `, { input: {
@@ -116,7 +116,7 @@ async function getThread(github, discussion, input, includePermissions) {
   if (input.parent) {
     if (!nodeId(input.parent)) throw error(400, "INVALID_COMMENT");
     const { node } = await github.graphql(`
-      query($id: ID!, $after: String) {
+      query DiscussionReplies($id: ID!, $after: String) {
         node(id: $id) { ... on DiscussionComment {
           discussion { id } replyTo { id }
           replies(first: ${replyPageSize}, after: $after) { ${pageInfo} nodes { ${commentFields} } }
@@ -127,9 +127,9 @@ async function getThread(github, discussion, input, includePermissions) {
     hideMinimized(node.replies.nodes);
     return { replies: node.replies, includePermissions };
   }
-  const pagination = newest ? `last: ${pageSize}, before: $after` : `first: ${pageSize}, after: $after`;
+  const pagination = newest ? `last: ${commentPageSize}, before: $after` : `first: ${commentPageSize}, after: $after`;
   const { node } = await github.graphql(`
-    query($id: ID!, $after: String) {
+    query ${newest ? "NewestComments" : "OldestComments"}($id: ID!, $after: String) {
       node(id: $id) { ... on Discussion {
         ${discussionFields} ${reactionFields}
         comments(${pagination}) {
@@ -149,7 +149,7 @@ async function getThread(github, discussion, input, includePermissions) {
   return { discussion: node, includePermissions };
 }
 
-async function writeComment(github, user, auth, env, target, input) {
+async function writeComment(github, user, auth, createClient, env, target, input) {
   const { action, requestId } = input;
   if (!Object.hasOwn(mutations, action) || !(typeof requestId === "string" && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(requestId))) throw error(400, "INVALID_COMMENT");
   const body = typeof input.body === "string" ? input.body.trim() : "";
@@ -164,14 +164,14 @@ async function writeComment(github, user, auth, env, target, input) {
     // Verify GitHub authorization before creating a discussion as the installation.
     const [ownerName, repoName] = target.repo.name.split("/");
     const { repository } = await user.graphql(
-      "query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id hasDiscussionsEnabled } }",
+      "query DiscussionRepository($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id hasDiscussionsEnabled } }",
       { owner: ownerName, name: repoName },
     );
     if (repository?.id !== target.repo.id || !repository.hasDiscussionsEnabled) throw error(403, "COMMENT_FORBIDDEN");
     let discussion = await resolveDiscussion(github, auth, target);
     if (!discussion) {
       if (action !== "post" && !(action === "add" && !input.id)) throw error(404, "DISCUSSION_NOT_FOUND");
-      discussion = await createDiscussion(github, env, target);
+      discussion = await createDiscussion(github, createClient, env, target);
       await auth.remember(key, discussion.id);
     }
     const id = discussion.id;
@@ -179,7 +179,7 @@ async function writeComment(github, user, auth, env, target, input) {
     if (input.id) {
       if (!nodeId(input.id)) throw error(400, "INVALID_COMMENT");
       const { node } = await user.graphql(`
-        query($id: ID!) {
+        query DiscussionCommentById($id: ID!) {
           node(id: $id) { ... on DiscussionComment {
             id discussion { id } replyTo { id } isMinimized
             viewerCanUpdate viewerCanDelete viewerCanReact replies { totalCount }
@@ -201,14 +201,14 @@ async function writeComment(github, user, auth, env, target, input) {
       if (action === "delete") delta = -1 - (subject.replies?.totalCount || 0);
     } else {
       const permitted = subject ? subject.viewerCanReact : (await user.graphql(
-        "query($id: ID!) { node(id: $id) { ... on Discussion { viewerCanReact } } }", { id },
+        "query DiscussionReactionPermission($id: ID!) { node(id: $id) { ... on Discussion { viewerCanReact } } }", { id },
       )).node?.viewerCanReact;
       if (!permitted) throw error(403, "COMMENT_FORBIDDEN");
       Object.assign(mutation, { subjectId: subject?.id || id, content: input.reaction });
     }
     const [name, type, fields] = mutations[action];
     const previousCount = delta ? await totals(github, id).catch(() => null) : null;
-    await user.graphql(`mutation($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
+    await user.graphql(`mutation ${name}($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
     let count = null;
     if (delta) {
       try {
@@ -243,7 +243,10 @@ async function readJson(request) {
   catch { throw error(400, "INVALID_COMMENT"); }
 }
 
-export async function handleComments(request, env, token, target) {
+export async function handleComments(request, env, token, target, {
+  createClient = discussionGithub,
+  userGraphql,
+} = {}) {
   const write = request.method === "POST";
   const limiter = write ? env.COMMENT_WRITE_LIMIT : env.COMMENT_READ_LIMIT;
   const auth = env.MORI_COMMENT_AUTH;
@@ -254,15 +257,16 @@ export async function handleComments(request, env, token, target) {
     if (write && !signedIn) throw error(401, "LOGIN_REQUIRED");
     const input = write ? await readJson(request) : Object.fromEntries(new URL(request.url).searchParams);
     if (!input || typeof input !== "object") throw error(400, "INVALID_COMMENT");
-    const github = await discussionGithub(env, target.repo.name);
+    const github = await createClient(env, target.repo.name);
     const user = signedIn && { token, async graphql(query, variables) {
+      if (userGraphql) return userGraphql(signedIn, query, variables);
       const result = await auth.graphql(token, query, variables);
       if (!result.data) throw error(result.status, result.error || "GITHUB_REQUEST_FAILED", result.retryAt);
       return result.data;
     } };
     let body;
     if (write) {
-      body = await writeComment(github, user, auth, env, target, input);
+      body = await writeComment(github, user, auth, createClient, env, target, input);
     } else {
       const discussion = await resolveDiscussion(github, auth, target);
       if (!discussion) return { status: 200, body: { discussion: null, count: 0 } };

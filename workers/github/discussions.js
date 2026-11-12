@@ -22,7 +22,7 @@ function getSourceConfig(env, sourceType, scope = "paragraph") {
 
 async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor, privateRepository, repositoryId }) {
   const query = `
-    query(
+    query DiscussionCountPage(
       $owner: String!,
       $repo: String!,
       $categoryId: ID!,
@@ -74,7 +74,7 @@ async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor, pr
 
 async function fetchDiscussionCommentPage({ github, discussionId, cursor }) {
   const query = `
-    query(
+    query DiscussionCommentCountPage(
       $discussionId: ID!,
       $cursor: String
     ) {
@@ -298,7 +298,7 @@ async function getContentCommentTotals(env, github, sourceType, contentItems) {
   );
 }
 
-export async function handleDiscussionCounts(request, env, corsHeaders) {
+export async function handleDiscussionCounts(request, env, corsHeaders, createClient = discussionGithub) {
   const respond = (body, status = 200, headers = {}) => Response.json(body, {
     status, headers: { ...corsHeaders, ...headers },
   });
@@ -346,7 +346,7 @@ export async function handleDiscussionCounts(request, env, corsHeaders) {
     let client;
     const github = {
       async graphql(query, variables) {
-        client ||= discussionGithub(env, `${owner}/${repo}`);
+        client ||= createClient(env, `${owner}/${repo}`);
         return (await client).graphql(query, variables);
       },
     };

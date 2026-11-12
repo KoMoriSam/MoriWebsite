@@ -30,7 +30,6 @@ await configure(port);
 await seed(env, { force: mode === "seed" });
 if (mode === "seed") process.exit(0);
 await run(["node", "scripts/build/static-assets.mjs"], { env });
-await run(["node", "scripts/release/changelog.mjs", "generate"], { env });
 
 const controller = new AbortController();
 process.once("SIGINT", () => controller.abort());

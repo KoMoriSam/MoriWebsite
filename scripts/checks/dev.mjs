@@ -46,18 +46,48 @@ for (const resource of ["/search/pagefind-entry.json", "/search/pagefind.js", "/
 const registry = await fetchLocal("/site-data/discussion-targets.json").then((response) => response.json());
 const article = Object.keys(registry.articles)[0];
 const discussion = "/api/comments?scope=article&target=" + encodeURIComponent(article);
-const post = (action, id) => fetchLocal(discussion, {
-  method: "POST",
-  headers: { Origin: origin, Cookie: cookie, "Content-Type": "application/json" },
-  body: JSON.stringify({ action, id, body: "本地联调 " + randomUUID(), requestId: randomUUID() }),
+const thread = async (session = cookie) => fetchLocal(discussion + "&sort=newest", {
+  headers: { Cookie: session },
+}).then((response) => response.json());
+const write = (action, fields = {}, session = cookie) => fetchLocal(discussion, {
+  method: "POST", headers: { Origin: origin, Cookie: session, "Content-Type": "application/json" },
+  body: JSON.stringify({ action, requestId: randomUUID(), ...fields }),
 });
-const posted = await post("post");
+const counts = async () => {
+  const response = await fetchLocal("/api/github/discussions/counts", {
+    method: "POST", headers: { Origin: origin, "Content-Type": "application/json" },
+    body: JSON.stringify({ sourceType: "article", scope: "content-total", contents: [{ contentId: article, discussionTerm: article }] }),
+  });
+  assert.equal(response.status, 200);
+  return (await response.json()).counts[article];
+};
+const initialCount = await counts();
+const body = "本地联调 " + randomUUID();
+assert.equal((await write("post", { body }, "")).status, 401);
+const posted = await write("post", { body });
 assert.equal(posted.status, 200);
-const result = await posted.json();
-const comment = result.discussion.comments.nodes.at(-1);
-assert.equal((await post("reply", comment.id)).status, 200);
-const thread = await fetchLocal(discussion).then((response) => response.json());
-assert.equal(thread.discussion.comments.nodes.find(({ id }) => id === comment.id).replies.totalCount, 1);
+const comment = (await thread()).discussion.comments.nodes.find((node) => node.body === body);
+assert.equal(comment.viewerCanUpdate, true);
+const { id } = comment;
+assert.equal((await write("edit", { id, body }, await signIn("restricted"))).status, 403);
+assert.equal((await write("edit", { id, body: body + " 编辑" })).status, 200);
+assert.equal((await write("reply", { id, body })).status, 200);
+assert.equal((await write("add", { id, reaction: "HEART" })).status, 200);
+const updated = (await thread()).discussion.comments.nodes.find((node) => node.id === id);
+assert.equal(updated.body, body + " 编辑");
+assert.equal(updated.replies.totalCount, 1);
+assert.equal(updated.reactionGroups.find(({ content }) => content === "HEART").viewerHasReacted, true);
+assert.equal(await counts(), initialCount + 2);
+assert.equal((await write("remove", { id, reaction: "HEART" })).status, 200);
+assert.equal((await write("delete", { id })).status, 200);
+assert.equal(await counts(), initialCount);
+for (const endpoint of ["announcements", "changelog"]) {
+  const response = await fetchLocal("/api/" + endpoint);
+  assert.equal(response.status, 200, endpoint);
+  const data = await response.json();
+  assert.equal(data.schemaVersion, 1, endpoint);
+  assert.ok(Array.isArray(data.items), endpoint);
+}
 assert.equal((await fetchLocal("/api/auth/logout", { method: "POST", headers: { Origin: origin, Cookie: cookie } })).status, 200);
 assert.equal((await fetchLocal(path, { headers: { Cookie: cookie } })).status, 401);
-console.log("检查通过：本地登录票据、D1 会话、评论与回复、小说 R2 与 Pagefind、权限与退出。");
+console.log("检查通过：本地登录、评论读写与计数、公告和更新日志、小说权限与退出。");

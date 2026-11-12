@@ -30,6 +30,10 @@ export async function configure(port) {
       compatibility_flags: ["nodejs_compat"],
       vars: { GAMES_ALLOWED_ORIGINS: origin },
       services: [service("MORI_COMMENT_AUTH", "mori-auth-local", "CommentAuth")],
+      ratelimits: [
+        { name: "COMMENT_READ_LIMIT", namespace_id: "1101", simple: { limit: 90, period: 60 } },
+        { name: "COMMENT_WRITE_LIMIT", namespace_id: "1102", simple: { limit: 12, period: 60 } },
+      ],
       d1_databases: [d1("ANALYTICS_DB", "mori-analytics-local", 2, "analytics")],
       kv_namespaces: ["LOCAL_COMMENTS", "ANNOUNCEMENTS_KV", "CHANGELOG_KV", "RATE_LIMIT_KV"]
         .map((binding, index) => ({ binding, id: String(index + 1).padStart(32, "0") })),

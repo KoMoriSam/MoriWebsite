@@ -226,7 +226,7 @@ const validateUniqueIds = (entries) => {
   }
 };
 
-const loadLocalAnnouncements = async () => {
+export const loadLocalAnnouncements = async () => {
   const entries = await readAnnouncementFiles();
   validateUniqueIds(entries);
   return entries;
