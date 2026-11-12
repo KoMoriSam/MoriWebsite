@@ -75,7 +75,7 @@ async function checkoutSource(source, scratch, previous) {
       };
     }
     // Keep credentials out of clone URLs, command arguments, and saved Git config.
-    const env = sourceGitEnvironment();
+    const remoteEnv = sourceGitEnvironment();
     await observeBuild("content", `${source.name} clone`, () => run(
       [
         "git",
@@ -91,16 +91,16 @@ async function checkoutSource(source, scratch, previous) {
         `https://github.com/${source.repository}.git`,
         directory,
       ],
-      { env },
+      { env: remoteEnv },
     ));
     await observeBuild("content", `${source.name} checkout`, async () => {
       await run(["git", "sparse-checkout", "set", "--cone", ...source.folders], {
         cwd: directory,
-        env,
       });
       if (pinned && (await run(["git", "rev-parse", ref], { cwd: directory, capture: true })) !== pinned)
-        await run(["git", "fetch", "--depth", "1", "origin", pinned], { cwd: directory, env });
-      await run(["git", "checkout", "--force", "--detach", pinned || ref], { cwd: directory, env });
+        await run(["git", "fetch", "--depth", "1", "origin", pinned], { cwd: directory, env: remoteEnv });
+      // Checking out a blobless clone can fetch missing files from the private remote.
+      await run(["git", "checkout", "--force", "--detach", pinned || ref], { cwd: directory, env: remoteEnv });
     });
     commit = await run(["git", "rev-parse", "HEAD"], {
       cwd: directory,
@@ -120,7 +120,7 @@ async function checkoutSource(source, scratch, previous) {
             "origin",
             previous.commit,
           ],
-          { cwd: directory, env },
+          { cwd: directory, env: remoteEnv },
         ).then(
           () => true,
           () => false,

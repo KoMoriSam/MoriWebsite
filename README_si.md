@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  වත්මන් අනුවාදය: <strong>2.21.0</strong>
+  වත්මන් අනුවාදය: <strong>2.21.1</strong>
   ·
   <a href="https://komori.cc/changelog">වෙනස්කම් සටහන</a>
 </p>

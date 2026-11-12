@@ -1,5 +1,6 @@
 import { readWorkerConfig } from "../lib/worker-config.mjs";
 import { run } from "../lib/commands.mjs";
+import { unusedBuildVariables, workerSecrets } from "../lib/build-environment.mjs";
 
 const args = process.argv.slice(2);
 if (args.some((arg) => arg !== "--remote")) throw new Error("用法：pnpm check env [--remote]");
@@ -22,6 +23,9 @@ console.log(`OK  现有公开外链由 ${raw.name} 提供；构建快照桶 ${sn
 
 const buildKeys = ["CONTENT_GITHUB_TOKEN", "SSG_R2_ACCESS_KEY", "SSG_R2_SECRET_KEY", "NOVEL_R2_ACCESS_KEY", "NOVEL_R2_SECRET_KEY"];
 const inBuild = process.env.WORKERS_CI === "1";
+for (const name of unusedBuildVariables()) {
+  console.log(`可移出构建  ${name}（运行时专用，或旧发布流程已停用）`);
+}
 let failed = false;
 for (const key of buildKeys) {
   const present = Boolean(process.env[key]?.trim());
@@ -37,10 +41,7 @@ else if (process.env.SKIP_DEPENDENCY_INSTALL !== "1") {
 
 if (args.includes("--remote")) {
   const [account, ...configs] = [site.account_id, "wrangler.auth.jsonc", "wrangler.api.jsonc"];
-  const expected = [
-    ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "TOKEN_ENCRYPTION_KEY"],
-    ["GITHUB_APP_PRIVATE_KEY", "GITHUB_TOKEN", "PIXABAY_API_KEY"],
-  ];
+  const expected = [workerSecrets.auth, workerSecrets.api];
   for (const [index, config] of configs.entries()) {
     try {
       const secrets = JSON.parse(await run(["wrangler", "secret", "list", "--config", config], { capture: true }));
