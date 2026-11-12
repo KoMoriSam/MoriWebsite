@@ -24,6 +24,7 @@ import {
 } from "../lib/content-files.mjs";
 import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 import { PROJECT_ROOT, run } from "../lib/commands.mjs";
+import { readSourceHead, sourceGitEnvironment, sourceRef, sources } from "../lib/content-revisions.mjs";
 import { prepareKaiming } from "../lib/kaiming-assets.mjs";
 
 import { sealNovelRelease, sourceDirectory } from "./novel-release.mjs";
@@ -32,55 +33,6 @@ export const CONTENT_DIRECTORY = sourceDirectory;
 export const BUILD_DIRECTORY = path.join(PROJECT_ROOT, ".tmp/content-build");
 export const MANIFEST_PATH = path.join(BUILD_DIRECTORY, "manifest.json");
 export const SITE_RECEIPT_PATH = path.join(BUILD_DIRECTORY, "site.json");
-
-const sources = [
-  {
-    name: "blog",
-    repository: "KoMoriSam/ObsidianVault",
-    folders: ["notes", "attachments", "scripts"],
-  },
-  {
-    name: "novel",
-    repository: "KoMoriSam/MyWritingVault",
-    folders: ["public", "scripts"],
-  },
-];
-
-function sourceGitEnvironment() {
-  const token = process.env.CONTENT_GITHUB_TOKEN;
-  if (!token)
-    throw new Error(
-      "缺少 CONTENT_GITHUB_TOKEN：请配置两个私有仓库的只读构建凭据，或设置 CONTENT_BLOG_DIR / CONTENT_NOVEL_DIR 使用本地内容源。",
-    );
-  return {
-    ...buildEnvironment(),
-    GIT_TERMINAL_PROMPT: "0",
-    GIT_CONFIG_COUNT: "1",
-    GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
-    GIT_CONFIG_VALUE_0: `Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString("base64")}`,
-  };
-}
-
-function sourceRef(key) {
-  const ref = process.env[`CONTENT_${key}_REF`] || "main";
-  if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(ref) || ref.includes(".."))
-    throw new Error(`无效的内容分支：${ref}`);
-  return ref;
-}
-
-async function readSourceHead(repository, ref) {
-  const line = await run(
-    [
-      "git",
-      "ls-remote",
-      "--exit-code",
-      `https://github.com/${repository}.git`,
-      `refs/heads/${ref}`,
-    ],
-    { env: sourceGitEnvironment(), capture: true },
-  );
-  return line.split(/\s+/u)[0];
-}
 
 async function assertWorkspace(directory) {
   const relative = path.relative(
@@ -106,11 +58,13 @@ async function checkoutSource(source, scratch, previous) {
         { hidden: true },
       );
   } else {
-    const head = previous?.ref === ref
+    const pinned = process.env[`MORI_PINNED_${key}`];
+    if (pinned && !/^[a-f0-9]{40}$/.test(pinned)) throw new Error(`Invalid pinned ${source.name} commit`);
+    const head = pinned || (previous?.ref === ref
       ? await observeBuild("content", `${source.name} check source commit`, () =>
           readSourceHead(source.repository, ref),
         )
-      : null;
+      : null);
     if (head && previous.commit === head) {
       return {
         ...source,
@@ -144,12 +98,15 @@ async function checkoutSource(source, scratch, previous) {
         cwd: directory,
         env,
       });
-      await run(["git", "checkout", "--force", ref], { cwd: directory, env });
+      if (pinned && (await run(["git", "rev-parse", ref], { cwd: directory, capture: true })) !== pinned)
+        await run(["git", "fetch", "--depth", "1", "origin", pinned], { cwd: directory, env });
+      await run(["git", "checkout", "--force", "--detach", pinned || ref], { cwd: directory, env });
     });
     commit = await run(["git", "rev-parse", "HEAD"], {
       cwd: directory,
       capture: true,
     });
+    if (pinned && commit !== pinned) throw new Error(`Pinned ${source.name} commit changed`);
     if (previous && previous.commit !== commit) {
       historyVerified =
         /^[a-f0-9]{40}$/u.test(previous.commit) &&

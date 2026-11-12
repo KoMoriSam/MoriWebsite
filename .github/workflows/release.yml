@@ -1,33 +1,30 @@
-name: Build and promote website releases
+name: Promote or roll back website releases
 
 on:
   push:
     tags: ["v*.*.*"]
-  repository_dispatch:
-    types: [blog-updated, novel-updated, fonts-updated]
   workflow_dispatch:
     inputs:
       action:
         type: choice
-        options: [build, stage, verify, promote, rollback]
-        default: build
+        options: [promote, rollback]
+        required: true
       release_id:
-        description: Exact Release ID for deployment, verification or rollback
+        description: Exact verified Release ID
         type: string
+        required: true
+      target:
+        type: choice
+        options: [rehearsal, production]
+        default: rehearsal
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: mori-release-pipeline
+  group: mori-release-${{ inputs.target }}
   cancel-in-progress: false
-
-env:
-  WRANGLER_SEND_METRICS: "false"
-  RELEASE_R2_ENDPOINT: ${{ vars.RELEASE_R2_ENDPOINT }}
-  RELEASE_R2_BUCKET: ${{ vars.RELEASE_R2_BUCKET }}
-  RELEASE_CONTROL_R2_ENDPOINT: ${{ vars.RELEASE_CONTROL_R2_ENDPOINT }}
-  RELEASE_CONTROL_R2_BUCKET: ${{ vars.RELEASE_CONTROL_R2_BUCKET }}
 
 jobs:
   validate-tag:
@@ -44,160 +41,62 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24.15.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: |
+          package-manager-cache: false
+      - name: Validate release metadata
+        run: |
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          pnpm install --frozen-lockfile
           pnpm release verify "${GITHUB_REF_NAME#v}"
 
-  build:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'repository_dispatch' || inputs.action == 'build')
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    environment: release-build
-    outputs:
-      release_id: ${{ steps.artifact.outputs.release_id }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12.3.4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24.15.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build immutable release
-        id: artifact
-        run: pnpm release build --profile
-        env:
-          CONTENT_GITHUB_TOKEN: ${{ secrets.CONTENT_GITHUB_TOKEN }}
-          SSG_R2_ENDPOINT: ${{ vars.SSG_R2_ENDPOINT }}
-          SSG_R2_BUCKET: ${{ vars.SSG_R2_BUCKET }}
-          SSG_R2_ACCESS_KEY: ${{ secrets.SSG_R2_ACCESS_KEY }}
-          SSG_R2_SECRET_KEY: ${{ secrets.SSG_R2_SECRET_KEY }}
-          SSG_SNAPSHOT_NAMESPACE: release-candidates
-          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
-          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-profile
-          path: .tmp/build-profiles/*.ndjson
-          include-hidden-files: true
-
-  stage:
-    needs: build
-    if: always() && (needs.build.result == 'success' || (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'stage'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    environment: staging
-    outputs:
-      release_id: ${{ steps.stage.outputs.release_id }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12.3.4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24.15.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Deploy exact Release ID to Staging
-        id: stage
-        run: |
-          pnpm release stage "$RELEASE_ID"
-          printf 'release_id=%s\n' "$RELEASE_ID" >> "$GITHUB_OUTPUT"
-        env:
-          RELEASE_ID: ${{ needs.build.outputs.release_id || inputs.release_id }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
-          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
-          RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
-          RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
-          STAGE_NOVEL_R2_ENDPOINT: ${{ vars.STAGE_NOVEL_R2_ENDPOINT }}
-          STAGE_NOVEL_R2_BUCKET: novel-vault-staging
-          STAGE_NOVEL_R2_ACCESS_KEY: ${{ secrets.STAGE_NOVEL_R2_ACCESS_KEY }}
-          STAGE_NOVEL_R2_SECRET_KEY: ${{ secrets.STAGE_NOVEL_R2_SECRET_KEY }}
-          MORI_STAGING_AUTH_D1_ID: ${{ vars.MORI_STAGING_AUTH_D1_ID }}
-          MORI_STAGING_ANALYTICS_D1_ID: ${{ vars.MORI_STAGING_ANALYTICS_D1_ID }}
-          MORI_STAGING_RATE_LIMIT_KV_ID: ${{ vars.MORI_STAGING_RATE_LIMIT_KV_ID }}
-          MORI_STAGING_ANNOUNCEMENTS_KV_ID: ${{ vars.MORI_STAGING_ANNOUNCEMENTS_KV_ID }}
-          MORI_STAGING_CHANGELOG_KV_ID: ${{ vars.MORI_STAGING_CHANGELOG_KV_ID }}
-          MORI_STAGING_DISCUSSION_REPO: ${{ vars.MORI_STAGING_DISCUSSION_REPO }}
-          MORI_STAGING_READER_IDS: ${{ vars.MORI_STAGING_READER_IDS }}
-          MORI_STAGE_ACCESS_CLIENT_ID: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_ID }}
-          MORI_STAGE_ACCESS_CLIENT_SECRET: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_SECRET }}
-
-  verify:
-    needs: stage
-    if: always() && (needs.stage.result == 'success' || (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'verify'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: staging-verification
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12.3.4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24.15.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Check OAuth session, SSG, comments and novel access
-        run: pnpm release verify "$RELEASE_ID"
-        env:
-          RELEASE_ID: ${{ needs.stage.outputs.release_id || inputs.release_id }}
-          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
-          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
-          RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
-          RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
-          MORI_STAGE_SESSION: ${{ secrets.MORI_STAGE_SESSION }}
-          MORI_STAGE_ACCESS_CLIENT_ID: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_ID }}
-          MORI_STAGE_ACCESS_CLIENT_SECRET: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_SECRET }}
-
-  production:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (inputs.action == 'promote' || inputs.action == 'rollback')
+  deploy:
+    if: |
+      github.event_name == 'workflow_dispatch' && (
+      (inputs.target == 'production' && github.ref == 'refs/heads/main' && vars.MORI_RELEASE_PROMOTION_ENABLED == '1') ||
+      (inputs.target == 'rehearsal' && github.ref_type == 'branch' && github.ref_name == vars.MORI_RELEASE_REHEARSAL_BRANCH))
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: production
+    environment: ${{ inputs.target == 'rehearsal' && 'release-rehearsal' || 'production' }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12.3.4
       - uses: actions/setup-node@v6
         with:
           node-version: 24.15.0
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Promote or restore approved Release ID
+          package-manager-cache: false
+      - name: Install locked Wrangler version
         run: |
-          if [ "$ACTION" = promote ]; then pnpm release approve "$RELEASE_ID"; fi
-          pnpm release "$ACTION" "$RELEASE_ID"
+          version="$(sed -nE 's/^  wrangler@([0-9]+\.[0-9]+\.[0-9]+):$/\1/p' pnpm-lock.yaml | sort -u)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          npm install --prefix "$RUNNER_TEMP/mori-wrangler" --no-save --no-package-lock --no-audit --no-fund "wrangler@$version"
+          printf 'MORI_RELEASE_WRANGLER=%s\n' "$RUNNER_TEMP/mori-wrangler/node_modules/wrangler/bin/wrangler.js" >> "$GITHUB_ENV"
+      - name: Deploy exact Release ID
+        run: |
+          if [ "$ACTION" = promote ]; then node scripts/release/artifact.mjs approve "$RELEASE_ID"; fi
+          node scripts/release/artifact.mjs "$ACTION" "$RELEASE_ID"
+          printf '### Website Release\n\n- Target: %s\n- Action: %s\n- Release ID: `%s`\n' "$MORI_RELEASE_MODE" "$ACTION" "$RELEASE_ID" >> "$GITHUB_STEP_SUMMARY"
         env:
           ACTION: ${{ inputs.action }}
           RELEASE_ID: ${{ inputs.release_id }}
+          MORI_RELEASE_MODE: ${{ inputs.target }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RELEASE_R2_ENDPOINT: ${{ vars.RELEASE_R2_ENDPOINT }}
+          RELEASE_R2_BUCKET: ${{ vars.RELEASE_R2_BUCKET }}
           RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
           RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
+          RELEASE_CONTROL_R2_ENDPOINT: ${{ vars.RELEASE_CONTROL_R2_ENDPOINT }}
+          RELEASE_CONTROL_R2_BUCKET: ${{ vars.RELEASE_CONTROL_R2_BUCKET }}
           RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
           RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
           RELEASE_APPROVAL_KEY: ${{ secrets.RELEASE_APPROVAL_KEY }}
-          NOVEL_R2_ENDPOINT: ${{ vars.NOVEL_R2_ENDPOINT }}
-          NOVEL_R2_BUCKET: novel-vault
-          NOVEL_R2_ACCESS_KEY: ${{ secrets.NOVEL_R2_ACCESS_KEY }}
-          NOVEL_R2_SECRET_KEY: ${{ secrets.NOVEL_R2_SECRET_KEY }}
+          NOVEL_R2_ENDPOINT: ${{ inputs.target == 'production' && vars.NOVEL_R2_ENDPOINT || '' }}
+          NOVEL_R2_BUCKET: ${{ inputs.target == 'production' && 'novel-vault' || '' }}
+          NOVEL_R2_ACCESS_KEY: ${{ inputs.target == 'production' && secrets.NOVEL_R2_ACCESS_KEY || '' }}
+          NOVEL_R2_SECRET_KEY: ${{ inputs.target == 'production' && secrets.NOVEL_R2_SECRET_KEY || '' }}
+          STAGE_NOVEL_R2_ENDPOINT: ${{ inputs.target == 'rehearsal' && vars.STAGE_NOVEL_R2_ENDPOINT || '' }}
+          STAGE_NOVEL_R2_BUCKET: ${{ inputs.target == 'rehearsal' && 'novel-vault-staging' || '' }}
+          STAGE_NOVEL_R2_ACCESS_KEY: ${{ inputs.target == 'rehearsal' && secrets.STAGE_NOVEL_R2_ACCESS_KEY || '' }}
+          STAGE_NOVEL_R2_SECRET_KEY: ${{ inputs.target == 'rehearsal' && secrets.STAGE_NOVEL_R2_SECRET_KEY || '' }}
+          MORI_STAGE_ACCESS_CLIENT_ID: ${{ inputs.target == 'rehearsal' && secrets.MORI_STAGE_ACCESS_CLIENT_ID || '' }}
+          MORI_STAGE_ACCESS_CLIENT_SECRET: ${{ inputs.target == 'rehearsal' && secrets.MORI_STAGE_ACCESS_CLIENT_SECRET || '' }}

@@ -1,14 +1,15 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, constants } from "node:fs";
-import { copyFile, cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 import { run } from "../lib/commands.mjs";
 import { buildEnvironment } from "../lib/build-environment.mjs";
 import { observeBuild, buildEvent } from "../lib/build-report.mjs";
+import { archiveWarningBytes } from "./retention.mjs";
 import { assertNovelRelease } from "../build/novel-release.mjs";
-import { snapshotStore } from "../build/snapshot-store.mjs";
+import { getJson, putJson, rehearsalMode, releaseIdPattern, releaseStore, scratchDirectory } from "./records.mjs";
+export { getJson, putJson, releaseIdPattern, scratchDirectory } from "./records.mjs";
 
-export const releaseIdPattern = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/;
 const checksum = /^[a-f0-9]{64}$/;
 const roots = ["dist", ".output/content", ".output/content-build/novel", ".output/novel-search",
   ".output/novel-vault.json", "workers", "shared", "migrations",
@@ -24,13 +25,8 @@ export async function hashFile(file) {
   return hasher.digest("hex");
 }
 
-export async function scratchDirectory() {
-  await mkdir(".tmp", { recursive: true });
-  return mkdtemp(resolve(".tmp/release-"));
-}
-
 export function artifactStore() {
-  const store = snapshotStore({ prefix: "RELEASE_R2", namespace: "release-v1" });
+  const store = releaseStore();
   if (store) return store;
   if (process.env.MORI_ARTIFACT_LOCAL !== "1") throw new Error("Configure private RELEASE_R2 credentials");
   const base = resolve(".tmp/local-release-artifacts");
@@ -58,25 +54,6 @@ export function artifactStore() {
   };
 }
 
-export async function putJson(store, key, value, scratch, { immutable = true } = {}) {
-  const file = resolve(scratch, randomUUID() + ".json");
-  await writeFile(file, JSON.stringify(value));
-  try {
-    return await store.put(key, file, immutable);
-  } finally {
-    await rm(file, { force: true });
-  }
-}
-
-export async function getJson(store, key, scratch) {
-  const file = resolve(scratch, randomUUID() + ".json");
-  try {
-    return await store.get(key, file) ? await json(file) : null;
-  } finally {
-    await rm(file, { force: true });
-  }
-}
-
 async function inventory(root) {
   const files = [];
   for (const entry of await readdir(root, { recursive: true, withFileTypes: true })) {
@@ -93,7 +70,8 @@ export async function sealArtifact(source, report) {
   const store = artifactStore();
   const scratch = await scratchDirectory();
   try {
-    const id = randomUUID();
+    const id = process.env.MORI_CANDIDATE_ID || randomUUID();
+    if (!releaseIdPattern.test(id)) throw new Error("Invalid candidate Release ID");
     const root = resolve(scratch, "tree");
     await observeBuild("artifact", "copy publishable files", async () => {
       for (const name of roots) {
@@ -112,15 +90,20 @@ export async function sealArtifact(source, report) {
       run(["tar", "-czf", archive, "-C", root, ...roots], { env: buildEnvironment() }),
     );
     const manifest = {
-      schema: 1, id, createdAt: new Date().toISOString(), contentKind,
+      schema: 1, id, rehearsal: rehearsalMode(), inputFingerprint: process.env.MORI_CANDIDATE_FINGERPRINT, createdAt: new Date().toISOString(), contentKind,
       websiteCommit: source.websiteCommit, sources: source.sources, novelVersion,
       toolchain: { node: process.version, platform: process.platform, architecture: process.arch },
       files, archiveHash: await hashFile(archive), bytes: (await stat(archive)).size,
       report: { mode: report.mode, phases: report.phases, regeneratedPages: report.regeneratedPages, reusedPages: report.reusedPages },
     };
+    if (process.env.MORI_RELEASE_ARCHIVE_BYTES) {
+      const projectedBytes = Number(process.env.MORI_RELEASE_ARCHIVE_BYTES) + manifest.bytes;
+      if (projectedBytes >= archiveWarningBytes)
+        buildEvent("artifact", "release archive capacity", "warning", { projectedBytes, warningBytes: archiveWarningBytes });
+    }
     await observeBuild("artifact", "store immutable release", async () => {
-      if (!await store.put(`${id}/artifact.tar.gz`, archive, true) ||
-          !await putJson(store, `${id}/manifest.json`, manifest, scratch))
+      if (!await putJson(store, `${id}/manifest.json`, manifest, scratch) ||
+          !await store.put(`${id}/artifact.tar.gz`, archive, true))
         throw new Error("Release ID already exists");
     }, { bytes: manifest.bytes });
     if (process.env.GITHUB_OUTPUT) {
@@ -134,13 +117,20 @@ export async function sealArtifact(source, report) {
   }
 }
 
-export async function materializeArtifact(id, scratch) {
+export async function readReleaseManifest(id, scratch) {
   if (!releaseIdPattern.test(id || "")) throw new Error("Specify an exact Release ID");
   const store = artifactStore();
   const manifest = await getJson(store, `${id}/manifest.json`, scratch);
   if (manifest?.schema !== 1 || manifest.id !== id || !checksum.test(manifest.archiveHash) ||
       !checksum.test(manifest.novelVersion) || !/^[a-f0-9]{40}$/i.test(manifest.websiteCommit) ||
       !Array.isArray(manifest.sources) || !manifest.files) throw new Error("Release manifest is unavailable or invalid");
+  if (Boolean(manifest.rehearsal) !== rehearsalMode()) throw new Error("Release belongs to another deployment mode");
+  return manifest;
+}
+
+export async function materializeArtifact(id, scratch, manifest = null) {
+  manifest ||= await readReleaseManifest(id, scratch);
+  const store = artifactStore();
   const archive = resolve(scratch, "release.tar.gz");
   await observeBuild("artifact", "retrieve and verify release", async () => {
     if (!await store.get(`${id}/artifact.tar.gz`, archive) ||

@@ -1,12 +1,12 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-import { readdir, rm } from "node:fs/promises";
+import { readFile, readdir, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 import { run } from "../lib/commands.mjs";
 import { deployEnvironment } from "../lib/build-environment.mjs";
 import { observeBuild, buildEvent } from "../lib/build-report.mjs";
 import { publishNovelRelease } from "../build/novel-release.mjs";
-import { snapshotStore } from "../build/snapshot-store.mjs";
-import { getJson, putJson, materializeArtifact, scratchDirectory, hash } from "./artifact-store.mjs";
+import { controlStore, rehearsalMode, releaseIdPattern, releaseStore } from "./records.mjs";
+import { getJson, putJson, materializeArtifact, readReleaseManifest, scratchDirectory, hash } from "./artifact-store.mjs";
 import { deploymentConfigs, stagingOrigin } from "./environment.mjs";
 
 const [action, id, ...args] = process.argv.slice(2);
@@ -14,7 +14,11 @@ const deployOrder = ["auth", "api", "content", "site"];
 const env = deployEnvironment();
 delete env.WRANGLER_CI_OVERRIDE_NAME;
 delete env.WRANGLER_CI_MATCH_TAG;
-const cf = (args, root, capture = false) => run(["wrangler", ...args], { cwd: root, env, capture });
+const cf = (args, root, capture = false) => {
+  const wrangler = process.env.MORI_RELEASE_WRANGLER;
+  return run(wrangler ? ["node", wrangler, ...args] : ["wrangler", ...args], { cwd: root, env, capture });
+};
+const rehearsal = rehearsalMode();
 
 async function singleVersion(root, config, { optional = false } = {}) {
   const data = await cf(["deployments", "status", "--config", config, "--json"], root, true)
@@ -39,6 +43,15 @@ async function schema(root, configs, stage) {
 }
 
 async function deploy(root, manifest, stage, verifiedVersions) {
+  if (stage) await observeBuild("release", "verify staging Access policy", async () => {
+    const anonymous = await fetchSite(stagingOrigin, "/", { stage: false });
+    const login = new URL(anonymous.headers.get("Location") || "/", stagingOrigin);
+    if (anonymous.status !== 302 || !login.hostname.endsWith(".cloudflareaccess.com") ||
+        !login.pathname.startsWith("/cdn-cgi/access/login/"))
+      throw new Error("Staging must require Cloudflare Access before deploying private content");
+    if ((await fetchSite(stagingOrigin, "/")).status !== 200)
+      throw new Error("Staging CI service token cannot access the site");
+  });
   const configs = await deploymentConfigs(root, stage, manifest.id);
   await schema(root, configs, stage);
   const before = {};
@@ -46,6 +59,8 @@ async function deploy(root, manifest, stage, verifiedVersions) {
   await observeBuild("release", "synchronize private novel objects", () => publishNovelRelease(manifest.novelVersion, {
     root, prefix: stage ? "STAGE_NOVEL_R2" : "NOVEL_R2", bucket: stage ? "novel-vault-staging" : "novel-vault",
   }));
+  if (!stage && verifiedVersions && deployOrder.some((name) => before[name] !== verifiedVersions[name]))
+    throw new Error("Production Worker versions drifted from the active release record");
   const attempted = [];
   const versions = {};
   try {
@@ -144,17 +159,30 @@ async function verify(manifest) {
   }
   const thread = "/api/comments?scope=article&target=" + encodeURIComponent(article);
   await expect(thread, 200);
-  const body = `Staging verification ${manifest.id} ${randomUUID()}`;
+  const body = `Staging verification ${manifest.id}`;
+  const requestId = (action) => hash(manifest.id + ":" + action)
+    .replace(/^(........)(....).(...).(...)(............).*$/, "$1-$2-4$3-a$4-$5");
   const post = async (action, id) => (await expect(thread, 200, {
-    cookie, method: "POST", data: { action, id, body, requestId: randomUUID() },
+    cookie, method: "POST", data: { action, id, body, requestId: requestId(action) },
   })).json();
-  await post("post");
-  const discussion = await (await expect(thread + "&sort=newest", 200, { cookie })).json();
-  const comment = discussion.discussion?.comments.nodes.find((node) => node.body === body);
+  const findComment = async () => {
+    const discussion = await (await expect(thread + "&sort=newest", 200, { cookie })).json();
+    return discussion.discussion?.comments.nodes.find((node) => node.body === body);
+  };
+  let comment = await findComment();
+  if (!comment) {
+    await post("post");
+    comment = await findComment();
+  }
   if (!comment) throw new Error("Staging comment was not readable after write");
-  await post("reply", comment.id);
-  const replies = await (await expect(thread + "&parent=" + encodeURIComponent(comment.id), 200, { cookie })).json();
-  if (!replies.replies?.nodes?.some((node) => node.body === body)) throw new Error("Staging reply was not readable after write");
+  const findReply = async () => {
+    const replies = await (await expect(thread + "&parent=" + encodeURIComponent(comment.id), 200, { cookie })).json();
+    return replies.replies?.nodes?.some((node) => node.body === body);
+  };
+  if (!await findReply()) {
+    await post("reply", comment.id);
+    if (!await findReply()) throw new Error("Staging reply was not readable after write");
+  }
   return { verifiedAt: new Date().toISOString(), checks: ["ssg", "client-entry", "staging-auth", "session", "private-novel", "pagefind", "comment-counts", "comment-write", "comment-reply"] };
 }
 
@@ -168,20 +196,32 @@ if (action === "build") {
   if (id && !["--profile", "--full"].includes(id)) throw new Error("Usage: pnpm release build [--profile] [--full]");
   await run(["node", "scripts/build/smart.mjs", "--artifact", ...[id, ...args].filter(Boolean)]);
 } else {
-  if (!["stage", "verify", "verify-artifact", "approve", "promote", "rollback"].includes(action) || args.length)
-    throw new Error("Usage: pnpm release <stage|verify|verify-artifact|approve|promote|rollback> <Release ID>");
+  if (!["stage", "verify", "verify-artifact", "approve", "promote", "rollback", "report"].includes(action) || args.length)
+    throw new Error("Usage: pnpm release <stage|verify|verify-artifact|approve|promote|rollback|report> <Release ID>");
   const scratch = await scratchDirectory();
   let lock;
   try {
-    const { manifest, root } = await materializeArtifact(id, scratch);
-    if (action === "verify-artifact") {
+    if (!releaseIdPattern.test(id || "")) throw new Error("Specify an exact Release ID");
+    if (action === "report") {
+      const store = releaseStore();
+      if (!store) throw new Error("Configure private RELEASE_R2 credentials");
+      const reports = await store.list(`${id}/reports/`);
+      if (!reports.length) throw new Error("No private reports for this Release ID");
+      for (const { key } of reports) {
+        const target = resolve(scratch, "report.ndjson");
+        if (!await store.get(key, target)) throw new Error("Report disappeared during retrieval");
+        process.stdout.write(await readFile(target, "utf8"));
+      }
+    } else if (action === "verify-artifact") {
+      const { manifest } = await materializeArtifact(id, scratch);
       console.log(JSON.stringify({ id, contentKind: manifest.contentKind, archiveHash: manifest.archiveHash }));
     } else {
+      const control = controlStore();
+      if (await getJson(control, `${id}/expired.json`, scratch)) throw new Error("Release is EXPIRED");
+      const manifest = await readReleaseManifest(id, scratch);
       if (manifest.contentKind !== "candidate" || manifest.sources.slice(0, 2).length !== 2 ||
           manifest.sources.slice(0, 2).some(({ commit }) => !/^[a-f0-9]{40}$/i.test(commit)))
         throw new Error("A fixture release cannot be staged or promoted as a production candidate");
-      const control = snapshotStore({ prefix: "RELEASE_CONTROL_R2", namespace: "release-control-v1" });
-      if (!control) throw new Error("Configure the release control store");
       if (["stage", "promote", "rollback"].includes(action) &&
           (!env.CLOUDFLARE_API_TOKEN || !env.CLOUDFLARE_ACCOUNT_ID))
         throw new Error("Configure scoped Cloudflare deployment credentials");
@@ -191,14 +231,19 @@ if (action === "build") {
         throw new Error("Another release operation holds the deployment lock");
       }
       try {
+        if (await getJson(control, `${id}/expired.json`, scratch)) throw new Error("Release is EXPIRED");
+        if (["verify", "approve"].includes(action) && !await releaseStore().exists(`${id}/artifact.tar.gz`))
+          throw new Error("Release archive is missing");
         const receipt = (kind) => getJson(control, `${id}/${kind}.json`, scratch);
         const valid = (value) => value?.id === id && value.archiveHash === manifest.archiveHash &&
           value.websiteCommit === manifest.websiteCommit && value.sourcesHash === hash(JSON.stringify(manifest.sources));
         const base = { id, archiveHash: manifest.archiveHash, websiteCommit: manifest.websiteCommit,
           sourcesHash: hash(JSON.stringify(manifest.sources)) };
         if (action === "stage") {
+          const { root } = await materializeArtifact(id, scratch, manifest);
           const versions = await deploy(root, manifest, true);
           await putJson(control, `${id}/staged.json`, { ...base, versions }, scratch, { immutable: false });
+          await putJson(control, "active-staging.json", { ...base, versions }, scratch, { immutable: false });
         } else if (action === "verify") {
           const staged = await receipt("staged");
           if (!valid(staged)) throw new Error("Stage the specified Release ID first");
@@ -228,7 +273,10 @@ if (action === "build") {
             if (action === "rollback" && !valid(await receipt("production")))
               throw new Error("Rollback requires a previously deployed production Release ID");
             const active = await getJson(control, "active-production.json", scratch);
-            const versions = await deploy(root, manifest, false, active?.versions);
+            const { root } = await materializeArtifact(id, scratch, manifest);
+            const versions = await deploy(root, manifest, rehearsal, active?.versions);
+            if (rehearsal)
+              await putJson(control, "active-staging.json", { ...base, versions }, scratch, { immutable: false });
             const result = { ...base, versions, action, deployedAt: new Date().toISOString() };
             await putJson(control, `${id}/deployments/${randomUUID()}.json`, result, scratch);
             await putJson(control, `${id}/production.json`, result, scratch, { immutable: false });

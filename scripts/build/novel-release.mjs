@@ -1,8 +1,9 @@
 import { discussionRegistry } from "../../shared/discussions.js";
 import { getChapterContextTitle } from "../../src/utils/novel/format-label.js";
 import { createHash } from "node:crypto";
-import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import { publicCovers, publicCoverManifest, releaseFile, resourcePath } from "../../shared/novel-release.js";
 import { copyTree, removeBuildDirectory } from "../lib/content-files.mjs";
 import { PROJECT_ROOT } from "../lib/commands.mjs";
@@ -183,9 +184,18 @@ export async function publishNovelRelease(version, {
   const { privateManifest, source, searchDirectory } = directories(root);
   const store = snapshotStore({ prefix, namespace: "v1" });
   if (!store || process.env[prefix + "_BUCKET"] !== bucket) throw new Error("Configure the target private novel upload credentials");
-  if (await store.exists(`versions/${version}.json`)) {
-    buildEvent("deploy", "novel release manifest", "reuse", { version });
-    if (root === PROJECT_ROOT) return;
+  const versionKey = `versions/${version}.json`;
+  let manifestExists = false;
+  const scratch = await mkdtemp(path.join(tmpdir(), "mori-novel-release-"));
+  try {
+    const existing = path.join(scratch, "manifest.json");
+    if (await store.get(versionKey, existing)) {
+      if (sha(await readFile(existing)) !== version) throw new Error("Stored private novel version manifest hash mismatch");
+      buildEvent("deploy", "novel release manifest", "reuse", { version });
+      manifestExists = true;
+    }
+  } finally {
+    await rm(scratch, { recursive: true, force: true });
   }
   const entries = Object.entries(await json(privateManifest));
   const resources = new Map(entries.map(([key, digest]) => [digest, key]));
@@ -208,8 +218,8 @@ export async function publishNovelRelease(version, {
       }));
     }
   }, { completed: 0, total: objects.length, uploaded: 0, reused: 0 });
-  await observeBuild("deploy", "store novel release manifest", () =>
-    store.put(`versions/${version}.json`, privateManifest, true),
+  if (!manifestExists) await observeBuild("deploy", "store novel release manifest", () =>
+    store.put(versionKey, privateManifest, true),
     { version },
   );
 }

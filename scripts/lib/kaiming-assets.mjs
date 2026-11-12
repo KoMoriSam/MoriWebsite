@@ -2,7 +2,6 @@ import { setTimeout } from "node:timers/promises";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { Uint8ArrayReader, Uint8ArrayWriter, ZipReader } from "@zip.js/zip.js";
 
 const repository = "KoMoriSam/Kaiming";
 const archiveName = "KaimingPunctuation-VF.zip";
@@ -16,6 +15,7 @@ const files = [
 export async function extractKaiming(archive, checksum, destination) {
   const digest = createHash("sha256").update(archive).digest("hex");
   if (!/^[a-f0-9]{64}$/i.test(checksum) || digest !== checksum.toLowerCase()) throw new Error("Kaiming release checksum mismatch");
+  const { Uint8ArrayReader, Uint8ArrayWriter, ZipReader } = await import("@zip.js/zip.js");
   const reader = new ZipReader(new Uint8ArrayReader(archive), { useWebWorkers: false });
   try {
     const entries = await reader.getEntries();
@@ -60,7 +60,7 @@ async function download(url, limit) {
   return Buffer.concat(chunks);
 }
 
-export async function prepareKaiming(destination) {
+export async function resolveKaiming() {
   let tag = process.env.CONTENT_KAIMING_RELEASE;
   if (!tag) {
     // Resolve once, then fetch both assets from the same release, without a GitHub API token.
@@ -73,8 +73,18 @@ export async function prepareKaiming(destination) {
   }
   if (!/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(tag)) throw new Error(`Invalid Kaiming release tag: ${tag}`);
   const base = `https://github.com/${repository}/releases/download/${encodeURIComponent(tag)}`;
-  const [archive, sums] = await Promise.all([download(`${base}/${archiveName}`, 8 * 1024 * 1024), download(`${base}/SHA256SUMS`, 16384)]);
+  const sums = await download(`${base}/SHA256SUMS`, 16384);
   const checksum = sums.toString("utf8").split(/\r?\n/).map((line) => line.trim().split(/\s+/)).find(([, filename]) => filename === archiveName)?.[0];
-  const sha256 = await extractKaiming(archive, checksum, destination);
-  return { repository, release: tag, sha256 };
+  if (!/^[a-f0-9]{64}$/i.test(checksum || "")) throw new Error("Kaiming release is missing its archive checksum");
+  return { repository, release: tag, sha256: checksum.toLowerCase() };
+}
+
+export async function prepareKaiming(destination) {
+  const pinned = process.env.MORI_PINNED_KAIMING;
+  const version = pinned ? JSON.parse(pinned) : await resolveKaiming();
+  if (version.repository !== repository || !/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(version.release))
+    throw new Error("Invalid pinned Kaiming release");
+  const archive = await download(`https://github.com/${repository}/releases/download/${encodeURIComponent(version.release)}/${archiveName}`, 8 * 1024 * 1024);
+  await extractKaiming(archive, version.sha256, destination);
+  return version;
 }

@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { copyFile, mkdir, open, rename, rm } from "node:fs/promises";
 import { resolve } from "node:path";
+import { buildEnvironment } from "../lib/build-environment.mjs";
 
 const r2Settings = {
   SSG_R2_ENDPOINT: {
@@ -52,7 +53,8 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
     SSG_SNAPSHOT_NAMESPACE: namespace,
   } = settings;
   const endpoint = endpointSetting.replace(/\/$/u, "");
-  async function request(method, name, { input, output, create } = {}) {
+  const objectPrefix = namespace + "/";
+  async function request(method, name, { input, output, create, query } = {}) {
     const args = [
       "--silent",
       "--show-error",
@@ -72,9 +74,10 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
     if (method === "HEAD") args.push("--head");
     if (input) args.push("--upload-file", input);
     if (create) args.push("--header", "If-None-Match: *");
-    args.push(`${endpoint}/${bucket}/${namespace}/${name}`);
+    args.push(query ? `${endpoint}/${bucket}?${query}` :
+      `${endpoint}/${bucket}/${(objectPrefix + name).split("/").map(encodeURIComponent).join("/")}`);
     return new Promise((resolveRequest, reject) => {
-      const child = spawn("curl", args, { stdio: ["pipe", "pipe", "inherit"] });
+      const child = spawn("curl", args, { env: buildEnvironment(), stdio: ["pipe", "pipe", "inherit"] });
       let response = "";
       child.stdout.setEncoding("utf8");
       child.stdout.on("data", (data) => {
@@ -110,7 +113,32 @@ export function snapshotStore({ prefix = "SSG_R2", namespace: fixedNamespace } =
     const code = body.match(/<Code>([A-Za-z][A-Za-z0-9]{0,63})<\/Code>/u)?.[1];
     return new Error(`R2 ${method} ${name}: ${status}${code ? ` (${code})` : ""}`);
   }
+  const xmlText = (value) => value.replace(/&(amp|lt|gt|quot|apos);/g, (_, entity) =>
+    ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" })[entity]);
   return {
+    async list(prefix = "") {
+      const objects = [];
+      let continuation;
+      do {
+        const query = new URLSearchParams({ "list-type": "2", prefix: objectPrefix + prefix });
+        if (continuation) query.set("continuation-token", continuation);
+        const response = await request("GET", "", { query });
+        if (response.status !== 200 || !response.body.includes("<ListBucketResult"))
+          throw await responseError("LIST", prefix, response);
+        for (const [, entry] of response.body.matchAll(/<Contents>([\s\S]+?)<\/Contents>/g)) {
+          const name = xmlText(entry.match(/<Key>(.*?)<\/Key>/s)?.[1] || "");
+          const bytes = Number(entry.match(/<Size>(\d+)<\/Size>/)?.[1]);
+          if (!name.startsWith(objectPrefix) || !Number.isSafeInteger(bytes))
+            throw new Error("Invalid R2 listing entry");
+          objects.push({ key: name.slice(objectPrefix.length), bytes, modifiedAt: entry.match(/<LastModified>(.*?)<\/LastModified>/)?.[1] });
+        }
+        const next = response.body.match(/<NextContinuationToken>(.*?)<\/NextContinuationToken>/s)?.[1];
+        if (response.body.includes("<IsTruncated>true</IsTruncated>") && (!next || xmlText(next) === continuation))
+          throw new Error("Incomplete R2 listing");
+        continuation = next && xmlText(next);
+      } while (continuation);
+      return objects;
+    },
     async exists(name) {
       const response = await request("HEAD", name);
       if (response.status === 404) return false;

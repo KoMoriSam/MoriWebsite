@@ -8,6 +8,7 @@ import {
   mkdtemp,
   readFile,
   readdir,
+  rm,
   stat,
   writeFile,
 } from "node:fs/promises";
@@ -145,11 +146,11 @@ const snapshotDirectories = [
   ".tmp/site-search-cache",
 ];
 await mkdir(".tmp", { recursive: true });
-delete process.env.SSG_BUILD_PROFILE;
+if (!process.env.MORI_CANDIDATE_ID) delete process.env.SSG_BUILD_PROFILE;
 if (profile) {
   const directory = resolve(".tmp/build-profiles");
   await mkdir(directory, { recursive: true });
-  process.env.SSG_BUILD_PROFILE = join(directory, `${randomUUID()}.ndjson`);
+  process.env.SSG_BUILD_PROFILE ||= join(directory, `${randomUUID()}.ndjson`);
   console.log(`Build profile: ${process.env.SSG_BUILD_PROFILE}`);
 }
 const lock = resolve(".tmp/site-build.lock");
@@ -549,8 +550,16 @@ try {
       });
       state.archiveHash = await observeBuild("snapshot", "hash archive", () =>
         hashFile(archive), { bytes: state.archiveBytes });
-      await observeBuild("snapshot", "store archive", () =>
-        store.put(`${id}.tar.gz`, archive), { storage, bytes: state.archiveBytes });
+      await observeBuild("snapshot", "store archive", async () => {
+        if (!await store.put(`${id}.tar.gz`, archive, Boolean(remote)))
+          throw new Error("Snapshot already exists");
+      }, { storage, bytes: state.archiveBytes });
+      if (remote) await observeBuild("snapshot", "verify uploaded archive", async () => {
+        const uploaded = join(scratch, "uploaded-snapshot.tar.gz");
+        if (!await store.get(`${id}.tar.gz`, uploaded) || await hashFile(uploaded) !== state.archiveHash)
+          throw new Error("Stored snapshot SHA-256 mismatch");
+        await rm(uploaded);
+      }, { storage, bytes: state.archiveBytes });
     });
     if (artifact) await sealArtifact(source, summary);
     await writeFile(stateFile, JSON.stringify(state));

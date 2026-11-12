@@ -195,10 +195,11 @@ async function main() {
     await run(["vite", "preview", "--host", "0.0.0.0", ...args]);
   } else if (command === "release") {
     const artifactVerification = args[0] === "verify" && /^[0-9a-f-]{36}$/.test(args[1] || "");
-    const target = artifactVerification || ["changelog", "announcement", "build", "stage", "verify-artifact", "approve", "promote", "rollback"].includes(args[0])
+    const target = artifactVerification || ["changelog", "announcement", "build", "stage", "verify-artifact", "approve", "promote", "rollback", "report", "retention"].includes(args[0])
       ? args.shift()
       : "cli";
-    await run(["cli", "changelog", "announcement"].includes(target) ? script(`release/${target}.mjs`, ...args) : script("release/artifact.mjs", target, ...args));
+    if (target === "retention") await run(script("release/retention.mjs", ...args));
+    else await run(["cli", "changelog", "announcement"].includes(target) ? script(`release/${target}.mjs`, ...args) : script("release/artifact.mjs", target, ...args));
   } else if (command === "check") {
     const names = (await readdir(new URL("./checks/", import.meta.url)))
       .filter((name) => name.endsWith(".mjs"))
