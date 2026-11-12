@@ -1,63 +1,203 @@
-name: Publish website release
+name: Build and promote website releases
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: ["v*.*.*"]
+  repository_dispatch:
+    types: [blog-updated, novel-updated, fonts-updated]
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        options: [build, stage, verify, promote, rollback]
+        default: build
+      release_id:
+        description: Exact Release ID for deployment, verification or rollback
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: production-release
+  group: mori-release-pipeline
   cancel-in-progress: false
 
+env:
+  WRANGLER_SEND_METRICS: "false"
+  RELEASE_R2_ENDPOINT: ${{ vars.RELEASE_R2_ENDPOINT }}
+  RELEASE_R2_BUCKET: ${{ vars.RELEASE_R2_BUCKET }}
+  RELEASE_CONTROL_R2_ENDPOINT: ${{ vars.RELEASE_CONTROL_R2_ENDPOINT }}
+  RELEASE_CONTROL_R2_BUCKET: ${{ vars.RELEASE_CONTROL_R2_BUCKET }}
+
 jobs:
-  release:
-    name: Verify release and promote website code
+  validate-tag:
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: production
-    permissions:
-      contents: write
-    env:
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      WRANGLER_SEND_METRICS: "false"
-
     steps:
-      - name: Checkout release
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24.15.0
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Verify release tag
-        shell: bash
-        run: |
-          git fetch origin main --no-tags
+      - run: pnpm install --frozen-lockfile
+      - run: |
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main
           pnpm release verify "${GITHUB_REF_NAME#v}"
 
-      - name: Publish changelog
-        run: pnpm release changelog publish --yes
+  build:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'repository_dispatch' || inputs.action == 'build')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: release-build
+    outputs:
+      release_id: ${{ steps.artifact.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build immutable release
+        id: artifact
+        run: pnpm release build --profile
+        env:
+          CONTENT_GITHUB_TOKEN: ${{ secrets.CONTENT_GITHUB_TOKEN }}
+          SSG_R2_ENDPOINT: ${{ vars.SSG_R2_ENDPOINT }}
+          SSG_R2_BUCKET: ${{ vars.SSG_R2_BUCKET }}
+          SSG_R2_ACCESS_KEY: ${{ secrets.SSG_R2_ACCESS_KEY }}
+          SSG_R2_SECRET_KEY: ${{ secrets.SSG_R2_SECRET_KEY }}
+          SSG_SNAPSHOT_NAMESPACE: release-candidates
+          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
+          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-profile
+          path: .tmp/build-profiles/*.ndjson
+          include-hidden-files: true
 
-      - name: Promote verified release to production
-        shell: bash
+  stage:
+    needs: build
+    if: always() && (needs.build.result == 'success' || (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'stage'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: staging
+    outputs:
+      release_id: ${{ steps.stage.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy exact Release ID to Staging
+        id: stage
         run: |
-          # HEAD is the verified tag commit, not the current tip of main.
-          # A normal push rejects outdated releases instead of rolling production back.
-          git push origin HEAD:refs/heads/production
+          pnpm release stage "$RELEASE_ID"
+          printf 'release_id=%s\n' "$RELEASE_ID" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_ID: ${{ needs.build.outputs.release_id || inputs.release_id }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
+          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
+          RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
+          RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
+          STAGE_NOVEL_R2_ENDPOINT: ${{ vars.STAGE_NOVEL_R2_ENDPOINT }}
+          STAGE_NOVEL_R2_BUCKET: novel-vault-staging
+          STAGE_NOVEL_R2_ACCESS_KEY: ${{ secrets.STAGE_NOVEL_R2_ACCESS_KEY }}
+          STAGE_NOVEL_R2_SECRET_KEY: ${{ secrets.STAGE_NOVEL_R2_SECRET_KEY }}
+          MORI_STAGING_AUTH_D1_ID: ${{ vars.MORI_STAGING_AUTH_D1_ID }}
+          MORI_STAGING_ANALYTICS_D1_ID: ${{ vars.MORI_STAGING_ANALYTICS_D1_ID }}
+          MORI_STAGING_RATE_LIMIT_KV_ID: ${{ vars.MORI_STAGING_RATE_LIMIT_KV_ID }}
+          MORI_STAGING_ANNOUNCEMENTS_KV_ID: ${{ vars.MORI_STAGING_ANNOUNCEMENTS_KV_ID }}
+          MORI_STAGING_CHANGELOG_KV_ID: ${{ vars.MORI_STAGING_CHANGELOG_KV_ID }}
+          MORI_STAGING_DISCUSSION_REPO: ${{ vars.MORI_STAGING_DISCUSSION_REPO }}
+          MORI_STAGING_READER_IDS: ${{ vars.MORI_STAGING_READER_IDS }}
+          MORI_STAGE_ACCESS_CLIENT_ID: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_ID }}
+          MORI_STAGE_ACCESS_CLIENT_SECRET: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_SECRET }}
+
+  verify:
+    needs: stage
+    if: always() && (needs.stage.result == 'success' || (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'verify'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging-verification
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check OAuth session, SSG, comments and novel access
+        run: pnpm release verify "$RELEASE_ID"
+        env:
+          RELEASE_ID: ${{ needs.stage.outputs.release_id || inputs.release_id }}
+          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
+          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
+          RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
+          RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
+          MORI_STAGE_SESSION: ${{ secrets.MORI_STAGE_SESSION }}
+          MORI_STAGE_ACCESS_CLIENT_ID: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_ID }}
+          MORI_STAGE_ACCESS_CLIENT_SECRET: ${{ secrets.MORI_STAGE_ACCESS_CLIENT_SECRET }}
+
+  production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && (inputs.action == 'promote' || inputs.action == 'rollback')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Promote or restore approved Release ID
+        run: |
+          if [ "$ACTION" = promote ]; then pnpm release approve "$RELEASE_ID"; fi
+          pnpm release "$ACTION" "$RELEASE_ID"
+        env:
+          ACTION: ${{ inputs.action }}
+          RELEASE_ID: ${{ inputs.release_id }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          RELEASE_R2_ACCESS_KEY: ${{ secrets.RELEASE_R2_ACCESS_KEY }}
+          RELEASE_R2_SECRET_KEY: ${{ secrets.RELEASE_R2_SECRET_KEY }}
+          RELEASE_CONTROL_R2_ACCESS_KEY: ${{ secrets.RELEASE_CONTROL_R2_ACCESS_KEY }}
+          RELEASE_CONTROL_R2_SECRET_KEY: ${{ secrets.RELEASE_CONTROL_R2_SECRET_KEY }}
+          RELEASE_APPROVAL_KEY: ${{ secrets.RELEASE_APPROVAL_KEY }}
+          NOVEL_R2_ENDPOINT: ${{ vars.NOVEL_R2_ENDPOINT }}
+          NOVEL_R2_BUCKET: novel-vault
+          NOVEL_R2_ACCESS_KEY: ${{ secrets.NOVEL_R2_ACCESS_KEY }}
+          NOVEL_R2_SECRET_KEY: ${{ secrets.NOVEL_R2_SECRET_KEY }}

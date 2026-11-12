@@ -1,3 +1,4 @@
+import { buildEnvironment } from "../lib/build-environment.mjs";
 import { randomUUID } from "node:crypto";
 import {
   access,
@@ -21,6 +22,7 @@ import {
   validateNovelExport,
   validateNovelSourceIdentities,
 } from "../lib/content-files.mjs";
+import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 import { PROJECT_ROOT, run } from "../lib/commands.mjs";
 import { prepareKaiming } from "../lib/kaiming-assets.mjs";
 
@@ -51,7 +53,7 @@ function sourceGitEnvironment() {
       "缺少 CONTENT_GITHUB_TOKEN：请配置两个私有仓库的只读构建凭据，或设置 CONTENT_BLOG_DIR / CONTENT_NOVEL_DIR 使用本地内容源。",
     );
   return {
-    ...process.env,
+    ...buildEnvironment(),
     GIT_TERMINAL_PROMPT: "0",
     GIT_CONFIG_COUNT: "1",
     GIT_CONFIG_KEY_0: "http.https://github.com/.extraheader",
@@ -80,18 +82,6 @@ async function readSourceHead(repository, ref) {
   return line.split(/\s+/u)[0];
 }
 
-export async function sourcesAreCurrent(manifest) {
-  const current = await Promise.all(
-    manifest.sources
-      .slice(0, 2)
-      .map(
-        async ({ repository, ref, commit }) =>
-          (await readSourceHead(repository, ref)) === commit,
-      ),
-  );
-  return current.every(Boolean);
-}
-
 async function assertWorkspace(directory) {
   const relative = path.relative(
     await realpath(PROJECT_ROOT),
@@ -116,10 +106,12 @@ async function checkoutSource(source, scratch, previous) {
         { hidden: true },
       );
   } else {
-    if (
-      previous?.ref === ref &&
-      previous.commit === (await readSourceHead(source.repository, ref))
-    ) {
+    const head = previous?.ref === ref
+      ? await observeBuild("content", `${source.name} check source commit`, () =>
+          readSourceHead(source.repository, ref),
+        )
+      : null;
+    if (head && previous.commit === head) {
       return {
         ...source,
         ref,
@@ -130,7 +122,7 @@ async function checkoutSource(source, scratch, previous) {
     }
     // Keep credentials out of clone URLs, command arguments, and saved Git config.
     const env = sourceGitEnvironment();
-    await run(
+    await observeBuild("content", `${source.name} clone`, () => run(
       [
         "git",
         "clone",
@@ -146,12 +138,14 @@ async function checkoutSource(source, scratch, previous) {
         directory,
       ],
       { env },
-    );
-    await run(["git", "sparse-checkout", "set", "--cone", ...source.folders], {
-      cwd: directory,
-      env,
+    ));
+    await observeBuild("content", `${source.name} checkout`, async () => {
+      await run(["git", "sparse-checkout", "set", "--cone", ...source.folders], {
+        cwd: directory,
+        env,
+      });
+      await run(["git", "checkout", "--force", ref], { cwd: directory, env });
     });
-    await run(["git", "checkout", "--force", ref], { cwd: directory, env });
     commit = await run(["git", "rev-parse", "HEAD"], {
       cwd: directory,
       capture: true,
@@ -205,68 +199,76 @@ export async function prepareContent(previous) {
   });
   const scratch = await mkdtemp(path.join(BUILD_DIRECTORY, "sources-"));
   const staged = path.join(scratch, "published");
-  const env = { ...process.env };
+  const env = buildEnvironment();
   env.SSG_IMAGE_CACHE ||= path.join(PROJECT_ROOT, ".tmp/site-image-cache");
-  delete env.CONTENT_GITHUB_TOKEN;
-  delete env.CLOUDFLARE_API_TOKEN;
-  for (const key of Object.keys(env))
-    if (key.startsWith("SSG_R2_") || key.startsWith("NOVEL_R2_")) delete env[key];
   try {
     const checkedOut = [];
     for (const source of sources) {
       const prior = previous?.sources.find(
         ({ repository }) => repository === source.repository,
       );
-      checkedOut.push(await checkoutSource(source, scratch, prior));
+      const checkout = await observeBuild("content", `${source.name} prepare source`, () =>
+        checkoutSource(source, scratch, prior),
+      );
+      checkedOut.push(checkout);
+      buildEvent("content", source.name, "decision", {
+        cache: checkout.reused ? "hit" : "miss",
+        reason: checkout.reused ? "source commit unchanged" : prior ? "source requires export" : "no reusable export",
+        commit: checkout.commit,
+      });
     }
     const [blog, novel] = checkedOut;
     // Both vault and website use the same Sharp rules. Use the build's cache-aware
     // implementation in this disposable export checkout.
     if (blog.reused) {
-      await copyTree(
+      await observeBuild("content", "copy reused blog export", () => copyTree(
         path.join(CONTENT_DIRECTORY, "post"),
         path.join(staged, "post"),
-      );
+      ));
     } else {
-      for (const script of ["generate-image-variants.mjs", "build-cache.mjs"]) {
+      for (const script of ["generate-image-variants.mjs", "build-cache.mjs", "build-report.mjs"]) {
         await copyFile(
           path.join(PROJECT_ROOT, "scripts/lib", script),
           path.join(blog.directory, "scripts/lib", script),
         );
       }
-      await run(["node", "scripts/export-public-notes.mjs"], {
-        cwd: blog.directory,
-        env,
-      });
-      await copyBlogExport(
+      await observeBuild("content", "export blog", () =>
+        run(["node", "scripts/export-public-notes.mjs"], { cwd: blog.directory, env }),
+      );
+      await observeBuild("content", "copy blog export", () => copyBlogExport(
         path.join(blog.directory, "public"),
         path.join(staged, "post"),
-      );
+      ));
     }
 
     const novelDestination = path.join(staged, "novel");
     if (novel.reused) {
-      await copyTree(path.join(CONTENT_DIRECTORY, "novel"), novelDestination);
+      await observeBuild("content", "copy reused novel export", () =>
+        copyTree(path.join(CONTENT_DIRECTORY, "novel"), novelDestination),
+      );
     } else {
       const novelPublic = path.join(novel.directory, "public");
       const before = await novelMetadataFingerprint(novelPublic);
       await validateNovelSourceIdentities(novelPublic);
-      await run(["node", "scripts/generate-index.mjs"], {
-        cwd: novel.directory,
-        env,
-      });
+      await observeBuild("content", "generate novel catalog", () =>
+        run(["node", "scripts/generate-index.mjs"], { cwd: novel.directory, env }),
+      );
       if (before !== (await novelMetadataFingerprint(novelPublic))) {
         throw new Error(
           "小说目录尚未同步完成。请等待 MyWritingVault 自动更新目录后重新构建。",
         );
       }
       await validateNovelExport(novelPublic);
-      await copyTree(novelPublic, novelDestination);
+      await observeBuild("content", "copy novel export", () =>
+        copyTree(novelPublic, novelDestination),
+      );
       await generateImageVariants({
         root: path.join(novelDestination, "images"),
       });
     }
-    const kaiming = await prepareKaiming(path.join(staged, "kaiming"));
+    const kaiming = await observeBuild("content", "prepare Kaiming release", () =>
+      prepareKaiming(path.join(staged, "kaiming")),
+    );
     await writeFile(path.join(staged, "404.html"), "Not found\n");
     await writeFile(
       path.join(staged, "_redirects"),
@@ -292,17 +294,20 @@ export async function prepareContent(previous) {
         kaiming,
       ],
     };
-    await removeBuildDirectory(
-      CONTENT_DIRECTORY,
-      path.dirname(CONTENT_DIRECTORY),
+    await observeBuild("content", "remove previous content tree", () =>
+      removeBuildDirectory(CONTENT_DIRECTORY, path.dirname(CONTENT_DIRECTORY)),
     );
-    await copyTree(staged, CONTENT_DIRECTORY, { hidden: true });
+    await observeBuild("content", "copy prepared content tree", () =>
+      copyTree(staged, CONTENT_DIRECTORY, { hidden: true }),
+    );
     await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
     console.log(
       "博客、小说和开明字体的构建输入已准备完成。",
     );
   } finally {
-    await removeBuildDirectory(scratch, BUILD_DIRECTORY);
+    await observeBuild("content", "remove disposable source checkouts", () =>
+      removeBuildDirectory(scratch, BUILD_DIRECTORY),
+    );
   }
 }
 

@@ -109,7 +109,14 @@ export function createMoriAuth() {
   function start(router) {
     if (typeof window === "undefined" || stop) return;
     const url = new URL(window.location.href);
-    const failed = url.searchParams.has("auth_error");
+    const failure = url.searchParams.get("auth_error");
+    const errors = {
+      start: "oauth-start", denied: "oauth-denied", state: "oauth-state", exchange: "oauth-exchange",
+      profile: "oauth-profile", database: "oauth-database", session: "oauth-session",
+      grant: "oauth-grant", unavailable: "oauth-unavailable",
+    };
+    const failed = failure !== null;
+    url.searchParams.delete("auth_request");
     const legacy = url.searchParams.has("giscus");
     url.searchParams.delete("auth_error");
     url.searchParams.delete("giscus");
@@ -124,7 +131,7 @@ export function createMoriAuth() {
       window.sessionStorage.removeItem("mori:github:return");
     } catch { /* Storage is optional. */ }
     void retry()?.then(() => {
-      if (failed && !state.authenticated) apply(null, "anonymous", "session-invalid");
+      if (failed && !state.authenticated) apply(null, "anonymous", Object.hasOwn(errors, failure) ? errors[failure] : "session-invalid");
       if (returning?.path === path) {
         if (state.authenticated) signal();
         if (!url.hash && Number.isFinite(returning.y)) {

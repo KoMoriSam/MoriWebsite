@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import dotenv from "dotenv";
 import { generateImageVariants } from "../lib/generate-image-variants.mjs";
+import { buildEvent } from "../lib/build-report.mjs";
 import { fetchContent } from "../lib/content-source.mjs";
 
 const mode = process.argv.includes("--production")
@@ -17,6 +18,12 @@ const local = process.argv.includes("--reuse-local")
       root: "public/assets/images",
       exclude: ["games/fogport"],
     });
+if (process.argv.includes("--reuse-local"))
+  buildEvent("images", "site image manifest", "reuse", {
+    reason: "incremental build reuses compiled assets",
+    originals: Object.keys(local.images).length,
+    encoded: 0,
+  });
 const sources = [{ base: "/assets/images/", manifest: local }];
 const remoteBases = [
   ...new Set(
@@ -30,7 +37,7 @@ const remoteBases = [
 ];
 await Promise.all(
   remoteBases.map(async (base) => {
-    if (!/^https?:\/\//u.test(base)) return;
+    if (!/^https?:\/\//u.test(base) && !process.env.CONTENT_BUILD_DIR) return;
     try {
       const response = await fetchContent(`${base}_optimized/manifest.json`, {
         signal: AbortSignal.timeout(8000),

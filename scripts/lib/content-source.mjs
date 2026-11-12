@@ -5,10 +5,11 @@ import { fileInside, publishedPath } from "./content-files.mjs";
 export async function fetchContent(input, options) {
   const directory = process.env.CONTENT_BUILD_DIR;
   if (!directory) return fetch(input, options);
-  const url = new URL(input);
+  const buildOrigin = "https://komori.cc";
+  const url = new URL(input, buildOrigin);
   for (const [prefix, base] of [["post", process.env.VITE_BLOG_RAW], ["novel", process.env.VITE_NOVEL_RAW]]) {
     if (!base) continue;
-    const origin = new URL(`${base.replace(/\/+$/, "")}/`);
+    const origin = new URL(`${base.replace(/\/+$/, "")}/`, buildOrigin);
     if (url.origin !== origin.origin || !url.pathname.startsWith(origin.pathname)) continue;
     const relative = url.pathname.slice(origin.pathname.length).split("/").map(decodeURIComponent).join("/");
     // Never fall back to an older deployed document when a build snapshot is incomplete.

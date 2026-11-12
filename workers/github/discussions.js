@@ -1,4 +1,4 @@
-import { discussionScopes } from "../../shared/discussions.js";
+import { configuredDiscussionScopes } from "../../shared/discussions.js";
 import { discussionGithub } from "./installation.js";
 import { deleteGithubCache, readGithubCache, writeGithubCache } from "./cache.js";
 import { githubErrorHeaders } from "./client.js";
@@ -8,18 +8,19 @@ const RETAIN_MS = 60 * 60_000;
 
 function getSourceConfig(env, sourceType, scope = "paragraph") {
   const novel = sourceType === "novel";
-  const configuration = discussionScopes[scope === "paragraph"
+  const configuration = configuredDiscussionScopes(env)[scope === "paragraph"
     ? (novel ? "novel-paragraph" : "article-paragraph") : (novel ? "chapter" : "article")];
   const [owner, repo] = configuration.repo.name.split("/");
   const variable = novel ? "NOVEL" : "ARTICLE";
   const specific = scope === "paragraph" ? variable : `${variable}_${novel ? "CHAPTER" : "CONTENT"}`;
   return {
     owner, repo, categoryId: configuration.category.id,
+    privateRepository: env.MORI_ENV === "staging", repositoryId: configuration.repo.id,
     maxPages: Number(env[`${specific}_MAX_PAGES`] || env[`${variable}_MAX_PAGES`] || env.MAX_PAGES || 20),
   };
 }
 
-async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) {
+async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor, privateRepository, repositoryId }) {
   const query = `
     query(
       $owner: String!,
@@ -28,7 +29,7 @@ async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) 
       $cursor: String
     ) {
       repository(owner: $owner, name: $repo) {
-        isPrivate
+        id isPrivate
         discussions(
           first: 100,
           after: $cursor,
@@ -64,7 +65,8 @@ async function fetchDiscussionPage({ github, owner, repo, categoryId, cursor }) 
   `;
 
   const data = await github.graphql(query, { owner, repo, categoryId, cursor });
-  if (data.repository?.isPrivate !== false) throw Object.assign(new Error("Discussion repository is unavailable"), { status: 403 });
+  if (data.repository?.isPrivate !== privateRepository ||
+      (privateRepository && data.repository.id !== repositoryId)) throw Object.assign(new Error("Discussion repository is unavailable"), { status: 403 });
   const connection = data.repository?.discussions;
   if (!connection) throw new Error("GitHub 未返回讨论计数");
   return connection;
@@ -134,6 +136,8 @@ async function fetchAllDiscussionCounts({
   repo,
   categoryId,
   maxPages,
+  privateRepository,
+  repositoryId,
 }) {
   const counts = Object.create(null);
   let cursor = null;
@@ -148,6 +152,8 @@ async function fetchAllDiscussionCounts({
       repo,
       categoryId,
       cursor,
+      privateRepository,
+      repositoryId,
     });
 
     const nodes = discussions?.nodes || [];
@@ -185,8 +191,8 @@ async function fetchAllDiscussionCounts({
 }
 
 function countsCacheKey(env, sourceType, scope) {
-  const { owner, repo, maxPages, categoryId } = getSourceConfig(env, sourceType, scope);
-  const identifier = encodeURIComponent(JSON.stringify([owner, repo, categoryId, maxPages]));
+  const { owner, repo, maxPages, categoryId, privateRepository, repositoryId } = getSourceConfig(env, sourceType, scope);
+  const identifier = encodeURIComponent(JSON.stringify([owner, repo, categoryId, maxPages, privateRepository, repositoryId]));
   return new Request(`https://api.komori.cc/__cache/github-discussions/v2/${identifier}`);
 }
 
@@ -204,14 +210,14 @@ export async function updateDiscussionCount(env, target, title, count) {
 }
 
 async function getCountsMap(env, github, sourceType, scope = "paragraph") {
-  const { owner, repo, maxPages, categoryId } = getSourceConfig(env, sourceType, scope);
+  const { owner, repo, maxPages, categoryId, privateRepository, repositoryId } = getSourceConfig(env, sourceType, scope);
   const key = countsCacheKey(env, sourceType, scope);
   const cached = await readGithubCache(key);
   if (cached?.counts && cached.refreshAt > Date.now()) return cached.counts;
 
   try {
     const counts = await fetchAllDiscussionCounts({
-      github, owner, repo, categoryId, maxPages,
+      github, owner, repo, categoryId, maxPages, privateRepository, repositoryId,
     });
     const now = Date.now();
     await writeGithubCache(key, {

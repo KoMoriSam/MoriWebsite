@@ -10,12 +10,14 @@
   "preview_urls": false,
   "services": [
     { "binding": "MORI_AUTH", "service": "mori-auth", "entrypoint": "SiteAuth" },
-    { "binding": "COMMENTS", "service": "api", "entrypoint": "CommentsInternal" }
+    { "binding": "COMMENTS", "service": "api", "entrypoint": "CommentsInternal" },
+    { "binding": "PUBLIC_API", "service": "api" },
+    { "binding": "PUBLIC_CONTENT", "service": "content-router" }
   ],
   "r2_buckets": [{ "binding": "NOVEL_VAULT", "bucket_name": "novel-vault" }],
   "assets": {
     "binding": "ASSETS",
-    "run_worker_first": ["/api", "/api/*", "/auth", "/auth/*", "/pagefind-novel", "/pagefind-novel/*", "/archive/article", "/archive/article/*"],
+    "run_worker_first": ["/content", "/content/*", "/api", "/api/*", "/auth", "/auth/*", "/pagefind-novel", "/pagefind-novel/*", "/archive/article", "/archive/article/*"],
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"

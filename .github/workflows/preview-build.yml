@@ -1,0 +1,33 @@
+name: Build branch preview
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main, production]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.15.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/preview/build.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preview-assets
+          path: .output/preview
+          include-hidden-files: true
+          if-no-files-found: error

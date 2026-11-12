@@ -1,3 +1,5 @@
+import { assertPublicVite, buildEnvironment } from "../lib/build-environment.mjs";
+import { artifactStore, sealArtifact } from "../release/artifact-store.mjs";
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
 import {
@@ -16,46 +18,44 @@ import {
   MANIFEST_PATH,
   prepareContent,
   sealContentBuild,
-  sourcesAreCurrent,
 } from "./content.mjs";
-import { activeVersions, deploy, restoreVersions } from "./deploy.mjs";
 import { localSnapshotStore, snapshotStore } from "./snapshot-store.mjs";
 import { removeBuildDirectory } from "../lib/content-files.mjs";
 import { run } from "../lib/commands.mjs";
+import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 
 const flags = new Set(process.argv.slice(2));
-const publish = flags.has("--deploy");
-const dryRun = flags.has("--dry-run");
+const buildCandidate = flags.has("--deploy");
+const artifact = flags.has("--artifact");
+const dryRun = flags.has("--dry-run") || flags.has("--explain");
+const profile = flags.has("--profile");
 if (
   [...flags].some(
-    (flag) => !["--deploy", "--dry-run", "--full"].includes(flag),
+    (flag) => !["--deploy", "--dry-run", "--explain", "--full", "--profile", "--artifact"].includes(flag),
   ) ||
-  (publish && dryRun)
+  (buildCandidate && (dryRun || artifact)) || (artifact && dryRun)
 ) {
-  throw new Error("Usage: pnpm build:smart [--deploy | --dry-run] [--full]");
+  throw new Error("Usage: pnpm build:smart [--deploy | --dry-run | --explain] [--full] [--profile] [--artifact]");
+}
+if (buildCandidate) {
+  await run(["node", "scripts/release/candidate.mjs", ...(flags.has("--full") ? ["--full"] : [])]);
+  process.exit(0);
 }
 dotenv.config({ path: [".env.production", ".env"], quiet: true });
+assertPublicVite();
+if (artifact) Object.assign(process.env, {
+  VITE_BLOG_RAW: "/content/post", VITE_NOVEL_RAW: "/content/novel",
+  VITE_COMMENT_COUNTS_API: "/api/github/discussions/counts", VITE_RANDOM_HERO_API: "/api/random-hero",
+  VITE_ANALYTICS_API: "/api/analytics", VITE_ANNOUNCEMENTS_API: "/api/announcements",
+  VITE_CHANGELOG_API: "/api/changelog", VITE_GAMES_API: "/api/games/rooms",
+  VITE_GITHUB_PROFILE_API: "/api/github/users", VITE_GITHUB_REPOSITORY_API: "/api/github/repos",
+});
 process.env.VITE_BLOG_RAW ||= "https://raw.komori.cc/post";
 process.env.VITE_NOVEL_RAW ||= "https://raw.komori.cc/novel";
 process.env.CONTENT_BUILD_DIR = CONTENT_DIRECTORY;
 process.env.SSG_IMAGE_CACHE = resolve(".tmp/site-image-cache");
 const branch = process.env.SSG_PRODUCTION_BRANCH || "production";
-if (
-  publish &&
-  (process.env.WORKERS_CI !== "1" ||
-    process.env.WORKERS_CI_BRANCH !== branch ||
-    process.env.CONTENT_BLOG_DIR ||
-    process.env.CONTENT_NOVEL_DIR)
-) {
-  throw new Error(
-    "Smart deployment requires the trusted Workers Builds production branch",
-  );
-}
-const remote = publish ? snapshotStore() : null;
-if (publish && !remote)
-  throw new Error(
-    "Configure a private R2 snapshot bucket before enabling smart deployment",
-  );
+const remote = artifact ? snapshotStore() : null;
 if (
   process.env.WORKERS_CI === "1" &&
   process.env.WORKERS_CI_BRANCH !== branch &&
@@ -64,6 +64,13 @@ if (
   throw new Error(
     "Private source credentials must be scoped to the trusted production build",
   );
+}
+if (artifact) {
+  artifactStore();
+  if (process.env.MORI_ARTIFACT_LOCAL !== "1" && !process.env.CONTENT_BLOG_DIR && !process.env.CONTENT_NOVEL_DIR) {
+    const pendingFiles = await run(["git", "status", "--porcelain", "--untracked-files=normal"], { capture: true, env: buildEnvironment() });
+    if (pendingFiles) throw new Error("A publishable release requires a clean website checkout");
+  }
 }
 const store = remote || (await localSnapshotStore());
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
@@ -75,18 +82,26 @@ const hashFile = async (file) => {
   return digest.digest("hex");
 };
 async function inventory(directory) {
-  const files = await readdir(directory, {
-    recursive: true,
-    withFileTypes: true,
-  });
-  const result = {};
-  for (const entry of files.filter((entry) => !entry.isDirectory())) {
-    if (!entry.isFile())
-      throw new Error(`Unexpected build file: ${entry.name}`);
-    const file = join(entry.parentPath, entry.name);
-    result[file.slice(directory.length + 1).replaceAll("\\", "/")] =
-      await hashFile(file);
-  }
+  const name = directory.slice(resolve(".").length + 1);
+  const files = await observeBuild("inventory", "scan files", async (update) => {
+    const entries = await readdir(directory, { recursive: true, withFileTypes: true });
+    const files = entries.filter((entry) => !entry.isDirectory());
+    update({ completed: files.length });
+    return files;
+  }, { directory: name });
+  const result = await observeBuild("inventory", "hash files", async (update) => {
+    const hashes = {};
+    let completed = 0;
+    for (const entry of files) {
+      if (!entry.isFile())
+        throw new Error(`Unexpected build file: ${entry.name}`);
+      const file = join(entry.parentPath, entry.name);
+      hashes[file.slice(directory.length + 1).replaceAll("\\", "/")] =
+        await hashFile(file);
+      update({ completed: ++completed });
+    }
+    return hashes;
+  }, { directory: name, completed: 0, total: files.length });
   return Object.fromEntries(
     Object.entries(result).sort(([a], [b]) => a.localeCompare(b, "en")),
   );
@@ -113,75 +128,66 @@ const phases = {};
 async function phase(name, action) {
   const start = performance.now();
   try {
-    return await action();
+    return await observeBuild("smart", name, action);
   } finally {
     phases[name] = Math.round(performance.now() - start);
   }
 }
-const step = (file, ...args) => run(["node", `scripts/${file}.mjs`, ...args]);
+const step = (file, ...args) =>
+  observeBuild("command", file, () => run(["node", `scripts/${file}.mjs`, ...args], { env: buildEnvironment() }));
+const snapshotDirectories = [
+  "dist",
+  ".output/content",
+  ".output/content-build",
+  ".output/novel-search",
+  ".tmp/site-renderer",
+  ".tmp/site-image-cache",
+  ".tmp/site-search-cache",
+];
 await mkdir(".tmp", { recursive: true });
+delete process.env.SSG_BUILD_PROFILE;
+if (profile) {
+  const directory = resolve(".tmp/build-profiles");
+  await mkdir(directory, { recursive: true });
+  process.env.SSG_BUILD_PROFILE = join(directory, `${randomUUID()}.ndjson`);
+  console.log(`Build profile: ${process.env.SSG_BUILD_PROFILE}`);
+}
 const lock = resolve(".tmp/site-build.lock");
-await mkdir(lock);
+class InvalidSnapshot extends Error {}
+let localLocked = false;
 let remoteLocked = false;
 let scratch;
+let result = "error";
 try {
+  await observeBuild("lock", "acquire local lock", async () => {
+    await mkdir(lock);
+    localLocked = true;
+  });
   scratch = await mkdtemp(resolve(".tmp/site-publish-"));
   const stateFile = join(scratch, "state.json");
   const archive = join(scratch, "snapshot.tar.gz");
   const marker = join(scratch, "owner");
   await writeFile(marker, process.env.WORKERS_CI_BUILD_UUID || randomUUID());
-  if (remote) {
+  if (remote) await observeBuild("lock", "wait for R2 build lock", async () => {
     const deadline = Date.now() + 8 * 60_000;
     while (!(remoteLocked = await remote.put("publish.lock", marker, true))) {
       if (Date.now() > deadline)
         throw new Error(
-          "Timed out waiting for the production publication lock",
+          "Timed out waiting for the candidate build lock",
         );
       await new Promise((next) => setTimeout(next, 5000));
     }
-  }
-  const websiteCommit = await run(["git", "rev-parse", "HEAD"], {
-    capture: true,
   });
-  async function isCurrentSite() {
-    if (!publish) return true;
-    const ref = `refs/heads/${branch}`;
-    const head = await run(
-      [
-        "git",
-        "ls-remote",
-        "--exit-code",
-        "https://github.com/KoMoriSam/MoriWebsite.git",
-        ref,
-      ],
-      { capture: true },
-    );
-    return head.split(/\s+/u)[0] === websiteCommit;
-  }
-  if (!(await isCurrentSite())) {
-    console.log(
-      JSON.stringify({
-        mode: "SKIPPED",
-        websiteCommit,
-        reason: "superseded website checkout",
-      }),
-    );
-    process.exitCode = 0;
-  } else {
-    for (let attempt = 0; ; attempt++) {
-      if ((await execute()) !== false) break;
-      if (attempt >= 2)
-        throw new Error("Content heads kept changing while building");
-    }
-  }
+  const websiteCommit = await observeBuild("inputs", "website commit", () =>
+    run(["git", "rev-parse", "HEAD"], { capture: true }),
+  );
+  await execute();
+  result = "success";
   async function execute() {
     const renderReport = join(scratch, "render.json");
     process.env.SSG_RENDER_REPORT = renderReport;
-    const deployed = publish
-      ? await phase("activeVersions", activeVersions)
-      : null;
     const tracked = (
-      await run(
+      await observeBuild("inputs", "scan website files", () => run(
         [
           "git",
           "ls-files",
@@ -207,7 +213,7 @@ try {
           "LICENSES",
         ],
         { capture: true },
-      )
+      ))
     )
       .split("\0")
       .filter(Boolean);
@@ -216,14 +222,19 @@ try {
         .filter(([key]) => key.startsWith("VITE_"))
         .sort(),
     );
-    const inputs = [];
-    for (const file of [...new Set(tracked)].sort()) {
-      const digest = await hashFile(file).catch((error) => {
-        if (error.code === "ENOENT") return null;
-        throw error;
-      });
-      inputs.push([file, digest]);
-    }
+    const files = [...new Set(tracked)].sort();
+    const inputs = await observeBuild("inputs", "hash website files", async (update) => {
+      const inputs = [];
+      for (const file of files) {
+        const digest = await hashFile(file).catch((error) => {
+          if (error.code === "ENOENT") return null;
+          throw error;
+        });
+        inputs.push([file, digest]);
+        update({ completed: inputs.length });
+      }
+      return inputs;
+    }, { completed: 0, total: files.length });
     const platform = [process.version, process.platform, process.arch];
     const fingerprint = hash([platform, config, inputs]);
     const contentFingerprint = hash([
@@ -235,23 +246,39 @@ try {
           file.startsWith("scripts/lib/"),
       ),
     ]);
-    const contentWorkerFingerprint = hash(
-      inputs.filter(
-        ([file]) =>
-          file === "wrangler.content.jsonc" || file === "workers/content.js" || file === "shared/novel-release.js",
-      ),
-    );
-    process.env.SSG_CONTENT_CACHE_VERSION = fingerprint;
+    process.env.SSG_CONTENT_CACHE_VERSION = hash([platform, inputs.filter(([file]) =>
+      file === "pnpm-lock.yaml" ||
+      file === "scripts/build/pagefind.mjs" ||
+      file === "scripts/lib/content-source.mjs" ||
+      file === "scripts/lib/build-cache.mjs" ||
+      file === "src/utils/create-license-anchor.js" ||
+      file.startsWith("src/utils/markdown/") ||
+      file.startsWith("src/utils/novel/"),
+    )]);
+    process.env.SSG_RSS_CACHE_VERSION = hash([platform, inputs.filter(([file]) =>
+      file === "pnpm-lock.yaml" || file === "scripts/build/rss.mjs" ||
+      file === "scripts/lib/rss-content.mjs" || file.startsWith("src/utils/markdown/") ||
+      file.startsWith("src/utils/blog/") || file === "src/utils/resolve-article-assets.js",
+    )]);
     let previous;
     let snapshotHit = false;
     let restoredBytes = 0;
     let reason = "missing snapshot";
     let pending = false;
+    const storage = remote ? "r2" : "local";
     await phase("restore", async () => {
       try {
-        pending = await store.get("pending", join(scratch, "pending"));
-        if (!(await store.get("latest.json", stateFile))) return;
-        const state = await readJson(stateFile);
+        pending = await observeBuild("restore", "read publication marker", () =>
+          store.get("pending", join(scratch, "pending")), { storage });
+        if (!(await observeBuild("restore", "read snapshot metadata", async (update) => {
+          const found = await store.get("latest.json", stateFile);
+          update({ cache: found ? "hit" : "miss" });
+          return found;
+        }, { storage }))) return;
+        const state = await readJson(stateFile).catch((error) => {
+          if (!(error instanceof SyntaxError)) throw error;
+          throw new InvalidSnapshot("invalid snapshot metadata");
+        });
         if (
           state.schema !== 2 ||
           !/^[a-f0-9-]{36}$/u.test(state.id) ||
@@ -260,40 +287,71 @@ try {
           !Array.isArray(state.sources) ||
           !state.renderer
         ) {
-          throw new Error("incompatible version record");
+          throw new InvalidSnapshot("incompatible version record");
         }
-        if (
-          !(await store.get(`${state.id}.tar.gz`, archive)) ||
-          (await hashFile(archive)) !== state.archiveHash
-        ) {
-          throw new Error("snapshot checksum mismatch");
-        }
-        for (const directory of [
-          "dist",
-          ".output/content",
-          ".output/content-build",
-          ".output/novel-search",
-          ".tmp/site-renderer",
-          ".tmp/site-image-cache",
-          ".tmp/site-search-cache",
-        ]) {
-          await removeBuildDirectory(resolve(directory), resolve("."));
-        }
-        await run(["tar", "-xzf", archive]);
-        restoredBytes = (await stat(archive)).size;
+        await observeBuild("restore", "retrieve archive", async (update) => {
+          if (!(await store.get(`${state.id}.tar.gz`, archive)))
+            throw new InvalidSnapshot("snapshot archive missing");
+          restoredBytes = (await stat(archive)).size;
+          update({ bytes: restoredBytes });
+        }, { storage });
+        await observeBuild("restore", "verify archive SHA-256", async () => {
+          if ((await hashFile(archive)) !== state.archiveHash)
+            throw new InvalidSnapshot("snapshot checksum mismatch");
+        }, { bytes: restoredBytes });
+        await observeBuild("restore", "remove old directories", async (update) => {
+          let completed = 0;
+          for (const directory of snapshotDirectories) {
+            await removeBuildDirectory(resolve(directory), resolve("."));
+            update({ completed: ++completed });
+          }
+        }, { completed: 0, total: snapshotDirectories.length });
+        await observeBuild("restore", "extract archive", () =>
+          run(["tar", "-xzf", archive]), { bytes: restoredBytes });
+        await observeBuild("restore", "validate restored structure", async () => {
+          const files = [
+            "dist/index.html",
+            ".tmp/site-renderer/template.html",
+            ".tmp/site-renderer/server/main.mjs",
+          ];
+          const manifests = [
+            ".tmp/site-renderer/pages.json",
+            ".tmp/site-renderer/assets.json",
+            "dist/assets/images/_optimized/manifest.json",
+            join(CONTENT_DIRECTORY, "post/index.json"),
+            join(CONTENT_DIRECTORY, "novel/index.json"),
+          ];
+          try {
+            for (const directory of snapshotDirectories) {
+              if (!(await stat(directory)).isDirectory())
+                throw new InvalidSnapshot("invalid snapshot directory");
+            }
+            for (const file of files) {
+              if (!(await stat(file)).isFile())
+                throw new InvalidSnapshot("invalid snapshot file type");
+            }
+            for (const manifest of manifests) {
+              const data = await readJson(manifest);
+              if (!data || typeof data !== "object")
+                throw new InvalidSnapshot("invalid snapshot manifest");
+            }
+          } catch (error) {
+            if (error instanceof SyntaxError || ["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code))
+              throw new InvalidSnapshot("snapshot has missing or invalid site, renderer or content files");
+            throw error;
+          }
+        });
         previous = state;
         snapshotHit = true;
         reason = pending
           ? "interrupted publication"
           : state.fingerprint !== fingerprint
             ? "application inputs changed"
-            : deployed &&
-                (deployed.site !== state.versions?.site ||
-                  deployed.content !== state.versions?.content)
-              ? "active deployment changed"
-              : "";
+            : "";
       } catch (error) {
+        if (!(error instanceof InvalidSnapshot)) throw error;
         reason = error.message;
+        buildEvent("restore", "snapshot", "rejected", { reason });
       }
     });
     if (flags.has("--full")) reason = "full build requested";
@@ -308,15 +366,23 @@ try {
       ),
     );
     const source = await readJson(MANIFEST_PATH);
+    if (source.websiteCommit !== websiteCommit) throw new Error("Website checkout changed during the build");
     if (!source.historyVerified) {
       reason = "previous content commit could not be verified";
       full = true;
     }
     const content = await inventory(CONTENT_DIRECTORY);
     const delta = changes(previous?.content, content);
+    buildEvent("smart", "build mode", "decision", {
+      mode: full ? "FULL" : delta.total ? "INCREMENTAL" : "SKIPPED",
+      reason: reason || (delta.total ? "exported content changed" : "exported content unchanged"),
+      snapshotHit,
+      restoredBytes,
+      changedFiles: delta.total,
+    });
     if (!full && !delta.total) {
-      if (publish && !(await sourcesAreCurrent(source))) return false;
-      if (!dryRun) await sealContentBuild();
+      if (!dryRun) await phase("seal unchanged build", sealContentBuild);
+      if (artifact) await sealArtifact(source, { mode: "SKIPPED", phases });
       console.log(
         JSON.stringify({
           mode: "SKIPPED",
@@ -353,7 +419,12 @@ try {
     );
     async function render(compile) {
       if (compile) {
-        if (dryRun) return;
+        if (dryRun) {
+          buildEvent("vite", "client and SSR bundles", "skip", {
+            reason: "explain or dry-run mode",
+          });
+          return;
+        }
         await step("build/static-assets");
         await step("release/changelog", "generate");
         await step("build/licenses", "--source");
@@ -371,16 +442,7 @@ try {
         ...(dryRun ? ["--dry-run"] : []),
       );
     }
-    await phase("render", async () => {
-      try {
-        await render(full);
-      } catch (error) {
-        if (full || dryRun) throw error;
-        full = true;
-        reason = `incremental rendering failed: ${error.message}`;
-        await render(true);
-      }
-    });
+    await phase("render", () => render(full));
     const mode = full ? "FULL" : "INCREMENTAL";
     const contentChanges = changes(
       Object.fromEntries(
@@ -438,7 +500,7 @@ try {
       await step("build/sitemap");
       if (full) await step("build/licenses", "--dist");
       await step("build/prune-assets");
-      await sealContentBuild();
+      await phase("seal content and verify public assets", sealContentBuild);
     });
     const site = await inventory(resolve("dist"));
     const siteDelta = changes(previous?.site, site);
@@ -472,7 +534,6 @@ try {
       id,
       fingerprint,
       contentFingerprint,
-      contentWorkerFingerprint,
       ...source,
       site,
       content,
@@ -480,73 +541,21 @@ try {
       rendererPages: await readJson(resolve(".tmp/site-renderer/pages.json")),
       renderer: await inventory(resolve(".tmp/site-renderer")),
     };
-    const deployment = {
-      contentChanged:
-        flags.has("--full") ||
-        pending ||
-        previous?.contentWorkerFingerprint !== contentWorkerFingerprint ||
-        deployed?.content !== previous?.versions?.content ||
-        delta.total > 0,
-      siteChanged: full || siteDelta.total > 0,
-    };
     await phase("snapshot", async () => {
-      await run([
-        "tar",
-        "-czf",
-        archive,
-        "dist",
-        ".output/content",
-        ".output/content-build",
-        ".output/novel-search",
-        ".tmp/site-renderer",
-        ".tmp/site-image-cache",
-        ".tmp/site-search-cache",
-      ]);
-      state.archiveHash = await hashFile(archive);
-      state.archiveBytes = (await stat(archive)).size;
-      await store.put(`${id}.tar.gz`, archive);
-    });
-    if (!(await isCurrentSite())) {
-      await store.delete(`${id}.tar.gz`);
-      console.log(
-        JSON.stringify({
-          mode: "SKIPPED",
-          websiteCommit,
-          reason: "superseded website checkout",
-        }),
-      );
-      return;
-    }
-    if (publish) {
-      if (!(await sourcesAreCurrent(source))) {
-        await store.delete(`${id}.tar.gz`);
-        console.log(
-          JSON.stringify({
-            phase: "deploy",
-            reason: "content heads advanced; rebuilding",
-          }),
-        );
-        return false;
-      }
-      await store.put("pending", marker);
-      await phase("deploy", async () => {
-        try {
-          await deploy("website", [], deployment);
-          state.versions = await activeVersions();
-        } catch (error) {
-          await restoreVersions(deployed, previous?.versions).catch((rollback) => {
-            throw new AggregateError(
-              [error, rollback],
-              "Deployment and rollback failed",
-            );
-          });
-          throw error;
-        }
+      await observeBuild("snapshot", "compress archive", async (update) => {
+        await run(["tar", "-czf", archive, ...snapshotDirectories]);
+        state.archiveBytes = (await stat(archive)).size;
+        update({ bytes: state.archiveBytes });
       });
-    }
+      state.archiveHash = await observeBuild("snapshot", "hash archive", () =>
+        hashFile(archive), { bytes: state.archiveBytes });
+      await observeBuild("snapshot", "store archive", () =>
+        store.put(`${id}.tar.gz`, archive), { storage, bytes: state.archiveBytes });
+    });
+    if (artifact) await sealArtifact(source, summary);
     await writeFile(stateFile, JSON.stringify(state));
-    await store.put("latest.json", stateFile);
-    if (publish) await store.delete("pending");
+    await observeBuild("snapshot", "store latest metadata", () =>
+      store.put("latest.json", stateFile), { storage });
     if (previous)
       await store
         .delete(`${previous.id}.tar.gz`)
@@ -556,7 +565,6 @@ try {
     console.log(
       JSON.stringify({
         ...summary,
-        ...(publish && { deployment }),
         archiveBytes: state.archiveBytes,
         durationMs: Math.round(performance.now() - started),
         assets: {
@@ -568,9 +576,19 @@ try {
   }
 } finally {
   try {
-    if (remoteLocked) await remote.delete("publish.lock");
+    if (remoteLocked)
+      await observeBuild("lock", "release R2 build lock", () => remote.delete("publish.lock"));
+  } catch (error) {
+    result = "error";
+    throw error;
   } finally {
-    if (scratch) await removeBuildDirectory(scratch, resolve(".tmp"));
-    await removeBuildDirectory(lock, resolve(".tmp"));
+    try {
+      if (scratch) await removeBuildDirectory(scratch, resolve(".tmp"));
+    } finally {
+      if (localLocked) await removeBuildDirectory(lock, resolve(".tmp"));
+      buildEvent("smart", "build", result, {
+        elapsedMs: Math.round(performance.now() - started),
+      });
+    }
   }
 }

@@ -29,7 +29,9 @@ for (const entry of snapshot.articles) {
   assert.equal(schema.inLanguage, lang, file);
   assert.equal(schema.headline, entry.article.title, file);
   assert.equal(schema.url, canonical, file);
-  assert.ok(find("h1", "id", `article-title-${entry.id}`), `missing static title: ${file}`);
+  const titleAnchor = `article-title-${entry.id}`;
+  assert.ok(find("h1", "data-reader-heading-id", titleAnchor), `missing static title: ${file}`);
+  assert.ok(nodes.some((node) => attr(node, "id") === titleAnchor), `missing static title anchor: ${file}`);
   for (const locale of getArticleLocales(entry.article)) {
     assert.equal(attr(find("link", "hreflang", locale), "href"), `https://komori.cc${getArticlePath(entry.article, locale)}`);
   }

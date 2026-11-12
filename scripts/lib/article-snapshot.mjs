@@ -50,7 +50,7 @@ export async function createArticleSnapshot(
   for (const source of articles) {
     for (const lang of getArticleLocales(source)) {
       const version = resolveArticleVersion(source, lang, { explicit: true });
-      const url = new URL(`${baseUrl}/${version.path}`);
+      const url = new URL(`${baseUrl}/${version.path}`, "https://komori.cc");
       if (version.contentHash) url.searchParams.set("v", version.contentHash);
       const entry = await retryDownload(
         url,

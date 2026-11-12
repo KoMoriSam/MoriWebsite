@@ -7,18 +7,35 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const siteOrigin = env.MORI_SITE_ORIGIN || SITE;
+    const authOrigin = env.MORI_AUTH_ORIGIN || AUTH;
     if (/^\/(?:pagefind-novel|archive\/article)(?:\/|$)/i.test(path)) return json({ error: "NOT_FOUND" }, 404);
-    if (!/^\/(?:api|auth)(?:\/|$)/.test(path)) return env.ASSETS.fetch(request);
-    if (url.origin !== SITE) return json({ error: "NOT_FOUND" }, 404);
+    if (env.PUBLIC_CONTENT && path.startsWith("/content/")) {
+      url.pathname = path.slice("/content".length);
+      return env.PUBLIC_CONTENT.fetch(new Request(url, request));
+    }
+    if (!/^\/(?:api|auth)(?:\/|$)/.test(path)) {
+      const response = await env.ASSETS.fetch(request);
+      if (env.MORI_ENV !== "staging") return response;
+      const headers = new Headers(response.headers);
+      headers.set("X-Robots-Tag", "noindex, nofollow");
+      return new Response(response.body, { status: response.status, headers });
+    }
+    if (url.origin !== siteOrigin) return json({ error: "NOT_FOUND" }, 404);
     const token = readCookie(request, COOKIE.site);
-    if (!["GET", "HEAD"].includes(request.method) && request.headers.get("Origin") !== SITE) {
+    if (env.PUBLIC_API && /^\/api\/(?:github|games|analytics|announcements|changelog|random-hero)(?:\/|$)/.test(path)) {
+      url.pathname = path.slice(4);
+      return env.PUBLIC_API.fetch(new Request(url, request));
+    }
+    if (!["GET", "HEAD"].includes(request.method) && request.headers.get("Origin") !== siteOrigin) {
       return json({ error: "INVALID_ORIGIN" }, 403);
     }
     try {
       if (path === "/auth/login" && request.method === "GET") {
         const flow = randomToken();
-        const target = new URL("/login/github", AUTH);
+        const target = new URL(env.LOCAL_AUTH ? "/auth/local/login" : "/login/github", authOrigin);
         target.search = new URLSearchParams({ challenge: await hash(flow), return: returnPath(url.searchParams.get("return")) });
+        if (env.LOCAL_AUTH && url.searchParams.has("fixture")) target.searchParams.set("fixture", url.searchParams.get("fixture"));
         if (url.searchParams.get("reauthorize") === "1") target.searchParams.set("reauthorize", "1");
         return redirect(target.href, [sessionCookie(COOKIE.flow, flow, 660)]);
       }
@@ -27,7 +44,7 @@ export default {
           readCookie(request, COOKIE.flow), request.headers.get("User-Agent"), token);
         const cookies = [sessionCookie(COOKIE.flow)];
         if (result) cookies.push(sessionCookie(COOKIE.site, result.token, result.maxAge));
-        return redirect(new URL(result ? returnPath(result.returnTo) : "/?auth_error=github", SITE).href, cookies);
+        return redirect(new URL(result ? returnPath(result.returnTo) : "/?auth_error=grant", siteOrigin).href, cookies);
       }
       if (path === "/api/auth/session" && request.method === "GET") {
         const session = await env.MORI_AUTH.verify(token);
@@ -39,7 +56,7 @@ export default {
         const flowClear = new Headers(privateHeaders);
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.site));
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.flow));
-        return Response.json({ logoutUrl: AUTH + "/logout" }, { headers: flowClear });
+        return Response.json({ logoutUrl: authOrigin + (env.LOCAL_AUTH ? "/auth/local/logout" : "/logout") }, { headers: flowClear });
       }
       if (path.startsWith("/api/novel/") && ["GET", "HEAD"].includes(request.method)) {
         const session = await env.MORI_AUTH.verify(token);
@@ -48,16 +65,20 @@ export default {
         return await serveNovel(request, env, path.slice("/api/novel/".length));
       }
       if (path === "/api/comments" && ["GET", "POST"].includes(request.method)) {
-        const index = await env.ASSETS.fetch(new Request(`${SITE}/${discussionRegistry}`));
+        const index = await env.ASSETS.fetch(new Request(`${siteOrigin}/${discussionRegistry}`));
         if (!index.ok) return json({ error: "COMMENTS_UNAVAILABLE" }, 503);
-        const target = discussionTarget(await index.json(), url.searchParams.get("scope"), url.searchParams.get("target"));
+        const target = discussionTarget(await index.json(), url.searchParams.get("scope"), url.searchParams.get("target"), env);
         if (!target) return json({ error: "DISCUSSION_NOT_FOUND" }, 404);
         const result = await env.COMMENTS.handle(request, token, target);
         return json(result.body, result.status, result.headers);
       }
       return json({ error: "NOT_FOUND" }, 404);
     } catch {
-      return json({ error: "SERVICE_UNAVAILABLE" }, 503);
+      const requestId = crypto.randomUUID();
+      console.error(JSON.stringify({ event: "website_request_failed", requestId, route: path.startsWith("/auth/") ? "auth" : "api" }));
+      if (path === "/auth/complete" || path === "/auth/login")
+        return redirect(new URL(`/?auth_error=unavailable&auth_request=${requestId}`, siteOrigin).href);
+      return json({ error: "SERVICE_UNAVAILABLE", requestId }, 503);
     }
   },
 };

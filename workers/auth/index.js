@@ -4,11 +4,20 @@ import { credentials, exchange, githubClient, userGraphql } from "./github.js";
 import { hash, randomToken } from "./crypto.js";
 import { findSession, issueGrant, profile, redeemGrant, revokeFamily, SESSION_SECONDS } from "./session.js";
 
-const callback = AUTH + "/callback/github";
 const transactionSeconds = 600;
-const failLogin = () => redirect(SITE + "/?auth_error=github", [sessionCookie(COOKIE.oauth)]);
-const grantRedirect = (grant, cookies) =>
-  redirect(`${SITE}/auth/complete?grant=${grant}`, cookies);
+const siteOrigin = (env) => env.MORI_SITE_ORIGIN || SITE;
+const authOrigin = (env) => env.MORI_AUTH_ORIGIN || AUTH;
+const callback = (env) => authOrigin(env) + "/callback/github";
+const grantRedirect = (env, grant, cookies) =>
+  redirect(`${siteOrigin(env)}/auth/complete?grant=${grant}`, cookies);
+
+function loginFailure(env, path, stage, requestId) {
+  console.warn(JSON.stringify({ event: "mori_auth_failed", stage, requestId }));
+  const target = new URL(returnPath(path), siteOrigin(env));
+  target.searchParams.set("auth_error", stage);
+  target.searchParams.set("auth_request", requestId);
+  return redirect(target.href, [sessionCookie(COOKIE.oauth)]);
+}
 
 async function login(request, env, url) {
   if (env.AUTH_START_LIMIT && !(await env.AUTH_START_LIMIT.limit({ key: request.headers.get("CF-Connecting-IP") || "unknown" })).success) {
@@ -19,8 +28,9 @@ async function login(request, env, url) {
   const target = returnPath(url.searchParams.get("return"));
   const central = await findSession(env, readCookie(request, COOKIE.center), "auth");
   if (central && url.searchParams.get("reauthorize") !== "1") {
-    return grantRedirect(await issueGrant(env, central.family, randomToken(), challenge, target));
+    return grantRedirect(env, await issueGrant(env, central.family, randomToken(), challenge, target));
   }
+  if (!env.GITHUB_CLIENT_ID) throw new Error("OAuth initialization failed");
   const state = randomToken();
   const verifier = randomToken();
   const browser = randomToken();
@@ -34,7 +44,7 @@ async function login(request, env, url) {
   const authorize = new URL("https://github.com/login/oauth/authorize");
   authorize.search = new URLSearchParams({
     client_id: env.GITHUB_CLIENT_ID,
-    redirect_uri: callback,
+    redirect_uri: callback(env),
     state,
     code_challenge: await hash(verifier),
     code_challenge_method: "S256",
@@ -42,11 +52,11 @@ async function login(request, env, url) {
   return redirect(authorize.href, [sessionCookie(COOKIE.oauth, browser, transactionSeconds)]);
 }
 
-async function complete(request, env, url) {
+async function complete(request, env, url, requestId) {
   const state = url.searchParams.get("state");
   const code = url.searchParams.get("code");
   const browser = readCookie(request, COOKIE.oauth);
-  if (!opaque(state) || !browser) return failLogin();
+  if (!opaque(state) || !browser) return loginFailure(env, "/", "state", requestId);
   const db = env.AUTH_DB;
   const stateHash = await hash(state);
   const transaction = await db.prepare(`
@@ -54,22 +64,24 @@ async function complete(request, env, url) {
       AND audience = 'website' AND expires_at > ?
     RETURNING verifier, website_challenge, return_to
   `).bind(stateHash, await hash(browser), Date.now()).first();
-  if (!transaction) return failLogin();
-  const target = new URL(transaction.return_to, SITE);
-  target.searchParams.set("auth_error", "github");
-  const fail = () => redirect(target.href, [sessionCookie(COOKIE.oauth)]);
-  if (!code || code.length > 256 || url.searchParams.has("error")) return fail();
+  if (!transaction) return loginFailure(env, "/", "state", requestId);
+  const fail = (stage) => loginFailure(env, transaction.return_to, stage, requestId);
+  if (url.searchParams.get("error") === "access_denied") return fail("denied");
+  if (!code || code.length > 256 || url.searchParams.has("error")) return fail("exchange");
 
+  let stage = "exchange";
   try {
-    const access = await exchange(env, { code, redirect_uri: callback, code_verifier: transaction.verifier });
+    const access = await exchange(env, { code, redirect_uri: callback(env), code_verifier: transaction.verifier });
+    stage = "profile";
     const { data: user } = await githubClient(access.access_token).rest("/user");
-    if (!Number.isSafeInteger(user.id) || !user.login) return fail();
+    if (!Number.isSafeInteger(user.id) || !user.login) return fail(stage);
     const userId = crypto.randomUUID();
     const name = String(user.name || user.login).slice(0, 160);
     const avatar = new URL(user.avatar_url);
-    if (avatar.protocol !== "https:" || avatar.hostname !== "avatars.githubusercontent.com") return fail();
+    if (avatar.protocol !== "https:" || avatar.hostname !== "avatars.githubusercontent.com") return fail(stage);
     const now = Date.now();
     const identityId = String(user.id);
+    stage = "database";
     const [, , identity] = await db.batch([
       db.prepare(`
         INSERT INTO users (id, name, avatar_url, created_at)
@@ -85,6 +97,11 @@ async function complete(request, env, url) {
       db.prepare("SELECT user_id FROM identities WHERE provider = 'github' AND provider_user_id = ?").bind(identityId),
     ]);
     const id = identity.results[0].user_id;
+    if (env.MORI_ENV === "staging") {
+      const allowed = (env.MORI_STAGING_READER_IDS || "").split(",").includes(identityId);
+      await db.prepare("UPDATE users SET can_read_novel = ? WHERE id = ?").bind(Number(allowed), id).run();
+    }
+    stage = "session";
     const encrypted = await credentials(env, id, access);
     const token = randomToken();
     const family = crypto.randomUUID();
@@ -106,14 +123,14 @@ async function complete(request, env, url) {
           generation = excluded.generation, refresh_lock_until = 0
       `).bind(...encrypted, id),
     ]);
-    if (!session.results.length) return fail();
+    if (!session.results.length) return fail(stage);
     await revokeFamily(env, old);
     const grant = await issueGrant(env, family, stateHash, transaction.website_challenge, transaction.return_to);
-    return grantRedirect(grant, [
+    return grantRedirect(env, grant, [
       sessionCookie(COOKIE.center, token, SESSION_SECONDS), sessionCookie(COOKIE.oauth),
     ]);
   } catch {
-    return fail();
+    return fail(stage);
   }
 }
 
@@ -194,18 +211,22 @@ export class CommentAuth extends WorkerEntrypoint {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.origin !== AUTH || request.method !== "GET") return json({ error: "NOT_FOUND" }, 404);
+    const requestId = crypto.randomUUID();
+    if (url.origin !== authOrigin(env) || request.method !== "GET") return json({ error: "NOT_FOUND" }, 404);
     try {
       if (url.pathname === "/login/github") return await login(request, env, url);
-      if (url.pathname === "/callback/github") return await complete(request, env, url);
+      if (url.pathname === "/callback/github") return await complete(request, env, url, requestId);
       if (url.pathname === "/logout") {
         const current = await findSession(env, readCookie(request, COOKIE.center), "auth");
-        return redirect(new URL(returnPath(url.searchParams.get("return")), SITE).href, current ? [] : [sessionCookie(COOKIE.center)]);
+        return redirect(new URL(returnPath(url.searchParams.get("return")), siteOrigin(env)).href, current ? [] : [sessionCookie(COOKIE.center)]);
       }
-      if (url.pathname === "/") return redirect(SITE + "/auth/login");
+      if (url.pathname === "/") return redirect(siteOrigin(env) + "/auth/login");
       return json({ error: "NOT_FOUND" }, 404);
     } catch {
-      return json({ error: "AUTH_UNAVAILABLE" }, 503);
+      if (url.pathname === "/login/github") return loginFailure(env, url.searchParams.get("return"), "start", requestId);
+      if (url.pathname === "/callback/github") return loginFailure(env, "/", "unavailable", requestId);
+      console.warn(JSON.stringify({ event: "mori_auth_failed", stage: "unavailable", requestId }));
+      return json({ error: "AUTH_UNAVAILABLE", requestId }, 503);
     }
   },
   async scheduled(_event, env) {

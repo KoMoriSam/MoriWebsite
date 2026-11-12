@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { renderDOMHead } from "@unhead/vue/client";
 import { renderToString } from "vue/server-renderer";
 import { build, mergeConfig } from "vite";
+import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 import {
   ARTICLE_LOCALES,
   getArticleRedirects,
@@ -16,9 +17,6 @@ import { getRelatedArticles } from "../../src/utils/blog/related-articles.js";
 import { createArticleWikiLinkResolver } from "../../src/utils/blog/article-wiki-links.js";
 import { wikiLinkDependencies } from "../../src/utils/markdown/markdown-it-wikilink.js";
 
-const require = createRequire(import.meta.url);
-const ssgRequire = createRequire(require.resolve("vite-ssg/node"));
-const { JSDOM } = await import(pathToFileURL(ssgRequire.resolve("jsdom")).href);
 const compiler = resolve(".tmp/site-renderer");
 const output = resolve("dist");
 const stateDir = resolve(".tmp/site-data");
@@ -46,7 +44,9 @@ if (full) {
         ...options,
       }),
     );
-  await compile({ build: { ssrManifest: true, emptyOutDir: true } });
+  await observeBuild("vite", "compile client bundle", () =>
+    compile({ build: { ssrManifest: true, emptyOutDir: true } }),
+  );
   await mkdir(compiler, { recursive: true });
   await copyFile(
     resolve(output, "index.html"),
@@ -57,7 +57,7 @@ if (full) {
     resolve(compiler, "assets.json"),
   );
   process.env.VITE_SSG = "true";
-  await compile({
+  await observeBuild("vite", "compile SSR bundle", () => compile({
     build: {
       ssr: "src/main.js",
       outDir: resolve(compiler, "server"),
@@ -68,6 +68,10 @@ if (full) {
       rollupOptions: { output: { entryFileNames: "main.mjs" } },
     },
     ssr: { noExternal: ["vite-ssg"] },
+  }));
+} else {
+  buildEvent("vite", "client and SSR bundles", "skip", {
+    reason: "incremental build uses snapshot bundles",
   });
 }
 
@@ -95,8 +99,12 @@ const {
   stopTrackingImageReads,
   imageDependency,
   normalizeArticleDate,
-} = await import(pathToFileURL(resolve(compiler, "server/main.mjs")).href);
-const { app, routes } = await createApp("/novel");
+} = await observeBuild("ssg", "load SSR bundle", () =>
+  import(pathToFileURL(resolve(compiler, "server/main.mjs")).href),
+);
+const { app, routes } = await observeBuild("ssg", "load application routes", () =>
+  createApp("/novel"),
+);
 const previous = full ? {} : await readJson(manifestFile);
 const entries = new Map(snapshot.articles.map((entry) => [entry.path, entry]));
 const list = articles.filter(
@@ -243,15 +251,29 @@ const removed = Object.keys(previous).filter(
   (route) => !Object.hasOwn(pages, route),
 );
 const report = {
+  totalPages: paths.length,
   regeneratedPages: changed.length,
   reusedPages: paths.length - changed.length,
   removedPages: removed.length,
   ...(dryRun ? { routes: changed, removed } : {}),
 };
-console.log(JSON.stringify(report));
+buildEvent("ssg", "page invalidation", "summary", {
+  totalPages: paths.length,
+  regenerate: changed.length,
+  reuse: paths.length - changed.length,
+  remove: removed.length,
+});
 if (process.env.SSG_RENDER_REPORT)
   await writeJson(process.env.SSG_RENDER_REPORT, report);
 if (!dryRun) {
+  let JSDOM;
+  if (changed.length) {
+    const require = createRequire(import.meta.url);
+    const ssgRequire = createRequire(require.resolve("vite-ssg/node"));
+    ({ JSDOM } = await observeBuild("ssg", "load rendering dependencies", () =>
+      import(pathToFileURL(ssgRequire.resolve("jsdom")).href),
+    ));
+  }
   const template = await readFile(resolve(compiler, "template.html"), "utf8");
   const assets = await readJson(resolve(compiler, "assets.json"));
   const fileFor = (route) => {
@@ -273,64 +295,71 @@ if (!dryRun) {
       throw new Error("Unsafe removed route");
     await rm(file);
   }
-  for (const route of changed) {
-    const imageReads = trackImageReads();
-    const { app, head, initialState, triggerOnSSRAppRendered } =
-      await createApp(route);
-    if (novelRoutes.has(route) && initialState.pageData)
-      throw new Error(`Unexpected hydration payload for novel chapter: ${route}`);
-    const context = {};
-    const html = await renderToString(app, context);
-    await triggerOnSSRAppRendered();
-    stopTrackingImageReads();
-    pages[route].images = [...imageReads].sort();
-    pages[route].imageHash = imageHash(pages[route].images);
-    const state = JSON.stringify(JSON.stringify(initialState)).replace(
-      /[<\u2028\u2029]/gu,
-      (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
-    );
-    const dom = new JSDOM(
-      template.replace(
-        /(<body\b[^>]*\bid="app"[^>]*)(><\/body>)/u,
-        (_, body) =>
-          `${body} data-server-rendered="true">${html}<script>window.__INITIAL_STATE__=${state}</script></body>`,
-      ),
-    );
-    try {
-      const { document } = dom.window;
-      if (!document.querySelector("[data-server-rendered]"))
-        throw new Error("Missing SSG container");
-      const resources = new Set(
-        [...(context.modules || [])].flatMap((module) => assets[module] || []),
+  await observeBuild("ssg", "render pages and write HTML", async (update) => {
+    let completed = 0;
+    let writeMs = 0;
+    for (const route of changed) {
+      const imageReads = trackImageReads();
+      const { app, head, initialState, triggerOnSSRAppRendered } =
+        await createApp(route);
+      if (novelRoutes.has(route) && initialState.pageData)
+        throw new Error(`Unexpected hydration payload for novel chapter: ${route}`);
+      const context = {};
+      const html = await renderToString(app, context);
+      await triggerOnSSRAppRendered();
+      stopTrackingImageReads();
+      pages[route].images = [...imageReads].sort();
+      pages[route].imageHash = imageHash(pages[route].images);
+      const state = JSON.stringify(JSON.stringify(initialState)).replace(
+        /[<\u2028\u2029]/gu,
+        (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
       );
-      for (const href of resources) {
-        if (!/\.(js|css)$/u.test(href)) continue;
-        if (
-          [...document.head.querySelectorAll("link")].some(
-            (link) => link.getAttribute("href") === href,
+      const dom = new JSDOM(
+        template.replace(
+          /(<body\b[^>]*\bid="app"[^>]*)(><\/body>)/u,
+          (_, body) =>
+            `${body} data-server-rendered="true">${html}<script>window.__INITIAL_STATE__=${state}</script></body>`,
+        ),
+      );
+      try {
+        const { document } = dom.window;
+        if (!document.querySelector("[data-server-rendered]"))
+          throw new Error("Missing SSG container");
+        const resources = new Set(
+          [...(context.modules || [])].flatMap((module) => assets[module] || []),
+        );
+        for (const href of resources) {
+          if (!/\.(js|css)$/u.test(href)) continue;
+          if (
+            [...document.head.querySelectorAll("link")].some(
+              (link) => link.getAttribute("href") === href,
+            )
           )
-        )
-          continue;
-        const link = document.createElement("link");
-        link.rel = href.endsWith(".js") ? "modulepreload" : "stylesheet";
-        if (link.rel === "modulepreload") link.crossOrigin = "";
-        link.href = href;
-        document.head.append(link);
+            continue;
+          const link = document.createElement("link");
+          link.rel = href.endsWith(".js") ? "modulepreload" : "stylesheet";
+          if (link.rel === "modulepreload") link.crossOrigin = "";
+          link.href = href;
+          document.head.append(link);
+        }
+        await renderDOMHead(head, { document });
+        if (inlineFontRoutes.has(route)) {
+          const style = document.createElement("style");
+          style.id = "opening-punctuation-fonts";
+          style.textContent = openingFontStyles;
+          document.head.append(style);
+        }
+        const writeStarted = performance.now();
+        const file = fileFor(route);
+        await mkdir(dirname(file), { recursive: true });
+        await writeFile(file, dom.serialize());
+        writeMs += performance.now() - writeStarted;
+      } finally {
+        dom.window.close();
       }
-      await renderDOMHead(head, { document });
-      if (inlineFontRoutes.has(route)) {
-        const style = document.createElement("style");
-        style.id = "opening-punctuation-fonts";
-        style.textContent = openingFontStyles;
-        document.head.append(style);
-      }
-      const file = fileFor(route);
-      await mkdir(dirname(file), { recursive: true });
-      await writeFile(file, dom.serialize());
-    } finally {
-      dom.window.close();
+      update({ completed: ++completed, writeMs: Math.round(writeMs) });
     }
-  }
+  }, { completed: 0, total: changed.length, reused: paths.length - changed.length });
   const publicData = resolve(output, "site-data");
   await mkdir(publicData, { recursive: true });
   await Promise.all(

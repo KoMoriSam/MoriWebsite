@@ -89,11 +89,7 @@ function configureApp(articles, snapshot) {
 async function bootstrap() {
   const [articles, imageManifests, snapshot] = await Promise.all([
     import.meta.env.DEV ? [] : readBuildData("articles"),
-    import.meta.env.DEV
-      ? import("./utils/images/image-manifests.generated.json").then(
-          (module) => module.default,
-        )
-      : readBuildData("images"),
+    import.meta.env.DEV ? [] : readBuildData("images"),
     import.meta.env.SSR && !import.meta.env.DEV
       ? readBuildData("snapshot")
       : {},

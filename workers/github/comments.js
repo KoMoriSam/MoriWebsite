@@ -26,7 +26,7 @@ const pageSize = 15;
 const error = (status, code, retryAt) => Object.assign(new Error(code), { status, code, retryAt });
 const nodeId = (value) => typeof value === "string" && /^[\w=+/\-]{1,120}$/.test(value);
 const cursor = (value) => typeof value === "string" && /^[\w=+/-]{1,256}$/.test(value) ? value : null;
-const validDiscussion = (node, target) => node?.repository?.id === target.repo.id && node.repository.isPrivate === false && node?.category?.id === target.category.id;
+const validDiscussion = (node, target) => node?.repository?.id === target.repo.id && node.repository.isPrivate === Boolean(target.privateRepository) && node?.category?.id === target.category.id;
 const targetKey = (target) => JSON.stringify([target.repo.id, target.category.id, target.term]);
 const countsKey = (id) => new Request("https://api.komori.cc/__cache/thread-count/" + encodeURIComponent(id));
 
@@ -143,7 +143,7 @@ async function getThread(github, discussion, input, includePermissions) {
     }
   `, { id, after });
   if (!node || node.id !== id || node.category.id !== discussion.category.id ||
-      node.repository.id !== discussion.repository.id || node.repository.isPrivate !== false) throw error(404, "DISCUSSION_NOT_FOUND");
+      node.repository.id !== discussion.repository.id || node.repository.isPrivate !== discussion.repository.isPrivate) throw error(404, "DISCUSSION_NOT_FOUND");
   hideMinimized(node.comments.nodes);
   if (newest) node.comments.nodes.reverse();
   return { discussion: node, includePermissions };

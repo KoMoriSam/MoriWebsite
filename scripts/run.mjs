@@ -53,12 +53,13 @@ const descriptions = {
     "pdf-glyphs": "生成 PDF 文字识别映射",
   },
   "run deploy": {
-    website: "发布网站与配套内容",
-    content: "发布博客、小说和开明字体",
+    website: "检查网站部署包（--dry-run）",
+    content: "检查公开内容部署包（--dry-run）",
     api: "发布网站 API 服务",
     auth: "发布 Mori Auth 认证服务",
   },
   check: {
+    dev: "本地认证、评论与小说访问",
     announcements: "公告内容与发布流程",
     avalon: "阿瓦隆规则与角色能力",
     "avalon-extensions": "阿瓦隆扩展角色",
@@ -129,7 +130,7 @@ async function main() {
       target === "help"
     ) {
       console.log(
-        "启动本地开发环境。\n\n  pnpm dev          预览并实时更新网站\n  pnpm dev games    启动本地多人游戏服务",
+        "启动本地开发环境。\n\n  pnpm dev          预览并实时更新网站\n  pnpm dev:seed      刷新隔离的本地测试数据\n  pnpm dev games    启动本地多人游戏服务",
       );
       return;
     }
@@ -146,8 +147,7 @@ async function main() {
       ]);
     } else if (target === "site") {
       console.log("正在准备本地网站…");
-      await sequence(prepare(false));
-      await run(["vite", "--host", "0.0.0.0", ...args]);
+      await run(script("dev/start.mjs", "site", ...args));
     } else
       throw new Error(
         `无法启动“${target}”。运行 pnpm dev --help 选择网站或游戏服务。`,
@@ -155,7 +155,7 @@ async function main() {
   } else if (command === "build") {
     if (args.some((arg) => ["--help", "-h"].includes(arg))) {
       console.log(
-        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览，或运行 pnpm run deploy website 发布。\n小说正文和全文索引由发布命令上传到私有 R2。",
+        "生成可部署的网站和内容资源。\n\n用法：pnpm build [参数]\n\n输出：\n  dist/             网站、RSS、搜索与许可文件\n  .output/content/  博客、小说与开明字体\n\n构建需要内容源访问权限。完成后运行 pnpm preview 预览。正式发布使用 pnpm release promote <Release ID>。\n小说正文和全文索引由发布命令上传到私有 R2。",
       );
       return;
     }
@@ -176,7 +176,7 @@ async function main() {
       script("build/content.mjs", "--seal"),
     ]);
     console.log(
-      "构建完成。\n网站：dist/\n内容资源：.output/content/\n预览：pnpm preview\n发布：pnpm run deploy website",
+      "构建完成。\n网站：dist/\n内容资源：.output/content/\n预览：pnpm preview\n发布：pnpm release promote <Release ID>",
     );
   } else if (command === "preview") {
     if (args.some((arg) => ["--help", "-h"].includes(arg))) {
@@ -188,10 +188,11 @@ async function main() {
     console.log("正在打开网站构建预览…");
     await run(["vite", "preview", "--host", "0.0.0.0", ...args]);
   } else if (command === "release") {
-    const target = ["changelog", "announcement"].includes(args[0])
+    const artifactVerification = args[0] === "verify" && /^[0-9a-f-]{36}$/.test(args[1] || "");
+    const target = artifactVerification || ["changelog", "announcement", "build", "stage", "verify-artifact", "approve", "promote", "rollback"].includes(args[0])
       ? args.shift()
       : "cli";
-    await run(script(`release/${target}.mjs`, ...args));
+    await run(["cli", "changelog", "announcement"].includes(target) ? script(`release/${target}.mjs`, ...args) : script("release/artifact.mjs", target, ...args));
   } else if (command === "check") {
     const names = (await readdir(new URL("./checks/", import.meta.url)))
       .filter((name) => name.endsWith(".mjs"))

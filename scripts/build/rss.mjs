@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 import { createRssFeed } from "../lib/rss-content.mjs";
 import { digest } from "../lib/build-cache.mjs";
+import { observeBuild } from "../lib/build-report.mjs";
 import { hasMathSyntax } from "../../src/utils/markdown/load-markdown-features.js";
 import { loadMathJaxPlugin } from "../../src/utils/markdown/mathjax-svg.js";
 
@@ -13,7 +14,8 @@ dotenv.config({ path: ".env.production", quiet: true });
 
 const snapshotPath = resolve("src/router/ssg-data.generated.js");
 const outputPath = resolve("public/rss.xml");
-const contentBaseUrl = String(process.env.VITE_BLOG_RAW || "").trim();
+const base = String(process.env.VITE_BLOG_RAW || "").trim();
+const contentBaseUrl = base && new URL(base, "https://komori.cc").href;
 
 if (!contentBaseUrl) {
   throw new Error(
@@ -32,7 +34,7 @@ try {
 const snapshotUrl = pathToFileURL(snapshotPath);
 snapshotUrl.searchParams.set("rss", String(Date.now()));
 const snapshot = (await import(snapshotUrl.href)).default;
-const version = process.env.SSG_CONTENT_CACHE_VERSION;
+const version = process.env.SSG_RSS_CACHE_VERSION;
 const cacheFile = resolve(".tmp/site-search-cache/rss.json");
 const previous = version
   ? await readFile(cacheFile, "utf8")
@@ -40,21 +42,45 @@ const previous = version
       .catch(() => ({}))
   : {};
 const current = {};
-const mathPlugin = snapshot.articles.some(({ content }) => hasMathSyntax(content))
-  ? await loadMathJaxPlugin()
+const hasMath = snapshot.articles.some(({ content }) => hasMathSyntax(content));
+const cacheKey = (input) => digest(JSON.stringify([version, contentBaseUrl, [...input.slice(0, -1), hasMath]]));
+let needsMath = hasMath && !version;
+if (hasMath && version) {
+  createRssFeed(snapshot.articles, {
+    contentBaseUrl,
+    renderContent(input) {
+      if (hasMathSyntax(input[0]) && previous[cacheKey(input)] === undefined) needsMath = true;
+      return "";
+    },
+  });
+}
+const mathPlugin = needsMath
+  ? await observeBuild("rss", "load MathJax renderer", loadMathJaxPlugin)
   : undefined;
-const { xml, items } = createRssFeed(snapshot?.articles, {
-  contentBaseUrl,
-  mathPlugin,
-  renderContent(input, render) {
-    if (!version) return render();
-    const key = digest(JSON.stringify([version, contentBaseUrl, input]));
-    return (current[key] = previous[key] ?? render());
-  },
+const { xml, items } = await observeBuild("rss", "render feed entries", (update) => {
+  let hits = 0;
+  let misses = 0;
+  const feed = createRssFeed(snapshot?.articles, {
+    contentBaseUrl,
+    mathPlugin,
+    renderContent(input, render) {
+      if (!version) {
+        misses++;
+        return render();
+      }
+      const key = cacheKey(input);
+      if (Object.hasOwn(previous, key)) hits++;
+      else misses++;
+      return (current[key] = previous[key] ?? render());
+    },
+  });
+  update({ documents: feed.items.length, hits, misses });
+  return feed;
 });
-if (version) await writeFile(cacheFile, JSON.stringify(current));
-
-await mkdir(dirname(outputPath), { recursive: true });
-await writeFile(outputPath, xml, "utf8");
+await observeBuild("rss", "write feed and cache", async () => {
+  if (version) await writeFile(cacheFile, JSON.stringify(current));
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, xml, "utf8");
+}, { bytes: Buffer.byteLength(xml) });
 
 console.log(`博客订阅源已生成：${items.length} 篇文章。文件：${outputPath}`);

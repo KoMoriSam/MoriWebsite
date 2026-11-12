@@ -13,5 +13,6 @@
     "migrations_dir": "./migrations/auth"
   }],
   "ratelimits": [{ "name": "AUTH_START_LIMIT", "namespace_id": "1103", "simple": { "limit": 30, "period": 60 } }],
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
   "triggers": { "crons": ["17 3 * * *"] }
 }

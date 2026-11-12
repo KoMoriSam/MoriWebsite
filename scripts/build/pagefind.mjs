@@ -1,5 +1,5 @@
 import { searchDirectory } from "./novel-release.mjs";
-import { rm } from "node:fs/promises";
+import { readdir, rm, stat } from "node:fs/promises";
 import dotenv from "dotenv";
 import fm from "front-matter";
 import { createIndex } from "pagefind";
@@ -11,6 +11,7 @@ import { createLicenseAnchor } from "../../src/utils/create-license-anchor.js";
 import { createMarkdownSearchBlocks } from "../../src/utils/markdown/search-anchors.js";
 import { fetchContent } from "../lib/content-source.mjs";
 import { buildCache, digest } from "../lib/build-cache.mjs";
+import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 // 小说索引按整章 Markdown 生成，不再使用固定字数分页。
 // import { splitMarkdown } from "../../src/utils/markdown/split-markdown.js";
 
@@ -224,71 +225,80 @@ const buildPublic = !onlySelected || process.argv.includes("--public");
 const buildNovel = !onlySelected || process.argv.includes("--novel");
 const cacheVersion = process.env.SSG_CONTENT_CACHE_VERSION;
 const cache = cacheVersion && (await buildCache(".tmp/site-search-cache"));
-async function cachedRecords(key, generate) {
-  return cache
-    ? (await cache(["pagefind", cacheVersion, ...key], generate)).value
-    : generate();
+const publicStats = { completed: 0, hits: 0, misses: 0, reusedRecords: 0, generatedRecords: 0 };
+const novelStats = { ...publicStats };
+async function cachedRecords(stats, key, generate) {
+  const { value, hit } = cache
+    ? await cache(["pagefind", cacheVersion, ...key], generate)
+    : { value: generate(), hit: false };
+  stats.completed++;
+  stats[hit ? "hits" : "misses"]++;
+  stats[hit ? "reusedRecords" : "generatedRecords"] += value.length;
+  return value;
 }
 
-const blogRecords = (
-  await Promise.all(
-    (buildPublic ? ssgData.articles || [] : [])
-      .filter((entry) => !entry.legacy)
-      .map(async (entry, catalogOrder) => {
-        const article = entry.article || {};
-        const date = normalizeDate(article.date);
-        const metadata = [
-          {
-            key: "date",
-            label: "发布时间",
-            value: date,
-            icon: "ri-calendar-line",
-          },
-          article.length
-            ? {
-                key: "length",
-                label: "约",
-                value: `${article.length} 字`,
-                icon: "ri-file-text-line",
-              }
-            : null,
-        ].filter(Boolean);
+const blogDocuments = (ssgData.articles || []).filter((entry) => !entry.legacy);
+const loadBlogRecords = () => observeBuild("pagefind", "read public documents", async (update) => {
+  const groups = await Promise.all(
+    blogDocuments.map(async (entry, catalogOrder) => {
+      const article = entry.article || {};
+      const date = normalizeDate(article.date);
+      const metadata = [
+        {
+          key: "date",
+          label: "发布时间",
+          value: date,
+          icon: "ri-calendar-line",
+        },
+        article.length
+          ? {
+              key: "length",
+              label: "约",
+              value: `${article.length} 字`,
+              icon: "ri-file-text-line",
+            }
+          : null,
+      ].filter(Boolean);
 
-        const records = await cachedRecords(
-          [
-            "blog",
-            entry.path,
-            article.title,
-            article.summary,
-            article.aliases,
-            article.lang,
-            article.tags,
+      const records = await cachedRecords(
+        publicStats,
+        [
+          "blog",
+          entry.path,
+          article.title,
+          article.summary,
+          article.aliases,
+          article.lang,
+          article.tags,
+          metadata,
+          date,
+          digest(entry.content),
+        ],
+        () =>
+          createMarkdownRecords({
+            pages: [entry.content],
+            urlForBlock: ({ block }) =>
+              block ? `${entry.path}#${block.id}` : entry.path,
+            title: article.title || "未命名文章",
+            fallbackSummary: article.summary || "",
+            aliases: Array.isArray(article.aliases) ? article.aliases : [],
+            type: "blog",
+            language: article.lang || "zh-CN",
+            tags: article.tags,
             metadata,
             date,
-            digest(entry.content),
-          ],
-          () =>
-            createMarkdownRecords({
-              pages: [entry.content],
-              urlForBlock: ({ block }) =>
-                block ? `${entry.path}#${block.id}` : entry.path,
-              title: article.title || "未命名文章",
-              fallbackSummary: article.summary || "",
-              aliases: Array.isArray(article.aliases) ? article.aliases : [],
-              type: "blog",
-              language: article.lang || "zh-CN",
-              tags: article.tags,
-              metadata,
-              date,
-            }),
-        );
-        return records.map((record) => ({
-          ...record,
-          meta: { ...record.meta, catalogOrder: String(catalogOrder) },
-        }));
-      }),
-  )
-).flat();
+          }),
+      );
+      update(publicStats);
+      return records.map((record) => ({
+        ...record,
+        meta: { ...record.meta, catalogOrder: String(catalogOrder) },
+      }));
+    }),
+  );
+  return groups.flat();
+}, { completed: 0, total: blogDocuments.length });
+const blogRecords = buildPublic ? await loadBlogRecords() : [];
 
 const loadNovelRecords = async () => {
   if (!NOVEL_BASE)
@@ -307,80 +317,84 @@ const loadNovelRecords = async () => {
       ),
   );
 
-  const chapterRecordGroups = await Promise.all(
-    chapters.map(async (chapter) => {
-      let raw = "";
-      if (chapter.path) {
-        const response = await fetchContent(`${NOVEL_BASE}/${chapter.path}`);
-        if (!response.ok) {
-          throw new Error(
-            `获取小说章节失败：${chapter.path} (${response.status})`,
-          );
+  return observeBuild("pagefind", "read private novel documents", async (update) => {
+    const chapterRecordGroups = await Promise.all(
+      chapters.map(async (chapter) => {
+        let raw = "";
+        if (chapter.path) {
+          const response = await fetchContent(`${NOVEL_BASE}/${chapter.path}`);
+          if (!response.ok) {
+            throw new Error(
+              `获取小说章节失败：${chapter.path} (${response.status})`,
+            );
+          }
+          raw = await response.text();
         }
-        raw = await response.text();
-      }
-      const { catalogOrder, ...chapterInputs } = chapter;
-      const records = await cachedRecords(
-        ["novel", chapterInputs, digest(raw)],
-        () => {
-          const document = fm(raw);
-          const attributes = { ...chapter, ...document.attributes };
-          const uploadDate = normalizeDate(attributes.uploadDate);
-          const modifiedDate = normalizeDate(attributes.modifiedDate);
-          const date = modifiedDate || uploadDate;
-          const metadata = [
-            uploadDate
-              ? {
-                  key: "uploadDate",
-                  label: "发布时间",
-                  value: uploadDate,
-                  icon: "ri-upload-2-line",
-                }
-              : null,
-            modifiedDate
-              ? {
-                  key: "modifiedDate",
-                  label: "修改时间",
-                  value: modifiedDate,
-                  icon: "ri-file-edit-line",
-                }
-              : null,
-            attributes.length
-              ? {
-                  key: "length",
-                  label: "约",
-                  value: `${attributes.length} 字`,
-                  icon: "ri-file-text-line",
-                }
-              : null,
-          ].filter(Boolean);
+        const { catalogOrder, ...chapterInputs } = chapter;
+        const records = await cachedRecords(
+          novelStats,
+          ["novel", chapterInputs, digest(raw)],
+          () => {
+            const document = fm(raw);
+            const attributes = { ...chapter, ...document.attributes };
+            const uploadDate = normalizeDate(attributes.uploadDate);
+            const modifiedDate = normalizeDate(attributes.modifiedDate);
+            const date = modifiedDate || uploadDate;
+            const metadata = [
+              uploadDate
+                ? {
+                    key: "uploadDate",
+                    label: "发布时间",
+                    value: uploadDate,
+                    icon: "ri-upload-2-line",
+                  }
+                : null,
+              modifiedDate
+                ? {
+                    key: "modifiedDate",
+                    label: "修改时间",
+                    value: modifiedDate,
+                    icon: "ri-file-edit-line",
+                  }
+                : null,
+              attributes.length
+                ? {
+                    key: "length",
+                    label: "约",
+                    value: `${attributes.length} 字`,
+                    icon: "ri-file-text-line",
+                  }
+                : null,
+            ].filter(Boolean);
 
-          const baseUrl = chapter.uuid
-            ? `/novel/${encodeURIComponent(chapter.uuid)}`
-            : "/novel";
+            const baseUrl = chapter.uuid
+              ? `/novel/${encodeURIComponent(chapter.uuid)}`
+              : "/novel";
 
-          return createMarkdownRecords({
-            // pages: splitMarkdown(document.body),
-            pages: [document.body],
-            urlForBlock: ({ block }) =>
-              `${baseUrl}${block ? `#${block.id}` : ""}`,
-            title: chapter.title || "未命名章节",
-            fallbackSummary: chapter.volumeTitle || "《向远方》",
-            type: "novel",
-            tags: chapter.volumeTitle ? [chapter.volumeTitle] : [],
-            metadata,
-            date,
-          });
-        },
-      );
-      return records.map((record) => ({
-        ...record,
-        meta: { ...record.meta, catalogOrder: String(catalogOrder) },
-      }));
-    }),
-  );
+            return createMarkdownRecords({
+              // pages: splitMarkdown(document.body),
+              pages: [document.body],
+              urlForBlock: ({ block }) =>
+                `${baseUrl}${block ? `#${block.id}` : ""}`,
+              title: chapter.title || "未命名章节",
+              fallbackSummary: chapter.volumeTitle || "《向远方》",
+              type: "novel",
+              tags: chapter.volumeTitle ? [chapter.volumeTitle] : [],
+              metadata,
+              date,
+            });
+          },
+        );
+        update(novelStats);
+        return records.map((record) => ({
+          ...record,
+          meta: { ...record.meta, catalogOrder: String(catalogOrder) },
+        }));
+      }),
+    );
 
-  return chapterRecordGroups.flat();
+    return chapterRecordGroups.flat();
+  }, { completed: 0, total: chapters.length });
 };
 
 const changelogRecords = (ssgData.changelog?.items || []).map(
@@ -492,19 +506,49 @@ async function writeIndex(records, outputPath, novel) {
     throw new Error("Pagefind 内容归属错误");
   const { index, errors } = await createIndex({ includeCharacters: "@/+-._" });
   if (!index || errors.length) throw new Error(errors.join(";"));
-  for (const record of records) {
-    const result = await index.addCustomRecord(record);
-    if (result.errors.length) throw new Error(result.errors.join(";"));
+  const scope = novel ? "private novel" : "public";
+  try {
+    await observeBuild("pagefind", `add ${scope} records`, async (update) => {
+      let completed = 0;
+      for (const record of records) {
+        const result = await index.addCustomRecord(record);
+        if (result.errors.length) throw new Error(result.errors.join(";"));
+        update({ completed: ++completed });
+      }
+    }, { completed: 0, total: records.length });
+    await observeBuild("pagefind", `write ${scope} index`, async () => {
+      const output = await index.writeFiles({ outputPath });
+      if (output.errors.length) throw new Error(output.errors.join(";"));
+    });
+  } finally {
+    await index.deleteIndex();
   }
-  const output = await index.writeFiles({ outputPath });
-  if (output.errors.length) throw new Error(output.errors.join(";"));
-  await index.deleteIndex();
+  await observeBuild("pagefind", `measure ${scope} index`, async (update) => {
+    const files = (await readdir(outputPath, { recursive: true, withFileTypes: true }))
+      .filter((entry) => entry.isFile());
+    let bytes = 0;
+    for (const entry of files)
+      bytes += (await stat(resolve(entry.parentPath, entry.name))).size;
+    update({ files: files.length, bytes });
+  });
 }
-if (buildPublic) await writeIndex(publicRecords, OUTPUT_PATH, false);
+if (buildPublic) {
+  buildEvent("pagefind", "public records", "summary", {
+    ...publicStats,
+    documents: publicStats.completed + changelogRecords.length + licenseRecords.length,
+    generatedRecords: publicStats.generatedRecords + changelogRecords.length + licenseRecords.length,
+    records: publicRecords.length,
+  });
+  await writeIndex(publicRecords, OUTPUT_PATH, false);
+}
 if (buildNovel) {
-  await rm(searchDirectory, { recursive: true, force: true });
+  buildEvent("pagefind", "private novel records", "summary", {
+    ...novelStats,
+    documents: novelStats.completed,
+    records: novelRecords.length,
+  });
+  await observeBuild("pagefind", "clear private index", () =>
+    rm(searchDirectory, { recursive: true, force: true }),
+  );
   await writeIndex(novelRecords, searchDirectory, true);
 }
-console.log(
-  `全站搜索已生成：公开内容 ${publicRecords.length} 条、小说内容 ${novelRecords.length} 条。`,
-);

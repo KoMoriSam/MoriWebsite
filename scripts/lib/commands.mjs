@@ -7,7 +7,7 @@ export const PROJECT_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 
 export async function run(
   [tool, ...args],
-  { cwd = PROJECT_ROOT, env = process.env, capture = false } = {},
+  { cwd = PROJECT_ROOT, env = process.env, capture = false, signal } = {},
 ) {
   let executable = process.execPath;
   if (tool === "git" || tool === "tar") executable = tool;
@@ -28,6 +28,7 @@ export async function run(
     const child = spawn(executable, args, {
       cwd,
       env,
+      signal,
       stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit",
     });
     let output = "";

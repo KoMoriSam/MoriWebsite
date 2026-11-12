@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "node scripts/run.mjs dev",
+    "dev:seed": "node scripts/dev/start.mjs seed",
     "build": "node scripts/run.mjs build",
     "build:smart": "node scripts/build/smart.mjs",
     "preview": "node scripts/run.mjs preview",

@@ -7,6 +7,7 @@ import { publicCovers, publicCoverManifest, releaseFile, resourcePath } from "..
 import { copyTree, removeBuildDirectory } from "../lib/content-files.mjs";
 import { PROJECT_ROOT } from "../lib/commands.mjs";
 import { snapshotStore } from "./snapshot-store.mjs";
+import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 
 function directories(root) {
   const output = path.join(root, ".output");
@@ -100,6 +101,8 @@ export async function sealNovelRelease(root = PROJECT_ROOT) {
   await mkdir(path.join(publicDirectory, "novel/images/_optimized"), { recursive: true });
   for (const name of ["post", "kaiming"])
     await copyTree(path.join(sourceDirectory, name), path.join(publicDirectory, name), { hidden: true });
+  const fontStyles = path.join(publicDirectory, "kaiming/index.css");
+  await writeFile(fontStyles, (await readFile(fontStyles, "utf8")).replaceAll("https://raw.komori.cc/kaiming/", "./"));
   for (const name of ["_headers", "_redirects", "404.html"])
     await copyFile(path.join(sourceDirectory, name), path.join(publicDirectory, name));
   for (const file of allowed) {
@@ -174,22 +177,39 @@ export async function assertNovelRelease(root = PROJECT_ROOT) {
   return version;
 }
 
-export async function publishNovelRelease(version) {
-  const { privateManifest, source } = production;
-  const store = snapshotStore({ prefix: "NOVEL_R2", namespace: "v1" });
-  if (!store || process.env.NOVEL_R2_BUCKET !== "novel-vault") throw new Error("Configure private novel-vault upload credentials");
-  if (await store.exists(`versions/${version}.json`)) return;
-  const entries = Object.entries(await json(privateManifest));
-  const uploaded = new Set();
-  for (let offset = 0; offset < entries.length; offset += 12) {
-    await Promise.all(entries.slice(offset, offset + 12).map(async ([key, digest]) => {
-      if (uploaded.has(digest)) return;
-      uploaded.add(digest);
-      const object = `objects/${digest}`;
-      if (await store.exists(object)) return;
-      const [kind, ...rest] = key.split("/");
-      await store.put(object, path.join(kind === "search" ? searchDirectory : source, ...rest), true);
-    }));
+export async function publishNovelRelease(version, {
+  root = PROJECT_ROOT, prefix = "NOVEL_R2", bucket = "novel-vault",
+} = {}) {
+  const { privateManifest, source, searchDirectory } = directories(root);
+  const store = snapshotStore({ prefix, namespace: "v1" });
+  if (!store || process.env[prefix + "_BUCKET"] !== bucket) throw new Error("Configure the target private novel upload credentials");
+  if (await store.exists(`versions/${version}.json`)) {
+    buildEvent("deploy", "novel release manifest", "reuse", { version });
+    if (root === PROJECT_ROOT) return;
   }
-  await store.put(`versions/${version}.json`, privateManifest, true);
+  const entries = Object.entries(await json(privateManifest));
+  const resources = new Map(entries.map(([key, digest]) => [digest, key]));
+  const objects = [...resources];
+  await observeBuild("deploy", "sync novel objects", async (update) => {
+    let reused = 0;
+    let uploaded = 0;
+    for (let offset = 0; offset < objects.length; offset += 12) {
+      await Promise.all(objects.slice(offset, offset + 12).map(async ([digest, key]) => {
+        const object = `objects/${digest}`;
+        if (await store.exists(object)) {
+          reused++;
+        } else {
+          const [kind, ...rest] = key.split("/");
+          const written = await store.put(object, path.join(kind === "search" ? searchDirectory : source, ...rest), true);
+          if (written) uploaded++;
+          else reused++;
+        }
+        update({ completed: uploaded + reused, uploaded, reused });
+      }));
+    }
+  }, { completed: 0, total: objects.length, uploaded: 0, reused: 0 });
+  await observeBuild("deploy", "store novel release manifest", () =>
+    store.put(`versions/${version}.json`, privateManifest, true),
+    { version },
+  );
 }

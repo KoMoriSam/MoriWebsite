@@ -1,9 +1,10 @@
-import { assertNovelRelease, publishNovelRelease } from "./novel-release.mjs";
+import { assertNovelRelease } from "./novel-release.mjs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { MANIFEST_PATH, SITE_RECEIPT_PATH } from "./content.mjs";
 import { run } from "../lib/commands.mjs";
+import { observeBuild } from "../lib/build-report.mjs";
 
 export function contentDeploymentEnvironment(source = process.env) {
   const env = { ...source };
@@ -83,12 +84,12 @@ export async function deploy(
       "网站与内容版本不一致。请运行 pnpm build 重新生成发布文件。",
     );
   }
-  const novelVersion = await assertNovelRelease();
+  const novelVersion = await observeBuild("deploy", "verify novel release", () => assertNovelRelease());
   if (receipt.novelVersion !== novelVersion) throw new Error("Novel release receipt mismatch");
-  if (!args.includes("--dry-run")) await publishNovelRelease(novelVersion);
+
   // Publish content before the site starts referencing its new index and image manifest.
   if (contentChanged)
-    await run(
+    await observeBuild("deploy", "upload content Worker and assets", () => run(
       [
         "wrangler",
         "deploy",
@@ -98,14 +99,19 @@ export async function deploy(
         ...args,
       ],
       { env: contentDeploymentEnvironment() },
-    );
+    ));
   if (target === "website" && siteChanged)
-    await run(["wrangler", "deploy", "--config", "wrangler.jsonc", ...args]);
+    await observeBuild("deploy", "upload website Worker and assets", () =>
+      run(["wrangler", "deploy", "--config", "wrangler.jsonc", ...args]),
+    );
 }
 
 if (
   process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  await deploy(process.argv[2] || "website", process.argv.slice(3));
+  const [target = "website", ...args] = process.argv.slice(2);
+  if (!args.includes("--dry-run"))
+    throw new Error("Production website and content require pnpm release promote <Release ID>");
+  await deploy(target, args);
 }

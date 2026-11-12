@@ -1,3 +1,4 @@
+import { setTimeout } from "node:timers/promises";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -32,8 +33,22 @@ export async function extractKaiming(archive, checksum, destination) {
   return digest;
 }
 
+async function fetchRelease(url, options) {
+  for (let attempt = 0; ; attempt++) {
+    let response;
+    try {
+      response = await fetch(url, { ...options, signal: AbortSignal.timeout(30_000) });
+    } catch (error) {
+      if (attempt >= 2) throw error;
+    }
+    if (response && (attempt >= 2 || (response.status !== 429 && response.status < 500))) return response;
+    await response?.body?.cancel();
+    await setTimeout(750 * 2 ** attempt);
+  }
+}
+
 async function download(url, limit) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
+  const response = await fetchRelease(url);
   if (!response.ok) throw new Error(`Kaiming download failed (${response.status}): ${url}`);
   const chunks = [];
   let size = 0;
@@ -49,7 +64,7 @@ export async function prepareKaiming(destination) {
   let tag = process.env.CONTENT_KAIMING_RELEASE;
   if (!tag) {
     // Resolve once, then fetch both assets from the same release, without a GitHub API token.
-    const response = await fetch(`https://github.com/${repository}/releases/latest`, { redirect: "manual", signal: AbortSignal.timeout(30000) });
+    const response = await fetchRelease(`https://github.com/${repository}/releases/latest`, { redirect: "manual" });
     await response.body?.cancel();
     const location = new URL(response.headers.get("Location") || "", `https://github.com/${repository}/releases/latest`);
     const prefix = `/${repository}/releases/tag/`;

@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
+import { assertPublicVite } from "./scripts/lib/build-environment.mjs";
 import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
 import tailwindcss from "@tailwindcss/vite";
@@ -73,6 +74,13 @@ export default defineConfig({
   },
   plugins: [
     {
+      name: "validate-public-build-environment",
+      config(config, { command, mode }) {
+        if (command !== "build") return;
+        assertPublicVite(config.envDir === false ? process.env : loadEnv(mode, config.envDir || process.cwd()));
+      },
+    },
+    {
       name: "initial-site-theme",
       transformIndexHtml: {
         order: "pre",
@@ -80,6 +88,10 @@ export default defineConfig({
           tag: "script",
           children: `(${initializeSiteTheme.toString()})(${JSON.stringify(SITE_THEME_NAMES)});`,
           injectTo: "head-prepend",
+        }, {
+          tag: "link",
+          attrs: { rel: "stylesheet", href: "/content/kaiming/index.css" },
+          injectTo: "head",
         }],
       },
     },
