@@ -12,7 +12,6 @@
     @close="announcementStore.closeOverlay"
     @open="announcementStore.openAnnouncement"
   />
-  <div>test</div>
   <router-view />
   <BackToTop v-if="!route.meta.hideToTop" />
 </template>
