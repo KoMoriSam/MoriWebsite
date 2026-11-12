@@ -18,7 +18,7 @@ import { decrypt, hash, randomToken } from "../../workers/auth/crypto.js";
 import { findSession } from "../../workers/auth/session.js";
 import website from "../../workers/website.js";
 import raw from "../../workers/content.js";
-import { renderCommentMarkdown } from "../../src/services/comment-markdown.js";
+import { MARKDOWN_MODE_COMMENT, renderMarkdown } from "../../src/utils/markdown/render-markdown.js";
 
 registerHooks({
   resolve(specifier, context, next) {
@@ -357,7 +357,10 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
     assert.deepEqual([...links.values()], ["D_124"]);
     categoryMismatch = true;
     assert.equal((await website.fetch(new Request(url), env)).status, 502);
-    const safe = renderCommentMarkdown("<img src=x onerror=alert(1)> [x](javascript:alert%281%29) **bold**");
+    const safe = renderMarkdown(
+      "<img src=x onerror=alert(1)> [x](javascript:alert%281%29) **bold**",
+      { mode: MARKDOWN_MODE_COMMENT },
+    );
     assert.ok(!safe.includes("<img"));
     assert.ok(!safe.includes('href="javascript:'));
     assert.ok(safe.includes("<strong>bold</strong>"));

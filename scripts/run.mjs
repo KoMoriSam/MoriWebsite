@@ -29,6 +29,11 @@ const generators = {
   "pdf-glyphs": [["python", "scripts/sinhala/generate-pdf-glyphs.py"]],
 };
 const deployments = {
+  staging: [
+    script("dev/start.mjs", "seed"),
+    script("preview/build.mjs"),
+    script("release/bootstrap-staging.mjs", "--fixture"),
+  ],
   website: [script("build/deploy.mjs", "website")],
   api: [
     ["wrangler", "deploy", "--config", "wrangler.api.jsonc", "--keep-vars"],
@@ -53,6 +58,7 @@ const descriptions = {
     "pdf-glyphs": "生成 PDF 文字识别映射",
   },
   "run deploy": {
+    staging: "更新 Staging 测试版（--site-only 仅更新网站 Worker）",
     website: "检查网站部署包（--dry-run）",
     content: "检查公开内容部署包（--dry-run）",
     api: "发布网站 API 服务",
@@ -233,6 +239,9 @@ async function main() {
       name,
       args,
     );
+    if (steps && command === "deploy" && target === "staging" &&
+        (args.length > 1 || (args.length === 1 && args[0] !== "--site-only")))
+      throw new Error("用法：pnpm run deploy staging [--site-only]。部署已有候选版本请使用 pnpm release stage <Release ID>。");
     if (steps) console.log(`正在${descriptions[name][target]}…`);
     if (steps) await sequence(steps, args);
     if (steps && command === "deploy")

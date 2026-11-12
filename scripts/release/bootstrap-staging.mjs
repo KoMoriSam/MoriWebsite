@@ -18,6 +18,8 @@ const fixture = action === "--fixture";
 const active = action === "--dry-run" ? null : await fetch(stagingOrigin + "/site-data/release.json", {
   redirect: "manual", signal: AbortSignal.timeout(12_000),
 }).then(async (response) => response.ok ? response.json() : null).catch(() => null);
+if (fixture && !active?.id)
+  throw new Error("Cannot read the active Staging release. Check https://staging.komori.cc/site-data/release.json before deploying fixtures.");
 if (active && !["bootstrap", "staging-fixture"].includes(active.id))
   throw new Error("Staging is running a candidate release");
 const env = deployEnvironment();
