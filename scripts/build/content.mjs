@@ -65,7 +65,7 @@ async function checkoutSource(source, scratch, previous) {
           readSourceHead(source.repository, ref),
         )
       : null);
-    if (head && previous.commit === head) {
+    if (head && previous?.ref === ref && previous.commit === head) {
       return {
         ...source,
         ref,
