@@ -2,13 +2,15 @@ import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildEnvironment } from "./build-environment.mjs";
 
 export const PROJECT_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 
 export async function run(
   [tool, ...args],
-  { cwd = PROJECT_ROOT, env = process.env, capture = false, signal } = {},
+  { cwd = PROJECT_ROOT, env, capture = false, signal } = {},
 ) {
+  env ??= tool === "git" || tool === "tar" ? buildEnvironment() : process.env;
   let executable = process.execPath;
   if (tool === "git" || tool === "tar") executable = tool;
   else if (tool === "python") executable = env.PYTHON || "python";

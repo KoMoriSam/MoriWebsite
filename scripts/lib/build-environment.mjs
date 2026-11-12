@@ -1,6 +1,19 @@
 const runtime = /^(?:PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC|USERPROFILE|LOCALAPPDATA|APPDATA|HOME|TEMP|TMP|TMPDIR|NODE_PATH|ESBUILD_BINARY_PATH|LD_LIBRARY_PATH|LANG|LC_\w+|CI|TZ|TERM|NO_COLOR)$/i;
 const publicVite = /^VITE_(?:BLOG_RAW|NOVEL_RAW|COMMENT_COUNTS_API|GISCUS_CSS_RAW|RANDOM_HERO_API|ANALYTICS_API|SERVER_ADDRESS|GAMES_API|ANNOUNCEMENTS_API|CHANGELOG_API|GITHUB_PROFILE_API|GITHUB_REPOSITORY_API|SSG)$/;
 
+export const workerSecrets = {
+  auth: ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "TOKEN_ENCRYPTION_KEY"],
+  api: ["GITHUB_APP_PRIVATE_KEY", "GITHUB_TOKEN", "PIXABAY_API_KEY"],
+};
+
+const runtimeOnly = new Set([...Object.values(workerSecrets).flat(), "GITHUB_APP_ID", "GITHUB_INSTALLATION_ID"]);
+const retiredRelease = /^(?:RELEASE_(?:R2_|CONTROL_R2_)\w+|RELEASE_APPROVAL_KEY)$/;
+
+export function unusedBuildVariables(source = process.env) {
+  return Object.keys(source).filter((key) => runtimeOnly.has(key.toUpperCase()) ||
+    retiredRelease.test(key.toUpperCase())).sort();
+}
+
 export function buildEnvironment(source = process.env) {
   return Object.fromEntries(Object.entries(source).filter(([key]) =>
     runtime.test(key) || publicVite.test(key) ||

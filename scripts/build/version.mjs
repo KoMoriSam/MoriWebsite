@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { run } from "../lib/commands.mjs";
-import { assertPublicVite, buildEnvironment, deployEnvironment, sameOriginAssets } from "../lib/build-environment.mjs";
+import { assertPublicVite, buildEnvironment, deployEnvironment, sameOriginAssets, unusedBuildVariables } from "../lib/build-environment.mjs";
 import { buildEvent, observeBuild } from "../lib/build-report.mjs";
 import { publishStores, readWorkerConfig } from "../lib/worker-config.mjs";
 import { versionInputs } from "./version-inputs.mjs";
@@ -16,6 +16,12 @@ if (process.env.WORKERS_CI !== "1" || process.env.WORKERS_CI_BRANCH !== branch |
   throw new Error(`Version uploads require the trusted Workers Builds branch (${branch})`);
 if (process.env.SKIP_DEPENDENCY_INSTALL !== "1")
   throw new Error("Set SKIP_DEPENDENCY_INSTALL=1 in website → Settings → Builds");
+const unused = unusedBuildVariables();
+for (const name of unused) delete process.env[name];
+if (unused.length) buildEvent("version", "build configuration", "skip", {
+  reason: "runtime-only or retired variables removed from this process; remove these names from Workers Builds",
+  variables: unused,
+});
 assertPublicVite();
 Object.assign(process.env, sameOriginAssets());
 
