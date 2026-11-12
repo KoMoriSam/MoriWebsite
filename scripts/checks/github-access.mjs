@@ -387,6 +387,8 @@ test("separate public and private release files, authenticated Pagefind and old 
     ] } });
     await write(novel + "/1/chap.md", secret);
     await write(novel + "/images/private.webp", "private-image");
+    await write(novel + "/images/shared.webp", "already published blog image");
+    await write(dir + "/post/images/shared.webp", "already published blog image");
     await write(novel + "/images/_optimized/manifest.json", { version: 1, images: {
       [publicCovers[0]]: { width: 640, height: 480, variants: [{ src: "_optimized/abc-640.webp", width: 640 }] },
       "private.webp": { width: 50, height: 50, variants: [{ src: "_optimized/dead-50.webp", width: 50 }] },
@@ -413,6 +415,8 @@ test("separate public and private release files, authenticated Pagefind and old 
     assert.equal(await assertNovelRelease(root), version);
     assert.equal(await readFile(path.join(root, "dist/content/post/index.json"), "utf8"), "public");
     await assert.rejects(readFile(path.join(root, "dist/content/novel/1/chap.md")), { code: "ENOENT" });
+    assert.equal(await readFile(path.join(root, "dist/content/post/images/shared.webp"), "utf8"), "already published blog image");
+    await assert.rejects(readFile(path.join(root, "dist/content/novel/images/shared.webp")), { code: "ENOENT" });
     await write("dist/content/novel/index.json", "invalid");
     await assert.rejects(assertNovelRelease(root), /Unverified bundled content/);
     await includePublicContent(root);

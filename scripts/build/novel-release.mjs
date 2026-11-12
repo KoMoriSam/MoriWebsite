@@ -174,8 +174,13 @@ export async function assertNovelRelease(root = PROJECT_ROOT) {
       throw new Error(`Private novel file found in website assets: ${file}`);
     }
   }
+  // A published blog image may also be used in the novel. Novel assets have a
+  // separate allowlist, and chapter and search files can never be public.
+  const protectedDocuments = new Set(Object.entries(JSON.parse(body))
+    .filter(([name]) => name.startsWith("chapters/") || name.startsWith("search/"))
+    .map(([, digest]) => digest));
   for (const file of await files(publicDirectory)) {
-    if (privateHashes.has(sha(await readFile(path.join(publicDirectory, file)))))
+    if (protectedDocuments.has(sha(await readFile(path.join(publicDirectory, file)))))
       throw new Error(`Private novel document found in public content assets: ${file}`);
   }
   return version;
