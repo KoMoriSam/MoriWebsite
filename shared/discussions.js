@@ -3,6 +3,11 @@ const novel = { name: "KoMoriSam/theHorizon", id: "R_kgDOOWZUkw" };
 const general = { name: "General", id: "DIC_kwDOOWZUk84C_2_B" };
 export const bookTerm = "《向远方》 | 远方之森";
 export const discussionRegistry = "site-data/discussion-targets.json";
+export const siteOwnerLogin = "KoMoriSam";
+export const discussionAuthorLogins = {
+  article: "KoMoriSam",
+  novel: "KoMoriSam",
+};
 
 export const discussionScopes = {
   article: { repo: article, category: { name: "Announcements", id: "DIC_kwDOTElB584C_2-6" } },

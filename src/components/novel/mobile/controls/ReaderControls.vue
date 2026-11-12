@@ -243,8 +243,9 @@
       class="modal modal-bottom z-[90]"
       @cancel.prevent="requestPlatformCloseDialog"
     >
-      <div class="modal-box flex max-h-[78dvh] flex-col rounded-t-box p-0">
+      <div class="modal-box flex max-h-[78dvh] flex-col overflow-hidden rounded-t-box p-0">
         <ReaderDialogHeader
+          class="shrink-0"
           :title="currentMapping === 'title' ? translate('novel.reader.chapterComments') : translate('novel.reader.bookComments')"
           @back="requestCloseDialog"
         >
@@ -258,17 +259,14 @@
             </button>
           </template>
         </ReaderDialogHeader>
-        <ScrollableContainer class="flex-1">
-          <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
-            <Thread
-              v-if="commentsStarted"
-              :key="commentKey"
-              input-position="bottom"
-              :scope="currentMapping === 'title' ? 'chapter' : 'book'"
-              :target="currentMapping === 'title' ? currentChapter?.uuid || '' : bookTerm"
-            />
-          </section>
-        </ScrollableContainer>
+        <Thread
+          v-if="commentsStarted"
+          :key="commentKey"
+          class="p-4"
+          scroll-mode="dialog"
+          :scope="currentMapping === 'title' ? 'chapter' : 'book'"
+          :target="currentMapping === 'title' ? currentChapter?.uuid || '' : bookTerm"
+        />
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click.prevent="requestCloseDialog">{{ translate('reader.controls.back') }}</button>

@@ -81,11 +81,11 @@
   }
 
   /* 包裹元素与标题锚点 (.heading-wrapper) */
-  .markdown-content.prose :deep(.heading-wrapper) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.heading-wrapper) {
     @apply flex items-center gap-2;
   }
 
-  .markdown-content.prose :deep(.heading-wrapper a.header-anchor) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.heading-wrapper a.header-anchor) {
     @apply badge badge-sm text-base-content hover:badge-primary hover:text-primary-content 
     no-underline opacity-0 translate-y-0.5 group-hover:opacity-100 
     group-focus-within:opacity-100 transition-opacity select-none;
@@ -220,43 +220,43 @@
     @apply font-bold text-inherit;
   }
 
-  .markdown-content.prose :deep(mark) {
+  :is(.markdown-content, .markdown-comment).prose :deep(mark) {
     @apply bg-warning text-warning-content;
   }
 
   /* 脚注样式 */
-  .markdown-content.prose :deep(.footnote-ref) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.footnote-ref) {
     @apply whitespace-nowrap
     before:content-['\2060']
     after:content-['\2060'];
   }
 
-  .markdown-content.prose :deep(.footnote-ref a) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.footnote-ref a) {
     @apply badge badge-xs hover:badge-info hover:text-info-content
     indent-0 font-serif text-base-content no-underline tabular-nums
     text-[calc(var(--para-font-size)*0.5)] px-1;
   }
 
-  .markdown-content.prose :deep(.footnote-backref) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.footnote-backref) {
     @apply badge badge-xs hover:badge-info hover:text-info-content
     px-1 text-base-content no-underline select-none
     text-[calc(var(--para-font-size)*0.375)];
   }
 
-  .markdown-content.prose :deep(.footnotes p) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.footnotes p) {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)]
     leading-(--para-line-height)
     mx-0 text-left text-pretty;
   }
 
-  .markdown-content.prose :deep(li.footnote-item::marker) {
+  :is(.markdown-content, .markdown-comment).prose :deep(li.footnote-item::marker) {
     @apply font-serif
     text-[calc(var(--para-font-size)*0.75)] list-decimal;
   }
 
-  .markdown-content.prose :deep(li.footnote-item ul),
-  .markdown-content.prose :deep(li.footnote-item ul li) {
+  :is(.markdown-content, .markdown-comment).prose :deep(li.footnote-item ul),
+  :is(.markdown-content, .markdown-comment).prose :deep(li.footnote-item ul li) {
     @apply text-[calc(var(--para-font-size)*0.75)];
   }
 

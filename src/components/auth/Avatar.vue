@@ -37,7 +37,7 @@
   </div>
 </template>
 <script setup>
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useLocale } from "@/i18n";
 import { useThemeStore } from "@/stores/themeStore";
 import {
@@ -72,31 +72,35 @@ function updateRingColor() {
 watch([imageColor, () => props.src, () => props.ring, failed], updateRingColor, {
   flush: "post",
 });
-let themeObserver;
-let darkMedia;
 let themeFrame;
 function scheduleRingColor() {
+  if (!props.ring || !avatar.value) return;
   cancelAnimationFrame(themeFrame);
   themeFrame = requestAnimationFrame(updateRingColor);
 }
 watch(() => themeStore.theme, scheduleRingColor, { flush: "post" });
-onMounted(() => {
-  updateRingColor();
-  themeObserver = new MutationObserver(scheduleRingColor);
-  for (let node = avatar.value.parentElement; node; node = node.parentElement) {
-    themeObserver.observe(node, {
-      attributes: true,
-      attributeFilter: ["data-theme", "class", "style"],
+watch(
+  [avatar, () => props.ring],
+  ([element, ring], _, onCleanup) => {
+    if (!element || !ring) return;
+    updateRingColor();
+    const themeObserver = new MutationObserver(scheduleRingColor);
+    for (let node = element.parentElement; node; node = node.parentElement) {
+      themeObserver.observe(node, {
+        attributes: true,
+        attributeFilter: ["data-theme", "class", "style"],
+      });
+    }
+    const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    darkMedia.addEventListener("change", scheduleRingColor);
+    onCleanup(() => {
+      cancelAnimationFrame(themeFrame);
+      themeObserver.disconnect();
+      darkMedia.removeEventListener("change", scheduleRingColor);
     });
-  }
-  darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
-  darkMedia.addEventListener("change", scheduleRingColor);
-});
-onBeforeUnmount(() => {
-  cancelAnimationFrame(themeFrame);
-  themeObserver?.disconnect();
-  darkMedia?.removeEventListener("change", scheduleRingColor);
-});
+  },
+  { flush: "post" },
+);
 const initial = computed(() => {
   const name = props.name.trim();
   if (!name) return "";

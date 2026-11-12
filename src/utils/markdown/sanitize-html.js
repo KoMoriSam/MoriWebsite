@@ -490,9 +490,12 @@ const sanitizeTree = (node) => {
   });
 };
 
-export const sanitizeMarkdownHtml = (html = "") => {
+export const parseSanitizedMarkdownHtml = (html = "") => {
   const purified = DOMPurify.sanitize(String(html || ""), SANITIZE_OPTIONS);
   const fragment = parseFragment(purified);
   sanitizeTree(fragment);
-  return serialize(fragment);
+  return fragment;
 };
+
+export const sanitizeMarkdownHtml = (html = "") =>
+  serialize(parseSanitizedMarkdownHtml(html));

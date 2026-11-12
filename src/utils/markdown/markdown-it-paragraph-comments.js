@@ -1,12 +1,12 @@
 import ParagraphComments from "@/components/reader/display/ParagraphComments.vue";
 import ParagraphQuote from "@/components/reader/display/ParagraphQuote.vue";
-import { h } from "vue";
+import { h, watch } from "vue";
 import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
 import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 import { useLocale } from "@/i18n";
 
-export const useParagraphComments = ({ resolver } = {}) => {
+export const useParagraphComments = ({ enabled, resolver } = {}) => {
   const modal = useModal();
   const { t: translate, locale } = useLocale();
   const MAX_TITLE_LENGTH = 36;
@@ -272,7 +272,7 @@ export const useParagraphComments = ({ resolver } = {}) => {
 
     modal.info(titleNode, h(ParagraphComments, { paragraphId, sourceType }), {
       buttonMode: "close",
-      scrollContent: true,
+      scrollContent: "nested",
     });
   };
 
@@ -312,23 +312,11 @@ export const useParagraphComments = ({ resolver } = {}) => {
     updateCountIndicators(paragraphId, sourceType, count);
   };
 
-  const { addEventListener } = useGlobalEventListener(
-    "click",
-    handleCommentClick,
-    true,
-  );
-
-  const { addEventListener: addParagraphMetadataListener } =
-    useGlobalEventListener(
-      "paragraph-comment-metadata",
-      handleParagraphMetadata,
-      false,
-    );
-  const { addEventListener: addParagraphOpenListener } = useGlobalEventListener(
-    "paragraph-comment-open",
-    handleCommentOpen,
-    false,
-  );
+  const listeners = [
+    useGlobalEventListener("click", handleCommentClick, true),
+    useGlobalEventListener("paragraph-comment-metadata", handleParagraphMetadata),
+    useGlobalEventListener("paragraph-comment-open", handleCommentOpen),
+  ];
 
   const paragraphPlugin = (uuid, sourceType = "article") => {
     return (md) => {
@@ -413,6 +401,9 @@ export const useParagraphComments = ({ resolver } = {}) => {
         env,
         self,
       ) {
+        if (tokens[idx].meta?.figureContinuation) {
+          return defaultParagraphOpen(tokens, idx, options, env, self);
+        }
         const state = getParagraphState(env);
 
         if (state.listItemStack.length) {
@@ -436,6 +427,9 @@ export const useParagraphComments = ({ resolver } = {}) => {
         env,
         self,
       ) {
+        if (tokens[idx].meta?.figureContinuation) {
+          return defaultParagraphClose(tokens, idx, options, env, self);
+        }
         const state = getParagraphState(env);
         const paragraphId = state.paragraphStack.pop();
 
@@ -521,9 +515,16 @@ export const useParagraphComments = ({ resolver } = {}) => {
     };
   };
 
-  addEventListener();
-  addParagraphMetadataListener();
-  addParagraphOpenListener();
+  watch(
+    enabled,
+    (active) => {
+      for (const listener of listeners) {
+        if (active) listener.addEventListener();
+        else listener.removeEventListener();
+      }
+    },
+    { immediate: true },
+  );
 
   return paragraphPlugin;
 };

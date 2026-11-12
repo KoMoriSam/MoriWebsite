@@ -40,7 +40,7 @@
             />
             <i
               v-else-if="!avatarLoading"
-              class="ri-user-line absolute inset-0 grid place-items-center text-xs text-base-content/40"
+              class="ri-github-fill absolute inset-0 flex items-center justify-center leading-none text-base-content/40"
             ></i>
           </span>
         </span>
@@ -136,10 +136,12 @@ const props = defineProps({
 });
 
 const { t, locale } = useLocale();
-const compactNumberFormatter = computed(() => new Intl.NumberFormat(
-  locale.value === "si" ? "en" : locale.value,
-  { notation: "compact" },
-));
+const compactNumberFormatter = computed(
+  () =>
+    new Intl.NumberFormat(locale.value === "si" ? "en" : locale.value, {
+      notation: "compact",
+    }),
+);
 const card = ref(null);
 const preview = ref(null);
 const previewSettled = ref(false);

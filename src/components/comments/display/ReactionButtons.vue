@@ -1,49 +1,127 @@
 <template>
-  <div class="flex flex-wrap items-center gap-1">
-    <button v-for="reaction in activeReactions" :key="reaction.content" type="button"
-      class="btn btn-xs btn-ghost" :class="{ 'btn-active': reaction.viewerHasReacted }"
-      :disabled="disabled" :aria-pressed="Boolean(reaction.viewerHasReacted)"
+  <div class="flex flex-wrap items-center gap-2">
+    <button
+      v-for="vote in votes"
+      :key="vote.content"
+      type="button"
+      class="btn btn-xs rounded-full"
+      :class="
+        vote.viewerHasReacted ? 'btn-primary' : 'border-base-300 bg-base-100'
+      "
+      :disabled="disabled"
+      :aria-pressed="Boolean(vote.viewerHasReacted)"
+      :aria-label="vote.label"
+      :title="vote.label"
+      @click="$emit('react', vote)"
+    >
+      <i :class="vote.icon" aria-hidden="true"></i>
+      {{ number(vote.count) }}
+    </button>
+    <CommentPopover
+      ref="picker"
+      :label="t('reader.comments.chooseReaction')"
+      :disabled="disabled"
+      :placement="placement"
+      align="start"
+      trigger-class="btn btn-xs btn-circle border-base-300 bg-base-100"
+      panel-class="grid grid-cols-3 gap-1"
+    >
+      <template #trigger>
+        <i class="ri-emotion-happy-line text-base" aria-hidden="true"></i>
+      </template>
+      <button
+        v-for="reaction in reactions"
+        :key="reaction.content"
+        type="button"
+        class="btn btn-xs btn-square btn-ghost rounded-inner"
+        :class="{ 'btn-active': reaction.viewerHasReacted }"
+        :disabled="disabled"
+        :aria-pressed="Boolean(reaction.viewerHasReacted)"
+        :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
+        @click="choose(reaction)"
+      >
+        {{ reaction.emoji }}
+      </button>
+    </CommentPopover>
+    <button
+      v-for="reaction in activeReactions"
+      :key="reaction.content"
+      type="button"
+      class="btn btn-xs gap-1 rounded-full"
+      :class="
+        reaction.viewerHasReacted
+          ? 'btn-soft btn-primary'
+          : 'border-base-300 bg-base-100'
+      "
+      :disabled="disabled"
+      :aria-pressed="Boolean(reaction.viewerHasReacted)"
       :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
-      @click="$emit('react', reaction)">
+      @click="$emit('react', reaction)"
+    >
       {{ reaction.emoji }} {{ reaction.count }}
     </button>
-    <details ref="picker" class="dropdown dropdown-top">
-      <summary class="btn btn-xs btn-square btn-ghost"
-        :aria-label="t('reader.comments.chooseReaction')" :aria-disabled="disabled"
-        @click="disabled && $event.preventDefault()">
-        <i class="ri-emotion-happy-line" aria-hidden="true"></i>
-      </summary>
-      <div class="dropdown-content z-10 flex w-32 flex-wrap gap-1 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-        <button v-for="reaction in reactions" :key="reaction.content" type="button"
-          class="btn btn-xs btn-square btn-ghost" :class="{ 'btn-active': reaction.viewerHasReacted }"
-          :disabled="disabled" :aria-pressed="Boolean(reaction.viewerHasReacted)"
-          :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
-          @click="choose(reaction)">
-          {{ reaction.emoji }}
-        </button>
-      </div>
-    </details>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
-const props = defineProps({ groups: { type: Array, default: () => [] }, disabled: Boolean });
+import CommentPopover from "../interaction/CommentPopover.vue";
+const props = defineProps({
+  groups: { type: Array, default: () => [] },
+  disabled: Boolean,
+  placement: { type: String, default: "top" },
+});
 const emit = defineEmits(["react"]);
-const { t } = useLocale();
+const { t, number } = useLocale();
 const picker = ref(null);
 const emojis = {
-  THUMBS_UP: "👍", THUMBS_DOWN: "👎", LAUGH: "😄", HOORAY: "🎉",
-  CONFUSED: "😕", HEART: "❤️", ROCKET: "🚀", EYES: "👀",
+  LAUGH: "😄",
+  HOORAY: "🎉",
+  CONFUSED: "😕",
+  HEART: "❤️",
+  ROCKET: "🚀",
+  EYES: "👀",
 };
-const reactions = computed(() => Object.entries(emojis).map(([content, emoji]) => {
+const voteButtons = [
+  { content: "THUMBS_UP", icon: "ri-thumb-up", label: "like", undo: "unlike" },
+  {
+    content: "THUMBS_DOWN",
+    icon: "ri-thumb-down",
+    label: "dislike",
+    undo: "undislike",
+  },
+];
+function getReaction(content) {
   const group = props.groups.find((item) => item.content === content);
-  return { content, emoji, count: group?.users?.totalCount || 0, viewerHasReacted: group?.viewerHasReacted };
-}));
-const activeReactions = computed(() => reactions.value.filter((reaction) => reaction.count > 0));
+  return {
+    content,
+    count: group?.users?.totalCount || 0,
+    viewerHasReacted: group?.viewerHasReacted,
+  };
+}
+const votes = computed(() =>
+  voteButtons.map(({ content, icon, label, undo }) => {
+    const reaction = getReaction(content);
+    const selected = reaction.viewerHasReacted;
+    return {
+      ...reaction,
+      icon: `${icon}-${selected ? "fill" : "line"}`,
+      label: t(`reader.comments.${selected ? undo : label}`),
+    };
+  }),
+);
+const reactions = computed(() =>
+  Object.entries(emojis).map(([content, emoji]) => ({
+    ...getReaction(content),
+    emoji,
+  })),
+);
+const activeReactions = computed(() =>
+  reactions.value.filter(({ count }) => count > 0),
+);
 function choose(reaction) {
-  picker.value.open = false;
+  picker.value?.close();
   emit("react", reaction);
 }
 </script>

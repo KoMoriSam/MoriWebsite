@@ -1,5 +1,5 @@
 <script>
-import { computed, Fragment, h, inject, onMounted, provide, watch } from "vue";
+import { computed, Fragment, h, inject, onMounted, provide, useId, watch } from "vue";
 import { routerKey } from "vue-router";
 import { ensureMarkdownStyles } from "@/utils/markdown/load-markdown-styles";
 
@@ -8,6 +8,8 @@ import {
   parseHtmlFragment,
   renderHtmlFragment,
 } from "@/utils/markdown/render-html-vnodes";
+
+const SCOPED_MARKDOWN_ANCHORS = Symbol("scoped-markdown-anchors");
 
 export default {
   name: "RenderedContent",
@@ -21,6 +23,7 @@ export default {
       type: Function,
       default: null,
     },
+    scopeAnchors: Boolean,
     fontStyle: {
       type: String,
       default: "font-sans",
@@ -33,7 +36,13 @@ export default {
       () => props.resolver || inheritedResolver || null,
     );
     const resolveComponent = (context) => activeResolver.value?.(context);
-    const fragment = computed(() => parseHtmlFragment(props.html));
+    const inheritedScope = inject(SCOPED_MARKDOWN_ANCHORS, null);
+    const scopeAnchors = computed(() => props.scopeAnchors || inheritedScope?.value);
+    const anchorPrefix = `comment-${useId()}-`;
+    provide(SCOPED_MARKDOWN_ANCHORS, scopeAnchors);
+    const fragment = computed(() =>
+      parseHtmlFragment(props.html, scopeAnchors.value ? anchorPrefix : ""),
+    );
     const loadStyles = () => { void ensureMarkdownStyles(fragment.value); };
 
     onMounted(loadStyles);

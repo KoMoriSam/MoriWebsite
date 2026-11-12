@@ -28,10 +28,9 @@ const MARKDOWN_OPTIONS = {
   },
 };
 
-export const renderMarkdown = (
-  source = "",
-  { mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink, env } = {},
-) => {
+export const createMarkdownRenderer = ({
+  mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink,
+} = {}) => {
   const md = new MarkdownIt(
     MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER],
   );
@@ -40,12 +39,13 @@ export const renderMarkdown = (
     if (Array.isArray(plugin)) md.use(plugin[0], plugin[1]);
     else md.use(plugin);
   });
-  if (mode !== MARKDOWN_MODE_COMMENT) {
-    md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
-  }
-  if (mode === MARKDOWN_MODE_READER) {
+  md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
+  if (mode === MARKDOWN_MODE_READER || mode === MARKDOWN_MODE_COMMENT) {
     md.use(linkCardPlugin, { articleForPath: resolveWikiLink?.articleForPath });
   }
 
-  return md.render(String(source || ""), env);
+  return (source = "", env = {}) => md.render(String(source || ""), env);
 };
+
+export const renderMarkdown = (source, { env, ...options } = {}) =>
+  createMarkdownRenderer(options)(source, env);

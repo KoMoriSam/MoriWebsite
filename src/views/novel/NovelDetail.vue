@@ -287,7 +287,6 @@
         </header>
         <div class="min-w-0">
           <Thread
-            input-position="top"
             scope="book"
             :target="bookTerm"
           />

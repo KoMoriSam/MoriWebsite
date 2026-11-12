@@ -25,7 +25,7 @@
   }
 
   /* 标题样式 */
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(
       :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
@@ -36,7 +36,7 @@
     tracking-[calc(var(--para-letter-spacing)*1.25)];
   }
 
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(
       :where(h2):not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
@@ -46,7 +46,7 @@
     tracking-[calc(var(--para-letter-spacing)*1.125)];
   }
 
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(
       :where(h3):not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
@@ -57,11 +57,11 @@
     tracking-(--para-letter-spacing);
   }
 
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(:where(h4):not(:where([class~="not-prose"], [class~="not-prose"] *))),
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(:where(h5):not(:where([class~="not-prose"], [class~="not-prose"] *))),
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(
       :where(h6):not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
@@ -73,12 +73,30 @@
   }
 
   /* 段落与列表 */
+  :is(.markdown-content, .markdown-standard).prose
+    :deep(
+      :where(p, table, ul, ol, blockquote, pre):not(
+        :where([class~="not-prose"], [class~="not-prose"] *)
+      )
+    ) {
+    @apply my-(--para-margin-inline);
+  }
+
+  .markdown-standard.prose
+    :deep(> :where(p, table, ul, ol, blockquote, pre):first-child:not(.not-prose)) {
+    @apply mt-0;
+  }
+
+  .markdown-standard.prose
+    :deep(> :where(p, table, ul, ol, blockquote, pre):last-child:not(.not-prose)) {
+    @apply mb-0;
+  }
+
   .markdown-content.prose
     :deep(:where(p):not(:where([class~="not-prose"], [class~="not-prose"] *))) {
     @apply text-pretty text-justify
     text-(length:--para-font-size) 
     leading-(--para-line-height) 
-    my-(--para-margin-inline) 
     indent-(--para-text-indent) 
     tracking-(--para-letter-spacing);
   }
@@ -180,23 +198,11 @@
 
   .markdown-content.prose
     :deep(
-      :where(table):not(:where([class~="not-prose"], [class~="not-prose"] *))
-    ),
-  .markdown-content.prose
-    :deep(:where(ul):not(:where([class~="not-prose"], [class~="not-prose"] *))),
-  .markdown-content.prose
-    :deep(:where(ol):not(:where([class~="not-prose"], [class~="not-prose"] *))),
-  .markdown-content.prose
-    :deep(
-      :where(blockquote):not(
+      :where(table, ul, ol, blockquote, pre):not(
         :where([class~="not-prose"], [class~="not-prose"] *)
       )
-    ),
-  .markdown-content.prose
-    :deep(
-      :where(pre):not(:where([class~="not-prose"], [class~="not-prose"] *))
     ) {
-    @apply my-(--para-margin-inline) mx-0;
+    @apply mx-0;
   }
 
   .markdown-content.prose
@@ -216,11 +222,11 @@
   }
 
   /* Atomic icon groups do not inherit the anchor's text decoration. */
-  .markdown-content.prose :deep(a.markdown-inline-link) {
+  :is(.markdown-content, .markdown-comment).prose :deep(a.markdown-inline-link) {
     @apply no-underline;
   }
 
-  .markdown-content.prose
+  :is(.markdown-content, .markdown-comment).prose
     :deep(a.markdown-inline-link:hover .markdown-link-text) {
     @apply underline;
   }
@@ -255,44 +261,44 @@
     @apply max-w-full h-auto my-0;
   }
 
-  .markdown-content.prose :deep(.markdown-figure) {
-    @apply clear-both w-fit max-w-full mx-auto my-2 text-center;
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure) {
+    @apply clear-both grid w-fit max-w-full grid-cols-1 justify-items-center mx-auto my-2 text-center;
   }
 
-  .markdown-content.prose :deep(.markdown-figure > img) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure > img) {
     @apply block mx-auto my-0;
   }
 
-  .markdown-content.prose :deep(img.preview-image) {
+  :is(.markdown-content, .markdown-comment).prose :deep(img.preview-image) {
     @apply cursor-zoom-in rounded-box outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-base-content/35 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100;
   }
 
-  .markdown-content.prose :deep(img.markdown-inline-image) {
+  :is(.markdown-content, .markdown-comment).prose :deep(img.markdown-inline-image) {
     @apply inline-block my-0 align-middle;
   }
 
-  .markdown-content.prose :deep(img.markdown-svg-image) {
+  :is(.markdown-content, .markdown-comment).prose :deep(img.markdown-svg-image) {
     filter: var(--markdown-svg-filter, none);
   }
 
-  .markdown-content.prose :deep(.markdown-figure-left) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure-left) {
     @apply clear-none float-left max-w-[50%] ms-0 me-4;
   }
 
-  .markdown-content.prose :deep(.markdown-figure-left > img) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure-left > img) {
     @apply ms-0 me-auto;
   }
 
-  .markdown-content.prose :deep(.markdown-figure-right) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure-right) {
     @apply clear-none float-right max-w-[50%] ms-4 me-0;
   }
 
-  .markdown-content.prose :deep(.markdown-figure-right > img) {
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure-right > img) {
     @apply ms-auto me-0;
   }
 
-  .markdown-content.prose :deep(.markdown-figure > figcaption) {
-    @apply inline-block mt-1 text-center text-[calc(var(--para-font-size)*0.75)];
+  :is(.markdown-content, .markdown-comment).prose :deep(.markdown-figure > figcaption) {
+    @apply block min-w-0 max-w-full mt-1 text-center wrap-anywhere text-[calc(var(--para-font-size)*0.75)];
   }
 
   .markdown-content.prose
@@ -307,8 +313,7 @@
   }
 
   :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-wrapper) {
-    @apply w-full max-w-full min-w-0 overflow-x-auto scrollbar-thin;
-    margin-block: 1.5em;
+    @apply w-full max-w-full min-w-0 overflow-x-auto scrollbar-thin my-6;
   }
 
   :is(.markdown-content, .markdown-standard).prose :deep(.markdown-table-wrapper table) {

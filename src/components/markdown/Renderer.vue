@@ -2,11 +2,12 @@
   <article
     :lang="lang || (isReaderMode ? 'zh-CN' : undefined)"
     ref="articleRef"
-    :id="contentId"
+    :id="isCommentMode ? undefined : contentId"
     :class="[
       {
         'markdown-content': isReaderMode,
-        'markdown-standard': isStandardMode,
+        'markdown-standard': !isReaderMode,
+        'markdown-comment': isCommentMode,
         'max-w-full': isReaderMode,
         'opacity-50': isReaderMode && markdownPreparing,
         'reader-colors': isReaderMode && useReaderColors,
@@ -16,8 +17,8 @@
     ]"
     class="prose min-w-0 w-full transition-opacity prose-blockquote:[quotes:none] prose-blockquote:font-serif prose-blockquote:font-light prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline prose-a:hover:underline"
     :style="articleStyle"
-    @click="isReaderMode && handleArticleClick($event)"
-    @keydown="isReaderMode && handleArticleKeydown($event)"
+    @click="hasExtendedMarkdown && handleArticleClick($event)"
+    @keydown="hasExtendedMarkdown && handleArticleKeydown($event)"
   >
     <slot name="before" />
 
@@ -33,6 +34,7 @@
         :key="headerData.uuid"
         :html="page.html"
         :resolver="markdownComponentResolver"
+        :scope-anchors="isCommentMode"
       />
 
       <h1 v-if="isReaderMode && !renderedPages.length">
@@ -42,9 +44,13 @@
 
     <slot name="after" />
 
-    <ImagePreview v-if="isReaderMode" ref="imagePreviewRef" />
+    <ImagePreview v-if="hasExtendedMarkdown" ref="imagePreviewRef" />
   </article>
 </template>
+
+<script>
+const commentRenderers = new WeakMap();
+</script>
 
 <script setup>
 import { useLocale } from "@/i18n";
@@ -74,8 +80,9 @@ import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
   MARKDOWN_MODES,
+  MARKDOWN_MODE_COMMENT,
   MARKDOWN_MODE_READER,
-  MARKDOWN_MODE_STANDARD,
+  createMarkdownRenderer,
   renderMarkdown,
 } from "@/utils/markdown/render-markdown";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
@@ -170,7 +177,8 @@ const props = defineProps({
 const emit = defineEmits(["refresh", "render-ready"]);
 const wikiLinkResolver = inject(WIKI_LINK_RESOLVER, null);
 const isReaderMode = computed(() => props.mode === MARKDOWN_MODE_READER);
-const isStandardMode = computed(() => props.mode === MARKDOWN_MODE_STANDARD);
+const isCommentMode = computed(() => props.mode === MARKDOWN_MODE_COMMENT);
+const hasExtendedMarkdown = computed(() => isReaderMode.value || isCommentMode.value);
 const PROSE_SIZE_CLASSES = {
   sm: "prose-sm",
   base: "prose-base",
@@ -179,7 +187,7 @@ const PROSE_SIZE_CLASSES = {
   "2xl": "prose-2xl",
 };
 const proseSizeClass = computed(() => {
-  if (!isStandardMode.value) return "";
+  if (isReaderMode.value) return "";
 
   const size = String(props.proseSize || "")
     .trim()
@@ -252,6 +260,7 @@ import {
 } from "@/services/api-paragraph-comments";
 
 const paragraphPlugin = useParagraphComments({
+  enabled: isReaderMode,
   resolver: (context) => resolveMarkdownComponent(context),
 });
 const route = useRoute();
@@ -440,7 +449,7 @@ const syncRenderReady = async (cycle = renderReadyCycle) => {
 
   const root = articleRef.value;
   if (!root) return;
-  if (isReaderMode.value) {
+  if (hasExtendedMarkdown.value) {
     syncPreviewImages(root);
     if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
   }
@@ -619,7 +628,7 @@ const resolveStandardMarkdownComponent = (context) => {
 };
 
 const markdownComponentResolver = computed(() =>
-  isReaderMode.value
+  hasExtendedMarkdown.value
     ? resolveMarkdownComponent
     : resolveStandardMarkdownComponent,
 );
@@ -802,8 +811,6 @@ const tableWrapperPlugin = (md) => {
 };
 
 const loadMarkdownFeaturePlugins = async (content = "") => {
-  if (!isReaderMode.value) return;
-
   const markdownText = String(content || "");
   const languages = collectFenceLanguages(markdownText);
   const featureTasks = [];
@@ -827,10 +834,17 @@ const loadMarkdownFeaturePlugins = async (content = "") => {
   }
 };
 
+const commentMath = computed(() =>
+  isCommentMode.value && hasMathSyntax(combinedContent.value) ? mathJaxPlugin.value : null,
+);
+const mathPlugin = computed(() => isCommentMode.value ? commentMath.value : mathJaxPlugin.value);
+
 const sharedPlugins = computed(() => [
   MarkdownItAbbr,
   MarkdownItBracketedSpans,
-  [MarkdownItAttrs, { allowedAttributes: ["id", "class", "data-tip"] }],
+  [MarkdownItAttrs, {
+    allowedAttributes: isCommentMode.value ? ["data-tip"] : ["id", "class", "data-tip"],
+  }],
   highlightLazyPlugin,
   anchorPlugin,
   [alertPlugin, { translateTitle: localizeText }],
@@ -844,7 +858,7 @@ const sharedPlugins = computed(() => [
   MarkdownItSub,
   MarkdownItSup,
   taskStatusPlugin,
-  ...(mathJaxPlugin.value ? [mathJaxPlugin.value] : []),
+  ...(mathPlugin.value ? [mathPlugin.value] : []),
   MarkdownItMark,
   mermaidPlugin,
   figurePlugin,
@@ -852,17 +866,39 @@ const sharedPlugins = computed(() => [
   linkIconPlugin,
 ]);
 
+const commentRenderer = computed(() => {
+  if (!isCommentMode.value) return null;
+  const resolveWikiLink = wikiLinkResolver?.value;
+  let cache = commentRenderers.get(localizeText);
+  if (!cache || cache.resolveWikiLink !== resolveWikiLink) {
+    cache = { resolveWikiLink, renderers: new Map() };
+    commentRenderers.set(localizeText, cache);
+  }
+  const key = commentMath.value;
+  if (!cache.renderers.has(key)) {
+    cache.renderers.set(key, createMarkdownRenderer({
+      mode: MARKDOWN_MODE_COMMENT,
+      plugins: sharedPlugins.value,
+      resolveWikiLink,
+    }));
+  }
+  return cache.renderers.get(key);
+});
+
 // 正文只创建一个 Markdown 渲染实例，段落序号在整篇内容内连续递增。
 const renderedPages = computed(() => {
   markdownRenderVersion.value;
 
   return anchoredPages.value.map((page) => {
-    const plugins = isReaderMode.value
-      ? [
-          paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
-          ...sharedPlugins.value,
-        ]
+    if (commentRenderer.value) {
+      return { ...page, html: commentRenderer.value(page.source) };
+    }
+    const plugins = hasExtendedMarkdown.value
+      ? [...sharedPlugins.value]
       : [[alertPlugin, { translateTitle: localizeText }], codePlugin];
+    if (isReaderMode.value) {
+      plugins.unshift(paragraphPlugin(props.headerData.uuid, props.headerData.sourceType));
+    }
 
     return {
       ...page,
@@ -888,7 +924,7 @@ watch(
       return;
     }
 
-    if (!isReaderMode.value) {
+    if (!hasExtendedMarkdown.value) {
       markdownPreparing.value = false;
       markdownFeaturesReady.value = true;
       return;
@@ -898,6 +934,20 @@ watch(
     if (import.meta.env.SSR) {
       markdownPreparing.value = false;
       markdownFeaturesReady.value = true;
+      return;
+    }
+
+    if (isCommentMode.value) {
+      if (hasMathSyntax(content) && !mathJaxPlugin.value) {
+        try {
+          const plugin = await loadMathJaxPlugin();
+          if (requestId !== markdownFeatureRequestId) return;
+          mathJaxPlugin.value = plugin;
+        } catch (error) {
+          console.warn("数学公式 SVG 渲染器加载失败，已跳过公式渲染", error);
+        }
+      }
+      if (requestId === markdownFeatureRequestId) markdownFeaturesReady.value = true;
       return;
     }
 
@@ -1003,28 +1053,41 @@ watch(
 <style scoped src="@/assets/reader.css"></style>
 
 <style scoped>
+@reference "@/assets/main.css";
+
+.markdown-standard {
+  --para-font-size: 1em;
+  --para-letter-spacing: 0em;
+  --para-line-height: 1.5;
+  --para-margin-inline: --spacing(3);
+  --para-text-indent: --spacing(5);
+}
+
+.markdown-comment :deep(.footnote-item:focus),
+.markdown-comment :deep(.footnote-ref a:focus) {
+  outline: 1px solid var(--color-primary);
+  outline-offset: 0.125em;
+}
+
 .markdown-standard :deep(details.alert),
 .markdown-standard :deep([data-markdown-code-block]) {
   font-size: 1em;
   line-height: inherit;
-  margin-block: 1em;
+  margin-block: var(--para-margin-inline);
 }
 
 .markdown-standard :deep(details.alert) {
-  gap: 1em;
-  padding-block: 0.75em;
-  padding-inline: 1em;
+  @apply gap-4 px-4 py-3;
 }
 
 .markdown-standard :deep(details.alert > summary.alert-title) {
-  gap: 0.5em;
+  @apply gap-2;
 }
 
 .markdown-standard :deep(details.alert p),
 .markdown-standard :deep(details.alert ul li),
 .markdown-standard :deep(details.alert ol li) {
-  margin-block-start: 0.5em;
-  margin-block-end: 0.25em;
+  @apply mt-2 mb-1;
 }
 
 .markdown-standard :deep([data-markdown-code-block] header hgroup),
@@ -1037,14 +1100,11 @@ watch(
 }
 
 .markdown-standard :deep([data-markdown-code-block] > header) {
-  gap: 0.5em;
-  padding-block: 0.25em;
-  padding-inline-start: 0.75em;
-  padding-inline-end: 0.25em;
+  @apply gap-2 py-1 ps-3 pe-1;
 }
 
 .markdown-standard :deep([data-markdown-code-block] .mockup-code) {
-  padding-block: 0.5em;
+  @apply py-2;
 }
 
 .markdown-standard :deep([data-markdown-code-block] .mockup-code code) {

@@ -12,6 +12,7 @@
     @close="announcementStore.closeOverlay"
     @open="announcementStore.openAnnouncement"
   />
+  <div>test</div>
   <router-view />
   <BackToTop v-if="!route.meta.hideToTop" />
 </template>
@@ -57,7 +58,9 @@ useThemeTransition();
 const auth = useMoriAuth();
 const router = useRouter();
 let stopAuth;
-onMounted(() => { stopAuth = auth.start(router); });
+onMounted(() => {
+  stopAuth = auth.start(router);
+});
 onBeforeUnmount(() => stopAuth?.());
 const novelStore = useNovelStore();
 const analyticsStore = useAnalyticsStore();
@@ -214,8 +217,7 @@ const headLinks = computed(() => {
       links.push({
         rel: "alternate",
         hreflang: lang,
-        href: new URL(getArticlePath(article.value, lang), `${SITE_URL}/`)
-          .href,
+        href: new URL(getArticlePath(article.value, lang), `${SITE_URL}/`).href,
       });
     }
   }

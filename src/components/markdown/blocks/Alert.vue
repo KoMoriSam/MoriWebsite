@@ -3,7 +3,7 @@
     role="alert"
     class="alert alert-soft alert-vertical sm:gap-2"
     :class="[
-      `alert-${type} border-[color:var(--alert-color)]`,
+      `bg-transparent border-${type}`,
       foldable && ['collapse', 'collapse-arrow'],
     ]"
     :open="!foldable || !collapsed"
@@ -12,10 +12,16 @@
   >
     <summary
       class="alert-title"
-      :class="foldable ? 'collapse-title' : 'pointer-events-none'"
+      :class="
+        foldable
+          ? `text-${type} collapse-title`
+          : `text-${type} pointer-events-none`
+      "
     >
       <i :class="icon"></i>
-      <h6><RenderedContent :html="titleHtml" /></h6>
+      <h6>
+        <RenderedContent :html="titleHtml" />
+      </h6>
     </summary>
     <slot />
   </details>
@@ -49,7 +55,11 @@ details.alert > summary.alert-title {
 }
 
 details.alert > summary.alert-title h6 {
-  @apply flex-1 min-w-0 p-0 indent-0 font-serif;
+  @apply flex-initial min-w-0 p-0 indent-0 font-serif;
+}
+
+.collapse-arrow > .collapse-title::after {
+  @apply static! shrink-0! self-center! translate-y-0.75!;
 }
 
 details.alert.collapse > summary.alert-title {

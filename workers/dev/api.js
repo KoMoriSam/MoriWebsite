@@ -2,7 +2,7 @@ import { WorkerEntrypoint } from "cloudflare:workers";
 import api from "../api.js";
 import { hash } from "../auth/crypto.js";
 import { json } from "../auth/http.js";
-import { commentPageSize, handleComments, replyPageSize } from "../github/comments.js";
+import { commentPageSize, editPageSize, handleComments, replyPageSize } from "../github/comments.js";
 import { handleDiscussionCounts } from "../github/discussions.js";
 import { discussionScopes } from "../../shared/discussions.js";
 
@@ -52,6 +52,12 @@ function commentFields(comment, viewer) {
   };
 }
 
+function storedEdits(comment) {
+  return comment.edits || (comment.lastEditedAt
+    ? [{ id: comment.id, editedAt: comment.lastEditedAt, editor: null }]
+    : []);
+}
+
 function findComment(thread, id) {
   for (const comment of thread?.comments || []) {
     if (comment.id === id) return { comment, siblings: thread.comments };
@@ -87,7 +93,7 @@ function localGithub(env, repository, target, viewer) {
   return {
     async graphql(query, variables) {
       const operation = query.match(/\b(?:query|mutation)\s+(\w+)/)?.[1];
-      const { id, after, cursor, input } = variables;
+      const { id, after, before, cursor, input } = variables;
       switch (operation) {
         case "DiscussionRepository":
           return { repository: { id: repo.id, hasDiscussionsEnabled: true } };
@@ -127,22 +133,57 @@ function localGithub(env, repository, target, viewer) {
       }
 
       const thread = await targetThread();
-      if (!thread || (["DiscussionById", "DiscussionReactionPermission", "OldestComments", "NewestComments"].includes(operation) && id !== thread.id))
+      if (!thread || (["DiscussionById", "DiscussionReactionPermission", "OldestComments", "NewestComments", "DiscussionLikeRanking", "TopComments"].includes(operation) && id !== thread.id))
         return { node: null };
       if (operation === "DiscussionById") return { node: nodeFields(thread) };
       if (operation === "DiscussionReactionPermission") return { node: reactionFields(thread, viewer) };
+      if (operation === "DiscussionLikeRanking") {
+        const items = thread.comments.map((comment) => ({ id: comment.id, ...reactionFields(comment, viewer) }));
+        return { node: { id: thread.id, comments: connection(items, 100, after) } };
+      }
+      if (operation === "TopComments") {
+        return {
+          node: { ...nodeFields(thread), ...reactionFields(thread, viewer) },
+          nodes: variables.ids.map((id) => {
+            const comment = thread.comments.find((item) => item.id === id);
+            if (!comment) return null;
+            return {
+              ...commentFields(comment, viewer), discussion: { id: thread.id },
+              replies: query.includes("replies(first: 1) { totalCount }")
+                ? { totalCount: comment.replies.length }
+                : connection(comment.replies.map((reply) => commentFields(reply, viewer)), replyPageSize),
+            };
+          }),
+        };
+      }
       if (operation === "OldestComments" || operation === "NewestComments") {
         const page = connection(thread.comments, commentPageSize, after, operation === "NewestComments");
         return { node: {
           ...nodeFields(thread), ...reactionFields(thread, viewer), comments: {
             ...page, nodes: page.nodes.map((comment) => ({
               ...commentFields(comment, viewer),
-              replies: connection(comment.replies.map((reply) => commentFields(reply, viewer)), replyPageSize),
+              replies: query.includes("replies(first: 1) { totalCount }")
+                ? { totalCount: comment.replies.length }
+                : connection(comment.replies.map((reply) => commentFields(reply, viewer)), replyPageSize),
             })),
           },
         } };
       }
       const { comment, parent, siblings } = findComment(thread, id || input?.commentId || input?.subjectId || input?.replyToId);
+      if (operation === "DiscussionCommentEdits") {
+        if (!comment) return { node: null };
+        const edits = storedEdits(comment);
+        const end = before == null ? edits.length : Number(before);
+        const start = Math.max(0, end - editPageSize);
+        return { node: {
+          discussion: { id: thread.id },
+          isMinimized: comment.isMinimized,
+          userContentEdits: {
+            nodes: edits.slice(start, end),
+            pageInfo: { hasPreviousPage: start > 0, startCursor: String(start) },
+          },
+        } };
+      }
       if (operation === "DiscussionCommentById" || operation === "DiscussionReplies") {
         return { node: comment ? {
           ...commentFields(comment, viewer), discussion: { id: thread.id }, replyTo: parent && { id: parent.id },
@@ -158,8 +199,14 @@ function localGithub(env, repository, target, viewer) {
           });
           break;
         case "updateDiscussionComment":
+          comment.edits = storedEdits(comment);
           comment.body = input.body;
           comment.lastEditedAt = new Date().toISOString();
+          comment.edits.push({
+            id: crypto.randomUUID(),
+            editedAt: comment.lastEditedAt,
+            editor: { login: viewer.login || viewer.name },
+          });
           break;
         case "deleteDiscussionComment":
           siblings.splice(siblings.indexOf(comment), 1);

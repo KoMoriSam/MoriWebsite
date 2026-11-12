@@ -8,7 +8,7 @@
         :key="index"
         class="m-0! p-0 max-w-full overflow-visible! before:sticky before:left-0 before:bg-(--hljs-background) before:text-[color-mix(in_oklab,var(--hljs-foreground)_50%,transparent)] before:opacity-100! before:shadow-[2ch_0_0_var(--hljs-background)]"
         :data-prefix="index + 1"
-      ><code class="hljs p-0! text-sm md:text-base inline-block! overflow-visible!" :class="`language-${language}`"><RenderedContent :html="line" /></code></pre>
+      ><code class="hljs p-0! text-sm md:text-base inline-block! overflow-visible!" :class="`language-${language}`" v-html="line" /></pre>
     </article>
   </ScrollableContainer>
 </template>
@@ -17,7 +17,7 @@
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import hljs from "highlight.js/lib/core";
 import { onMounted, ref, watch } from "vue";
-import RenderedContent from "@/components/markdown/RenderedContent.vue";
+import { sanitizeMarkdownHtml } from "@/utils/markdown/sanitize-html";
 import {
   normalizeLanguage,
   preloadHighlightLanguages,
@@ -100,7 +100,8 @@ const highlightCode = async () => {
     ignoreIllegals: true,
   }).value;
 
-  highlightedLines.value = splitHighlightedCode(highlightedCode);
+  // 清洗整段高亮结果，再按行分配，避免为每行单独解析 HTML。
+  highlightedLines.value = splitHighlightedCode(sanitizeMarkdownHtml(highlightedCode));
 };
 
 onMounted(highlightCode);

@@ -198,7 +198,9 @@ function countsCacheKey(env, sourceType, scope) {
 
 export async function countDiscussion(github, discussionId) {
   const comments = await fetchDiscussionCommentPage({ github, discussionId, cursor: null });
-  return comments.totalCount + await fetchDiscussionReplyCount({ github, discussionId, comments });
+  const commentCount = comments.totalCount;
+  const replyCount = await fetchDiscussionReplyCount({ github, discussionId, comments });
+  return { commentCount, replyCount, count: commentCount + replyCount };
 }
 
 export async function updateDiscussionCount(env, target, title, count) {

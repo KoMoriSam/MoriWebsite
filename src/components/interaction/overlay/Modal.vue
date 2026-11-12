@@ -52,7 +52,9 @@
       <ScrollableContainer :class="{ 'flex-1': scrollContent }">
         <section
           :class="{
-            'scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5': scrollContent,
+            'min-h-0 flex-1 p-5': scrollContent,
+            'scrollbar-thin overflow-y-auto': scrollContent === true,
+            'flex flex-col': scrollContent === 'nested',
           }"
         >
           <slot name="description">
@@ -144,8 +146,9 @@ const props = defineProps({
     default: false,
   },
   scrollContent: {
-    type: Boolean,
+    type: [Boolean, String],
     default: false,
+    validator: (value) => typeof value === "boolean" || value === "nested",
   },
   showBack: {
     type: Boolean,

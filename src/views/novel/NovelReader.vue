@@ -9,6 +9,7 @@
     :container-class="readerContainerClass"
     :grid-class="readerGridClass"
     :content-class="readerContentClass"
+    aside-class="lg:[&>aside]:flex lg:[&>aside]:flex-col"
   >
     <template #toc="{ progress }">
       <ChapterToc :page-progress="progress" />
@@ -170,7 +171,7 @@
 
     <template #aside>
       <section
-        class="mb-4 flex min-w-0 flex-wrap items-center justify-between gap-2"
+        class="mb-4 flex min-w-0 shrink-0 flex-wrap items-center justify-between gap-2"
       >
         <h2 class="min-w-0 text-2xl font-serif font-bold break-words">
           {{
@@ -195,7 +196,7 @@
 
       <Thread
         :key="commentKey"
-        input-position="bottom"
+        scroll-mode="sidebar"
         :scope="currentMapping === 'title' ? 'chapter' : 'book'"
         :target="currentMapping === 'title' ? currentChapterUuid : bookTerm"
       />
@@ -218,9 +219,9 @@
     class="modal"
     @cancel.prevent="requestPlatformCloseChapterComments"
   >
-    <section class="modal-box flex max-h-[82dvh] flex-col p-0">
+    <section class="modal-box flex max-h-[82dvh] flex-col overflow-hidden p-0">
       <header
-        class="flex items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
+        class="flex shrink-0 items-center justify-between gap-3 border-b border-base-300 px-5 py-4"
       >
         <h2 class="text-xl font-serif font-bold">
           {{ translate("novel.reader.chapterComments") }}
@@ -234,17 +235,14 @@
           <i class="ri-close-line text-xl" aria-hidden="true"></i>
         </button>
       </header>
-      <ScrollableContainer class="flex-1">
-        <section class="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-5">
-          <Thread
-            v-if="chapterCommentsStarted"
-            :key="`chapter-comments-dialog-${commentKey}`"
-            input-position="bottom"
-            scope="chapter"
-            :target="currentChapterUuid"
-          />
-        </section>
-      </ScrollableContainer>
+      <Thread
+        v-if="chapterCommentsStarted"
+        :key="`chapter-comments-dialog-${commentKey}`"
+        class="p-5"
+        scroll-mode="dialog"
+        scope="chapter"
+        :target="currentChapterUuid"
+      />
     </section>
     <form method="dialog" class="modal-backdrop">
       <button @click.prevent="requestCloseChapterComments">
@@ -259,7 +257,6 @@ import { bookTerm } from "@/../shared/discussions.js";
 import { provideMarkdownAvatars } from "@/composables/markdown/useMarkdownAvatars";
 import { novelAssetBase } from "@/services/novel-release";
 provideMarkdownAvatars(novelAssetBase);
-import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from "@/i18n";
 import { FULL_DATE_OPTIONS } from "@/i18n/format-date.js";
 const {

@@ -1,5 +1,10 @@
 <template>
-  <ReadingLayout ref="readerRef" toc :aside="showReaderAside">
+  <ReadingLayout
+    ref="readerRef"
+    toc
+    :aside="showReaderAside"
+    aside-class="lg:[&>aside]:flex lg:[&>aside]:flex-col"
+  >
     <!-- 文章内容 -->
     <Renderer
       v-if="article && (loading || content)"
@@ -516,10 +521,11 @@
     </template>
 
     <template #aside v-if="loading || (content && article?.id != null)">
-      <CommentsPlaceholder v-if="loading" />
+      <CommentsPlaceholder v-if="loading" sidebar />
       <Thread
         v-else
         :key="article.id"
+        scroll-mode="sidebar"
         scope="article"
         :target="String(article.id)"
       />

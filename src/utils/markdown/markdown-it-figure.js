@@ -78,11 +78,6 @@ const wikilinkImageRule = (state, silent) => {
   return true;
 };
 
-const isStandaloneImage = (token) =>
-  token?.type === "inline" &&
-  token.children?.length === 1 &&
-  token.children[0].type === "image";
-
 export const figurePlugin = (md) => {
   md.inline.ruler.before("image", "wikilink_image", wikilinkImageRule);
 
@@ -96,22 +91,52 @@ export const figurePlugin = (md) => {
         figureOpen.type !== "paragraph_open" ||
         figureOpen.hidden ||
         figureClose.type !== "paragraph_close" ||
-        !isStandaloneImage(inline)
-      ) {
-        continue;
+        inline?.type !== "inline"
+      ) continue;
+
+      const children = inline.children || [];
+      const linked =
+        children[0]?.type === "link_open" &&
+        children[1]?.type === "image" &&
+        children[2]?.type === "link_close";
+      const image = children[linked ? 1 : 0];
+      if (image?.type !== "image") continue;
+
+      const imageEnd = linked ? 3 : 1;
+      if (children.length > imageEnd) {
+        const lineBreak = children[imageEnd];
+        const explicitlyCaptioned = image.attrGet("title") || image.meta?.wikilinkImage;
+        if (!explicitlyCaptioned ||
+            !["softbreak", "hardbreak"].includes(lineBreak?.type)) continue;
+
+        // 带图注的图片独占一行，下一行仍属于原段落。
+        const tail = new state.Token("inline", "", 0);
+        const lineEnd = inline.content.indexOf("\n");
+        Object.assign(tail, inline, {
+          children: children.slice(imageEnd + 1),
+          content: lineEnd < 0 ? "" : inline.content.slice(lineEnd + 1),
+        });
+        const paragraphOpen = new state.Token("paragraph_open", "p", 1);
+        const paragraphClose = new state.Token("paragraph_close", "p", -1);
+        paragraphOpen.meta = paragraphClose.meta = { figureContinuation: true };
+        paragraphOpen.level = figureOpen.level;
+        paragraphClose.level = figureClose.level;
+        state.tokens.splice(index + 3, 0, paragraphOpen, tail, paragraphClose);
+        inline.children = children.slice(0, imageEnd);
       }
 
       figureOpen.tag = "figure";
       figureOpen.attrJoin("class", "markdown-figure");
-      const alignment = inline.children[0].meta?.markdownImageAlign;
-      if (alignment) {
-        figureOpen.attrJoin("class", `markdown-figure-${alignment}`);
-      }
+      const alignment = image.meta?.markdownImageAlign;
+      if (alignment) figureOpen.attrJoin("class", `markdown-figure-${alignment}`);
       figureClose.tag = "figure";
-      inline.children[0].meta = {
-        ...(inline.children[0].meta || {}),
-        markdownFigure: true,
-      };
+      if (linked) {
+        const caption = new state.Token("figure_caption", "figcaption", 0);
+        caption.meta = { image };
+        inline.children.push(caption);
+      } else {
+        image.meta = { ...image.meta, markdownFigure: true };
+      }
     }
   });
 
@@ -121,11 +146,16 @@ export const figurePlugin = (md) => {
       return self.renderToken(tokens, idx, options);
     };
 
+  const captionFor = (token, options, env, self) =>
+    token.attrGet("title") || self.renderInlineAsText(token.children || [], options, env);
+  const captionHtml = (caption) =>
+    caption ? `<figcaption>${md.utils.escapeHtml(caption)}</figcaption>` : "";
+  md.renderer.rules.figure_caption = (tokens, idx, options, env, self) =>
+    captionHtml(captionFor(tokens[idx].meta.image, options, env, self));
+
   md.renderer.rules.image = function (tokens, idx, options, env, self) {
     const token = tokens[idx];
-    const caption =
-      token.attrGet("title") ||
-      self.renderInlineAsText(token.children || [], options, env);
+    const caption = captionFor(token, options, env, self);
 
     if (isSvgImage(token.attrGet("src"))) {
       token.attrJoin("class", "markdown-svg-image");
@@ -145,8 +175,6 @@ export const figurePlugin = (md) => {
 
     if (!token.meta?.markdownFigure) return image;
 
-    return caption
-      ? `${image}<figcaption>${md.utils.escapeHtml(caption)}</figcaption>`
-      : image;
+    return image + captionHtml(caption);
   };
 };

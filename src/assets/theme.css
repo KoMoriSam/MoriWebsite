@@ -130,7 +130,10 @@
 }
 
 @utility rounded-inner {
-  border-radius: max(0px, calc(var(--surface-radius, var(--radius-box)) - var(--surface-inset, 0px)));
+  border-radius: max(
+    var(--surface-min-radius, 0px),
+    calc(var(--surface-radius, var(--radius-box)) - var(--surface-inset, 0px))
+  );
   corner-shape: inherit;
 }
 

@@ -2,14 +2,14 @@ import { legacyDiscussionQuery } from "../../shared/discussions.js";
 import { githubErrorHeaders } from "./client.js";
 import { countDiscussion, updateDiscussionCount } from "./discussions.js";
 import { discussionGithub } from "./installation.js";
-import { readGithubCache, writeGithubCache } from "./cache.js";
+import { deleteGithubCache, readGithubCache, writeGithubCache } from "./cache.js";
 
 const reactions = new Set(["THUMBS_UP", "THUMBS_DOWN", "LAUGH", "HOORAY", "CONFUSED", "HEART", "ROCKET", "EYES"]);
 const discussionFields = "id title url locked repository { id isPrivate } category { id }";
 const reactionFields = "viewerCanReact reactionGroups { content viewerHasReacted users { totalCount } }";
 const pageInfo = "pageInfo { hasNextPage hasPreviousPage startCursor endCursor }";
 const commentFields = `
-  id body createdAt lastEditedAt isMinimized viewerCanUpdate viewerCanDelete
+  id url body createdAt lastEditedAt isMinimized viewerCanUpdate viewerCanDelete
   author { login avatarUrl url } ${reactionFields}
 `;
 const mutations = {
@@ -22,6 +22,7 @@ const mutations = {
 };
 export const replyPageSize = 12;
 export const commentPageSize = 15;
+export const editPageSize = 20;
 
 const error = (status, code, retryAt) => Object.assign(new Error(code), { status, code, retryAt });
 const nodeId = (value) => typeof value === "string" && /^[\w=+/\-]{1,120}$/.test(value);
@@ -29,6 +30,7 @@ const cursor = (value) => typeof value === "string" && /^[\w=+/-]{1,256}$/.test(
 const validDiscussion = (node, target) => node?.repository?.id === target.repo.id && node.repository.isPrivate === Boolean(target.privateRepository) && node?.category?.id === target.category.id;
 const targetKey = (target) => JSON.stringify([target.repo.id, target.category.id, target.term]);
 const countsKey = (id) => new Request("https://api.komori.cc/__cache/thread-count/" + encodeURIComponent(id));
+const rankingKey = (id) => new Request("https://api.komori.cc/__cache/thread-likes/" + encodeURIComponent(id));
 
 async function discussionNode(github, id) {
   const data = await github.graphql(`query DiscussionById($id: ID!) { node(id: $id) { ... on Discussion { ${discussionFields} } } }`, { id });
@@ -96,10 +98,10 @@ async function createDiscussion(github, createClient, env, target) {
 async function totals(github, id, force = false) {
   const key = countsKey(id);
   const cached = force ? null : await readGithubCache(key);
-  if (cached) return cached.count;
-  const count = await countDiscussion(github, id);
-  await writeGithubCache(key, { count }, Date.now() + 300_000);
-  return count;
+  if (Number.isInteger(cached?.replyCount)) return cached;
+  const counts = await countDiscussion(github, id);
+  await writeGithubCache(key, counts, Date.now() + 300_000);
+  return counts;
 }
 
 function hideMinimized(comments) {
@@ -107,6 +109,106 @@ function hideMinimized(comments) {
     if (comment.isMinimized) comment.body = "";
     if (comment.replies?.nodes) hideMinimized(comment.replies.nodes);
   }
+}
+
+async function rankComments(github, id) {
+  const key = rankingKey(id);
+  const cached = await readGithubCache(key);
+  if (Array.isArray(cached?.ids)) return cached.ids;
+  const entries = [];
+  let after = null;
+  for (let page = 0; page < 20; page++) {
+    const { node } = await github.graphql(`
+      query DiscussionLikeRanking($id: ID!, $after: String) {
+        node(id: $id) { ... on Discussion {
+          id
+          comments(first: 100, after: $after) {
+            ${pageInfo}
+            nodes { id isMinimized reactionGroups { content users { totalCount } } }
+          }
+        } }
+      }
+    `, { id, after });
+    if (node?.id !== id) throw error(404, "DISCUSSION_NOT_FOUND");
+    for (const item of node.comments.nodes) {
+      const likes = item.reactionGroups.find((group) => group.content === "THUMBS_UP");
+      entries.push({ id: item.id, likes: item.isMinimized ? -1 : likes?.users.totalCount || 0 });
+    }
+    if (!node.comments.pageInfo.hasNextPage) {
+      const ids = entries.sort((a, b) => b.likes - a.likes).map((item) => item.id);
+      await writeGithubCache(key, { ids }, Date.now() + 60_000);
+      return ids;
+    }
+    after = node.comments.pageInfo.endCursor;
+  }
+  throw error(422, "COMMENT_RANKING_TOO_LARGE");
+}
+
+async function getTopThread(github, discussion, input, includePermissions, replies) {
+  const id = discussion.id;
+  const start = input.cursor == null ? 0 : Number(/^top-(\d{1,4})$/u.exec(input.cursor)?.[1]);
+  if (!Number.isInteger(start)) throw error(400, "INVALID_COMMENT");
+  const ranking = await rankComments(github, id);
+  const ids = ranking.slice(start, start + commentPageSize);
+  const { node, nodes } = await github.graphql(`
+    query TopComments($id: ID!, $ids: [ID!]!, $hasComments: Boolean!) {
+      node(id: $id) { ... on Discussion { ${discussionFields} ${reactionFields} } }
+      nodes(ids: $ids) @include(if: $hasComments) { ... on DiscussionComment {
+        ${commentFields} discussion { id }
+        ${replies}
+      } }
+    }
+  `, { id, ids, hasComments: ids.length > 0 });
+  if (node?.id !== id || !validDiscussion(node, {
+    repo: discussion.repository, category: discussion.category,
+    privateRepository: discussion.repository.isPrivate,
+  })) {
+    throw error(404, "DISCUSSION_NOT_FOUND");
+  }
+  const byId = new Map((nodes || []).filter((item) => item?.discussion?.id === id).map((item) => [item.id, item]));
+  const comments = ids.map((commentId) => byId.get(commentId)).filter(Boolean);
+  hideMinimized(comments);
+  const end = start + ids.length;
+  return {
+    includePermissions,
+    discussion: {
+      ...node,
+      comments: {
+        nodes: comments,
+        totalCount: ranking.length,
+        pageInfo: { hasNextPage: end < ranking.length, endCursor: `top-${end}` },
+      },
+    },
+  };
+}
+
+async function getEditHistory(github, discussion, input) {
+  const before = cursor(input.cursor);
+  if (!nodeId(input.history) || (input.cursor && !before)) throw error(400, "INVALID_COMMENT");
+  const { node } = await github.graphql(`
+    query DiscussionCommentEdits($id: ID!, $before: String) {
+      node(id: $id) { ... on DiscussionComment {
+        discussion { id } isMinimized includesCreatedEdit createdAt
+        userContentEdits(last: ${editPageSize}, before: $before) {
+          pageInfo { hasPreviousPage startCursor }
+          nodes { id editedAt deletedAt editor { login } }
+        }
+      } }
+    }
+  `, { id: input.history, before });
+  if (node?.discussion?.id !== discussion.id || node.isMinimized)
+    throw error(404, "INVALID_COMMENT");
+  const history = node.userContentEdits;
+  const previous = history?.pageInfo.hasPreviousPage;
+  const revisions = history?.nodes || [];
+  return {
+    edits: revisions
+      .filter((edit) => edit && !edit.deletedAt &&
+        !(node.includesCreatedEdit && edit.editedAt === node.createdAt))
+      .reverse()
+      .map(({ id, editedAt, editor }) => ({ id, editedAt, editor: editor?.login || null })),
+    nextCursor: previous ? history.pageInfo.startCursor : null,
+  };
 }
 
 async function getThread(github, discussion, input, includePermissions) {
@@ -119,7 +221,7 @@ async function getThread(github, discussion, input, includePermissions) {
       query DiscussionReplies($id: ID!, $after: String) {
         node(id: $id) { ... on DiscussionComment {
           discussion { id } replyTo { id }
-          replies(first: ${replyPageSize}, after: $after) { ${pageInfo} nodes { ${commentFields} } }
+          replies(first: ${replyPageSize}, after: $after) { ${pageInfo} totalCount nodes { ${commentFields} } }
         } }
       }
     `, { id: input.parent, after });
@@ -128,15 +230,19 @@ async function getThread(github, discussion, input, includePermissions) {
     return { replies: node.replies, includePermissions };
   }
   const pagination = newest ? `last: ${commentPageSize}, before: $after` : `first: ${commentPageSize}, after: $after`;
+  const replies = input.replySummary === "1"
+    ? "replies(first: 1) { totalCount }"
+    : `replies(first: ${replyPageSize}) { ${pageInfo} totalCount nodes { ${commentFields} } }`;
+  if (input.sort === "top") return getTopThread(github, discussion, input, includePermissions, replies);
   const { node } = await github.graphql(`
     query ${newest ? "NewestComments" : "OldestComments"}($id: ID!, $after: String) {
       node(id: $id) { ... on Discussion {
-        ${discussionFields} ${reactionFields}
+        ${discussionFields} ${reactionFields} upvoteCount
         comments(${pagination}) {
           ${pageInfo} totalCount
           nodes {
-            ${commentFields}
-            replies(first: ${replyPageSize}) { ${pageInfo} totalCount nodes { ${commentFields} } }
+            ${commentFields} upvoteCount
+            ${replies}
           }
         }
       } }
@@ -207,13 +313,17 @@ async function writeComment(github, user, auth, createClient, env, target, input
       Object.assign(mutation, { subjectId: subject?.id || id, content: input.reaction });
     }
     const [name, type, fields] = mutations[action];
-    const previousCount = delta ? await totals(github, id).catch(() => null) : null;
+    const previousTotals = delta ? await totals(github, id).catch(() => null) : null;
     await user.graphql(`mutation ${name}($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
+    if (action === "post" ||
+        (subject && !subject.replyTo && (action === "delete" || input.reaction === "THUMBS_UP"))) {
+      await deleteGithubCache(rankingKey(id));
+    }
     let count = null;
     if (delta) {
       try {
-        count = await totals(github, id, true);
-        if (previousCount !== null) delta = count - previousCount;
+        ({ count } = await totals(github, id, true));
+        if (previousTotals) delta = count - previousTotals.count;
         await updateDiscussionCount(env, target, discussion.title, count);
       } catch { /* The GitHub mutation has already succeeded. */ }
     }
@@ -269,7 +379,11 @@ export async function handleComments(request, env, token, target, {
       body = await writeComment(github, user, auth, createClient, env, target, input);
     } else {
       const discussion = await resolveDiscussion(github, auth, target);
-      if (!discussion) return { status: 200, body: { discussion: null, count: 0 } };
+      if (Object.hasOwn(input, "history")) {
+        if (!discussion) throw error(404, "DISCUSSION_NOT_FOUND");
+        return { status: 200, body: await getEditHistory(user || github, discussion, input) };
+      }
+      if (!discussion) return { status: 200, body: { discussion: null, count: 0, commentCount: 0, replyCount: 0 } };
       let thread;
       try {
         thread = await getThread(user || github, discussion, input, Boolean(user));
@@ -277,7 +391,7 @@ export async function handleComments(request, env, token, target, {
         if (!user || ![401, 403, 409].includes(failure.status)) throw failure;
         thread = await getThread(github, discussion, input, false);
       }
-      body = input.parent ? thread : { ...thread, count: await totals(github, discussion.id) };
+      body = input.parent ? thread : { ...thread, ...await totals(github, discussion.id) };
     }
     return { status: 200, body };
   } catch (failure) {

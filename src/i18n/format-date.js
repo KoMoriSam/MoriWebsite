@@ -66,3 +66,24 @@ export function formatDate(date, locale, options) {
 
   return parts.map((part) => (part.type === "month" ? monthLabel : part.value)).join("");
 }
+
+const relativeDateUnits = [
+  ["year", 365 * 24 * 60],
+  ["month", 30 * 24 * 60],
+  ["day", 24 * 60],
+  ["hour", 60],
+  ["minute", 1],
+];
+const relativeDateFormatters = new Map();
+
+export function formatRelativeDate(date, locale, now) {
+  const elapsedMinutes = Math.trunc((now - new Date(date).getTime()) / 60_000);
+  if (!Number.isFinite(elapsedMinutes)) return "";
+  if (!relativeDateFormatters.has(locale))
+    relativeDateFormatters.set(locale, new Intl.RelativeTimeFormat([locale, "en-GB"], { numeric: "auto" }));
+  const formatter = relativeDateFormatters.get(locale);
+  const unit = relativeDateUnits.find(([, size]) => Math.abs(elapsedMinutes) >= size);
+  return unit
+    ? formatter.format(-Math.trunc(elapsedMinutes / unit[1]), unit[0])
+    : formatter.format(0, "second");
+}

@@ -1,7 +1,6 @@
 import { cloneVNode, h } from "vue";
 import { RouterLink } from "vue-router";
-import { parseFragment } from "parse5";
-import { sanitizeMarkdownHtml } from "./sanitize-html.js";
+import { parseSanitizedMarkdownHtml } from "./sanitize-html.js";
 import {
   getImageAttrs,
   restoreOriginalImage,
@@ -236,8 +235,53 @@ const getVNodeProps = (node) => {
   return props;
 };
 
-export const parseHtmlFragment = (html = "") =>
-  parseFragment(sanitizeMarkdownHtml(html));
+const scopedAnchorTargets = new WeakMap();
+
+function scopeHtmlAnchors(fragment, prefix) {
+  const ids = new Map();
+  const references = [];
+  const visit = (node) => {
+    if (node.namespaceURI && node.namespaceURI !== "http://www.w3.org/1999/xhtml") return;
+    for (const attribute of node.attrs || []) {
+      if (attribute.name === "id" && attribute.value) {
+        const id = attribute.value;
+        attribute.value = prefix + id;
+        ids.set(id, attribute.value);
+      } else if (
+        (attribute.name === "href" && attribute.value.startsWith("#")) ||
+        attribute.name === "aria-labelledby" || attribute.name === "aria-describedby"
+      ) {
+        references.push({ node, attribute });
+      }
+    }
+    getChildNodes(node).forEach(visit);
+  };
+  visit(fragment);
+
+  for (const { node, attribute } of references) {
+    if (attribute.name !== "href") {
+      attribute.value = attribute.value.split(/\s+/u).map((id) => ids.get(id) || id).join(" ");
+      continue;
+    }
+    const hash = attribute.value.slice(1);
+    let id = ids.get(hash);
+    try {
+      id = ids.get(decodeURIComponent(hash)) || id;
+    } catch {
+      // Keep literal fragments containing an invalid percent escape.
+    }
+    if (id) {
+      attribute.value = "#" + encodeURIComponent(id);
+      if (node.tagName === "a") scopedAnchorTargets.set(node, id);
+    }
+  }
+}
+
+export const parseHtmlFragment = (html = "", anchorPrefix = "") => {
+  const fragment = parseSanitizedMarkdownHtml(html);
+  if (anchorPrefix) scopeHtmlAnchors(fragment, anchorPrefix);
+  return fragment;
+};
 
 const renderNode = (node, resolver, key, parent, router) => {
   if (node.nodeName === "#text") {
@@ -308,6 +352,21 @@ const renderNode = (node, resolver, key, parent, router) => {
 
   if (resolved === false) return null;
   if (resolved !== undefined && resolved !== null) return resolved;
+
+  const localTarget = scopedAnchorTargets.get(node);
+  if (localTarget) {
+    props.onClick = (event) => {
+      if (event.defaultPrevented || event.button !== 0 ||
+          event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const target = event.currentTarget.ownerDocument.getElementById(localTarget);
+      if (!target) return;
+      event.preventDefault();
+      if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ block: "nearest", inline: "nearest" });
+    };
+    return h(node.tagName, { ...props, key }, children);
+  }
 
   if (linkType === "internal" && router && props.download == null) {
     const { href, ...linkProps } = props;
