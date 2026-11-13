@@ -22,7 +22,7 @@ try {
       await run(["wrangler", "d1", "migrations", "apply", binding, "--remote", "--config", configs[name]], { env, cwd: root });
   }
   for (const name of targets)
-    await run(["wrangler", "deploy", "--keep-vars", "--config", configs[name], ...(action === "--dry-run" ? ["--dry-run"] : [])],
+    await run(["wrangler", "deploy", "--config", configs[name], ...(action === "--dry-run" ? ["--dry-run"] : [])],
       { env, cwd: root });
 } finally {
   await rm(root, { recursive: true, force: true });

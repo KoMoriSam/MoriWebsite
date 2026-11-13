@@ -1,22 +1,22 @@
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { discussionRegistry, stagingDiscussionRepository } from "../../shared/discussions.js";
+import { discussionRegistry, testDiscussionRepository } from "../../shared/discussions.js";
 import { testOrigin, testPreviewName } from "../../shared/test-preview.js";
 import { novelVersionPattern, releaseFile } from "../../shared/novel-release.js";
 import { getArticlePath } from "../../src/utils/blog/article-versions.js";
 import { deployEnvironment } from "../lib/build-environment.mjs";
 import { run } from "../lib/commands.mjs";
 import { readWorkerConfig } from "../lib/worker-config.mjs";
-import { stagingNovelBucket } from "../release/environment.mjs";
+import { testNovelBucket } from "../release/environment.mjs";
 
 const source = resolve(".output/preview");
 const fixtures = resolve(".tmp/mori-dev/assets");
 const vars = {
-  MORI_ENV: "staging",
+  MORI_ENV: "test",
   MORI_SITE_ORIGIN: testOrigin,
-  MORI_STAGING_DISCUSSION_REPO: process.env.MORI_STAGING_DISCUSSION_REPO || "KoMoriSam/mori-staging-discussions",
+  MORI_TEST_DISCUSSION_REPO: process.env.MORI_TEST_DISCUSSION_REPO || "KoMoriSam/mori-test-discussions",
 };
-stagingDiscussionRepository(vars);
+testDiscussionRepository(vars);
 
 const config = await readWorkerConfig();
 if (config.name !== "website" || config.assets?.directory !== "./dist")
@@ -32,7 +32,7 @@ if (!novelVersionPattern.test(novel?.version || "") || !novel.catalog || typeof 
 await mkdir(".tmp", { recursive: true });
 const root = await mkdtemp(resolve(".tmp/test-preview-"));
 try {
-  await run(["wrangler", "r2", "object", "get", `${stagingNovelBucket}/v1/versions/${novel.version}.json`,
+  await run(["wrangler", "r2", "object", "get", `${testNovelBucket}/v1/versions/${novel.version}.json`,
     "--remote", "--file", resolve(root, "novel-manifest.json")], { env });
   const assets = resolve(root, "assets");
   await cp(source, assets, { recursive: true });
@@ -66,7 +66,7 @@ try {
         { binding: "COMMENTS", service: "api-test", entrypoint: "CommentsInternal" },
         { binding: "PUBLIC_API", service: "api-test" },
       ],
-      r2_buckets: [{ binding: "NOVEL_VAULT", bucket_name: stagingNovelBucket }],
+      r2_buckets: [{ binding: "NOVEL_VAULT", bucket_name: testNovelBucket }],
       version_metadata: { binding: "WEBSITE_VERSION" },
       observability: { enabled: true, logs: { invocation_logs: false } },
     },

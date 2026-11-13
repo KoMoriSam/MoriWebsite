@@ -3,14 +3,14 @@ import { handleComments } from "./github/comments.js";
 
 import api from "./api.js";
 import { discussionGithub } from "./github/installation.js";
-import { configuredDiscussionScopes, stagingDiscussionRepository } from "../shared/discussions.js";
+import { configuredDiscussionScopes, testDiscussionRepository } from "../shared/discussions.js";
 
 export { GameRoom } from "./api.js";
 
 let metadata;
 async function discussionEnvironment(env) {
-  if (env.MORI_ENV !== "staging") return env;
-  const repository = stagingDiscussionRepository(env);
+  if (env.MORI_ENV !== "test") return env;
+  const repository = testDiscussionRepository(env);
   const key = JSON.stringify([env.GITHUB_APP_ID, env.GITHUB_INSTALLATION_ID, repository]);
   if (metadata?.key !== key || metadata.until <= Date.now()) {
     const pending = (async () => {
@@ -26,7 +26,7 @@ async function discussionEnvironment(env) {
       `, { owner, name });
       if (!repo?.isPrivate || !repo.hasDiscussionsEnabled ||
           repo.nameWithOwner.toLowerCase() !== repository.toLowerCase())
-        throw new Error("The staging discussion repository must be private with Discussions enabled");
+        throw new Error("The test discussion repository must be private with Discussions enabled");
       const categories = repo.discussionCategories.nodes;
       const general = categories.find(({ name }) => name === "General") || categories[0];
       const paragraph = categories.find(({ name }) => name === "Ideas") || general;
@@ -37,7 +37,7 @@ async function discussionEnvironment(env) {
         "novel-paragraph": { repo: source, category: paragraph },
       };
       const settings = JSON.stringify(scopes);
-      configuredDiscussionScopes({ ...env, MORI_STAGING_DISCUSSIONS: settings });
+      configuredDiscussionScopes({ ...env, MORI_TEST_DISCUSSIONS: settings });
       return settings;
     })().catch((error) => {
       if (metadata?.pending === pending) metadata = undefined;
@@ -45,7 +45,7 @@ async function discussionEnvironment(env) {
     });
     metadata = { key, pending, until: Date.now() + 300_000 };
   }
-  return { ...env, MORI_STAGING_DISCUSSIONS: await metadata.pending };
+  return { ...env, MORI_TEST_DISCUSSIONS: await metadata.pending };
 }
 
 export default {
@@ -65,7 +65,7 @@ export class CommentsInternal extends WorkerEntrypoint {
   async handle(request, token, target) {
     try {
       const env = await discussionEnvironment(this.env);
-      if (env.MORI_ENV !== "staging") return handleComments(request, env, token, target);
+      if (env.MORI_ENV !== "test") return handleComments(request, env, token, target);
       const scope = configuredDiscussionScopes(env)[target.scope];
       if (!scope) return { status: 404, body: { error: "DISCUSSION_NOT_FOUND" } };
       return handleComments(request, env, token, { ...target, ...scope, privateRepository: true });

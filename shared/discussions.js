@@ -17,26 +17,26 @@ export const discussionScopes = {
   "novel-paragraph": { repo: novel, category: { name: "Ideas", id: "DIC_kwDOOWZUk84C_2_D" } },
 };
 
-export function stagingDiscussionRepository(env) {
-  const name = env.MORI_STAGING_DISCUSSION_REPO || "";
+export function testDiscussionRepository(env) {
+  const name = env.MORI_TEST_DISCUSSION_REPO || "";
   if (!/^[\w.-]+\/[\w.-]+$/.test(name) ||
       [article, novel].some((repo) => repo.name.toLowerCase() === name.toLowerCase()))
-    throw new Error("Configure an independent staging discussion repository");
+    throw new Error("Configure an independent test discussion repository");
   return name;
 }
 
 export function configuredDiscussionScopes(env) {
-  if (env?.MORI_ENV !== "staging") return discussionScopes;
-  const scopes = JSON.parse(env.MORI_STAGING_DISCUSSIONS || "null");
+  if (env?.MORI_ENV !== "test") return discussionScopes;
+  const scopes = JSON.parse(env.MORI_TEST_DISCUSSIONS || "null");
   if (!scopes || Object.keys(scopes).length !== Object.keys(discussionScopes).length)
-    throw new Error("Missing staging discussion scopes");
+    throw new Error("Missing test discussion scopes");
   const production = new Set(Object.values(discussionScopes).map(({ repo }) => repo.name.toLowerCase()));
   for (const key of Object.keys(discussionScopes)) {
     const { repo, category } = scopes[key] || {};
     if (!/^[\w.-]+\/[\w.-]+$/.test(repo?.name || "") || production.has(repo.name.toLowerCase()) ||
         !/^R_[\w-]+$/.test(repo.id || "") || !/^DIC_[\w-]+$/.test(category?.id || "") ||
         typeof category.name !== "string" || !category.name)
-      throw new Error("Invalid staging discussion scope");
+      throw new Error("Invalid test discussion scope");
   }
   return scopes;
 }
@@ -51,11 +51,11 @@ export function discussionTarget(registry, scope, value, env) {
   const term = scope === "book" ? bookTerm : scope === "chapter" ? record?.term : record && value;
   const path = scope === "book" ? "/novel" : record?.path;
   if (!term || !path || (scope === "book" && value !== bookTerm)) return null;
-  const settings = env?.MORI_ENV === "staging"
-    ? { repo: { name: stagingDiscussionRepository(env) } }
+  const settings = env?.MORI_ENV === "test"
+    ? { repo: { name: testDiscussionRepository(env) } }
     : configuredDiscussionScopes(env)[scope];
   return {
-    ...settings, scope, privateRepository: env?.MORI_ENV === "staging", term, sourceType: novel ? "novel" : "article",
+    ...settings, scope, privateRepository: env?.MORI_ENV === "test", term, sourceType: novel ? "novel" : "article",
     countScope: paragraph ? "paragraph" : novel ? "chapter" : "content",
     url: new URL(path + (paragraph ? "#" + encodeURIComponent(value) : ""), env?.MORI_SITE_ORIGIN || "https://komori.cc").href,
   };

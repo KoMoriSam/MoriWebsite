@@ -15,7 +15,7 @@ function getSourceConfig(env, sourceType, scope = "paragraph") {
   const specific = scope === "paragraph" ? variable : `${variable}_${novel ? "CHAPTER" : "CONTENT"}`;
   return {
     owner, repo, categoryId: configuration.category.id,
-    privateRepository: env.MORI_ENV === "staging", repositoryId: configuration.repo.id,
+    privateRepository: env.MORI_ENV === "test", repositoryId: configuration.repo.id,
     maxPages: Number(env[`${specific}_MAX_PAGES`] || env[`${variable}_MAX_PAGES`] || env.MAX_PAGES || 20),
   };
 }

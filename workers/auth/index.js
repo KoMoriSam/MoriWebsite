@@ -104,8 +104,8 @@ async function complete(request, env, url, requestId) {
       db.prepare("SELECT user_id FROM identities WHERE provider = 'github' AND provider_user_id = ?").bind(identityId),
     ]);
     const id = identity.results[0].user_id;
-    if (env.MORI_ENV === "staging") {
-      const allowed = (env.MORI_STAGING_READER_IDS || "").split(",").includes(identityId);
+    if (env.MORI_ENV === "test") {
+      const allowed = (env.MORI_TEST_READER_IDS || "").split(",").includes(identityId);
       await db.prepare("UPDATE users SET can_read_novel = ? WHERE id = ?").bind(Number(allowed), id).run();
     }
     stage = "session";
@@ -220,7 +220,7 @@ export default {
     const url = new URL(request.url);
     const requestId = crypto.randomUUID();
     let path = url.pathname;
-    if (env.MORI_ENV === "staging" && url.origin === testOrigin) {
+    if (env.MORI_ENV === "test" && url.origin === testOrigin) {
       path = testPaths.get(path);
       env = { ...env, MORI_SITE_ORIGIN: testOrigin, MORI_AUTH_ORIGIN: testOrigin };
     }

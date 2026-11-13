@@ -10,7 +10,7 @@ export default {
     const path = url.pathname;
     const siteOrigin = env.MORI_SITE_ORIGIN || SITE;
     const authOrigin = env.MORI_AUTH_ORIGIN || AUTH;
-    const testPreview = env.MORI_ENV === "staging" && siteOrigin === testOrigin && env.TEST_AUTH;
+    const testPreview = env.MORI_ENV === "test" && siteOrigin === testOrigin && env.TEST_AUTH;
     const override = request.headers.get("Cloudflare-Workers-Version-Overrides");
     const preview = url.origin !== siteOrigin || override !== null;
     if (/^\/(?:pagefind-novel|archive\/article)(?:\/|$)/i.test(path)) return json({ error: "NOT_FOUND" }, 404);
@@ -19,14 +19,14 @@ export default {
       return json({ error: "NOT_FOUND" }, 404);
     if (!/^\/(?:api|auth)(?:\/|$)/.test(path)) {
       const response = await env.ASSETS.fetch(request);
-      if (!publicContent && !preview && env.MORI_ENV !== "staging") return response;
+      if (!publicContent && !preview && env.MORI_ENV !== "test") return response;
       const headers = new Headers(response.headers);
       if (publicContent) {
         // Public attachments now share the site's origin. A direct navigation must not execute them as site code.
         headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
         headers.set("X-Content-Type-Options", "nosniff");
       }
-      if (preview || env.MORI_ENV === "staging") headers.set("X-Robots-Tag", "noindex, nofollow");
+      if (preview || env.MORI_ENV === "test") headers.set("X-Robots-Tag", "noindex, nofollow");
       return new Response(response.body, { status: response.status, headers });
     }
     if (path === "/api/version" && request.method === "GET") {

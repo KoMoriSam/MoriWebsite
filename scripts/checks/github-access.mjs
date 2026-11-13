@@ -177,17 +177,17 @@ test("Mori OAuth, credential refresh, binding authorization and logout", async (
   }
 });
 
-test("test Preview keeps OAuth on its own origin and uses staging permissions", async () => {
+test("test Preview keeps OAuth on its own origin and uses test permissions", async () => {
   const db = database();
   db.sqlite.exec(await readFile("migrations/auth/0001_auth.sql", "utf8"));
   const authEnv = {
-    AUTH_DB: db, MORI_ENV: "staging", MORI_STAGING_READER_IDS: "42",
-    MORI_SITE_ORIGIN: "https://staging.komori.cc", MORI_AUTH_ORIGIN: "https://auth-staging.komori.cc",
+    AUTH_DB: db, MORI_ENV: "test", MORI_TEST_READER_IDS: "42",
+    MORI_SITE_ORIGIN: testOrigin, MORI_AUTH_ORIGIN: "https://auth-test.komori.cc",
     GITHUB_CLIENT_ID: "test-id", GITHUB_CLIENT_SECRET: "test-secret",
     TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
   };
   const env = {
-    MORI_ENV: "staging", MORI_SITE_ORIGIN: testOrigin,
+    MORI_ENV: "test", MORI_SITE_ORIGIN: testOrigin,
     TEST_AUTH: { fetch: (request) => auth.fetch(request, authEnv) },
     MORI_AUTH: new SiteAuth(null, authEnv),
   };
