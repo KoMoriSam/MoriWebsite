@@ -91,7 +91,7 @@
           <div class="comment-surface-bottom border-t border-base-300 bg-(--comment-reply-bg) p-(--comment-inset)">
             <span class="btn btn-sm rounded-inner w-full justify-start border-base-300 bg-base-100 font-normal">
               <span class="skeleton skeleton-text">
-                {{ t(moriSession.authenticated ? "reader.comments.reply" : "reader.comments.loginToReply") }}
+                {{ t(authenticated ? "reader.comments.reply" : "reader.comments.loginToReply") }}
               </span>
             </span>
           </div>
@@ -104,22 +104,25 @@
       class="shrink-0"
       model-value=""
       loading
-      :authenticated="moriSession.authenticated"
+      :authenticated="authenticated"
       :label="t('reader.comments.post')"
     />
   </section>
 </template>
 
 <script setup>
+import { computed } from "vue";
 import CommentEditor from "@/components/comments/interaction/CommentEditor.vue";
 import { useLocale } from "@/i18n";
 import { moriSession } from "@/composables/auth/useMoriAuth";
 
-defineProps({
+const props = defineProps({
   novel: Boolean,
   sidebar: Boolean,
   contentOnly: Boolean,
+  authenticated: { type: Boolean, default: undefined },
 });
+const authenticated = computed(() => props.authenticated ?? moriSession.authenticated);
 const { t } = useLocale();
 const orders = ["oldest", "newest", "top"];
 const commentLines = [["w-11/12"], ["w-full", "w-10/12", "w-2/3"]];

@@ -36,6 +36,12 @@ export const TEST_SECTIONS = [
     description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
   },
   {
+    id: "comments",
+    label: "评论区",
+    title: "评论区布局与 Markdown",
+    description: "切换评论状态、身份和宽度，预览 Markdown 并操作本地模拟评论。",
+  },
+  {
     id: "rss",
     label: "RSS",
     title: "博客 RSS 预览",
@@ -123,6 +129,7 @@ export const TEST_SECTION_COMPONENTS = {
   modal: () => import("@/views/test/Modal.vue"),
   "announcement-modal": () => import("@/views/test/AnnouncementModal.vue"),
   markdown: () => import("@/views/test/Markdown.vue"),
+  comments: () => import("@/views/test/Comments.vue"),
   rss: () => import("@/views/test/Rss.vue"),
   "mobile-reader": () => import("@/views/test/MobileReader.vue"),
   "number-controller": () => import("@/views/test/NumberController.vue"),

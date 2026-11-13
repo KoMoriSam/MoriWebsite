@@ -126,6 +126,7 @@
           :class="{ 'skeleton skeleton-text': loading }"
           :disabled="busy"
           :return-hash="returnHash"
+          :login-action="loginAction"
         />
       </div>
     </footer>
@@ -144,6 +145,7 @@ const body = defineModel({ type: String, required: true });
 const props = defineProps({
   label: String,
   returnHash: String,
+  loginAction: Function,
   busy: Boolean,
   authenticated: Boolean,
   loading: Boolean,

@@ -17,7 +17,11 @@
           'lg:overflow-y-auto lg:scrollbar-thin': scrollMode === 'sidebar',
         }"
       >
-        <CommentsPlaceholder v-if="showPlaceholder" content-only />
+        <CommentsPlaceholder
+          v-if="showPlaceholder"
+          :authenticated="moriSession.authenticated"
+          content-only
+        />
         <div
           v-if="error"
           role="alert"
@@ -124,6 +128,7 @@
                   <CommentEditor
                     v-model="editor.body"
                     :return-hash="returnHash"
+                    :login-action="auth.login"
                     embedded
                     cancelable
                     :authenticated="moriSession.authenticated"
@@ -162,6 +167,7 @@
                         <CommentEditor
                           v-model="editor.body"
                           :return-hash="returnHash"
+                          :login-action="auth.login"
                           embedded
                           cancelable
                           :authenticated="moriSession.authenticated"
@@ -222,6 +228,7 @@
       v-model="editor.body"
       class="shrink-0"
       :return-hash="returnHash"
+      :login-action="auth.login"
       :authenticated="moriSession.authenticated"
       :loading="showPlaceholder"
       :busy="busy || moriSession.checking"
@@ -237,7 +244,7 @@ import { useTimestamp } from "@vueuse/core";
 import { discussionAuthorLogins } from "@/../shared/discussions.js";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import CommentsPlaceholder from "@/components/reader/feedback/CommentsPlaceholder.vue";
-import { moriSession, useMoriAuth } from "@/composables/auth/useMoriAuth";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useLocale } from "@/i18n";
 import { useToast } from "@/composables/useToast";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
@@ -250,6 +257,7 @@ const props = defineProps({
   scope: { type: String, required: true },
   target: { type: String, required: true },
   scrollMode: String,
+  preview: Object,
 });
 const returnHash = computed(() =>
   props.scope.endsWith("-paragraph") ? encodeURIComponent(props.target) : "",
@@ -261,7 +269,9 @@ const authorLogin = computed(() =>
 );
 const { t, number } = useLocale();
 const toast = useToast();
-const auth = useMoriAuth();
+const preview = import.meta.env.DEV ? props.preview : null;
+const auth = preview?.auth ?? useMoriAuth();
+const moriSession = auth.state;
 const counts = useCommentCountsStore();
 const pending = ref(true);
 const loaded = ref(false);
@@ -311,7 +321,9 @@ function resetEditor() {
 
 function readDraft() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(draftKey.value));
+    const saved = preview
+      ? preview.draft
+      : JSON.parse(sessionStorage.getItem(draftKey.value));
     const draft = saved?.editor;
     if (
       draft &&
@@ -329,6 +341,10 @@ function readDraft() {
 function saveDraft() {
   if (!active) return;
   const draft = editor.value;
+  if (preview) {
+    preview.draft = draft.body ? { editor: { ...draft }, submission } : null;
+    return;
+  }
   try {
     if (draft.body)
       sessionStorage.setItem(
@@ -343,6 +359,7 @@ function saveDraft() {
 watch(editor, saveDraft, { deep: true, flush: "sync" });
 
 async function request(parameters, options) {
+  if (preview) return preview.request(parameters, options);
   const search = new URLSearchParams({
     scope: props.scope,
     target: props.target,
@@ -559,7 +576,7 @@ async function mutate(action, options) {
       const contentId = props.scope.endsWith("-paragraph")
         ? props.target.replace(/-[1-9]\d*$/, "")
         : props.target;
-      if (props.scope !== "book" && result.delta)
+      if (!preview && props.scope !== "book" && result.delta)
         counts.adjustContentCommentTotal(source, contentId, result.delta);
       count.value = result.count ?? Math.max(0, count.value + result.delta);
       emit("count", count.value);
@@ -612,7 +629,7 @@ onBeforeUnmount(() => {
 });
 watch(sort, () => void load());
 watch(
-  () => [moriSession.checking, moriSession.revision],
+  () => [moriSession.checking, moriSession.revision, preview?.revision],
   ([checking]) => {
     permissions.value = false;
     if (!checking) void load();
