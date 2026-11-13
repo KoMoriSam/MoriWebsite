@@ -14,7 +14,7 @@ export const descriptions = {
     "pdf-glyphs": "生成 PDF 文字识别映射",
   },
   "run deploy": {
-    staging: "更新 Staging 测试版（--site-only 仅更新网站 Worker）",
+    integration: "更新 dev.komori.cc 联调预览",
     website: "检查网站部署包（--dry-run）",
     content: "检查公开内容部署包（--dry-run）或上传兼容外链的新版本（--upload）",
     api: "发布网站 API 服务",

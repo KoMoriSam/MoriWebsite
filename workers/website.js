@@ -1,3 +1,4 @@
+import { integrationAuthPrefix, integrationCallback, integrationOrigin } from "../shared/integration-preview.js";
 import { discussionRegistry, discussionTarget } from "../shared/discussions.js";
 import { AUTH, SITE, COOKIE, json, privateHeaders, readCookie, redirect, returnPath, sessionCookie } from "./auth/http.js";
 import { hash, randomToken } from "./auth/crypto.js";
@@ -9,6 +10,7 @@ export default {
     const path = url.pathname;
     const siteOrigin = env.MORI_SITE_ORIGIN || SITE;
     const authOrigin = env.MORI_AUTH_ORIGIN || AUTH;
+    const integration = env.MORI_ENV === "staging" && siteOrigin === integrationOrigin && env.INTEGRATION_AUTH;
     const override = request.headers.get("Cloudflare-Workers-Version-Overrides");
     const preview = url.origin !== siteOrigin || override !== null;
     if (/^\/(?:pagefind-novel|archive\/article)(?:\/|$)/i.test(path)) return json({ error: "NOT_FOUND" }, 404);
@@ -29,8 +31,7 @@ export default {
     }
     if (path === "/api/version" && request.method === "GET") {
       const version = env.WEBSITE_VERSION?.id;
-      const worker = env.MORI_ENV === "staging" ? "website-staging" : "website";
-      if (version && (!preview || url.origin !== siteOrigin || override === `${worker}="${version}"`))
+      if (version && (!preview || url.origin !== siteOrigin || override === `website="${version}"`))
         return json({ version });
     }
     if (preview) return json({ error: "NOT_FOUND" }, 404);
@@ -43,9 +44,14 @@ export default {
       return json({ error: "INVALID_ORIGIN" }, 403);
     }
     try {
+      if (integration && request.method === "GET" && [
+        integrationAuthPrefix + "/start", integrationCallback, integrationAuthPrefix + "/logout",
+      ].includes(path)) return await env.INTEGRATION_AUTH.fetch(request);
       if (path === "/auth/login" && request.method === "GET") {
         const flow = randomToken();
-        const target = new URL(env.LOCAL_AUTH ? "/auth/local/login" : "/login/github", authOrigin);
+        const target = integration
+          ? new URL(integrationAuthPrefix + "/start", siteOrigin)
+          : new URL(env.LOCAL_AUTH ? "/auth/local/login" : "/login/github", authOrigin);
         target.search = new URLSearchParams({ challenge: await hash(flow), return: returnPath(url.searchParams.get("return")) });
         if (env.LOCAL_AUTH && url.searchParams.has("fixture")) target.searchParams.set("fixture", url.searchParams.get("fixture"));
         if (url.searchParams.get("reauthorize") === "1") target.searchParams.set("reauthorize", "1");
@@ -68,7 +74,10 @@ export default {
         const flowClear = new Headers(privateHeaders);
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.site));
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.flow));
-        return Response.json({ logoutUrl: authOrigin + (env.LOCAL_AUTH ? "/auth/local/logout" : "/logout") }, { headers: flowClear });
+        const logoutUrl = integration
+          ? siteOrigin + integrationAuthPrefix + "/logout"
+          : authOrigin + (env.LOCAL_AUTH ? "/auth/local/logout" : "/logout");
+        return Response.json({ logoutUrl }, { headers: flowClear });
       }
       if (path.startsWith("/api/novel/") && ["GET", "HEAD"].includes(request.method)) {
         const session = await env.MORI_AUTH.verify(token);

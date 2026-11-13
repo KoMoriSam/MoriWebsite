@@ -30,10 +30,10 @@ const generators = {
   "pdf-glyphs": [["python", "scripts/sinhala/generate-pdf-glyphs.py"]],
 };
 const deployments = {
-  staging: [
+  integration: [
     script("dev/start.mjs", "seed"),
     script("preview/build.mjs"),
-    script("release/bootstrap-staging.mjs", "--fixture"),
+    script("preview/deploy-integration.mjs"),
   ],
   website: [script("build/deploy.mjs", "website")],
   api: [
@@ -176,9 +176,8 @@ async function main() {
       name,
       args,
     );
-    if (steps && command === "deploy" && target === "staging" &&
-        (args.length > 1 || (args.length === 1 && args[0] !== "--site-only")))
-      throw new Error("用法：pnpm run deploy staging [--site-only]。");
+    if (steps && command === "deploy" && target === "integration" && args.length)
+      throw new Error("用法：pnpm run deploy integration。");
     if (steps) console.log(`正在${descriptions[name][target]}…`);
     if (steps) await sequence(steps, args);
     if (steps && command === "deploy")

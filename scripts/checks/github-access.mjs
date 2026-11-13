@@ -8,6 +8,7 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { createIndex } from "pagefind";
+import { integrationAuthPrefix, integrationCallback, integrationOrigin } from "../../shared/integration-preview.js";
 import { discussionScopes, discussionTarget, legacyDiscussionQuery, bookTerm, discussionRegistry } from "../../shared/discussions.js";
 import { publicCovers } from "../../shared/novel-release.js";
 import { assertNovelRelease, includePublicContent, sealNovelRelease } from "../build/novel-release.mjs";
@@ -170,6 +171,60 @@ test("Mori OAuth, credential refresh, binding authorization and logout", async (
     assert.match(response.headers.get("Set-Cookie"), /Max-Age=0/);
     const broken = { MORI_AUTH: { verify() { throw new Error("auth unavailable"); } } };
     assert.equal((await website.fetch(new Request(protectedURL, { headers: { Cookie: app } }), broken)).status, 503);
+  } finally {
+    globalThis.fetch = originalFetch;
+    db.sqlite.close();
+  }
+});
+
+test("integration Preview keeps OAuth on its own origin and uses staging permissions", async () => {
+  const db = database();
+  db.sqlite.exec(await readFile("migrations/auth/0001_auth.sql", "utf8"));
+  const authEnv = {
+    AUTH_DB: db, MORI_ENV: "staging", MORI_STAGING_READER_IDS: "42",
+    MORI_SITE_ORIGIN: "https://staging.komori.cc", MORI_AUTH_ORIGIN: "https://auth-staging.komori.cc",
+    GITHUB_CLIENT_ID: "test-id", GITHUB_CLIENT_SECRET: "test-secret",
+    TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
+  };
+  const env = {
+    MORI_ENV: "staging", MORI_SITE_ORIGIN: integrationOrigin,
+    INTEGRATION_AUTH: { fetch: (request) => auth.fetch(request, authEnv) },
+    MORI_AUTH: new SiteAuth(null, authEnv),
+  };
+  const send = (path, options) => website.fetch(new Request(new URL(path, integrationOrigin), options), env);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => {
+    if (String(url) === "https://api.github.com/user") return Response.json({
+      id: 42, login: "reader", name: "Mori Reader", avatar_url: "https://avatars.githubusercontent.com/u/42",
+    });
+    assert.equal(String(url), "https://github.com/login/oauth/access_token");
+    assert.equal(options.body.get("redirect_uri"), integrationOrigin + integrationCallback);
+    return Response.json({ access_token: "mock-access", refresh_token: "mock-refresh", expires_in: 120, refresh_token_expires_in: 10000 });
+  };
+  try {
+    const login = await send("/auth/login?return=/novel");
+    const begin = new URL(login.headers.get("Location"));
+    assert.equal(begin.origin, integrationOrigin);
+    assert.equal(begin.pathname, integrationAuthPrefix + "/start");
+    const flow = cookie(login, COOKIE.flow);
+    const authorization = await send(begin);
+    const github = new URL(authorization.headers.get("Location"));
+    assert.equal(github.searchParams.get("redirect_uri"), integrationOrigin + integrationCallback);
+    const oauth = cookie(authorization, COOKIE.oauth);
+    const query = new URLSearchParams({ state: github.searchParams.get("state"), code: "test-code" });
+    const wrongHost = await auth.fetch(new Request(authEnv.MORI_AUTH_ORIGIN + "/callback/github?" + query, {
+      headers: { Cookie: oauth },
+    }), authEnv);
+    assert.equal(cookie(wrongHost, COOKIE.center), undefined);
+    const callback = await send(integrationCallback + "?" + query, { headers: { Cookie: oauth } });
+    const complete = new URL(callback.headers.get("Location"));
+    assert.equal(complete.origin, integrationOrigin);
+    assert.equal(complete.pathname, "/auth/complete");
+    const session = await send(complete, { headers: { Cookie: flow } });
+    assert.equal(session.headers.get("Location"), integrationOrigin + "/novel");
+    const token = cookieToken(cookie(session, COOKIE.site));
+    assert.equal((await env.MORI_AUTH.verify(token)).canReadNovel, true);
+    assert.equal((await send("https://another.dev.komori.cc" + integrationCallback)).status, 404);
   } finally {
     globalThis.fetch = originalFetch;
     db.sqlite.close();
