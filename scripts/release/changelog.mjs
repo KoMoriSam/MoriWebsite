@@ -3,10 +3,10 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { createInterface } from "node:readline/promises";
+import { waitForPublishedContent } from "./verify-published.mjs";
 
 import {
   CHANGELOG_DIR,
-  CHANGELOG_TYPES,
   PROJECT_ROOT,
   SEMVER_BUMPS,
   STATIC_CHANGELOG_PATH,
@@ -23,11 +23,6 @@ import {
   validateReleaseChain,
   writeStaticChangelog,
 } from "./changelog-content.mjs";
-import {
-  parseAnnouncementMarkdown,
-  renderAnnouncementMarkdown,
-} from "./announcement.mjs";
-
 const CONFIG_PATH = "wrangler.api.jsonc";
 const KV_BINDING = "CHANGELOG_KV";
 const KV_KEY = "changelog:v1";
@@ -35,7 +30,6 @@ const PUBLIC_ENDPOINT = "https://api.komori.cc/changelog";
 const WRANGLER_BIN = join(PROJECT_ROOT, "node_modules", "wrangler", "bin", "wrangler.js");
 const BACKUP_DIR = join(PROJECT_ROOT, ".tmp", "changelog-backups");
 const TEMP_DIR = join(PROJECT_ROOT, ".tmp", "changelog");
-const ANNOUNCEMENTS_DIR = join(PROJECT_ROOT, "announcements");
 const PACKAGE_PATH = join(PROJECT_ROOT, "package.json");
 const README_PATHS = ["README.md", "README_en.md", "README_fr.md", "README_si.md"].map((name) =>
   join(PROJECT_ROOT, name),
@@ -55,14 +49,12 @@ const helpText = `撰写版本更新日志，准备发布资料，并将更新�
   list                                  查看全部本地版本
   check                                 检查版本内容与发布顺序
   generate                              生成供网站展示的更新日志
-  prepare <version> [--date YYYY-MM-DD] 同步版本号、项目说明、更新日志和版本公告
+  prepare <version> [--date YYYY-MM-DD] 同步版本号、项目说明和更新日志
   publish [--dry-run] [--yes]           上线全部正式版本的更新记录
-  announcement <version> [--update]     准备该版本所属系列的公告
 
 选项：
   --dry-run    预览版本准备或发布结果
   --yes        跳过远端发布确认
-  --update     更新本地公告并增加修订号
 `;
 
 const parseOptions = (args) => {
@@ -228,13 +220,24 @@ const verifyPublicEndpoint = async (updatedAt) => {
   }
 };
 
-const publishReleases = async (releases, { dryRun = false, yes = false } = {}) => {
-  const updatedAt = formatLocalIso();
+const publishReleases = async (releases, { dryRun = false, yes = false, releaseVersion } = {}) => {
+  let updatedAt = formatLocalIso();
   const localPayload = createChangelogPayload(releases, { updatedAt });
   const remotePayload = await getRemotePayload();
+  if (releaseVersion) {
+    if (remotePayload.items.some(({ version }) => compareVersions(version, releaseVersion) > 0))
+      throw new Error("远端更新日志已有更新版本，已停止同步。");
+    const items = releaseMap(remotePayload.items);
+    for (const release of localPayload.items) {
+      if (release.version === releaseVersion || !items.has(release.version)) items.set(release.version, release);
+    }
+    localPayload.items = [...items.values()].sort((left, right) => compareVersions(right.version, left.version));
+  }
   const diff = diffPayloads(localPayload.items, remotePayload.items);
   console.log(`本地正式版本：${localPayload.items.length} 个；远端版本：${remotePayload.items.length} 个。`);
-  printDiff(diff);
+  const unchanged = !diff.added.length && !diff.changed.length && !diff.removed.length;
+  if (releaseVersion && unchanged) console.log("更新日志已同步，检查线上接口。");
+  else printDiff(diff);
   if (dryRun) {
     console.log("\n更新日志发布预览完成。确认以上内容后，移除 --dry-run 再次运行以正式发布。");
     return { published: false, payload: localPayload };
@@ -244,31 +247,37 @@ const publishReleases = async (releases, { dryRun = false, yes = false } = {}) =
     return { published: false, payload: localPayload };
   }
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const backupPath = join(BACKUP_DIR, `${timestamp}.json`);
-  const publishPath = join(TEMP_DIR, `publish-${process.pid}.json`);
-  await mkdir(BACKUP_DIR, { recursive: true });
-  await mkdir(TEMP_DIR, { recursive: true });
-  await writeFile(backupPath, `${JSON.stringify(remotePayload, null, 2)}\n`, "utf8");
-  await writeFile(publishPath, `${JSON.stringify(localPayload, null, 2)}\n`, "utf8");
-  try {
-    await runWrangler([...kvArguments("put"), "--path", publishPath]);
-  } finally {
-    await unlink(publishPath).catch(() => {});
+  if (releaseVersion && unchanged) {
+    updatedAt = remotePayload.updatedAt;
+  } else {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const backupPath = join(BACKUP_DIR, `${timestamp}.json`);
+    const publishPath = join(TEMP_DIR, `publish-${process.pid}.json`);
+    await mkdir(BACKUP_DIR, { recursive: true });
+    await mkdir(TEMP_DIR, { recursive: true });
+    await writeFile(backupPath, `${JSON.stringify(remotePayload, null, 2)}\n`, "utf8");
+    await writeFile(publishPath, `${JSON.stringify(localPayload, null, 2)}\n`, "utf8");
+    try {
+      await runWrangler([...kvArguments("put"), "--path", publishPath]);
+    } finally {
+      await unlink(publishPath).catch(() => {});
+    }
+    if (!(await verifyRemoteWrite(updatedAt))) {
+      throw new Error(`KV 写入后校验失败。远端旧数据备份位于：${backupPath}`);
+    }
+    console.log(`远端备份：${backupPath}`);
   }
-  if (!(await verifyRemoteWrite(updatedAt))) {
-    throw new Error(`KV 写入后校验失败。远端旧数据备份位于：${backupPath}`);
-  }
-  const publicVerified = await verifyPublicEndpoint(updatedAt);
+  const publicVerified = releaseVersion
+    ? await waitForPublishedContent(() => verifyPublicEndpoint(updatedAt))
+    : await verifyPublicEndpoint(updatedAt);
   console.log(`\n发布成功：${localPayload.items.length} 个版本。`);
-  console.log(`远端备份：${backupPath}`);
   console.log(publicVerified ? "网站已可获取本次更新日志。" : "更新日志已保存到云端，网站接口尚未返回本次内容。请稍后查看网站。");
   return { published: true, payload: localPayload };
 };
 
-const findRelease = async (version) => {
+const findRelease = async (version, options) => {
   if (!version) throw new Error("请提供版本号。");
-  const entries = await readReleaseFiles();
+  const entries = await readReleaseFiles(options);
   const entry = entries.find((item) => item.release.version === version);
   if (!entry) throw new Error(`未找到版本：${version}`);
   return { entries, entry };
@@ -401,62 +410,6 @@ export const publishAllReleases = async ({ dryRun, yes }) => {
   return result;
 };
 
-const announcementVersion = (version) => {
-  const [major, minor] = version.split(".");
-  return `${major}.${minor}.0`;
-};
-
-const announcementBody = (release) => {
-  const sections = [release.intro];
-  release.groups.forEach((group) => {
-    sections.push(`## ${CHANGELOG_TYPES[group.type]}\n\n${group.markdown}`);
-  });
-  if (release.note) sections.push(`## 版本说明\n\n${release.note}`);
-  if (release.warning) sections.push(`## 升级前请注意\n\n${release.warning}`);
-  sections.push(`[查看 ${release.version} 完整更新日志](/changelog#version-${release.version})`);
-  return sections.filter(Boolean).join("\n\n");
-};
-
-const createAnnouncementDraft = async (release, { update = false, skipExisting = false } = {}) => {
-  const baseVersion = announcementVersion(release.version);
-  const path = join(ANNOUNCEMENTS_DIR, `release-${baseVersion}.md`);
-  let existing = null;
-  try {
-    existing = parseAnnouncementMarkdown(await readFile(path, "utf8"), basename(path));
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
-  if (baseVersion !== release.version) {
-    if (!existing) throw new Error(`缺少所属大版本公告 release-${baseVersion}.md，请先准备大版本公告；维护版本不单独创建公告。`);
-    console.log(`版本公告：${path}`);
-    console.log(`请在公告正文中整合 ${release.version} 的使用体验，编辑完成后运行 pnpm release announcement bump release-${baseVersion} 更新修订号。`);
-    return path;
-  }
-  if (existing && !update) {
-    if (skipExisting) {
-      console.log(`公告草稿已存在，已保留：${path}`);
-      return path;
-    }
-    throw new Error(`公告草稿已存在；如需更新并增加 revision，请添加 --update：${path}`);
-  }
-  const announcement = {
-    id: `release-${release.version}`,
-    revision: existing ? existing.revision + 1 : 1,
-    title: `${release.version} 近期更新`,
-    summary: release.summary,
-    body: announcementBody(release),
-    tone: existing?.tone || "info",
-    priority: existing?.priority || "normal",
-    pinned: existing?.pinned || false,
-    startsAt: existing?.startsAt || formatLocalIso(),
-    ...(existing?.endsAt ? { endsAt: existing.endsAt } : {}),
-  };
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, renderAnnouncementMarkdown(announcement), "utf8");
-  console.log(`${existing ? "已更新" : "已生成"}公告草稿：${path}`);
-  return path;
-};
-
 const readOptionalFile = async (path) => {
   try {
     return await readFile(path, "utf8");
@@ -515,17 +468,15 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
   if (dryRun) {
     console.log(`准备发布：${pkg.version} → ${version}`);
     console.log(`发布日期：${release.date}`);
-    console.log("准备结果预览：版本号、各语言项目说明、更新日志与版本公告将就绪。确认后移除 --dry-run 再次运行。");
+    console.log("准备结果预览：版本号、各语言项目说明和更新日志将就绪。确认后移除 --dry-run 再次运行。");
     return;
   }
 
-  const announcementPath = join(ANNOUNCEMENTS_DIR, `release-${announcementVersion(version)}.md`);
   const snapshots = new Map(readmes.map(({ path, content }) => [path, content]));
   for (const path of [
     entry.path,
     PACKAGE_PATH,
     STATIC_CHANGELOG_PATH,
-    announcementPath,
   ]) {
     snapshots.set(path, await readOptionalFile(path));
   }
@@ -547,7 +498,6 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
       );
     }
     await writeStaticChangelog(candidateEntries);
-    await createAnnouncementDraft(release, { skipExisting: true });
   } catch (error) {
     await Promise.all(
       Array.from(snapshots, ([path, content]) => restoreFile(path, content)),
@@ -555,10 +505,22 @@ export const prepareRelease = async (version, { date, dryRun = false } = {}) => 
     throw error;
   }
 
-  console.log(`\n版本 ${version} 的发布资料已准备完成。请检查并提交本地变更。`);
-  console.log(`提交后创建标签：git tag -a v${version} -m "发布 v${version}"`);
-  console.log("推送提交和标签：git push origin main --follow-tags");
+  console.log(`\n版本 ${version} 的发布资料已准备完成。`);
 };
+
+export async function finalizeRelease() {
+  const draft = (await readReleaseFiles()).find(({ release }) => release.status === "draft")?.release;
+  if (!draft || !/^\d+\.\d+\.\d+$/.test(draft.version))
+    throw new Error("请先将一个正式版本号的更新日志草稿提交到 main。");
+  await prepareRelease(draft.version);
+  await verifyReleaseVersion(draft.version);
+  return draft.version;
+}
+
+export async function publishReleaseChangelog(version) {
+  const { entries } = await verifyReleaseVersion(version);
+  await publishReleases(entries, { yes: true, releaseVersion: version });
+}
 
 const main = async () => {
   const [command = "help", ...rawArgs] = process.argv.slice(2);
@@ -569,7 +531,7 @@ const main = async () => {
       await createDraft(version);
       break;
     case "edit": {
-      const { entries, entry } = await findRelease(version);
+      const { entries, entry } = await findRelease(version, { allowDraftPlaceholders: true });
       await openEditor(entry.path);
       const release = parseReleaseMarkdown(
         await readFile(entry.path, "utf8"),
@@ -604,11 +566,6 @@ const main = async () => {
         yes: options.has("--yes"),
       });
       break;
-    case "announcement": {
-      const { entry } = await findRelease(version);
-      await createAnnouncementDraft(entry.release, { update: options.has("--update") });
-      break;
-    }
     case "help":
     case "--help":
     case "-h":

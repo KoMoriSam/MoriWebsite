@@ -27,14 +27,13 @@ export default {
       if (preview || env.MORI_ENV === "staging") headers.set("X-Robots-Tag", "noindex, nofollow");
       return new Response(response.body, { status: response.status, headers });
     }
-    if (preview) {
+    if (path === "/api/version" && request.method === "GET") {
       const version = env.WEBSITE_VERSION?.id;
       const worker = env.MORI_ENV === "staging" ? "website-staging" : "website";
-      if (path === "/api/version" && request.method === "GET" && version &&
-          (url.origin !== siteOrigin || override === `${worker}="${version}"`))
+      if (version && (!preview || url.origin !== siteOrigin || override === `${worker}="${version}"`))
         return json({ version });
-      return json({ error: "NOT_FOUND" }, 404);
     }
+    if (preview) return json({ error: "NOT_FOUND" }, 404);
     const token = readCookie(request, COOKIE.site);
     if (env.PUBLIC_API && /^\/api\/(?:github|games|analytics|announcements|changelog|random-hero)(?:\/|$)/.test(path)) {
       url.pathname = path.slice(4);

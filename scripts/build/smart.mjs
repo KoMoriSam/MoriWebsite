@@ -32,10 +32,13 @@ const dryRun = flags.has("--dry-run") || flags.has("--explain");
 const profile = flags.has("--profile");
 if ([...flags].some((flag) => !["--upload", "--deploy", "--dry-run", "--explain", "--full", "--profile"].includes(flag)) ||
     upload && dryRun) {
-  throw new Error("Usage: pnpm build:smart [--upload | --dry-run | --explain] [--full] [--profile]");
+  throw new Error("Usage: pnpm build:smart [--upload | --deploy | --dry-run | --explain] [--full] [--profile]");
 }
 if (upload) {
-  await run(["node", "scripts/build/version.mjs", ...(flags.has("--full") ? ["--full"] : [])]);
+  await run(["node", "scripts/build/version.mjs",
+    ...(flags.has("--full") ? ["--full"] : []),
+    ...(flags.has("--deploy") ? ["--deploy"] : []),
+  ]);
   process.exit(0);
 }
 dotenv.config({ path: [".env.production", ".env"], quiet: true });

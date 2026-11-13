@@ -121,6 +121,8 @@ pnpm dev
 
 构建时，可用 `CONTENT_BLOG_DIR` 和 `CONTENT_NOVEL_DIR` 指定本地 Vault，或用 `CONTENT_GITHUB_TOKEN` 读取两个私有内容仓库。网站、RSS 和搜索索引使用同一次导出的内容。
 
+用 `pnpm menu` 打开项目总菜单，用方向键和回车选择操作。
+
 | 命令                                | 用途                                                           |
 | ----------------------------------- | -------------------------------------------------------------- |
 | `pnpm build`                        | 完整构建，输出网站 `dist/` 和内容资源 `.output/content/`       |
@@ -129,7 +131,7 @@ pnpm dev
 | `pnpm preview`                      | 预览已构建的网站                                               |
 | `pnpm check <目标>`                 | 运行指定业务检查；省略目标可查看列表                           |
 | `pnpm generate <目标>`              | 生成指定资源；省略目标可查看列表                               |
-| `pnpm release prepare <版本>`       | 准备版本号、更新日志与公告草稿                                 |
+| `pnpm release prepare <版本>`       | 准备版本号和更新日志                                 |
 | `pnpm release verify <版本>`        | 检查版本号、README 与更新日志是否一致                          |
 | `pnpm run deploy <目标>`            | 发布网站、内容、API 或 Giscus；省略目标可查看列表              |
 | `pnpm release announcement publish` | 独立发布公告                                                   |
@@ -138,7 +140,7 @@ pnpm dev
 
 | 更新来源              | 如何上线                                                                                                                          |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 网站代码              | `v<版本>` 标签通过 GitHub Actions 校验后推进 `production`，触发 Workers Builds；日常 `main` 提交随版本发布                        |
+| 网站代码              | 从 `main` 运行 GitHub Actions → **发布网站**。工作流读取唯一的更新日志草稿，自动准备版本、提交、打标签并更新 `production`。Cloudflare 部署并验证后，同步本次更新日志。 |
 | 博客和小说            | 私有仓库 `ObsidianVault` 和 `MyWritingVault` 更新后，各自通过 `WORKERS_BUILD_HOOK` 触发构建，使用 `production` 上已发布的网站代码 |
 | 开明字体              | 字体发布通过 Deploy Hook 触发构建；构建从 `KoMoriSam/Kaiming` 的 GitHub Release 下载并校验资源                                    |
 | Giscus 主题和加载动画 | 在 `giscus/` 维护，通过 `pnpm run deploy giscus` 单独发布                                                                         |
@@ -146,6 +148,8 @@ pnpm dev
 Workers Builds 恢复上次成功发布的快照。仅内容变化且快照兼容时，增量 SSG 重建受影响的页面和内容产物，复用已有前端构建。构建配置或站点代码变化、快照无法使用时会完整构建；没有变化时跳过部署。完整和增量构建都优先复用有效的图片分级缓存。构建日志用 `INCREMENTAL`、`FULL` 或 `SKIPPED` 标明结果。
 
 增量发布只部署产物有变化的 Worker。网页和内容由 Workers Static Assets 提供，私有 R2 仅保存构建快照。博客和小说的正文及图片继续通过 `raw.komori.cc/post` 和 `raw.komori.cc/novel` 访问；同域的 `/kaiming` 提供字体，`/giscus` 提供评论主题及 `/giscus/images/spin.gif` 加载动画。
+
+在 `pnpm menu` 的「内容管理」撰写下一版更新日志，将草稿随代码推到 `main`。然后在「发布」打开 GitHub 网站发版，点 **Run workflow**。失败可从 Cloudflare Builds 日志查看原因并重试该构建。首次启用时，在 GitHub Settings → Environments → production 添加变量 `RELEASE_APP_CLIENT_ID` 和 Secret `RELEASE_APP_PRIVATE_KEY`，允许 `main` 使用该环境。发布 App 需要本仓库的 Contents 读写权限，并须能更新 `main`、`production` 和创建发布标签。Cloudflare 构建令牌需要 Workers Scripts 和 Workers KV Storage 的编辑权限。
 
 在 `website` 的 Workers Builds 设置中，生产分支选 `production`，构建命令留空，部署命令设为 `pnpm run build:smart --deploy`。以下变量只配置在生产构建环境：
 

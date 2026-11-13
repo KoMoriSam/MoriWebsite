@@ -121,6 +121,8 @@ Variables prefixed with `VITE_` are included in client code and should contain p
 
 Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to build from local Vaults, or use `CONTENT_GITHUB_TOKEN` to read both private content repositories. The site, RSS feed, and search index use the same content export.
 
+Run `pnpm menu` and use the arrow keys and Enter to choose a project task.
+
 | Command                             | Result                                                                                             |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `pnpm build`                        | Build the full site into `dist/` and content assets into `.output/content/`                        |
@@ -129,7 +131,7 @@ Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to build from local Vaults, or us
 | `pnpm preview`                      | Preview the built site                                                                             |
 | `pnpm check <target>`               | Run focused checks; omit the target to list options                                                |
 | `pnpm generate <target>`            | Generate selected resources; omit the target to list options                                       |
-| `pnpm release prepare <version>`    | Prepare the version number, release notes, and announcement draft                                  |
+| `pnpm release prepare <version>`    | Prepare the version number and release notes                                  |
 | `pnpm release verify <version>`     | Check that the package, README, and release-note versions agree                                    |
 | `pnpm run deploy <target>`          | Publish the website, content, API, or Giscus; omit the target to list options                      |
 | `pnpm release announcement publish` | Publish announcements independently                                                                |
@@ -138,7 +140,7 @@ Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to build from local Vaults, or us
 
 | What changed                        | How it goes live                                                                                                                                                         |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Website code                        | GitHub Actions validates the `v<version>` tag and advances `production`, triggering Workers Builds. Ordinary `main` commits go live with a release.                      |
+| Website code                        | Run **发布网站** from `main` in GitHub Actions. It finalizes the single changelog draft, commits and tags the release, and advances `production`. After deployment verification, Cloudflare syncs the release notes. |
 | Blog and novel                      | Updates to the private `ObsidianVault` and `MyWritingVault` repositories trigger their respective `WORKERS_BUILD_HOOK`, using the released website code on `production`. |
 | Kaiming fonts                       | A font release triggers a Deploy Hook. The build downloads and verifies assets from the GitHub Release in `KoMoriSam/Kaiming`.                                           |
 | Giscus themes and loading animation | Maintain them in `giscus/` and publish them separately with `pnpm run deploy giscus`.                                                                                    |
@@ -146,6 +148,8 @@ Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to build from local Vaults, or us
 Workers Builds restores the snapshot from the last successful deployment. If only the content has changed and the snapshot is compatible, incremental SSG rebuilds affected pages and content assets and reuses the compiled frontend. Changes to site code or build configuration, or an unusable snapshot, trigger a full build. With no changes to publish, deployment is skipped. Both full and incremental builds reuse valid cached image variants. The build log reports `INCREMENTAL`, `FULL`, or `SKIPPED`.
 
 An incremental release deploys only the Workers whose output changed. Workers Static Assets serves the site and its content. The private R2 bucket stores build snapshots. Blog and novel text and images remain available at `raw.komori.cc/post` and `raw.komori.cc/novel`; on the same host, `/kaiming` serves fonts and `/giscus` serves comment themes and the loading animation at `/giscus/images/spin.gif`.
+
+Use **内容管理** in `pnpm menu` to write the release draft and push it to `main` with your code. Use **发布** to open GitHub Actions and select **Run workflow**. Check Workers Builds logs and retry that build if it fails. To enable releases, set the `RELEASE_APP_CLIENT_ID` variable and `RELEASE_APP_PRIVATE_KEY` secret in GitHub Settings → Environments → production, and allow `main` to use the environment. The release app needs Contents read and write access and permission to advance `main` and `production` and create release tags. The Cloudflare build token needs edit access to Workers Scripts and Workers KV Storage.
 
 In Workers Builds for `website`, set the production branch to `production`, leave the Build command blank, and set the Deploy command to `pnpm run build:smart --deploy`. Set these variables in the production build environment:
 

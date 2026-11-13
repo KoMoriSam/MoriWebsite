@@ -121,6 +121,8 @@ Les variables `VITE_` sont intégrées au code client et doivent contenir unique
 
 Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou utilisez `CONTENT_GITHUB_TOKEN` pour lire les deux dépôts privés de contenu. Le site, le flux RSS et l'index de recherche utilisent le même export.
 
+Ouvrez `pnpm menu` et choisissez une opération avec les touches fléchées et Entrée.
+
 | Commande                            | Résultat                                                                                                                                |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm build`                        | Effectuer un build complet du site dans `dist/` et des ressources dans `.output/content/`                                               |
@@ -129,7 +131,7 @@ Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou ut
 | `pnpm preview`                      | Prévisualiser le site généré                                                                                                            |
 | `pnpm check <cible>`                | Exécuter les vérifications ciblées ; sans cible, afficher les options                                                                   |
 | `pnpm generate <cible>`             | Générer les ressources choisies ; sans cible, afficher les options                                                                      |
-| `pnpm release prepare <version>`    | Préparer le numéro de version, les notes et le brouillon d'annonce                                                                      |
+| `pnpm release prepare <version>`    | Préparer le numéro de version et les notes                                                                      |
 | `pnpm release verify <version>`     | Vérifier la cohérence des versions du paquet, des README et du journal                                                                  |
 | `pnpm run deploy <cible>`           | Publier le site, les contenus, l'API ou Giscus ; sans cible, afficher les options                                                       |
 | `pnpm release announcement publish` | Publier les annonces séparément                                                                                                         |
@@ -138,7 +140,7 @@ Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou ut
 
 | Source de la mise à jour                 | Mise en ligne                                                                                                                                                                    |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code du site                             | GitHub Actions valide la balise `v<version>` et met à jour `production`, ce qui déclenche Workers Builds. Les commits ordinaires de `main` sont mis en ligne lors d'une version. |
+| Code du site                             | Lancez **发布网站** depuis `main` dans GitHub Actions. Le workflow finalise le brouillon, crée le commit et la balise, puis avance `production`. Cloudflare vérifie le déploiement et synchronise les notes de version. |
 | Blog et roman                            | Une mise à jour dans l'un des dépôts privés `ObsidianVault` ou `MyWritingVault` déclenche son `WORKERS_BUILD_HOOK` et utilise le code du site déjà publié sur `production`.      |
 | Polices Kaiming                          | Une nouvelle version déclenche un Deploy Hook. Le build télécharge et vérifie les ressources de la GitHub Release de `KoMoriSam/Kaiming`.                                        |
 | Thèmes Giscus et animation de chargement | Maintenus dans `giscus/` et publiés séparément avec `pnpm run deploy giscus`.                                                                                                    |
@@ -146,6 +148,8 @@ Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou ut
 Workers Builds restaure l'instantané du dernier déploiement réussi. Si seul le contenu change et que l'instantané est compatible, la génération statique incrémentale reconstruit les pages et les ressources concernées et réutilise le code du site déjà compilé. Le build est complet si le code du site ou la configuration de build change, ou si l'instantané est inutilisable. S'il n'y a rien à publier, le déploiement est ignoré. Les deux modes réutilisent les variantes d'image valides déjà en cache. Le journal de build indique `INCREMENTAL`, `FULL` ou `SKIPPED`.
 
 Une publication incrémentale ne déploie que les Workers dont les fichiers générés ont changé. Workers Static Assets sert le site et ses contenus. Le compartiment R2 privé conserve les instantanés de build. Les textes et images du blog et du roman restent accessibles via `raw.komori.cc/post` et `raw.komori.cc/novel`. Sur le même domaine, `/kaiming` sert les polices et `/giscus` les thèmes de commentaires, avec l'animation à l'adresse `/giscus/images/spin.gif`.
+
+Dans `pnpm menu`, ouvrez **内容管理** pour rédiger le brouillon et poussez-le sur `main` avec le code. Dans **发布**, ouvrez GitHub Actions et cliquez sur **Run workflow**. En cas d’échec, consultez les journaux Workers Builds et relancez le build. Pour activer la publication, configurez la variable `RELEASE_APP_CLIENT_ID` et le secret `RELEASE_APP_PRIVATE_KEY` dans GitHub Settings → Environments → production, puis autorisez `main` à utiliser cet environnement. L’application doit avoir les droits de lecture et d’écriture sur Contents et pouvoir avancer `main` et `production` et créer les balises de version. Le jeton Cloudflare doit pouvoir modifier Workers Scripts et Workers KV Storage.
 
 Dans les paramètres Workers Builds de `website`, choisissez `production` comme branche de production, laissez la commande de build vide et définissez la commande de déploiement sur `pnpm run build:smart --deploy`. Configurez les variables suivantes dans l'environnement de build de production :
 

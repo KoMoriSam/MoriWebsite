@@ -516,6 +516,13 @@ test("native website version previews only serve public assets", async () => {
     PUBLIC_API: { fetch: async () => { throw new Error("Preview forwarded to production API"); } },
     MORI_AUTH: { verify: async () => { throw new Error("Preview used production auth"); } },
   };
+  const production = await website.fetch(new Request(start + "/api/version"), env);
+  assert.deepEqual(await production.json(), { version: "version-id" });
+  assert.match(production.headers.get("Cache-Control"), /no-store/);
+  const mismatch = await website.fetch(new Request(start + "/api/version", {
+    headers: { "Cloudflare-Workers-Version-Overrides": 'website="another-version"' },
+  }), env);
+  assert.equal(mismatch.status, 404);
   for (const [origin, headers] of [
     ["https://version-website.example.workers.dev", {}],
     [start, { "Cloudflare-Workers-Version-Overrides": 'website="version-id"' }],
