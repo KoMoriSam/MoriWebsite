@@ -11,6 +11,7 @@ const action = (label, ...args) => ({ label, run: () => command(...args) });
 const localScript = (label, file, ...args) => ({
   label, run: () => run(["node", `scripts/${file}.mjs`, ...args]),
 });
+const submenu = (label, options) => ({ label, options });
 const back = { label: "返回" };
 const color = (style, text) => styleText(style, text, { stream: stdout });
 let cancelled = false;
@@ -96,7 +97,7 @@ function choose(title, options) {
 
 async function openReleasePage() {
   const url = "https://github.com/KoMoriSam/MoriWebsite/actions/workflows/release.yml";
-  console.log("更新日志草稿随代码推到 main 后，点击 Run workflow 发版。");
+  console.log("将更新日志草稿随代码推到 main，再点 Run workflow。");
   const [program, ...args] = process.platform === "win32"
     ? ["rundll32.exe", "url.dll,FileProtocolHandler", url]
     : process.platform === "darwin"
@@ -156,47 +157,94 @@ async function checkOptions() {
     .filter((name) => name.endsWith(".mjs"))
     .map((name) => name.slice(0, -4));
   const targets = new Set([...Object.keys(descriptions.check), ...names]);
-  return [...targets].map((name) => action(descriptions.check[name] || name, "check", name));
+  const groups = [
+    ["认证与联调", ["dev", "github", "github-access", "github-profile", "env"]],
+    ["阅读与正文", ["blog", "blog-build", "blog-translations", "blog-translations-runtime",
+      "blog-translations-ssr", "markdown", "markdown-styles", "markdown-avatars", "markdown-xss"]],
+    ["构建与发布", ["build-assets", "content-build", "content-licenses", "rss",
+      "site-perf", "announcements", "changelog"]],
+    ["语言与翻译", ["i18n", "i18n-loading", "i18n-quantities", "i18n-runtime"]],
+    ["游戏", ["games", "game-room-client", "room-dissolution", "avalon",
+      "avalon-extensions", "avalon-knowledge", "fogport"]],
+    ["图片与转换工具", ["images", "responsive-images", "image-converter", "sinhala", "sinhala-documents"]],
+  ];
+  const check = (name) => action(descriptions.check[name] || name, "check", name);
+  const options = groups.map(([label, checks]) =>
+    submenu(label, checks.filter((name) => targets.delete(name)).map(check)));
+  if (targets.size) options.push(submenu("其他检查", [...targets].map(check)));
+  return options;
 }
 
+const generateOptions = (...targets) => targets.map((name) =>
+  action(descriptions.generate[name], "generate", name));
+
 const groups = [
-  { label: "开发", options: [
-    action("启动网站开发环境", "dev"),
-    action("启动多人游戏服务", "dev", "games"),
+  submenu("本地开发", [
+    action("启动本地网站", "dev"),
+    action("启动本地游戏服务", "dev", "games"),
     localScript("刷新本地测试数据", "dev/start", "seed"),
-  ] },
-  { label: "构建与预览", options: [
-    localScript("构建网站（自动选择增量或完整构建）", "build/smart"),
-    localScript("强制完整构建", "build/smart", "--full"),
-    action("独立完整构建（输出网站和内容部署包）", "build"),
+  ]),
+  submenu("构建与预览", [
+    localScript("构建网站（自动选增量或全量）", "build/smart"),
+    localScript("构建网站（强制全量）", "build/smart", "--full"),
     localScript("查看构建计划", "build/smart", "--dry-run"),
-    action("预览已构建的网站", "preview"),
-  ] },
-  { label: "检查", options: checkOptions },
-  { label: "发布", options: [
-    { label: "打开 GitHub 网站发版", run: openReleasePage },
-    action("更新 test.dev.komori.cc 测试预览", "deploy", "test"),
+    action("构建网站与内容部署包", "build"),
+    action("预览本地构建", "preview"),
     action("检查网站部署包", "deploy", "website", "--dry-run"),
-    action("检查公开内容部署包", "deploy", "content", "--dry-run"),
-    action("上传公开内容 Worker 版本", "deploy", "content", "--upload"),
-    action("发布正式 API 服务", "deploy", "api"),
-    action("发布正式认证服务", "deploy", "auth"),
-  ] },
-  { label: "内容管理", options: [
-    { label: "撰写下一版更新日志", run: () => chooseRelease("draft") },
-    { label: "编辑已有更新日志", run: () => chooseRelease("edit") },
-    action("查看所有版本", "release", "changelog", "list"),
-    action("新建公告", "release", "announcement", "new"),
-    { label: "编辑公告", run: () => chooseAnnouncement("选择要编辑的公告", "edit") },
-    { label: "提高公告修订号", run: () => chooseAnnouncement("选择要更新修订号的公告", "bump") },
-    { label: "结束公告展示", run: () => chooseAnnouncement("选择要结束的公告", "expire") },
-    action("下载线上公告", "release", "announcement", "pull"),
-    action("预览公告发布差异", "release", "announcement", "publish", "--dry-run"),
-    action("发布公告", "release", "announcement", "publish"),
-  ] },
-  { label: "生成资源", options: Object.entries(descriptions.generate)
-    .map(([target, label]) => action(label, "generate", target)) },
+    action("检查内容部署包", "deploy", "content", "--dry-run"),
+  ]),
+  submenu("检查", checkOptions),
+  submenu("测试部署", [
+    action("更新测试网站（仅预览）", "deploy", "test"),
+    localScript("更新测试 API（评论等）", "release/bootstrap-test", "--apply", "--api-only"),
+    localScript("更新测试认证（登录）", "release/bootstrap-test", "--apply", "--auth-only"),
+  ]),
+  submenu("发布", [
+    { label: "打开 GitHub 网站发版", run: openReleasePage },
+    action("发布正式 API", "deploy", "api"),
+    action("发布正式认证", "deploy", "auth"),
+    action("上传公开内容版本", "deploy", "content", "--upload"),
+  ]),
+  submenu("内容管理", [
+    submenu("更新日志", [
+      { label: "撰写下一版更新日志", run: () => chooseRelease("draft") },
+      { label: "编辑已有更新日志", run: () => chooseRelease("edit") },
+      action("查看所有版本", "release", "changelog", "list"),
+    ]),
+    submenu("公告", [
+      action("新建公告", "release", "announcement", "new"),
+      { label: "编辑公告", run: () => chooseAnnouncement("选择要编辑的公告", "edit") },
+      { label: "提高公告修订号", run: () => chooseAnnouncement("选择要更新修订号的公告", "bump") },
+      { label: "结束公告展示", run: () => chooseAnnouncement("选择要结束的公告", "expire") },
+      action("下载线上公告", "release", "announcement", "pull"),
+      action("预览公告发布差异", "release", "announcement", "publish", "--dry-run"),
+      action("发布公告", "release", "announcement", "publish"),
+    ]),
+  ]),
+  submenu("生成资源", [
+    submenu("页面与索引", generateOptions("mock", "routes", "pagefind", "sitemap", "rss", "changelog", "licenses")),
+    submenu("图片与字体", generateOptions("assets", "images", "fonts")),
+    submenu("词库与字形", generateOptions("lexicon", "pdf-glyphs")),
+  ]),
 ];
+
+async function browse(title, items, exit) {
+  const options = typeof items === "function" ? await items() : items;
+  while (!cancelled) {
+    const choice = await choose(title, [...options, exit]);
+    if (!choice || choice === exit) return;
+    try {
+      if (choice.options) {
+        await browse(choice.label, choice.options, back);
+      } else {
+        console.log(choice.label);
+        await choice.run();
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+}
 
 async function main() {
   if (!stdin.isTTY || !stdout.isTTY || process.argv.includes("--help")) {
@@ -204,21 +252,7 @@ async function main() {
     return;
   }
 
-  while (!cancelled) {
-    const group = await choose("MoriWebsite · 选择操作", [...groups, { label: "退出" }]);
-    if (!group?.options) return;
-    const options = typeof group.options === "function" ? await group.options() : group.options;
-    while (!cancelled) {
-      const choice = await choose(group.label, [...options, back]);
-      if (!choice?.run) break;
-      try {
-        console.log(choice.label);
-        await choice.run();
-      } catch (error) {
-        console.error(error.message);
-      }
-    }
-  }
+  await browse("MoriWebsite · 选择操作", groups, { label: "退出" });
 }
 
 main().catch((error) => {
