@@ -11,7 +11,7 @@ if (!["--dry-run", "--apply"].includes(action) ||
 
 const env = deployEnvironment();
 await mkdir(".tmp", { recursive: true });
-const root = await mkdtemp(resolve(".tmp/staging-"));
+const root = await mkdtemp(resolve(".tmp/test-backends-"));
 try {
   for (const name of ["workers", "shared", "migrations", "wrangler.auth.jsonc", "wrangler.api.jsonc"])
     await cp(name, resolve(root, name), { recursive: true });

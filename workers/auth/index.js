@@ -1,4 +1,4 @@
-import { integrationAuthPrefix, integrationCallback, integrationOrigin } from "../../shared/integration-preview.js";
+import { testAuthPrefix, testCallback, testOrigin } from "../../shared/test-preview.js";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { AUTH, SITE, COOKIE, json, opaque, readCookie, redirect, returnPath, sessionCookie } from "./http.js";
 import { credentials, exchange, githubClient, userGraphql } from "./github.js";
@@ -6,15 +6,15 @@ import { hash, randomToken } from "./crypto.js";
 import { findSession, issueGrant, profile, redeemGrant, revokeFamily, SESSION_SECONDS } from "./session.js";
 
 const transactionSeconds = 600;
-const integrationPaths = new Map([
-  [integrationAuthPrefix + "/start", "/login/github"],
-  [integrationCallback, "/callback/github"],
-  [integrationAuthPrefix + "/logout", "/logout"],
+const testPaths = new Map([
+  [testAuthPrefix + "/start", "/login/github"],
+  [testCallback, "/callback/github"],
+  [testAuthPrefix + "/logout", "/logout"],
 ]);
 const siteOrigin = (env) => env.MORI_SITE_ORIGIN || SITE;
 const authOrigin = (env) => env.MORI_AUTH_ORIGIN || AUTH;
-const callback = (env) => authOrigin(env) + (authOrigin(env) === integrationOrigin ? integrationCallback : "/callback/github");
-const browserHash = (env, browser) => hash(authOrigin(env) === integrationOrigin ? integrationOrigin + ":" + browser : browser);
+const callback = (env) => authOrigin(env) + (authOrigin(env) === testOrigin ? testCallback : "/callback/github");
+const browserHash = (env, browser) => hash(authOrigin(env) === testOrigin ? testOrigin + ":" + browser : browser);
 const grantRedirect = (env, grant, cookies) =>
   redirect(`${siteOrigin(env)}/auth/complete?grant=${grant}`, cookies);
 
@@ -220,9 +220,9 @@ export default {
     const url = new URL(request.url);
     const requestId = crypto.randomUUID();
     let path = url.pathname;
-    if (env.MORI_ENV === "staging" && url.origin === integrationOrigin) {
-      path = integrationPaths.get(path);
-      env = { ...env, MORI_SITE_ORIGIN: integrationOrigin, MORI_AUTH_ORIGIN: integrationOrigin };
+    if (env.MORI_ENV === "staging" && url.origin === testOrigin) {
+      path = testPaths.get(path);
+      env = { ...env, MORI_SITE_ORIGIN: testOrigin, MORI_AUTH_ORIGIN: testOrigin };
     }
     if (url.origin !== authOrigin(env) || request.method !== "GET") return json({ error: "NOT_FOUND" }, 404);
     try {

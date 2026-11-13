@@ -175,7 +175,7 @@ const groups = [
   { label: "检查", options: checkOptions },
   { label: "发布", options: [
     { label: "打开 GitHub 网站发版", run: openReleasePage },
-    action("更新 dev.komori.cc 联调预览", "deploy", "integration"),
+    action("更新 test.dev.komori.cc 测试预览", "deploy", "test"),
     action("检查网站部署包", "deploy", "website", "--dry-run"),
     action("检查公开内容部署包", "deploy", "content", "--dry-run"),
     action("上传公开内容 Worker 版本", "deploy", "content", "--upload"),

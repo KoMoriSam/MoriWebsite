@@ -1,10 +1,9 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { readWorkerConfig } from "../lib/worker-config.mjs";
-import { integrationOrigin } from "../../shared/integration-preview.js";
+import { testOrigin } from "../../shared/test-preview.js";
 import { stagingDiscussionRepository } from "../../shared/discussions.js";
 
-export const stagingOrigin = "https://staging.komori.cc";
 export const authStagingOrigin = "https://auth-staging.komori.cc";
 const apiStagingOrigin = "https://api-staging.komori.cc";
 const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
@@ -32,7 +31,7 @@ export async function deploymentConfigs(root) {
   const { auth, api } = configs;
   const vars = {
     MORI_ENV: "staging",
-    MORI_SITE_ORIGIN: stagingOrigin,
+    MORI_SITE_ORIGIN: testOrigin,
     MORI_AUTH_ORIGIN: authStagingOrigin,
     MORI_STAGING_DISCUSSION_REPO: process.env.MORI_STAGING_DISCUSSION_REPO || "KoMoriSam/mori-staging-discussions",
   };
@@ -55,8 +54,8 @@ export async function deploymentConfigs(root) {
   api.kv_namespaces = api.kv_namespaces.map(({ remote, ...entry }) =>
     ({ ...entry, id: bind(entry.binding + "_ID", /^[0-9a-f]{32}$/i) }));
   for (const config of Object.values(configs)) {
-    config.name += "-staging";
-    config.services?.forEach((service) => { service.service += "-staging"; });
+    config.name += "-test";
+    config.services?.forEach((service) => { service.service += "-test"; });
     config.observability = { enabled: true, head_sampling_rate: 1 };
   }
   for (const [name, config] of Object.entries({ auth, api })) {
@@ -65,11 +64,11 @@ export async function deploymentConfigs(root) {
   }
   auth.routes = [{ pattern: new URL(authStagingOrigin).hostname, custom_domain: true }];
   api.routes = [{ pattern: new URL(apiStagingOrigin).hostname, custom_domain: true }];
-  api.vars = { ...vars, GAMES_ALLOWED_ORIGINS: [stagingOrigin, integrationOrigin].join(",") };
+  api.vars = { ...vars, GAMES_ALLOWED_ORIGINS: testOrigin };
   auth.vars = { ...vars, MORI_STAGING_READER_IDS: readers };
   const results = {};
   for (const [name, config] of Object.entries(configs)) {
-    const file = resolve(root, `wrangler.staging-${name}.json`);
+    const file = resolve(root, `wrangler.test-${name}.json`);
     await writeFile(file, JSON.stringify(config));
     results[name] = file;
   }
