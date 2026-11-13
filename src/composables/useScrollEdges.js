@@ -4,6 +4,9 @@ import { useThemeStore } from "@/stores/themeStore";
 
 const emptyEdges = () => ({ top: false, bottom: false, left: false, right: false });
 const scrollable = (overflow) => /^(auto|scroll|overlay)$/.test(overflow);
+const pixels = (value) => parseFloat(value) || 0;
+// The client and scroll dimensions are rounded independently of the offset.
+const edgeTolerance = 2;
 
 export const useScrollEdges = (viewportRef, hostRef) => {
   const themes = useThemeStore();
@@ -27,7 +30,9 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     let inView = false;
     let resizeTargetsDirty = true;
     let appearanceDirty = true;
+    let geometryDirty = true;
     let backgroundImage = "";
+    let viewportContent;
     const resizeTargets = new Set();
     let ancestors = [];
 
@@ -65,13 +70,13 @@ export const useScrollEdges = (viewportRef, hostRef) => {
         style.direction === "rtl" ? maxX + viewport.scrollLeft : viewport.scrollLeft,
       ));
       const y = Math.min(maxY, Math.max(0, viewport.scrollTop));
-      const vertical = scrollable(style.overflowY) && maxY > 1;
-      const horizontal = scrollable(style.overflowX) && maxX > 1;
+      const vertical = scrollable(style.overflowY) && maxY > edgeTolerance;
+      const horizontal = scrollable(style.overflowX) && maxX > edgeTolerance;
       const next = {
-        top: vertical && y > 1,
-        bottom: vertical && y < maxY - 1,
-        left: horizontal && x > 1,
-        right: horizontal && x < maxX - 1,
+        top: vertical && y > edgeTolerance,
+        bottom: vertical && maxY - y > edgeTolerance,
+        left: horizontal && x > edgeTolerance,
+        right: horizontal && maxX - x > edgeTolerance,
       };
       if (Object.keys(next).some((edge) => next[edge] !== edges.value[edge])) {
         edges.value = next;
@@ -89,11 +94,30 @@ export const useScrollEdges = (viewportRef, hostRef) => {
         backgroundImage = layers.join(", ") || "linear-gradient(var(--color-base-100), var(--color-base-100))";
         appearanceDirty = false;
       }
+      if (!geometryDirty) return;
+      geometryDirty = false;
+      const viewportRect = viewport.getBoundingClientRect();
+      const hostRect = host.getBoundingClientRect();
+      const hostStyle = getComputedStyle(host);
+      const borderLeft = pixels(style.borderLeftWidth);
+      const borderTop = pixels(style.borderTopWidth);
+      const hostBorderLeft = pixels(hostStyle.borderLeftWidth);
+      const hostBorderTop = pixels(hostStyle.borderTopWidth);
+      const gutterLeft = Math.max(0, viewport.clientLeft - Math.round(borderLeft));
+      const gutterTop = Math.max(0, viewport.clientTop - Math.round(borderTop));
+      // Keep fractional layout coordinates. clientLeft/clientTop are only
+      // needed to detect a scrollbar gutter on the leading edge.
+      const width = viewportContent
+        ? viewportContent.width + pixels(style.paddingLeft) + pixels(style.paddingRight)
+        : viewport.clientWidth;
+      const height = viewportContent
+        ? viewportContent.height + pixels(style.paddingTop) + pixels(style.paddingBottom)
+        : viewport.clientHeight;
       const nextStyle = {
-        left: `${viewport.offsetLeft + viewport.clientLeft}px`,
-        top: `${viewport.offsetTop + viewport.clientTop}px`,
-        width: `${viewport.clientWidth}px`,
-        height: `${viewport.clientHeight}px`,
+        left: `${viewportRect.left - hostRect.left - hostBorderLeft + borderLeft + gutterLeft}px`,
+        top: `${viewportRect.top - hostRect.top - hostBorderTop + borderTop + gutterTop}px`,
+        width: `${width}px`,
+        height: `${height}px`,
         borderRadius: style.borderRadius,
         cornerShape: style.getPropertyValue("corner-shape") || "round",
         "--scroll-fade-background": backgroundImage,
@@ -113,9 +137,16 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     const refresh = () => {
       syncAncestors();
       appearanceDirty = true;
+      geometryDirty = true;
       schedule();
     };
-    const resizeObserver = new ResizeObserver(schedule);
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === viewport) viewportContent = entry.contentRect;
+      }
+      geometryDirty = true;
+      schedule();
+    });
     const syncResizeTargets = () => {
       // Nested fixed-size children can overflow without resizing their parent.
       const nextTargets = new Set([host, viewport, ...viewport.querySelectorAll("*")]);
@@ -139,6 +170,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       if (records.some((record) => record.type === "attributes" && record.target === viewport)) {
         appearanceDirty = true;
       }
+      geometryDirty = true;
       schedule();
     });
     contentObserver.observe(viewport, {
@@ -161,6 +193,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       frame = 0;
       syncAncestors();
       appearanceDirty = true;
+      geometryDirty = true;
       update();
     };
     const stopMotionWatch = watch(layoutMotionActive, (active) => {
@@ -175,6 +208,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
     refreshViewport = refresh;
 
     viewport.addEventListener("scroll", schedule, { passive: true });
+    viewport.addEventListener("scrollend", schedule);
     viewport.addEventListener("load", refresh, true);
     document.addEventListener("transitionend", finishAppearanceChange, true);
     document.addEventListener("animationend", finishAppearanceChange, true);
@@ -195,6 +229,7 @@ export const useScrollEdges = (viewportRef, hostRef) => {
       contentObserver.disconnect();
       appearanceObserver.disconnect();
       viewport.removeEventListener("scroll", schedule);
+      viewport.removeEventListener("scrollend", schedule);
       viewport.removeEventListener("load", refresh, true);
       document.removeEventListener("transitionend", finishAppearanceChange, true);
       document.removeEventListener("animationend", finishAppearanceChange, true);

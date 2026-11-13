@@ -605,15 +605,21 @@ try {
 
   const { useScrollEdges } = await runtime.ssrLoadModule("/src/composables/useScrollEdges.js");
   let scans = 0;
-  const host = { parentElement: null, computedStyle: { backgroundColor: "rgb(255, 255, 255)" } };
+  const host = {
+    parentElement: null,
+    getBoundingClientRect: () => ({ left: 10.25, top: 20.5 }),
+    computedStyle: { backgroundColor: "rgb(255, 255, 255)" },
+  };
   const scroll = Object.assign(target(), {
     parentElement: host, isConnected: true, clientWidth: 100, clientHeight: 50,
     scrollWidth: 200, scrollHeight: 300, scrollTop: 0, scrollLeft: 0,
-    offsetLeft: 0, offsetTop: 0, clientLeft: 0, clientTop: 0,
+    clientLeft: 13, clientTop: 1,
+    getBoundingClientRect: () => ({ left: 11.75, top: 22.75 }),
     closest: () => null,
     querySelectorAll() { scans++; return []; },
     computedStyle: { direction: "ltr", overflowY: "auto", overflowX: "auto",
-      backgroundColor: "transparent", borderRadius: "0px", getPropertyValue: () => "" },
+      backgroundColor: "transparent", borderRadius: "0px", getPropertyValue: () => "",
+      borderLeftWidth: "1px", borderTopWidth: "1px", paddingLeft: "4px", paddingRight: "4px" },
   });
   let scrollState;
   probe = mount(() => { scrollState = useScrollEdges(shallowRef(scroll), shallowRef(host)); });
@@ -625,13 +631,23 @@ try {
   flushFrame();
   assert.equal(scans, 1);
   assert.deepEqual(scrollState.edges.value, { top: false, bottom: true, left: false, right: true });
+  SizeObserver.all.at(-1).emit([{ target: scroll, contentRect: { width: 92.25, height: 49.75 } }]);
+  flushFrame();
+  assert.deepEqual(
+    Object.fromEntries(["left", "top", "width", "height"].map((key) => [key, scrollState.overlayStyle.value[key]])),
+    { left: "14.5px", top: "3.25px", width: "100.25px", height: "49.75px" },
+  );
   content.emit([{ type: "childList" }]);
   content.emit([{ type: "childList" }]);
   assert.equal(scans, 1);
   flushFrame();
   assert.equal(scans, 2, "Repeated content changes share one descendant scan");
-  scroll.scrollTop = 250;
+  scroll.scrollTop = 247;
   scroll.listeners.get("scroll")();
+  flushFrame();
+  assert.equal(scrollState.edges.value.bottom, true);
+  scroll.scrollTop = 248.5;
+  scroll.listeners.get("scrollend")();
   flushFrame();
   assert.equal(scrollState.edges.value.bottom, false);
   assert.equal(scrollState.edges.value.top, true);

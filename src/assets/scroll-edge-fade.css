@@ -41,20 +41,20 @@
 
 .scroll-edge-fade-top {
   top: 0;
-  mask-image: linear-gradient(to bottom, black, transparent);
+  mask-image: linear-gradient(to bottom, black 1px, transparent);
 }
 
 .scroll-edge-fade-bottom {
   bottom: 0;
-  mask-image: linear-gradient(to top, black, transparent);
+  mask-image: linear-gradient(to top, black 1px, transparent);
 }
 
 .scroll-edge-fade-left {
   left: 0;
-  mask-image: linear-gradient(to right, black, transparent);
+  mask-image: linear-gradient(to right, black 1px, transparent);
 }
 
 .scroll-edge-fade-right {
   right: 0;
-  mask-image: linear-gradient(to left, black, transparent);
+  mask-image: linear-gradient(to left, black 1px, transparent);
 }
