@@ -169,7 +169,9 @@ function localGithub(env, repository, target, viewer) {
           },
         } };
       }
-      const { comment, parent, siblings } = findComment(thread, id || input?.commentId || input?.subjectId || input?.replyToId);
+      const { comment, parent, siblings } = findComment(thread,
+        operation === "deleteDiscussionComment" ? input.id : id || input?.commentId || input?.subjectId || input?.replyToId,
+      );
       if (operation === "DiscussionCommentEdits") {
         if (!comment) return { node: null };
         const edits = storedEdits(comment);

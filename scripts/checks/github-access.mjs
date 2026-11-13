@@ -301,7 +301,7 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
         }
         if (query.includes("viewerCanUpdate viewerCanDelete viewerCanReact")) return { data: { node: {
           ...comment, id: variables.id, discussion: { id: variables.id === "DC_other" ? "D_other" : "D_1" },
-          replies: { totalCount: 0 },
+          replies: { totalCount: variables.id === "DC_1" ? replyCount : 0 },
         } } };
         if (query.includes("updateDiscussionComment")) {
           actions.push("edit");
@@ -314,8 +314,10 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
           return { data: { [name]: { subject: { id: variables.input.subjectId } } } };
         }
         if (query.includes("deleteDiscussionComment")) {
-          actions.push("delete");
-          replyCount--;
+          assert.deepEqual(Object.keys(variables.input).sort(), ["clientMutationId", "id"]);
+          assert.ok(["DC_1", "DC_2"].includes(variables.input.id));
+          actions.push("delete:" + variables.input.id);
+          if (variables.input.id === "DC_2") replyCount--;
           return { data: { deleteDiscussionComment: { clientMutationId: variables.input.clientMutationId } } };
         }
         throw new Error("Unexpected user query");
@@ -397,7 +399,8 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
     await mutation("add", { id: "DC_2", reaction: "HEART" });
     await mutation("remove", { id: "DC_2", reaction: "HEART" });
     assert.equal((await mutation("delete", { id: "DC_2" })).count, 4);
-    assert.deepEqual(actions, ["reply", "edit", "addReaction", "removeReaction", "delete"]);
+    assert.deepEqual(await mutation("delete", { id: "DC_1" }), { ok: true, delta: 0, count: 4 });
+    assert.deepEqual(actions, ["reply", "edit", "addReaction", "removeReaction", "delete:DC_2", "delete:DC_1"]);
     assert.equal(writes, 1);
     assert.equal(installations, 1);
     const creationRequest = new Request(start + "/api/comments?scope=article&target=124", {

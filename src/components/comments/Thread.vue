@@ -36,8 +36,8 @@
             v-else
             type="button"
             class="btn btn-sm"
-            :disabled="pending"
-            @click="load()"
+            :disabled="pending || busy"
+            @click="retryRequest()"
           >
             {{ t("common.navigationStatus.retry") }}
           </button>
@@ -303,6 +303,7 @@ let generation = 0;
 let active = false;
 let controller;
 let submission;
+let retryRequest;
 
 function resetEditor() {
   editor.value = emptyEditor();
@@ -363,7 +364,8 @@ function loadEditHistory(id, cursor, signal) {
   return request({ history: id, ...(cursor && { cursor }) }, { signal });
 }
 
-function report(failure) {
+function report(failure, retry = load) {
+  retryRequest = retry;
   error.value =
     failure.message === "COMMENT_RANKING_TOO_LARGE"
       ? "reader.comments.rankingTooLarge"
@@ -436,7 +438,7 @@ async function load(cursor) {
     loaded.value = true;
     emit("count", count.value);
   } catch (failure) {
-    if (id === generation) report(failure);
+    if (id === generation) report(failure, () => load(cursor));
   } finally {
     if (id === generation) pending.value = false;
   }
@@ -532,7 +534,8 @@ async function mutate(action, options) {
   }
   const revision = moriSession.revision;
   const signature = JSON.stringify([action, options]);
-  if (submission?.signature !== signature)
+  // Each attempt to delete a specific comment can safely use a fresh request ID.
+  if (action === "delete" || submission?.signature !== signature)
     submission = { signature, id: crypto.randomUUID() };
   saveDraft();
   busy.value = true;
@@ -548,7 +551,7 @@ async function mutate(action, options) {
     );
     submission = null;
     if (!active || revision !== moriSession.revision) return false;
-    if (result.delta) {
+    if (result.count != null || result.delta) {
       const source =
         props.scope === "article" || props.scope === "article-paragraph"
           ? "article"
@@ -556,7 +559,7 @@ async function mutate(action, options) {
       const contentId = props.scope.endsWith("-paragraph")
         ? props.target.replace(/-[1-9]\d*$/, "")
         : props.target;
-      if (props.scope !== "book")
+      if (props.scope !== "book" && result.delta)
         counts.adjustContentCommentTotal(source, contentId, result.delta);
       count.value = result.count ?? Math.max(0, count.value + result.delta);
       emit("count", count.value);
@@ -568,7 +571,11 @@ async function mutate(action, options) {
       submission = null;
     if (failure.message === "GITHUB_REAUTHORIZE") submission = null;
     saveDraft();
-    if (active && revision === moriSession.revision) report(failure);
+    if (active && revision === moriSession.revision) {
+      const retryDelete = action === "delete" &&
+        (!failure.status || failure.status >= 500 || failure.status === 429);
+      report(failure, retryDelete ? () => mutate(action, options) : undefined);
+    }
     return false;
   } finally {
     busy.value = false;

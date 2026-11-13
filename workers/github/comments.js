@@ -303,8 +303,12 @@ async function writeComment(github, user, auth, createClient, env, target, input
       delta = 1;
     } else if (action === "edit" || action === "delete") {
       if (!(action === "edit" ? subject?.viewerCanUpdate : subject?.viewerCanDelete)) throw error(403, "COMMENT_FORBIDDEN");
-      Object.assign(mutation, { commentId: subject.id, ...(action === "edit" && { body }) });
-      if (action === "delete") delta = -1 - (subject.replies?.totalCount || 0);
+      if (action === "edit") Object.assign(mutation, { commentId: subject.id, body });
+      else {
+        mutation.id = subject.id;
+        // GitHub keeps the replies when it wipes a parent comment.
+        delta = subject.replies?.totalCount ? 0 : -1;
+      }
     } else {
       const permitted = subject ? subject.viewerCanReact : (await user.graphql(
         "query DiscussionReactionPermission($id: ID!) { node(id: $id) { ... on Discussion { viewerCanReact } } }", { id },
@@ -313,14 +317,15 @@ async function writeComment(github, user, auth, createClient, env, target, input
       Object.assign(mutation, { subjectId: subject?.id || id, content: input.reaction });
     }
     const [name, type, fields] = mutations[action];
-    const previousTotals = delta ? await totals(github, id).catch(() => null) : null;
+    const refreshTotals = delta !== 0 || action === "delete";
+    const previousTotals = refreshTotals ? await totals(github, id).catch(() => null) : null;
     await user.graphql(`mutation ${name}($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
     if (action === "post" ||
         (subject && !subject.replyTo && (action === "delete" || input.reaction === "THUMBS_UP"))) {
       await deleteGithubCache(rankingKey(id));
     }
     let count = null;
-    if (delta) {
+    if (refreshTotals) {
       try {
         ({ count } = await totals(github, id, true));
         if (previousTotals) delta = count - previousTotals.count;

@@ -122,9 +122,9 @@
       "reaction": "添加或移除 {emoji} 反应",
       "failed": "评论加载或更新失败。",
       "reauthorize": "请重新授权 GitHub 后继续评论。",
-      "forbidden": "请求过于频繁，请稍后重试。",
-      "rateLimited": "已收到此请求，请刷新讨论查看结果。",
-      "duplicate": "Mori 会话已过期，请重新登录。"
+      "forbidden": "GitHub 拒绝了此操作。",
+      "rateLimited": "请求过于频繁，请稍后重试。",
+      "duplicate": "已收到此请求，请刷新讨论查看结果。"
     },
     "contextMenu": {
       "label": "正文操作",
