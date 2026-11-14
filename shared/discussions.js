@@ -4,6 +4,32 @@ const general = { name: "General", id: "DIC_kwDOOWZUk84C_2_B" };
 export const bookTerm = "《向远方》 | 远方之森";
 export const discussionRegistry = "site-data/discussion-targets.json";
 export const siteOwnerLogin = "KoMoriSam";
+export const initialReplyCount = 2;
+export const defaultCommentSort = "top";
+const positiveReactionWeights = new Map([
+  ["THUMBS_UP", 1],
+  ["LAUGH", 1],
+  ["HEART", 2],
+  ["HOORAY", 2],
+  ["ROCKET", 3],
+]);
+
+export function affectsCommentHeat(reaction) {
+  return positiveReactionWeights.has(reaction);
+}
+
+export function commentHeat({ isMinimized, reactionGroups = [], replies }) {
+  if (isMinimized) return -1;
+  return reactionGroups.reduce(
+    (score, { content, users }) =>
+      score + (positiveReactionWeights.get(content) ?? 0) * (users?.totalCount ?? 0),
+    2 * (replies?.totalCount ?? 0),
+  );
+}
+
+export const commentMinimizedReasons = [
+  "abuse", "off-topic", "outdated", "resolved", "duplicate", "spam", "low-quality",
+];
 export const discussionAuthorLogins = {
   article: "KoMoriSam",
   novel: "KoMoriSam",
