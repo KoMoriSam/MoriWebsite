@@ -17,8 +17,8 @@
     ]"
     class="prose min-w-0 w-full transition-opacity prose-blockquote:[quotes:none] prose-blockquote:font-serif prose-blockquote:font-light prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline prose-a:hover:underline"
     :style="articleStyle"
-    @click="hasExtendedMarkdown && handleArticleClick($event)"
-    @keydown="hasExtendedMarkdown && handleArticleKeydown($event)"
+    @click="hasImagePreview && handleArticleClick($event)"
+    @keydown="hasImagePreview && handleArticleKeydown($event)"
   >
     <slot name="before" />
 
@@ -44,7 +44,7 @@
 
     <slot name="after" />
 
-    <ImagePreview v-if="hasExtendedMarkdown" ref="imagePreviewRef" />
+    <ImagePreview v-if="hasImagePreview" ref="imagePreviewRef" />
   </article>
 </template>
 
@@ -97,6 +97,14 @@ const props = defineProps({
     type: String,
     default: MARKDOWN_MODE_READER,
     validator: (value) => MARKDOWN_MODES.includes(value),
+  },
+  customMarkdown: {
+    type: Object,
+    default: null,
+  },
+  fetchParagraphCounts: {
+    type: Boolean,
+    default: true,
   },
   proseSize: {
     type: String,
@@ -179,6 +187,17 @@ const wikiLinkResolver = inject(WIKI_LINK_RESOLVER, null);
 const isReaderMode = computed(() => props.mode === MARKDOWN_MODE_READER);
 const isCommentMode = computed(() => props.mode === MARKDOWN_MODE_COMMENT);
 const hasExtendedMarkdown = computed(() => isReaderMode.value || isCommentMode.value);
+const customExtensions = computed(() => new Set(props.customMarkdown?.extensions));
+const hasExtension = (name, fallback = hasExtendedMarkdown.value) =>
+  props.customMarkdown ? customExtensions.value.has(name) : fallback;
+const hasImagePreview = computed(() => hasExtension("figures"));
+const hasParagraphComments = computed(() =>
+  hasExtension("paragraphComments", isReaderMode.value),
+);
+const hasMath = computed(() => hasExtension("math"));
+const preloadCodeLanguages = computed(() =>
+  hasExtension("code", isReaderMode.value),
+);
 const PROSE_SIZE_CLASSES = {
   sm: "prose-sm",
   base: "prose-base",
@@ -260,7 +279,7 @@ import {
 } from "@/services/api-paragraph-comments";
 
 const paragraphPlugin = useParagraphComments({
-  enabled: isReaderMode,
+  enabled: hasParagraphComments,
   resolver: (context) => resolveMarkdownComponent(context),
 });
 const route = useRoute();
@@ -449,10 +468,8 @@ const syncRenderReady = async (cycle = renderReadyCycle) => {
 
   const root = articleRef.value;
   if (!root) return;
-  if (hasExtendedMarkdown.value) {
-    syncPreviewImages(root);
-    if (root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
-  }
+  if (hasImagePreview.value) syncPreviewImages(root);
+  if (hasExtension("mermaid") && root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
 
   emittedRenderReadyCycle = cycle;
   emit("render-ready");
@@ -611,27 +628,38 @@ const resolveMarkdownComponent = ({
   return undefined;
 };
 
-const resolveStandardMarkdownComponent = (context) => {
-  const { tagName } = context;
-  if (
-    tagName === "table" ||
-    (tagName === "section" &&
-      String(context.props.class || "")
-        .split(/\s+/)
-        .includes("markdown-table-wrapper"))
-  ) {
-    return resolveMarkdownComponent(context);
-  }
-  if (!tagName.startsWith("markdown-")) return undefined;
-  if (!["markdown-alert", "markdown-code"].includes(tagName)) return false;
-  return resolveMarkdownComponent(context);
+const componentExtensions = {
+  "markdown-alert": "alerts",
+  "markdown-code": "code",
+  "markdown-chat": "social",
+  "markdown-moment": "social",
+  "markdown-link-icon": "linkIcons",
+  "markdown-link-card": "linkCards",
+  "markdown-mermaid": "mermaid",
 };
+const markdownComponentResolver = computed(() => {
+  if (!props.customMarkdown && hasExtendedMarkdown.value) return resolveMarkdownComponent;
 
-const markdownComponentResolver = computed(() =>
-  hasExtendedMarkdown.value
-    ? resolveMarkdownComponent
-    : resolveStandardMarkdownComponent,
-);
+  const enabled = new Set(customExtensions.value);
+  if (!props.customMarkdown) {
+    enabled.add("tables");
+    enabled.add("alerts");
+    enabled.add("code");
+  }
+
+  return (context) => {
+    const { tagName } = context;
+    if (tagName === "table" || tagName === "section") {
+      return enabled.has("tables") ? resolveMarkdownComponent(context) : undefined;
+    }
+    if (tagName === "mjx-container" && enabled.has("math")) {
+      return resolveMarkdownComponent(context);
+    }
+    if (!tagName.startsWith("markdown-")) return undefined;
+    const extension = componentExtensions[tagName];
+    return enabled.has(extension) ? resolveMarkdownComponent(context) : false;
+  };
+});
 
 const beginRenderReadyCycle = () => {
   renderReadyCycle += 1;
@@ -649,6 +677,7 @@ watch(
     markdownRenderVersion.value,
     markdownFeaturesReady.value,
     props.mode,
+    props.customMarkdown,
   ],
   beginRenderReadyCycle,
   { flush: "post", immediate: true },
@@ -812,14 +841,14 @@ const tableWrapperPlugin = (md) => {
 
 const loadMarkdownFeaturePlugins = async (content = "") => {
   const markdownText = String(content || "");
-  const languages = collectFenceLanguages(markdownText);
+  const languages = preloadCodeLanguages.value ? collectFenceLanguages(markdownText) : [];
   const featureTasks = [];
 
   if (languages.length) {
     featureTasks.push(preloadHighlightLanguages(languages));
   }
 
-  if (hasMathSyntax(markdownText) && !mathJaxPlugin.value) {
+  if (hasMath.value && hasMathSyntax(markdownText) && !mathJaxPlugin.value) {
     featureTasks.push(
       loadMathJaxPlugin().then((plugin) => {
         mathJaxPlugin.value = plugin;
@@ -839,35 +868,40 @@ const commentMath = computed(() =>
 );
 const mathPlugin = computed(() => isCommentMode.value ? commentMath.value : mathJaxPlugin.value);
 
-const sharedPlugins = computed(() => [
-  MarkdownItAbbr,
-  MarkdownItBracketedSpans,
-  [MarkdownItAttrs, {
+const renderingPlugins = computed(() => [
+  ["abbreviations", MarkdownItAbbr],
+  ["attributes", MarkdownItBracketedSpans],
+  ["attributes", [MarkdownItAttrs, {
     allowedAttributes: isCommentMode.value ? ["data-tip"] : ["id", "class", "data-tip"],
-  }],
-  highlightLazyPlugin,
-  anchorPlugin,
-  [alertPlugin, { translateTitle: localizeText }],
-  chatHeaderPlugin,
-  chatContainerPlugin,
-  momentsPlugin,
-  codePlugin,
-  emojiPlugin,
-  footnotePlugin,
-  [rubyPlugin, { rp: ["（", "）"] }],
-  MarkdownItSub,
-  MarkdownItSup,
-  taskStatusPlugin,
-  ...(mathPlugin.value ? [mathPlugin.value] : []),
-  MarkdownItMark,
-  mermaidPlugin,
-  figurePlugin,
-  tableWrapperPlugin,
-  linkIconPlugin,
-]);
+  }]],
+  ["code", highlightLazyPlugin],
+  ["headingAnchors", anchorPlugin],
+  ["alerts", [alertPlugin, { translateTitle: localizeText }]],
+  ["social", chatHeaderPlugin],
+  ["social", chatContainerPlugin],
+  ["social", momentsPlugin],
+  ["code", codePlugin],
+  ["emoji", emojiPlugin],
+  ["footnotes", footnotePlugin],
+  ["ruby", [rubyPlugin, { rp: ["（", "）"] }]],
+  ["subscript", MarkdownItSub],
+  ["superscript", MarkdownItSup],
+  ["tasks", taskStatusPlugin],
+  ["math", mathPlugin.value],
+  ["mark", MarkdownItMark],
+  ["mermaid", mermaidPlugin],
+  ["figures", figurePlugin],
+  ["tables", tableWrapperPlugin],
+  ["linkIcons", linkIconPlugin],
+].flatMap(([name, plugin]) => {
+  const enabled = name === "alerts" || (name === "code" && plugin === codePlugin)
+    ? hasExtension(name, true)
+    : hasExtension(name);
+  return enabled && plugin ? [plugin] : [];
+}));
 
 const commentRenderer = computed(() => {
-  if (!isCommentMode.value) return null;
+  if (!isCommentMode.value || props.customMarkdown) return null;
   const resolveWikiLink = wikiLinkResolver?.value;
   let cache = commentRenderers.get(localizeText);
   if (!cache || cache.resolveWikiLink !== resolveWikiLink) {
@@ -878,7 +912,7 @@ const commentRenderer = computed(() => {
   if (!cache.renderers.has(key)) {
     cache.renderers.set(key, createMarkdownRenderer({
       mode: MARKDOWN_MODE_COMMENT,
-      plugins: sharedPlugins.value,
+      plugins: renderingPlugins.value,
       resolveWikiLink,
     }));
   }
@@ -893,10 +927,8 @@ const renderedPages = computed(() => {
     if (commentRenderer.value) {
       return { ...page, html: commentRenderer.value(page.source) };
     }
-    const plugins = hasExtendedMarkdown.value
-      ? [...sharedPlugins.value]
-      : [[alertPlugin, { translateTitle: localizeText }], codePlugin];
-    if (isReaderMode.value) {
+    const plugins = [...renderingPlugins.value];
+    if (hasParagraphComments.value) {
       plugins.unshift(paragraphPlugin(props.headerData.uuid, props.headerData.sourceType));
     }
 
@@ -906,6 +938,9 @@ const renderedPages = computed(() => {
         mode: props.mode,
         plugins,
         resolveWikiLink: wikiLinkResolver?.value,
+        parserOptions: props.customMarkdown?.parserOptions,
+        wikiLinks: hasExtension("wikiLinks", true),
+        linkCards: hasExtension("linkCards"),
       }),
     };
   });
@@ -913,8 +948,8 @@ const renderedPages = computed(() => {
 
 // 运行时 content 变化：异步加载特性插件后渲染
 watch(
-  () => [combinedContent.value, props.mode],
-  async ([content]) => {
+  () => [combinedContent.value, props.mode, hasMath.value, preloadCodeLanguages.value],
+  async ([content, , mathEnabled, preloadCode]) => {
     const requestId = ++markdownFeatureRequestId;
     markdownFeaturesReady.value = false;
 
@@ -924,20 +959,15 @@ watch(
       return;
     }
 
-    if (!hasExtendedMarkdown.value) {
-      markdownPreparing.value = false;
-      markdownFeaturesReady.value = true;
-      return;
-    }
-
     // SSG 构建时无法执行异步加载，直接渲染基础 Markdown
-    if (import.meta.env.SSR) {
+    if (import.meta.env.SSR || (!mathEnabled && !preloadCode)) {
       markdownPreparing.value = false;
       markdownFeaturesReady.value = true;
       return;
     }
 
-    if (isCommentMode.value) {
+    if (isCommentMode.value && !props.customMarkdown) {
+      markdownPreparing.value = false;
       if (hasMathSyntax(content) && !mathJaxPlugin.value) {
         try {
           const plugin = await loadMathJaxPlugin();
@@ -987,7 +1017,8 @@ watch(
     props.headerData.sourceType,
     props.headerData.commentScope,
     props.headerData.commentTerm,
-    props.mode,
+    hasParagraphComments.value,
+    props.fetchParagraphCounts,
   ],
   async ([isLoading, isPreparing]) => {
     // immediate watch 在 SSG 阶段也会执行；段评统计依赖浏览器 DOM 和 RAF。
@@ -1000,7 +1031,8 @@ watch(
       return;
     }
 
-    if (!isReaderMode.value) {
+    if (!hasParagraphComments.value || !props.fetchParagraphCounts) {
+      latestBatchToken.value++;
       return;
     }
 

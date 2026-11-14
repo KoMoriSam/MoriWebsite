@@ -31,7 +31,7 @@ function getLinkCard(inline, articleForPath) {
 }
 
 export function linkCardPlugin(md, { articleForPath } = {}) {
-  md.core.ruler.after("wiki_anchors", "standalone_link_cards", (state) => {
+  md.core.ruler.push("standalone_link_cards", (state) => {
     const { tokens } = state;
     for (let index = 0; index < tokens.length - 2; index += 1) {
       const open = tokens[index];

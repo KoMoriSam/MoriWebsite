@@ -9,15 +9,18 @@
       v-if="showToc"
       ref="mobileTocBoundaryElement"
       aria-hidden="true"
-      class="relative -top-2 h-0 xl:hidden"
+      class="relative -top-2 h-0"
+      :class="mobileTocVisibility"
     ></div>
 
     <aside
       v-if="showToc"
       ref="mobileTocElement"
+      data-reader-mobile-toc
       :aria-label="translate('reader.body.contents')"
       :class="[
-        'sticky z-10 xl:hidden',
+        'sticky z-10',
+        mobileTocVisibility,
         mobileTocCompact ? 'top-0' : 'top-2',
       ]"
       @pointerdown="handleMobileTocPointerDown"
@@ -50,7 +53,7 @@
       v-if="showToc"
       aria-hidden="true"
       :class="[
-        'xl:hidden',
+        mobileTocVisibility,
         mobileTocCompact ? 'h-1' : 'h-4',
       ]"
     ></div>
@@ -66,7 +69,8 @@
       <aside
         v-if="showToc"
         :class="[
-          'hidden min-w-0 w-full max-w-full xl:sticky xl:block xl:self-start',
+          'sticky hidden min-w-0 w-full max-w-full self-start',
+          scrollContainer ? '@min-[48rem]/reader:block' : 'xl:block',
           tocClass,
         ]"
         :style="{
@@ -85,7 +89,9 @@
           'min-w-0 w-full max-w-full',
           showAside &&
             'border-b border-base-300 pb-8 xl:border-r xl:border-b-0 xl:pr-8 xl:pb-0',
-          showToc && 'xl:border-l xl:border-base-300 xl:pl-8',
+          showToc && (scrollContainer
+            ? '@min-[48rem]/reader:border-l @min-[48rem]/reader:border-base-300 @min-[48rem]/reader:pl-4'
+            : 'xl:border-l xl:border-base-300 xl:pl-8'),
           contentClass,
         ]"
       >
@@ -120,11 +126,12 @@ import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useEventListener, useResizeObserver } from "@vueuse/core";
 import { layoutMotionActive } from "@/composables/layout/useLayoutMotion";
 import { useMobileTocTransition } from "@/composables/reader/useMobileTocTransition";
 
-defineProps({
+const props = defineProps({
   containerClass: { type: [String, Array, Object], default: "" },
   gridClass: { type: [String, Array, Object], default: "" },
   contentClass: { type: [String, Array, Object], default: "" },
@@ -132,6 +139,7 @@ defineProps({
   asideClass: { type: [String, Array, Object], default: "" },
   stickyTop: { type: String, default: "12rem" },
   showToc: { type: Boolean, default: false },
+  scrollContainer: { type: Object, default: null },
   showAside: { type: Boolean, default: false },
 });
 
@@ -144,6 +152,10 @@ const bodyElement = ref(null);
 
 const mobileTocCompact = ref(false);
 const mobileTocMenuOpen = ref(false);
+const mobileTocVisibility = computed(() =>
+  props.scrollContainer ? "@min-[48rem]/reader:hidden" : "xl:hidden",
+);
+const scrollPosition = () => Math.max(0, props.scrollContainer?.scrollTop ?? window.scrollY);
 useMobileTocTransition(mobileTocElement, bodyElement, mobileTocCompact);
 
 const mobileTocScrollDirectionThreshold = 24;
@@ -167,8 +179,10 @@ const mobileTocPointerStart = {
 };
 
 const getMobileTocBoundaryState = () => {
-  if (!mobileTocBoundaryElement.value) return null;
-  return mobileTocBoundaryElement.value.getBoundingClientRect().top <= 0;
+  const boundary = mobileTocBoundaryElement.value;
+  if (!boundary?.getClientRects().length) return null;
+  const top = props.scrollContainer?.getBoundingClientRect().top ?? 0;
+  return boundary.getBoundingClientRect().top <= top;
 };
 
 const resetMobileTocPointer = () => {
@@ -211,7 +225,7 @@ const setMobileTocCompact = (value) => {
   if (changed && typeof window !== "undefined") {
     mobileTocAutoTransitionLockedUntil =
       window.performance.now() + mobileTocAutoTransitionLockDuration;
-    mobileTocLastScrollY = Math.max(0, window.scrollY);
+    mobileTocLastScrollY = scrollPosition();
     resetMobileTocScrollDirection();
   }
 };
@@ -288,7 +302,7 @@ const handleMobileTocPointerEnd = (event) => {
 };
 
 const updateMobileTocAtBoundary = (trackScrollDirection = false) => {
-  const currentScrollY = Math.max(0, window.scrollY);
+  const currentScrollY = scrollPosition();
   const scrollDelta = currentScrollY - mobileTocLastScrollY;
   mobileTocLastScrollY = currentScrollY;
 
@@ -364,14 +378,20 @@ watch(layoutMotionActive, (active) => {
   if (!active) scheduleMobileTocBoundaryUpdate();
 });
 
+const scrollTarget = computed(() =>
+  props.scrollContainer || (typeof window !== "undefined" ? window : null),
+);
+useEventListener(scrollTarget, "scroll", scheduleMobileTocBoundaryUpdate, { passive: true });
+useResizeObserver(() => props.scrollContainer, () => {
+  if (getMobileTocBoundaryState() === null) setMobileTocCompact(false);
+  scheduleMobileTocBoundaryUpdate();
+});
+
 onMounted(() => {
   emit("content-ready", contentElement.value);
 
-  mobileTocLastScrollY = Math.max(0, window.scrollY);
+  mobileTocLastScrollY = scrollPosition();
 
-  window.addEventListener("scroll", scheduleMobileTocBoundaryUpdate, {
-    passive: true,
-  });
   window.addEventListener("resize", scheduleMobileTocBoundaryUpdate);
 
   scheduleMobileTocBoundaryUpdate();
@@ -379,7 +399,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.clearTimeout(mobileTocClickSuppressionTimer);
-  window.removeEventListener("scroll", scheduleMobileTocBoundaryUpdate);
   window.removeEventListener("resize", scheduleMobileTocBoundaryUpdate);
 
   if (mobileTocBoundaryFrame) {

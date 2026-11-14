@@ -29,18 +29,24 @@ const MARKDOWN_OPTIONS = {
 };
 
 export const createMarkdownRenderer = ({
-  mode = MARKDOWN_MODE_READER, plugins = [], resolveWikiLink,
+  mode = MARKDOWN_MODE_READER,
+  plugins = [],
+  resolveWikiLink,
+  parserOptions,
+  wikiLinks = true,
+  linkCards = mode === MARKDOWN_MODE_READER || mode === MARKDOWN_MODE_COMMENT,
 } = {}) => {
-  const md = new MarkdownIt(
-    MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER],
-  );
+  const md = new MarkdownIt({
+    ...(MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER]),
+    ...parserOptions,
+  });
 
   plugins.forEach((plugin) => {
     if (Array.isArray(plugin)) md.use(plugin[0], plugin[1]);
     else md.use(plugin);
   });
-  md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
-  if (mode === MARKDOWN_MODE_READER || mode === MARKDOWN_MODE_COMMENT) {
+  if (wikiLinks) md.use(wikiLinkPlugin, { resolveNote: resolveWikiLink });
+  if (linkCards) {
     md.use(linkCardPlugin, { articleForPath: resolveWikiLink?.articleForPath });
   }
 
