@@ -240,6 +240,7 @@
         :key="`chapter-comments-dialog-${commentKey}`"
         class="p-5"
         scroll-mode="dialog"
+        compact-editor
         scope="chapter"
         :target="currentChapterUuid"
       />

@@ -19,12 +19,12 @@
         v-for="[action, icon] in group"
         :key="action"
         type="button"
-        class="btn btn-ghost btn-xs btn-square rounded-inner"
+        class="btn btn-ghost btn-xs btn-square tooltip"
         :class="{ 'btn-active': action === 'monospace' && monospace }"
         :aria-pressed="action === 'monospace' ? monospace : undefined"
         :aria-label="label(action)"
+        :data-tip="label(action)"
         :disabled="disabled"
-        :title="label(action)"
         @mousedown.prevent
         @click="choose(action)"
       >
@@ -44,7 +44,10 @@
       </template>
     </ActionMenu>
 
-    <div aria-hidden="true" class="pointer-events-none invisible absolute start-0 top-0 size-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none invisible absolute start-0 top-0 size-0 overflow-hidden"
+    >
       <span ref="buttonSize" class="btn btn-ghost btn-xs btn-square"></span>
       <span ref="dividerSize" class="inline-block border-s px-1"></span>
     </div>
@@ -65,25 +68,62 @@ const buttonSize = ref(null);
 const dividerSize = ref(null);
 const label = (action) => t("comments.toolbar." + action);
 const formatGroups = [
-  [["heading", "ri-h-2"], ["bold", "ri-bold"], ["italic", "ri-italic"], ["strike", "ri-strikethrough"]],
-  [["quote", "ri-double-quotes-l"], ["code", "ri-code-line"], ["link", "ri-link"]],
-  [["bullet", "ri-list-unordered"], ["ordered", "ri-list-ordered"], ["task", "ri-list-check-2"]],
-  [["mention", "ri-at-line"], ["image", "ri-image-line"], ["table", "ri-table-line"],
-    ["codeBlock", "ri-code-box-line"], ["details", "ri-expand-up-down-line"], ["math", "ri-functions"]],
+  [
+    ["heading", "ri-h-2"],
+    ["bold", "ri-bold"],
+    ["italic", "ri-italic"],
+    ["strike", "ri-strikethrough"],
+  ],
+  [
+    ["quote", "ri-double-quotes-l"],
+    ["code", "ri-code-line"],
+    ["link", "ri-link"],
+  ],
+  [
+    ["bullet", "ri-list-unordered"],
+    ["ordered", "ri-list-ordered"],
+    ["task", "ri-list-check-2"],
+  ],
+  [
+    ["mention", "ri-at-line"],
+    ["image", "ri-image-line"],
+    ["table", "ri-table-line"],
+    ["codeBlock", "ri-code-box-line"],
+    ["details", "ri-expand-up-down-line"],
+    ["math", "ri-functions"],
+  ],
   [["monospace", "ri-font-mono"]],
 ];
 const actions = formatGroups.flat();
 const priority = [
-  "bold", "italic", "code", "link", "heading", "strike", "quote", "bullet", "ordered", "task",
-  "mention", "image", "table", "codeBlock", "details", "math", "monospace",
+  "bold",
+  "italic",
+  "code",
+  "link",
+  "heading",
+  "strike",
+  "quote",
+  "bullet",
+  "ordered",
+  "task",
+  "mention",
+  "image",
+  "table",
+  "codeBlock",
+  "details",
+  "math",
+  "monospace",
 ];
-const groupByAction = new Map(formatGroups.flatMap((group, index) =>
-  group.map(([action]) => [action, index]),
-));
+const groupByAction = new Map(
+  formatGroups.flatMap((group, index) =>
+    group.map(([action]) => [action, index]),
+  ),
+);
 const visible = ref(new Set());
-const visibleGroups = computed(() => formatGroups
-  .map((group) => group.filter(([action]) => visible.value.has(action)))
-  .filter((group) => group.length),
+const visibleGroups = computed(() =>
+  formatGroups
+    .map((group) => group.filter(([action]) => visible.value.has(action)))
+    .filter((group) => group.length),
 );
 const overflowGroups = computed(() =>
   formatGroups
@@ -101,7 +141,11 @@ const overflowGroups = computed(() =>
 let observer;
 
 function showActions(next) {
-  if (visible.value.size === next.size && [...next].every((action) => visible.value.has(action))) return;
+  if (
+    visible.value.size === next.size &&
+    [...next].every((action) => visible.value.has(action))
+  )
+    return;
   visible.value = next;
 }
 
@@ -109,14 +153,19 @@ function updateToolbar() {
   const bar = toolbar.value;
   if (!bar || !buttonSize.value || !dividerSize.value) return;
   const style = getComputedStyle(bar);
-  const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+  const padding =
+    (parseFloat(style.paddingLeft) || 0) +
+    (parseFloat(style.paddingRight) || 0);
   const width = bar.clientWidth - padding;
   const button = buttonSize.value.getBoundingClientRect().width;
   const gap = parseFloat(style.columnGap) || 0;
   const groupSpace = dividerSize.value.getBoundingClientRect().width + gap;
   if (!button) return;
 
-  if (actions.length * button + (formatGroups.length - 1) * groupSpace <= width) {
+  if (
+    actions.length * button + (formatGroups.length - 1) * groupSpace <=
+    width
+  ) {
     showActions(new Set(priority));
     return;
   }

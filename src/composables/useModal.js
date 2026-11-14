@@ -311,6 +311,7 @@ const modal = {
       buttonMode = "footer",
       variant = "default",
       scrollContent = false,
+      panelClass,
       showBack = false,
       backLabel = "返回",
       leadingAction = null,
@@ -352,6 +353,7 @@ const modal = {
               buttonMode,
               variant,
               scrollContent,
+              panelClass,
               showBack,
               backLabel: localeService.text(backLabel),
               onSubmit,
@@ -372,7 +374,9 @@ const modal = {
               description: () =>
                 typeof description === "string"
                   ? h("p", localeService.text(description))
-                  : h("article", description),
+                  : h("article", {
+                      class: scrollContent === "nested" ? "flex min-h-0 flex-1 flex-col" : undefined,
+                    }, description),
               "leading-action": () => leadingAction,
             },
           );

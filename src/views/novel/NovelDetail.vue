@@ -288,6 +288,7 @@
         <div class="min-w-0">
           <Thread
             scope="book"
+            :compact-editor="mobile"
             :target="bookTerm"
           />
         </div>
@@ -405,6 +406,7 @@ watch(
 
 const { imageLoaded, handleImageLoad } = useImageLoad();
 const opening = useViewportSection();
+const mobile = useMediaQuery("(width < 1024px)");
 const isWideOpening = useMediaQuery("(min-width: 40rem)");
 const sections = [
   { id: "novel-opening", titleKey: "novel.reader.cover" },

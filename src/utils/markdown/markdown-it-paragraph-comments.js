@@ -5,6 +5,7 @@ import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
 import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 import { useLocale } from "@/i18n";
+import { RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS } from "@/constants/reader-layout";
 
 export const useParagraphComments = ({ enabled, resolver } = {}) => {
   const modal = useModal();
@@ -273,6 +274,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
     modal.info(titleNode, h(ParagraphComments, { paragraphId, sourceType }), {
       buttonMode: "close",
       scrollContent: "nested",
+      panelClass: RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS,
     });
   };
 

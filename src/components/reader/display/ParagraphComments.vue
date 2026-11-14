@@ -1,6 +1,6 @@
 <template>
   <Thread :key="paragraphId" :scope="sourceType === 'novel' ? 'novel-paragraph' : 'article-paragraph'"
-    :target="paragraphId" scroll-mode="dialog" @count="updateCount" />
+    :target="paragraphId" scroll-mode="dialog" compact-editor @count="updateCount" />
 </template>
 
 <script setup>

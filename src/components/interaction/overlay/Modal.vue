@@ -9,9 +9,9 @@
     <section
       ref="modalRef"
       class="modal-box relative scrollbar-thin"
-      :class="{
+      :class="[panelClass, {
         'flex max-h-[82dvh] flex-col overflow-hidden p-0': scrollContent,
-      }"
+      }]"
     >
       <header
         :class="{
@@ -150,6 +150,7 @@ const props = defineProps({
     default: false,
     validator: (value) => typeof value === "boolean" || value === "nested",
   },
+  panelClass: { type: [String, Array], default: undefined },
   showBack: {
     type: Boolean,
     default: false,

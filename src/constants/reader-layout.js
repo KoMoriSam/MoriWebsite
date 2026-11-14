@@ -12,3 +12,9 @@ export const MOBILE_READER_GRID_CLASS =
   "h-full min-h-0 flex-1 items-stretch! overflow-hidden";
 export const MOBILE_READER_CONTENT_CLASS =
   "flex h-full min-h-0 flex-col self-stretch overflow-hidden border-0! p-0!";
+
+export const MOBILE_READER_DIALOG_SIZE_CLASS =
+  "h-dvh max-h-dvh rounded-none sm:h-[min(90dvh,52rem)] sm:max-h-[min(90dvh,52rem)] sm:rounded-box";
+
+export const RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS =
+  "max-lg:h-dvh max-lg:max-h-dvh! max-sm:rounded-none sm:max-lg:h-[min(90dvh,52rem)] sm:max-lg:max-h-[min(90dvh,52rem)]!";

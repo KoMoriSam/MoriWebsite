@@ -101,6 +101,7 @@
         ]"
         :style="{
           top: stickyTop,
+          '--reader-sticky-top': stickyTop,
         }"
       >
         <aside

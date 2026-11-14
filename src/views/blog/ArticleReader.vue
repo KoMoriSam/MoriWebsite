@@ -3,7 +3,7 @@
     ref="readerRef"
     toc
     :aside="showReaderAside"
-    aside-class="lg:[&>aside]:flex lg:[&>aside]:flex-col"
+    aside-class="lg:[&>aside]:flex lg:[&>aside]:h-[calc(100dvh-2*var(--reader-sticky-top))] lg:[&>aside]:max-h-none lg:[&>aside]:flex-col lg:[&>aside]:overflow-hidden"
   >
     <!-- 文章内容 -->
     <Renderer
@@ -521,11 +521,12 @@
     </template>
 
     <template #aside v-if="loading || (content && article?.id != null)">
-      <CommentsPlaceholder v-if="loading" sidebar />
+      <CommentsPlaceholder v-if="loading" sidebar :compact-editor="mobile" />
       <Thread
         v-else
         :key="article.id"
         scroll-mode="sidebar"
+        :compact-editor="mobile"
         scope="article"
         :target="String(article.id)"
       />
@@ -552,6 +553,7 @@ const {
 
 import { computed, defineAsyncComponent, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { useMediaQuery } from "@vueuse/core";
 import { Translation as I18nT } from "vue-i18n";
 import Thread from "@/components/comments/Thread.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -715,6 +717,7 @@ const openArticleContextSearch = (keyword) => {
   });
 };
 
+const mobile = useMediaQuery("(width < 1024px)");
 const showReaderAside = computed(
   () =>
     props.loading ||

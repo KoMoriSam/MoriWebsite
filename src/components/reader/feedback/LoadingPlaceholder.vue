@@ -21,13 +21,15 @@
       :content-class="mobileNovel ? MOBILE_READER_CONTENT_CLASS : ''"
       :show-toc="!mobileNovel"
       :show-aside="!mobileNovel"
-      aside-class="lg:[&>aside]:flex lg:[&>aside]:flex-col"
+      :aside-class="kind === 'novel'
+        ? 'lg:[&>aside]:flex lg:[&>aside]:flex-col'
+        : 'lg:[&>aside]:flex lg:[&>aside]:h-[calc(100dvh-2*var(--reader-sticky-top))] lg:[&>aside]:max-h-none lg:[&>aside]:flex-col lg:[&>aside]:overflow-hidden'"
       sticky-top="2rem"
     >
       <template #mobile-toc><TocPlaceholder mobile :novel="kind === 'novel'" /></template>
       <template #toc><TocPlaceholder :novel="kind === 'novel'" /></template>
       <ContentPlaceholder :kind="kind" :article="article" :chapter="chapter" :mobile="mobileNovel" :show-header="showHeader" />
-      <template #aside><CommentsPlaceholder :novel="kind === 'novel'" sidebar /></template>
+      <template #aside><CommentsPlaceholder :novel="kind === 'novel'" sidebar :compact-editor="mobile" /></template>
     </ContentGrid>
     <ContentPlaceholder v-else :kind="kind" :article="article" :chapter="chapter" :mobile="mobileNovel" :show-header="showHeader" />
   </section>

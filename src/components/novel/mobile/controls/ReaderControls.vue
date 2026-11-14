@@ -194,7 +194,8 @@
       @cancel.prevent="requestPlatformCloseDialog"
     >
       <div
-        class="modal-box flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none p-0 sm:h-[min(90dvh,52rem)] sm:max-h-[min(90dvh,52rem)] sm:rounded-box"
+        class="modal-box flex flex-col overflow-hidden p-0"
+        :class="MOBILE_READER_DIALOG_SIZE_CLASS"
       >
         <ReaderDialogHeader
           :title="translate('reader.controls.layout')"
@@ -243,7 +244,10 @@
       class="modal modal-bottom z-[90]"
       @cancel.prevent="requestPlatformCloseDialog"
     >
-      <div class="modal-box flex max-h-[78dvh] flex-col overflow-hidden rounded-t-box p-0">
+      <div
+        class="modal-box flex flex-col overflow-hidden p-0"
+        :class="MOBILE_READER_DIALOG_SIZE_CLASS"
+      >
         <ReaderDialogHeader
           class="shrink-0"
           :title="currentMapping === 'title' ? translate('novel.reader.chapterComments') : translate('novel.reader.bookComments')"
@@ -264,6 +268,7 @@
           :key="commentKey"
           class="p-4"
           scroll-mode="dialog"
+          compact-editor
           :scope="currentMapping === 'title' ? 'chapter' : 'book'"
           :target="currentMapping === 'title' ? currentChapter?.uuid || '' : bookTerm"
         />
@@ -290,6 +295,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import Thread from "@/components/comments/Thread.vue";
+import { MOBILE_READER_DIALOG_SIZE_CLASS } from "@/constants/reader-layout";
 import { useNovelStore } from "@/stores/novel";
 import { useReaderStore } from "@/stores/readerStore";
 import { useChapters } from "@/composables/novel/useChapters";
