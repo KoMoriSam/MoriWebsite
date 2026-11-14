@@ -1,15 +1,15 @@
 <template>
   <Popover
-    :label="t('reader.comments.editHistory')"
+    :label="t('comments.editHistory')"
     align="start"
     trigger-class="cursor-pointer text-xs text-base-content/60 hover:underline"
     panel-class="text-sm"
     @open="openHistory"
   >
-    <template #trigger>{{ t("reader.comments.edited") }}</template>
+    <template #trigger>{{ t("comments.edited") }}</template>
     <ul v-if="edits.length" class="divide-y divide-base-300">
       <li v-for="edit in edits" :key="edit.id" class="flex flex-wrap gap-x-3 gap-y-1 px-2 py-1.5">
-        <span class="font-medium wrap-anywhere">{{ edit.editor || t("reader.comments.unknownEditor") }}</span>
+        <span class="font-medium wrap-anywhere">{{ edit.editor || t("comments.unknownEditor") }}</span>
         <time :datetime="edit.editedAt" class="text-base-content/65">
           {{ formatDate(edit.editedAt, { dateStyle: "medium", timeStyle: "short" }) }}
         </time>
@@ -17,19 +17,19 @@
     </ul>
     <p v-if="pending" role="status" class="flex items-center gap-2 px-2 py-1.5">
       <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
-      {{ t("reader.comments.loadingEdits") }}
+      {{ t("comments.loadingEdits") }}
     </p>
     <template v-else-if="failed">
-      <p role="alert" class="px-2 py-1.5">{{ t("reader.comments.editsUnavailable") }}</p>
+      <p role="alert" class="px-2 py-1.5">{{ t("comments.editsUnavailable") }}</p>
       <button class="btn btn-ghost btn-xs rounded-inner" type="button" @click="load">
         {{ t("common.navigationStatus.retry") }}
       </button>
     </template>
     <button v-else-if="nextCursor" class="btn btn-ghost btn-xs rounded-inner" type="button" @click="load">
-      {{ t("reader.comments.olderEdits") }}
+      {{ t("comments.olderEdits") }}
     </button>
     <p v-else-if="loaded && !edits.length" class="px-2 py-1.5">
-      {{ t("reader.comments.noEdits") }}
+      {{ t("comments.noEdits") }}
     </p>
   </Popover>
 </template>

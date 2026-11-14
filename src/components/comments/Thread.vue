@@ -7,7 +7,7 @@
       'lg:[--comment-editor-max-height:40dvh]': scrollMode === 'sidebar',
     }"
     :aria-busy="pending"
-    :aria-label="t('reader.comments.title')"
+    :aria-label="t('comments.title')"
   >
     <component :is="scrollMode ? ScrollableContainer : 'div'">
       <div
@@ -29,7 +29,7 @@
         >
           <span>{{ t(error) }}</span>
           <button
-            v-if="error === 'reader.comments.reauthorize'"
+            v-if="error === 'comments.reauthorize'"
             type="button"
             class="btn btn-sm"
             @click="auth.login({ reauthorize: true, hash: returnHash })"
@@ -62,7 +62,7 @@
               rel="noopener noreferrer"
             >
               <i class="ri-github-fill" aria-hidden="true"></i>
-              {{ t("reader.comments.openGithub") }}
+              {{ t("comments.openGithub") }}
             </a>
           </div>
           <div class="flex min-w-0 flex-col gap-4">
@@ -70,13 +70,13 @@
               <span class="flex flex-wrap items-center gap-x-2 text-sm font-semibold">
                 <span>{{ t("common.counts.comments", { count: number(commentCount) }, commentCount) }}</span>
                 <span aria-hidden="true">·</span>
-                <span>{{ t("reader.comments.replies", { count: number(replyCount) }, replyCount) }}</span>
+                <span>{{ t("comments.replies", { count: number(replyCount) }, replyCount) }}</span>
               </span>
               <div v-if="discussion" class="flex flex-wrap items-center gap-2">
                 <div
                   class="tabs tabs-box tabs-sm"
                   role="radiogroup"
-                  :aria-label="t('reader.comments.sort')"
+                  :aria-label="t('comments.sort.label')"
                 >
                   <input
                     v-for="order in ['oldest', 'newest', 'top']"
@@ -84,7 +84,7 @@
                     v-model="sort"
                     :name="sortGroup"
                     :value="order"
-                    :aria-label="t('reader.comments.' + order)"
+                    :aria-label="t('comments.sort.' + order)"
                     :disabled="pending"
                     type="radio"
                     class="tab whitespace-nowrap"
@@ -93,11 +93,11 @@
               </div>
             </div>
             <p v-if="discussion?.locked" class="text-sm text-base-content/70">
-              {{ t("reader.comments.locked") }}
+              {{ t("comments.locked") }}
             </p>
 
             <p v-if="!comments.length" class="text-sm text-base-content/65">
-              {{ t("reader.comments.empty") }}
+              {{ t("comments.empty") }}
             </p>
             <div v-else class="flex min-w-0 flex-col gap-4">
               <CommentEntry
@@ -133,7 +133,7 @@
                     cancelable
                     :authenticated="moriSession.authenticated"
                     :busy="busy || moriSession.checking"
-                    :label="t('reader.comments.' + editor.action)"
+                    :action="editor.action"
                     @cancel="resetEditor"
                     @submit="submitEditor"
                   />
@@ -172,7 +172,7 @@
                           cancelable
                           :authenticated="moriSession.authenticated"
                           :busy="busy || moriSession.checking"
-                          :label="t('reader.comments.edit')"
+                          action="edit"
                           @cancel="resetEditor"
                           @submit="submitEditor"
                         />
@@ -180,7 +180,7 @@
                     </CommentEntry>
                     <p v-if="replyRequests.has(comment.id)" role="status" class="px-4 py-2 text-sm">
                       <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
-                      {{ t("reader.comments.loadingReplies") }}
+                      {{ t("comments.loadingReplies") }}
                     </p>
                     <button
                       v-else-if="replyErrors.has(comment.id)"
@@ -196,7 +196,7 @@
                       class="btn btn-ghost btn-sm mx-4 my-2"
                       @click="loadReplies(comment)"
                     >
-                      {{ t("reader.comments.moreReplies") }}
+                      {{ t("comments.loadMoreReplies") }}
                     </button>
                   </div>
                 </template>
@@ -209,7 +209,7 @@
               :disabled="pending"
               @click="load(nextCursor)"
             >
-              {{ t("reader.comments.more") }}
+              {{ t("comments.loadMoreComments") }}
             </button>
             <button
               v-if="editor.action !== 'post' && !hasEditorTarget"
@@ -217,7 +217,7 @@
               class="btn btn-ghost btn-sm"
               @click="resetEditor"
             >
-              {{ t("reader.comments.cancel") }}
+              {{ t("comments.cancel") }}
             </button>
           </div>
         </template>
@@ -232,7 +232,6 @@
       :authenticated="moriSession.authenticated"
       :loading="showPlaceholder"
       :busy="busy || moriSession.checking"
-      :label="t('reader.comments.post')"
       @submit="submitEditor"
     />
   </section>
@@ -385,16 +384,16 @@ function report(failure, retry = load) {
   retryRequest = retry;
   error.value =
     failure.message === "COMMENT_RANKING_TOO_LARGE"
-      ? "reader.comments.rankingTooLarge"
+      ? "comments.rankingTooLarge"
       : failure.message === "GITHUB_REAUTHORIZE"
-      ? "reader.comments.reauthorize"
+      ? "comments.reauthorize"
       : failure.message === "COMMENT_ALREADY_SUBMITTED"
-        ? "reader.comments.duplicate"
+        ? "comments.duplicate"
         : failure.status === 403
-          ? "reader.comments.forbidden"
+          ? "comments.forbidden"
           : failure.status === 429
-            ? "reader.comments.rateLimited"
-            : "reader.comments.failed";
+            ? "comments.rateLimited"
+            : "comments.failed";
 }
 
 async function load(cursor) {
@@ -535,7 +534,7 @@ function quoteReply(parent, comment) {
     : "";
   const body = current ? `${current.trimEnd()}\n\n${quote}\n\n` : `${quote}\n\n`;
   if (body.length > 10000) {
-    toast.error(t("reader.comments.quoteTooLong"));
+    toast.error(t("comments.quoteTooLong"));
     return;
   }
   editor.value = { action: "reply", id: parent.id, parentId: null, body };
@@ -605,7 +604,7 @@ async function submitEditor() {
 }
 
 function remove(comment) {
-  if (window.confirm(t("reader.comments.confirmDelete")))
+  if (window.confirm(t("comments.confirmDelete")))
     void mutate("delete", { id: comment.id });
 }
 

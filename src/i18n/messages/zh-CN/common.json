@@ -468,12 +468,113 @@
       "copy": "复制到剪贴板"
     }
   },
-  "reader": {
-    "comments": {
-      "reply": "回复",
-      "loading": "评论加载中…",
-      "slow": "评论加载较慢，请稍候或重试。"
+  "comments": {
+    "title": "评论",
+    "write": "撰写",
+    "reply": "回复",
+    "loginToComment": "登录后评论",
+    "loginToReply": "登录后回复",
+    "replies": "{count} 条回复",
+    "actions": "评论操作",
+    "openGithub": "在 GitHub 查看",
+    "like": "点赞",
+    "unlike": "取消点赞",
+    "dislike": "点踩",
+    "undislike": "取消点踩",
+    "rankingTooLarge": "评论数过多，无法按最热排序。请选择最早或最新。",
+    "toolbar": {
+      "label": "格式工具",
+      "more": "更多格式",
+      "heading": "添加标题",
+      "bold": "加粗",
+      "italic": "设为斜体",
+      "strike": "添加删除线",
+      "quote": "插入引用",
+      "code": "插入代码",
+      "link": "添加链接",
+      "bullet": "添加项目列表",
+      "ordered": "添加编号列表",
+      "task": "添加任务列表",
+      "mention": "提及用户",
+      "image": "通过链接插入图片",
+      "table": "插入表格",
+      "codeBlock": "代码块",
+      "details": "折叠提示框",
+      "math": "数学公式",
+      "monospace": "等宽字体"
     },
+    "emptyPreview": "暂无可预览内容。",
+    "copyLink": "复制链接",
+    "linkCopied": "已复制链接",
+    "copyLinkFailed": "无法复制链接。",
+    "quoteReply": "引用回复",
+    "quoteTooLong": "引用太长，无法加入当前回复。",
+    "edited": "已编辑",
+    "siteOwner": "站长",
+    "contentAuthor": "作者",
+    "editHistory": "编辑记录",
+    "unknownEditor": "未知编辑者",
+    "loadingEdits": "正在加载编辑记录…",
+    "editsUnavailable": "无法加载编辑记录。",
+    "olderEdits": "查看更早的修改",
+    "noEdits": "暂无可查看的编辑记录。",
+    "loadingReplies": "正在加载回复…",
+    "sort": {
+      "label": "排序",
+      "oldest": "最早",
+      "newest": "最新",
+      "top": "最热"
+    },
+    "empty": "暂无评论。",
+    "editor": {
+      "post": {
+        "label": "发表评论",
+        "placeholder": "撰写评论",
+        "submit": "发表评论"
+      },
+      "reply": {
+        "label": "回复",
+        "placeholder": "撰写回复",
+        "submit": "回复"
+      },
+      "edit": {
+        "label": "编辑评论",
+        "placeholder": "撰写评论",
+        "submit": "更新评论"
+      }
+    },
+    "edit": "编辑",
+    "delete": "删除",
+    "confirmDelete": "删除这条评论？",
+    "preview": "预览",
+    "expandEditor": "展开评论编辑器",
+    "collapseEditor": "收起评论编辑器",
+    "markdownHelp": "支持使用 Markdown 排版",
+    "cancel": "取消",
+    "loadMoreComments": "加载更多…",
+    "loadMoreReplies": "加载更多回复",
+    "deletedUser": "已删除的用户",
+    "minimized": "此评论已隐藏。",
+    "minimizedWithReason": "此评论被标记为{reason}。",
+    "minimizedReasons": {
+      "abuse": "滥用",
+      "off-topic": "偏离主题",
+      "outdated": "已过期",
+      "resolved": "已解决",
+      "duplicate": "重复",
+      "spam": "垃圾内容",
+      "low-quality": "低质量"
+    },
+    "locked": "此讨论已锁定。",
+    "chooseReaction": "添加表情反应",
+    "reaction": "添加或移除 {emoji} 反应",
+    "failed": "评论加载或更新失败。",
+    "reauthorize": "请重新授权 GitHub 后继续评论。",
+    "forbidden": "GitHub 拒绝了此操作。",
+    "rateLimited": "请求过于频繁，请稍后重试。",
+    "duplicate": "已收到此请求，请刷新讨论查看结果。"
+  },
+  "reader": {
     "contextMenu": {
       "image": "图片"
     },

@@ -18,13 +18,13 @@
       <div
         class="tabs tabs-lift relative col-start-1 row-start-1 px-(--comment-inset) pt-(--comment-inset)"
         role="radiogroup"
-        :aria-label="label"
+        :aria-label="fieldLabel"
       >
         <input
           v-model="preview"
           :name="tabGroup"
           :value="false"
-          :aria-label="t('reader.comments.write')"
+          :aria-label="t('comments.write')"
           type="radio"
           class="tab"
         />
@@ -32,7 +32,7 @@
           v-model="preview"
           :name="tabGroup"
           :value="true"
-          :aria-label="t('reader.comments.preview')"
+          :aria-label="t('comments.preview')"
           :disabled="!authenticated"
           type="radio"
           class="tab"
@@ -63,7 +63,7 @@
           v-else-if="preview"
           class="col-start-1 row-start-1 p-3 text-base-content/60"
         >
-          {{ t("reader.comments.toolbar.emptyPreview") }}
+          {{ t("comments.emptyPreview") }}
         </p>
         <textarea
           ref="textarea"
@@ -79,8 +79,8 @@
           dir="auto"
           rows="4"
           maxlength="10000"
-          :aria-label="label"
-          :placeholder="label"
+          :aria-label="fieldLabel"
+          :placeholder="placeholder"
         />
         <div
           v-if="loading"
@@ -100,7 +100,7 @@
         class="btn btn-ghost btn-sm rounded-inner font-normal text-base-content/65"
       >
         <i class="ri-markdown-line text-base" aria-hidden="true"></i>
-        <span :class="{ 'skeleton skeleton-text': loading }">{{ t("reader.comments.markdownPlaceholder") }}</span>
+        <span :class="{ 'skeleton skeleton-text': loading }">{{ t("comments.markdownHelp") }}</span>
       </a>
       <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
         <button
@@ -110,7 +110,7 @@
           :disabled="busy"
           @click="$emit('cancel')"
         >
-          {{ t("reader.comments.cancel") }}
+          {{ t("comments.cancel") }}
         </button>
         <button
           v-if="authenticated"
@@ -118,7 +118,7 @@
           class="btn btn-primary btn-sm rounded-inner"
           :disabled="loading || busy || !body.trim()"
         >
-          <span :class="{ 'skeleton skeleton-text': loading }">{{ label }}</span>
+          <span :class="{ 'skeleton skeleton-text': loading }">{{ submitLabel }}</span>
         </button>
         <LoginButton
           v-else
@@ -127,6 +127,7 @@
           :disabled="busy"
           :return-hash="returnHash"
           :login-action="loginAction"
+          :label="t('comments.loginToComment')"
         />
       </div>
     </footer>
@@ -143,7 +144,7 @@ import { editMarkdown } from "@/utils/markdown/edit-markdown";
 const Renderer = defineAsyncComponent(() => import("@/components/markdown/Renderer.vue"));
 const body = defineModel({ type: String, required: true });
 const props = defineProps({
-  label: String,
+  action: { type: String, default: "post" },
   returnHash: String,
   loginAction: Function,
   busy: Boolean,
@@ -163,6 +164,9 @@ const monospace = useStorage("mori:comments:monospace", false, undefined, {
 });
 const tabGroup = useId();
 const { t } = useLocale();
+const fieldLabel = computed(() => t(`comments.editor.${props.action}.label`));
+const placeholder = computed(() => t(`comments.editor.${props.action}.placeholder`));
+const submitLabel = computed(() => t(`comments.editor.${props.action}.submit`));
 const shortcuts = { b: "bold", i: "italic", e: "code", k: "link" };
 
 function format(action) {

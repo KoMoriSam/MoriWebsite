@@ -3,7 +3,7 @@
     ref="toolbar"
     class="relative flex min-w-0 items-center gap-1"
     role="group"
-    :aria-label="t('reader.comments.toolbar.label')"
+    :aria-label="t('comments.toolbar.label')"
   >
     <div
       v-for="(group, index) in visibleGroups"
@@ -63,7 +63,7 @@ const { t } = useLocale();
 const toolbar = ref(null);
 const buttonSize = ref(null);
 const dividerSize = ref(null);
-const label = (action) => t("reader.comments.toolbar." + action);
+const label = (action) => t("comments.toolbar." + action);
 const formatGroups = [
   [["heading", "ri-h-2"], ["bold", "ri-bold"], ["italic", "ri-italic"], ["strike", "ri-strikethrough"]],
   [["quote", "ri-double-quotes-l"], ["code", "ri-code-line"], ["link", "ri-link"]],

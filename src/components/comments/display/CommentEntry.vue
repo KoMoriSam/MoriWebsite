@@ -22,13 +22,13 @@
           {{ comment.author.login }}
         </a>
         <span v-else class="min-w-0 font-semibold wrap-anywhere">
-          {{ comment.author?.login || t("reader.comments.deletedUser") }}
+          {{ comment.author?.login || t("comments.deletedUser") }}
         </span>
         <span v-if="isSiteOwner" class="badge badge-outline badge-xs">
-          {{ t("reader.comments.siteOwner") }}
+          {{ t("comments.siteOwner") }}
         </span>
         <span v-if="isContentAuthor" class="badge badge-outline badge-xs">
-          {{ t("reader.comments.contentAuthor") }}
+          {{ t("comments.contentAuthor") }}
         </span>
         <Popover
           :label="publishedAt"
@@ -51,7 +51,7 @@
         />
       </div>
       <ActionMenu
-        :label="t('reader.comments.actions')"
+        :label="t('comments.actions')"
         :disabled="busy"
         :groups="actionGroups"
         trigger-class="btn btn-ghost btn-xs btn-square ms-auto"
@@ -63,7 +63,7 @@
       </ActionMenu>
     </header>
     <p v-if="comment.isMinimized" class="px-4 py-4 text-base-content/60">
-      {{ t("reader.comments.minimized") }}
+      {{ t("comments.minimized") }}
     </p>
     <template v-else>
       <Renderer
@@ -89,7 +89,7 @@
           @click="$emit('toggle-replies')"
         >
           <i :class="repliesOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" aria-hidden="true"></i>
-          {{ t("reader.comments.replies", { count: number(replyCount) }, replyCount) }}
+          {{ t("comments.replies", { count: number(replyCount) }, replyCount) }}
         </button>
       </footer>
     </template>
@@ -100,7 +100,7 @@
       :aria-expanded="repliesOpen"
       @click="$emit('toggle-replies')"
     >
-      {{ t("reader.comments.replies", { count: number(replyCount) }, replyCount) }}
+      {{ t("comments.replies", { count: number(replyCount) }, replyCount) }}
     </button>
     <div
       v-if="$slots.editor || $slots.replies || showReplyControl"
@@ -117,7 +117,7 @@
           :disabled="busy"
           @click="$emit('reply')"
         >
-          {{ t(authenticated ? "reader.comments.reply" : "reader.comments.loginToReply") }}
+          {{ t(authenticated ? "comments.reply" : "comments.loginToReply") }}
         </button>
       </div>
     </div>
@@ -183,16 +183,16 @@ const canDeleteComment = computed(
 const actionGroups = computed(() => [
   {
     items: [
-      commentUrl.value && { id: "copyLink", label: t("reader.comments.copyLink") },
-      canQuoteComment.value && { id: "quote", label: t("reader.comments.quoteReply") },
+      commentUrl.value && { id: "copyLink", label: t("comments.copyLink") },
+      canQuoteComment.value && { id: "quote", label: t("comments.quoteReply") },
     ].filter(Boolean),
   },
   {
     items: [
-      canEditComment.value && { id: "edit", label: t("reader.comments.edit") },
+      canEditComment.value && { id: "edit", label: t("comments.edit") },
       canDeleteComment.value && {
         id: "delete",
-        label: t("reader.comments.delete"),
+        label: t("comments.delete"),
         destructive: true,
       },
     ].filter(Boolean),
@@ -203,9 +203,9 @@ async function copyLink() {
   try {
     await copy(commentUrl.value);
     if (!copied.value) throw new Error("Clipboard is unavailable");
-    toast.success(t("reader.contextMenu.linkCopied"));
+    toast.success(t("comments.linkCopied"));
   } catch {
-    toast.error(t("reader.contextMenu.copyFailed"));
+    toast.error(t("comments.copyLinkFailed"));
   }
 }
 const replyCount = computed(() => props.comment.replies?.totalCount || 0);

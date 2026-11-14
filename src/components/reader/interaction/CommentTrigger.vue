@@ -5,14 +5,14 @@
     class="comment-trigger group"
     :data-paragraph-id="paragraphId"
     :data-source-type="sourceType"
-    :aria-label="translate('reader.comments.open')"
+    :aria-label="translate('reader.paragraphComments.open')"
     @click="requestOpen"
   >
     <span
       class="paragraph-comment-count"
       :data-paragraph-id="paragraphId"
       :data-source-type="sourceType"
-      :aria-label="translate('reader.comments.count')"
+      :aria-label="translate('reader.paragraphComments.count')"
     >
       {{ countLabel }}
     </span>

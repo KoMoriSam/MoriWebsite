@@ -470,12 +470,113 @@
       "copy": "Copier dans le presse-papiers"
     }
   },
-  "reader": {
-    "comments": {
-      "reply": "Répondre à",
-      "loading": "Chargement des commentaires…",
-      "slow": "Le chargement des commentaires prend plus de temps. Veuillez patienter ou réessayer."
+  "comments": {
+    "title": "Commentaires",
+    "write": "Écrire",
+    "reply": "Répondre",
+    "loginToComment": "Se connecter pour commenter",
+    "loginToReply": "Se connecter pour répondre",
+    "replies": "{count} réponse | {count} réponses",
+    "actions": "Options du commentaire",
+    "openGithub": "Voir sur GitHub",
+    "like": "J’aime",
+    "unlike": "Retirer la mention J’aime",
+    "dislike": "Je n’aime pas",
+    "undislike": "Retirer la mention Je n’aime pas",
+    "rankingTooLarge": "Cette discussion contient trop de commentaires pour les trier par popularité. Triez-les du plus ancien ou du plus récent.",
+    "toolbar": {
+      "label": "Outils de mise en forme",
+      "more": "Plus de formats",
+      "heading": "Ajouter un titre",
+      "bold": "Mettre en gras",
+      "italic": "Mettre en italique",
+      "strike": "Barrer le texte",
+      "quote": "Insérer une citation",
+      "code": "Insérer du code",
+      "link": "Ajouter un lien",
+      "bullet": "Ajouter une liste à puces",
+      "ordered": "Ajouter une liste numérotée",
+      "task": "Ajouter une liste de tâches",
+      "mention": "Mentionner une personne",
+      "image": "Insérer une image depuis une URL",
+      "table": "Insérer un tableau",
+      "codeBlock": "Bloc de code",
+      "details": "Note repliable",
+      "math": "Formule mathématique",
+      "monospace": "Police à chasse fixe"
     },
+    "emptyPreview": "Aucun contenu à prévisualiser.",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié",
+    "copyLinkFailed": "Impossible de copier le lien.",
+    "quoteReply": "Citer dans la réponse",
+    "quoteTooLong": "Cette citation est trop longue pour la réponse actuelle.",
+    "edited": "Modifié",
+    "siteOwner": "Responsable du site",
+    "contentAuthor": "Auteur",
+    "editHistory": "Historique des modifications",
+    "unknownEditor": "Éditeur inconnu",
+    "loadingEdits": "Chargement de l’historique…",
+    "editsUnavailable": "Impossible de charger l’historique.",
+    "olderEdits": "Modifications précédentes",
+    "noEdits": "Aucun historique disponible.",
+    "loadingReplies": "Chargement des réponses…",
+    "sort": {
+      "label": "Tri",
+      "oldest": "Anciens",
+      "newest": "Récents",
+      "top": "Les plus populaires"
+    },
+    "empty": "Aucun commentaire.",
+    "editor": {
+      "post": {
+        "label": "Ajouter un commentaire",
+        "placeholder": "Écrire un commentaire",
+        "submit": "Commenter"
+      },
+      "reply": {
+        "label": "Répondre",
+        "placeholder": "Écrire une réponse",
+        "submit": "Répondre"
+      },
+      "edit": {
+        "label": "Modifier le commentaire",
+        "placeholder": "Écrire un commentaire",
+        "submit": "Mettre à jour le commentaire"
+      }
+    },
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirmDelete": "Supprimer ce commentaire ?",
+    "preview": "Aperçu",
+    "expandEditor": "Agrandir l’éditeur de commentaire",
+    "collapseEditor": "Réduire l’éditeur de commentaire",
+    "markdownHelp": "La mise en forme avec Markdown est prise en charge",
+    "cancel": "Annuler",
+    "loadMoreComments": "Afficher plus…",
+    "loadMoreReplies": "Afficher plus de réponses",
+    "deletedUser": "Compte supprimé",
+    "minimized": "Ce commentaire a été masqué.",
+    "minimizedWithReason": "Ce commentaire a été signalé pour le motif suivant : {reason}.",
+    "minimizedReasons": {
+      "abuse": "contenu abusif",
+      "off-topic": "hors sujet",
+      "outdated": "obsolète",
+      "resolved": "résolu",
+      "duplicate": "doublon",
+      "spam": "spam",
+      "low-quality": "contenu de faible qualité"
+    },
+    "locked": "Cette discussion est verrouillée.",
+    "chooseReaction": "Ajouter une réaction",
+    "reaction": "Réagir avec {emoji}",
+    "failed": "Impossible de charger ou de modifier les commentaires.",
+    "reauthorize": "Reconnectez GitHub pour continuer à commenter.",
+    "forbidden": "GitHub a refusé cette action.",
+    "rateLimited": "Trop de requêtes. Réessayez dans un instant.",
+    "duplicate": "Cette demande a déjà été reçue. Rechargez la discussion pour vérifier le résultat."
+  },
+  "reader": {
     "contextMenu": {
       "image": "Image"
     },

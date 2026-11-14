@@ -19,7 +19,7 @@
     </button>
     <Popover
       ref="picker"
-      :label="t('reader.comments.chooseReaction')"
+      :label="t('comments.chooseReaction')"
       :disabled="disabled"
       :placement="placement"
       align="start"
@@ -37,7 +37,7 @@
         :class="{ 'btn-active': reaction.viewerHasReacted }"
         :disabled="disabled"
         :aria-pressed="Boolean(reaction.viewerHasReacted)"
-        :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
+        :aria-label="t('comments.reaction', { emoji: reaction.emoji })"
         @click="choose(reaction)"
       >
         {{ reaction.emoji }}
@@ -55,7 +55,7 @@
       "
       :disabled="disabled"
       :aria-pressed="Boolean(reaction.viewerHasReacted)"
-      :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
+      :aria-label="t('comments.reaction', { emoji: reaction.emoji })"
       @click="$emit('react', reaction)"
     >
       {{ reaction.emoji }} {{ reaction.count }}
@@ -107,7 +107,7 @@ const votes = computed(() =>
     return {
       ...reaction,
       icon: `${icon}-${selected ? "fill" : "line"}`,
-      label: t(`reader.comments.${selected ? undo : label}`),
+      label: t(`comments.${selected ? undo : label}`),
     };
   }),
 );

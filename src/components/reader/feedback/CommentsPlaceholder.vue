@@ -29,7 +29,7 @@
         </div>
         <span class="skeleton skeleton-text ms-auto flex items-center gap-1">
           <i class="ri-github-fill"></i>
-          {{ t("reader.comments.openGithub") }}
+          {{ t("comments.openGithub") }}
         </span>
       </div>
 
@@ -47,7 +47,7 @@
               class="tab whitespace-nowrap"
               :class="{ 'tab-active': order === 'oldest' }"
             >
-              <span class="skeleton skeleton-text">{{ t("reader.comments." + order) }}</span>
+              <span class="skeleton skeleton-text">{{ t("comments.sort." + order) }}</span>
             </span>
           </div>
         </div>
@@ -91,7 +91,7 @@
           <div class="comment-surface-bottom border-t border-base-300 bg-(--comment-reply-bg) p-(--comment-inset)">
             <span class="btn btn-sm rounded-inner w-full justify-start border-base-300 bg-base-100 font-normal">
               <span class="skeleton skeleton-text">
-                {{ t(authenticated ? "reader.comments.reply" : "reader.comments.loginToReply") }}
+                {{ t(authenticated ? "comments.reply" : "comments.loginToReply") }}
               </span>
             </span>
           </div>
@@ -105,7 +105,6 @@
       model-value=""
       loading
       :authenticated="authenticated"
-      :label="t('reader.comments.post')"
     />
   </section>
 </template>
