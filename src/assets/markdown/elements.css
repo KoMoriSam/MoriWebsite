@@ -1,0 +1,236 @@
+/* Typography supplies the standard scale, inline emphasis and table chrome.
+   These rules describe the site's Markdown design and accept layout tokens. */
+@layer utilities {
+  .markdown :where(p, ul, ol, table, blockquote, pre):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(p, ul, ol, blockquote, pre) {
+    margin-block: var(--md-block-gap, var(--para-margin-inline, 0.75rem));
+  }
+
+  .markdown :where(h1, h2, h3, h4, h5, h6):not(:where(.not-prose, .not-prose *)) {
+    font-family: var(--font-serif);
+    font-weight: var(--md-heading-weight);
+    margin-block: 0;
+    padding-block: var(--md-heading-padding);
+    text-wrap: balance;
+  }
+
+  .markdown-reading :where(h1, h2, h3, h4, h5, h6):not(:where(.not-prose, .not-prose *)) {
+    font-size: var(--md-heading-size);
+    line-height: var(--md-heading-leading);
+    letter-spacing: var(--md-heading-tracking, normal);
+  }
+
+  .markdown :where(h1) {
+    --md-heading-weight: 800;
+    --md-heading-size: var(--md-h1-size);
+    --md-heading-leading: var(--md-h1-leading);
+    --md-heading-tracking: calc(var(--para-letter-spacing, 0em) * 1.25);
+  }
+
+  .markdown :where(h2) {
+    --md-heading-weight: 700;
+    --md-heading-size: var(--md-h2-size);
+    --md-heading-leading: var(--md-h2-leading);
+    --md-heading-tracking: calc(var(--para-letter-spacing, 0em) * 1.125);
+  }
+
+  .markdown :where(h3) { --md-heading-weight: 600; }
+
+  .markdown :where(h4, h5, h6) {
+    --md-heading-weight: 500;
+    --md-subheading-padding: 0.5rem 0;
+  }
+
+  .markdown :where(h3, h4, h5, h6) {
+    --md-heading-size: var(--md-h3-size);
+    --md-heading-leading: var(--md-h3-leading);
+    --md-heading-tracking: var(--para-letter-spacing, 0em);
+    --md-heading-padding: var(--md-subheading-padding, 0.5rem 0.25rem);
+  }
+
+  .markdown :where(p, li):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(p, li) {
+    font-size: var(--md-text-size, inherit);
+    line-height: var(--md-leading, inherit);
+    letter-spacing: var(--md-tracking, inherit);
+  }
+
+  .markdown :where(p):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(p) {
+    text-align: var(--md-align, start);
+    text-wrap: pretty;
+    text-indent: var(--md-indent, 0);
+  }
+
+  .markdown :where(ul, ol):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(ul, ol) {
+    --md-marker-width: 1em;
+    font-size: var(--md-text-size, inherit);
+    padding-inline-start: calc(var(--md-marker-width) + var(--md-list-offset, 0px));
+  }
+
+  .markdown :where(li > :is(ul, ol)):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(li > :is(ul, ol)) {
+    padding-inline-start: var(--md-marker-width);
+  }
+
+  .markdown :where(ol):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(ol) {
+    --md-marker-width: max(1em, var(--md-ordered-marker-space, 1em));
+    --md-counter-style: decimal;
+  }
+
+  :is(.markdown, .markdown-fragment) :where(ol ol:not([type]), ol[type="a" s]) { --md-counter-style: lower-alpha; }
+  :is(.markdown, .markdown-fragment) :where(ol ol ol:not([type]), ol[type="i" s]) { --md-counter-style: lower-roman; }
+  :is(.markdown, .markdown-fragment) :where(ol[type="A" s]) { --md-counter-style: upper-alpha; }
+  :is(.markdown, .markdown-fragment) :where(ol[type="I" s]) { --md-counter-style: upper-roman; }
+
+  .markdown :where(ol > li):not(:where(.not-prose, .not-prose *))::marker,
+  .markdown-fragment :where(ol > li)::marker {
+    content: none;
+  }
+
+  .markdown :where(ol > li):not(:where(.not-prose, .not-prose *, .task-list-item))::before,
+  .markdown-fragment :where(ol > li):not(.task-list-item)::before {
+    content: counter(list-item, var(--md-counter-style)) ".";
+    color: var(--tw-prose-counters, currentColor);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .markdown :where(ol > li):not(:where(.not-prose, .not-prose *))::before,
+  .markdown-fragment :where(ol > li)::before,
+  :is(.markdown.prose, .markdown-fragment) .task-list-item-marker {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 100%;
+    inline-size: var(--md-marker-width, 1em);
+    block-size: 1lh;
+    text-indent: 0;
+    white-space: nowrap;
+  }
+
+  .markdown :where(ol > li):not(:where(.not-prose, .not-prose *))::before,
+  .markdown-fragment :where(ol > li)::before {
+    padding-inline-end: 0.2em;
+    text-align: end;
+  }
+
+  .markdown-fragment :where(ul) { list-style-type: disc; }
+  .markdown-fragment :where(ol) { list-style-type: decimal; }
+
+  .markdown :where(ul ul):not(:where(.not-prose, .not-prose *)), .markdown-fragment :where(ul ul) { list-style-type: circle; }
+  .markdown :where(ul ul ul):not(:where(.not-prose, .not-prose *)), .markdown-fragment :where(ul ul ul) { list-style-type: square; }
+  .markdown :where(ol ol:not([type])):not(:where(.not-prose, .not-prose *)), .markdown-fragment :where(ol ol:not([type])) { list-style-type: lower-alpha; }
+  .markdown :where(ol ol ol:not([type])):not(:where(.not-prose, .not-prose *)), .markdown-fragment :where(ol ol ol:not([type])) { list-style-type: lower-roman; }
+
+  .markdown :where(li):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(li) {
+    position: relative;
+    margin-block: var(--md-list-item-gap, 0.5em);
+    padding-inline-start: 0;
+  }
+
+  .markdown :where(li, blockquote):not(:where(.not-prose, .not-prose *)), .markdown-fragment :where(li, blockquote) {
+    --md-indent: 0px;
+  }
+
+  .markdown :where(li .tooltip):not(:where(.not-prose, .not-prose *)) {
+    /* The inline block's last baseline would pull the marker down. */
+    vertical-align: top;
+  }
+
+  .markdown :where(p, li, h1, h2, h3, h4, h5, h6, blockquote, a):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+
+  .markdown :where(a):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(a) {
+    color: var(--md-link-color, var(--color-primary));
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+      font-weight: var(--md-link-hover-weight);
+    }
+  }
+
+  .markdown :where(strong):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(strong) {
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .markdown :where(mark):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(mark) {
+    @apply bg-warning text-warning-content;
+  }
+
+  .markdown :where(blockquote):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(blockquote) {
+    @apply font-serif font-light not-italic;
+    quotes: none;
+    padding-inline-start: var(--md-quote-padding, 1em);
+    --md-text-size: var(--md-quote-size, inherit);
+  }
+
+  .markdown-fragment :where(blockquote) {
+    @apply border-s-3 border-base-content/25;
+  }
+
+  .markdown :where(code):not(:where(pre *, .not-prose, .not-prose *)),
+  .markdown-fragment :where(code):not(:where(pre *)) {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .markdown :where(pre):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(pre) {
+    @apply max-w-full overflow-x-auto scrollbar-thin;
+  }
+
+  .markdown :where(kbd):not(:where(.not-prose, .not-prose *)) {
+    @apply kbd indent-0 font-mono;
+  }
+
+  .markdown :where(img, svg, video, canvas, iframe):not(:where(.not-prose, .not-prose *)),
+  .markdown-fragment :where(img, svg, video, canvas) {
+    max-inline-size: 100%;
+    block-size: auto;
+    margin-block: var(--md-media-margin, 0);
+  }
+
+  .markdown :where(iframe):not(:where(.not-prose, .not-prose *)) { inline-size: 100%; }
+
+  .markdown-table-scroll,
+  .markdown-table-wrapper {
+    @apply w-full max-w-full min-w-0;
+  }
+
+  .markdown-table-wrapper {
+    @apply overflow-x-auto scrollbar-thin;
+    margin-block: var(--md-section-gap, 1.5rem);
+  }
+
+  .markdown-table-wrapper table {
+    @apply w-full max-w-none my-0;
+    table-layout: auto;
+    font-size: var(--md-table-size, 0.875em);
+    letter-spacing: var(--md-table-tracking);
+    line-height: var(--md-table-leading, 1.5);
+  }
+
+  .markdown-table-wrapper :where(th, td) {
+    min-width: 12em;
+    max-width: 32em;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .markdown :where(hr):not(:where(.footnotes-sep, .not-prose, .not-prose *)) {
+    margin-block: var(--md-section-gap, 3em);
+  }
+}

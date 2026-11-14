@@ -468,12 +468,113 @@
       "copy": "Copy to clipboard"
     }
   },
-  "reader": {
-    "comments": {
-      "reply": "Reply to",
-      "loading": "Loading comments…",
-      "slow": "Comments are taking longer to load. Please wait or try again."
+  "comments": {
+    "title": "Comments",
+    "write": "Write",
+    "reply": "Reply",
+    "loginToComment": "Sign in to comment",
+    "loginToReply": "Sign in to reply",
+    "replies": "{count} reply | {count} replies",
+    "actions": "Comment options",
+    "openGithub": "View on GitHub",
+    "like": "Like",
+    "unlike": "Remove like",
+    "dislike": "Dislike",
+    "undislike": "Remove dislike",
+    "rankingTooLarge": "Top is unavailable for discussions with this many comments. Sort by Oldest or Newest.",
+    "toolbar": {
+      "label": "Formatting tools",
+      "more": "More formatting",
+      "heading": "Add header text",
+      "bold": "Add bold text",
+      "italic": "Add italic text",
+      "strike": "Add strikethrough text",
+      "quote": "Insert a quote",
+      "code": "Insert code",
+      "link": "Add a link",
+      "bullet": "Add a bulleted list",
+      "ordered": "Add a numbered list",
+      "task": "Add a task list",
+      "mention": "Mention a user",
+      "image": "Insert an image from a URL",
+      "table": "Insert a table",
+      "codeBlock": "Code block",
+      "details": "Collapsible note",
+      "math": "Math formula",
+      "monospace": "Monospace font"
     },
+    "emptyPreview": "Nothing to preview.",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyLinkFailed": "Could not copy the link.",
+    "quoteReply": "Quote reply",
+    "quoteTooLong": "This quote is too long for the current reply.",
+    "edited": "Edited",
+    "siteOwner": "Site owner",
+    "contentAuthor": "Author",
+    "editHistory": "Edit history",
+    "unknownEditor": "Unknown editor",
+    "loadingEdits": "Loading edit history…",
+    "editsUnavailable": "Could not load edit history.",
+    "olderEdits": "Older edits",
+    "noEdits": "No edit history available.",
+    "loadingReplies": "Loading replies…",
+    "sort": {
+      "label": "Sort",
+      "oldest": "Oldest",
+      "newest": "Newest",
+      "top": "Top"
+    },
+    "empty": "No comments yet.",
+    "editor": {
+      "post": {
+        "label": "Add a comment",
+        "placeholder": "Write a comment",
+        "submit": "Comment"
+      },
+      "reply": {
+        "label": "Reply",
+        "placeholder": "Write a reply",
+        "submit": "Reply"
+      },
+      "edit": {
+        "label": "Edit comment",
+        "placeholder": "Write a comment",
+        "submit": "Update comment"
+      }
+    },
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this comment?",
+    "preview": "Preview",
+    "expandEditor": "Expand comment editor",
+    "collapseEditor": "Collapse comment editor",
+    "markdownHelp": "Styling with Markdown is supported",
+    "cancel": "Cancel",
+    "loadMoreComments": "Load more…",
+    "loadMoreReplies": "Load more replies",
+    "deletedUser": "Deleted user",
+    "minimized": "This comment has been hidden.",
+    "minimizedWithReason": "This comment was marked as {reason}.",
+    "minimizedReasons": {
+      "abuse": "abuse",
+      "off-topic": "off-topic",
+      "outdated": "outdated",
+      "resolved": "resolved",
+      "duplicate": "duplicate",
+      "spam": "spam",
+      "low-quality": "low quality"
+    },
+    "locked": "This discussion is locked.",
+    "chooseReaction": "Add a reaction",
+    "reaction": "React with {emoji}",
+    "failed": "Could not load or update comments.",
+    "reauthorize": "Reconnect GitHub to continue commenting.",
+    "forbidden": "GitHub denied this action.",
+    "rateLimited": "Too many requests. Try again shortly.",
+    "duplicate": "This request was already received. Reload the discussion to check its result."
+  },
+  "reader": {
     "contextMenu": {
       "image": "Image"
     },

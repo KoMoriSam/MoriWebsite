@@ -1,16 +1,16 @@
 <template>
   <section
-    class="not-prose"
+    class="not-prose markdown-block"
     data-markdown-chat
     :class="{ 'message-only': !ui }"
   >
     <header v-if="ui" class="chat-bar">
       <figure class="avatar flex gap-2 items-center">
-        <button class="btn btn-ghost btn-square btn-sm">
+        <button class="btn btn-ghost btn-square btn-sm markdown-control">
           <i class="ri-arrow-left-wide-line" aria-hidden="true"></i>
         </button>
         <!-- <img
-          class="w-8 sm:w-10 rounded-full"
+          class="markdown-avatar rounded-full"
           :alt="ui.title"
           :src="avatarFor(ui.title)"
         /> -->
@@ -25,7 +25,7 @@
           </span>
         </figcaption>
       </figure>
-      <button class="btn btn-ghost btn-square btn-sm">
+      <button class="btn btn-ghost btn-square btn-sm markdown-control">
         <i class="ri-menu-line" aria-hidden="true"></i>
       </button>
     </header>
@@ -34,7 +34,7 @@
       v-for="(message, index) in messages"
       :key="`${message.type}-${message.username || 'system'}-${index}`"
     >
-      <div v-if="message.type === 'system'" class="chat-info">
+      <div v-if="message.type === 'system'" class="chat-info markdown-fragment">
         <RenderedContent :html="message.contentHtml || ''" />
       </div>
 
@@ -43,7 +43,7 @@
         :class="['chat', isSelf(message.username) ? 'chat-end' : 'chat-start']"
       >
         <aside class="chat-image avatar">
-          <div class="w-8 sm:w-10 rounded-full">
+          <div class="markdown-avatar rounded-full">
             <img
               :alt="message.username || translate('markdown.chat.user')"
               v-bind="avatarAttrs(message.username || '用户')"
@@ -56,7 +56,7 @@
         </header>
         <div
           :class="[
-            'chat-bubble',
+            'chat-bubble markdown-fragment',
             isSelf(message.username) && 'chat-bubble-primary',
           ]"
         >
@@ -80,7 +80,7 @@
     <footer v-if="ui" class="chat-input">
       <!-- 麦克风 / 键盘 -->
       <button
-        class="btn btn-ghost btn-square btn-sm"
+        class="btn btn-ghost btn-square btn-sm markdown-control"
         :aria-label="voiceMode ? translate('markdown.chat.keyboard') : translate('markdown.chat.voice')"
         @click="voiceMode = !voiceMode"
       >
@@ -102,7 +102,7 @@
       </button>
 
       <!-- 表情 -->
-      <button class="btn btn-ghost btn-square btn-sm">
+      <button class="btn btn-ghost btn-square btn-sm markdown-control">
         <i class="ri-emoji-sticker-line"></i>
       </button>
 
@@ -201,31 +201,55 @@ section[data-markdown-chat].message-only {
 
 /* Chat 聊天样式 */
 .chat-bar {
-  @apply flex items-center justify-between gap-2 bg-base-200/50 border-b border-base-300 p-2 mb-2;
+  @apply flex items-center justify-between bg-base-200/50 border-b border-base-300;
+  margin-block-end: var(--md-component-gap);
+  font-size: var(--md-component-detail-size);
 }
 
 .chat-input {
-  @apply flex justify-between gap-2 bg-base-200/50 border-t border-base-300 p-2 mt-2;
+  @apply flex justify-between bg-base-200/50 border-t border-base-300;
+  margin-block-start: var(--md-component-gap);
+}
+
+.chat-bar,
+.chat-input {
+  gap: var(--md-component-gap);
+  padding: var(--md-component-gap);
+}
+
+.chat-input :is(input, button:not(.markdown-control)) {
+  --size: var(--md-component-control);
+  font-size: var(--md-component-detail-size);
+  line-height: 1.25;
 }
 
 .chat {
   @apply px-4 sm:px-8 md:px-12 lg:px-16 xl:px-8 overflow-visible;
 }
 
-.chat-info :deep(p) {
-  @apply indent-0 text-center text-base-content/60;
+.chat-info {
+  --md-align: center;
+  --md-text-size: var(--md-component-meta-size);
+  color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
 }
 
 .chat-bubble {
-  @apply px-1 py-2 bg-base-200/75 overflow-visible;
+  @apply bg-base-200/75 overflow-visible;
+  padding: var(--md-component-gap);
+  --md-text-size: var(--md-component-detail-size);
+  --md-block-gap: calc(var(--md-component-gap) * 0.5);
+  --md-indent: 0px;
+  --md-align: justify;
+  --md-link-hover-weight: 700;
 }
 
 .chat-bubble :deep(p) {
-  @apply indent-0 m-1 text-justify relative;
+  position: relative;
 }
 
 .chat-bubble :deep(p code) {
   @apply text-base-content;
+  font-size: var(--md-component-meta-size);
 }
 
 .chat-bubble :deep(img) {
@@ -233,27 +257,30 @@ section[data-markdown-chat].message-only {
 }
 
 .chat-bubble:has(img) {
-  @apply p-1;
+  padding: calc(var(--md-component-gap) * 0.5);
 }
 
 .chat-bubble-primary {
   @apply bg-primary;
 }
 
-.chat :deep(a) {
-  @apply text-primary hover:font-bold;
-}
-
 .chat :deep(a span img) {
   @apply rounded-none max-w-[unset] min-w-[unset];
 }
 
-.chat-bubble-primary :deep(a) {
-  @apply text-[color-mix(in_oklab,var(--color-primary-content)_65%,var(--color-primary))];
+.chat-bubble-primary {
+  --md-link-color: color-mix(in oklab, var(--color-primary-content) 65%, var(--color-primary));
 }
 
 .chat-header {
   @apply mb-1;
+  font-size: var(--md-component-meta-size);
+  line-height: 1.25;
+}
+
+.chat-footer span {
+  font-size: var(--md-component-meta-size);
+  line-height: 1.25;
 }
 
 .chat img,

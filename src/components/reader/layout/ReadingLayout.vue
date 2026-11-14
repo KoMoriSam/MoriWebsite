@@ -1,7 +1,9 @@
 <template>
   <component
     :is="rootTag"
-    :class="['w-full min-w-0 max-w-full flex-1', pageClass]"
+    ref="layoutElement"
+    v-bind="$attrs"
+    :class="['w-full min-w-0 max-w-full flex-1', scrollWithin && '@container/reader', pageClass]"
     :style="pageStyle"
     :data-theme="pageTheme || undefined"
   >
@@ -14,6 +16,7 @@
       :toc-class="tocClass"
       :aside-class="asideClass"
       :sticky-top="stickyTop"
+      :scroll-container="scrollContainer"
       :show-toc="showToc"
       :show-aside="showAside"
       @content-ready="handleContentReady"
@@ -90,6 +93,7 @@ import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
 import "@/assets/font/reader-fonts.css";
+import { useEventListener, useResizeObserver } from "@vueuse/core";
 
 import {
   computed,
@@ -106,6 +110,8 @@ import { READER_PAGE_CLASS, READER_GRID_CLASS } from '@/constants/reader-layout'
 import Toc from "@/components/reader/navigation/Toc.vue";
 import Footer from "@/components/layout/Footer.vue";
 import { useModalClose } from "@/composables/useModal";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   rootTag: {
@@ -127,7 +133,7 @@ const props = defineProps({
   tocSelector: {
     type: String,
     // 始终相对当前 Reader 的正文容器查询，避免多个阅读器或页面切换时
-    // 全局 #markdown-content 选择器命中旧节点。
+    // 全局 #markdown 选择器命中旧节点。
     default: "h1, h2, h3, h4",
   },
   aside: {
@@ -174,6 +180,10 @@ const props = defineProps({
     type: [String, Array, Object],
     default: "",
   },
+  scrollWithin: {
+    type: Boolean,
+    default: false,
+  },
   stickyTop: {
     type: String,
     default: "2rem",
@@ -181,6 +191,8 @@ const props = defineProps({
 });
 
 const slots = useSlots();
+const layoutElement = ref(null);
+const scrollContainer = computed(() => props.scrollWithin ? layoutElement.value : null);
 const contentElement = ref(null);
 const formatSettingDialogRef = ref(null);
 const headings = ref([]);
@@ -209,6 +221,8 @@ const showAside = computed(
 );
 
 const readingProgress = computed(() => readingProgressValue.value);
+const tocScrollOffset = () =>
+  scrollContainer.value?.getBoundingClientRect().top ?? getNavbarScrollOffset();
 
 const resolvedGridClass = computed(() => {
   if (props.gridClass) return props.gridClass;
@@ -218,6 +232,9 @@ const resolvedGridClass = computed(() => {
   }
 
   if (showToc.value) {
+    if (props.scrollWithin) {
+      return "gap-y-8 @min-[48rem]/reader:grid-cols-[12rem_minmax(0,1fr)] @min-[48rem]/reader:gap-x-4";
+    }
     return "gap-y-8 xl:grid-cols-[15rem_minmax(0,1fr)] xl:gap-x-8 2xl:grid-cols-[17rem_minmax(0,1fr)]";
   }
 
@@ -231,7 +248,7 @@ const resolvedGridClass = computed(() => {
 const getHeadingText = (element, index) => {
   const heading = element.cloneNode(true);
   heading
-    .querySelectorAll(".comment-trigger")
+    .querySelectorAll(".comment-trigger, .header-anchor")
     .forEach((trigger) => trigger.remove());
 
   return heading.textContent?.trim() || translate('reader.settings.heading', { p0: index + 1 });
@@ -267,7 +284,8 @@ const observeHeadings = (elements) => {
     return;
   }
 
-  const navbarOffset = getNavbarScrollOffset();
+  const container = scrollContainer.value;
+  const scrollOffset = container ? 0 : getNavbarScrollOffset();
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       const visible = entries
@@ -285,12 +303,13 @@ const observeHeadings = (elements) => {
       }
 
       const passed = elements.filter(
-        (element) => element.getBoundingClientRect().top < navbarOffset + 24,
+        (element) => element.getBoundingClientRect().top < tocScrollOffset() + 24,
       );
       activeHeadingId.value = getHeadingId(passed.at(-1) || elements[0]);
     },
     {
-      rootMargin: `-${navbarOffset}px 0px -70% 0px`,
+      root: container,
+      rootMargin: `-${scrollOffset}px 0px -70% 0px`,
       threshold: [0, 1],
     },
   );
@@ -306,19 +325,19 @@ const updateReadingProgress = () => {
     return;
   }
 
+  const container = scrollContainer.value;
   const rect = element.getBoundingClientRect();
-  const contentTop = window.scrollY + rect.top;
-  const contentHeight = element.scrollHeight;
-  const viewportHeight = window.innerHeight;
+  const viewportHeight = container?.clientHeight ?? window.innerHeight;
+  const contentHeight = container?.scrollHeight ?? element.scrollHeight;
   const maxScrollable = Math.max(contentHeight - viewportHeight, 0);
 
   if (maxScrollable === 0) {
-    const isVisible = rect.bottom > 0 && rect.top < viewportHeight;
+    const isVisible = container ? viewportHeight > 0 : rect.bottom > 0 && rect.top < viewportHeight;
     readingProgressValue.value = isVisible ? 100 : 0;
     return;
   }
 
-  const scrolled = window.scrollY - contentTop;
+  const scrolled = container?.scrollTop ?? -rect.top;
   const progress = Math.round((Math.max(0, scrolled) / maxScrollable) * 100);
   readingProgressValue.value = Math.min(100, Math.max(0, progress));
 };
@@ -372,13 +391,22 @@ const scrollToHeading = (id) => {
   pendingHeadingId = id;
   activeHeadingId.value = id;
   window.clearTimeout(pendingHeadingTimer);
-  if (!("onscrollend" in window)) {
+  const container = scrollContainer.value;
+  if (!("onscrollend" in (container || window))) {
     pendingHeadingTimer = window.setTimeout(() => {
       pendingHeadingId = "";
     }, 2000);
   }
 
-  element.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (container) {
+    const mobileTocHeight = container.querySelector("[data-reader-mobile-toc]")?.offsetHeight ?? 0;
+    container.scrollBy({
+      top: element.getBoundingClientRect().top - tocScrollOffset() - (mobileTocHeight ? mobileTocHeight + 8 : 0),
+      behavior: "smooth",
+    });
+  } else {
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   window.history.replaceState(window.history.state, "", `#${id}`);
 };
 
@@ -419,15 +447,22 @@ const requestCloseFormatSetting = () => formatSettingModal.requestClose();
 const requestPlatformCloseFormatSetting = () =>
   formatSettingModal.requestPlatformClose();
 
+const scrollTarget = computed(() =>
+  scrollContainer.value || (typeof window !== "undefined" ? window : null),
+);
+useEventListener(scrollTarget, "scroll", scheduleProgressUpdate, { passive: true });
+useEventListener(scrollTarget, "scrollend", handleScrollEnd);
+useResizeObserver(
+  computed(() => props.scrollWithin ? contentElement.value : null),
+  scheduleProgressUpdate,
+);
 onMounted(() => {
   scheduleProgressUpdate();
-  window.addEventListener("scroll", scheduleProgressUpdate, { passive: true });
-  window.addEventListener("scrollend", handleScrollEnd);
   window.addEventListener("resize", scheduleProgressUpdate);
 });
 
 watch(
-  () => [props.toc, props.tocSelector, props.tocMinLevel, props.tocMaxLevel],
+  () => [props.toc, props.tocSelector, props.tocMinLevel, props.tocMaxLevel, scrollContainer.value],
   () => nextTick(collectHeadings),
 );
 
@@ -436,13 +471,11 @@ onBeforeUnmount(() => {
   intersectionObserver?.disconnect();
   window.clearTimeout(updateTimer);
   window.clearTimeout(pendingHeadingTimer);
-  window.removeEventListener("scroll", scheduleProgressUpdate);
-  window.removeEventListener("scrollend", handleScrollEnd);
   window.removeEventListener("resize", scheduleProgressUpdate);
   if (progressFrame) {
     window.cancelAnimationFrame(progressFrame);
   }
 });
 
-defineExpose({ openFormatSetting });
+defineExpose({ layoutElement, openFormatSetting });
 </script>

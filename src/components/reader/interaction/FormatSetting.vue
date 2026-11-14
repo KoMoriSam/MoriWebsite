@@ -6,9 +6,11 @@
         class="flex shrink-0 items-start gap-3 border-b border-base-300 px-3 py-3"
       >
         <div class="min-w-0 flex-1">
-          <h3 class="m-0 text-base font-semibold tracking-wide">{{ translate('reader.format.title') }}</h3>
+          <h3 class="m-0 text-base font-semibold tracking-wide">
+            {{ translate("reader.format.title") }}
+          </h3>
           <p class="mt-0.5 text-xs text-base-content/55">
-            {{ translate('reader.format.previewHint') }}
+            {{ translate("reader.format.previewHint") }}
           </p>
         </div>
         <button
@@ -18,7 +20,7 @@
           @click="resetLayout"
         >
           <i class="ri-reset-left-line" aria-hidden="true"></i>
-          {{ translate('reader.format.reset') }}
+          {{ translate("reader.format.reset") }}
         </button>
       </header>
 
@@ -31,23 +33,21 @@
             class="overflow-y-auto overscroll-contain rounded-box h-36 md:h-48 p-4 bg-base-200 scrollbar-none shadow-inner"
             :class="styleConfigs.fontClass"
             :data-theme="mobile ? previewTheme || undefined : undefined"
-            :style="[
-              previewStyle,
-              {
-                fontFamily: styleConfigs.fontFamily || undefined,
-                '--para-text-indent': `calc(${styleConfigs.fontSize * 2}px + ${styleConfigs.fontGap * 0.6}rem)`,
-              },
-            ]"
-            :aria-label="mobile ? translate('reader.format.mobilePreview') : translate('reader.format.desktopPreview')"
+            :style="previewStyle"
+            :aria-label="
+              mobile
+                ? translate('reader.format.mobilePreview')
+                : translate('reader.format.desktopPreview')
+            "
           >
             <p class="m-0 indent-(--para-text-indent) text-justify text-pretty">
-              {{ translate('reader.format.previewText') }}
+              {{ translate("reader.format.previewText") }}
             </p>
             <p
               class="mb-0 indent-(--para-text-indent) text-justify text-pretty"
               :style="{ marginBlockStart: previewParagraphGap }"
             >
-              {{ translate('reader.format.previewNext') }}
+              {{ translate("reader.format.previewNext") }}
             </p>
           </div>
         </ScrollableContainer>
@@ -72,7 +72,8 @@
               :aria-selected="mobileReadingMode === mode.value"
               @click="store.setMobileReadingMode(mode.value)"
             >
-              <i :class="mode.icon" aria-hidden="true"></i>{{ localizeText(mode.label) }}
+              <i :class="mode.icon" aria-hidden="true"></i
+              >{{ localizeText(mode.label) }}
             </button>
           </div>
           <div class="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -81,9 +82,9 @@
               :class="controlsOnly ? 'col-span-1' : 'col-span-2'"
             >
               <span class="label block text-xs md:text-sm">
-                {{ translate('reader.format.textFont') }}
+                {{ translate("reader.format.textFont") }}
                 <small :title="translate('reader.format.sessionFontHint')">
-                  {{ translate('reader.format.savedFontHint') }}
+                  {{ translate("reader.format.savedFontHint") }}
                 </small>
               </span>
               <FontSelect
@@ -104,7 +105,7 @@
               @click="resetLayout"
             >
               <i class="ri-reset-left-line" aria-hidden="true"></i>
-              {{ translate('reader.format.reset') }}
+              {{ translate("reader.format.reset") }}
             </button>
             <label
               v-for="control in READER_TYPOGRAPHY_CONTROLS"
@@ -112,7 +113,8 @@
               class="col-span-1 xl:col-span-2 md:my-1 min-w-0"
             >
               <span class="label block text-xs md:text-sm">
-                {{ localizeText(control.shortLabel) }} {{ formatNumericValue(control) }}
+                {{ localizeText(control.shortLabel) }}
+                {{ formatNumericValue(control) }}
               </span>
               <input
                 type="range"
@@ -121,13 +123,17 @@
                 :step="control.step"
                 class="range range-xs xl:range-sm mt-1 w-full"
                 :value="styleConfigs[control.key]"
-                @input="store.setStyle(control.key, Number($event.target.value))"
+                @input="
+                  store.setStyle(control.key, Number($event.target.value))
+                "
               />
             </label>
           </div>
           <template v-if="mobile">
             <fieldset class="mt-4">
-              <legend class="label text-xs">{{ translate('reader.format.readingColors') }}</legend>
+              <legend class="label text-xs">
+                {{ translate("reader.format.readingColors") }}
+              </legend>
               <div class="mt-2 grid grid-cols-5 gap-2">
                 <button
                   v-for="theme in MOBILE_READER_COLOR_THEMES"
@@ -142,7 +148,9 @@
                   @click="selectColorTheme(theme.value)"
                 >
                   <i :class="theme.icon" aria-hidden="true"></i>
-                  <span class="text-[0.625rem]">{{ localizeText(theme.label) }}</span>
+                  <span class="text-[0.625rem]">{{
+                    localizeText(theme.label)
+                  }}</span>
                 </button>
               </div>
             </fieldset>
@@ -150,7 +158,7 @@
               <legend
                 class="label text-xs w-full flex items-center justify-between"
               >
-                <span>{{ translate('reader.format.customize') }}</span>
+                <span>{{ translate("reader.format.customize") }}</span>
                 <div
                   role="tablist"
                   class="tabs tabs-box tabs-xs"
@@ -181,7 +189,9 @@
                   <label
                     class="input input-sm flex w-full items-center justify-between gap-2"
                   >
-                    <span class="text-xs">{{ translate('reader.format.textColor') }}</span>
+                    <span class="text-xs">{{
+                      translate("reader.format.textColor")
+                    }}</span>
                     <input
                       type="color"
                       class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -192,7 +202,9 @@
                   <label
                     class="input input-sm flex w-full items-center justify-between gap-2"
                   >
-                    <span class="text-xs">{{ translate('reader.format.backgroundColor') }}</span>
+                    <span class="text-xs">{{
+                      translate("reader.format.backgroundColor")
+                    }}</span>
                     <input
                       type="color"
                       class="size-7 cursor-pointer border-0 bg-transparent p-0"
@@ -221,7 +233,11 @@
                         getReaderBackgroundImageUrl(image.id),
                       ),
                     }"
-                    :aria-label="translate('reader.format.chooseBackground', { p0: localizeText(image.label) })"
+                    :aria-label="
+                      translate('reader.format.chooseBackground', {
+                        p0: localizeText(image.label),
+                      })
+                    "
                     :aria-pressed="styleConfigs.backgroundImage === image.id"
                     @click="selectBackgroundImage(image)"
                   >
@@ -238,7 +254,9 @@
             </fieldset>
           </template>
           <fieldset v-else class="mt-4">
-            <legend class="label block text-xs md:text-sm">{{ translate('reader.format.siteTheme') }}</legend>
+            <legend class="label block text-xs md:text-sm">
+              {{ translate("reader.format.siteTheme") }}
+            </legend>
             <div class="mt-2 grid grid-cols-5 gap-2">
               <button
                 v-for="theme in siteThemeOptions"
@@ -246,13 +264,19 @@
                 type="button"
                 class="btn btn-sm h-auto min-h-12 flex-col gap-0.5 px-1 py-1.5"
                 :class="{
-                  'outline-2 outline-primary': selectedSiteTheme === theme.value,
+                  'outline-2 outline-primary':
+                    selectedSiteTheme === theme.value,
                 }"
                 :data-theme="
                   theme.value === 'default' ? systemTheme : theme.value
                 "
                 :title="localizeText(theme.description)"
-                :aria-label="translate('reader.format.switchTheme', { p0: localizeText(theme.label), p1: localizeText(theme.description) })"
+                :aria-label="
+                  translate('reader.format.switchTheme', {
+                    p0: localizeText(theme.label),
+                    p1: localizeText(theme.description),
+                  })
+                "
                 :aria-pressed="selectedSiteTheme === theme.value"
                 @click="themeStore.setTheme(theme.value)"
               >
@@ -296,7 +320,12 @@
               "
               :style="presetSampleStyle(preset)"
               :title="localizeText(preset.description)"
-              :aria-label="translate('reader.format.applyDefaultPreset', { p0: localizeText(preset.name), p1: localizeText(preset.description) })"
+              :aria-label="
+                translate('reader.format.applyDefaultPreset', {
+                  p0: localizeText(preset.name),
+                  p1: localizeText(preset.description),
+                })
+              "
               :aria-pressed="isPresetActive(preset)"
               @click="applyPreset(preset)"
             >
@@ -327,7 +356,11 @@
                 "
                 :style="presetSampleStyle(preset)"
                 :title="localizeText(preset.name)"
-                :aria-label="translate('reader.format.applySavedPreset', { p0: localizeText(preset.name) })"
+                :aria-label="
+                  translate('reader.format.applySavedPreset', {
+                    p0: localizeText(preset.name),
+                  })
+                "
                 :aria-pressed="isPresetActive(preset)"
                 @click="applyPreset(preset)"
               >
@@ -338,7 +371,11 @@
               <button
                 type="button"
                 class="btn btn-circle btn-xs absolute -right-1 -top-1 size-5 min-h-0 border-base-300 bg-base-100 p-0 shadow-sm"
-                :aria-label="translate('reader.format.deletePreset', { p0: localizeText(preset.name) })"
+                :aria-label="
+                  translate('reader.format.deletePreset', {
+                    p0: localizeText(preset.name),
+                  })
+                "
                 @click="store.removeReaderLayoutPreset(preset.id)"
               >
                 <i class="ri-close-line" aria-hidden="true"></i>
@@ -355,7 +392,9 @@
             :placeholder="translate('reader.format.savePreset')"
             :aria-label="translate('reader.format.presetName')"
           />
-          <button class="btn btn-sm join-item" type="submit">{{ translate('reader.format.save') }}</button>
+          <button class="btn btn-sm join-item" type="submit">
+            {{ translate("reader.format.save") }}
+          </button>
         </form>
       </footer>
     </section>
@@ -364,7 +403,7 @@
 
 <script setup>
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate, text: localizeText } = useLocale();
 
 import { computed, ref } from "vue";
@@ -373,6 +412,7 @@ import { usePreferredDark } from "@vueuse/core";
 
 import FontSelect from "@/components/interaction/controls/FontSelect.vue";
 import { useReaderStore } from "@/stores/readerStore";
+import { readerTypographyMetrics } from "@/utils/reader/reader-typography";
 import { useThemeStore } from "@/stores/themeStore";
 import {
   FONTS,
@@ -385,6 +425,9 @@ import {
   READER_SYSTEM_PRESETS,
   READER_TYPOGRAPHY_CONTROLS,
   STYLE_CONFIG_KEYS,
+  READER_STYLE_DEFAULTS,
+  DEFAULT_READER_FALLBACK_FONT,
+  getReaderPresetAppearance,
 } from "@/constants/reader";
 
 const props = defineProps({
@@ -416,7 +459,7 @@ const { theme: selectedSiteTheme, themeList: siteThemeList } =
 const prefersDark = usePreferredDark();
 const presetName = ref("");
 const readerFontSelect = ref(null);
-const readerFallbackFontId = ref("font-sans");
+const readerFallbackFontId = ref(DEFAULT_READER_FALLBACK_FONT);
 let readerFontRequestId = 0;
 const readerWebsiteFonts = FONTS.map(({ name, style }) => ({
   id: style,
@@ -428,12 +471,16 @@ const readerWebsiteFonts = FONTS.map(({ name, style }) => ({
 const backgroundTypeOptions = Object.freeze([
   {
     value: "color",
-    get label() { return translate('reader.format.solidColor'); },
+    get label() {
+      return translate("reader.format.solidColor");
+    },
     icon: "ri-palette-line",
   },
   {
     value: "image",
-    get label() { return translate('reader.format.backgroundImage'); },
+    get label() {
+      return translate("reader.format.backgroundImage");
+    },
     icon: "ri-image-line",
   },
 ]);
@@ -443,8 +490,12 @@ const systemTheme = computed(() => (prefersDark.value ? "forest" : "lemonade"));
 const siteThemeOptions = computed(() => [
   {
     value: "default",
-    get label() { return translate('reader.format.system'); },
-    get description() { return translate('reader.format.systemHint'); },
+    get label() {
+      return translate("reader.format.system");
+    },
+    get description() {
+      return translate("reader.format.systemHint");
+    },
     icon: "ri-contrast-line",
   },
   ...siteThemeList.value.map((theme) => ({
@@ -459,7 +510,9 @@ const isLayoutDefault = computed(() =>
 const systemPresets = computed(() =>
   READER_SYSTEM_PRESETS.map((preset, index) => ({
     preset,
-    get label() { return translate('reader.format.preset', { p0: index + 1 }); },
+    get label() {
+      return translate("reader.format.preset", { p0: index + 1 });
+    },
   })),
 );
 
@@ -480,7 +533,7 @@ const semanticReaderThemes = new Set(
 const selectedColorTheme = computed(() => {
   const theme = styleConfigs.value.colorTheme;
   if (theme === "custom" || semanticReaderThemes.has(theme)) return theme;
-  return "site";
+  return READER_STYLE_DEFAULTS.colorTheme;
 });
 const selectedBackgroundImage = computed(() =>
   getReaderBackgroundImage(styleConfigs.value.backgroundImage),
@@ -488,7 +541,7 @@ const selectedBackgroundImage = computed(() =>
 const selectedBackgroundType = computed(() =>
   styleConfigs.value.backgroundType === "image" && selectedBackgroundImage.value
     ? "image"
-    : "color",
+    : READER_STYLE_DEFAULTS.backgroundType,
 );
 const previewTheme = computed(() => {
   const theme =
@@ -498,6 +551,7 @@ const previewTheme = computed(() => {
   return semanticReaderThemes.has(theme) ? theme : "";
 });
 
+const previewTypography = computed(() => readerTypographyMetrics(styleConfigs.value));
 const previewStyle = computed(() => ({
   ...(props.mobile
     ? {
@@ -520,16 +574,13 @@ const previewStyle = computed(() => ({
           "var(--color-base-content)",
       }
     : {}),
-  fontSize: `${Math.max(1, Number(styleConfigs.value.fontSize) || 20)}px`,
-  letterSpacing: `${(Number(styleConfigs.value.fontGap) || 0) * 0.25}rem`,
-  lineHeight: Number(styleConfigs.value.lineHeight) || 1.6,
+  fontFamily: styleConfigs.value.fontFamily || undefined,
+  fontSize: `${previewTypography.value.fontSize}px`,
+  letterSpacing: previewTypography.value.letterSpacing,
+  lineHeight: previewTypography.value.lineHeight,
+  "--para-text-indent": previewTypography.value.textIndent,
 }));
-const previewParagraphGap = computed(() => {
-  const fontSize = Math.max(1, Number(styleConfigs.value.fontSize) || 20);
-  const lineHeight = Math.max(1, Number(styleConfigs.value.lineHeight) || 1.6);
-  const paragraphGap = Math.max(0, Number(styleConfigs.value.paraHeight) || 0);
-  return `${paragraphGap * fontSize * lineHeight}px`;
-});
+const previewParagraphGap = computed(() => `${previewTypography.value.paragraphGap}px`);
 
 const presetBackgroundImageTheme = (preset) => {
   const styles = preset?.styles || {};
@@ -553,7 +604,7 @@ const presetDisplayTheme = (preset) => {
 };
 const presetSampleStyle = (preset) => {
   const sample = {
-    letterSpacing: `${(Number(preset?.styles?.fontGap) || 0) * 0.125}rem`,
+    letterSpacing: `${(preset?.styles?.fontGap ?? READER_STYLE_DEFAULTS.fontGap) * 0.125}rem`,
   };
   if (!props.mobile) return sample;
 
@@ -582,35 +633,10 @@ const presetSampleStyle = (preset) => {
   };
 };
 
-const normalizePresetStyle = (preset, key) => {
-  const styles = preset?.styles || {};
-  if (key === "colorTheme") {
-    return (
-      styles.colorTheme ||
-      (styles.textColor || styles.backgroundColor || styles.backgroundImage
-        ? "custom"
-        : "site")
-    );
-  }
-  if (key === "backgroundType") {
-    return (
-      styles.backgroundType || (styles.backgroundImage ? "image" : "color")
-    );
-  }
-  if (key === "textColor" || key === "backgroundColor") {
-    return styles[key] || "";
-  }
-  if (key === "backgroundImage") return styles.backgroundImage || "";
-  return styles[key];
-};
 const isPresetActive = (preset) => {
-  const includesMobileAppearance = [
-    "colorTheme",
-    "textColor",
-    "backgroundColor",
-    "backgroundType",
-    "backgroundImage",
-  ].some((key) => preset?.styles?.[key] !== undefined);
+  const appearance = getReaderPresetAppearance(preset?.styles);
+  const expectedStyles = { ...preset?.styles, ...appearance };
+  const includesMobileAppearance = Object.hasOwn(appearance, "colorTheme");
   const comparedKeys =
     props.mobile && includesMobileAppearance
       ? STYLE_CONFIG_KEYS.map(({ key }) => key)
@@ -627,10 +653,8 @@ const isPresetActive = (preset) => {
     modeMatches &&
     siteThemeMatches &&
     comparedKeys.every((key) => {
-      const defaultValue = STYLE_CONFIG_KEYS.find(
-        (item) => item.key === key,
-      )?.default;
-      const expected = normalizePresetStyle(preset, key);
+      const defaultValue = READER_STYLE_DEFAULTS[key];
+      const expected = expectedStyles[key];
       if (expected === undefined) return false;
       return typeof defaultValue === "number"
         ? Number(styleConfigs.value[key]) === Number(expected)
@@ -640,6 +664,7 @@ const isPresetActive = (preset) => {
 };
 
 const applyPreset = (preset) => {
+  if (preset?.styles?.fontStyle !== undefined) readerFontRequestId += 1;
   if (props.mobile) {
     store.applyMobileLayoutPreset(preset);
     return;
@@ -656,7 +681,7 @@ const savePreset = () => {
   if (saved) presetName.value = "";
 };
 const resetLayout = () => {
-  readerFallbackFontId.value = "font-sans";
+  readerFallbackFontId.value = DEFAULT_READER_FALLBACK_FONT;
   readerFontRequestId += 1;
   if (props.mobile) store.resetMobileLayout();
   else store.resetReaderLayout();
@@ -666,13 +691,13 @@ const selectReaderFont = async (fontId) => {
   const websiteFont = readerWebsiteFonts.some(({ id }) => id === fontId);
   if (websiteFont) {
     store.setReaderFont(fontId);
-    if (readerFallbackFontId.value === "font-sans") return;
+    if (readerFallbackFontId.value === DEFAULT_READER_FALLBACK_FONT) return;
   }
 
   try {
     const resolved = await readerFontSelect.value?.resolveFont(
       fontId,
-      translate('reader.format.previewTitle'),
+      translate("reader.format.previewTitle"),
       "normal",
       readerFallbackFontId.value,
     );

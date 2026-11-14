@@ -4,7 +4,7 @@
     class="relative flex min-h-0 flex-1 flex-col overflow-hidden"
     :aria-label="translate('reader.paged.label')"
     :aria-busy="showChapterLoadingOverlay"
-    :style="readerTypographyStyle"
+    :style="readerTypography"
   >
     <div
       ref="viewportRef"
@@ -24,7 +24,7 @@
         '--reader-page-baseline-offset': `${pageBaselineOffset}px`,
         '--reader-paragraph-gap': `${paragraphGap}px`,
         '--reader-footnote-reserve': `${footnoteReserve}px`,
-        '--reader-page-font-size': `${styleConfigs.fontSize}px`,
+        '--reader-page-font-size': `${typography.fontSize}px`,
         '--reader-page-padding-block':
           'var(--mobile-reader-content-padding-block)',
         '--reader-page-offset': `${renderedPageOffset}px`,
@@ -40,6 +40,7 @@
       @contextmenu.capture.prevent="handleContextMenu"
     >
       <Renderer
+        layout="reading"
         :content="content"
         :is-loading="isLoading"
         :show-loading="false"
@@ -214,6 +215,10 @@
 </template>
 
 <script setup>
+import {
+  readerTypographyMetrics,
+  readerTypographyStyle,
+} from "@/utils/reader/reader-typography";
 import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
@@ -329,7 +334,9 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const pageWidth = ref(1);
 const pageHeight = ref(MIN_PAGE_HEIGHT);
-const pageLineHeight = ref(35.2);
+const typography = computed(() => readerTypographyMetrics(props.styleConfigs));
+const getPageLineHeight = () => Math.max(1, roundLayoutPixel(typography.value.linePixels));
+const pageLineHeight = ref(getPageLineHeight());
 const pageBaselineOffset = ref(0);
 const leadingEmptyPages = ref(0);
 const paginationLayoutResetting = ref(false);
@@ -373,23 +380,9 @@ const renderedPageOffset = computed(
   () => pageOffset.value + leadingEmptyPages.value * pageStride.value,
 );
 const paragraphGap = computed(
-  () =>
-    Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
-    pageLineHeight.value,
+  () => typography.value.paraHeight * pageLineHeight.value,
 );
-const readerTypographyStyle = computed(() => ({
-  "--para-font-size": `${props.styleConfigs.fontSize}px`,
-  "--para-letter-spacing": `${props.styleConfigs.fontGap * 0.25}rem`,
-  "--para-line-height": props.styleConfigs.lineHeight,
-  "--para-margin-inline": `${
-    Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
-    Math.max(1, Number(props.styleConfigs.fontSize) || 20) *
-    Math.max(1, Number(props.styleConfigs.lineHeight) || 1.6)
-  }px`,
-  "--para-text-indent": `calc(${props.styleConfigs.fontSize * 2}px + ${
-    props.styleConfigs.fontGap * 0.7
-  }rem)`,
-}));
+const readerTypography = computed(() => readerTypographyStyle(props.styleConfigs));
 const footnoteReserve = computed(
   () => footnoteReservesByPage.value[currentPage.value] || 0,
 );
@@ -403,7 +396,7 @@ const paginationReady = computed(
     measuredChapterUuid.value === String(props.chapter?.uuid || ""),
 );
 const getArticleElement = () =>
-  viewportRef.value?.querySelector(":scope > .markdown-content");
+  viewportRef.value?.querySelector(":scope > .markdown-reading");
 const {
   beginChapterNavigation,
   cancelChapterNavigation,
@@ -430,7 +423,7 @@ const {
   footnoteReserve,
   renderedPageOffset,
   pageStride,
-  fontSize: () => props.styleConfigs.fontSize,
+  fontSize: () => typography.value.fontSize,
   paginationReady,
   canCapture: hasMeasured,
   revealDuration: CHAPTER_REVEAL_DURATION,
@@ -472,16 +465,10 @@ const getPageLayout = (viewport) => {
     MIN_PAGE_HEIGHT,
     Math.floor(Math.min(readerBottom, visualBottom) - viewportTop),
   );
-  const fontSize = Math.max(1, Number(props.styleConfigs.fontSize) || 22);
-  const lineHeight = Math.max(
-    1,
-    roundLayoutPixel(fontSize * (Number(props.styleConfigs.lineHeight) || 1.6)),
-  );
-
   return {
     height: availableHeight,
     // 保持整章行高恒定；不足一行的余量自然留在页面底部。
-    lineHeight,
+    lineHeight: getPageLineHeight(),
   };
 };
 

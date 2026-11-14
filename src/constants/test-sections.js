@@ -33,7 +33,13 @@ export const TEST_SECTIONS = [
     id: "markdown",
     label: "Markdown",
     title: "Markdown 渲染与样式测试",
-    description: "检查生产 Markdown 插件链、段评标记与阅读器样式实时联动。",
+    description: "切换标准排版和阅读器排版，按需挂载扩展，并编辑同一份 Markdown 即时预览。",
+  },
+  {
+    id: "comments",
+    label: "评论区",
+    title: "评论区",
+    description: "切换评论状态、身份和宽度，预览 Markdown 并操作本地模拟评论。",
   },
   {
     id: "rss",
@@ -123,6 +129,7 @@ export const TEST_SECTION_COMPONENTS = {
   modal: () => import("@/views/test/Modal.vue"),
   "announcement-modal": () => import("@/views/test/AnnouncementModal.vue"),
   markdown: () => import("@/views/test/Markdown.vue"),
+  comments: () => import("@/views/test/Comments.vue"),
   rss: () => import("@/views/test/Rss.vue"),
   "mobile-reader": () => import("@/views/test/MobileReader.vue"),
   "number-controller": () => import("@/views/test/NumberController.vue"),

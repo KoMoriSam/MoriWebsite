@@ -55,7 +55,7 @@
           v-for="line in (paragraph % 2 === 0 ? 5 : 4)"
           :key="line"
           class="flex h-(--placeholder-line-height) items-center"
-          :class="line === 1 ? 'ml-[2em]' : ''"
+          :class="line === 1 ? 'ms-(--para-text-indent)' : ''"
         >
           <div
             class="skeleton h-[0.55em] motion-reduce:animate-none"
@@ -74,6 +74,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { readerTypographyMetrics } from '@/utils/reader/reader-typography';
 import { useReaderStore } from '@/stores/readerStore';
 
 const props = defineProps({
@@ -85,13 +86,14 @@ const props = defineProps({
 });
 const reader = useReaderStore();
 const typographyStyle = computed(() => {
-  const { fontSize, lineHeight, paraHeight } = reader.styleConfigs;
-  const line = fontSize * lineHeight;
+  const { fontSize, linePixels, paragraphGap, textIndent } =
+    readerTypographyMetrics(reader.styleConfigs);
   return {
     fontSize: `${fontSize}px`,
-    '--placeholder-line-height': `${line}px`,
-    '--placeholder-paragraph-gap': `${line * paraHeight}px`,
-    '--placeholder-header-gap': `${props.mobile ? line : line * 1.5}px`,
+    '--para-text-indent': textIndent,
+    '--placeholder-line-height': `${linePixels}px`,
+    '--placeholder-paragraph-gap': `${paragraphGap}px`,
+    '--placeholder-header-gap': `${props.mobile ? linePixels : linePixels * 1.5}px`,
   };
 });
 </script>

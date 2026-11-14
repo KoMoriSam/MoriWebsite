@@ -9,20 +9,30 @@ import {
   MOBILE_READER_ZONE_SETTING,
   READER_LAYOUT_PRESETS_SETTING,
   DEFAULT_MOBILE_READER_ZONES,
+  DEFAULT_MOBILE_READING_MODE,
+  READER_STYLE_DEFAULTS,
+  getReaderPresetAppearance,
   READER_LAYOUT_STYLE_KEYS,
   STYLE_CONFIG_KEYS,
 } from "@/constants/reader";
 import { useReaderSettingsStorage } from "@/composables/storage/useReaderSettingsStorage";
+import { resolveReaderTypography } from "@/utils/reader/reader-typography";
 
 export const useReaderStore = defineStore("reader", () => {
   const { getSetting, setSetting } = useReaderSettingsStorage();
   const readerFontOverride = ref(null);
 
-  const styleConfigs = computed(() => {
+  const savedStyles = computed(() => {
     const configs = {};
-    STYLE_CONFIG_KEYS.forEach((config) => {
-      configs[config.key] = getSetting(config.storageKey, config.default);
+    STYLE_CONFIG_KEYS.forEach(({ key, storageKey }) => {
+      configs[key] = getSetting(storageKey, READER_STYLE_DEFAULTS[key]);
     });
+    return { ...configs, ...resolveReaderTypography(configs) };
+  });
+
+  // Device fonts only override the active session. Website fonts are saved.
+  const styleConfigs = computed(() => {
+    const configs = { ...savedStyles.value };
     if (readerFontOverride.value) {
       configs.fontStyle = readerFontOverride.value.id;
       configs.fontFamily = readerFontOverride.value.family;
@@ -40,12 +50,12 @@ export const useReaderStore = defineStore("reader", () => {
   const mobileReadingMode = computed(() => {
     const mode = getSetting(
       MOBILE_READING_MODE_SETTING,
-      MOBILE_READING_MODES.PAGED,
+      DEFAULT_MOBILE_READING_MODE,
     );
 
     return Object.values(MOBILE_READING_MODES).includes(mode)
       ? mode
-      : MOBILE_READING_MODES.PAGED;
+      : DEFAULT_MOBILE_READING_MODE;
   });
 
   const setMobileReadingMode = (mode) => {
@@ -120,50 +130,9 @@ export const useReaderStore = defineStore("reader", () => {
   };
   const applyMobileLayoutPreset = (preset) => {
     if (!preset?.styles) return;
-    const hasOwnStyle = (key) =>
-      Object.prototype.hasOwnProperty.call(preset.styles, key);
-    const hasPresetColors =
-      hasOwnStyle("colorTheme") ||
-      hasOwnStyle("textColor") ||
-      hasOwnStyle("backgroundColor") ||
-      hasOwnStyle("backgroundType") ||
-      hasOwnStyle("backgroundImage");
-    const inferredColorTheme = hasOwnStyle("colorTheme")
-      ? preset.styles.colorTheme
-      : preset.styles.textColor ||
-          preset.styles.backgroundColor ||
-          preset.styles.backgroundImage
-        ? "custom"
-        : "site";
-    const inferredBackgroundType = hasOwnStyle("backgroundType")
-      ? preset.styles.backgroundType
-      : preset.styles.backgroundImage
-        ? "image"
-        : "color";
+    const styles = { ...preset.styles, ...getReaderPresetAppearance(preset.styles) };
     STYLE_CONFIG_KEYS.forEach(({ key }) => {
-      if (key === "colorTheme" && hasPresetColors) {
-        setStyle(key, inferredColorTheme);
-      } else if (key === "textColor" && hasPresetColors) {
-        setStyle(key, preset.styles.textColor || "");
-      } else if (key === "backgroundColor" && hasPresetColors) {
-        setStyle(
-          key,
-          inferredBackgroundType === "color"
-            ? preset.styles.backgroundColor || ""
-            : "",
-        );
-      } else if (key === "backgroundType" && hasPresetColors) {
-        setStyle(key, inferredBackgroundType);
-      } else if (key === "backgroundImage" && hasPresetColors) {
-        setStyle(
-          key,
-          inferredBackgroundType === "image"
-            ? preset.styles.backgroundImage || ""
-            : "",
-        );
-      } else if (preset.styles[key] !== undefined) {
-        setStyle(key, preset.styles[key]);
-      }
+      if (styles[key] !== undefined) setStyle(key, styles[key]);
     });
     if (preset.mode !== undefined) setMobileReadingMode(preset.mode);
   };
@@ -180,50 +149,35 @@ export const useReaderStore = defineStore("reader", () => {
     );
   const removeReaderLayoutPreset = removeMobileLayoutPreset;
 
+  const isDefault = (key) =>
+    Object.hasOwn(READER_STYLE_DEFAULTS, key) &&
+    !(key === "fontStyle" && readerFontOverride.value) &&
+    savedStyles.value[key] === READER_STYLE_DEFAULTS[key];
+
   const isMobileLayoutDefault = computed(
     () =>
-      !readerFontOverride.value &&
-      mobileReadingMode.value === MOBILE_READING_MODES.PAGED &&
-      STYLE_CONFIG_KEYS.every(
-        ({ storageKey, default: defaultValue }) =>
-          getSetting(storageKey, defaultValue) === defaultValue,
-      ),
+      mobileReadingMode.value === DEFAULT_MOBILE_READING_MODE &&
+      STYLE_CONFIG_KEYS.every(({ key }) => isDefault(key)),
   );
 
   const resetMobileLayout = () => {
     STYLE_CONFIG_KEYS.forEach(({ key }) => resetStyle(key));
-    setMobileReadingMode(MOBILE_READING_MODES.PAGED);
+    setMobileReadingMode(DEFAULT_MOBILE_READING_MODE);
   };
 
   const isReaderLayoutDefault = computed(
-    () =>
-      !readerFontOverride.value &&
-      READER_LAYOUT_STYLE_KEYS.every((key) => {
-        const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
-        return (
-          config &&
-          getSetting(config.storageKey, config.default) === config.default
-        );
-      }),
+    () => READER_LAYOUT_STYLE_KEYS.every(isDefault),
   );
 
   const resetReaderLayout = () => {
-    READER_LAYOUT_STYLE_KEYS.forEach((key) => resetStyle(key));
-  };
-
-  const isDefault = (key) => {
-    if (key === "fontStyle" && readerFontOverride.value) return false;
-    const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
-    if (!config) return false;
-    const currentValue = getSetting(config.storageKey, config.default);
-    return currentValue === config.default;
+    READER_LAYOUT_STYLE_KEYS.forEach(resetStyle);
   };
 
   const resetStyle = (key) => {
     if (key === "fontStyle") readerFontOverride.value = null;
     const config = STYLE_CONFIG_KEYS.find((item) => item.key === key);
     if (config) {
-      setSetting(config.storageKey, config.default);
+      setSetting(config.storageKey, READER_STYLE_DEFAULTS[key]);
     }
   };
 

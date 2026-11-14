@@ -1,25 +1,8 @@
 <template>
   <div class="flex flex-wrap items-center gap-2">
-    <button
-      v-for="vote in votes"
-      :key="vote.content"
-      type="button"
-      class="btn btn-xs rounded-full"
-      :class="
-        vote.viewerHasReacted ? 'btn-primary' : 'border-base-300 bg-base-100'
-      "
-      :disabled="disabled"
-      :aria-pressed="Boolean(vote.viewerHasReacted)"
-      :aria-label="vote.label"
-      :title="vote.label"
-      @click="$emit('react', vote)"
-    >
-      <i :class="vote.icon" aria-hidden="true"></i>
-      {{ number(vote.count) }}
-    </button>
-    <CommentPopover
+    <Popover
       ref="picker"
-      :label="t('reader.comments.chooseReaction')"
+      :label="t('comments.chooseReaction')"
       :disabled="disabled"
       :placement="placement"
       align="start"
@@ -37,25 +20,38 @@
         :class="{ 'btn-active': reaction.viewerHasReacted }"
         :disabled="disabled"
         :aria-pressed="Boolean(reaction.viewerHasReacted)"
-        :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
+        :aria-label="t('comments.reaction', { emoji: reaction.emoji })"
         @click="choose(reaction)"
       >
         {{ reaction.emoji }}
       </button>
-    </CommentPopover>
+    </Popover>
+    <button
+      v-for="vote in votes"
+      :key="vote.content"
+      type="button"
+      class="btn btn-xs rounded-full"
+      :class="
+        vote.viewerHasReacted ? 'btn-primary' : 'border-base-300 bg-base-100'
+      "
+      :disabled="disabled"
+      :aria-pressed="Boolean(vote.viewerHasReacted)"
+      :aria-label="vote.label"
+      :title="vote.label"
+      @click="$emit('react', vote)"
+    >
+      <i :class="vote.icon" aria-hidden="true"></i>
+      {{ number(vote.count) }}
+    </button>
     <button
       v-for="reaction in activeReactions"
       :key="reaction.content"
       type="button"
-      class="btn btn-xs gap-1 rounded-full"
-      :class="
-        reaction.viewerHasReacted
-          ? 'btn-soft btn-primary'
-          : 'border-base-300 bg-base-100'
-      "
+      class="btn btn-xs rounded-full"
+      :class="reaction.viewerHasReacted ? 'btn-soft btn-primary' : 'btn-soft'"
       :disabled="disabled"
       :aria-pressed="Boolean(reaction.viewerHasReacted)"
-      :aria-label="t('reader.comments.reaction', { emoji: reaction.emoji })"
+      :aria-label="t('comments.reaction', { emoji: reaction.emoji })"
       @click="$emit('react', reaction)"
     >
       {{ reaction.emoji }} {{ reaction.count }}
@@ -66,7 +62,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
-import CommentPopover from "../interaction/CommentPopover.vue";
+import Popover from "@/components/display/menu/Popover.vue";
 const props = defineProps({
   groups: { type: Array, default: () => [] },
   disabled: Boolean,
@@ -107,7 +103,7 @@ const votes = computed(() =>
     return {
       ...reaction,
       icon: `${icon}-${selected ? "fill" : "line"}`,
-      label: t(`reader.comments.${selected ? undo : label}`),
+      label: t(`comments.${selected ? undo : label}`),
     };
   }),
 );

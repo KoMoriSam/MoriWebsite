@@ -1,99 +1,146 @@
 <template>
   <section
     ref="threadElement"
-    class="comment-thread flex min-h-0 w-full min-w-0 flex-col gap-6 font-sans"
+    class="comment-thread flex min-h-0 w-full min-w-0 flex-col gap-4 font-sans"
     :class="{
-      '[--comment-editor-max-height:40dvh]': scrollMode === 'dialog',
-      'lg:[--comment-editor-max-height:40dvh]': scrollMode === 'sidebar',
+      'flex-1 [--comment-editor-max-height:40dvh]': scrollMode === 'dialog',
+      'lg:flex-1 lg:[--comment-editor-max-height:40dvh]':
+        scrollMode === 'sidebar',
     }"
     :aria-busy="pending"
-    :aria-label="t('reader.comments.title')"
+    :aria-label="t('comments.title')"
   >
-    <component :is="scrollMode ? ScrollableContainer : 'div'">
+    <div v-if="loaded || showPlaceholder" class="grid min-w-0 shrink-0 gap-6">
+      <CommentsPlaceholder v-if="showPlaceholder" part="header" />
+      <div
+        v-if="loaded"
+        class="flex flex-wrap items-center gap-2 border-b border-base-300 pb-3 text-sm"
+      >
+        <ReactionButtons
+          placement="bottom"
+          :groups="threadReactions"
+          :disabled="busy || (permissions && !discussion?.viewerCanReact)"
+          @react="react(null, $event)"
+        />
+        <a
+          v-if="discussionUrl"
+          :href="discussionUrl"
+          class="link link-hover ms-auto"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <i class="ri-github-fill" aria-hidden="true"></i>
+          {{ t("comments.openGithub") }}
+          <i class="ri-external-link-line" aria-hidden="true"></i>
+        </a>
+      </div>
+      <div v-if="loaded || editorPosition === 'top'" class="grid min-w-0 gap-4">
+        <div
+          v-if="loaded"
+          class="flex flex-wrap items-center justify-between gap-2"
+        >
+          <span
+            class="flex flex-wrap items-center gap-x-2 text-sm font-semibold"
+          >
+            <span>{{
+              t(
+                "common.counts.comments",
+                { count: number(commentCount) },
+                commentCount,
+              )
+            }}</span>
+            <span aria-hidden="true">·</span>
+            <span>{{
+              t(
+                "comments.replies",
+                { count: number(replyCount) },
+                replyCount,
+              )
+            }}</span>
+            <span
+              v-if="discussion?.locked"
+              class="badge badge-sm badge-error badge-soft font-normal"
+            >
+              <i class="ri-lock-line" aria-hidden="true"></i>
+              {{ t("comments.locked") }}
+            </span>
+          </span>
+          <div v-if="discussion" class="flex flex-wrap items-center gap-2">
+            <div
+              class="tabs tabs-box tabs-sm"
+              role="radiogroup"
+              :aria-label="t('comments.sort.label')"
+            >
+              <input
+                v-for="order in ['oldest', 'newest', 'top']"
+                :key="order"
+                v-model="sort"
+                :name="sortGroup"
+                :value="order"
+                :aria-label="t('comments.sort.' + order)"
+                :disabled="pending"
+                type="radio"
+                class="tab whitespace-nowrap"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="editorPosition === 'top'"
+          ref="topEditorTarget"
+          class="empty:hidden"
+        ></div>
+      </div>
+    </div>
+    <div
+      v-if="error"
+      role="alert"
+      class="flex flex-wrap items-center gap-2 text-sm text-error"
+    >
+      <span>{{ t(error) }}</span>
+      <button
+        v-if="error === 'comments.reauthorize'"
+        type="button"
+        class="btn btn-sm"
+        @click="auth.login({ reauthorize: true, hash: returnHash })"
+      >
+        {{ t("auth.login") }}
+      </button>
+      <button
+        v-else
+        type="button"
+        class="btn btn-sm"
+        :disabled="pending || busy"
+        @click="retryRequest()"
+      >
+        {{ t("common.navigationStatus.retry") }}
+      </button>
+    </div>
+    <component
+      :is="scrollMode ? ScrollableContainer : 'div'"
+      :class="{
+        'flex-1': scrollMode === 'dialog',
+        'lg:flex-1': scrollMode === 'sidebar',
+      }"
+    >
       <div
         class="grid min-h-0 grid-cols-1 content-start gap-6"
         :class="{
-          'overflow-y-auto scrollbar-thin': scrollMode === 'dialog',
-          'lg:overflow-y-auto lg:scrollbar-thin': scrollMode === 'sidebar',
+          'flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain pb-0.5 scrollbar-thin':
+            scrollMode === 'dialog',
+          'lg:flex-1 lg:overflow-x-hidden lg:overflow-y-auto lg:overscroll-y-contain lg:pb-0.5 lg:scrollbar-thin':
+            scrollMode === 'sidebar',
         }"
       >
-        <CommentsPlaceholder v-if="showPlaceholder" content-only />
-        <div
-          v-if="error"
-          role="alert"
-          class="flex flex-wrap items-center gap-2 text-sm text-error"
-        >
-          <span>{{ t(error) }}</span>
-          <button
-            v-if="error === 'reader.comments.reauthorize'"
-            type="button"
-            class="btn btn-sm"
-            @click="auth.login({ reauthorize: true, hash: returnHash })"
-          >
-            {{ t("auth.login") }}
-          </button>
-          <button
-            v-else
-            type="button"
-            class="btn btn-sm"
-            :disabled="pending"
-            @click="load()"
-          >
-            {{ t("common.navigationStatus.retry") }}
-          </button>
-        </div>
+        <CommentsPlaceholder
+          v-if="showPlaceholder"
+          :authenticated="moriSession.authenticated"
+          part="list"
+        />
         <template v-if="loaded">
-          <div class="flex flex-wrap items-center gap-2 border-b border-base-300 pb-3 text-sm">
-            <ReactionButtons
-              placement="bottom"
-              :groups="threadReactions"
-              :disabled="busy || (permissions && !discussion?.viewerCanReact)"
-              @react="react(null, $event)"
-            />
-            <a
-              v-if="discussionUrl"
-              :href="discussionUrl"
-              class="link link-hover ms-auto flex items-center gap-1"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <i class="ri-github-fill" aria-hidden="true"></i>
-              {{ t("reader.comments.openGithub") }}
-            </a>
-          </div>
           <div class="flex min-w-0 flex-col gap-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="flex flex-wrap items-center gap-x-2 text-sm font-semibold">
-                <span>{{ t("common.counts.comments", { count: number(commentCount) }, commentCount) }}</span>
-                <span aria-hidden="true">·</span>
-                <span>{{ t("reader.comments.replies", { count: number(replyCount) }, replyCount) }}</span>
-              </span>
-              <div v-if="discussion" class="flex flex-wrap items-center gap-2">
-                <div
-                  class="tabs tabs-box tabs-sm"
-                  role="radiogroup"
-                  :aria-label="t('reader.comments.sort')"
-                >
-                  <input
-                    v-for="order in ['oldest', 'newest', 'top']"
-                    :key="order"
-                    v-model="sort"
-                    :name="sortGroup"
-                    :value="order"
-                    :aria-label="t('reader.comments.' + order)"
-                    :disabled="pending"
-                    type="radio"
-                    class="tab whitespace-nowrap"
-                  />
-                </div>
-              </div>
-            </div>
-            <p v-if="discussion?.locked" class="text-sm text-base-content/70">
-              {{ t("reader.comments.locked") }}
-            </p>
-
             <p v-if="!comments.length" class="text-sm text-base-content/65">
-              {{ t("reader.comments.empty") }}
+              {{ t("comments.empty") }}
             </p>
             <div v-else class="flex min-w-0 flex-col gap-4">
               <CommentEntry
@@ -101,6 +148,7 @@
                 :key="comment.id"
                 :comment="comment"
                 :author-login="authorLogin"
+                :viewer-login="moriSession.profile?.login"
                 :now="now"
                 :load-history="loadEditHistory"
                 :history-revision="moriSession.revision"
@@ -109,7 +157,7 @@
                 :authenticated="moriSession.authenticated"
                 :busy="busy"
                 :editing="editor.id === comment.id && editor.action === 'edit'"
-                :replies-open="openReplies.has(comment.id)"
+                :replies-open="repliesOpen(comment)"
                 @toggle-replies="toggleReplies(comment)"
                 @reply="replyToComment(comment)"
                 @quote="quoteReply(comment, comment)"
@@ -118,23 +166,33 @@
                 @react="react(comment.id, $event)"
               >
                 <template
-                  v-if="editor.id === comment.id && (editor.action !== 'reply' || moriSession.authenticated)"
+                  v-if="
+                    editor.id === comment.id &&
+                    (editor.action !== 'reply' || moriSession.authenticated)
+                  "
                   #editor
                 >
                   <CommentEditor
                     v-model="editor.body"
                     :return-hash="returnHash"
+                    :login-action="auth.login"
                     embedded
                     cancelable
+                    :compact="compactEditor"
                     :authenticated="moriSession.authenticated"
                     :busy="busy || moriSession.checking"
-                    :label="t('reader.comments.' + editor.action)"
+                    :action="editor.action"
+                    :error="error"
                     @cancel="resetEditor"
                     @submit="submitEditor"
                   />
                 </template>
                 <template
-                  v-if="openReplies.has(comment.id) && (comment.replies?.totalCount || comment.replies?.nodes?.length)"
+                  v-if="
+                    repliesOpen(comment) &&
+                    (comment.replies?.totalCount ||
+                      visibleReplies(comment).length)
+                  "
                   #replies
                 >
                   <div
@@ -142,7 +200,7 @@
                     :aria-busy="replyRequests.has(comment.id)"
                   >
                     <CommentEntry
-                      v-for="reply in comment.replies?.nodes"
+                      v-for="reply in visibleReplies(comment)"
                       :key="reply.id"
                       :comment="reply"
                       :author-login="authorLogin"
@@ -151,7 +209,10 @@
                       :history-revision="moriSession.revision"
                       reply
                       :can-quote="!discussion.locked && !comment.isMinimized"
-                      :permissions="permissions && comment.replies.includePermissions !== false"
+                      :permissions="
+                        permissions &&
+                        comment.replies.includePermissions !== false
+                      "
                       :busy="busy"
                       @quote="quoteReply(comment, reply)"
                       @edit="startEditor('edit', reply, comment.id)"
@@ -162,35 +223,47 @@
                         <CommentEditor
                           v-model="editor.body"
                           :return-hash="returnHash"
+                          :login-action="auth.login"
                           embedded
                           cancelable
+                          :compact="compactEditor"
                           :authenticated="moriSession.authenticated"
                           :busy="busy || moriSession.checking"
-                          :label="t('reader.comments.edit')"
+                          action="edit"
+                          :error="error"
                           @cancel="resetEditor"
                           @submit="submitEditor"
                         />
                       </template>
                     </CommentEntry>
-                    <p v-if="replyRequests.has(comment.id)" role="status" class="px-4 py-2 text-sm">
-                      <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
-                      {{ t("reader.comments.loadingReplies") }}
+                    <p
+                      v-if="replyRequests.has(comment.id)"
+                      role="status"
+                      class="px-4 py-2 text-sm"
+                    >
+                      <span
+                        class="loading loading-spinner loading-xs"
+                        aria-hidden="true"
+                      ></span>
+                      {{ t("comments.loadingReplies") }}
                     </p>
                     <button
                       v-else-if="replyErrors.has(comment.id)"
                       type="button"
-                      class="btn btn-ghost btn-sm mx-4 my-2"
+                      class="btn btn-ghost btn-xs mx-4 mb-2"
                       @click="loadReplies(comment)"
                     >
                       {{ t("common.navigationStatus.retry") }}
+                      <i class="ri-refresh-line" aria-hidden="true"></i>
                     </button>
                     <button
-                      v-else-if="comment.replies?.pageInfo?.hasNextPage"
+                      v-else-if="hasMoreReplies(comment)"
                       type="button"
-                      class="btn btn-ghost btn-sm mx-4 my-2"
+                      class="btn btn-ghost btn-xs mx-4 mb-2"
                       @click="loadReplies(comment)"
                     >
-                      {{ t("reader.comments.moreReplies") }}
+                      {{ t("comments.loadMoreReplies") }}
+                      <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
                     </button>
                   </div>
                 </template>
@@ -199,11 +272,12 @@
             <button
               v-if="nextCursor"
               type="button"
-              class="btn btn-sm self-center"
+              class="btn btn-ghost btn-sm self-center"
               :disabled="pending"
               @click="load(nextCursor)"
             >
-              {{ t("reader.comments.more") }}
+              {{ t("comments.loadMoreComments") }}
+              <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
             </button>
             <button
               v-if="editor.action !== 'post' && !hasEditorTarget"
@@ -211,33 +285,56 @@
               class="btn btn-ghost btn-sm"
               @click="resetEditor"
             >
-              {{ t("reader.comments.cancel") }}
+              {{ t("comments.cancel") }}
             </button>
           </div>
         </template>
       </div>
     </component>
-    <CommentEditor
-      v-if="showPlaceholder || (loaded && !discussion?.locked && editor.action === 'post')"
-      v-model="editor.body"
-      class="shrink-0"
-      :return-hash="returnHash"
-      :authenticated="moriSession.authenticated"
-      :loading="showPlaceholder"
-      :busy="busy || moriSession.checking"
-      :label="t('reader.comments.post')"
-      @submit="submitEditor"
-    />
+    <Teleport
+      :to="topEditorTarget"
+      :disabled="editorPosition !== 'top' || !topEditorTarget"
+    >
+      <CommentEditor
+        v-if="
+          showPlaceholder ||
+          (loaded && !discussion?.locked && editor.action === 'post')
+        "
+        v-model="editor.body"
+        class="shrink-0"
+        :compact="compactEditor"
+        :return-hash="returnHash"
+        :login-action="auth.login"
+        :authenticated="moriSession.authenticated"
+        :loading="showPlaceholder"
+        :busy="busy || moriSession.checking"
+        :error="error"
+        @submit="submitEditor"
+      />
+    </Teleport>
   </section>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  useId,
+  watch,
+} from "vue";
 import { useTimestamp } from "@vueuse/core";
-import { discussionAuthorLogins } from "@/../shared/discussions.js";
+import {
+  defaultCommentSort,
+  discussionAuthorLogins,
+  initialReplyCount,
+} from "@/../shared/discussions.js";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import CommentsPlaceholder from "@/components/reader/feedback/CommentsPlaceholder.vue";
-import { moriSession, useMoriAuth } from "@/composables/auth/useMoriAuth";
+import { useMoriAuth } from "@/composables/auth/useMoriAuth";
 import { useLocale } from "@/i18n";
 import { useToast } from "@/composables/useToast";
 import { useCommentCountsStore } from "@/stores/commentCountsStore";
@@ -250,6 +347,13 @@ const props = defineProps({
   scope: { type: String, required: true },
   target: { type: String, required: true },
   scrollMode: String,
+  compactEditor: Boolean,
+  editorPosition: {
+    type: String,
+    default: "bottom",
+    validator: (value) => ["top", "bottom"].includes(value),
+  },
+  preview: Object,
 });
 const returnHash = computed(() =>
   props.scope.endsWith("-paragraph") ? encodeURIComponent(props.target) : "",
@@ -257,24 +361,35 @@ const returnHash = computed(() =>
 const emit = defineEmits(["count"]);
 const now = useTimestamp({ interval: 30_000 });
 const authorLogin = computed(() =>
-  props.scope.startsWith("article") ? discussionAuthorLogins.article : discussionAuthorLogins.novel,
+  props.scope.startsWith("article")
+    ? discussionAuthorLogins.article
+    : discussionAuthorLogins.novel,
 );
 const { t, number } = useLocale();
 const toast = useToast();
-const auth = useMoriAuth();
+const preview = import.meta.env.DEV ? props.preview : null;
+const auth = preview?.auth ?? useMoriAuth();
+const moriSession = auth.state;
 const counts = useCommentCountsStore();
 const pending = ref(true);
 const loaded = ref(false);
 const busy = ref(false);
 const error = ref("");
-const showPlaceholder = computed(() => pending.value && !loaded.value && !error.value);
-const sort = ref("oldest");
+const showPlaceholder = computed(
+  () => pending.value && !loaded.value && !error.value,
+);
+const sort = ref(defaultCommentSort);
 const sortGroup = useId();
 const threadElement = ref(null);
+const topEditorTarget = ref(null);
 const discussion = ref(null);
-const discussionUrl = computed(() => githubDiscussionUrl(discussion.value?.url));
+const discussionUrl = computed(() =>
+  githubDiscussionUrl(discussion.value?.url),
+);
 const comments = ref([]);
-const openReplies = reactive(new Set());
+const replyVisibility = reactive(new Map());
+const replyLimits = reactive(new Map());
+const postedReplies = reactive(new Map());
 const replyRequests = reactive(new Map());
 const replyErrors = reactive(new Set());
 const count = ref(0);
@@ -295,14 +410,16 @@ const hasEditorTarget = computed(() =>
   comments.value.some(
     (item) =>
       item.id === editor.value.id ||
-      (openReplies.has(item.id) && editor.value.parentId === item.id) ||
-      item.replies?.nodes?.some((reply) => reply.id === editor.value.id),
+      (repliesOpen(item) &&
+        (editor.value.parentId === item.id ||
+          visibleReplies(item).some((reply) => reply.id === editor.value.id))),
   ),
 );
 let generation = 0;
 let active = false;
 let controller;
 let submission;
+let retryRequest;
 
 function resetEditor() {
   editor.value = emptyEditor();
@@ -310,7 +427,9 @@ function resetEditor() {
 
 function readDraft() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(draftKey.value));
+    const saved = preview
+      ? preview.draft
+      : JSON.parse(sessionStorage.getItem(draftKey.value));
     const draft = saved?.editor;
     if (
       draft &&
@@ -328,6 +447,10 @@ function readDraft() {
 function saveDraft() {
   if (!active) return;
   const draft = editor.value;
+  if (preview) {
+    preview.draft = draft.body ? { editor: { ...draft }, submission } : null;
+    return;
+  }
   try {
     if (draft.body)
       sessionStorage.setItem(
@@ -342,6 +465,7 @@ function saveDraft() {
 watch(editor, saveDraft, { deep: true, flush: "sync" });
 
 async function request(parameters, options) {
+  if (preview) return preview.request(parameters, options);
   const search = new URLSearchParams({
     scope: props.scope,
     target: props.target,
@@ -363,19 +487,20 @@ function loadEditHistory(id, cursor, signal) {
   return request({ history: id, ...(cursor && { cursor }) }, { signal });
 }
 
-function report(failure) {
+function report(failure, retry = load) {
+  retryRequest = retry;
   error.value =
     failure.message === "COMMENT_RANKING_TOO_LARGE"
-      ? "reader.comments.rankingTooLarge"
+      ? "comments.rankingTooLarge"
       : failure.message === "GITHUB_REAUTHORIZE"
-      ? "reader.comments.reauthorize"
-      : failure.message === "COMMENT_ALREADY_SUBMITTED"
-        ? "reader.comments.duplicate"
-        : failure.status === 403
-          ? "reader.comments.forbidden"
-          : failure.status === 429
-            ? "reader.comments.rateLimited"
-            : "reader.comments.failed";
+        ? "comments.reauthorize"
+        : failure.message === "COMMENT_ALREADY_SUBMITTED"
+          ? "comments.duplicate"
+          : failure.status === 403
+            ? "comments.forbidden"
+            : failure.status === 429
+              ? "comments.rateLimited"
+              : "comments.failed";
 }
 
 async function load(cursor) {
@@ -394,10 +519,11 @@ async function load(cursor) {
       {
         sort: sort.value,
         ...(cursor && { cursor }),
-        // Drafts created before parent IDs were stored can still find their reply.
-        ...(editor.value.action !== "edit" || editor.value.parentId !== undefined
-          ? { replySummary: "1" }
-          : {}),
+        // Older drafts without a parent ID still need to find their reply.
+        ...(editor.value.action === "edit" &&
+        editor.value.parentId === undefined
+          ? {}
+          : { replyPreview: "1" }),
       },
       { signal: controller.signal },
     );
@@ -406,25 +532,37 @@ async function load(cursor) {
     discussion.value = result.discussion;
     permissions.value = Boolean(result.includePermissions);
     const pageItems = page?.nodes || [];
-    const existingIds = new Set(cursor ? comments.value.map(({ id }) => id) : []);
+    const existingIds = new Set(
+      cursor ? comments.value.map(({ id }) => id) : [],
+    );
     comments.value = cursor
-      ? [...comments.value, ...pageItems.filter(({ id }) => !existingIds.has(id))]
+      ? [
+          ...comments.value,
+          ...pageItems.filter(({ id }) => !existingIds.has(id)),
+        ]
       : pageItems;
     for (const comment of pageItems) {
-      if (editor.value.parentId === comment.id ||
-          comment.replies?.nodes?.some((reply) => reply.id === editor.value.id)) {
-        openReplies.add(comment.id);
-      }
-    }
-    if (!cursor) {
-      const visibleIds = new Set(pageItems.map(({ id }) => id));
-      for (const openId of openReplies) {
-        if (!visibleIds.has(openId)) openReplies.delete(openId);
+      if (
+        editor.value.parentId === comment.id ||
+        comment.replies?.nodes?.some((reply) => reply.id === editor.value.id)
+      ) {
+        replyVisibility.set(comment.id, true);
       }
     }
     for (const comment of comments.value) {
-      if (openReplies.has(comment.id) && comment.replies?.totalCount && !comment.replies.nodes)
-        void loadReplies(comment);
+      if (!repliesOpen(comment) || !comment.replies?.totalCount) continue;
+      const nodes = comment.replies.nodes || [];
+      const limit = replyLimits.get(comment.id) || initialReplyCount;
+      const editTarget =
+        editor.value.parentId === comment.id ? editor.value.id : null;
+      if (
+        !nodes.length ||
+        (comment.replies.pageInfo?.hasNextPage &&
+          (nodes.length < limit ||
+            (editTarget && !nodes.some(({ id }) => id === editTarget))))
+      ) {
+        void loadReplies(comment, { limit, editTarget });
+      }
     }
     nextCursor.value =
       sort.value === "newest"
@@ -432,11 +570,21 @@ async function load(cursor) {
         : page?.pageInfo.hasNextPage && page.pageInfo.endCursor;
     count.value = result.count || 0;
     commentCount.value = result.commentCount ?? page?.totalCount ?? 0;
-    replyCount.value = result.replyCount ?? Math.max(0, count.value - commentCount.value);
+    replyCount.value =
+      result.replyCount ?? Math.max(0, count.value - commentCount.value);
     loaded.value = true;
     emit("count", count.value);
   } catch (failure) {
-    if (id === generation) report(failure);
+    if (id !== generation) return;
+    if (
+      !loaded.value &&
+      sort.value === "top" &&
+      failure.message === "COMMENT_RANKING_TOO_LARGE"
+    ) {
+      sort.value = "oldest";
+    } else {
+      report(failure, () => load(cursor));
+    }
   } finally {
     if (id === generation) pending.value = false;
   }
@@ -448,47 +596,108 @@ function cancelReplyRequests() {
   replyErrors.clear();
 }
 
+function repliesOpen(comment) {
+  return replyVisibility.get(comment.id) ?? !comment.isMinimized;
+}
+
+function visibleReplies(comment) {
+  const nodes = comment.replies?.nodes || [];
+  const limit = replyLimits.get(comment.id) || initialReplyCount;
+  const posted = new Map(
+    (postedReplies.get(comment.id) || []).map((reply) => [reply.id, reply]),
+  );
+  const visible = nodes.filter(({ id }, index) => {
+    const ownReply = posted.delete(id);
+    return index < limit || id === editor.value.id || ownReply;
+  });
+  return [...visible, ...posted.values()];
+}
+
+function hasMoreReplies(comment) {
+  return (
+    comment.replies?.pageInfo?.hasNextPage ||
+    comment.replies?.nodes?.length >
+      (replyLimits.get(comment.id) || initialReplyCount)
+  );
+}
+
 function toggleReplies(comment) {
-  if (openReplies.delete(comment.id)) return;
-  openReplies.add(comment.id);
-  if (!comment.replies?.nodes || replyErrors.has(comment.id)) {
-    void loadReplies(comment);
+  const open = !repliesOpen(comment);
+  replyVisibility.set(comment.id, open);
+  if (!open) return;
+  const limit = replyLimits.get(comment.id) || initialReplyCount;
+  if (
+    !comment.replies?.nodes ||
+    replyErrors.has(comment.id) ||
+    (comment.replies.pageInfo?.hasNextPage &&
+      comment.replies.nodes.length < limit)
+  ) {
+    void loadReplies(comment, { limit });
   }
 }
 
-async function loadReplies(comment) {
+async function loadReplies(comment, { limit, editTarget } = {}) {
   if (replyRequests.has(comment.id)) return;
+  if (
+    limit === undefined &&
+    comment.replies?.nodes?.length >
+      (replyLimits.get(comment.id) || initialReplyCount)
+  ) {
+    replyLimits.set(comment.id, comment.replies.nodes.length);
+    return;
+  }
   const controller = new AbortController();
   replyRequests.set(comment.id, controller);
   replyErrors.delete(comment.id);
   try {
-    const cursor = comment.replies?.pageInfo?.endCursor;
-    const { replies, includePermissions } = await request({
-      parent: comment.id,
-      ...(cursor && { cursor }),
-    }, { signal: controller.signal });
-    if (!controller.signal.aborted && comments.value.includes(comment)) {
+    do {
+      const cursor = comment.replies?.pageInfo?.endCursor;
+      const { replies, includePermissions } = await request(
+        { parent: comment.id, ...(cursor && { cursor }) },
+        { signal: controller.signal },
+      );
+      if (controller.signal.aborted || !comments.value.includes(comment))
+        return;
+      const existing = comment.replies?.nodes || [];
+      const seen = new Set(existing.map(({ id }) => id));
       comment.replies = {
         ...replies,
         totalCount: replies.totalCount ?? comment.replies?.totalCount,
-        nodes: [...(comment.replies?.nodes || []), ...replies.nodes],
-        includePermissions: comment.replies?.includePermissions !== false && includePermissions,
+        nodes: [
+          ...existing,
+          ...replies.nodes.filter(({ id }) => !seen.has(id)),
+        ],
+        includePermissions:
+          comment.replies?.includePermissions !== false && includePermissions,
       };
-    }
+      if (limit === undefined)
+        replyLimits.set(comment.id, comment.replies.nodes.length);
+      if (replies.pageInfo?.endCursor === cursor) break;
+    } while (
+      comment.replies.pageInfo?.hasNextPage &&
+      (comment.replies.nodes.length < limit ||
+        (editTarget &&
+          !comment.replies.nodes.some(({ id }) => id === editTarget)))
+    );
   } catch (failure) {
     if (!controller.signal.aborted) {
       replyErrors.add(comment.id);
       report(failure);
     }
   } finally {
-    if (replyRequests.get(comment.id) === controller) replyRequests.delete(comment.id);
+    if (replyRequests.get(comment.id) === controller)
+      replyRequests.delete(comment.id);
   }
 }
 
 function focusInlineEditor() {
-  void nextTick(() =>
-    threadElement.value?.querySelector("[data-inline-comment-editor] textarea")?.focus(),
-  );
+  void nextTick(() => {
+    const fields = threadElement.value?.querySelectorAll(
+      "[data-inline-comment-editor]:not([inert]) :is(input[type=text], textarea)",
+    );
+    if (fields)
+      Array.from(fields).find((field) => field.getClientRects().length)?.focus();
+  });
 }
 
 function replyToComment(comment) {
@@ -510,13 +719,21 @@ function startEditor(action, comment, parentId = null) {
 
 function quoteReply(parent, comment) {
   if (busy.value || moriSession.checking) return;
-  const quote = comment.body.trim().slice(0, 8000).split(/\r?\n/u).map((line) => `> ${line}`).join("\n");
-  const current = editor.value.action === "reply" && editor.value.id === parent.id
-    ? editor.value.body
-    : "";
-  const body = current ? `${current.trimEnd()}\n\n${quote}\n\n` : `${quote}\n\n`;
+  const quote = comment.body
+    .trim()
+    .slice(0, 8000)
+    .split(/\r?\n/u)
+    .map((line) => `> ${line}`)
+    .join("\n");
+  const current =
+    editor.value.action === "reply" && editor.value.id === parent.id
+      ? editor.value.body
+      : "";
+  const body = current
+    ? `${current.trimEnd()}\n\n${quote}\n\n`
+    : `${quote}\n\n`;
   if (body.length > 10000) {
-    toast.error(t("reader.comments.quoteTooLong"));
+    toast.error(t("comments.quoteTooLong"));
     return;
   }
   editor.value = { action: "reply", id: parent.id, parentId: null, body };
@@ -532,7 +749,8 @@ async function mutate(action, options) {
   }
   const revision = moriSession.revision;
   const signature = JSON.stringify([action, options]);
-  if (submission?.signature !== signature)
+  // Each attempt to delete a specific comment can safely use a fresh request ID.
+  if (action === "delete" || submission?.signature !== signature)
     submission = { signature, id: crypto.randomUUID() };
   saveDraft();
   busy.value = true;
@@ -548,7 +766,31 @@ async function mutate(action, options) {
     );
     submission = null;
     if (!active || revision !== moriSession.revision) return false;
-    if (result.delta) {
+    if (action === "reply") {
+      replyVisibility.set(options.id, true);
+      if (result.reply?.id) {
+        const previous = postedReplies.get(options.id) || [];
+        postedReplies.set(options.id, [...previous, result.reply]);
+      }
+    } else if (action === "delete" || action === "edit") {
+      for (const [parentId, replies] of postedReplies) {
+        if (action === "delete" && parentId === options.id)
+          postedReplies.delete(parentId);
+        else if (replies.some(({ id }) => id === options.id)) {
+          postedReplies.set(
+            parentId,
+            action === "delete"
+              ? replies.filter(({ id }) => id !== options.id)
+              : replies.map((reply) =>
+                  reply.id === options.id
+                    ? { ...reply, body: options.body }
+                    : reply,
+                ),
+          );
+        }
+      }
+    }
+    if (result.count != null || result.delta) {
       const source =
         props.scope === "article" || props.scope === "article-paragraph"
           ? "article"
@@ -556,7 +798,7 @@ async function mutate(action, options) {
       const contentId = props.scope.endsWith("-paragraph")
         ? props.target.replace(/-[1-9]\d*$/, "")
         : props.target;
-      if (props.scope !== "book")
+      if (!preview && props.scope !== "book" && result.delta)
         counts.adjustContentCommentTotal(source, contentId, result.delta);
       count.value = result.count ?? Math.max(0, count.value + result.delta);
       emit("count", count.value);
@@ -568,20 +810,28 @@ async function mutate(action, options) {
       submission = null;
     if (failure.message === "GITHUB_REAUTHORIZE") submission = null;
     saveDraft();
-    if (active && revision === moriSession.revision) report(failure);
+    if (active && revision === moriSession.revision) {
+      const retryDelete =
+        action === "delete" &&
+        (!failure.status || failure.status >= 500 || failure.status === 429);
+      report(failure, retryDelete ? () => mutate(action, options) : undefined);
+    }
     return false;
   } finally {
     busy.value = false;
   }
 }
 
-async function submitEditor() {
+async function submitEditor(onSuccess) {
   const { action, id, body } = editor.value;
-  if (await mutate(action, { id, body })) resetEditor();
+  if (await mutate(action, { id, body })) {
+    onSuccess?.();
+    resetEditor();
+  }
 }
 
 function remove(comment) {
-  if (window.confirm(t("reader.comments.confirmDelete")))
+  if (window.confirm(t("comments.confirmDelete")))
     void mutate("delete", { id: comment.id });
 }
 
@@ -605,7 +855,11 @@ onBeforeUnmount(() => {
 });
 watch(sort, () => void load());
 watch(
-  () => [moriSession.checking, moriSession.revision],
+  () => moriSession.revision,
+  () => postedReplies.clear(),
+);
+watch(
+  () => [moriSession.checking, moriSession.revision, preview?.revision],
   ([checking]) => {
     permissions.value = false;
     if (!checking) void load();

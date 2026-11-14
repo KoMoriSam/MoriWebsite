@@ -1,6 +1,6 @@
 {
   "name": "KoMoriSam",
-  "version": "2.21.1",
+  "version": "2.21.2",
   "homepage": "https://komori.cc/",
   "private": true,
   "type": "module",
@@ -9,6 +9,7 @@
     "node": "^24.15.0 || >=26.0.0"
   },
   "scripts": {
+    "menu": "node scripts/menu.mjs",
     "dev": "node scripts/run.mjs dev",
     "dev:seed": "node scripts/dev/start.mjs seed",
     "build": "node scripts/run.mjs build",

@@ -252,7 +252,7 @@ export const validateRelease = (release, source = "更新日志") => {
   };
 };
 
-export const parseReleaseMarkdown = (content, source = "更新日志文件") => {
+export const parseReleaseMarkdown = (content, source = "更新日志文件", { allowDraftPlaceholders = false } = {}) => {
   if (!frontMatter.test(content)) {
     throw new Error(`${source} 缺少 YAML front matter。`);
   }
@@ -270,7 +270,8 @@ export const parseReleaseMarkdown = (content, source = "更新日志文件") => 
     source,
   );
 
-  if (PLACEHOLDERS.some((placeholder) => content.includes(placeholder))) {
+  if (!(allowDraftPlaceholders && release.status === "draft") &&
+      PLACEHOLDERS.some((placeholder) => content.includes(placeholder))) {
     throw new Error(`${source} 仍包含未填写的占位内容。`);
   }
   return release;
@@ -368,7 +369,7 @@ export const validateReleaseChain = (entries, source = "更新日志版本链") 
   return { releases, drafts };
 };
 
-export const readReleaseFiles = async () => {
+export const readReleaseFiles = async (options) => {
   await mkdir(CHANGELOG_DIR, { recursive: true });
   const names = (await readdir(CHANGELOG_DIR))
     .filter((name) => name.toLowerCase().endsWith(".md"))
@@ -379,7 +380,7 @@ export const readReleaseFiles = async () => {
   for (const name of names) {
     const path = join(CHANGELOG_DIR, name);
     const content = await readFile(path, "utf8");
-    const release = parseReleaseMarkdown(content, name);
+    const release = parseReleaseMarkdown(content, name, options);
     if (name !== `${release.version}.md`) {
       throw new Error(`${name} 的文件名必须与 version ${release.version} 一致。`);
     }

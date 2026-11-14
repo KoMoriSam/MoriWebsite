@@ -1,15 +1,24 @@
-name: Check release metadata
+name: 发布网站
 
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: website-release
+  cancel-in-progress: false
+
 jobs:
-  validate-tag:
+  release:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      deployment: false
+    env:
+      TZ: Asia/Singapore
     steps:
       - uses: actions/checkout@v6
         with:
@@ -22,8 +31,51 @@ jobs:
         with:
           node-version: 24.15.0
           package-manager-cache: false
-      - name: Validate release metadata
+      - name: 准备并校验发布资料
+        id: prepare
         run: |
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
           pnpm install --frozen-lockfile
-          pnpm release verify "${GITHUB_REF_NAME#v}"
+          pnpm release finalize
+      - uses: actions/create-github-app-token@v3
+        id: release-token
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+      - name: 推送发布提交、标签和 production
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.prepare.outputs.tag }}
+          RELEASE_TOKEN: ${{ steps.release-token.outputs.token }}
+        run: |
+          git_auth=$(printf 'x-access-token:%s' "$RELEASE_TOKEN" | base64 -w0)
+          echo "::add-mask::$git_auth"
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="Authorization: Basic $git_auth"
+          git fetch --no-tags origin \
+            refs/heads/main:refs/remotes/origin/main \
+            refs/heads/production:refs/remotes/origin/production
+          test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
+
+          git config user.name 'MoriWebsite Release'
+          git config user.email 'release@komori.cc'
+          git add -- package.json README.md README_en.md README_fr.md README_si.md \
+            "changelog/releases/${RELEASE_TAG#v}.md"
+          git commit -m "chore(release): ${RELEASE_TAG#v}"
+          release=$(git rev-parse HEAD)
+          production=$(git rev-parse origin/production)
+          target=$release
+          if ! git merge-base --is-ancestor "$production" "$release"; then
+            merged_tree=$(git merge-tree --write-tree "$production" "$release")
+            if [[ "$merged_tree" != "$(git rev-parse "$release^{tree}")" ]]; then
+              echo "::error::production contains changes outside the validated release."
+              exit 1
+            fi
+            target=$(git commit-tree "$merged_tree" -p "$production" -p "$release" -m "Release $RELEASE_TAG")
+          fi
+
+          git tag -a "$RELEASE_TAG" "$release" -m "Release $RELEASE_TAG"
+          git push --atomic origin "$release:refs/heads/main" \
+            "$target:refs/heads/production" "refs/tags/$RELEASE_TAG"
+          printf '已推送 %s。Cloudflare Workers Builds 将构建、验证网站并同步更新日志。\n' "$RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"

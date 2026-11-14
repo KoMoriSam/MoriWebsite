@@ -1,0 +1,84 @@
+@utility mask-bubble {
+  -webkit-mask-box-image-source: url("/assets/images/icons/review-bubble.svg");
+  -webkit-mask-box-image-slice: 4 5 4 6;
+  -webkit-mask-box-image-width: 4px 5px 4px 6px;
+  -webkit-mask-box-image-repeat: stretch;
+
+  mask-border-source: url("/assets/images/icons/review-bubble.svg");
+  mask-border-slice: 4 5 4 6;
+  mask-border-width: 4px 5px 4px 6px;
+  mask-border-repeat: stretch;
+}
+
+@utility mask-bubble-fill {
+  -webkit-mask-box-image-source: url("/assets/images/icons/review-bubble-fill.svg");
+  -webkit-mask-box-image-slice: 4 5 4 6 fill;
+  -webkit-mask-box-image-width: 4px 5px 4px 6px;
+  -webkit-mask-box-image-repeat: stretch;
+
+  mask-border-source: url("/assets/images/icons/review-bubble-fill.svg");
+  mask-border-slice: 4 5 4 6 fill;
+  mask-border-width: 4px 5px 4px 6px;
+  mask-border-repeat: stretch;
+}
+
+@layer utilities {
+  /* 段落评论按钮 */
+  .markdown button.comment-trigger {
+    @apply whitespace-nowrap select-none
+      relative overflow-visible
+    inline-flex items-center justify-center
+    h-4 min-h-0 min-w-6 w-auto ps-1.25 pe-1 ml-1
+    transition-[opacity,scale]
+    -translate-y-0.5
+    text-primary
+    z-0
+
+    before:content-['']
+    before:absolute before:inset-0
+    before:bg-primary
+    before:mask-bubble
+
+    hover:text-primary-content
+    hover:before:mask-bubble-fill
+
+    active:scale-80
+    active:text-primary-content
+    active:before:mask-bubble-fill;
+  }
+
+  .markdown button.comment-trigger .paragraph-comment-count {
+    @apply whitespace-nowrap
+    text-xs leading-none
+    font-sans font-bold z-10;
+  }
+
+  .markdown .markdown-link-card > .card [data-card-motion="title"] {
+    @apply pe-12;
+  }
+
+  .markdown .markdown-link-card > button.comment-trigger {
+    @apply absolute top-4 right-3 z-10 m-0 translate-y-0
+    transition-[translate] duration-200 motion-reduce:transition-none;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .markdown .markdown-link-card:hover > .card,
+  .markdown .markdown-link-card:hover > button.comment-trigger {
+      translate: 0 -0.25rem;
+    }
+  }
+
+  .markdown .chat-end .chat-bubble p button.comment-trigger {
+    @apply absolute right-full top-0
+    -translate-x-4 translate-y-0.75 ps-1 pe-1.25
+    before:scale-x-[-1]
+    active:before:scale-x-[-80%]
+    active:before:scale-y-[80%];
+  }
+
+  .markdown .chat-start .chat-bubble p button.comment-trigger {
+    @apply absolute left-full top-0
+    translate-x-4 translate-y-0.75;
+  }
+}

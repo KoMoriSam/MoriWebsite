@@ -8,6 +8,7 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { createIndex } from "pagefind";
+import { testAuthPrefix, testCallback, testOrigin } from "../../shared/test-preview.js";
 import { discussionScopes, discussionTarget, legacyDiscussionQuery, bookTerm, discussionRegistry } from "../../shared/discussions.js";
 import { publicCovers } from "../../shared/novel-release.js";
 import { assertNovelRelease, includePublicContent, sealNovelRelease } from "../build/novel-release.mjs";
@@ -17,7 +18,8 @@ import { decrypt, hash, randomToken } from "../../workers/auth/crypto.js";
 import { findSession } from "../../workers/auth/session.js";
 import website from "../../workers/website.js";
 import raw from "../../workers/content.js";
-import { MARKDOWN_MODE_COMMENT, renderMarkdown } from "../../src/utils/markdown/render-markdown.js";
+import { COMMENT_MARKDOWN } from "../../src/utils/comments/comment-markdown.js";
+import { MARKDOWN_MODE_CUSTOM, renderMarkdown } from "../../src/utils/markdown/render-markdown.js";
 
 registerHooks({
   resolve(specifier, context, next) {
@@ -176,6 +178,60 @@ test("Mori OAuth, credential refresh, binding authorization and logout", async (
   }
 });
 
+test("test Preview keeps OAuth on its own origin and uses test permissions", async () => {
+  const db = database();
+  db.sqlite.exec(await readFile("migrations/auth/0001_auth.sql", "utf8"));
+  const authEnv = {
+    AUTH_DB: db, MORI_ENV: "test", MORI_TEST_READER_IDS: "42",
+    MORI_SITE_ORIGIN: testOrigin, MORI_AUTH_ORIGIN: "https://auth-test.komori.cc",
+    GITHUB_CLIENT_ID: "test-id", GITHUB_CLIENT_SECRET: "test-secret",
+    TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
+  };
+  const env = {
+    MORI_ENV: "test", MORI_SITE_ORIGIN: testOrigin,
+    TEST_AUTH: { fetch: (request) => auth.fetch(request, authEnv) },
+    MORI_AUTH: new SiteAuth(null, authEnv),
+  };
+  const send = (path, options) => website.fetch(new Request(new URL(path, testOrigin), options), env);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => {
+    if (String(url) === "https://api.github.com/user") return Response.json({
+      id: 42, login: "reader", name: "Mori Reader", avatar_url: "https://avatars.githubusercontent.com/u/42",
+    });
+    assert.equal(String(url), "https://github.com/login/oauth/access_token");
+    assert.equal(options.body.get("redirect_uri"), testOrigin + testCallback);
+    return Response.json({ access_token: "mock-access", refresh_token: "mock-refresh", expires_in: 120, refresh_token_expires_in: 10000 });
+  };
+  try {
+    const login = await send("/auth/login?return=/novel");
+    const begin = new URL(login.headers.get("Location"));
+    assert.equal(begin.origin, testOrigin);
+    assert.equal(begin.pathname, testAuthPrefix + "/start");
+    const flow = cookie(login, COOKIE.flow);
+    const authorization = await send(begin);
+    const github = new URL(authorization.headers.get("Location"));
+    assert.equal(github.searchParams.get("redirect_uri"), testOrigin + testCallback);
+    const oauth = cookie(authorization, COOKIE.oauth);
+    const query = new URLSearchParams({ state: github.searchParams.get("state"), code: "test-code" });
+    const wrongHost = await auth.fetch(new Request(authEnv.MORI_AUTH_ORIGIN + "/callback/github?" + query, {
+      headers: { Cookie: oauth },
+    }), authEnv);
+    assert.equal(cookie(wrongHost, COOKIE.center), undefined);
+    const callback = await send(testCallback + "?" + query, { headers: { Cookie: oauth } });
+    const complete = new URL(callback.headers.get("Location"));
+    assert.equal(complete.origin, testOrigin);
+    assert.equal(complete.pathname, "/auth/complete");
+    const session = await send(complete, { headers: { Cookie: flow } });
+    assert.equal(session.headers.get("Location"), testOrigin + "/novel");
+    const token = cookieToken(cookie(session, COOKIE.site));
+    assert.equal((await env.MORI_AUTH.verify(token)).canReadNovel, true);
+    assert.equal((await send("https://another.dev.komori.cc" + testCallback)).status, 404);
+  } finally {
+    globalThis.fetch = originalFetch;
+    db.sqlite.close();
+  }
+});
+
 test("legacy discussion mapping, user permissions, reply counts and idempotent mutations", async () => {
   const registry = {
     articles: { 123: { path: "/blog/123" }, 124: { path: "/blog/124" } },
@@ -246,7 +302,7 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
         }
         if (query.includes("viewerCanUpdate viewerCanDelete viewerCanReact")) return { data: { node: {
           ...comment, id: variables.id, discussion: { id: variables.id === "DC_other" ? "D_other" : "D_1" },
-          replies: { totalCount: 0 },
+          replies: { totalCount: variables.id === "DC_1" ? replyCount : 0 },
         } } };
         if (query.includes("updateDiscussionComment")) {
           actions.push("edit");
@@ -259,8 +315,10 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
           return { data: { [name]: { subject: { id: variables.input.subjectId } } } };
         }
         if (query.includes("deleteDiscussionComment")) {
-          actions.push("delete");
-          replyCount--;
+          assert.deepEqual(Object.keys(variables.input).sort(), ["clientMutationId", "id"]);
+          assert.ok(["DC_1", "DC_2"].includes(variables.input.id));
+          actions.push("delete:" + variables.input.id);
+          if (variables.input.id === "DC_2") replyCount--;
           return { data: { deleteDiscussionComment: { clientMutationId: variables.input.clientMutationId } } };
         }
         throw new Error("Unexpected user query");
@@ -342,7 +400,8 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
     await mutation("add", { id: "DC_2", reaction: "HEART" });
     await mutation("remove", { id: "DC_2", reaction: "HEART" });
     assert.equal((await mutation("delete", { id: "DC_2" })).count, 4);
-    assert.deepEqual(actions, ["reply", "edit", "addReaction", "removeReaction", "delete"]);
+    assert.deepEqual(await mutation("delete", { id: "DC_1" }), { ok: true, delta: 0, count: 4 });
+    assert.deepEqual(actions, ["reply", "edit", "addReaction", "removeReaction", "delete:DC_2", "delete:DC_1"]);
     assert.equal(writes, 1);
     assert.equal(installations, 1);
     const creationRequest = new Request(start + "/api/comments?scope=article&target=124", {
@@ -358,7 +417,7 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
     assert.equal((await website.fetch(new Request(url), env)).status, 502);
     const safe = renderMarkdown(
       "<img src=x onerror=alert(1)> [x](javascript:alert%281%29) **bold**",
-      { mode: MARKDOWN_MODE_COMMENT },
+      { mode: MARKDOWN_MODE_CUSTOM, parserOptions: COMMENT_MARKDOWN.parserOptions },
     );
     assert.ok(!safe.includes("<img"));
     assert.ok(!safe.includes('href="javascript:'));
@@ -516,6 +575,13 @@ test("native website version previews only serve public assets", async () => {
     PUBLIC_API: { fetch: async () => { throw new Error("Preview forwarded to production API"); } },
     MORI_AUTH: { verify: async () => { throw new Error("Preview used production auth"); } },
   };
+  const production = await website.fetch(new Request(start + "/api/version"), env);
+  assert.deepEqual(await production.json(), { version: "version-id" });
+  assert.match(production.headers.get("Cache-Control"), /no-store/);
+  const mismatch = await website.fetch(new Request(start + "/api/version", {
+    headers: { "Cloudflare-Workers-Version-Overrides": 'website="another-version"' },
+  }), env);
+  assert.equal(mismatch.status, 404);
   for (const [origin, headers] of [
     ["https://version-website.example.workers.dev", {}],
     [start, { "Cloudflare-Workers-Version-Overrides": 'website="version-id"' }],

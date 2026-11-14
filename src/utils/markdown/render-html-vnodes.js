@@ -179,6 +179,36 @@ const getChildNodes = (node) =>
     ? node.content?.childNodes || []
     : node.childNodes || [];
 
+// Keep native numbering, including start and reversed, and size the gutter
+// for the widest number. Nested alphabetic and Roman markers use wider glyphs.
+function orderedMarkerSpace(node, { start, reversed, type }) {
+  const count = getChildNodes(node).filter((child) => child.tagName === "li").length;
+  const parsedStart = Number.parseInt(start, 10);
+  const first = Number.isFinite(parsedStart) ? parsedStart : reversed ? count : 1;
+  const last = first + Math.max(0, count - 1) * (reversed ? -1 : 1);
+  const largest = Math.max(first, last);
+  const digits = Math.max(String(first).length, String(last).length);
+
+  let depth = 0;
+  for (let parent = node.parentNode; parent; parent = parent.parentNode) {
+    if (parent.tagName === "ol") depth += 1;
+  }
+
+  const roman = type === "I" || type === "i" || (!type && depth >= 2);
+  const alphabetic = type === "A" || type === "a" || (!type && depth === 1);
+  let width = digits === 1 ? 1 : digits * 0.65 + 0.4;
+  if (roman && largest > 0 && largest <= 3999) {
+    width = largest <= 3 ? 1.5 : largest <= 9 ? 2.5 : largest <= 39 ? 3 : largest <= 99 ? 4 : 9;
+  } else if (alphabetic && Math.min(first, last) > 0) {
+    let letters = 1;
+    for (let number = largest; number > 26; number = Math.floor((number - 1) / 26)) {
+      letters += 1;
+    }
+    width = letters * (type === "A" ? 0.85 : 0.7) + 0.3;
+  }
+  return `${Math.max(1, Math.ceil(width * 2) / 2)}em`;
+}
+
 function getLinkType(href) {
   if (!href) return null;
   const currentOrigin = globalThis.location?.origin || SITE_ORIGIN;
@@ -304,6 +334,9 @@ const renderNode = (node, resolver, key, parent, router) => {
   if (!node.tagName) return null;
 
   const props = getVNodeProps(node);
+  if (node.tagName === "ol") {
+    props.style = [props.style, { "--md-ordered-marker-space": orderedMarkerSpace(node, props) }];
+  }
   const linkType =
     node.tagName === "a" && node.namespaceURI === "http://www.w3.org/1999/xhtml"
       ? getLinkType(props.href)
@@ -368,7 +401,12 @@ const renderNode = (node, resolver, key, parent, router) => {
     return h(node.tagName, { ...props, key }, children);
   }
 
-  if (linkType === "internal" && router && props.download == null) {
+  // The pagination engine places footnotes using their literal fragment URLs.
+  const footnoteLink = props.href?.startsWith("#") &&
+    (parent?.attrs?.some(({ name, value }) =>
+      name === "class" && value.split(/\s+/u).includes("footnote-ref"),
+    ) || props.class?.split(/\s+/u).includes("footnote-backref"));
+  if (linkType === "internal" && router && props.download == null && !footnoteLink) {
     const { href, ...linkProps } = props;
     const base = new URL(router.currentRoute.value.fullPath, SITE_ORIGIN);
     const url = new URL(href, base);

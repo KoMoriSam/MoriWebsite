@@ -30,6 +30,74 @@ import {
 } from "../../src/utils/markdown/render-html-vnodes.js";
 import { sanitizeMarkdownHtml } from "../../src/utils/markdown/sanitize-html.js";
 
+import { COMMENT_MARKDOWN } from "../../src/utils/comments/comment-markdown.js";
+import { resolveMarkdownExtensions } from "../../src/utils/markdown/markdown-extensions.js";
+import {
+  MARKDOWN_MODE_CUSTOM,
+  MARKDOWN_MODE_READER,
+  MARKDOWN_MODE_STANDARD,
+  createMarkdownRenderer,
+} from "../../src/utils/markdown/render-markdown.js";
+
+const custom = createMarkdownRenderer({ mode: MARKDOWN_MODE_CUSTOM });
+const standard = createMarkdownRenderer({ mode: MARKDOWN_MODE_STANDARD });
+const reader = createMarkdownRenderer({ mode: MARKDOWN_MODE_READER });
+assert.doesNotMatch(custom("before\nafter <span>HTML</span>"), /<br|<span>/u);
+assert.match(standard("https://example.com"), /<a href=/u);
+assert.doesNotMatch(reader("https://example.com"), /<a href=/u);
+
+const customWithFootnotes = createMarkdownRenderer({
+  mode: MARKDOWN_MODE_CUSTOM,
+  parserOptions: { html: true },
+  plugins: [footnotePlugin],
+});
+assert.match(customWithFootnotes("<strong>example</strong>[^a]\n\n[^a]: note"), /<strong>example<\/strong>.*footnote-ref/u);
+// Rendering with a router must keep literal footnote links available to
+// the mobile pagination engine.
+const unscopedFootnoteHtml = await renderToString(createSSRApp({
+  render: () => h("div", renderHtmlFragment(
+    parseHtmlFragment(customWithFootnotes("body[^a]\n\n[^a]: note")),
+    null,
+    { currentRoute: { value: { fullPath: "/novel/example" } } },
+  )),
+}));
+assert.match(unscopedFootnoteHtml, /href="#fn1"/u);
+assert.match(unscopedFootnoteHtml, /href="#fnref1"/u);
+
+const expectedExtensions = resolveMarkdownExtensions(MARKDOWN_MODE_CUSTOM, {
+  extensions: ["footnotes"],
+});
+assert.ok(expectedExtensions.has("footnotes"));
+assert.ok(!expectedExtensions.has("paragraphComments"));
+assert.ok(!resolveMarkdownExtensions(MARKDOWN_MODE_CUSTOM).has("linkCards"));
+
+const commentExtensions = resolveMarkdownExtensions(MARKDOWN_MODE_CUSTOM, COMMENT_MARKDOWN);
+const comment = createMarkdownRenderer({
+  mode: MARKDOWN_MODE_CUSTOM,
+  parserOptions: COMMENT_MARKDOWN.parserOptions,
+  plugins: [
+    MarkdownItBracketedSpans,
+    [MarkdownItAttrs, { allowedAttributes: COMMENT_MARKDOWN.allowedAttributes }],
+    footnotePlugin,
+  ],
+  wikiLinks: commentExtensions.has("wikiLinks"),
+  linkCards: commentExtensions.has("linkCards"),
+});
+const commentOutput = comment(
+  'first\nsecond <span>HTML</span>\n\n[tip]{.custom #unique data-tip="hint"}[^a]\n\n[^a]: note',
+);
+assert.match(commentOutput, /first<br>\nsecond &lt;span&gt;/u);
+assert.match(commentOutput, /<span data-tip="hint">tip<\/span>/u);
+assert.doesNotMatch(commentOutput, /class="custom"|id="unique"/u);
+for (const anchorScope of ["preview-", "published-"]) {
+  const fragment = parseHtmlFragment(commentOutput, anchorScope);
+  const output = await renderToString(createSSRApp({
+    render: () => h("div", renderHtmlFragment(fragment)),
+  }));
+  assert.match(output, new RegExp(`href="#${anchorScope}fn1"`, "u"));
+  assert.match(output, new RegExp(`id="${anchorScope}fn1"`, "u"));
+}
+
 const xssPayloads = [
   "<script>console.log('XSS-1')</script>",
   "<img src=x onerror=\"console.log('XSS-2')\">",

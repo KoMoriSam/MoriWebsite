@@ -17,7 +17,7 @@ const TASK_STATUSES = {
     input: "checked",
   },
   "-": { label: "已取消", icon: "ri-close-circle-fill", tone: "muted" },
-  "/": { label: "进行中", icon: "ri-loader-4-fill", tone: "info" },
+  "/": { label: "进行中", icon: "ri-progress-5-line", tone: "info" },
   ">": { label: "已推迟", icon: "ri-send-ins-fill", tone: "muted" },
   "<": { label: "计划中", icon: "ri-calendar-fill", tone: "info" },
   "?": { label: "待确认", icon: "ri-question-fill", tone: "error" },

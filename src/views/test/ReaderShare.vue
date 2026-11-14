@@ -51,6 +51,7 @@
         <summary>当前测试的阅读器内容：{{ activeSample.name }}</summary>
         <div class="mx-auto mt-4 max-w-3xl">
           <Renderer
+            layout="reading"
             :key="renderKey"
             ref="auditRenderer"
             :content="activeSample.content"

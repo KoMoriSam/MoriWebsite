@@ -65,7 +65,7 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not([data-markdown-chat] *)
+      :is(p, li, blockquote, h1, h2, h3, h4, h5, h6):not(.markdown-block *)
   ) {
   line-height: var(--reader-page-line-height);
   orphans: 1;
@@ -107,8 +107,8 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(blockquote, ul, ol, li):not([data-markdown-chat] *)
-      > :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
+      :is(blockquote, ul, ol, li):not(.markdown-block *)
+      > :is(p, ul, ol, blockquote):not(.markdown-block *)
   ) {
   margin-block: 0;
 }
@@ -116,16 +116,16 @@
 .mobile-page-viewport
   :deep(
     .mobile-page-article
-      :is(blockquote, li):not([data-markdown-chat] *)
-      > :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
-      + :is(p, ul, ol, blockquote):not([data-markdown-chat] *)
+      :is(blockquote, li):not(.markdown-block *)
+      > :is(p, ul, ol, blockquote):not(.markdown-block *)
+      + :is(p, ul, ol, blockquote):not(.markdown-block *)
   ) {
   margin-block-start: var(--reader-paragraph-gap);
 }
 
 .mobile-page-viewport
   :deep(
-    .mobile-page-article :is(h1, h2, h3, h4, h5, h6):not([data-markdown-chat] *)
+    .mobile-page-article :is(h1, h2, h3, h4, h5, h6):not(.markdown-block *)
   ) {
   margin-block: 0;
   padding-block: 0;
@@ -289,7 +289,7 @@
 
 .mobile-page-viewport
   :deep(
-    .mobile-page-article :is(ul, ol, li, blockquote):not([data-markdown-chat] *)
+    .mobile-page-article :is(ul, ol, li, blockquote):not(.markdown-block *)
   ) {
   line-height: var(--reader-page-line-height);
 }

@@ -1,0 +1,271 @@
+@layer utilities {
+  .markdown-block {
+    --md-component-size: calc(
+      var(--md-body-size, 1rem) * var(--md-component-scale, 1)
+    );
+    --md-component-detail-size: calc(var(--md-component-size) * 0.875);
+    --md-component-meta-size: calc(var(--md-component-size) * 0.75);
+    --md-component-padding: clamp(
+      0.625rem,
+      calc(var(--md-component-size) * 0.75),
+      1.5rem
+    );
+    --md-component-gap: calc(var(--md-component-padding) * 0.5);
+    --md-component-icon: clamp(0.875rem, var(--md-component-size), 1.75rem);
+    --md-component-control: clamp(
+      1.5rem,
+      calc(var(--md-component-size) * 1.75),
+      2.75rem
+    );
+    --md-component-leading: 1.45;
+    --md-leading: var(--md-component-leading);
+    --md-tracking: normal;
+    font-size: var(--md-component-size);
+    line-height: var(--md-component-leading);
+    letter-spacing: normal;
+    margin-block: var(--md-block-component-gap, 1rem);
+  }
+
+  .markdown-block .markdown-control {
+    --size: var(--md-component-control);
+    font-size: var(--md-component-icon);
+    line-height: 1;
+  }
+
+  .markdown-block .markdown-avatar {
+    inline-size: var(--md-component-control);
+  }
+
+  /* Code and diagrams use the same panel around their own scroll areas. */
+  .markdown-block-panel {
+    @apply relative mx-auto flex w-full min-w-0 max-w-full flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 font-sans;
+  }
+
+  .markdown-link-card [data-card-motion="title"],
+  .markdown-link-card .card-body {
+    padding-inline: var(--md-component-padding);
+  }
+
+  .markdown-link-card [data-card-motion="title"] {
+    padding-block-start: var(--md-component-padding);
+    font-size: var(--md-component-detail-size);
+  }
+
+  .markdown-link-card .card-body {
+    padding-block: var(--md-component-gap) var(--md-component-padding);
+    font-size: var(--md-component-meta-size);
+    line-height: 1.4;
+  }
+
+  .markdown-link-card
+    :is([data-card-motion="description"], [data-card-motion="actions"]) {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .markdown-link-card [data-card-motion="actions"] :where(i) {
+    font-size: var(--md-component-detail-size);
+  }
+
+  .markdown.prose :is(h1, h2, h3, h4, h5, h6):has(> .header-anchor) {
+    padding-inline-end: 1.5em;
+  }
+
+  .markdown.prose .header-anchor {
+    @apply relative inline-block no-underline opacity-0 transition-opacity;
+    inline-size: 0;
+    block-size: 0;
+    vertical-align: baseline;
+    font-size: 0.65em;
+  }
+
+  .markdown.prose
+    :is(h1, h2, h3, h4, h5, h6):is(:hover, :focus-within)
+    > .header-anchor,
+  .markdown.prose :is(h1, h2, h3, h4, h5, h6):focus > .header-anchor {
+    opacity: 1;
+  }
+
+  .markdown.prose .header-anchor > span {
+    @apply badge badge-xs h-fit text-base-content select-none font-mono;
+    position: absolute;
+    inset-inline-start: 0.35em;
+    inset-block-end: -0.15em;
+    font-size: inherit;
+    line-height: 1;
+    padding-inline: 0.25em;
+  }
+
+  .markdown.prose .header-anchor:is(:hover, :focus-visible) > span {
+    @apply badge-primary text-primary-content;
+  }
+
+  /* Atomic icon groups do not inherit the anchor's text decoration. */
+  .markdown.prose a.markdown-inline-link {
+    @apply no-underline hover:no-underline;
+  }
+
+  .markdown.prose a.markdown-inline-link:hover .markdown-link-text {
+    @apply underline;
+  }
+
+  .markdown.prose .markdown-figure {
+    @apply clear-both grid w-fit max-w-full grid-cols-1 justify-items-center mx-auto my-2 text-center;
+  }
+
+  .markdown.prose .markdown-figure > img {
+    @apply block mx-auto my-0;
+  }
+
+  .markdown.prose img.preview-image {
+    @apply cursor-zoom-in rounded-box outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-base-content/35 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100;
+  }
+
+  .markdown.prose img.markdown-inline-image {
+    @apply inline-block my-0 align-middle;
+  }
+
+  .markdown.prose img.markdown-svg-image {
+    filter: var(--markdown-svg-filter, none);
+  }
+
+  .markdown.prose .markdown-figure-left {
+    @apply clear-none float-left max-w-[50%] ms-0 me-4;
+  }
+
+  .markdown.prose .markdown-figure-left > img {
+    margin-inline: 0 auto;
+  }
+
+  .markdown.prose .markdown-figure-right {
+    @apply clear-none float-right max-w-[50%] ms-4 me-0;
+  }
+
+  .markdown.prose .markdown-figure-right > img {
+    margin-inline: auto 0;
+  }
+
+  .markdown.prose .markdown-figure > figcaption {
+    @apply block min-w-0 max-w-full mt-1 text-center wrap-anywhere;
+    font-size: calc(var(--para-font-size, 1em) * 0.75);
+  }
+
+  /* 脚注样式 */
+  .markdown :where(hr.footnotes-sep):not(:where(.not-prose, .not-prose *)) {
+    margin-block: var(--md-section-gap, 1.6em);
+  }
+
+  .markdown.prose .footnote-ref {
+    @apply whitespace-nowrap
+    before:content-['\2060']
+    after:content-['\2060'];
+  }
+
+  .markdown.prose .footnote-ref a {
+    @apply badge badge-xs hover:badge-info hover:text-info-content
+    indent-0 font-serif text-base-content no-underline tabular-nums px-1;
+  }
+
+  .markdown.prose .footnote-backref {
+    @apply badge badge-xs hover:badge-info hover:text-info-content
+    px-1 text-base-content no-underline select-none;
+  }
+
+  .markdown.prose :is(.footnote-ref a, .footnote-backref) {
+    --size: 1.25em;
+    font-size: max(0.625rem, calc(var(--md-body-size, 1rem) * 0.5));
+    line-height: 1;
+  }
+
+  .markdown.prose .footnotes {
+    --md-text-size: calc(var(--md-body-size, 1rem) * 0.75);
+    font-size: var(--md-text-size);
+    --md-indent: 0px;
+    --md-list-offset: 0px;
+    --md-align: start;
+    font-family: var(--font-serif);
+  }
+
+  .markdown.prose :is(.footnote-item, .footnote-ref a):focus-visible {
+    outline: 1px solid var(--color-primary);
+    outline-offset: 0.125em;
+  }
+
+  /* Task List 任务列表 */
+  :is(.markdown.prose, .markdown-fragment) li.task-list-item {
+    list-style-type: none;
+  }
+
+  :is(.markdown.prose, .markdown-fragment)
+    li.task-list-item
+    > p:has(> .task-list-item-marker) {
+    position: relative;
+  }
+
+  :is(.markdown.prose, .markdown-fragment) input.task-list-item-native {
+    @apply sr-only;
+  }
+
+  :is(.markdown.prose, .markdown-fragment) .task-list-item-status {
+    @apply inline-flex items-center justify-center
+    indent-0 text-[1em] text-base-content/60;
+  }
+
+  .markdown.prose .task-list-item-status[data-task-tone="info"] {
+    @apply text-info;
+  }
+
+  .markdown.prose .task-list-item-status[data-task-tone="success"] {
+    @apply text-success;
+  }
+
+  .markdown.prose .task-list-item-status[data-task-tone="warning"] {
+    @apply text-warning;
+  }
+
+  .markdown.prose .task-list-item-status[data-task-tone="error"] {
+    @apply text-error;
+  }
+
+  .markdown.prose .task-list-item-status[data-task-tone="accent"] {
+    @apply text-accent;
+  }
+
+  .markdown.prose
+    :is(
+      [data-task-status="x" i] > .task-list-item-content,
+      [data-task-status="x" i] > p > .task-list-item-content
+    ) {
+    @apply text-base-content/50;
+  }
+
+  .markdown.prose
+    :is(
+      [data-task-status="-"] > .task-list-item-content,
+      [data-task-status="-"] > p > .task-list-item-content
+    ) {
+    @apply text-base-content/50 line-through decoration-base-content/40;
+  }
+
+  /* MathJax 输出自包含的 SVG path */
+  .markdown.prose mjx-container[data-reader-latex-source] {
+    @apply max-w-full text-[1em];
+  }
+
+  .markdown.prose mjx-container[data-reader-latex-source] svg g text {
+    @apply font-serif;
+  }
+
+  .markdown.prose mjx-container[data-reader-latex-source][display="true"] {
+    @apply block max-w-full overflow-x-auto overflow-y-hidden text-center;
+    font-size: var(--md-math-size, 1em);
+  }
+
+  .markdown.prose mjx-container[data-reader-latex-source] > svg {
+    @apply inline-block max-w-none;
+  }
+
+  .markdown.prose p:has(mjx-container[display="true"]) {
+    @apply indent-0 text-center;
+  }
+}

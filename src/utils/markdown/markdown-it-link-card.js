@@ -31,7 +31,7 @@ function getLinkCard(inline, articleForPath) {
 }
 
 export function linkCardPlugin(md, { articleForPath } = {}) {
-  md.core.ruler.after("wiki_anchors", "standalone_link_cards", (state) => {
+  md.core.ruler.push("standalone_link_cards", (state) => {
     const { tokens } = state;
     for (let index = 0; index < tokens.length - 2; index += 1) {
       const open = tokens[index];
@@ -52,7 +52,7 @@ export function linkCardPlugin(md, { articleForPath } = {}) {
 
       // Retain the paragraph rules so comment IDs after the card stay stable.
       open.tag = close.tag = "div";
-      open.attrJoin("class", "markdown-link-card relative my-(--para-margin-inline) break-inside-avoid-column");
+      open.attrJoin("class", "markdown-link-card markdown-block relative break-inside-avoid-column");
       const token = new state.Token("link_card", "markdown-link-card", 0);
       token.meta = card;
       inline.children = [token];

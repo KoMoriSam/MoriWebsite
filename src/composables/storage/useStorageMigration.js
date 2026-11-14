@@ -1,6 +1,9 @@
 import { useStorage } from "@vueuse/core";
 import { useGlobalStorage } from "@/composables/storage/useGlobalStorage";
-import { useReaderSettingsStorage } from "@/composables/storage/useReaderSettingsStorage";
+import {
+  LEGACY_READER_SETTING_KEYS,
+  useReaderSettingsStorage,
+} from "@/composables/storage/useReaderSettingsStorage";
 import { useReadingStateStorage } from "@/composables/storage/useReadingStateStorage";
 
 export function useStorageMigration() {
@@ -63,57 +66,8 @@ export function useStorageMigration() {
   };
 
   const migrateReaderSettings = () => {
-    const { READER_SETTINGS } = useReaderSettingsStorage();
-
-    const mapping = {
-      STYLE_FONT: "STYLE_FONT",
-      STYLE_FONT_GAP: "STYLE_FONT_GAP",
-      STYLE_FONT_SIZE: "STYLE_FONT_SIZE",
-      NOVEL_CURRENT_COMPONENT: "NOVEL_CURRENT_COMPONENT",
-      NOVEL_SIDE_CURRENT_COMPONENT: "NOVEL_SIDE_CURRENT_COMPONENT",
-      CONTENT_LINE_HEIGHT: "STYLE_LINE_HEIGHT",
-      CONTENT_PARA_HEIGHT: "STYLE_PARA_HEIGHT",
-    };
-
-    const numberKeys = [
-      "STYLE_FONT_GAP",
-      "STYLE_FONT_SIZE",
-      "CONTENT_LINE_HEIGHT",
-      "CONTENT_PARA_HEIGHT",
-    ];
-
-    Object.keys(mapping).forEach((oldKey) => {
-      const newKey = mapping[oldKey];
-      const raw = localStorage.getItem(oldKey);
-      if (raw === null) return;
-
-      let value;
-      try {
-        if (/^[\[{]/.test(raw)) {
-          value = JSON.parse(raw);
-        } else if (numberKeys.includes(oldKey)) {
-          // 对数值键做更精确的转换（LINE/PARA 用 float）
-          if (oldKey.includes("LINE") || oldKey.includes("PARA")) {
-            value = parseFloat(raw);
-          } else {
-            value = Number(raw);
-          }
-        } else if (/^-?\d+(\.\d+)?$/.test(raw)) {
-          // 不是声明为数值键但内容是纯数字，也转换为 Number
-          value = raw.includes(".") ? parseFloat(raw) : Number(raw);
-        } else {
-          value = raw;
-        }
-      } catch (e) {
-        value = raw;
-      }
-
-      READER_SETTINGS.value[newKey] = value;
-      console.log(
-        `migrateReaderSettings: ${oldKey} -> READER_SETTINGS.${newKey}`,
-        value,
-      );
-    });
+    const { getSetting } = useReaderSettingsStorage();
+    LEGACY_READER_SETTING_KEYS.forEach((key) => getSetting(key));
   };
 
   const migrateReadingState = () => {
@@ -174,13 +128,7 @@ export function useStorageMigration() {
     const keysToClear = [
       "APP_VERSION",
       "SET_THEME",
-      "STYLE_FONT",
-      "STYLE_FONT_GAP",
-      "STYLE_FONT_SIZE",
-      "CONTENT_LINE_HEIGHT",
-      "CONTENT_PARA_HEIGHT",
-      "NOVEL_CURRENT_COMPONENT",
-      "NOVEL_SIDE_CURRENT_COMPONENT",
+      ...LEGACY_READER_SETTING_KEYS,
       "CHAPTERS_CONTENT",
       "CHAPTER_LIST",
       "CHAPTER_LIST_UPDATED_AT",

@@ -40,6 +40,8 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
   let positionFrame = 0;
   let activeRoot = null;
   let selectionMenuActive = false;
+  let selectionPointerId = null;
+  let explicitContextMenu = false;
   let longPressTimer = 0;
   let pointTargetReleaseTimer = 0;
   let pointTargetContextActive = false;
@@ -63,6 +65,7 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     root = resolveRoot(activeRoot),
     { allowOpen = true, closeWhenEmpty = true } = {},
   ) => {
+    if (explicitContextMenu) return null;
     const context = createReaderSelectionContext(root);
     if (context) {
       if (allowOpen || selectionMenuActive) {
@@ -175,7 +178,37 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
 
     activeRoot = root;
     event.preventDefault();
+    if (
+      event.pointerType !== "touch" &&
+      (event.button === 2 || event.pointerType === "mouse" || !isTouchContext)
+    ) {
+      explicitContextMenu = true;
+      window.cancelAnimationFrame(selectionFrame);
+      window.cancelAnimationFrame(positionFrame);
+      selectionFrame = 0;
+      positionFrame = 0;
+      const point = {
+        root,
+        target: event.target,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      };
+      const context =
+        createReaderSelectionContext(root) ??
+        (isLink ? createReaderPointTargetContext(point) : null) ??
+        createReaderTextContext(point);
+      if (context) {
+        emit("text-context", {
+          ...context,
+          explicitContextMenu: true,
+          clientX: point.clientX,
+          clientY: point.clientY,
+        });
+      }
+      return;
+    }
     window.requestAnimationFrame(() => {
+      if (explicitContextMenu) return;
       if ((isLink || isTouchContext) && emitPointTargetContext(event, root)) {
         releasePointTargetContext();
         return;
@@ -197,11 +230,12 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
   };
 
   const syncSelectionContext = () => {
-    if (pointTargetContextActive || touchPointer.pointTargetContext) return;
+    if (explicitContextMenu || selectionPointerId !== null || pointTargetContextActive || touchPointer.pointTargetContext)
+      return;
     if (selectionFrame) window.cancelAnimationFrame(selectionFrame);
     selectionFrame = window.requestAnimationFrame(() => {
       selectionFrame = 0;
-      emitSelectionContext(resolveRoot(activeRoot));
+      if (selectionPointerId === null) emitSelectionContext(resolveRoot(activeRoot));
     });
   };
 
@@ -235,6 +269,15 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     const root = resolveRoot(event.currentTarget);
     if (!root || !root.contains(event.target)) return;
     activeRoot = root;
+
+    if (event.button === 0) explicitContextMenu = false;
+    if (event.button === 0 && event.pointerType === "mouse" && !isReaderInteractiveEvent(event)) {
+      selectionPointerId = event.pointerId;
+      if (selectionMenuActive) {
+        selectionMenuActive = false;
+        emit("text-context", null);
+      }
+    }
 
     if (
       event.pointerType !== "touch" ||
@@ -309,7 +352,17 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
       window.getSelection?.()?.removeAllRanges();
       return;
     }
-    handleSelectionEnd(event);
+    if (event.pointerType !== "mouse") handleSelectionEnd(event);
+  };
+
+  const finishMouseSelection = (event) => {
+    if (event.pointerId !== selectionPointerId || event.button !== 0) return;
+    selectionPointerId = null;
+    syncSelectionContext();
+  };
+
+  const cancelMouseSelection = () => {
+    selectionPointerId = null;
   };
 
   const handlePointerCancel = () => {
@@ -319,11 +372,17 @@ export const useReaderTextContext = ({ getRoot, emit }) => {
     if (pointTargetContextActive) releasePointTargetContext();
   };
 
-  onMounted(() =>
-    document.addEventListener("selectionchange", syncSelectionContext),
-  );
+  onMounted(() => {
+    document.addEventListener("selectionchange", syncSelectionContext);
+    window.addEventListener("pointerup", finishMouseSelection, true);
+    window.addEventListener("pointercancel", cancelMouseSelection, true);
+    window.addEventListener("blur", cancelMouseSelection);
+  });
   onBeforeUnmount(() => {
     document.removeEventListener("selectionchange", syncSelectionContext);
+    window.removeEventListener("pointerup", finishMouseSelection, true);
+    window.removeEventListener("pointercancel", cancelMouseSelection, true);
+    window.removeEventListener("blur", cancelMouseSelection);
     if (selectionFrame) window.cancelAnimationFrame(selectionFrame);
     if (positionFrame) window.cancelAnimationFrame(positionFrame);
     resetTouchPointer();

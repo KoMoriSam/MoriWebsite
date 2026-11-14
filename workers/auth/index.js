@@ -1,3 +1,4 @@
+import { testAuthPrefix, testCallback, testOrigin } from "../../shared/test-preview.js";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { AUTH, SITE, COOKIE, json, opaque, readCookie, redirect, returnPath, sessionCookie } from "./http.js";
 import { credentials, exchange, githubClient, userGraphql } from "./github.js";
@@ -5,9 +6,15 @@ import { hash, randomToken } from "./crypto.js";
 import { findSession, issueGrant, profile, redeemGrant, revokeFamily, SESSION_SECONDS } from "./session.js";
 
 const transactionSeconds = 600;
+const testPaths = new Map([
+  [testAuthPrefix + "/start", "/login/github"],
+  [testCallback, "/callback/github"],
+  [testAuthPrefix + "/logout", "/logout"],
+]);
 const siteOrigin = (env) => env.MORI_SITE_ORIGIN || SITE;
 const authOrigin = (env) => env.MORI_AUTH_ORIGIN || AUTH;
-const callback = (env) => authOrigin(env) + "/callback/github";
+const callback = (env) => authOrigin(env) + (authOrigin(env) === testOrigin ? testCallback : "/callback/github");
+const browserHash = (env, browser) => hash(authOrigin(env) === testOrigin ? testOrigin + ":" + browser : browser);
 const grantRedirect = (env, grant, cookies) =>
   redirect(`${siteOrigin(env)}/auth/complete?grant=${grant}`, cookies);
 
@@ -38,7 +45,7 @@ async function login(request, env, url) {
     INSERT INTO oauth_transactions
       (state_hash, browser_hash, website_challenge, return_to, verifier, audience, expires_at)
     VALUES (?, ?, ?, ?, ?, 'website', ?)
-  `).bind(await hash(state), await hash(browser), challenge, target, verifier,
+  `).bind(await hash(state), await browserHash(env, browser), challenge, target, verifier,
     Date.now() + transactionSeconds * 1000).run();
 
   const authorize = new URL("https://github.com/login/oauth/authorize");
@@ -63,7 +70,7 @@ async function complete(request, env, url, requestId) {
     DELETE FROM oauth_transactions WHERE state_hash = ? AND browser_hash = ?
       AND audience = 'website' AND expires_at > ?
     RETURNING verifier, website_challenge, return_to
-  `).bind(stateHash, await hash(browser), Date.now()).first();
+  `).bind(stateHash, await browserHash(env, browser), Date.now()).first();
   if (!transaction) return loginFailure(env, "/", "state", requestId);
   const fail = (stage) => loginFailure(env, transaction.return_to, stage, requestId);
   if (url.searchParams.get("error") === "access_denied") return fail("denied");
@@ -97,8 +104,8 @@ async function complete(request, env, url, requestId) {
       db.prepare("SELECT user_id FROM identities WHERE provider = 'github' AND provider_user_id = ?").bind(identityId),
     ]);
     const id = identity.results[0].user_id;
-    if (env.MORI_ENV === "staging") {
-      const allowed = (env.MORI_STAGING_READER_IDS || "").split(",").includes(identityId);
+    if (env.MORI_ENV === "test") {
+      const allowed = (env.MORI_TEST_READER_IDS || "").split(",").includes(identityId);
       await db.prepare("UPDATE users SET can_read_novel = ? WHERE id = ?").bind(Number(allowed), id).run();
     }
     stage = "session";
@@ -212,19 +219,24 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const requestId = crypto.randomUUID();
+    let path = url.pathname;
+    if (env.MORI_ENV === "test" && url.origin === testOrigin) {
+      path = testPaths.get(path);
+      env = { ...env, MORI_SITE_ORIGIN: testOrigin, MORI_AUTH_ORIGIN: testOrigin };
+    }
     if (url.origin !== authOrigin(env) || request.method !== "GET") return json({ error: "NOT_FOUND" }, 404);
     try {
-      if (url.pathname === "/login/github") return await login(request, env, url);
-      if (url.pathname === "/callback/github") return await complete(request, env, url, requestId);
-      if (url.pathname === "/logout") {
+      if (path === "/login/github") return await login(request, env, url);
+      if (path === "/callback/github") return await complete(request, env, url, requestId);
+      if (path === "/logout") {
         const current = await findSession(env, readCookie(request, COOKIE.center), "auth");
         return redirect(new URL(returnPath(url.searchParams.get("return")), siteOrigin(env)).href, current ? [] : [sessionCookie(COOKIE.center)]);
       }
-      if (url.pathname === "/") return redirect(siteOrigin(env) + "/auth/login");
+      if (path === "/") return redirect(siteOrigin(env) + "/auth/login");
       return json({ error: "NOT_FOUND" }, 404);
     } catch {
-      if (url.pathname === "/login/github") return loginFailure(env, url.searchParams.get("return"), "start", requestId);
-      if (url.pathname === "/callback/github") return loginFailure(env, "/", "unavailable", requestId);
+      if (path === "/login/github") return loginFailure(env, url.searchParams.get("return"), "start", requestId);
+      if (path === "/callback/github") return loginFailure(env, "/", "unavailable", requestId);
       console.warn(JSON.stringify({ event: "mori_auth_failed", stage: "unavailable", requestId }));
       return json({ error: "AUTH_UNAVAILABLE", requestId }, 503);
     }

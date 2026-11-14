@@ -1,3 +1,4 @@
+import { testAuthPrefix, testCallback, testOrigin } from "../shared/test-preview.js";
 import { discussionRegistry, discussionTarget } from "../shared/discussions.js";
 import { AUTH, SITE, COOKIE, json, privateHeaders, readCookie, redirect, returnPath, sessionCookie } from "./auth/http.js";
 import { hash, randomToken } from "./auth/crypto.js";
@@ -9,6 +10,7 @@ export default {
     const path = url.pathname;
     const siteOrigin = env.MORI_SITE_ORIGIN || SITE;
     const authOrigin = env.MORI_AUTH_ORIGIN || AUTH;
+    const testPreview = env.MORI_ENV === "test" && siteOrigin === testOrigin && env.TEST_AUTH;
     const override = request.headers.get("Cloudflare-Workers-Version-Overrides");
     const preview = url.origin !== siteOrigin || override !== null;
     if (/^\/(?:pagefind-novel|archive\/article)(?:\/|$)/i.test(path)) return json({ error: "NOT_FOUND" }, 404);
@@ -17,24 +19,22 @@ export default {
       return json({ error: "NOT_FOUND" }, 404);
     if (!/^\/(?:api|auth)(?:\/|$)/.test(path)) {
       const response = await env.ASSETS.fetch(request);
-      if (!publicContent && !preview && env.MORI_ENV !== "staging") return response;
+      if (!publicContent && !preview && env.MORI_ENV !== "test") return response;
       const headers = new Headers(response.headers);
       if (publicContent) {
         // Public attachments now share the site's origin. A direct navigation must not execute them as site code.
         headers.set("Content-Security-Policy", "sandbox; default-src 'none'");
         headers.set("X-Content-Type-Options", "nosniff");
       }
-      if (preview || env.MORI_ENV === "staging") headers.set("X-Robots-Tag", "noindex, nofollow");
+      if (preview || env.MORI_ENV === "test") headers.set("X-Robots-Tag", "noindex, nofollow");
       return new Response(response.body, { status: response.status, headers });
     }
-    if (preview) {
+    if (path === "/api/version" && request.method === "GET") {
       const version = env.WEBSITE_VERSION?.id;
-      const worker = env.MORI_ENV === "staging" ? "website-staging" : "website";
-      if (path === "/api/version" && request.method === "GET" && version &&
-          (url.origin !== siteOrigin || override === `${worker}="${version}"`))
+      if (version && (!preview || url.origin !== siteOrigin || override === `website="${version}"`))
         return json({ version });
-      return json({ error: "NOT_FOUND" }, 404);
     }
+    if (preview) return json({ error: "NOT_FOUND" }, 404);
     const token = readCookie(request, COOKIE.site);
     if (env.PUBLIC_API && /^\/api\/(?:github|games|analytics|announcements|changelog|random-hero)(?:\/|$)/.test(path)) {
       url.pathname = path.slice(4);
@@ -44,9 +44,14 @@ export default {
       return json({ error: "INVALID_ORIGIN" }, 403);
     }
     try {
+      if (testPreview && request.method === "GET" && [
+        testAuthPrefix + "/start", testCallback, testAuthPrefix + "/logout",
+      ].includes(path)) return await env.TEST_AUTH.fetch(request);
       if (path === "/auth/login" && request.method === "GET") {
         const flow = randomToken();
-        const target = new URL(env.LOCAL_AUTH ? "/auth/local/login" : "/login/github", authOrigin);
+        const target = testPreview
+          ? new URL(testAuthPrefix + "/start", siteOrigin)
+          : new URL(env.LOCAL_AUTH ? "/auth/local/login" : "/login/github", authOrigin);
         target.search = new URLSearchParams({ challenge: await hash(flow), return: returnPath(url.searchParams.get("return")) });
         if (env.LOCAL_AUTH && url.searchParams.has("fixture")) target.searchParams.set("fixture", url.searchParams.get("fixture"));
         if (url.searchParams.get("reauthorize") === "1") target.searchParams.set("reauthorize", "1");
@@ -69,7 +74,10 @@ export default {
         const flowClear = new Headers(privateHeaders);
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.site));
         flowClear.append("Set-Cookie", sessionCookie(COOKIE.flow));
-        return Response.json({ logoutUrl: authOrigin + (env.LOCAL_AUTH ? "/auth/local/logout" : "/logout") }, { headers: flowClear });
+        const logoutUrl = testPreview
+          ? siteOrigin + testAuthPrefix + "/logout"
+          : authOrigin + (env.LOCAL_AUTH ? "/auth/local/logout" : "/logout");
+        return Response.json({ logoutUrl }, { headers: flowClear });
       }
       if (path.startsWith("/api/novel/") && ["GET", "HEAD"].includes(request.method)) {
         const session = await env.MORI_AUTH.verify(token);

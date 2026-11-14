@@ -4,161 +4,120 @@
   </a>
 </p>
 
-<h1 align="center">MoriWebsite · 远方之森</h1>
+<h1 align="center">远方之森 · MoriWebsite</h1>
 
 <p align="center">
-  Read articles and original fiction, work with images and Sinhala documents, and play board games with friends.
+  Write about technology and everyday life, read original stories, explore words and images, and play games with friends.
 </p>
 
 <p align="center">
-  <a href="https://komori.cc/">Visit the site</a>
-  ·
-  <a href="https://komori.cc/rss.xml">Subscribe to the blog</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Report an issue</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README.md">中文</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_fr.md">Français</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_si.md">සිංහල</a>
-</p>
-
-<p align="center">
-  Current version: <strong>2.21.1</strong>
-  ·
+  <a href="https://komori.cc/">Visit the site</a> ·
+  <a href="https://komori.cc/blog">Blog</a> ·
+  <a href="https://komori.cc/novel">Novel</a> ·
+  <a href="https://komori.cc/tools">Tools</a> ·
+  <a href="https://komori.cc/games">Games</a> ·
   <a href="https://komori.cc/changelog">Changelog</a>
 </p>
 
-## Start here
+<p align="center">
+  <a href="./README.md">简体中文</a> ·
+  English ·
+  <a href="./README_fr.md">Français</a> ·
+  <a href="./README_si.md">සිංහල</a>
+</p>
 
-远方之森 is Mori's personal website, bringing together technical explorations, essays, reading notes, original fiction, everyday tools, and multiplayer board games. Open the site on a desktop or phone to get started.
+<p align="center">
+  Current version: <strong>2.21.2</strong>
+</p>
 
-| What you want to do      | Where to go                                                                                                                                                                 |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Read articles            | [Blog](https://komori.cc/blog): find posts by keyword, tag, and year, and switch between published language versions                                                        |
-| Follow the novel         | [The Horizon /《向远方》](https://komori.cc/novel): browse volumes and chapters, resume reading, and adjust the reader layout                                               |
-| Convert images           | [Image converter](https://komori.cc/tools/image-converter): batch conversion, compression, resizing, watermarks, and animation processing                                   |
-| Work with Sinhala text   | [Font encoding converter](https://komori.cc/tools/sinhala-font-converter): convert between Unicode and legacy font encodings, including documents                           |
-| Check a server           | [Minecraft server status](https://komori.cc/tools/server-status): check connectivity and online information                                                                 |
-| Play with friends        | [Avalon](https://komori.cc/games/avalon) offers social deduction for 5–10 players; [Fogport](https://komori.cc/games/fogport) offers an economic board game for 2–4 players |
-| Explore the font project | [Kaiming](https://komori.cc/kaiming): learn about the project and its font resources                                                                                        |
+## About 远方之森
+
+**远方之森** is Mori's personal website and an evolving web project. It brings together technical notes, essays, reading notes, and original fiction, along with browser tools, multiplayer games, and independent design projects.
+
+The site is designed for everyday reading and use. Articles have a dedicated reader and on-site discussions. The tools work in the browser wherever possible, and the desktop and mobile interfaces are tailored to how people use each device. This public repository contains the website code; the blog, novel, and other content are managed in separate repositories.
+
+## What you can do here
+
+| Content | Where to go and what to expect |
+| --- | --- |
+| **Blog** | [Read articles](https://komori.cc/blog): find posts by keyword, tag, and year, read technical notes and essays, and switch between published translations. |
+| **Original novel: The Horizon (《向远方》)** | [Browse volumes and chapters](https://komori.cc/novel): use the table of contents, saved progress, and layout settings to continue reading. The full text is available to authorized users who are signed in. |
+| **Image conversion** | [Image format converter](https://komori.cc/tools/image-converter): convert images in batches, compress and resize them, add watermarks, and process animated images. |
+| **Sinhala text processing** | [Font encoding converter](https://komori.cc/tools/sinhala-font-converter): convert text between Unicode and legacy font encodings, including DOCX, PPTX, and PDFs with selectable text. |
+| **Minecraft server lookup** | [Server status](https://komori.cc/tools/server-status): check connectivity and online information for Java Edition and Bedrock Edition servers. |
+| **Multiplayer board games** | [Avalon](https://komori.cc/games/avalon): online social deduction for 5–10 players. [Fogport](https://komori.cc/games/fogport): an experimental economic board game for 2–4 players that is still unfinished. |
+| **Kaiming punctuation** | [Project overview](https://komori.cc/kaiming): learn about the design of punctuation glyphs and explore the related font resources. |
 
 ## Reading and discussion
 
-The blog and novel provide contents navigation, reading progress, and layout settings. Your theme, reading position, and preferences are saved in the current browser so you can pick up where you left off. Articles can include code, equations, diagrams, footnotes, and ruby annotations; code blocks support copying.
+The blog and novel share a reader with a table of contents, progress tracking, font and layout controls, themes, and a mobile reading experience adapted to touch. Your reading preferences and progress are saved in the current browser.
 
-Press `Ctrl + K` (`Cmd + K` on macOS) to search article sections, novel chapters, release notes, and license entries. Filters for content type, tags, volumes, and years help you jump to relevant content.
+Articles support syntax highlighting, mathematical notation, Mermaid diagrams, footnotes, ruby annotations, wiki links, and other Markdown extensions. You can jump to a heading or paragraph, browse related content, or turn a selection into an image to share. Articles also show related recommendations, when they were last updated, and notices about how current the information is.
 
-The interface supports Chinese, English, French, and Sinhala. Articles offer their available translations and show language notices when your selected language is unavailable.
+**On-site comments connect directly to GitHub Discussions.** Sign in with GitHub to post, reply, edit, delete, and react on the site. Discussions are available for articles, novel chapters, and individual paragraphs. You can sort comments by popularity, newest first, or oldest first. Long comments and nested discussions are designed to work across screen sizes. The blog and novel store their discussions in [theWake](https://github.com/KoMoriSam/theWake) and [theHorizon](https://github.com/KoMoriSam/theHorizon), respectively, without relying on an embedded comment interface.
 
-The novel's catalog is public; reading its chapters requires GitHub sign-in. Giscus supports discussions on articles, chapters, and individual paragraphs, with a GitHub account required to post. Blog and novel discussions live in [theWake](https://github.com/KoMoriSam/theWake) and [theHorizon](https://github.com/KoMoriSam/theHorizon), respectively.
+The site interface supports **Simplified Chinese, English, French, and Sinhala**. Blog translations have their own URLs for direct sharing and search indexing. You can switch an article's language independently of the site interface.
 
-Follow new posts through [RSS](https://komori.cc/rss.xml), and check the [changelog](https://komori.cc/changelog) and [announcements](https://komori.cc/announcements) for site updates.
+Press `Ctrl + K` (`Cmd + K` on macOS) to search articles, chapters, release notes, and license information. You can also [subscribe to the blog via RSS](https://komori.cc/rss.xml).
 
-## Tools and games
+## Technology and architecture
 
-**The image converter** processes images in your browser. Use it to prepare batches of assets, reduce file sizes, standardize dimensions, add text or image watermarks, and process animated images.
+| Area | Main technologies and design |
+| --- | --- |
+| Front end | Vue 3, Vue Router, Pinia, Vite, Tailwind CSS, daisyUI |
+| Content rendering | Vite SSG, Markdown-it, Pele (Mermaid), Pagefind, article pages generated separately for each language |
+| Back end | Cloudflare Workers, D1, KV, R2, Durable Objects |
+| Sign-in and discussions | GitHub OAuth and GitHub Discussions, with the site's own comment interface and API |
+| Build and release | GitHub Actions, Cloudflare Workers Builds, build snapshots, incremental SSG, and versioned deployments |
 
-**The Sinhala font encoding converter** converts between Unicode and legacy font encodings. Paste text directly or work with DOCX and PPTX files. For PDFs with selectable text, export the content as an editable DOCX or the page layout as an editable PPTX.
+The site serves public content and SEO metadata on statically prerendered pages. Workers handle dynamic features such as sign-in, discussions, analytics, and online multiplayer games. The blog and novel have their own publishing workflows, separate from the website code.
 
-**Multiplayer board games** let friends join the same room using a room code or invitation link. Avalon includes role configuration, team votes, missions, and game history. Fogport centers on industries, transport links, resources, and sales; it is a test version with development on hold and some features unfinished.
+The build process checks what changed and decides whether to skip the build, update selected static pages, or run a full build. Snapshots let it reuse generated image variants and other build outputs. Release candidates are kept separate from production traffic so they can be verified before traffic is switched, with the option to roll back to an earlier version.
 
-## Using the content
+## Local development
 
-| Content                                                          | Terms                                                                                                                     |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Original software source code in this repository                 | [MIT License](./LICENSE)                                                                                                  |
-| Original blog articles                                           | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) by default; check the license shown on each article |
-| Original novel The Horizon /《向远方》                           | All Rights Reserved                                                                                                       |
-| Third-party libraries, fonts, icons, images, and other materials | Their respective licenses or rights notices                                                                               |
-| Reader comments                                                  | Rights remain with their authors, subject to their rights notices                                                         |
-
-Each article's attribution card lists its title, link, author, publication date, and license so you can identify the source and applicable terms. Third-party information is available on the [licenses page](https://komori.cc/licenses), in the [English notices](./THIRD_PARTY_NOTICES.md), and in the [Chinese notices](./THIRD_PARTY_NOTICES.zh-CN.md).
-
-## Run locally
-
-The project uses Vue 3, Vite SSG, Tailwind CSS, daisyUI, and Pagefind, with server APIs running on Cloudflare Workers. Use Node.js 24.15 or a later 24.x release, or Node.js 26 or later, with pnpm 12.3.4.
+Requires **Node.js 24.15+ (within 24.x) or 26+**, and **pnpm 12.3.4**.
 
 ```bash
 git clone https://github.com/KoMoriSam/MoriWebsite.git
 cd MoriWebsite
 pnpm install
-```
-
-Create `.env.development` in the project root and set the content and comment-theme URLs:
-
-```dotenv
-VITE_BLOG_RAW=https://raw.komori.cc/post
-VITE_NOVEL_RAW=https://raw.komori.cc/novel
-VITE_GISCUS_CSS_RAW=https://raw.komori.cc/giscus
-```
-
-```bash
 pnpm dev
 ```
 
-Open the address printed in the terminal. You can also point the content URLs to your own local mirrors; `mock/` and `.env*` files are ignored by Git. To develop multiplayer rooms, run `pnpm dev games` in another terminal.
+`pnpm dev` automatically prepares isolated local services and test data for the API, authentication, comments, and novel, then starts the site with sample content. **You don't need access to private content repositories or production secrets.** Open the address printed in the terminal.
 
-Configure additional services as needed:
+Common commands:
 
-| Environment variable                           | Purpose                             |
-| ---------------------------------------------- | ----------------------------------- |
-| `VITE_SERVER_ADDRESS`                          | Default Minecraft server to query   |
-| `VITE_RANDOM_HERO_API`                         | Random homepage background service  |
-| `VITE_COMMENT_COUNTS_API`                      | Paragraph comment counts            |
-| `VITE_GAMES_API`                               | Multiplayer room service            |
-| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Changelog and announcement services |
-| `VITE_ANALYTICS_API`                           | Traffic analytics service           |
+| Command | What it does |
+| --- | --- |
+| `pnpm menu` | Open an interactive menu for development, checks, builds, and releases. |
+| `pnpm dev` | Start the local site and its test services. |
+| `pnpm dev:seed` | Refresh the isolated local test data. |
+| `pnpm dev games` | Run the local multiplayer game service on its own. |
+| `pnpm check` | List the available checks. For example, run `pnpm check markdown`. |
+| `pnpm build` | Build the site, search index, and content assets from the full content sources. |
+| `pnpm preview` | Preview the built site. |
+| `pnpm run build:smart --dry-run` | See which build mode would be used and what would change. |
 
-Variables prefixed with `VITE_` are included in client code and should contain public configuration only. Store private repository tokens and deployment credentials in build-environment Secrets.
+A **full production build** uses the actual content. Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to local content directories, or supply a `CONTENT_GITHUB_TOKEN` with permission to read the private content repositories. Provide access tokens and deployment credentials as environment secrets. Keep them out of the repository and out of client-side `VITE_` variables.
 
-## Build and publish
+## Content and releases
 
-### Build locally
+Website development takes place on `main`, and released versions live on `production`. GitHub Actions prepares release commits and tags. Cloudflare builds and verifies the release, then switches production traffic to it. Updates to the blog, novel, and font resources can trigger their own builds. See the [changelog](https://komori.cc/changelog) and [site announcements](https://komori.cc/announcements) for details.
 
-Set `CONTENT_BLOG_DIR` and `CONTENT_NOVEL_DIR` to build from local Vaults, or use `CONTENT_GITHUB_TOKEN` to read both private content repositories. The site, RSS feed, and search index use the same content export.
+Most website code lives in `src/`, server-side Workers in `workers/`, and build, check, and release scripts in `scripts/`. Release records are kept in `changelog/releases/`. Automated releases depend on settings specific to this repository and its Cloudflare environment; deploying to another account requires its own configuration.
 
-| Command                             | Result                                                                                             |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `pnpm build`                        | Build the full site into `dist/` and content assets into `.output/content/`                        |
-| `pnpm run build:smart`              | Use the local snapshot to choose an incremental or full build; pass `--full` to force a full build |
-| `pnpm run build:smart --dry-run`    | See the build mode and what would change without deploying                                         |
-| `pnpm preview`                      | Preview the built site                                                                             |
-| `pnpm check <target>`               | Run focused checks; omit the target to list options                                                |
-| `pnpm generate <target>`            | Generate selected resources; omit the target to list options                                       |
-| `pnpm release prepare <version>`    | Prepare the version number, release notes, and announcement draft                                  |
-| `pnpm release verify <version>`     | Check that the package, README, and release-note versions agree                                    |
-| `pnpm run deploy <target>`          | Publish the website, content, API, or Giscus; omit the target to list options                      |
-| `pnpm release announcement publish` | Publish announcements independently                                                                |
+## Copyright and licensing
 
-### Publish to production
+- **Original software code in this repository**: [MIT License](./LICENSE).
+- **Original blog articles**: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) by default; see each article's copyright notice.
+- **Original novel: The Horizon (《向远方》)**: All Rights Reserved.
+- **Third-party fonts, images, icons, and other assets**: subject to their respective licenses or rights notices.
+- **Reader comments**: rights remain with their respective authors.
 
-| What changed                        | How it goes live                                                                                                                                                         |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Website code                        | GitHub Actions validates the `v<version>` tag and advances `production`, triggering Workers Builds. Ordinary `main` commits go live with a release.                      |
-| Blog and novel                      | Updates to the private `ObsidianVault` and `MyWritingVault` repositories trigger their respective `WORKERS_BUILD_HOOK`, using the released website code on `production`. |
-| Kaiming fonts                       | A font release triggers a Deploy Hook. The build downloads and verifies assets from the GitHub Release in `KoMoriSam/Kaiming`.                                           |
-| Giscus themes and loading animation | Maintain them in `giscus/` and publish them separately with `pnpm run deploy giscus`.                                                                                    |
+For third-party licensing information, see the [site's licenses page](https://komori.cc/licenses), the [Chinese notices](./THIRD_PARTY_NOTICES.zh-CN.md), and the [English notices](./THIRD_PARTY_NOTICES.md).
 
-Workers Builds restores the snapshot from the last successful deployment. If only the content has changed and the snapshot is compatible, incremental SSG rebuilds affected pages and content assets and reuses the compiled frontend. Changes to site code or build configuration, or an unusable snapshot, trigger a full build. With no changes to publish, deployment is skipped. Both full and incremental builds reuse valid cached image variants. The build log reports `INCREMENTAL`, `FULL`, or `SKIPPED`.
+## Feedback
 
-An incremental release deploys only the Workers whose output changed. Workers Static Assets serves the site and its content. The private R2 bucket stores build snapshots. Blog and novel text and images remain available at `raw.komori.cc/post` and `raw.komori.cc/novel`; on the same host, `/kaiming` serves fonts and `/giscus` serves comment themes and the loading animation at `/giscus/images/spin.gif`.
-
-In Workers Builds for `website`, set the production branch to `production`, leave the Build command blank, and set the Deploy command to `pnpm run build:smart --deploy`. Set these variables in the production build environment:
-
-| Setting                                                      | Value                                                                                                                                                                                   |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONTENT_GITHUB_TOKEN` (Secret)                              | GitHub token with read-only Contents access to both private content repositories                                                                                                        |
-| `SSG_R2_ENDPOINT`, `SSG_R2_BUCKET`, `SSG_SNAPSHOT_NAMESPACE` | R2 S3 API endpoint without the bucket path, private snapshot bucket name, and `production`, respectively                                                                                |
-| `SSG_R2_ACCESS_KEY`, `SSG_R2_SECRET_KEY` (Secrets)           | Access Key ID and Secret Access Key from the same [R2 S3 credentials](https://developers.cloudflare.com/r2/get-started/s3/), with **Object Read & Write** scoped to the snapshot bucket |
-
-Announcements are grouped under `x.y.0`. Maintenance, optimization, and fixes are incorporated into the same announcement so readers can find the version's full experience in one place. Blog front matter can set an article's `license`; the default is `CC BY-NC-SA 4.0`, and translations inherit the source article's license unless overridden.
-
-Start with `src/views/` for pages, and find related implementations in `src/components/`, `src/composables/`, and `src/utils/`. Build and release commands live in `scripts/`; Cloudflare services live in `workers/`.
-
-## Feedback and participation
-
-[Open an issue](https://github.com/KoMoriSam/MoriWebsite/issues) to report a problem or suggest an improvement. Include the page, steps to reproduce, expected and actual behavior, and browser version. For conversations about the writing, use the comments on the article or novel page.
+Use [GitHub Issues](https://github.com/KoMoriSam/MoriWebsite/issues) to report problems or suggest improvements. To discuss an article or the novel, you can also leave a comment on the relevant page.

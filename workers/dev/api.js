@@ -4,7 +4,7 @@ import { hash } from "../auth/crypto.js";
 import { json } from "../auth/http.js";
 import { commentPageSize, editPageSize, handleComments, replyPageSize } from "../github/comments.js";
 import { handleDiscussionCounts } from "../github/discussions.js";
-import { discussionScopes } from "../../shared/discussions.js";
+import { discussionScopes, initialReplyCount } from "../../shared/discussions.js";
 
 export { GameRoom } from "../api.js";
 
@@ -44,10 +44,10 @@ function reactionFields(node, viewer) {
 }
 
 function commentFields(comment, viewer) {
-  const { id, author, body, createdAt, lastEditedAt, isMinimized } = comment;
+  const { id, author, body, createdAt, lastEditedAt, isMinimized, minimizedReason } = comment;
   const owns = Boolean(viewer && (author.id ? viewer.id === author.id : viewer.name === author.login));
   return {
-    id, author, body, createdAt, lastEditedAt, isMinimized,
+    id, author, body, createdAt, lastEditedAt, isMinimized, minimizedReason,
     viewerCanUpdate: owns, viewerCanDelete: owns, ...reactionFields(comment, viewer),
   };
 }
@@ -133,14 +133,22 @@ function localGithub(env, repository, target, viewer) {
       }
 
       const thread = await targetThread();
-      if (!thread || (["DiscussionById", "DiscussionReactionPermission", "OldestComments", "NewestComments", "DiscussionLikeRanking", "TopComments"].includes(operation) && id !== thread.id))
+      if (!thread || (["DiscussionById", "DiscussionReactionPermission", "OldestComments", "NewestComments", "DiscussionHeatRanking", "TopComments"].includes(operation) && id !== thread.id))
         return { node: null };
       if (operation === "DiscussionById") return { node: nodeFields(thread) };
       if (operation === "DiscussionReactionPermission") return { node: reactionFields(thread, viewer) };
-      if (operation === "DiscussionLikeRanking") {
-        const items = thread.comments.map((comment) => ({ id: comment.id, ...reactionFields(comment, viewer) }));
+      if (operation === "DiscussionHeatRanking") {
+        const items = thread.comments.map((comment) => ({
+          id: comment.id, isMinimized: comment.isMinimized, ...reactionFields(comment, viewer), ...replyCount(comment),
+        }));
         return { node: { id: thread.id, comments: connection(items, 100, after) } };
       }
+      const threadReplies = (comment) => query.includes("replies(first: 1) { totalCount }")
+        ? { totalCount: comment.replies.length }
+        : connection(
+            comment.replies.map((reply) => commentFields(reply, viewer)),
+            query.includes(`replies(first: ${initialReplyCount})`) ? initialReplyCount : replyPageSize,
+          );
       if (operation === "TopComments") {
         return {
           node: { ...nodeFields(thread), ...reactionFields(thread, viewer) },
@@ -149,9 +157,7 @@ function localGithub(env, repository, target, viewer) {
             if (!comment) return null;
             return {
               ...commentFields(comment, viewer), discussion: { id: thread.id },
-              replies: query.includes("replies(first: 1) { totalCount }")
-                ? { totalCount: comment.replies.length }
-                : connection(comment.replies.map((reply) => commentFields(reply, viewer)), replyPageSize),
+              replies: threadReplies(comment),
             };
           }),
         };
@@ -162,14 +168,14 @@ function localGithub(env, repository, target, viewer) {
           ...nodeFields(thread), ...reactionFields(thread, viewer), comments: {
             ...page, nodes: page.nodes.map((comment) => ({
               ...commentFields(comment, viewer),
-              replies: query.includes("replies(first: 1) { totalCount }")
-                ? { totalCount: comment.replies.length }
-                : connection(comment.replies.map((reply) => commentFields(reply, viewer)), replyPageSize),
+              replies: threadReplies(comment),
             })),
           },
         } };
       }
-      const { comment, parent, siblings } = findComment(thread, id || input?.commentId || input?.subjectId || input?.replyToId);
+      const { comment, parent, siblings } = findComment(thread,
+        operation === "deleteDiscussionComment" ? input.id : id || input?.commentId || input?.subjectId || input?.replyToId,
+      );
       if (operation === "DiscussionCommentEdits") {
         if (!comment) return { node: null };
         const edits = storedEdits(comment);
@@ -192,12 +198,15 @@ function localGithub(env, repository, target, viewer) {
       }
 
       switch (operation) {
-        case "addDiscussionComment":
-          (input.replyToId ? comment.replies : thread.comments).push({
+        case "addDiscussionComment": {
+          const created = {
             id: crypto.randomUUID(), body: input.body, createdAt: new Date().toISOString(),
             author: { id: viewer.id, login: viewer.login || viewer.name, avatarUrl: viewer.avatarUrl }, replies: [],
-          });
-          break;
+          };
+          (input.replyToId ? comment.replies : thread.comments).push(created);
+          await save(thread);
+          return { addDiscussionComment: { comment: commentFields(created, viewer) } };
+        }
         case "updateDiscussionComment":
           comment.edits = storedEdits(comment);
           comment.body = input.body;

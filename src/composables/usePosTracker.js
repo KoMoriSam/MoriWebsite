@@ -794,7 +794,7 @@ export function usePosTracker(router, onRestoreTitle, options = {}) {
         readPos.value = persistedPosToken;
 
         if (
-          target.closest(".markdown-content") &&
+          target.closest(".markdown-reading") &&
           target.closest(
             ".footnote-ref, .footnote-backref, [data-footnote-ref], [data-footnote-backref]",
           ) &&

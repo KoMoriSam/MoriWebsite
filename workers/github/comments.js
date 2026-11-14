@@ -1,4 +1,4 @@
-import { legacyDiscussionQuery } from "../../shared/discussions.js";
+import { affectsCommentHeat, commentHeat, initialReplyCount, legacyDiscussionQuery } from "../../shared/discussions.js";
 import { githubErrorHeaders } from "./client.js";
 import { countDiscussion, updateDiscussionCount } from "./discussions.js";
 import { discussionGithub } from "./installation.js";
@@ -9,12 +9,12 @@ const discussionFields = "id title url locked repository { id isPrivate } catego
 const reactionFields = "viewerCanReact reactionGroups { content viewerHasReacted users { totalCount } }";
 const pageInfo = "pageInfo { hasNextPage hasPreviousPage startCursor endCursor }";
 const commentFields = `
-  id url body createdAt lastEditedAt isMinimized viewerCanUpdate viewerCanDelete
+  id url body createdAt lastEditedAt isMinimized minimizedReason viewerCanUpdate viewerCanDelete
   author { login avatarUrl url } ${reactionFields}
 `;
 const mutations = {
   post: ["addDiscussionComment", "AddDiscussionCommentInput", "comment { id }"],
-  reply: ["addDiscussionComment", "AddDiscussionCommentInput", "comment { id }"],
+  reply: ["addDiscussionComment", "AddDiscussionCommentInput", `comment { ${commentFields} }`],
   edit: ["updateDiscussionComment", "UpdateDiscussionCommentInput", "comment { id }"],
   delete: ["deleteDiscussionComment", "DeleteDiscussionCommentInput", "clientMutationId"],
   add: ["addReaction", "AddReactionInput", "subject { id }"],
@@ -30,7 +30,7 @@ const cursor = (value) => typeof value === "string" && /^[\w=+/-]{1,256}$/.test(
 const validDiscussion = (node, target) => node?.repository?.id === target.repo.id && node.repository.isPrivate === Boolean(target.privateRepository) && node?.category?.id === target.category.id;
 const targetKey = (target) => JSON.stringify([target.repo.id, target.category.id, target.term]);
 const countsKey = (id) => new Request("https://api.komori.cc/__cache/thread-count/" + encodeURIComponent(id));
-const rankingKey = (id) => new Request("https://api.komori.cc/__cache/thread-likes/" + encodeURIComponent(id));
+const rankingKey = (id) => new Request("https://api.komori.cc/__cache/thread-heat-v2/" + encodeURIComponent(id));
 
 async function discussionNode(github, id) {
   const data = await github.graphql(`query DiscussionById($id: ID!) { node(id: $id) { ... on Discussion { ${discussionFields} } } }`, { id });
@@ -119,23 +119,26 @@ async function rankComments(github, id) {
   let after = null;
   for (let page = 0; page < 20; page++) {
     const { node } = await github.graphql(`
-      query DiscussionLikeRanking($id: ID!, $after: String) {
+      query DiscussionHeatRanking($id: ID!, $after: String) {
         node(id: $id) { ... on Discussion {
           id
           comments(first: 100, after: $after) {
             ${pageInfo}
-            nodes { id isMinimized reactionGroups { content users { totalCount } } }
+            nodes {
+              id isMinimized
+              reactionGroups { content users { totalCount } }
+              replies { totalCount }
+            }
           }
         } }
       }
     `, { id, after });
     if (node?.id !== id) throw error(404, "DISCUSSION_NOT_FOUND");
     for (const item of node.comments.nodes) {
-      const likes = item.reactionGroups.find((group) => group.content === "THUMBS_UP");
-      entries.push({ id: item.id, likes: item.isMinimized ? -1 : likes?.users.totalCount || 0 });
+      entries.push({ id: item.id, score: commentHeat(item) });
     }
     if (!node.comments.pageInfo.hasNextPage) {
-      const ids = entries.sort((a, b) => b.likes - a.likes).map((item) => item.id);
+      const ids = entries.sort((a, b) => b.score - a.score).map((item) => item.id);
       await writeGithubCache(key, { ids }, Date.now() + 60_000);
       return ids;
     }
@@ -230,9 +233,10 @@ async function getThread(github, discussion, input, includePermissions) {
     return { replies: node.replies, includePermissions };
   }
   const pagination = newest ? `last: ${commentPageSize}, before: $after` : `first: ${commentPageSize}, after: $after`;
+  const replyLimit = input.replyPreview === "1" ? initialReplyCount : replyPageSize;
   const replies = input.replySummary === "1"
     ? "replies(first: 1) { totalCount }"
-    : `replies(first: ${replyPageSize}) { ${pageInfo} totalCount nodes { ${commentFields} } }`;
+    : `replies(first: ${replyLimit}) { ${pageInfo} totalCount nodes { ${commentFields} } }`;
   if (input.sort === "top") return getTopThread(github, discussion, input, includePermissions, replies);
   const { node } = await github.graphql(`
     query ${newest ? "NewestComments" : "OldestComments"}($id: ID!, $after: String) {
@@ -303,8 +307,12 @@ async function writeComment(github, user, auth, createClient, env, target, input
       delta = 1;
     } else if (action === "edit" || action === "delete") {
       if (!(action === "edit" ? subject?.viewerCanUpdate : subject?.viewerCanDelete)) throw error(403, "COMMENT_FORBIDDEN");
-      Object.assign(mutation, { commentId: subject.id, ...(action === "edit" && { body }) });
-      if (action === "delete") delta = -1 - (subject.replies?.totalCount || 0);
+      if (action === "edit") Object.assign(mutation, { commentId: subject.id, body });
+      else {
+        mutation.id = subject.id;
+        // GitHub keeps the replies when it wipes a parent comment.
+        delta = subject.replies?.totalCount ? 0 : -1;
+      }
     } else {
       const permitted = subject ? subject.viewerCanReact : (await user.graphql(
         "query DiscussionReactionPermission($id: ID!) { node(id: $id) { ... on Discussion { viewerCanReact } } }", { id },
@@ -313,21 +321,22 @@ async function writeComment(github, user, auth, createClient, env, target, input
       Object.assign(mutation, { subjectId: subject?.id || id, content: input.reaction });
     }
     const [name, type, fields] = mutations[action];
-    const previousTotals = delta ? await totals(github, id).catch(() => null) : null;
-    await user.graphql(`mutation ${name}($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
-    if (action === "post" ||
-        (subject && !subject.replyTo && (action === "delete" || input.reaction === "THUMBS_UP"))) {
+    const refreshTotals = delta !== 0 || action === "delete";
+    const previousTotals = refreshTotals ? await totals(github, id).catch(() => null) : null;
+    const result = await user.graphql(`mutation ${name}($input: ${type}!) { ${name}(input: $input) { ${fields} } }`, { input: mutation });
+    const changesScore = (action === "add" || action === "remove") && affectsCommentHeat(input.reaction);
+    if (refreshTotals || (subject && !subject.replyTo && changesScore)) {
       await deleteGithubCache(rankingKey(id));
     }
     let count = null;
-    if (delta) {
+    if (refreshTotals) {
       try {
         ({ count } = await totals(github, id, true));
         if (previousTotals) delta = count - previousTotals.count;
         await updateDiscussionCount(env, target, discussion.title, count);
       } catch { /* The GitHub mutation has already succeeded. */ }
     }
-    return { ok: true, delta, count };
+    return { ok: true, delta, count, ...(action === "reply" && { reply: result?.[name]?.comment }) };
   } finally {
     await auth.release(key, owner).catch(() => {});
   }

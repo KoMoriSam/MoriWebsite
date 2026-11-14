@@ -5,6 +5,7 @@ import { useModal } from "@/composables/useModal";
 import { useGlobalEventListener } from "@/composables/useGlobalEventListener";
 import { useParagraphCommentsStorage } from "@/composables/storage/useParagraphCommentsStorage";
 import { useLocale } from "@/i18n";
+import { RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS } from "@/constants/reader-layout";
 
 export const useParagraphComments = ({ enabled, resolver } = {}) => {
   const modal = useModal();
@@ -107,7 +108,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
   };
 
   const getParagraphTitleHtml = (paragraphElement) => {
-    if (!paragraphElement) return escapeHtml(translate("reader.comments.current"));
+    if (!paragraphElement) return escapeHtml(translate("reader.paragraphComments.current"));
 
     if (paragraphElement.dataset.readerFullParagraphText) {
       const paragraphText = normalizeParagraphText(
@@ -117,7 +118,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
         paragraphText.length > MAX_TITLE_LENGTH
           ? `${paragraphText.slice(0, MAX_TITLE_LENGTH)}...`
           : paragraphText;
-      return escapeHtml(truncatedText || translate("reader.comments.current"));
+      return escapeHtml(truncatedText || translate("reader.paragraphComments.current"));
     }
 
     const clonedElement = paragraphElement.cloneNode(true);
@@ -128,7 +129,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
       const cardTitle = clonedElement.querySelector("[data-card-motion='title']");
       if (cardTitle) {
         truncateTitleContent(cardTitle);
-        const titleText = normalizeParagraphText(cardTitle.textContent) || translate("reader.comments.current");
+        const titleText = normalizeParagraphText(cardTitle.textContent) || translate("reader.paragraphComments.current");
         const cardLink = cardTitle.closest("a[href]");
         if (!cardLink) return escapeHtml(titleText);
 
@@ -159,7 +160,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
 
     return normalizeParagraphText(titleContent.textContent || "")
       ? titleContent.innerHTML
-      : escapeHtml(translate("reader.comments.current"));
+      : escapeHtml(translate("reader.paragraphComments.current"));
   };
 
   const findParagraphElement = (paragraphId) => {
@@ -181,13 +182,13 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
     trigger.className = "comment-trigger";
     trigger.dataset.paragraphId = paragraphId;
     trigger.dataset.sourceType = sourceType;
-    trigger.setAttribute("aria-label", translate("reader.comments.open"));
+    trigger.setAttribute("aria-label", translate("reader.paragraphComments.open"));
 
     const indicator = document.createElement("span");
     indicator.className = "paragraph-comment-count";
     indicator.dataset.paragraphId = paragraphId;
     indicator.dataset.sourceType = sourceType;
-    indicator.setAttribute("aria-label", translate("reader.comments.count"));
+    indicator.setAttribute("aria-label", translate("reader.paragraphComments.count"));
     indicator.textContent = getCommentCountLabel(count);
 
     trigger.append(indicator);
@@ -202,7 +203,8 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
 
   const insertCommentTrigger = (commentable, trigger) => {
     if (!commentable.matches("li")) {
-      commentable.append(trigger);
+      const anchor = commentable.querySelector(":scope > a.header-anchor");
+      commentable.insertBefore(trigger, anchor);
       return;
     }
 
@@ -260,9 +262,9 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
 
     const paragraphElement = findParagraphElement(paragraphId);
     const titleHtml = getParagraphTitleHtml(paragraphElement);
-    const reader = paragraphElement?.closest(".markdown-content");
+    const reader = paragraphElement?.closest(".markdown-reading");
     const titleNode = h("hgroup", { class: "space-y-1" }, [
-      h("h3", { class: "text-base" }, translate("reader.comments.current")),
+      h("h3", { class: "text-base" }, translate("reader.paragraphComments.current")),
       h(ParagraphQuote, {
         html: titleHtml,
         lang: reader?.lang || locale.value,
@@ -273,6 +275,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
     modal.info(titleNode, h(ParagraphComments, { paragraphId, sourceType }), {
       buttonMode: "close",
       scrollContent: "nested",
+      panelClass: RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS,
     });
   };
 
@@ -377,7 +380,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
         const count = getCount(paragraphId, sourceType);
         if (count <= 0) return "";
 
-        return `<button type="button" class="comment-trigger" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.comments.open"))}"><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.comments.count"))}">${getCommentCountLabel(count)}</span></button>`;
+        return `<button type="button" class="comment-trigger" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.paragraphComments.open"))}"><span class="paragraph-comment-count" data-paragraph-id="${paragraphId}" data-source-type="${sourceType}" aria-label="${escapeHtml(translate("reader.paragraphComments.count"))}">${getCommentCountLabel(count)}</span></button>`;
       };
 
       const assignCommentableAttributes = (

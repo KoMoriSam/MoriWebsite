@@ -1,25 +1,28 @@
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { appendFile } from "node:fs/promises";
 
-import { publishAnnouncements } from "./announcement.mjs";
 import {
+  finalizeRelease,
   prepareRelease,
   publishAllReleases,
+  publishReleaseChangelog,
   verifyReleaseVersion,
 } from "./changelog.mjs";
 
-const helpText = `准备发布资料，并管理已经上线的更新日志与公告。
+const helpText = `准备发布资料，并管理更新日志与公告。
 
 用法：pnpm release <命令> [版本] [选项]
 
 命令：
-  prepare <version> [--date YYYY-MM-DD] 准备版本号、项目说明、更新日志和版本公告
+  prepare <version> [--date YYYY-MM-DD] 准备版本号、项目说明和更新日志
   verify <version>                     确认发布资料中的版本号一致
-  publish <version> [--dry-run] [--yes] 上线更新日志与公告
+  publish <version> [--dry-run] [--yes] 上线更新日志
   changelog <command> [options]        管理更新日志
   announcement <command> [options]     管理公告
 
-网站版本在 Cloudflare Workers → website → Deployments 中切换和回滚。
+日常发版只需将一份更新日志草稿提交到 main，再运行 GitHub Actions → 发布网站。
+Cloudflare Workers Builds 验证网站上线后会同步更新日志。
 `;
 
 const parseOptions = (args) => {
@@ -43,18 +46,17 @@ const parseOptions = (args) => {
 
 const publishRelease = async (version, options) => {
   await verifyReleaseVersion(version);
-  const publishOptions = {
+  await publishAllReleases({
     dryRun: options.has("--dry-run"),
     yes: options.has("--yes"),
-  };
-
-  console.log("\n正在发布更新日志…");
-  const changelogResult = await publishAllReleases(publishOptions);
-  if (!publishOptions.dryRun && !changelogResult.published) return;
-
-  console.log("\n正在发布公告…");
-  await publishAnnouncements(publishOptions);
+  });
 };
+
+async function syncRelease(version) {
+  if (process.env.WORKERS_CI !== "1" || process.env.WORKERS_CI_BRANCH !== "production")
+    throw new Error("自动同步仅由正式网站构建执行。");
+  await publishReleaseChangelog(version);
+}
 
 const main = async () => {
   const [command = "help", ...rawArgs] = process.argv.slice(2);
@@ -62,6 +64,18 @@ const main = async () => {
   const version = positional[0];
 
   switch (command) {
+    case "finalize": {
+      const output = process.env.GITHUB_OUTPUT;
+      if (process.env.GITHUB_ACTIONS !== "true" || !output)
+        throw new Error("请通过 GitHub Actions → 发布网站执行。");
+      const next = await finalizeRelease();
+      await appendFile(output, `tag=v${next}\n`);
+      break;
+    }
+    case "sync":
+      if (!version) throw new Error("请提供已部署的网站版本号。");
+      await syncRelease(version);
+      break;
     case "prepare":
       await prepareRelease(version, {
         date: options.get("--date"),
