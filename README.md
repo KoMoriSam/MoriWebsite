@@ -4,165 +4,118 @@
   </a>
 </p>
 
-<h1 align="center">MoriWebsite · 远方之森</h1>
+<h1 align="center">远方之森 · MoriWebsite</h1>
 
 <p align="center">
-  阅读文章与原创小说，处理图片和僧伽罗语文档，和朋友一起玩桌游。
+  记录技术与生活，阅读原创故事，探索文字与图像，也和朋友一起玩游戏。
 </p>
 
 <p align="center">
-  <a href="https://komori.cc/">访问网站</a>
-  ·
-  <a href="https://komori.cc/rss.xml">订阅博客</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">反馈问题</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_en.md">English</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_fr.md">Français</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_si.md">සිංහල</a>
-</p>
-
-<p align="center">
-  当前版本：<strong>2.21.1</strong>
-  ·
+  <a href="https://komori.cc/">访问网站</a> ·
+  <a href="https://komori.cc/blog">博客</a> ·
+  <a href="https://komori.cc/novel">小说</a> ·
+  <a href="https://komori.cc/tools">工具</a> ·
+  <a href="https://komori.cc/games">游戏</a> ·
   <a href="https://komori.cc/changelog">更新日志</a>
 </p>
 
-## 从这里开始
+<p align="center">
+  简体中文 ·
+  <a href="./README_en.md">English</a> ·
+  <a href="./README_fr.md">Français</a> ·
+  <a href="./README_si.md">සිංහල</a>
+</p>
 
-远方之森是 Mori 的个人网站，收录技术探索、随笔、读书笔记与原创小说，也提供日常工具和多人桌游。直接打开网站即可使用，桌面和手机均可访问。
+<p align="center">当前版本：<strong>2.21.2</strong></p>
 
-| 想做什么         | 入口与体验                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 阅读文章         | [博客](https://komori.cc/blog)：按关键词、标签和年份查找文章，切换已发布的语言版本                                           |
-| 追更小说         | [《向远方》](https://komori.cc/novel)：浏览卷章目录，继续上次阅读，调整阅读排版                                              |
-| 转换图片         | [图片转换器](https://komori.cc/tools/image-converter)：批量转换格式、压缩、调整尺寸、添加水印与处理动图                      |
-| 处理僧伽罗语文本 | [字体编码转换器](https://komori.cc/tools/sinhala-font-converter)：转换 Unicode 与传统字体编码，处理文本文档                  |
-| 查询服务器       | [Minecraft 服务器状态](https://komori.cc/tools/server-status)：查看服务器连接状态和在线信息                                  |
-| 和朋友玩桌游     | [阿瓦隆](https://komori.cc/games/avalon)适合 5–10 人身份推理；[雾港商纪](https://komori.cc/games/fogport)适合 2–4 人经营对局 |
-| 了解字体项目     | [开明](https://komori.cc/kaiming)：查看项目介绍与字体资源                                                                    |
+## 关于远方之森
 
-## 阅读与讨论
+**远方之森**是 Mori 的个人网站，也是一个持续完善的 Web 项目。这里收录技术记录、随笔、阅读笔记和原创小说，并提供浏览器工具、多人游戏与独立设计项目。
 
-博客和小说提供目录导航、阅读进度与排版设置。主题、阅读位置和阅读偏好保存在当前浏览器中，方便下次继续阅读。文章中的代码、公式、图表、脚注与注音可直接阅读，代码块支持复制。
+网站面向实际阅读与使用而设计：文章有完整的阅读器和站内讨论；工具尽可能直接在浏览器中完成工作；桌面端与移动端采用适合各自操作方式的界面。仓库公开的是网站程序，博客、小说等内容由独立仓库管理。
 
-按 `Ctrl + K`（macOS 为 `Cmd + K`）打开全站搜索，查找文章段落、小说章节、版本更新和许可条目；结合类型、标签、卷目或年份筛选，可以直接跳到相关内容。
+## 你可以在这里做什么
 
-界面支持中文、英语、法语和僧伽罗语。博客可切换已有译文，未提供所选语言时会显示可用版本和语言提示。
+| 内容                   | 入口与体验                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **博客**               | [阅读文章](https://komori.cc/blog)：按关键词、标签和年份查找内容，阅读技术记录与随笔，切换已发布的译文                                           |
+| **原创小说《向远方》** | [浏览卷章](https://komori.cc/novel)：使用目录、进度记录与个性化排版继续阅读；正文向获授权的登录用户开放                                          |
+| **图片转换**           | [图片格式转换器](https://komori.cc/tools/image-converter)：批量转换、压缩、缩放、添加水印，支持动图处理                                          |
+| **僧伽罗语文本处理**   | [字体编码转换器](https://komori.cc/tools/sinhala-font-converter)：在 Unicode 与传统字体编码之间转换文本，处理 DOCX、PPTX 及含可选中文字的 PDF    |
+| **Minecraft 查询**     | [服务器状态](https://komori.cc/tools/server-status)：查看 Java 版和基岩版服务器的连接及在线信息                                                  |
+| **多人桌游**           | [阿瓦隆](https://komori.cc/games/avalon)：5–10 人在线身份推理；[雾港商纪](https://komori.cc/games/fogport)：2–4 人经济经营桌游实验项目（半成品） |
+| **开明标点**           | [项目展示](https://komori.cc/kaiming)：了解标点字形设计与相关字体资源                                                                            |
 
-小说目录公开浏览，进入正文需要 GitHub 登录。文章、章节和段落均可通过 Giscus 参与讨论，发表评论需要 GitHub 账号。博客与小说的评论分别保存在 [theWake](https://github.com/KoMoriSam/theWake) 和 [theHorizon](https://github.com/KoMoriSam/theHorizon) 的 GitHub Discussions 中。
+## 阅读与交流
 
-博客更新可通过 [RSS](https://komori.cc/rss.xml) 订阅；网站变化见[更新日志](https://komori.cc/changelog)和[公告](https://komori.cc/announcements)。
+博客和小说使用统一的阅读界面，提供目录、阅读进度、字体与排版调整、主题设置，以及适配触屏操作的移动端阅读方式。阅读偏好和进度保存在当前浏览器中。
 
-## 工具与游戏
+文章支持代码高亮、数学公式、Mermaid 图表、脚注、注音、双链和扩展 Markdown 内容。可以跳转到具体标题或段落、查看相关内容，也可以将选中的内容整理为分享图片。文章还提供关联推荐、修改时间和内容时效提示。
 
-**图片转换器**在浏览器内处理图片，适合批量整理素材、压缩体积、统一尺寸和添加文字或图片水印，也支持动图处理。
+**站内评论直接连接 GitHub Discussions**：登录 GitHub 后，可在网站中发表评论、回复、编辑、删除和表态；文章、小说章节与正文段落都有相应的讨论入口。评论支持热门、最新和最早排序，长评论与多级浏览体验针对不同屏幕做了优化。讨论数据分别保存在 [theWake](https://github.com/KoMoriSam/theWake) 和 [theHorizon](https://github.com/KoMoriSam/theHorizon)，不依赖外嵌评论界面。
 
-**僧伽罗字体编码转换器**支持 Unicode 与传统字体编码互转，可直接粘贴文本，也可处理 DOCX 和 PPTX 文档。含可选中文字的 PDF 可按内容导出为可编辑的 DOCX，或按页面版式导出为可编辑的 PPTX。
+网站界面支持**简体中文、英语、法语和僧伽罗语**。博客译文有独立地址，便于直接分享与搜索收录；不同语言的文章内容可单独切换，而不影响网站界面语言。
 
-**多人桌游**可通过房间码或邀请链接与朋友加入同一房间。阿瓦隆提供角色配置、组队投票、任务流程和对局记录；雾港商纪围绕产业、线路、资源与销售展开经营，目前为测试版本，开发暂停，部分功能尚未完成。
+按 `Ctrl + K`（macOS 使用 `Cmd + K`）可打开站内搜索，查找文章、章节、更新日志及许可信息。博客也提供 [RSS 订阅](https://komori.cc/rss.xml)。
 
-## 内容使用与版权
+## 技术与架构
 
-| 内容                                 | 使用规则                                                                                                   |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| 本仓库原创软件源代码                 | [MIT License](./LICENSE)                                                                                   |
-| 原创博客文章                         | 默认采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)，具体以文章页的协议声明为准 |
-| 原创小说《向远方》                   | 保留所有权利（All Rights Reserved）                                                                        |
-| 第三方库、字体、图标、图片及其他素材 | 遵循各自许可证或权利声明                                                                                   |
-| 读者评论                             | 权利归相应作者，遵循其权利声明                                                                             |
+| 层面       | 主要技术与设计                                                             |
+| ---------- | -------------------------------------------------------------------------- |
+| 前端       | Vue 3、Vue Router、Pinia、Vite、Tailwind CSS、daisyUI                      |
+| 内容呈现   | Vite SSG、Markdown-it、Pele（Mermaid）、Pagefind、按语言独立生成的文章页面 |
+| 服务端     | Cloudflare Workers、D1、KV、R2、Durable Objects                            |
+| 登录与讨论 | GitHub OAuth、GitHub Discussions，配合站内原生评论界面与 API               |
+| 构建和发布 | GitHub Actions、Cloudflare Workers Builds、构建快照、增量 SSG 与版本化部署 |
 
-文章页的版权卡片列出标题、链接、作者、发布日期与适用协议，便于确认出处和使用条件。第三方许可可在[站内许可页](https://komori.cc/licenses)、[中文第三方声明](./THIRD_PARTY_NOTICES.zh-CN.md)与[英文第三方声明](./THIRD_PARTY_NOTICES.md)查看。
+网站以静态预渲染页面承载公开内容与 SEO 信息，以 Workers 处理登录、讨论、统计和联机游戏等动态能力。博客和小说采用独立的内容发布流程，与网站代码解耦。
 
-## 本地运行
+构建流程会判断实际变更，按需跳过构建、局部更新静态页面，或执行完整构建；图片分级资源和其他可复用产物通过快照避免重复生成。发布流程将候选版本与正式流量分离，支持先验证再切换，以及回退到之前的版本。
 
-项目使用 Vue 3、Vite SSG、Tailwind CSS、daisyUI 和 Pagefind，服务端接口运行于 Cloudflare Workers。需要 Node.js 24.15 及更新的 24.x 版本，或 Node.js 26 及更新版本；包管理器使用 pnpm 12.3.4。
+## 本地开发
+
+要求 **Node.js 24.15+（24.x）或 26+**，以及 **pnpm 12.3.4**。
 
 ```bash
 git clone https://github.com/KoMoriSam/MoriWebsite.git
 cd MoriWebsite
 pnpm install
-```
-
-在根目录创建 `.env.development`，配置阅读内容与评论主题的地址：
-
-```dotenv
-VITE_BLOG_RAW=https://raw.komori.cc/post
-VITE_NOVEL_RAW=https://raw.komori.cc/novel
-VITE_GISCUS_CSS_RAW=https://raw.komori.cc/giscus
-```
-
-```bash
 pnpm dev
 ```
 
-使用终端显示的地址访问本地网站。也可将内容地址指向自己的本地镜像；`mock/` 和 `.env*` 文件均被 Git 忽略。调试联机房间时，另开终端运行 `pnpm dev games`。
+`pnpm dev` 会自动准备隔离的本地 API、认证、评论和小说测试数据，使用模拟内容启动网站；**无需获取私有内容仓库或配置正式环境的密钥**。打开终端输出的地址即可预览。
 
-可按需配置其他服务：
+常用命令：
 
-| 环境变量                                       | 用途                        |
-| ---------------------------------------------- | --------------------------- |
-| `VITE_SERVER_ADDRESS`                          | 默认查询的 Minecraft 服务器 |
-| `VITE_RANDOM_HERO_API`                         | 首页随机背景图服务          |
-| `VITE_COMMENT_COUNTS_API`                      | 段落评论数量查询            |
-| `VITE_GAMES_API`                               | 游戏房间服务                |
-| `VITE_CHANGELOG_API`、`VITE_ANNOUNCEMENTS_API` | 更新日志与公告服务          |
-| `VITE_ANALYTICS_API`                           | 访问统计服务                |
+| 命令                             | 用途                                             |
+| -------------------------------- | ------------------------------------------------ |
+| `pnpm menu`                      | 使用交互式菜单选择开发、检查、构建与发布相关操作 |
+| `pnpm dev`                       | 启动本地网站及配套测试服务                       |
+| `pnpm dev:seed`                  | 刷新隔离的本地测试数据                           |
+| `pnpm dev games`                 | 单独运行多人游戏的本地服务                       |
+| `pnpm check`                     | 查看可用检查项目；例如 `pnpm check markdown`     |
+| `pnpm build`                     | 使用完整内容源构建网站、搜索索引与内容资源       |
+| `pnpm preview`                   | 预览完成构建的网站                               |
+| `pnpm run build:smart --dry-run` | 查看增量构建的模式与变更范围                     |
 
-`VITE_` 变量会进入客户端代码，只用于公开配置。私有仓库访问令牌与部署凭据应保存在构建环境的 Secrets 中。
+**完整生产构建**与本地模拟开发不同，需要通过 `CONTENT_BLOG_DIR`、`CONTENT_NOVEL_DIR` 指定本地内容目录，或使用具备相应权限的 `CONTENT_GITHUB_TOKEN` 读取私有内容仓库。访问令牌及部署凭据应通过环境 Secrets 提供，不应提交到仓库或使用 `VITE_` 客户端变量保存。
 
-## 构建与发布
+## 内容与版本发布
 
-### 本地构建
+网站代码通过 `main` 开发与维护，已发布版本由 `production` 承载。网站版本经 GitHub Actions 准备发布提交与标签，再由 Cloudflare 构建、核验并切换正式版本；博客、小说和字体内容可以独立触发对应更新。详细变化可查看[更新日志](https://komori.cc/changelog)与[站点公告](https://komori.cc/announcements)。
 
-构建时，可用 `CONTENT_BLOG_DIR` 和 `CONTENT_NOVEL_DIR` 指定本地 Vault，或用 `CONTENT_GITHUB_TOKEN` 读取两个私有内容仓库。网站、RSS 和搜索索引使用同一次导出的内容。
+代码主要位于 `src/`，服务端 Worker 位于 `workers/`，构建、检查与发布脚本位于 `scripts/`；版本记录保存在 `changelog/releases/`。项目的自动发布流程依赖仓库和 Cloudflare 环境的特定配置，并非克隆后即可部署到其他账号。
 
-用 `pnpm menu` 打开项目总菜单，用方向键和回车选择操作。
+## 版权与许可
 
-| 命令                                | 用途                                                           |
-| ----------------------------------- | -------------------------------------------------------------- |
-| `pnpm build`                        | 完整构建，输出网站 `dist/` 和内容资源 `.output/content/`       |
-| `pnpm run build:smart`              | 使用本地快照自动选择增量或完整构建；加 `--full` 可强制完整构建 |
-| `pnpm run build:smart --dry-run`    | 查看本次构建会采用的模式与变更范围，无需部署                   |
-| `pnpm preview`                      | 预览已构建的网站                                               |
-| `pnpm check <目标>`                 | 运行指定业务检查；省略目标可查看列表                           |
-| `pnpm generate <目标>`              | 生成指定资源；省略目标可查看列表                               |
-| `pnpm release prepare <版本>`       | 准备版本号和更新日志                                 |
-| `pnpm release verify <版本>`        | 检查版本号、README 与更新日志是否一致                          |
-| `pnpm run deploy <目标>`            | 发布网站、内容、API 或 Giscus；省略目标可查看列表              |
-| `pnpm release announcement publish` | 独立发布公告                                                   |
+- **本仓库原创软件代码**：[MIT License](./LICENSE)。
+- **原创博客文章**：默认使用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)，具体以文章内的版权声明为准。
+- **原创小说《向远方》**：保留所有权利（All Rights Reserved）。
+- **第三方字体、图像、图标与其他资源**：遵循各自的许可或权利声明。
+- **读者评论**：权利归各自作者所有。
 
-### 生产发布
+第三方资源的许可信息可查看[站内许可页](https://komori.cc/licenses)、[中文声明](./THIRD_PARTY_NOTICES.zh-CN.md)与[英文声明](./THIRD_PARTY_NOTICES.md)。
 
-| 更新来源              | 如何上线                                                                                                                          |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 网站代码              | 从 `main` 运行 GitHub Actions → **发布网站**。工作流读取唯一的更新日志草稿，自动准备版本、提交、打标签并更新 `production`。Cloudflare 部署并验证后，同步本次更新日志。 |
-| 博客和小说            | 私有仓库 `ObsidianVault` 和 `MyWritingVault` 更新后，各自通过 `WORKERS_BUILD_HOOK` 触发构建，使用 `production` 上已发布的网站代码 |
-| 开明字体              | 字体发布通过 Deploy Hook 触发构建；构建从 `KoMoriSam/Kaiming` 的 GitHub Release 下载并校验资源                                    |
-| Giscus 主题和加载动画 | 在 `giscus/` 维护，通过 `pnpm run deploy giscus` 单独发布                                                                         |
+## 反馈
 
-Workers Builds 恢复上次成功发布的快照。仅内容变化且快照兼容时，增量 SSG 重建受影响的页面和内容产物，复用已有前端构建。构建配置或站点代码变化、快照无法使用时会完整构建；没有变化时跳过部署。完整和增量构建都优先复用有效的图片分级缓存。构建日志用 `INCREMENTAL`、`FULL` 或 `SKIPPED` 标明结果。
-
-增量发布只部署产物有变化的 Worker。网页和内容由 Workers Static Assets 提供，私有 R2 仅保存构建快照。博客和小说的正文及图片继续通过 `raw.komori.cc/post` 和 `raw.komori.cc/novel` 访问；同域的 `/kaiming` 提供字体，`/giscus` 提供评论主题及 `/giscus/images/spin.gif` 加载动画。
-
-在 `pnpm menu` 的「内容管理」撰写下一版更新日志，将草稿随代码推到 `main`。然后在「发布」打开 GitHub 网站发版，点 **Run workflow**。失败可从 Cloudflare Builds 日志查看原因并重试该构建。首次启用时，在 GitHub Settings → Environments → production 添加变量 `RELEASE_APP_CLIENT_ID` 和 Secret `RELEASE_APP_PRIVATE_KEY`，允许 `main` 使用该环境。发布 App 需要本仓库的 Contents 读写权限，并须能更新 `main`、`production` 和创建发布标签。Cloudflare 构建令牌需要 Workers Scripts 和 Workers KV Storage 的编辑权限。
-
-在 `website` 的 Workers Builds 设置中，生产分支选 `production`，构建命令留空，部署命令设为 `pnpm run build:smart --deploy`。以下变量只配置在生产构建环境：
-
-| 配置                                                         | 填写内容                                                                                                                                                       |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONTENT_GITHUB_TOKEN`（Secret）                             | 对两个私有内容仓库有 Contents 只读权限的 GitHub 令牌                                                                                                           |
-| `SSG_R2_ENDPOINT`、`SSG_R2_BUCKET`、`SSG_SNAPSHOT_NAMESPACE` | R2 的 S3 API 端点（不含桶路径）、私有快照桶名和 `production`                                                                                                   |
-| `SSG_R2_ACCESS_KEY`、`SSG_R2_SECRET_KEY`（Secrets）          | 同一组 [R2 S3 凭据](https://developers.cloudflare.com/r2/get-started/s3/)的 Access Key ID 和 Secret Access Key，权限选择 **Object Read & Write**，仅授权快照桶 |
-
-版本公告按 `x.y.0` 归组，后续维护、优化与修复融入同一份公告，读者可在一处了解该版本的完整体验。博客 frontmatter 可通过 `license` 指定文章协议，未填写时使用 `CC BY-NC-SA 4.0`；译文默认沿用原文协议。
-
-开发时可从 `src/views/` 查找页面，从 `src/components/`、`src/composables/` 与 `src/utils/` 查找对应业务实现；构建与发布入口位于 `scripts/`，Cloudflare 服务位于 `workers/`。
-
-## 反馈与参与
-
-遇到问题或有改进建议，可以[提交 Issue](https://github.com/KoMoriSam/MoriWebsite/issues)。描述所在页面、操作步骤、预期结果、实际表现与浏览器版本，有助于复现问题。阅读交流可直接使用文章或小说页面的评论区。
+欢迎通过 [GitHub Issues](https://github.com/KoMoriSam/MoriWebsite/issues) 反馈问题或提出建议；与文章、小说有关的交流也可以直接留在对应内容的评论区。

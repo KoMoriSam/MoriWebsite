@@ -4,165 +4,120 @@
   </a>
 </p>
 
-<h1 align="center">MoriWebsite · 远方之森</h1>
+<h1 align="center">远方之森 · MoriWebsite</h1>
 
 <p align="center">
-  Lire des articles et un roman original, traiter des images et des documents cinghalais, et jouer entre amis.
+  Écrire sur la technique et le quotidien, lire des récits originaux, explorer le texte et l’image, et jouer entre amis.
 </p>
 
 <p align="center">
-  <a href="https://komori.cc/">Visiter le site</a>
-  ·
-  <a href="https://komori.cc/rss.xml">S'abonner au blog</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/issues">Signaler un problème</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README.md">中文</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_en.md">English</a>
-  ·
-  <a href="https://github.com/KoMoriSam/MoriWebsite/blob/main/README_si.md">සිංහල</a>
-</p>
-
-<p align="center">
-  Version actuelle : <strong>2.21.1</strong>
-  ·
+  <a href="https://komori.cc/">Visiter le site</a> ·
+  <a href="https://komori.cc/blog">Blog</a> ·
+  <a href="https://komori.cc/novel">Roman</a> ·
+  <a href="https://komori.cc/tools">Outils</a> ·
+  <a href="https://komori.cc/games">Jeux</a> ·
   <a href="https://komori.cc/changelog">Journal des modifications</a>
 </p>
 
-## Pour commencer
+<p align="center">
+  <a href="./README.md">简体中文</a> ·
+  <a href="./README_en.md">English</a> ·
+  Français ·
+  <a href="./README_si.md">සිංහල</a>
+</p>
 
-远方之森 est le site personnel de Mori. Il rassemble des explorations techniques, des essais, des notes de lecture, un roman original, des outils du quotidien et des jeux de société multijoueurs. Il est accessible directement sur ordinateur ou téléphone.
+<p align="center">
+  Version actuelle : <strong>2.21.2</strong>
+</p>
 
-| Votre objectif                 | Où aller                                                                                                                                                                 |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Lire des articles              | [Blog](https://komori.cc/blog) : rechercher par mot-clé, étiquette et année, puis choisir parmi les versions linguistiques publiées                                      |
-| Suivre le roman                | [Vers le lointain /《向远方》](https://komori.cc/novel) : parcourir les volumes et chapitres, reprendre la lecture et régler la mise en page                             |
-| Convertir des images           | [Convertisseur d'images](https://komori.cc/tools/image-converter) : conversion par lot, compression, redimensionnement, filigranes et traitement d'animations            |
-| Traiter du texte cinghalais    | [Convertisseur d'encodage de polices](https://komori.cc/tools/sinhala-font-converter) : convertir entre Unicode et encodages traditionnels, y compris dans des documents |
-| Consulter un serveur           | [État d'un serveur Minecraft](https://komori.cc/tools/server-status) : vérifier sa connexion et ses informations en ligne                                                |
-| Jouer entre amis               | [Avalon](https://komori.cc/games/avalon), déduction sociale pour 5 à 10 joueurs ; [Fogport](https://komori.cc/games/fogport), jeu de gestion pour 2 à 4 joueurs          |
-| Découvrir le projet de polices | [Kaiming](https://komori.cc/kaiming) : présentation du projet et ressources typographiques                                                                               |
+## À propos de 远方之森
+
+**远方之森** est le site personnel de Mori et un projet web qui continue d’évoluer. Il réunit des notes techniques, des essais, des notes de lecture et un roman original, ainsi que des outils utilisables dans le navigateur, des jeux multijoueurs et des projets de design indépendants.
+
+Le site est conçu pour lire et utiliser ses outils au quotidien. Les articles disposent d’une interface de lecture dédiée et d’un espace de discussion intégré. Les outils fonctionnent autant que possible dans le navigateur, et les interfaces sur ordinateur et sur mobile sont adaptées à leurs usages respectifs. Ce dépôt public contient le code du site ; le blog, le roman et les autres contenus sont gérés dans des dépôts distincts.
+
+## Que faire sur le site ?
+
+| Contenu | Accès et fonctionnalités |
+| --- | --- |
+| **Blog** | [Lire les articles](https://komori.cc/blog) : rechercher par mot-clé, étiquette et année, lire des notes techniques et des essais, et passer d’une traduction publiée à l’autre. |
+| **Roman original : Vers le lointain (《向远方》)** | [Parcourir les volumes et les chapitres](https://komori.cc/novel) : reprendre la lecture grâce à la table des matières, au suivi de la progression et aux réglages de mise en page. Le texte intégral est réservé aux personnes connectées qui disposent d’une autorisation. |
+| **Conversion d’images** | [Convertisseur de formats d’image](https://komori.cc/tools/image-converter) : convertir des images par lot, les compresser, les redimensionner, ajouter des filigranes et traiter les images animées. |
+| **Traitement de texte cinghalais** | [Convertisseur d’encodage de polices](https://komori.cc/tools/sinhala-font-converter) : convertir du texte entre Unicode et les anciens encodages de polices, y compris dans des fichiers DOCX, PPTX et PDF dont le texte est sélectionnable. |
+| **Consultation de serveurs Minecraft** | [État des serveurs](https://komori.cc/tools/server-status) : vérifier la connectivité et consulter les informations en ligne des serveurs des éditions Java et Bedrock. |
+| **Jeux de société multijoueurs** | [Avalon](https://komori.cc/games/avalon) : jeu de déduction sociale en ligne pour 5 à 10 personnes. [Fogport](https://komori.cc/games/fogport) : jeu de société expérimental de gestion économique pour 2 à 4 personnes, encore inachevé. |
+| **Ponctuation Kaiming** | [Présentation du projet](https://komori.cc/kaiming) : découvrir le dessin des signes de ponctuation et les ressources typographiques associées. |
 
 ## Lecture et discussions
 
-Le blog et le roman proposent un sommaire, un suivi de progression et des réglages de mise en page. Le thème, la position de lecture et les préférences sont conservés dans le navigateur utilisé pour faciliter la reprise. Les articles peuvent contenir du code, des formules, des diagrammes, des notes de bas de page et des annotations ruby ; les blocs de code peuvent être copiés.
+Le blog et le roman partagent une même interface de lecture, avec une table des matières, le suivi de la progression, des réglages de police et de mise en page, des thèmes et un mode de lecture adapté aux écrans tactiles. Les préférences et la progression sont enregistrées dans le navigateur utilisé.
 
-Appuyez sur `Ctrl + K` (`Cmd + K` sur macOS) pour rechercher des passages d'articles, des chapitres, des notes de version et des mentions de licence. Les filtres par type, étiquette, volume ou année permettent d'accéder directement au contenu pertinent.
+Les articles prennent en charge la coloration syntaxique, les formules mathématiques, les diagrammes Mermaid, les notes de bas de page, les annotations de prononciation (ruby), les liens wiki et d’autres extensions Markdown. Il est possible d’accéder directement à un titre ou à un paragraphe, de consulter des contenus associés ou de transformer une sélection en image à partager. Les articles affichent aussi des recommandations, la date de leur dernière modification et des indications sur l’actualité des informations.
 
-L'interface est disponible en chinois, anglais, français et cinghalais. Les articles proposent leurs traductions disponibles et signalent la langue affichée lorsque la langue choisie n'est pas disponible.
+**Les commentaires du site sont directement reliés à GitHub Discussions.** Après connexion avec GitHub, on peut publier, répondre, modifier ou supprimer ses commentaires et ajouter des réactions depuis le site. Des espaces de discussion sont accessibles pour les articles, les chapitres du roman et les paragraphes. Les commentaires peuvent être triés par popularité, du plus récent au plus ancien ou dans l’ordre inverse. L’affichage des longs commentaires et des fils de réponses imbriqués est adapté aux différentes tailles d’écran. Les discussions du blog et du roman sont conservées respectivement dans [theWake](https://github.com/KoMoriSam/theWake) et [theHorizon](https://github.com/KoMoriSam/theHorizon), sans interface de commentaires externe intégrée à la page.
 
-Le catalogue du roman est public ; la lecture des chapitres nécessite une connexion GitHub. Giscus permet de discuter des articles, des chapitres et de paragraphes précis. Un compte GitHub est nécessaire pour publier un commentaire. Les discussions du blog et du roman sont hébergées respectivement dans [theWake](https://github.com/KoMoriSam/theWake) et [theHorizon](https://github.com/KoMoriSam/theHorizon).
+L’interface du site est disponible en **chinois simplifié, anglais, français et cinghalais**. Les traductions du blog ont chacune leur propre URL, ce qui facilite leur partage et leur indexation. On peut changer la langue d’un article indépendamment de celle de l’interface.
 
-Abonnez-vous au [flux RSS](https://komori.cc/rss.xml) pour suivre le blog. Les évolutions du site sont présentées dans le [journal des modifications](https://komori.cc/changelog) et les [annonces](https://komori.cc/announcements).
+Le raccourci `Ctrl + K` (`Cmd + K` sur macOS) ouvre la recherche sur le site, qui permet de trouver des articles, des chapitres, des notes de version et des informations sur les licences. Le blog propose aussi un [flux RSS](https://komori.cc/rss.xml).
 
-## Outils et jeux
+## Technologies et architecture
 
-**Le convertisseur d'images** traite les images dans le navigateur. Il permet de préparer des lots, réduire la taille des fichiers, uniformiser les dimensions, ajouter des filigranes textuels ou graphiques et traiter des images animées.
+| Domaine | Principaux choix techniques |
+| --- | --- |
+| Interface | Vue 3, Vue Router, Pinia, Vite, Tailwind CSS, daisyUI |
+| Rendu des contenus | Vite SSG, Markdown-it, Pele (Mermaid), Pagefind, pages d’articles générées séparément pour chaque langue |
+| Côté serveur | Cloudflare Workers, D1, KV, R2, Durable Objects |
+| Connexion et discussions | GitHub OAuth et GitHub Discussions, avec l’interface de commentaires et l’API propres au site |
+| Construction et publication | GitHub Actions, Cloudflare Workers Builds, instantanés de construction, génération statique incrémentale et déploiements versionnés |
 
-**Le convertisseur d'encodage de polices cinghalaises** convertit entre Unicode et encodages traditionnels. Vous pouvez coller du texte ou traiter des fichiers DOCX et PPTX. Pour un PDF contenant du texte sélectionnable, vous pouvez exporter le contenu dans un DOCX modifiable ou la mise en page dans un PPTX modifiable.
+Les pages statiques prégénérées servent le contenu public et les métadonnées de référencement. Les Workers prennent en charge les fonctions dynamiques, comme la connexion, les discussions, les statistiques et les jeux en ligne. Le blog et le roman suivent des processus de publication indépendants du code du site.
 
-**Les jeux de société multijoueurs** permettent de rejoindre une même salle avec un code ou un lien d'invitation. Avalon propose la configuration des rôles, les votes d'équipe, les missions et l'historique des parties. Fogport repose sur les industries, les liaisons, les ressources et les ventes ; il s'agit d'une version de test dont le développement est suspendu et certaines fonctions restent inachevées.
+Le processus de construction examine les changements pour décider s’il faut ignorer la construction, mettre à jour certaines pages statiques ou reconstruire l’ensemble du site. Les instantanés permettent de réutiliser les variantes d’images et d’autres fichiers générés. Les versions candidates sont isolées du trafic de production pour permettre leur vérification avant la bascule et, si nécessaire, le retour à une version précédente.
 
-## Utilisation des contenus
+## Développement local
 
-| Contenu                                                         | Conditions                                                                                                                          |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Code source logiciel original de ce dépôt                       | [Licence MIT](./LICENSE)                                                                                                            |
-| Articles originaux du blog                                      | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) par défaut ; consulter la licence indiquée sur chaque article |
-| Roman original Vers le lointain /《向远方》                     | Tous droits réservés (All Rights Reserved)                                                                                          |
-| Bibliothèques, polices, icônes, images et autres éléments tiers | Leurs licences ou mentions de droits respectives                                                                                    |
-| Commentaires des lecteurs                                       | Les droits restent à leurs auteurs, selon leurs mentions de droits                                                                  |
-
-La fiche d'attribution de chaque article présente son titre, son lien, son auteur, sa date de publication et sa licence pour identifier la source et les conditions applicables. Les licences tierces sont consultables sur la [page des licences](https://komori.cc/licenses), dans les [mentions en anglais](./THIRD_PARTY_NOTICES.md) et les [mentions en chinois](./THIRD_PARTY_NOTICES.zh-CN.md).
-
-## Exécuter en local
-
-Le projet utilise Vue 3, Vite SSG, Tailwind CSS, daisyUI et Pagefind. Les API serveur fonctionnent sur Cloudflare Workers. Utilisez Node.js 24.15 ou une version ultérieure de la série 24.x, ou Node.js 26 et ultérieur, avec pnpm 12.3.4.
+Prérequis : **Node.js 24.15 ou supérieur dans la série 24.x, ou Node.js 26 ou supérieur**, et **pnpm 12.3.4**.
 
 ```bash
 git clone https://github.com/KoMoriSam/MoriWebsite.git
 cd MoriWebsite
 pnpm install
-```
-
-Créez `.env.development` à la racine du projet pour définir les adresses des contenus et des thèmes de commentaires :
-
-```dotenv
-VITE_BLOG_RAW=https://raw.komori.cc/post
-VITE_NOVEL_RAW=https://raw.komori.cc/novel
-VITE_GISCUS_CSS_RAW=https://raw.komori.cc/giscus
-```
-
-```bash
 pnpm dev
 ```
 
-Ouvrez l'adresse affichée dans le terminal. Les adresses de contenu peuvent aussi pointer vers vos propres copies locales ; `mock/` et les fichiers `.env*` sont ignorés par Git. Pour développer les salles multijoueurs, lancez `pnpm dev games` dans un autre terminal.
+`pnpm dev` prépare automatiquement les services et les données de test isolés pour l’API, l’authentification, les commentaires et le roman, puis lance le site avec du contenu de démonstration. **Aucun accès aux dépôts de contenu privés ni aux secrets de production n’est nécessaire.** Ouvrez l’adresse affichée dans le terminal.
 
-Configurez les autres services selon vos besoins :
+Commandes courantes :
 
-| Variable d'environnement                       | Utilisation                                   |
-| ---------------------------------------------- | --------------------------------------------- |
-| `VITE_SERVER_ADDRESS`                          | Serveur Minecraft interrogé par défaut        |
-| `VITE_RANDOM_HERO_API`                         | Service d'arrière-plan aléatoire de l'accueil |
-| `VITE_COMMENT_COUNTS_API`                      | Nombre de commentaires par paragraphe         |
-| `VITE_GAMES_API`                               | Service des salles multijoueurs               |
-| `VITE_CHANGELOG_API`, `VITE_ANNOUNCEMENTS_API` | Services du journal et des annonces           |
-| `VITE_ANALYTICS_API`                           | Service de statistiques de fréquentation      |
+| Commande | Utilité |
+| --- | --- |
+| `pnpm menu` | Ouvrir le menu interactif pour le développement, les vérifications, la construction et la publication. |
+| `pnpm dev` | Lancer le site en local et ses services de test. |
+| `pnpm dev:seed` | Actualiser les données de test locales isolées. |
+| `pnpm dev games` | Lancer uniquement le service local des jeux multijoueurs. |
+| `pnpm check` | Afficher les vérifications disponibles ; par exemple, lancer `pnpm check markdown`. |
+| `pnpm build` | Générer le site, l’index de recherche et les ressources à partir des sources de contenu complètes. |
+| `pnpm preview` | Prévisualiser le site généré. |
+| `pnpm run build:smart --dry-run` | Voir le mode de construction qui serait utilisé et ce qui serait mis à jour. |
 
-Les variables `VITE_` sont intégrées au code client et doivent contenir uniquement une configuration publique. Conservez les jetons des dépôts privés et les identifiants de déploiement dans les Secrets de l'environnement de build.
+Une **construction complète pour la production** utilise les contenus réels. Indiquez les répertoires de contenu locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou fournissez un `CONTENT_GITHUB_TOKEN` autorisé à lire les dépôts de contenu privés. Les jetons d’accès et les identifiants de déploiement doivent être fournis sous forme de secrets d’environnement. Ils ne doivent figurer ni dans le dépôt ni dans les variables `VITE_` accessibles côté client.
 
-## Construire et publier
+## Publication des contenus et des versions
 
-### Construire en local
+Le code du site est développé et maintenu sur `main`, tandis que les versions publiées sont hébergées sur `production`. GitHub Actions prépare les commits et les tags de publication. Cloudflare construit et vérifie la version, puis la met en service. Les mises à jour du blog, du roman et des polices peuvent déclencher leurs propres constructions. Consultez le [journal des modifications](https://komori.cc/changelog) et les [annonces du site](https://komori.cc/announcements) pour en savoir plus.
 
-Indiquez les Vaults locaux avec `CONTENT_BLOG_DIR` et `CONTENT_NOVEL_DIR`, ou utilisez `CONTENT_GITHUB_TOKEN` pour lire les deux dépôts privés de contenu. Le site, le flux RSS et l'index de recherche utilisent le même export.
+Le code du site se trouve principalement dans `src/`, les Workers côté serveur dans `workers/`, et les scripts de construction, de vérification et de publication dans `scripts/`. Les notes de version sont conservées dans `changelog/releases/`. La publication automatisée repose sur des réglages propres à ce dépôt et à son environnement Cloudflare. Un déploiement sur un autre compte nécessite sa propre configuration.
 
-Ouvrez `pnpm menu` et choisissez une opération avec les touches fléchées et Entrée.
+## Droits d’auteur et licences
 
-| Commande                            | Résultat                                                                                                                                |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm build`                        | Effectuer un build complet du site dans `dist/` et des ressources dans `.output/content/`                                               |
-| `pnpm run build:smart`              | Utiliser l'instantané local pour choisir entre un build incrémental et un build complet ; ajouter `--full` pour forcer un build complet |
-| `pnpm run build:smart --dry-run`    | Voir le mode de build et les changements prévus sans déployer                                                                           |
-| `pnpm preview`                      | Prévisualiser le site généré                                                                                                            |
-| `pnpm check <cible>`                | Exécuter les vérifications ciblées ; sans cible, afficher les options                                                                   |
-| `pnpm generate <cible>`             | Générer les ressources choisies ; sans cible, afficher les options                                                                      |
-| `pnpm release prepare <version>`    | Préparer le numéro de version et les notes                                                                      |
-| `pnpm release verify <version>`     | Vérifier la cohérence des versions du paquet, des README et du journal                                                                  |
-| `pnpm run deploy <cible>`           | Publier le site, les contenus, l'API ou Giscus ; sans cible, afficher les options                                                       |
-| `pnpm release announcement publish` | Publier les annonces séparément                                                                                                         |
+- **Code logiciel original de ce dépôt** : [licence MIT](./LICENSE).
+- **Articles originaux du blog** : [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) par défaut ; la mention figurant dans chaque article fait foi.
+- **Roman original : Vers le lointain (《向远方》)** : tous droits réservés.
+- **Polices, images, icônes et autres ressources tierces** : soumises à leurs licences ou mentions de droits respectives.
+- **Commentaires des lecteurs** : les droits restent la propriété de leurs auteurs.
 
-### Publier en production
+Les informations relatives aux licences des ressources tierces sont disponibles sur la [page des licences du site](https://komori.cc/licenses), dans les [mentions en chinois](./THIRD_PARTY_NOTICES.zh-CN.md) et dans les [mentions en anglais](./THIRD_PARTY_NOTICES.md).
 
-| Source de la mise à jour                 | Mise en ligne                                                                                                                                                                    |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code du site                             | Lancez **发布网站** depuis `main` dans GitHub Actions. Le workflow finalise le brouillon, crée le commit et la balise, puis avance `production`. Cloudflare vérifie le déploiement et synchronise les notes de version. |
-| Blog et roman                            | Une mise à jour dans l'un des dépôts privés `ObsidianVault` ou `MyWritingVault` déclenche son `WORKERS_BUILD_HOOK` et utilise le code du site déjà publié sur `production`.      |
-| Polices Kaiming                          | Une nouvelle version déclenche un Deploy Hook. Le build télécharge et vérifie les ressources de la GitHub Release de `KoMoriSam/Kaiming`.                                        |
-| Thèmes Giscus et animation de chargement | Maintenus dans `giscus/` et publiés séparément avec `pnpm run deploy giscus`.                                                                                                    |
+## Retours et suggestions
 
-Workers Builds restaure l'instantané du dernier déploiement réussi. Si seul le contenu change et que l'instantané est compatible, la génération statique incrémentale reconstruit les pages et les ressources concernées et réutilise le code du site déjà compilé. Le build est complet si le code du site ou la configuration de build change, ou si l'instantané est inutilisable. S'il n'y a rien à publier, le déploiement est ignoré. Les deux modes réutilisent les variantes d'image valides déjà en cache. Le journal de build indique `INCREMENTAL`, `FULL` ou `SKIPPED`.
-
-Une publication incrémentale ne déploie que les Workers dont les fichiers générés ont changé. Workers Static Assets sert le site et ses contenus. Le compartiment R2 privé conserve les instantanés de build. Les textes et images du blog et du roman restent accessibles via `raw.komori.cc/post` et `raw.komori.cc/novel`. Sur le même domaine, `/kaiming` sert les polices et `/giscus` les thèmes de commentaires, avec l'animation à l'adresse `/giscus/images/spin.gif`.
-
-Dans `pnpm menu`, ouvrez **内容管理** pour rédiger le brouillon et poussez-le sur `main` avec le code. Dans **发布**, ouvrez GitHub Actions et cliquez sur **Run workflow**. En cas d’échec, consultez les journaux Workers Builds et relancez le build. Pour activer la publication, configurez la variable `RELEASE_APP_CLIENT_ID` et le secret `RELEASE_APP_PRIVATE_KEY` dans GitHub Settings → Environments → production, puis autorisez `main` à utiliser cet environnement. L’application doit avoir les droits de lecture et d’écriture sur Contents et pouvoir avancer `main` et `production` et créer les balises de version. Le jeton Cloudflare doit pouvoir modifier Workers Scripts et Workers KV Storage.
-
-Dans les paramètres Workers Builds de `website`, choisissez `production` comme branche de production, laissez la commande de build vide et définissez la commande de déploiement sur `pnpm run build:smart --deploy`. Configurez les variables suivantes dans l'environnement de build de production :
-
-| Paramètre                                                    | Valeur                                                                                                                                                                                                                       |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONTENT_GITHUB_TOKEN` (secret)                              | Jeton GitHub avec accès Contents en lecture seule aux deux dépôts privés de contenu                                                                                                                                          |
-| `SSG_R2_ENDPOINT`, `SSG_R2_BUCKET`, `SSG_SNAPSHOT_NAMESPACE` | Point de terminaison de l'API S3 de R2 sans le chemin du compartiment, nom du compartiment privé des instantanés et `production`, respectivement                                                                             |
-| `SSG_R2_ACCESS_KEY`, `SSG_R2_SECRET_KEY` (secrets)           | Identifiant de clé d'accès et clé secrète issus des mêmes [identifiants S3 de R2](https://developers.cloudflare.com/r2/get-started/s3/), avec l'autorisation **Object Read & Write** limitée au compartiment des instantanés |
-
-Les annonces sont regroupées sous `x.y.0`. Maintenance, optimisations et corrections sont intégrées à la même annonce pour présenter l'expérience complète d'une version en un seul endroit. Le front matter des articles peut préciser une `license` ; la valeur par défaut est `CC BY-NC-SA 4.0`, et les traductions héritent de la licence originale sauf indication contraire.
-
-Les pages se trouvent dans `src/views/`, leurs composants et leur logique dans `src/components/`, `src/composables/` et `src/utils/`. Les commandes de build et de publication se trouvent dans `scripts/`, les services Cloudflare dans `workers/`.
-
-## Retours et participation
-
-[Ouvrez une issue](https://github.com/KoMoriSam/MoriWebsite/issues) pour signaler un problème ou proposer une amélioration. Précisez la page, les étapes, le résultat attendu, le comportement observé et la version du navigateur. Pour échanger sur les textes, utilisez les commentaires de l'article ou du roman.
+Signalez un problème ou proposez une amélioration via les [issues GitHub](https://github.com/KoMoriSam/MoriWebsite/issues). Pour discuter d’un article ou du roman, vous pouvez aussi laisser un commentaire sur la page concernée.
