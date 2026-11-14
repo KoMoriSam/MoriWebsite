@@ -63,7 +63,7 @@
       </ActionMenu>
     </header>
     <p v-if="comment.isMinimized" class="px-4 py-4 text-base-content/60">
-      {{ t("comments.minimized") }}
+      {{ minimizedMessage }}
     </p>
     <template v-else>
       <Renderer
@@ -135,7 +135,7 @@ import Popover from "@/components/display/menu/Popover.vue";
 import EditHistory from "../interaction/EditHistory.vue";
 import { useLocale } from "@/i18n";
 import { formatRelativeDate } from "@/i18n/format-date";
-import { siteOwnerLogin } from "@/../shared/discussions.js";
+import { commentMinimizedReasons, siteOwnerLogin } from "@/../shared/discussions.js";
 import { useToast } from "@/composables/useToast";
 import { githubDiscussionUrl } from "@/utils/github-discussion-url";
 const props = defineProps({
@@ -159,6 +159,13 @@ function chooseAction(action) {
   else emit(action);
 }
 const { t, locale, date: formatDate, number } = useLocale();
+const minimizedMessage = computed(() => {
+  const reason = props.comment.minimizedReason;
+  if (!commentMinimizedReasons.includes(reason)) return t("comments.minimized");
+  return t("comments.minimizedWithReason", {
+    reason: t("comments.minimizedReasons." + reason),
+  });
+});
 const login = computed(() => props.comment.author?.login?.toLowerCase());
 const isSiteOwner = computed(() => login.value === siteOwnerLogin.toLowerCase());
 const isContentAuthor = computed(() => login.value === props.authorLogin.toLowerCase());

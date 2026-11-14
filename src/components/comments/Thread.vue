@@ -113,7 +113,7 @@
                 :authenticated="moriSession.authenticated"
                 :busy="busy"
                 :editing="editor.id === comment.id && editor.action === 'edit'"
-                :replies-open="openReplies.has(comment.id)"
+                :replies-open="repliesOpen(comment)"
                 @toggle-replies="toggleReplies(comment)"
                 @reply="replyToComment(comment)"
                 @quote="quoteReply(comment, comment)"
@@ -139,7 +139,7 @@
                   />
                 </template>
                 <template
-                  v-if="openReplies.has(comment.id) && (comment.replies?.totalCount || comment.replies?.nodes?.length)"
+                  v-if="repliesOpen(comment) && (comment.replies?.totalCount || visibleReplies(comment).length)"
                   #replies
                 >
                   <div
@@ -147,7 +147,7 @@
                     :aria-busy="replyRequests.has(comment.id)"
                   >
                     <CommentEntry
-                      v-for="reply in comment.replies?.nodes"
+                      v-for="reply in visibleReplies(comment)"
                       :key="reply.id"
                       :comment="reply"
                       :author-login="authorLogin"
@@ -191,7 +191,7 @@
                       {{ t("common.navigationStatus.retry") }}
                     </button>
                     <button
-                      v-else-if="comment.replies?.pageInfo?.hasNextPage"
+                      v-else-if="hasMoreReplies(comment)"
                       type="button"
                       class="btn btn-ghost btn-sm mx-4 my-2"
                       @click="loadReplies(comment)"
@@ -240,7 +240,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, watch } from "vue";
 import { useTimestamp } from "@vueuse/core";
-import { discussionAuthorLogins } from "@/../shared/discussions.js";
+import { defaultCommentSort, discussionAuthorLogins, initialReplyCount } from "@/../shared/discussions.js";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import CommentsPlaceholder from "@/components/reader/feedback/CommentsPlaceholder.vue";
 import { useMoriAuth } from "@/composables/auth/useMoriAuth";
@@ -277,13 +277,15 @@ const loaded = ref(false);
 const busy = ref(false);
 const error = ref("");
 const showPlaceholder = computed(() => pending.value && !loaded.value && !error.value);
-const sort = ref("oldest");
+const sort = ref(defaultCommentSort);
 const sortGroup = useId();
 const threadElement = ref(null);
 const discussion = ref(null);
 const discussionUrl = computed(() => githubDiscussionUrl(discussion.value?.url));
 const comments = ref([]);
-const openReplies = reactive(new Set());
+const replyVisibility = reactive(new Map());
+const replyLimits = reactive(new Map());
+const postedReplies = reactive(new Map());
 const replyRequests = reactive(new Map());
 const replyErrors = reactive(new Set());
 const count = ref(0);
@@ -304,8 +306,9 @@ const hasEditorTarget = computed(() =>
   comments.value.some(
     (item) =>
       item.id === editor.value.id ||
-      (openReplies.has(item.id) && editor.value.parentId === item.id) ||
-      item.replies?.nodes?.some((reply) => reply.id === editor.value.id),
+      (repliesOpen(item) &&
+        (editor.value.parentId === item.id ||
+          visibleReplies(item).some((reply) => reply.id === editor.value.id))),
   ),
 );
 let generation = 0;
@@ -412,10 +415,11 @@ async function load(cursor) {
       {
         sort: sort.value,
         ...(cursor && { cursor }),
-        // Drafts created before parent IDs were stored can still find their reply.
-        ...(editor.value.action !== "edit" || editor.value.parentId !== undefined
-          ? { replySummary: "1" }
-          : {}),
+        // Older drafts without a parent ID still need to find their reply.
+        ...(editor.value.action === "edit" &&
+        editor.value.parentId === undefined
+          ? {}
+          : { replyPreview: "1" }),
       },
       { signal: controller.signal },
     );
@@ -424,25 +428,37 @@ async function load(cursor) {
     discussion.value = result.discussion;
     permissions.value = Boolean(result.includePermissions);
     const pageItems = page?.nodes || [];
-    const existingIds = new Set(cursor ? comments.value.map(({ id }) => id) : []);
+    const existingIds = new Set(
+      cursor ? comments.value.map(({ id }) => id) : [],
+    );
     comments.value = cursor
-      ? [...comments.value, ...pageItems.filter(({ id }) => !existingIds.has(id))]
+      ? [
+          ...comments.value,
+          ...pageItems.filter(({ id }) => !existingIds.has(id)),
+        ]
       : pageItems;
     for (const comment of pageItems) {
-      if (editor.value.parentId === comment.id ||
-          comment.replies?.nodes?.some((reply) => reply.id === editor.value.id)) {
-        openReplies.add(comment.id);
-      }
-    }
-    if (!cursor) {
-      const visibleIds = new Set(pageItems.map(({ id }) => id));
-      for (const openId of openReplies) {
-        if (!visibleIds.has(openId)) openReplies.delete(openId);
+      if (
+        editor.value.parentId === comment.id ||
+        comment.replies?.nodes?.some((reply) => reply.id === editor.value.id)
+      ) {
+        replyVisibility.set(comment.id, true);
       }
     }
     for (const comment of comments.value) {
-      if (openReplies.has(comment.id) && comment.replies?.totalCount && !comment.replies.nodes)
-        void loadReplies(comment);
+      if (!repliesOpen(comment) || !comment.replies?.totalCount) continue;
+      const nodes = comment.replies.nodes || [];
+      const limit = replyLimits.get(comment.id) || initialReplyCount;
+      const editTarget =
+        editor.value.parentId === comment.id ? editor.value.id : null;
+      if (
+        !nodes.length ||
+        (comment.replies.pageInfo?.hasNextPage &&
+          (nodes.length < limit ||
+            (editTarget && !nodes.some(({ id }) => id === editTarget))))
+      ) {
+        void loadReplies(comment, { limit, editTarget });
+      }
     }
     nextCursor.value =
       sort.value === "newest"
@@ -450,11 +466,21 @@ async function load(cursor) {
         : page?.pageInfo.hasNextPage && page.pageInfo.endCursor;
     count.value = result.count || 0;
     commentCount.value = result.commentCount ?? page?.totalCount ?? 0;
-    replyCount.value = result.replyCount ?? Math.max(0, count.value - commentCount.value);
+    replyCount.value =
+      result.replyCount ?? Math.max(0, count.value - commentCount.value);
     loaded.value = true;
     emit("count", count.value);
   } catch (failure) {
-    if (id === generation) report(failure, () => load(cursor));
+    if (id !== generation) return;
+    if (
+      !loaded.value &&
+      sort.value === "top" &&
+      failure.message === "COMMENT_RANKING_TOO_LARGE"
+    ) {
+      sort.value = "oldest";
+    } else {
+      report(failure, () => load(cursor));
+    }
   } finally {
     if (id === generation) pending.value = false;
   }
@@ -466,40 +492,97 @@ function cancelReplyRequests() {
   replyErrors.clear();
 }
 
+function repliesOpen(comment) {
+  return replyVisibility.get(comment.id) ?? !comment.isMinimized;
+}
+
+function visibleReplies(comment) {
+  const nodes = comment.replies?.nodes || [];
+  const limit = replyLimits.get(comment.id) || initialReplyCount;
+  const posted = new Map(
+    (postedReplies.get(comment.id) || []).map((reply) => [reply.id, reply]),
+  );
+  const visible = nodes.filter(({ id }, index) => {
+    const ownReply = posted.delete(id);
+    return index < limit || id === editor.value.id || ownReply;
+  });
+  return [...visible, ...posted.values()];
+}
+
+function hasMoreReplies(comment) {
+  return (
+    comment.replies?.pageInfo?.hasNextPage ||
+    comment.replies?.nodes?.length >
+      (replyLimits.get(comment.id) || initialReplyCount)
+  );
+}
+
 function toggleReplies(comment) {
-  if (openReplies.delete(comment.id)) return;
-  openReplies.add(comment.id);
-  if (!comment.replies?.nodes || replyErrors.has(comment.id)) {
-    void loadReplies(comment);
+  const open = !repliesOpen(comment);
+  replyVisibility.set(comment.id, open);
+  if (!open) return;
+  const limit = replyLimits.get(comment.id) || initialReplyCount;
+  if (
+    !comment.replies?.nodes ||
+    replyErrors.has(comment.id) ||
+    (comment.replies.pageInfo?.hasNextPage &&
+      comment.replies.nodes.length < limit)
+  ) {
+    void loadReplies(comment, { limit });
   }
 }
 
-async function loadReplies(comment) {
+async function loadReplies(comment, { limit, editTarget } = {}) {
   if (replyRequests.has(comment.id)) return;
+  if (
+    limit === undefined &&
+    comment.replies?.nodes?.length >
+      (replyLimits.get(comment.id) || initialReplyCount)
+  ) {
+    replyLimits.set(comment.id, comment.replies.nodes.length);
+    return;
+  }
   const controller = new AbortController();
   replyRequests.set(comment.id, controller);
   replyErrors.delete(comment.id);
   try {
-    const cursor = comment.replies?.pageInfo?.endCursor;
-    const { replies, includePermissions } = await request({
-      parent: comment.id,
-      ...(cursor && { cursor }),
-    }, { signal: controller.signal });
-    if (!controller.signal.aborted && comments.value.includes(comment)) {
+    do {
+      const cursor = comment.replies?.pageInfo?.endCursor;
+      const { replies, includePermissions } = await request(
+        { parent: comment.id, ...(cursor && { cursor }) },
+        { signal: controller.signal },
+      );
+      if (controller.signal.aborted || !comments.value.includes(comment))
+        return;
+      const existing = comment.replies?.nodes || [];
+      const seen = new Set(existing.map(({ id }) => id));
       comment.replies = {
         ...replies,
         totalCount: replies.totalCount ?? comment.replies?.totalCount,
-        nodes: [...(comment.replies?.nodes || []), ...replies.nodes],
-        includePermissions: comment.replies?.includePermissions !== false && includePermissions,
+        nodes: [
+          ...existing,
+          ...replies.nodes.filter(({ id }) => !seen.has(id)),
+        ],
+        includePermissions:
+          comment.replies?.includePermissions !== false && includePermissions,
       };
-    }
+      if (limit === undefined)
+        replyLimits.set(comment.id, comment.replies.nodes.length);
+      if (replies.pageInfo?.endCursor === cursor) break;
+    } while (
+      comment.replies.pageInfo?.hasNextPage &&
+      (comment.replies.nodes.length < limit ||
+        (editTarget &&
+          !comment.replies.nodes.some(({ id }) => id === editTarget)))
+    );
   } catch (failure) {
     if (!controller.signal.aborted) {
       replyErrors.add(comment.id);
       report(failure);
     }
   } finally {
-    if (replyRequests.get(comment.id) === controller) replyRequests.delete(comment.id);
+    if (replyRequests.get(comment.id) === controller)
+      replyRequests.delete(comment.id);
   }
 }
 
@@ -567,6 +650,30 @@ async function mutate(action, options) {
     );
     submission = null;
     if (!active || revision !== moriSession.revision) return false;
+    if (action === "reply") {
+      replyVisibility.set(options.id, true);
+      if (result.reply?.id) {
+        const previous = postedReplies.get(options.id) || [];
+        postedReplies.set(options.id, [...previous, result.reply]);
+      }
+    } else if (action === "delete" || action === "edit") {
+      for (const [parentId, replies] of postedReplies) {
+        if (action === "delete" && parentId === options.id)
+          postedReplies.delete(parentId);
+        else if (replies.some(({ id }) => id === options.id)) {
+          postedReplies.set(
+            parentId,
+            action === "delete"
+              ? replies.filter(({ id }) => id !== options.id)
+              : replies.map((reply) =>
+                  reply.id === options.id
+                    ? { ...reply, body: options.body }
+                    : reply,
+                ),
+          );
+        }
+      }
+    }
     if (result.count != null || result.delta) {
       const source =
         props.scope === "article" || props.scope === "article-paragraph"
@@ -627,6 +734,11 @@ onBeforeUnmount(() => {
   cancelReplyRequests();
 });
 watch(sort, () => void load());
+watch(
+  () => moriSession.revision,
+  () => postedReplies.clear(),
+);
+
 watch(
   () => [moriSession.checking, moriSession.revision, preview?.revision],
   ([checking]) => {

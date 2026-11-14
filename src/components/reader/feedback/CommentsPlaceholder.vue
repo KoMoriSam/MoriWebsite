@@ -45,7 +45,7 @@
               v-for="order in orders"
               :key="order"
               class="tab whitespace-nowrap"
-              :class="{ 'tab-active': order === 'oldest' }"
+              :class="{ 'tab-active': order === defaultCommentSort }"
             >
               <span class="skeleton skeleton-text">{{ t("comments.sort." + order) }}</span>
             </span>
@@ -111,6 +111,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { defaultCommentSort } from "@/../shared/discussions.js";
 import CommentEditor from "@/components/comments/interaction/CommentEditor.vue";
 import { useLocale } from "@/i18n";
 import { moriSession } from "@/composables/auth/useMoriAuth";
