@@ -1,8 +1,9 @@
 import { reactive, watch } from "vue";
-import { siteOwnerLogin } from "@/../shared/discussions.js";
+import { commentHeat, initialReplyCount, siteOwnerLogin } from "@/../shared/discussions.js";
 import { COMMENT_SAMPLES } from "./comment-samples";
 
 const discussionUrl = "https://github.com/example/comment-preview/discussions/1";
+const commenterLogin = "a-reader-with-a-very-long-github-name";
 const pageSize = 3;
 const replyPageSize = 2;
 
@@ -37,6 +38,7 @@ export function useCommentPreview() {
     identity: "owner",
     locked: false,
     minimized: false,
+    minimizedReason: "",
     edited: true,
     showReactions: true,
     showReplies: true,
@@ -53,6 +55,7 @@ export function useCommentPreview() {
   let firstCommentId;
   const authState = reactive({
     get authenticated() { return settings.identity !== "guest"; },
+    get profile() { return this.authenticated ? { login: viewer() } : null; },
     checking: false,
     revision: 0,
   });
@@ -98,11 +101,12 @@ export function useCommentPreview() {
     ]);
     comments = [
       first,
-      entry("a-reader-with-a-very-long-github-name", "这条评论用来检查长用户名和时间是否自然换行。", 18),
+      entry(commenterLogin, "这条评论用来检查长用户名和时间是否自然换行。", 18),
       entry(null, "这条评论没有可显示的作者资料。", 10),
       entry("preview-reader", "翻页后看到的评论。", 4),
       entry(siteOwnerLogin, "这是讨论串的最后一条示例。", 1),
     ];
+    first.reactionGroups.push({ content: "ROCKET", count: 3, viewers: new Set() });
     extraComments = new Set(comments.slice(pageSize).map(({ id }) => id));
     preview.draft = null;
     preview.revision++;
@@ -115,6 +119,7 @@ export function useCommentPreview() {
       settings.status,
       settings.locked,
       settings.minimized,
+      settings.minimizedReason,
       settings.edited,
       settings.showReactions,
       settings.showReplies,
@@ -124,7 +129,11 @@ export function useCommentPreview() {
     () => preview.revision++,
   );
 
-  const viewer = () => settings.identity === "owner" ? siteOwnerLogin : "preview-reader";
+  const viewer = () => {
+    if (settings.identity === "owner") return siteOwnerLogin;
+    if (settings.identity === "commenter") return commenterLogin;
+    return "preview-reader";
+  };
   const signedIn = () => preview.auth.state.authenticated;
   function formatReactions(groups) {
     return groups
@@ -153,12 +162,22 @@ export function useCommentPreview() {
       ...item,
       get body() { return first ? settings.body : item.body; },
       isMinimized: first && settings.minimized,
+      minimizedReason: first && settings.minimized ? settings.minimizedReason || null : null,
       lastEditedAt: settings.edited ? item.lastEditedAt : null,
       viewerCanUpdate: canManage,
       viewerCanDelete: canManage,
       viewerCanReact: !settings.locked,
       reactionGroups: formatReactions(item.reactionGroups),
-      replies: reply ? undefined : { totalCount: visibleReplies(item).length },
+      replies: reply ? undefined : replyConnection(visibleReplies(item), 0, initialReplyCount),
+    };
+  }
+
+  function replyConnection(replies, offset, size) {
+    const end = offset + size;
+    return {
+      totalCount: replies.length,
+      nodes: replies.slice(offset, end).map((reply) => formatEntry(reply, true)),
+      pageInfo: { hasNextPage: end < replies.length, endCursor: String(end) },
     };
   }
 
@@ -167,6 +186,7 @@ export function useCommentPreview() {
     const parent = comments.find((item) => item.replies.some((reply) => reply.id === id));
     const items = parent?.replies ?? comments;
     const item = items.find((comment) => comment.id === id);
+    let postedReply;
     if (id && !item) throw new Error("COMMENT_PREVIEW_MISSING");
     if (action === "post") {
       if (settings.status === "empty") {
@@ -175,7 +195,9 @@ export function useCommentPreview() {
       }
       comments.push(entry(viewer(), body));
     } else if (action === "reply") {
-      item.replies.push(entry(viewer(), body));
+      const reply = entry(viewer(), body);
+      item.replies.push(reply);
+      postedReply = formatEntry(reply, true);
     } else if (action === "edit") {
       item.body = body;
       if (id === firstCommentId) settings.body = body;
@@ -197,7 +219,7 @@ export function useCommentPreview() {
       if (action === "add") group.viewers.add(viewer());
       else group.viewers.delete(viewer());
     }
-    return { ...counts(), delta: counts().count - before };
+    return { ...counts(), delta: counts().count - before, reply: postedReply };
   }
 
   async function request(parameters, { signal, body } = {}) {
@@ -224,14 +246,9 @@ export function useCommentPreview() {
     if (parameters.parent) {
       const parent = comments.find(({ id }) => id === parameters.parent);
       const replies = parent ? visibleReplies(parent) : [];
-      const end = offset + replyPageSize;
       return {
         includePermissions,
-        replies: {
-          totalCount: replies.length,
-          nodes: replies.slice(offset, end).map((reply) => formatEntry(reply, true)),
-          pageInfo: { hasNextPage: end < replies.length, endCursor: String(end) },
-        },
+        replies: replyConnection(replies, offset, replyPageSize),
       };
     }
 
@@ -239,9 +256,12 @@ export function useCommentPreview() {
     const newest = parameters.sort === "newest";
     if (newest) items.reverse();
     if (parameters.sort === "top") {
-      const votes = (item) => formatReactions(item.reactionGroups)
-        .find(({ content }) => content === "THUMBS_UP")?.users.totalCount ?? 0;
-      items.sort((a, b) => votes(b) - votes(a));
+      const heat = (item) => commentHeat({
+        isMinimized: item.id === firstCommentId && settings.minimized,
+        reactionGroups: formatReactions(item.reactionGroups),
+        replies: { totalCount: visibleReplies(item).length },
+      });
+      items.sort((a, b) => heat(b) - heat(a));
     }
     const end = offset + pageSize;
     const more = end < items.length;

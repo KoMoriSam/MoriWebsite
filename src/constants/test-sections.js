@@ -38,7 +38,7 @@ export const TEST_SECTIONS = [
   {
     id: "comments",
     label: "评论区",
-    title: "评论区布局与 Markdown",
+    title: "评论区",
     description: "切换评论状态、身份和宽度，预览 Markdown 并操作本地模拟评论。",
   },
   {

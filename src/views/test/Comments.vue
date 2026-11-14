@@ -30,6 +30,7 @@
             <select v-model="settings.identity" class="select select-sm w-full">
               <option value="guest">未登录</option>
               <option value="member">已登录读者</option>
+              <option value="commenter">评论本人</option>
               <option value="owner">站长 / 作者</option>
             </select>
           </label>
@@ -39,6 +40,13 @@
               <option :value="0">无</option>
               <option :value="600">0.6 秒</option>
               <option :value="2000">2 秒</option>
+            </select>
+          </label>
+          <label class="col-span-2 grid min-w-0 gap-1">
+            评论输入框位置
+            <select v-model="editorPosition" class="select select-sm w-full">
+              <option value="top">顶部</option>
+              <option value="bottom">底部</option>
             </select>
           </label>
           <label class="col-span-2 grid min-w-0 gap-2">
@@ -52,6 +60,10 @@
               class="range range-xs w-full"
             />
           </label>
+          <label class="flex items-center gap-2">
+            <input v-model="compactEditor" type="checkbox" class="checkbox checkbox-sm" />
+            紧凑输入栏
+          </label>
           <label
             v-for="{ key, label } in switches"
             :key="key"
@@ -63,6 +75,33 @@
               class="checkbox checkbox-sm"
             />
             {{ label }}
+          </label>
+          <button
+            v-if="scene.mode === 'dialog'"
+            type="button"
+            class="btn btn-sm col-span-2"
+            @click="dialogOpen = true"
+          >
+            打开实际弹窗
+          </button>
+          <label
+            v-if="settings.minimized"
+            class="col-span-2 grid min-w-0 gap-1"
+          >
+            隐藏原因
+            <select
+              v-model="settings.minimizedReason"
+              class="select select-sm w-full"
+            >
+              <option value="">未提供原因</option>
+              <option
+                v-for="reason in commentMinimizedReasons"
+                :key="reason"
+                :value="reason"
+              >
+                {{ t("comments.minimizedReasons." + reason) }}
+              </option>
+            </select>
           </label>
         </fieldset>
 
@@ -96,39 +135,29 @@
       </div>
 
       <section class="min-w-0" aria-label="评论区预览">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-sm font-semibold">{{ scene.label }}</h2>
-          <button
-            v-if="scene.mode === 'dialog'"
-            type="button"
-            class="btn btn-sm"
-            @click="dialogOpen = true"
-          >
-            打开实际弹窗
-          </button>
-        </div>
-
         <div
           v-if="!dialogOpen"
           class="mx-auto w-full min-w-0"
+          :class="{
+            'flex h-dvh flex-col': scene.mode === 'dialog',
+            'lg:flex lg:h-dvh lg:flex-col': scene.mode === 'sidebar',
+          }"
           :style="{ maxWidth: `${width}px` }"
         >
           <ParagraphQuote
             v-if="scene.scope.endsWith('-paragraph')"
             :html="paragraphQuote"
             lang="zh-CN"
-            class="mb-4"
+            class="mb-4 shrink-0"
           />
           <Thread
             :key="threadKey"
             :scope="scene.scope"
             :target="target"
             :scroll-mode="scene.mode"
+            :compact-editor="compactEditor"
+            :editor-position="editorPosition"
             :preview="preview"
-            :class="{
-              'max-h-[70dvh]': scene.mode === 'dialog',
-              'lg:max-h-[70dvh]': scene.mode === 'sidebar',
-            }"
           />
         </div>
       </section>
@@ -136,6 +165,7 @@
 
     <Modal
       :visible="dialogOpen"
+      :panel-class="['h-[82dvh]', RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS]"
       button-mode="close"
       scroll-content="nested"
       @close="dialogOpen = false"
@@ -155,6 +185,8 @@
           :scope="scene.scope"
           :target="target"
           scroll-mode="dialog"
+          :compact-editor="compactEditor"
+          :editor-position="editorPosition"
           :preview="preview"
         />
       </template>
@@ -164,20 +196,20 @@
 
 <script setup>
 import { computed, ref, shallowRef, watch } from "vue";
+import { commentMinimizedReasons } from "@/../shared/discussions.js";
+import { useLocale } from "@/i18n";
 import Thread from "@/components/comments/Thread.vue";
 import Modal from "@/components/interaction/overlay/Modal.vue";
+import { RESPONSIVE_COMMENT_DIALOG_SIZE_CLASS } from "@/constants/reader-layout";
 import ParagraphQuote from "@/components/reader/display/ParagraphQuote.vue";
 import PageShell from "./PageShell.vue";
 import { COMMENT_SAMPLES } from "./comment-samples";
 import { useCommentPreview } from "./useCommentPreview";
 
 const scenes = [
-  { label: "文章评论侧栏", scope: "article", mode: "sidebar" },
-  { label: "本章说侧栏", scope: "chapter", mode: "sidebar" },
-  { label: "本章说弹窗", scope: "chapter", mode: "dialog" },
-  { label: "文章段评弹窗", scope: "article-paragraph", mode: "dialog" },
-  { label: "小说段评弹窗", scope: "novel-paragraph", mode: "dialog" },
-  { label: "书评（正文内）", scope: "book" },
+  { label: "侧栏", scope: "article", mode: "sidebar" },
+  { label: "弹窗", scope: "article-paragraph", mode: "dialog" },
+  { label: "正文流", scope: "book" },
 ];
 const switches = [
   { key: "locked", label: "锁定讨论" },
@@ -191,7 +223,10 @@ const paragraphQuote =
   "<p>风沿着窗缝钻进房间，<em>纸页响了一声</em>。她没有抬头。</p>";
 
 const { settings, preview, reset } = useCommentPreview();
+const { t } = useLocale();
 const scene = shallowRef(scenes[0]);
+const editorPosition = ref("bottom");
+const compactEditor = ref(false);
 const width = ref(600);
 const dialogOpen = ref(false);
 const sampleIndex = ref(0);
