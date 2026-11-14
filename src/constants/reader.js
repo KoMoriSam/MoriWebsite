@@ -22,6 +22,7 @@ export const MOBILE_READING_MODE_OPTIONS = Object.freeze([
 ]);
 
 export const MOBILE_READING_MODE_SETTING = "MOBILE_READING_MODE";
+export const DEFAULT_MOBILE_READING_MODE = MOBILE_READING_MODES.PAGED;
 
 export const MOBILE_READER_WHEEL_SETTING = "MOBILE_READER_WHEEL_PAGINATION";
 export const MOBILE_READER_VOLUME_SETTING = "MOBILE_READER_VOLUME_PAGINATION";
@@ -64,7 +65,9 @@ export const getReaderBackgroundImage = (id) =>
   READER_BACKGROUND_IMAGES.find((image) => image.id === id);
 
 export const getReaderBackgroundImageUrl = (id) =>
-  getReaderBackgroundImage(id) ? getImageUrl(`/assets/images/backgrounds/${id}.webp`) : "";
+  getReaderBackgroundImage(id)
+    ? getImageUrl(`/assets/images/backgrounds/${id}.webp`)
+    : "";
 
 export const MOBILE_READER_ZONE_ACTIONS = Object.freeze([
   { value: "none", label: "无操作" },
@@ -98,7 +101,7 @@ export const READER_SYSTEM_PRESETS = Object.freeze([
     mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-kai",
-      fontSize: 20,
+      fontSize: 18,
       fontGap: 0,
       lineHeight: 1.6,
       paraHeight: 0.5,
@@ -112,7 +115,7 @@ export const READER_SYSTEM_PRESETS = Object.freeze([
     mode: MOBILE_READING_MODES.PAGED,
     styles: {
       fontStyle: "font-fang",
-      fontSize: 20,
+      fontSize: 18,
       fontGap: 0,
       lineHeight: 1.6,
       paraHeight: 0.5,
@@ -175,7 +178,7 @@ export const READER_TYPOGRAPHY_CONTROLS = Object.freeze([
     label: "字体大小",
     shortLabel: "字号",
     storageKey: "STYLE_FONT_SIZE",
-    default: 20,
+    default: 18,
     min: 16,
     max: 32,
     step: 1,
@@ -233,13 +236,7 @@ export const STYLE_CONFIG_KEYS = Object.freeze([
     storageKey: "STYLE_FONT",
     default: "font-kai",
   }),
-  ...READER_TYPOGRAPHY_CONTROLS.map(({ key, storageKey, default: value }) =>
-    Object.freeze({
-      key,
-      storageKey,
-      default: value,
-    }),
-  ),
+  ...READER_TYPOGRAPHY_CONTROLS,
   Object.freeze({
     key: "colorTheme",
     storageKey: "STYLE_COLOR_THEME",
@@ -266,6 +263,32 @@ export const STYLE_CONFIG_KEYS = Object.freeze([
     default: "",
   }),
 ]);
+
+// Derived from the setting descriptors used by the Store and controls.
+export const READER_STYLE_DEFAULTS = Object.freeze(
+  Object.fromEntries(STYLE_CONFIG_KEYS.map(({ key, default: value }) => [key, value])),
+);
+
+export const DEFAULT_READER_FALLBACK_FONT = "font-sans";
+
+// Older mobile presets stored the chosen colors or image without a theme/type.
+export function getReaderPresetAppearance(styles = {}) {
+  const { colorTheme, textColor, backgroundColor, backgroundType, backgroundImage } = styles;
+  if ([colorTheme, textColor, backgroundColor, backgroundType, backgroundImage].every(
+    (value) => value === undefined,
+  )) return {};
+
+  const type = backgroundType ??
+    (backgroundImage ? "image" : READER_STYLE_DEFAULTS.backgroundType);
+  return {
+    colorTheme: colorTheme ??
+      (textColor || backgroundColor || backgroundImage ? "custom" : READER_STYLE_DEFAULTS.colorTheme),
+    textColor: textColor || READER_STYLE_DEFAULTS.textColor,
+    backgroundType: type,
+    backgroundColor: (type === "color" && backgroundColor) || READER_STYLE_DEFAULTS.backgroundColor,
+    backgroundImage: (type === "image" && backgroundImage) || READER_STYLE_DEFAULTS.backgroundImage,
+  };
+}
 
 export const FONTS = Object.freeze([
   Object.freeze({

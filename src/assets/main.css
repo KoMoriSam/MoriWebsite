@@ -1,7 +1,5 @@
 @import "./font/index.css";
 
-@import "./highlight.css";
-
 @import "tailwindcss";
 
 @plugin "daisyui";
@@ -9,6 +7,7 @@
 
 @plugin "@tailwindcss/typography";
 
+@import "./markdown.css";
 @import "./animate.css";
 @import "./font/remixicon.generated.css";
 
@@ -61,12 +60,6 @@
 @utility drag-none {
   -webkit-user-drag: none;
   user-select: none;
-}
-
-@utility code-block {
-  @apply mockup-code w-full relative scrollbar-thin pb-0
-  border border-base-300
-  bg-(--hljs-background) text-(--hljs-foreground);
 }
 
 @layer base {

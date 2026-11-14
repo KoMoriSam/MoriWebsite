@@ -11,13 +11,13 @@
     contain
   >
     <template #title>
-      <span class="flex min-w-0 items-start gap-1.5">
+      <span class="flex min-w-0 items-start gap-(--md-component-gap)">
         <span
           class="avatar mt-0.5 shrink-0"
           :aria-busy="avatarLoading"
           aria-hidden="true"
         >
-          <span class="relative size-5 overflow-hidden rounded-full">
+          <span class="relative size-(--md-component-icon) overflow-hidden rounded-full">
             <span
               v-if="avatarLoading"
               class="skeleton absolute inset-0 rounded-full"
@@ -48,17 +48,17 @@
       </span>
     </template>
     <template #description>
-      <span class="block h-10" :aria-busy="!previewSettled">
+      <span class="block h-[2.8lh]" :aria-busy="!previewSettled">
         <span
           v-if="!previewSettled"
-          class="grid h-full content-center gap-1.5"
+          class="grid h-full content-center gap-(--md-component-gap)"
           aria-hidden="true"
         >
           <span
-            class="skeleton block h-3 w-full motion-reduce:animate-none"
+            class="skeleton block h-[0.8em] w-full motion-reduce:animate-none"
           ></span>
           <span
-            class="skeleton block h-3 w-4/5 motion-reduce:animate-none"
+            class="skeleton block h-[0.8em] w-4/5 motion-reduce:animate-none"
           ></span>
         </span>
         <span v-else class="line-clamp-2">{{
@@ -68,13 +68,13 @@
     </template>
     <template #meta>
       <span
-        class="grid h-8.5 w-full min-w-0 grid-cols-2 gap-x-1.5 gap-y-0.5 @min-[30rem]/github-card:h-4 @min-[30rem]/github-card:grid-cols-[minmax(0,1fr)_auto_auto]"
+        class="grid min-h-[2lh] w-full min-w-0 grid-cols-2 gap-x-1.5 gap-y-0.5 @min-[30rem]/github-card:min-h-[1lh] @min-[30rem]/github-card:grid-cols-[minmax(0,1fr)_auto_auto]"
         :aria-busy="!previewSettled"
       >
         <CatalogMeta
           icon="ri-code-s-slash-line"
           :title="preview?.language || t('common.language')"
-          class="col-span-2 h-4 @min-[30rem]/github-card:col-span-1 [&>span]:truncate"
+          class="col-span-2 @min-[30rem]/github-card:col-span-1 [&>span]:truncate"
         >
           <span
             v-if="!previewSettled"
@@ -86,7 +86,7 @@
         <CatalogMeta
           icon="ri-star-line"
           :title="t('markdown.repository.stars')"
-          class="h-4 tabular-nums [&>span]:truncate"
+          class="tabular-nums [&>span]:truncate"
         >
           <span
             v-if="!previewSettled"
@@ -102,7 +102,7 @@
         <CatalogMeta
           icon="ri-git-fork-line"
           :title="t('markdown.repository.forks')"
-          class="h-4 tabular-nums [&>span]:truncate"
+          class="tabular-nums [&>span]:truncate"
         >
           <span
             v-if="!previewSettled"

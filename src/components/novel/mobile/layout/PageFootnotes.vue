@@ -2,7 +2,7 @@
   <aside
     v-if="notes.length"
     ref="rootRef"
-    class="page-footnotes markdown-content prose absolute inset-x-0 z-10 max-w-none overflow-y-auto"
+    class="page-footnotes markdown markdown-reading prose absolute inset-x-0 z-10 max-w-none overflow-y-auto"
     :class="{ 'page-footnotes-measure': measure }"
     :aria-label="translate('reader.footnotes.title')"
     data-reader-interactive
@@ -17,7 +17,7 @@
             :value="getNoteNumber(note.label)"
             class="footnote-item"
           >
-            <p class="text-justify text-pretty">{{ note.text }}</p>
+            <p>{{ note.text }}</p>
           </li>
         </ol>
       </section>
@@ -175,11 +175,6 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<!-- 与桌面正文使用同一份脚注字体、字号和 marker 规则。reader.css 是
-     scoped 样式，必须在本组件作用域内再次引入，不能依赖 Markdown.vue
-     的 scope 属性穿透到这个同级浮层。 -->
-<style scoped src="@/assets/reader.css"></style>
-
 <style scoped>
 .page-footnotes {
   bottom: var(--reader-page-padding-block);
@@ -192,34 +187,28 @@ onBeforeUnmount(() => {
   transform: translateY(var(--reader-footnote-baseline-shift, 0px));
 }
 
-.page-footnotes.markdown-content.prose
-  > .page-footnotes-content
-  > .footnotes-sep {
+.page-footnotes .footnotes-sep {
   margin-block: 0 calc(var(--para-font-size) * 0.25);
   margin-inline: 0;
   padding: 0;
 }
 
-.page-footnotes.markdown-content.prose .footnotes,
-.page-footnotes.markdown-content.prose .footnotes-list {
+.page-footnotes .footnotes,
+.page-footnotes .footnotes-list {
   margin: 0;
   padding-block: 0;
 }
 
-.page-footnotes.markdown-content.prose .footnotes-list {
-  padding-inline-start: 1.5em;
-}
-
-.page-footnotes.markdown-content.prose .footnote-item {
+.page-footnotes .footnote-item {
   margin: 0;
   padding: 0;
 }
 
-.page-footnotes.markdown-content.prose .footnote-item + .footnote-item {
+.page-footnotes .footnote-item + .footnote-item {
   margin-block-start: calc(var(--para-font-size) * 0.125);
 }
 
-.page-footnotes.markdown-content.prose .footnotes p {
+.page-footnotes .footnotes p {
   margin: 0;
   padding: 0;
 }

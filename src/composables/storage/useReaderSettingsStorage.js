@@ -1,74 +1,52 @@
+import { READER_LAYOUT_STYLE_KEYS, STYLE_CONFIG_KEYS } from "../../constants/reader.js";
 import { useHydratedStorage } from "./useHydratedStorage";
+
+const legacyKeyMapping = {
+  CONTENT_LINE_HEIGHT: "STYLE_LINE_HEIGHT",
+  CONTENT_PARA_HEIGHT: "STYLE_PARA_HEIGHT",
+};
+const numericKeys = new Set(
+  STYLE_CONFIG_KEYS
+    .filter(({ default: value }) => typeof value === "number")
+    .map(({ storageKey }) => storageKey),
+);
+export const LEGACY_READER_SETTING_KEYS = [
+  ...STYLE_CONFIG_KEYS
+    .filter(({ key }) => READER_LAYOUT_STYLE_KEYS.includes(key))
+    .map(({ storageKey }) => storageKey),
+  "NOVEL_CURRENT_COMPONENT",
+  "NOVEL_SIDE_CURRENT_COMPONENT",
+];
 
 export function useReaderSettingsStorage() {
   const { storage: READER_SETTINGS, ready } = useHydratedStorage("READER_SETTINGS", {});
 
-  // 旧键名到新键名的映射（包含重命名）
-  const keyMapping = {
-    // 直接映射的键
-    STYLE_FONT: "STYLE_FONT",
-    STYLE_FONT_GAP: "STYLE_FONT_GAP",
-    STYLE_FONT_SIZE: "STYLE_FONT_SIZE",
-    NOVEL_CURRENT_COMPONENT: "NOVEL_CURRENT_COMPONENT",
-    NOVEL_SIDE_CURRENT_COMPONENT: "NOVEL_SIDE_CURRENT_COMPONENT",
-
-    // 重命名的键
-    CONTENT_LINE_HEIGHT: "STYLE_LINE_HEIGHT",
-    CONTENT_PARA_HEIGHT: "STYLE_PARA_HEIGHT",
-  };
-
-  // 数值类型的键（需要转换）
-  const numberKeys = [
-    "STYLE_FONT_GAP",
-    "STYLE_FONT_SIZE",
-    "CONTENT_LINE_HEIGHT",
-    "CONTENT_PARA_HEIGHT",
-  ];
-
-  // 通用兼容性获取函数
   const getSetting = (key, defaultValue) => {
-    const newKey = keyMapping[key] || key;
+    const storageKey = legacyKeyMapping[key] || key;
+    const saved = READER_SETTINGS.value[storageKey];
+    if (saved !== undefined) return saved;
+    if (!ready.value || typeof window === "undefined") return defaultValue;
 
-    // 优先从新结构获取
-    if (READER_SETTINGS.value[newKey] !== undefined) {
-      return READER_SETTINGS.value[newKey];
-    }
-    if (!ready.value) return defaultValue;
-
-    // 尝试从旧键名获取（SSG 构建时跳过 localStorage）
-    let oldValue = null;
+    let legacy = null;
     try {
-      if (typeof window !== "undefined") oldValue = window.localStorage.getItem(key);
-    } catch { /* Continue with in-memory preferences. */ }
-    if (oldValue !== null) {
-      // 根据类型转换
-      let value = oldValue;
-      if (numberKeys.includes(key)) {
-        value =
-          key.includes("LINE_HEIGHT") || key.includes("PARA_HEIGHT")
-            ? parseFloat(oldValue)
-            : Number(oldValue);
-      }
-
-      // 自动迁移到新结构
-      READER_SETTINGS.value[newKey] = value;
-      return value;
+      legacy = window.localStorage.getItem(key);
+    } catch {
+      // Storage restrictions must not prevent reading in this session.
     }
+    if (legacy === null) return defaultValue;
 
-    // 初始化默认值到新结构，确保后续引用修改能被持久化
-    READER_SETTINGS.value[newKey] = defaultValue;
-    return READER_SETTINGS.value[newKey];
+    if (numericKeys.has(key)) {
+      const value = legacy.trim() ? Number(legacy) : NaN;
+      if (!Number.isFinite(value)) return defaultValue;
+      legacy = value;
+    }
+    READER_SETTINGS.value[storageKey] = legacy;
+    return legacy;
   };
 
-  // 通用设置函数
   const setSetting = (key, value) => {
-    const newKey = keyMapping[key] || key;
-    READER_SETTINGS.value[newKey] = value;
+    READER_SETTINGS.value[legacyKeyMapping[key] || key] = value;
   };
 
-  return {
-    READER_SETTINGS,
-    getSetting,
-    setSetting,
-  };
+  return { READER_SETTINGS, getSetting, setSetting };
 }

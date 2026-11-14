@@ -80,8 +80,8 @@
             >
               正文排版
               <select v-model="customLayout" class="select select-xs w-30">
-                <option :value="MARKDOWN_MODE_STANDARD">标准排版</option>
-                <option :value="MARKDOWN_MODE_READER">阅读器排版</option>
+                <option value="standard">标准排版</option>
+                <option value="reading">阅读器排版</option>
               </select>
             </label>
 
@@ -237,7 +237,8 @@
         >
           <Renderer
             ref="markdownPreviewRef"
-            :mode="rendererMode"
+            :mode="previewMode"
+            :layout="previewLayoutMode"
             :custom-markdown="customMarkdown"
             :content="markdownContent"
             :header-data="markdownHeaderData"
@@ -298,6 +299,7 @@ import { useArticleApi } from "@/services/api-articles";
 import { createArticleWikiLinkResolver } from "@/utils/blog/article-wiki-links";
 import { WIKI_LINK_RESOLVER } from "@/utils/markdown/markdown-it-wikilink";
 import {
+  MARKDOWN_MODE_CUSTOM,
   MARKDOWN_MODE_READER,
   MARKDOWN_MODE_STANDARD,
 } from "@/utils/markdown/render-markdown";
@@ -322,10 +324,10 @@ const textContext = ref({});
 const modeOptions = [
   { value: MARKDOWN_MODE_STANDARD, label: "标准" },
   { value: MARKDOWN_MODE_READER, label: "阅读器" },
-  { value: "custom", label: "自定义" },
+  { value: MARKDOWN_MODE_CUSTOM, label: "自定义" },
 ];
 const previewMode = ref(MARKDOWN_MODE_READER);
-const customLayout = ref(MARKDOWN_MODE_STANDARD);
+const customLayout = ref("standard");
 
 // 正文尺寸档位：range 用下标，业务值仍是 'sm' | 'base' | ...
 const sizeOptions = [
@@ -415,12 +417,14 @@ const customOptions = reactive({
   typographer: true,
 });
 const customExtensions = ref(["alerts", "code", "wikiLinks", "tables"]);
-const isCustomPreview = computed(() => previewMode.value === "custom");
-const rendererMode = computed(() =>
-  isCustomPreview.value ? customLayout.value : previewMode.value,
+const isCustomPreview = computed(() => previewMode.value === MARKDOWN_MODE_CUSTOM);
+const previewLayoutMode = computed(() =>
+  isCustomPreview.value
+    ? customLayout.value
+    : previewMode.value === MARKDOWN_MODE_READER ? "reading" : "standard",
 );
 const isReaderPreview = computed(
-  () => rendererMode.value === MARKDOWN_MODE_READER,
+  () => previewLayoutMode.value === "reading",
 );
 watch(isReaderPreview, updatePreviewDimensions, { flush: "post" });
 const customMarkdown = computed(() =>

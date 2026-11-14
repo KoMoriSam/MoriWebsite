@@ -136,7 +136,9 @@
           <Renderer
             v-if="preview && body.trim()"
             :content="body"
-            mode="comment"
+            mode="custom"
+            :custom-markdown="COMMENT_MARKDOWN"
+            scope-anchors
             prose-size="sm"
             class="col-start-1 row-start-1 max-h-(--comment-editor-max-height,none) max-w-none overflow-y-auto p-3 wrap-anywhere scrollbar-thin"
             :class="{ 'min-h-0 max-h-none': expanded }"
@@ -265,6 +267,7 @@
 </template>
 
 <script setup>
+import { COMMENT_MARKDOWN } from "@/utils/comments/comment-markdown";
 import {
   computed,
   defineAsyncComponent,

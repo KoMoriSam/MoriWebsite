@@ -1,23 +1,19 @@
 <template>
   <header
-    class="flex shrink-0 select-none items-center justify-between gap-2 border-b border-base-300 bg-base-100 py-1 ps-3 pe-1"
+    class="markdown-code-header flex shrink-0 select-none items-center justify-between gap-(--md-component-gap,0.5rem) border-b border-base-300 bg-base-100 py-[calc(var(--md-component-gap,0.5rem)*0.5)] ps-(--md-component-padding,0.75rem) pe-[calc(var(--md-component-gap,0.5rem)*0.5)]"
   >
     <hgroup
-      class="flex min-w-0 items-center text-sm font-medium text-base-content"
+      class="flex min-w-0 items-center gap-(--md-component-gap,0.5rem) text-(length:--md-component-detail-size,0.875rem) leading-tight font-medium text-base-content"
     >
       <i
         :class="header.icon"
-        class="me-2 text-lg font-normal"
+        class="markdown-toolbar-icon font-normal"
         aria-hidden="true"
       ></i>
-      <h6 v-if="title" class="truncate">{{ title }}</h6>
-      <!-- <span
-        v-if="title && header.label"
-        class="badge badge-sm ms-2 shrink-0"
-      >
+      <h6 v-if="title" class="font-mono truncate">{{ title }}</h6>
+      <h6 v-else-if="header.label" class="font-mono font-bold truncate">
         {{ header.label }}
-      </span> -->
-      <h6 v-else-if="header.label" class="truncate">{{ header.label }}</h6>
+      </h6>
     </hgroup>
 
     <client-only>
@@ -98,3 +94,19 @@ const header = computed(() => {
   };
 });
 </script>
+
+<style scoped>
+.markdown-code-header {
+  --md-toolbar-icon: clamp(
+    0.75rem,
+    calc(var(--md-component-size, 1rem) * 0.75),
+    1rem
+  );
+}
+
+.markdown-code-header :deep(.markdown-toolbar-icon),
+.markdown-code-header :deep(.markdown-control > i) {
+  font-size: var(--md-toolbar-icon);
+  line-height: 1;
+}
+</style>

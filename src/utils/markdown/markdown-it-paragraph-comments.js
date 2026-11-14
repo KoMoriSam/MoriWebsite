@@ -203,7 +203,8 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
 
   const insertCommentTrigger = (commentable, trigger) => {
     if (!commentable.matches("li")) {
-      commentable.append(trigger);
+      const anchor = commentable.querySelector(":scope > a.header-anchor");
+      commentable.insertBefore(trigger, anchor);
       return;
     }
 
@@ -261,7 +262,7 @@ export const useParagraphComments = ({ enabled, resolver } = {}) => {
 
     const paragraphElement = findParagraphElement(paragraphId);
     const titleHtml = getParagraphTitleHtml(paragraphElement);
-    const reader = paragraphElement?.closest(".markdown-content");
+    const reader = paragraphElement?.closest(".markdown-reading");
     const titleNode = h("hgroup", { class: "space-y-1" }, [
       h("h3", { class: "text-base" }, translate("reader.paragraphComments.current")),
       h(ParagraphQuote, {

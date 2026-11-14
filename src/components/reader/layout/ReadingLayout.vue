@@ -133,7 +133,7 @@ const props = defineProps({
   tocSelector: {
     type: String,
     // 始终相对当前 Reader 的正文容器查询，避免多个阅读器或页面切换时
-    // 全局 #markdown-content 选择器命中旧节点。
+    // 全局 #markdown 选择器命中旧节点。
     default: "h1, h2, h3, h4",
   },
   aside: {
@@ -248,7 +248,7 @@ const resolvedGridClass = computed(() => {
 const getHeadingText = (element, index) => {
   const heading = element.cloneNode(true);
   heading
-    .querySelectorAll(".comment-trigger")
+    .querySelectorAll(".comment-trigger, .header-anchor")
     .forEach((trigger) => trigger.remove());
 
   return heading.textContent?.trim() || translate('reader.settings.heading', { p0: index + 1 });

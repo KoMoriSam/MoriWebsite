@@ -4,11 +4,11 @@ import { wikiLinkPlugin } from "./markdown-it-wikilink.js";
 
 export const MARKDOWN_MODE_READER = "reader";
 export const MARKDOWN_MODE_STANDARD = "standard";
-export const MARKDOWN_MODE_COMMENT = "comment";
+export const MARKDOWN_MODE_CUSTOM = "custom";
 export const MARKDOWN_MODES = [
   MARKDOWN_MODE_READER,
   MARKDOWN_MODE_STANDARD,
-  MARKDOWN_MODE_COMMENT,
+  MARKDOWN_MODE_CUSTOM,
 ];
 
 const MARKDOWN_OPTIONS = {
@@ -21,10 +21,8 @@ const MARKDOWN_OPTIONS = {
     linkify: true,
     typographer: true,
   },
-  [MARKDOWN_MODE_COMMENT]: {
+  [MARKDOWN_MODE_CUSTOM]: {
     html: false,
-    linkify: true,
-    breaks: true,
   },
 };
 
@@ -33,11 +31,13 @@ export const createMarkdownRenderer = ({
   plugins = [],
   resolveWikiLink,
   parserOptions,
-  wikiLinks = true,
-  linkCards = mode === MARKDOWN_MODE_READER || mode === MARKDOWN_MODE_COMMENT,
+  wikiLinks = mode !== MARKDOWN_MODE_CUSTOM,
+  linkCards = mode === MARKDOWN_MODE_READER,
 } = {}) => {
   const md = new MarkdownIt({
-    ...(MARKDOWN_OPTIONS[mode] || MARKDOWN_OPTIONS[MARKDOWN_MODE_READER]),
+    ...(Object.hasOwn(MARKDOWN_OPTIONS, mode)
+      ? MARKDOWN_OPTIONS[mode]
+      : MARKDOWN_OPTIONS[MARKDOWN_MODE_CUSTOM]),
     ...parserOptions,
   });
 

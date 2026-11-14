@@ -18,7 +18,8 @@ import { decrypt, hash, randomToken } from "../../workers/auth/crypto.js";
 import { findSession } from "../../workers/auth/session.js";
 import website from "../../workers/website.js";
 import raw from "../../workers/content.js";
-import { MARKDOWN_MODE_COMMENT, renderMarkdown } from "../../src/utils/markdown/render-markdown.js";
+import { COMMENT_MARKDOWN } from "../../src/utils/comments/comment-markdown.js";
+import { MARKDOWN_MODE_CUSTOM, renderMarkdown } from "../../src/utils/markdown/render-markdown.js";
 
 registerHooks({
   resolve(specifier, context, next) {
@@ -416,7 +417,7 @@ test("legacy discussion mapping, user permissions, reply counts and idempotent m
     assert.equal((await website.fetch(new Request(url), env)).status, 502);
     const safe = renderMarkdown(
       "<img src=x onerror=alert(1)> [x](javascript:alert%281%29) **bold**",
-      { mode: MARKDOWN_MODE_COMMENT },
+      { mode: MARKDOWN_MODE_CUSTOM, parserOptions: COMMENT_MARKDOWN.parserOptions },
     );
     assert.ok(!safe.includes("<img"));
     assert.ok(!safe.includes('href="javascript:'));

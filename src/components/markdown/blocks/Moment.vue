@@ -1,13 +1,13 @@
 <template>
   <section
-    class="not-prose font-sans"
+    class="not-prose markdown-block font-sans"
     data-markdown-moment
     :aria-label="translate('markdown.moment.postLabel', { p0: username })"
   >
     <!-- 动态作者 -->
     <header class="moments-author">
       <div class="avatar shrink-0">
-        <div class="w-8 sm:w-10 rounded-full">
+        <div class="markdown-avatar rounded-full">
           <img
             class="m-0!"
             v-bind="avatarAttrs(username)"
@@ -37,15 +37,15 @@
       <button
         v-if="isSelf(username)"
         type="button"
-        class="btn btn-ghost btn-circle btn-sm shrink-0"
+        class="btn btn-ghost btn-circle btn-sm markdown-control shrink-0"
         :aria-label="translate('markdown.moment.moreActions')"
       >
-        <i class="ri-more-2-line text-lg" aria-hidden="true"></i>
+        <i class="ri-more-2-line" aria-hidden="true"></i>
       </button>
     </header>
 
     <!-- 动态正文 -->
-    <article class="moments-content">
+    <article class="moments-content markdown-fragment">
       <RenderedContent :html="contentHtml" />
 
       <div v-if="images.length" class="moments-images">
@@ -66,7 +66,7 @@
     >
       <template v-for="action in actions" :key="action.label">
         <div class="moments-action">
-          <button type="button" class="btn btn-ghost btn-square btn-sm">
+          <button type="button" class="btn btn-ghost btn-square btn-sm markdown-control">
             <i :class="action.icon" aria-hidden="true"></i>
           </button>
           <span v-if="action.value" class="action-value">
@@ -88,7 +88,7 @@
           <!-- 一级评论 -->
           <div class="comment-item">
             <div class="avatar shrink-0">
-              <div class="w-8 rounded-full">
+              <div class="markdown-avatar rounded-full">
                 <img
                   class="m-0!"
                   v-bind="avatarAttrs(comment.username)"
@@ -96,7 +96,7 @@
                 />
               </div>
             </div>
-            <div class="comment-body">
+            <div class="comment-body markdown-fragment">
               <RenderedContent :html="commentHtml(comment)" />
             </div>
           </div>
@@ -109,7 +109,7 @@
               class="comment-item"
             >
               <div class="avatar shrink-0">
-                <div class="w-8 rounded-full">
+                <div class="markdown-avatar rounded-full">
                   <img
                     class="m-0!"
                     v-bind="avatarAttrs(reply.replier)"
@@ -117,7 +117,7 @@
                   />
                 </div>
               </div>
-              <div class="comment-body">
+              <div class="comment-body markdown-fragment">
                 <RenderedContent :html="replyHtml(reply)" />
               </div>
             </div>
@@ -128,7 +128,7 @@
       <!-- 发表评论 -->
       <!-- <form class="comment-composer" @submit.prevent>
         <div class="avatar shrink-0">
-          <div class="w-8 rounded-full">
+          <div class="markdown-avatar rounded-full">
             <img class="m-0!" :src="avatarFor('KoMoriSam')" alt="KoMoriSam" />
           </div>
         </div>
@@ -283,7 +283,9 @@ section[data-markdown-moment] {
 /* 作者信息 */
 
 .moments-author {
-  @apply flex items-center gap-3 p-3 pb-0;
+  @apply flex items-center;
+  gap: var(--md-component-padding);
+  padding: var(--md-component-padding) var(--md-component-padding) 0;
 }
 
 .moments-header {
@@ -292,11 +294,13 @@ section[data-markdown-moment] {
 
 .moments-header .header-title {
   @apply truncate font-bold leading-tight;
+  font-size: var(--md-component-detail-size);
 }
 
 .moments-header .header-info {
   @apply mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5
-    text-xs text-base-content/50;
+    text-base-content/50;
+  font-size: var(--md-component-meta-size);
 }
 
 .moments-header .header-info > * {
@@ -305,30 +309,30 @@ section[data-markdown-moment] {
 
 /* 动态正文 */
 
-.moments-content {
-  @apply p-3;
+.moments-content,
+.comment-body {
+  --md-block-gap: 0px;
+  --md-indent: 0px;
+  --md-link-hover-weight: 700;
 }
 
-.moments-content :deep(p) {
-  @apply my-0 indent-0 text-justify;
+.moments-content {
+  padding: var(--md-component-padding);
+  --md-text-size: var(--md-component-detail-size);
+  --md-align: justify;
+  --md-quote-padding: 0.75rem;
 }
 
 .moments-content :deep(blockquote) {
-  @apply my-2;
-}
-
-.moments-content :deep(blockquote p) {
-  @apply border-l-3 border-base-content/25 pl-3;
-}
-
-.moments-content :deep(a) {
-  @apply text-primary hover:font-bold;
+  margin-block: 0.5rem;
 }
 
 /* 图片布局 */
 
 .moments-content .moments-images {
-  @apply grid grid-cols-3 gap-2 pt-2;
+  @apply grid grid-cols-3;
+  gap: var(--md-component-gap);
+  padding-block-start: var(--md-component-gap);
 }
 
 .moments-content .moments-images:has(> :nth-child(4):last-child) {
@@ -343,7 +347,8 @@ section[data-markdown-moment] {
 
 .moments-actions {
   @apply flex justify-between items-center border-base-300
-    bg-base-200/50 px-3 py-1;
+    bg-base-200/50;
+  padding: calc(var(--md-component-gap) * 0.5) var(--md-component-padding);
 }
 
 .moments-action {
@@ -355,13 +360,16 @@ section[data-markdown-moment] {
 }
 
 .moments-actions .action-value {
-  @apply text-xs opacity-60;
+  @apply opacity-60;
+  font-size: var(--md-component-meta-size);
 }
 
 /* 评论区 */
 
 .moments-comments {
-  @apply p-3 bg-base-200/50 gap-2;
+  @apply bg-base-200/50;
+  padding: var(--md-component-padding);
+  gap: var(--md-component-gap);
 }
 
 /* 评论输入框 */
@@ -400,11 +408,12 @@ section[data-markdown-moment] {
 /* RenderedContent 内部评论样式 */
 
 .moments-comments :deep(p) {
-  @apply my-0 indent-0 flex flex-col;
+  @apply flex flex-col;
 }
 
 .moments-comments :deep(.comments-info) {
   @apply mr-1 inline-flex items-baseline gap-1;
+  font-size: var(--md-component-detail-size);
 }
 
 .moments-comments :deep(.user-name) {
@@ -420,7 +429,4 @@ section[data-markdown-moment] {
   @apply mx-1 font-normal text-base-content/50;
 }
 
-.moments-comments :deep(a) {
-  @apply text-primary hover:font-bold;
-}
 </style>

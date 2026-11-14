@@ -334,7 +334,7 @@ export const createReaderTextContext = ({
     block =
       target.closest("[data-markdown-code-block], th, td") ||
       target.closest(TEXT_BLOCK_SELECTOR) ||
-      target.closest("table, .markdown-content > div");
+      target.closest("table, .markdown-reading > div");
     if (block === root || !root.contains(block)) block = null;
   }
   const selectedText = selectionDetails?.text || pointedFormula?.text || "";

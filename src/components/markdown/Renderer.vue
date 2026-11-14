@@ -1,21 +1,18 @@
 <template>
   <article
-    :lang="lang || (isReaderMode ? 'zh-CN' : undefined)"
+    :lang="lang || (readingLayout ? 'zh-CN' : undefined)"
     ref="articleRef"
-    :id="isCommentMode ? undefined : contentId"
+    :id="scopeAnchors ? undefined : contentId"
     :class="[
       {
-        'markdown-content': isReaderMode,
-        'markdown-standard': !isReaderMode,
-        'markdown-comment': isCommentMode,
-        'max-w-full': isReaderMode,
-        'opacity-50': isReaderMode && markdownPreparing,
-        'reader-colors': isReaderMode && useReaderColors,
+        'markdown-reading max-w-full': readingLayout,
+        'opacity-50': readingLayout && markdownPreparing,
+        'reader-colors': readingLayout && useReaderColors,
       },
-      isReaderMode ? styleConfigs.fontClass || styleConfigs.fontStyle : '',
+      readingLayout ? readerFontClass : '',
       proseSizeClass,
     ]"
-    class="prose min-w-0 w-full transition-opacity prose-blockquote:[quotes:none] prose-blockquote:font-serif prose-blockquote:font-light prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline prose-a:hover:underline"
+    class="markdown prose min-w-0 w-full transition-opacity"
     :style="articleStyle"
     @click="hasImagePreview && handleArticleClick($event)"
     @keydown="hasImagePreview && handleArticleKeydown($event)"
@@ -34,10 +31,10 @@
         :key="headerData.uuid"
         :html="page.html"
         :resolver="markdownComponentResolver"
-        :scope-anchors="isCommentMode"
+        :scope-anchors="scopeAnchors"
       />
 
-      <h1 v-if="isReaderMode && !renderedPages.length">
+      <h1 v-if="readingLayout && !renderedPages.length">
         {{ translate("markdown.content.loadFailed") }}
       </h1>
     </template>
@@ -47,10 +44,6 @@
     <ImagePreview v-if="hasImagePreview" ref="imagePreviewRef" />
   </article>
 </template>
-
-<script>
-const commentRenderers = new WeakMap();
-</script>
 
 <script setup>
 import { useLocale } from "@/i18n";
@@ -80,11 +73,12 @@ import RenderedContent from "@/components/markdown/RenderedContent.vue";
 import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
 import {
   MARKDOWN_MODES,
-  MARKDOWN_MODE_COMMENT,
   MARKDOWN_MODE_READER,
   createMarkdownRenderer,
-  renderMarkdown,
 } from "@/utils/markdown/render-markdown";
+import { resolveMarkdownExtensions } from "@/utils/markdown/markdown-extensions";
+import { READER_STYLE_DEFAULTS } from "@/constants/reader";
+import { readerTypographyStyle } from "@/utils/reader/reader-typography";
 import { injectMarkdownSearchAnchors } from "@/utils/markdown/search-anchors";
 import { loadMathJaxPlugin } from "@/utils/markdown/mathjax-svg";
 import { projectMarkdownComponentProps } from "@/utils/markdown/markdown-component-props";
@@ -98,6 +92,12 @@ const props = defineProps({
     default: MARKDOWN_MODE_READER,
     validator: (value) => MARKDOWN_MODES.includes(value),
   },
+  layout: {
+    type: String,
+    default: "standard",
+    validator: (value) => ["standard", "reading"].includes(value),
+  },
+  scopeAnchors: Boolean,
   customMarkdown: {
     type: Object,
     default: null,
@@ -166,15 +166,7 @@ const props = defineProps({
   // 样式配置
   styleConfigs: {
     type: Object,
-    default: () => ({
-      fontStyle: "font-kai", // 字体样式类名
-      fontClass: "font-kai",
-      fontFamily: "",
-      fontSize: 22, // 字体大小(px)
-      fontGap: 0, // 字间距
-      lineHeight: 1.6, // 行间距
-      paraHeight: 0.5, // 段间距
-    }),
+    default: () => READER_STYLE_DEFAULTS,
   },
   useReaderColors: {
     type: Boolean,
@@ -184,20 +176,15 @@ const props = defineProps({
 
 const emit = defineEmits(["refresh", "render-ready"]);
 const wikiLinkResolver = inject(WIKI_LINK_RESOLVER, null);
-const isReaderMode = computed(() => props.mode === MARKDOWN_MODE_READER);
-const isCommentMode = computed(() => props.mode === MARKDOWN_MODE_COMMENT);
-const hasExtendedMarkdown = computed(() => isReaderMode.value || isCommentMode.value);
-const customExtensions = computed(() => new Set(props.customMarkdown?.extensions));
-const hasExtension = (name, fallback = hasExtendedMarkdown.value) =>
-  props.customMarkdown ? customExtensions.value.has(name) : fallback;
+const readingLayout = computed(() => props.layout === "reading");
+const extensions = computed(() =>
+  resolveMarkdownExtensions(props.mode, props.customMarkdown),
+);
+const hasExtension = (name) => extensions.value.has(name);
 const hasImagePreview = computed(() => hasExtension("figures"));
-const hasParagraphComments = computed(() =>
-  hasExtension("paragraphComments", isReaderMode.value),
-);
+const hasParagraphComments = computed(() => hasExtension("paragraphComments"));
 const hasMath = computed(() => hasExtension("math"));
-const preloadCodeLanguages = computed(() =>
-  hasExtension("code", isReaderMode.value),
-);
+const preloadCodeLanguages = computed(() => hasExtension("code"));
 const PROSE_SIZE_CLASSES = {
   sm: "prose-sm",
   base: "prose-base",
@@ -206,37 +193,21 @@ const PROSE_SIZE_CLASSES = {
   "2xl": "prose-2xl",
 };
 const proseSizeClass = computed(() => {
-  if (isReaderMode.value) return "";
-
-  const size = String(props.proseSize || "")
-    .trim()
-    .replace(/^prose-/, "");
-  if (!size || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(size)) return "";
-
-  return PROSE_SIZE_CLASSES[size] || `prose-${size}`;
+  if (readingLayout.value) return "";
+  return (
+    PROSE_SIZE_CLASSES[String(props.proseSize).replace(/^prose-/, "")] || ""
+  );
 });
-const resolvedTextColor = computed(() => {
-  if (!isReaderMode.value || !props.useReaderColors) return "";
-  return props.styleConfigs.textColor || "";
-});
-const articleStyle = computed(() => {
-  if (!isReaderMode.value) return undefined;
-
-  return {
-    "--para-font-size": `${props.styleConfigs.fontSize}px`,
-    "--para-letter-spacing": `${props.styleConfigs.fontGap * 0.25}rem`,
-    "--para-line-height": props.styleConfigs.lineHeight,
-    "--para-margin-inline": `${
-      Math.max(0, Number(props.styleConfigs.paraHeight) || 0) *
-      Math.max(1, Number(props.styleConfigs.fontSize) || 22) *
-      Math.max(1, Number(props.styleConfigs.lineHeight) || 1.6)
-    }px`,
-    "--para-text-indent": `calc(${props.styleConfigs.fontSize * 2}px
-      + ${props.styleConfigs.fontGap * 0.7}rem)`,
-    "--reader-text-color": resolvedTextColor.value || undefined,
-    fontFamily: props.styleConfigs.fontFamily || undefined,
-  };
-});
+const readerFontClass = computed(() =>
+  props.styleConfigs.fontClass ||
+  props.styleConfigs.fontStyle ||
+  READER_STYLE_DEFAULTS.fontStyle,
+);
+const articleStyle = computed(() =>
+  readingLayout.value
+    ? readerTypographyStyle(props.styleConfigs, props.useReaderColors)
+    : undefined,
+);
 const PREVIEW_SVG_FILTER = "invert(1) hue-rotate(180deg)";
 const FALLBACK_IMAGE_WIDTH = 1200;
 const FALLBACK_IMAGE_HEIGHT = 800;
@@ -269,7 +240,6 @@ import { taskStatusPlugin } from "@/utils/markdown/markdown-it-task-status";
 import {
   collectFenceLanguages,
   hasMathSyntax,
-  highlightLazyPlugin,
   preloadHighlightLanguages,
 } from "@/utils/markdown/load-markdown-features";
 import {
@@ -449,9 +419,12 @@ const anchoredPages = computed(() =>
   combinedContent.value
     ? [
         {
-          source: isReaderMode.value
-            ? injectMarkdownSearchAnchors(combinedContent.value)
-            : combinedContent.value,
+          source:
+            hasExtension("searchAnchors") &&
+            (props.customMarkdown?.parserOptions?.html ??
+              props.mode === MARKDOWN_MODE_READER)
+              ? injectMarkdownSearchAnchors(combinedContent.value)
+              : combinedContent.value,
         },
       ]
     : [],
@@ -461,7 +434,8 @@ let renderReadyCycle = 0;
 let emittedRenderReadyCycle = -1;
 
 const syncRenderReady = async (cycle = renderReadyCycle) => {
-  if (import.meta.env.SSR || props.isLoading || !markdownFeaturesReady.value) return;
+  if (import.meta.env.SSR || props.isLoading || !markdownFeaturesReady.value)
+    return;
 
   await nextTick();
   if (cycle !== renderReadyCycle || emittedRenderReadyCycle === cycle) return;
@@ -469,7 +443,11 @@ const syncRenderReady = async (cycle = renderReadyCycle) => {
   const root = articleRef.value;
   if (!root) return;
   if (hasImagePreview.value) syncPreviewImages(root);
-  if (hasExtension("mermaid") && root.querySelector('[data-mermaid-viewer][aria-busy="true"]')) return;
+  if (
+    hasExtension("mermaid") &&
+    root.querySelector('[data-mermaid-viewer][aria-busy="true"]')
+  )
+    return;
 
   emittedRenderReadyCycle = cycle;
   emit("render-ready");
@@ -495,7 +473,7 @@ const resolveMarkdownComponent = ({
       ScrollableContainer,
       {
         key,
-        class: "markdown-table-scroll w-full max-w-full",
+        class: "markdown-table-scroll",
         layout: "block",
       },
       {
@@ -516,7 +494,7 @@ const resolveMarkdownComponent = ({
       ScrollableContainer,
       {
         key,
-        class: "markdown-table-scroll w-full max-w-full",
+        class: "markdown-table-scroll",
         layout: "block",
       },
       { default: () => h("section", nodeProps, children) },
@@ -561,61 +539,91 @@ const resolveMarkdownComponent = ({
     if (kind === "github") {
       return h(GithubRepositoryCard, { key, href, label, repository });
     }
-    const article = wikiLinkResolver?.value?.articleForPath?.(href.split("#", 1)[0]);
+    const article = wikiLinkResolver?.value?.articleForPath?.(
+      href.split("#", 1)[0],
+    );
     if (!article) return false;
     const publishedDate = normalizeArticleDate(article.date);
     const length = Number(article.length);
-    const hasLength = article.length != null && Number.isFinite(length) && length >= 0;
+    const hasLength =
+      article.length != null && Number.isFinite(length) && length >= 0;
     const readingTime = Math.max(1, Math.ceil(length / 300));
-    return h(CatalogCard, {
-      key,
-      to: href,
-      title: label || article.title,
-      titleTag: "div",
-      description: article.summary || "",
-      cover: sanitizeMarkdownResourceUrl(article.banner),
-      lang: article.lang,
-      compact: true,
-      class: "not-prose @container/article-card font-sans",
-    }, {
-      meta: () => h("span", {
-        class: "grid w-full min-w-0 grid-cols-2 gap-x-1.5 gap-y-0.5 @min-[30rem]/article-card:grid-cols-[minmax(0,1fr)_auto_auto]",
-      }, [
-        publishedDate
-          ? h(CatalogMeta, {
-              tag: "time",
-              datetime: publishedDate,
-              icon: "ri-calendar-line",
-              class: "col-span-2 @min-[30rem]/article-card:col-span-1 [&>span]:truncate",
-              title: formatDate(publishedDate),
-            }, { default: () => formatDate(publishedDate) })
-          : null,
-        hasLength
-          ? h(CatalogMeta, {
-              icon: "ri-t-box-line",
-              class: "col-start-1 tabular-nums @min-[30rem]/article-card:col-start-2 [&>span]:truncate",
-            }, {
-              default: () => translate(
-                "common.counts.characters",
-                { count: formatNumber(length) },
-                length,
-              ),
-            })
-          : null,
-        hasLength
-          ? h(CatalogMeta, {
-              icon: "ri-time-line",
-              class: "col-start-2 tabular-nums @min-[30rem]/article-card:col-start-3 [&>span]:truncate",
-            }, {
-              default: () => translate(
-                "common.counts.minutes",
-                { count: formatNumber(readingTime) },
-                readingTime,
-              ),
-            })
-          : null,
-      ]),
-    });
+    return h(
+      CatalogCard,
+      {
+        key,
+        to: href,
+        title: label || article.title,
+        titleTag: "div",
+        description: article.summary || "",
+        cover: sanitizeMarkdownResourceUrl(article.banner),
+        lang: article.lang,
+        compact: true,
+        class: "not-prose @container/article-card font-sans",
+      },
+      {
+        meta: () =>
+          h(
+            "span",
+            {
+              class:
+                "grid w-full min-w-0 grid-cols-2 gap-x-1.5 gap-y-0.5 @min-[30rem]/article-card:grid-cols-[minmax(0,1fr)_auto_auto]",
+            },
+            [
+              publishedDate
+                ? h(
+                    CatalogMeta,
+                    {
+                      tag: "time",
+                      datetime: publishedDate,
+                      icon: "ri-calendar-line",
+                      class:
+                        "col-span-2 @min-[30rem]/article-card:col-span-1 [&>span]:truncate",
+                      title: formatDate(publishedDate),
+                    },
+                    { default: () => formatDate(publishedDate) },
+                  )
+                : null,
+              hasLength
+                ? h(
+                    CatalogMeta,
+                    {
+                      icon: "ri-t-box-line",
+                      class:
+                        "col-start-1 tabular-nums @min-[30rem]/article-card:col-start-2 [&>span]:truncate",
+                    },
+                    {
+                      default: () =>
+                        translate(
+                          "common.counts.characters",
+                          { count: formatNumber(length) },
+                          length,
+                        ),
+                    },
+                  )
+                : null,
+              hasLength
+                ? h(
+                    CatalogMeta,
+                    {
+                      icon: "ri-time-line",
+                      class:
+                        "col-start-2 tabular-nums @min-[30rem]/article-card:col-start-3 [&>span]:truncate",
+                    },
+                    {
+                      default: () =>
+                        translate(
+                          "common.counts.minutes",
+                          { count: formatNumber(readingTime) },
+                          readingTime,
+                        ),
+                    },
+                  )
+                : null,
+            ],
+          ),
+      },
+    );
   }
   if (tagName === "markdown-mermaid") {
     return h(Mermaid, {
@@ -637,29 +645,21 @@ const componentExtensions = {
   "markdown-link-card": "linkCards",
   "markdown-mermaid": "mermaid",
 };
-const markdownComponentResolver = computed(() => {
-  if (!props.customMarkdown && hasExtendedMarkdown.value) return resolveMarkdownComponent;
-
-  const enabled = new Set(customExtensions.value);
-  if (!props.customMarkdown) {
-    enabled.add("tables");
-    enabled.add("alerts");
-    enabled.add("code");
+const markdownComponentResolver = (context) => {
+  const { tagName } = context;
+  if (tagName === "table" || tagName === "section") {
+    return hasExtension("tables")
+      ? resolveMarkdownComponent(context)
+      : undefined;
   }
-
-  return (context) => {
-    const { tagName } = context;
-    if (tagName === "table" || tagName === "section") {
-      return enabled.has("tables") ? resolveMarkdownComponent(context) : undefined;
-    }
-    if (tagName === "mjx-container" && enabled.has("math")) {
-      return resolveMarkdownComponent(context);
-    }
-    if (!tagName.startsWith("markdown-")) return undefined;
-    const extension = componentExtensions[tagName];
-    return enabled.has(extension) ? resolveMarkdownComponent(context) : false;
-  };
-});
+  if (tagName === "mjx-container" && hasMath.value) {
+    return resolveMarkdownComponent(context);
+  }
+  if (!tagName.startsWith("markdown-")) return undefined;
+  return hasExtension(componentExtensions[tagName])
+    ? resolveMarkdownComponent(context)
+    : false;
+};
 
 const beginRenderReadyCycle = () => {
   renderReadyCycle += 1;
@@ -699,7 +699,7 @@ const scrollToRouteAnchor = async () => {
     import.meta.env.SSR ||
     typeof window === "undefined" ||
     typeof document === "undefined" ||
-    !isReaderMode.value ||
+    !readingLayout.value ||
     !props.manageRouteAnchor ||
     props.isLoading ||
     markdownPreparing.value
@@ -841,7 +841,9 @@ const tableWrapperPlugin = (md) => {
 
 const loadMarkdownFeaturePlugins = async (content = "") => {
   const markdownText = String(content || "");
-  const languages = preloadCodeLanguages.value ? collectFenceLanguages(markdownText) : [];
+  const languages = preloadCodeLanguages.value
+    ? collectFenceLanguages(markdownText)
+    : [];
   const featureTasks = [];
 
   if (languages.length) {
@@ -863,92 +865,80 @@ const loadMarkdownFeaturePlugins = async (content = "") => {
   }
 };
 
-const commentMath = computed(() =>
-  isCommentMode.value && hasMathSyntax(combinedContent.value) ? mathJaxPlugin.value : null,
+const renderingPlugins = computed(() =>
+  [
+    ["abbreviations", MarkdownItAbbr],
+    ["attributes", MarkdownItBracketedSpans],
+    [
+      "attributes",
+      [
+        MarkdownItAttrs,
+        {
+          allowedAttributes: props.customMarkdown?.allowedAttributes ?? [
+            "id",
+            "class",
+            "data-tip",
+          ],
+        },
+      ],
+    ],
+    ["headingAnchors", anchorPlugin],
+    ["alerts", [alertPlugin, { translateTitle: localizeText }]],
+    ["social", chatHeaderPlugin],
+    ["social", chatContainerPlugin],
+    ["social", momentsPlugin],
+    ["code", codePlugin],
+    ["emoji", emojiPlugin],
+    ["footnotes", footnotePlugin],
+    ["ruby", [rubyPlugin, { rp: ["（", "）"] }]],
+    ["subscript", MarkdownItSub],
+    ["superscript", MarkdownItSup],
+    ["tasks", taskStatusPlugin],
+    ["math", mathJaxPlugin.value],
+    ["mark", MarkdownItMark],
+    ["mermaid", mermaidPlugin],
+    ["figures", figurePlugin],
+    ["tables", tableWrapperPlugin],
+    ["linkIcons", linkIconPlugin],
+  ].flatMap(([name, plugin]) => (hasExtension(name) && plugin ? [plugin] : [])),
 );
-const mathPlugin = computed(() => isCommentMode.value ? commentMath.value : mathJaxPlugin.value);
 
-const renderingPlugins = computed(() => [
-  ["abbreviations", MarkdownItAbbr],
-  ["attributes", MarkdownItBracketedSpans],
-  ["attributes", [MarkdownItAttrs, {
-    allowedAttributes: isCommentMode.value ? ["data-tip"] : ["id", "class", "data-tip"],
-  }]],
-  ["code", highlightLazyPlugin],
-  ["headingAnchors", anchorPlugin],
-  ["alerts", [alertPlugin, { translateTitle: localizeText }]],
-  ["social", chatHeaderPlugin],
-  ["social", chatContainerPlugin],
-  ["social", momentsPlugin],
-  ["code", codePlugin],
-  ["emoji", emojiPlugin],
-  ["footnotes", footnotePlugin],
-  ["ruby", [rubyPlugin, { rp: ["（", "）"] }]],
-  ["subscript", MarkdownItSub],
-  ["superscript", MarkdownItSup],
-  ["tasks", taskStatusPlugin],
-  ["math", mathPlugin.value],
-  ["mark", MarkdownItMark],
-  ["mermaid", mermaidPlugin],
-  ["figures", figurePlugin],
-  ["tables", tableWrapperPlugin],
-  ["linkIcons", linkIconPlugin],
-].flatMap(([name, plugin]) => {
-  const enabled = name === "alerts" || (name === "code" && plugin === codePlugin)
-    ? hasExtension(name, true)
-    : hasExtension(name);
-  return enabled && plugin ? [plugin] : [];
-}));
-
-const commentRenderer = computed(() => {
-  if (!isCommentMode.value || props.customMarkdown) return null;
-  const resolveWikiLink = wikiLinkResolver?.value;
-  let cache = commentRenderers.get(localizeText);
-  if (!cache || cache.resolveWikiLink !== resolveWikiLink) {
-    cache = { resolveWikiLink, renderers: new Map() };
-    commentRenderers.set(localizeText, cache);
+// MarkdownIt is reused across content updates; configuration changes rebuild it.
+const markdownRenderer = computed(() => {
+  const plugins = [...renderingPlugins.value];
+  if (hasParagraphComments.value) {
+    // Wrap the heading renderer so the comment button precedes the permalink.
+    plugins.push(
+      paragraphPlugin(props.headerData.uuid, props.headerData.sourceType),
+    );
   }
-  const key = commentMath.value;
-  if (!cache.renderers.has(key)) {
-    cache.renderers.set(key, createMarkdownRenderer({
-      mode: MARKDOWN_MODE_COMMENT,
-      plugins: renderingPlugins.value,
-      resolveWikiLink,
-    }));
-  }
-  return cache.renderers.get(key);
+  return createMarkdownRenderer({
+    mode: props.mode,
+    plugins,
+    resolveWikiLink: wikiLinkResolver?.value,
+    parserOptions: props.customMarkdown?.parserOptions,
+    wikiLinks: hasExtension("wikiLinks"),
+    linkCards: hasExtension("linkCards"),
+  });
 });
 
-// 正文只创建一个 Markdown 渲染实例，段落序号在整篇内容内连续递增。
 const renderedPages = computed(() => {
+  // Syntax highlighting registers languages asynchronously.
   markdownRenderVersion.value;
-
-  return anchoredPages.value.map((page) => {
-    if (commentRenderer.value) {
-      return { ...page, html: commentRenderer.value(page.source) };
-    }
-    const plugins = [...renderingPlugins.value];
-    if (hasParagraphComments.value) {
-      plugins.unshift(paragraphPlugin(props.headerData.uuid, props.headerData.sourceType));
-    }
-
-    return {
-      ...page,
-      html: renderMarkdown(page.source, {
-        mode: props.mode,
-        plugins,
-        resolveWikiLink: wikiLinkResolver?.value,
-        parserOptions: props.customMarkdown?.parserOptions,
-        wikiLinks: hasExtension("wikiLinks", true),
-        linkCards: hasExtension("linkCards"),
-      }),
-    };
-  });
+  return anchoredPages.value.map((page) => ({
+    ...page,
+    html: markdownRenderer.value(page.source),
+  }));
 });
 
 // 运行时 content 变化：异步加载特性插件后渲染
 watch(
-  () => [combinedContent.value, props.mode, hasMath.value, preloadCodeLanguages.value],
+  () => [
+    combinedContent.value,
+    props.mode,
+    hasMath.value,
+    preloadCodeLanguages.value,
+  ],
   async ([content, , mathEnabled, preloadCode]) => {
     const requestId = ++markdownFeatureRequestId;
     markdownFeaturesReady.value = false;
@@ -963,21 +953,6 @@ watch(
     if (import.meta.env.SSR || (!mathEnabled && !preloadCode)) {
       markdownPreparing.value = false;
       markdownFeaturesReady.value = true;
-      return;
-    }
-
-    if (isCommentMode.value && !props.customMarkdown) {
-      markdownPreparing.value = false;
-      if (hasMathSyntax(content) && !mathJaxPlugin.value) {
-        try {
-          const plugin = await loadMathJaxPlugin();
-          if (requestId !== markdownFeatureRequestId) return;
-          mathJaxPlugin.value = plugin;
-        } catch (error) {
-          console.warn("数学公式 SVG 渲染器加载失败，已跳过公式渲染", error);
-        }
-      }
-      if (requestId === markdownFeatureRequestId) markdownFeaturesReady.value = true;
       return;
     }
 
@@ -1081,66 +1056,3 @@ watch(
   { immediate: true, flush: "post" },
 );
 </script>
-
-<style scoped src="@/assets/reader.css"></style>
-
-<style scoped>
-@reference "@/assets/main.css";
-
-.markdown-standard {
-  --para-font-size: 1em;
-  --para-letter-spacing: 0em;
-  --para-line-height: 1.5;
-  --para-margin-inline: --spacing(3);
-  --para-text-indent: --spacing(5);
-}
-
-.markdown-comment :deep(.footnote-item:focus),
-.markdown-comment :deep(.footnote-ref a:focus) {
-  outline: 1px solid var(--color-primary);
-  outline-offset: 0.125em;
-}
-
-.markdown-standard :deep(details.alert),
-.markdown-standard :deep([data-markdown-code-block]) {
-  font-size: 1em;
-  line-height: inherit;
-  margin-block: var(--para-margin-inline);
-}
-
-.markdown-standard :deep(details.alert) {
-  @apply gap-4 px-4 py-3;
-}
-
-.markdown-standard :deep(details.alert > summary.alert-title) {
-  @apply gap-2;
-}
-
-.markdown-standard :deep(details.alert p),
-.markdown-standard :deep(details.alert ul li),
-.markdown-standard :deep(details.alert ol li) {
-  @apply mt-2 mb-1;
-}
-
-.markdown-standard :deep([data-markdown-code-block] header hgroup),
-.markdown-standard :deep([data-markdown-code-block] .mockup-code) {
-  font-size: 0.875em;
-}
-
-.markdown-standard :deep([data-markdown-code-block] header hgroup) {
-  line-height: 1.25;
-}
-
-.markdown-standard :deep([data-markdown-code-block] > header) {
-  @apply gap-2 py-1 ps-3 pe-1;
-}
-
-.markdown-standard :deep([data-markdown-code-block] .mockup-code) {
-  @apply py-2;
-}
-
-.markdown-standard :deep([data-markdown-code-block] .mockup-code code) {
-  font-size: 1em;
-  line-height: 1.5;
-}
-</style>

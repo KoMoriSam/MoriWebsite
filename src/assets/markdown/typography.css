@@ -1,0 +1,98 @@
+/* Layout presets are chosen by the caller. Parser modes never select CSS. */
+@layer utilities {
+  .markdown {
+    --md-heading-padding: 0.75rem 0.5rem;
+    --md-body-size: 1rem;
+  }
+
+  /* Match the font sizes of the Typography plugin's prose size utilities. */
+  .markdown.prose-sm { --md-body-size: 0.875rem; }
+  .markdown.prose-lg { --md-body-size: 1.125rem; }
+  .markdown.prose-xl { --md-body-size: 1.25rem; }
+  .markdown.prose-2xl { --md-body-size: 1.5rem; }
+
+  /* Empty reader anchors do not count as content. Keep the padding inside cards. */
+  .markdown > :nth-child(1 of :not([hidden], [aria-hidden="true"]:empty, script, style, template)):where(
+    p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, pre, table, figure, hr,
+    div, section, details, .markdown-block
+  ):not(:where(.not-prose:not(.markdown-block))) {
+    margin-block-start: 0;
+
+    &:where(h1, h2, h3, h4, h5, h6) {
+      padding-block-start: 0;
+    }
+
+    &.markdown-table-scroll > .markdown-table-wrapper,
+    &:where(blockquote) > :first-child,
+    &:where(ul, ol) > li:first-child,
+    &:where(ul, ol) > li:first-child > p:first-child {
+      margin-block-start: 0;
+    }
+  }
+
+  .markdown:not(.markdown-reading) > :where(p, table, ul, ol, blockquote, pre):last-child:not(.not-prose) {
+    margin-block-end: 0;
+  }
+
+  .markdown:not(.markdown-reading) {
+    --md-block-component-gap: 0.75rem;
+  }
+
+  .markdown-reading {
+    --md-h1-size: calc(var(--para-font-size) * 1.25);
+    --md-h2-size: calc(var(--para-font-size) * 1.125);
+    --md-h3-size: var(--para-font-size);
+    --md-h1-leading: calc(var(--para-font-size) * 1.75);
+    --md-h2-leading: calc(var(--para-font-size) * 1.5);
+    --md-h3-leading: calc(var(--para-font-size) * 1.25);
+    --md-body-size: var(--para-font-size);
+    --md-text-size: var(--para-font-size);
+    --md-leading: var(--para-line-height);
+    --md-tracking: var(--para-letter-spacing);
+    --md-indent: var(--para-text-indent);
+    --md-list-offset: 1em;
+    --md-align: justify;
+    --md-list-item-gap: var(--para-margin-inline);
+    --md-component-scale: 0.875;
+    --md-quote-padding: calc(var(--para-text-indent, 0px) * 0.25);
+    --md-quote-size: calc(var(--para-font-size) * 0.875);
+    --md-section-gap: calc(var(--para-margin-inline) + var(--para-font-size) * var(--para-line-height) * 0.5);
+    --md-table-size: calc(var(--para-font-size) * 0.875);
+    --md-table-tracking: calc(var(--para-letter-spacing) * 0.875);
+    --md-table-leading: calc(var(--para-line-height) * 0.875);
+    --md-link-hover-weight: 700;
+    --md-media-margin: 0px;
+    --md-math-size: var(--para-font-size);
+  }
+
+  @media (width >= 48rem) {
+    .markdown-reading {
+      --md-list-offset: 2em;
+      --md-quote-padding: calc(var(--para-text-indent, 0px) * 0.5);
+    }
+  }
+
+  .markdown-reading.reader-colors {
+    --tw-prose-body: var(--reader-text-color, var(--color-base-content));
+    --tw-prose-headings: var(--tw-prose-body);
+    --tw-prose-lead: var(--tw-prose-body);
+    --tw-prose-bold: var(--tw-prose-body);
+    --tw-prose-counters: var(--tw-prose-body);
+    --tw-prose-bullets: var(--tw-prose-body);
+    --tw-prose-quotes: var(--tw-prose-body);
+    --tw-prose-captions: var(--tw-prose-body);
+  }
+
+  .markdown-reading :where(p.signature) {
+    @apply indent-0 font-script text-center text-balance ps-[25%] md:ps-[50%];
+    font-size: calc(var(--para-font-size) * 1.125);
+    margin-block-start: calc(var(--para-margin-inline) + var(--para-line-height) * var(--para-font-size));
+  }
+
+  .paragraph-comment-title > .markdown {
+    --para-text-indent: 0px;
+    --para-letter-spacing: 0px;
+    font-size: var(--para-font-size);
+    line-height: var(--para-line-height);
+  }
+}

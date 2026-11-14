@@ -14,6 +14,7 @@
     @wheel.passive="markReadingInteraction"
   >
     <Renderer
+      layout="reading"
       :content="content"
       :is-loading="isLoading"
       :show-loading="false"
@@ -58,11 +59,7 @@
         <button
           type="button"
           class="alert alert-soft pointer-events-auto block w-[calc(100%-1.5rem)] max-w-sm cursor-pointer border border-base-300 bg-base-100/95 p-3 text-left text-sm shadow-lg backdrop-blur-md"
-          :aria-label="
-            translate(
-              'reader.scroll.help',
-            )
-          "
+          :aria-label="translate('reader.scroll.help')"
           @click="dismissReaderHint"
         >
           <span class="block w-full">
@@ -104,8 +101,7 @@
                 <span
                   class="mt-0.5 block text-[0.6875rem] text-base-content/55"
                 >
-                  {{ translate("reader.paged.centerHint")
-                  }}<br />
+                  {{ translate("reader.paged.centerHint") }}<br />
                   {{ translate("reader.paged.edgeHint") }}
                 </span>
               </span>
@@ -118,11 +114,7 @@
                 translate("reader.paged.moreControls")
               }}</span>
               <span class="text-base-content/60">
-                {{
-                  translate(
-                    "reader.paged.zonesHint",
-                  )
-                }}
+                {{ translate("reader.paged.zonesHint") }}
               </span>
             </span>
           </span>
@@ -144,6 +136,7 @@ import ChapterToc from "@/components/novel/ChapterToc.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
 import { useChapters } from "@/composables/novel/useChapters";
 import { useReadingStateStorage } from "@/composables/storage/useReadingStateStorage";
+import { readerTypographyMetrics } from "@/utils/reader/reader-typography";
 import { alignMobileChapterHeaderBlock } from "@/utils/reader/align-header";
 import { useReaderHint } from "@/composables/novel/useReaderHint";
 import { useReaderTextContext } from "@/composables/reader/useReaderTextContext";
@@ -256,7 +249,7 @@ const findReadingAnchor = () => {
 
   const containerTop = container.getBoundingClientRect().top;
   const anchors = container.querySelectorAll(
-    "#markdown-content h1[id], #markdown-content h2[id], #markdown-content h3[id], #markdown-content h4[id], #markdown-content h5[id], #markdown-content h6[id], #markdown-content p[id]",
+    ".markdown-reading :is(h1, h2, h3, h4, h5, h6, p)[id]",
   );
   let current = null;
 
@@ -303,12 +296,10 @@ const waitForLayout = () =>
   });
 
 const alignChapterHeaderBlock = async () => {
-  const article = scrollContainerRef.value?.querySelector("#markdown-content");
+  const article = getArticleElement();
   return alignMobileChapterHeaderBlock({
     article,
-    lineHeight:
-      (Number(props.styleConfigs.fontSize) || 20) *
-      (Number(props.styleConfigs.lineHeight) || 1.6),
+    lineHeight: readerTypographyMetrics(props.styleConfigs).linePixels,
     waitForLayout,
   });
 };
@@ -416,7 +407,7 @@ const turnChapter = (direction) => {
 };
 
 const getArticleElement = () =>
-  scrollContainerRef.value?.querySelector(":scope > .markdown-content");
+  scrollContainerRef.value?.querySelector(":scope > .markdown-reading");
 const {
   getSelectionContext,
   handleContextMenu: handleContextMenu,

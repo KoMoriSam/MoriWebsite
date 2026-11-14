@@ -52,7 +52,7 @@ export function linkCardPlugin(md, { articleForPath } = {}) {
 
       // Retain the paragraph rules so comment IDs after the card stay stable.
       open.tag = close.tag = "div";
-      open.attrJoin("class", "markdown-link-card relative my-(--para-margin-inline) break-inside-avoid-column");
+      open.attrJoin("class", "markdown-link-card markdown-block relative break-inside-avoid-column");
       const token = new state.Token("link_card", "markdown-link-card", 0);
       token.meta = card;
       inline.children = [token];

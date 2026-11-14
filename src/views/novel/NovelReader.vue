@@ -148,6 +148,7 @@
       />
 
       <Renderer
+        layout="reading"
         v-if="currentChapter && !isMobileReader"
         :content="currentChapterContent"
         :is-loading="isLoadingContent"
@@ -724,7 +725,7 @@ const setupNovelPosTracker = () => {
       getContextId: () => String(currentChapterUuid.value || ""),
       isActive: () => router.currentRoute.value.name === "novel-reader",
       posSelector:
-        ".markdown-content h1[id], .markdown-content h2[id], .markdown-content h3[id], .markdown-content h4[id], .markdown-content h5[id], .markdown-content h6[id], .markdown-content p[id]",
+        ".markdown-reading h1[id], .markdown-reading h2[id], .markdown-reading h3[id], .markdown-reading h4[id], .markdown-reading h5[id], .markdown-reading h6[id], .markdown-reading p[id]",
     },
   );
   trackedReaderContext.value = readerContext;

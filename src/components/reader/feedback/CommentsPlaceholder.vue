@@ -94,7 +94,7 @@
               <span class="skeleton h-2 w-4 rounded-sm"></span>
             </span>
           </header>
-          <div class="px-4 pb-2">
+          <div class="px-3 pb-2">
             <div
               v-for="width in lines"
               :key="width"
@@ -104,7 +104,7 @@
             </div>
           </div>
           <footer
-            class="flex flex-wrap items-center justify-between gap-2 px-4 pb-2"
+            class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2"
           >
             <div class="flex flex-wrap items-center gap-2">
               <span class="btn btn-xs btn-circle border-base-300 bg-base-100">
@@ -135,21 +135,27 @@
               >
                 <header class="flex min-w-0 items-center gap-2 p-2">
                   <span class="skeleton size-9 shrink-0 rounded-full"></span>
-                  <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-                    <span class="skeleton h-3.5 w-20 max-w-full rounded-sm"></span>
+                  <div
+                    class="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1"
+                  >
+                    <span
+                      class="skeleton h-3.5 w-20 max-w-full rounded-sm"
+                    ></span>
                     <span class="skeleton h-3 w-12 rounded-sm"></span>
                   </div>
                   <span class="btn btn-ghost btn-xs btn-square ms-auto">
                     <span class="skeleton h-2 w-4 rounded-sm"></span>
                   </span>
                 </header>
-                <div class="px-4 pb-2">
+                <div class="px-3 pb-2">
                   <div class="flex h-5 items-center">
                     <span class="skeleton h-3 w-3/4 rounded-sm"></span>
                   </div>
                 </div>
-                <footer class="flex flex-wrap items-center gap-2 px-4 pb-2">
-                  <span class="btn btn-xs btn-circle border-base-300 bg-base-100">
+                <footer class="flex flex-wrap items-center gap-2 px-3 pb-2">
+                  <span
+                    class="btn btn-xs btn-circle border-base-300 bg-base-100"
+                  >
                     <span class="skeleton size-4 rounded-full"></span>
                   </span>
                   <span

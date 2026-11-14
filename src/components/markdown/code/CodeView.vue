@@ -1,14 +1,12 @@
 <template>
   <ScrollableContainer>
-    <article
-      class="mockup-code before:content-none not-prose max-w-full overflow-x-auto scrollbar-thin bg-(--hljs-background) rounded-none py-2"
-    >
+    <article class="mockup-code not-prose markdown-code-view">
       <pre
         v-for="(line, index) in highlightedLines"
         :key="index"
-        class="m-0! p-0 max-w-full overflow-visible! before:sticky before:left-0 before:bg-(--hljs-background) before:text-[color-mix(in_oklab,var(--hljs-foreground)_50%,transparent)] before:opacity-100! before:shadow-[2ch_0_0_var(--hljs-background)]"
+        class="code-line"
         :data-prefix="index + 1"
-      ><code class="hljs p-0! text-sm md:text-base inline-block! overflow-visible!" :class="`language-${language}`" v-html="line" /></pre>
+      ><code class="hljs" :class="`language-${language}`" v-html="line" /></pre>
     </article>
   </ScrollableContainer>
 </template>
@@ -101,7 +99,9 @@ const highlightCode = async () => {
   }).value;
 
   // 清洗整段高亮结果，再按行分配，避免为每行单独解析 HTML。
-  highlightedLines.value = splitHighlightedCode(sanitizeMarkdownHtml(highlightedCode));
+  highlightedLines.value = splitHighlightedCode(
+    sanitizeMarkdownHtml(highlightedCode),
+  );
 };
 
 onMounted(highlightCode);
@@ -114,3 +114,40 @@ watch(
   { flush: "post" },
 );
 </script>
+
+<style scoped>
+@reference "@/assets/main.css";
+
+.markdown-code-view {
+  @apply max-w-full overflow-x-auto scrollbar-thin rounded-none;
+  color: var(--hljs-foreground);
+  background: var(--hljs-background);
+  padding-block: var(--md-component-gap, 0.5rem);
+  font-size: var(--md-component-detail-size, 0.875rem);
+  line-height: 1.5;
+}
+
+.markdown-code-view::before {
+  content: none;
+}
+
+.code-line {
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.code-line > code {
+  display: inline-block;
+  padding: 0;
+}
+
+.code-line::before {
+  position: sticky;
+  left: 0;
+  opacity: 1;
+  background: var(--hljs-background);
+  color: color-mix(in oklab, var(--hljs-foreground) 50%, transparent);
+  box-shadow: 2ch 0 0 var(--hljs-background);
+}
+</style>

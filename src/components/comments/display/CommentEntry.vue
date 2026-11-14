@@ -70,7 +70,7 @@
         </template>
       </ActionMenu>
     </header>
-    <p v-if="comment.isMinimized" class="px-4 pb-2 text-base-content/60 italic">
+    <p v-if="comment.isMinimized" class="px-3 pb-2 text-base-content/60 italic">
       {{ minimizedMessage }}
     </p>
     <template v-else>
@@ -91,9 +91,11 @@
         <div ref="bodyContent" class="flow-root">
           <Renderer
             :content="comment.body"
-            mode="comment"
+            mode="custom"
+            :custom-markdown="COMMENT_MARKDOWN"
+            scope-anchors
             prose-size="sm"
-            class="max-w-none px-4 pb-2 wrap-anywhere"
+            class="max-w-none px-3 pb-2 wrap-anywhere"
             dir="auto"
             @render-ready="measureBodyPreview"
           />
@@ -114,7 +116,7 @@
         ></i>
       </button>
       <footer
-        class="flex flex-wrap items-center justify-between gap-2 px-4 pb-2"
+        class="flex flex-wrap items-center justify-between gap-2 px-2 pb-2"
       >
         <div class="flex flex-wrap items-center gap-2">
           <ReactionButtons
@@ -178,6 +180,7 @@
 </template>
 
 <script setup>
+import { COMMENT_MARKDOWN } from "@/utils/comments/comment-markdown";
 import { computed, ref, useId } from "vue";
 import { useClipboard, useResizeObserver } from "@vueuse/core";
 import Avatar from "@/components/auth/Avatar.vue";

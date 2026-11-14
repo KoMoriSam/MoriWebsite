@@ -3,14 +3,14 @@
     ref="viewerRoot"
     data-mermaid-viewer
     :data-mermaid-source="source"
-    class="not-prose"
+    class="not-prose markdown-block markdown-block-panel"
     :class="isFullscreen ? 'h-full min-h-0' : ''"
     :aria-busy="renderStatus === 'loading'"
   >
     <CodeHeader type="mermaid">
       <template #actions>
         <nav
-          class="flex shrink-0 items-center gap-1"
+          class="flex shrink-0 items-center gap-[calc(var(--md-component-gap)*0.5)]"
           :aria-label="translate('markdown.mermaid.tools')"
         >
           <div
@@ -20,25 +20,31 @@
           >
             <button
               role="tab"
-              class="tab"
+              class="tab markdown-diagram-tab"
               :class="viewMode === 'code' ? 'tab-active' : ''"
               :aria-label="translate('markdown.mermaid.sourceLabel')"
               :aria-pressed="viewMode === 'code'"
               :title="translate('markdown.mermaid.code')"
               @click="viewMode = 'code'"
             >
-              <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+              <i
+                class="ri-code-s-slash-line markdown-toolbar-icon"
+                aria-hidden="true"
+              ></i>
             </button>
             <button
               role="tab"
-              class="tab"
+              class="tab markdown-diagram-tab"
               :class="viewMode === 'preview' ? 'tab-active' : ''"
               :aria-label="translate('markdown.mermaid.previewLabel')"
               :aria-pressed="viewMode === 'preview'"
               :title="translate('markdown.mermaid.preview')"
               @click="viewMode = 'preview'"
             >
-              <i class="ri-image-line" aria-hidden="true"></i>
+              <i
+                class="ri-image-line markdown-toolbar-icon"
+                aria-hidden="true"
+              ></i>
             </button>
           </div>
           <aside
@@ -57,10 +63,18 @@
             <button
               v-if="viewMode === 'preview'"
               type="button"
-              class="btn btn-sm btn-square btn-ghost shrink-0"
-              :aria-label="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.fullscreenLabel')"
+              class="btn btn-sm btn-square markdown-control btn-ghost shrink-0"
+              :aria-label="
+                isFullscreen
+                  ? translate('markdown.mermaid.exitFullscreen')
+                  : translate('markdown.mermaid.fullscreenLabel')
+              "
               :aria-pressed="isFullscreen"
-              :title="isFullscreen ? translate('markdown.mermaid.exitFullscreen') : translate('markdown.mermaid.fullscreen')"
+              :title="
+                isFullscreen
+                  ? translate('markdown.mermaid.exitFullscreen')
+                  : translate('markdown.mermaid.fullscreen')
+              "
               :disabled="!canFullscreen"
               @click="toggleFullscreen"
             >
@@ -76,10 +90,18 @@
             <button
               v-else
               type="button"
-              class="btn btn-sm btn-square shrink-0"
+              class="btn btn-sm btn-square markdown-control shrink-0"
               :class="copied ? 'btn-success' : 'btn-ghost'"
-              :aria-label="copied ? translate('markdown.mermaid.copied') : translate('markdown.mermaid.copyLabel')"
-              :title="copied ? translate('markdown.codeBlock.copied') : translate('markdown.mermaid.copyCode')"
+              :aria-label="
+                copied
+                  ? translate('markdown.mermaid.copied')
+                  : translate('markdown.mermaid.copyLabel')
+              "
+              :title="
+                copied
+                  ? translate('markdown.codeBlock.copied')
+                  : translate('markdown.mermaid.copyCode')
+              "
               @click="copy(source)"
             >
               <i
@@ -94,7 +116,7 @@
 
     <figure
       data-mermaid-preview
-      class="group relative min-w-0 bg-base-200/50 m-0!"
+      class="group relative min-w-0 bg-base-200/50"
       :class="[
         isFullscreen ? 'min-h-0 flex-1' : '',
         !isFullscreen && viewMode === 'preview' ? 'min-h-36 md:min-h-56' : '',
@@ -111,7 +133,7 @@
           class="loading loading-spinner loading-sm"
           aria-hidden="true"
         ></span>
-        <span>{{ translate('markdown.mermaid.loading') }}</span>
+        <span>{{ translate("markdown.mermaid.loading") }}</span>
       </div>
 
       <div
@@ -120,10 +142,10 @@
         class="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-sm text-base-content/70"
       >
         <i
-          class="ri-error-warning-line text-2xl text-warning"
+          class="ri-error-warning-line text-[length:calc(var(--md-component-icon)*1.5)] text-warning"
           aria-hidden="true"
         ></i>
-        <span>{{ translate('markdown.mermaid.invalid') }}</span>
+        <span>{{ translate("markdown.mermaid.invalid") }}</span>
       </div>
 
       <div
@@ -170,7 +192,7 @@
       >
         <button
           type="button"
-          class="btn btn-sm btn-square btn-ghost join-item"
+          class="btn btn-sm btn-square markdown-control btn-ghost join-item"
           :aria-label="translate('markdown.mermaid.zoomInLabel')"
           :title="translate('markdown.mermaid.zoomIn')"
           :disabled="zoom >= MAX_ZOOM"
@@ -180,7 +202,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-square btn-ghost join-item"
+          class="btn btn-sm btn-square markdown-control btn-ghost join-item"
           :aria-label="translate('markdown.mermaid.zoomOutLabel')"
           :title="translate('markdown.mermaid.zoomOut')"
           :disabled="zoom <= MIN_ZOOM"
@@ -194,7 +216,7 @@
 </template>
 
 <script setup>
-import { useLocale } from '@/i18n';
+import { useLocale } from "@/i18n";
 const { t: translate } = useLocale();
 
 import { useClipboard } from "@vueuse/core";
@@ -442,12 +464,16 @@ const renderDiagram = async (reflowWidth) => {
       .toString(36)
       .slice(2)}`;
     const fontFamily =
-      getComputedStyle(viewerRoot.value).getPropertyValue("--font-mono").trim() ||
-      "monospace";
+      getComputedStyle(viewerRoot.value)
+        .getPropertyValue("--font-mono")
+        .trim() || "monospace";
     const fontSize = DESKTOP_TARGET_LABEL_FONT_SIZE;
     if (!isReflow) {
-      await document.fonts?.load(`${fontSize}px ${fontFamily}`, source).catch(() => {});
-      if (requestId !== renderRequestId || source !== props.source.trim()) return;
+      await document.fonts
+        ?.load(`${fontSize}px ${fontFamily}`, source)
+        .catch(() => {});
+      if (requestId !== renderRequestId || source !== props.source.trim())
+        return;
     }
 
     requestedWidth = reflowWidth ?? getDiagramWidth();
@@ -467,7 +493,8 @@ const renderDiagram = async (reflowWidth) => {
       return;
     }
     const view = isReflow ? getViewportOffsets() : undefined;
-    if (!insertRenderedSvg(svg)) throw new Error(translate('markdown.mermaid.invalidSvg'));
+    if (!insertRenderedSvg(svg))
+      throw new Error(translate("markdown.mermaid.invalidSvg"));
 
     if (isReflow) {
       initializeSvgViewport(view);
@@ -632,7 +659,8 @@ const getViewportOffsets = () => ({
 });
 
 const syncResponsiveViewport = (view = getViewportOffsets()) => {
-  if (!svgElement?.clientWidth || !svgElement.clientHeight || !initialViewBox) return;
+  if (!svgElement?.clientWidth || !svgElement.clientHeight || !initialViewBox)
+    return;
   const baseScale = getBaseScale(svgElement);
   defaultZoom.value = Math.min(
     MAX_ZOOM,
@@ -642,7 +670,10 @@ const syncResponsiveViewport = (view = getViewportOffsets()) => {
     ),
   );
 
-  zoom.value = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, defaultZoom.value * view.zoomRatio));
+  zoom.value = Math.min(
+    MAX_ZOOM,
+    Math.max(MIN_ZOOM, defaultZoom.value * view.zoomRatio),
+  );
   defaultPanX = getDefaultPanX();
   clampPan(defaultPanX + view.x, view.y);
 };
@@ -883,3 +914,59 @@ onBeforeUnmount(() => {
   document.removeEventListener("fullscreenchange", syncFullscreenState);
 });
 </script>
+
+<style scoped>
+@reference "@/assets/main.css";
+
+[data-mermaid-viewer] {
+  color: var(--reader-text-color, var(--color-base-content));
+  --pele-bg: var(--color-base-100);
+  --pele-fg: var(--reader-text-color, var(--color-base-content));
+  --pele-muted: color-mix(in oklab, var(--pele-fg) 72%, var(--pele-bg));
+  --pele-line: color-mix(in oklab, var(--color-primary) 76%, var(--pele-fg));
+  --pele-surface: color-mix(in oklab, var(--color-primary) 14%, var(--pele-bg));
+  --pele-surface-alt: color-mix(in oklab, var(--pele-fg) 7%, var(--pele-bg));
+  --pele-border: color-mix(in oklab, var(--color-primary) 68%, var(--pele-fg));
+  --pele-accent: var(--color-primary);
+  --pele-critical: var(--color-error);
+  --pele-radius: var(--radius-box);
+  --pele-series-1: var(--color-primary);
+  --pele-series-2: var(--color-secondary);
+  --pele-series-3: var(--color-accent);
+  --pele-series-4: var(--color-info);
+  --pele-series-5: var(--color-success);
+  --pele-series-6: var(--color-warning);
+  --pele-series-7: var(--color-error);
+  --pele-series-8: var(--color-neutral);
+}
+
+.markdown-diagram-tab {
+  --tab-height: calc(var(--md-component-control) * 0.85);
+  --tab-p: var(--md-component-gap);
+}
+
+pre.mermaid {
+  @apply m-0 flex h-full w-full max-w-full items-center justify-center p-0 font-sans leading-normal tracking-normal;
+  min-height: inherit;
+}
+
+:deep(.mermaid-svg-wrapper) {
+  @apply flex h-auto w-full max-w-full items-center justify-center;
+  min-height: inherit;
+}
+
+pre.mermaid :deep(svg) {
+  @apply pointer-events-none m-0 block h-auto w-full max-w-none overflow-hidden select-none;
+  min-height: inherit;
+}
+
+[data-mermaid-viewer]:fullscreen {
+  @apply m-0 h-screen w-screen max-w-none overflow-hidden rounded-none border-0 bg-base-100 p-0 shadow-none;
+}
+
+[data-mermaid-viewer]:fullscreen :deep(.mermaid-svg-wrapper),
+[data-mermaid-viewer]:fullscreen pre.mermaid :deep(svg) {
+  height: 100%;
+  max-height: none;
+}
+</style>

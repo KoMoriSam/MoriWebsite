@@ -7,6 +7,7 @@
   >
     <!-- 文章内容 -->
     <Renderer
+      layout="reading"
       v-if="article && (loading || content)"
       :ref="scrollRef"
       :content="content"

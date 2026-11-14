@@ -24,10 +24,6 @@ export default {
       default: null,
     },
     scopeAnchors: Boolean,
-    fontStyle: {
-      type: String,
-      default: "font-sans",
-    },
   },
   setup(props) {
     const router = inject(routerKey, null);
@@ -38,7 +34,7 @@ export default {
     const resolveComponent = (context) => activeResolver.value?.(context);
     const inheritedScope = inject(SCOPED_MARKDOWN_ANCHORS, null);
     const scopeAnchors = computed(() => props.scopeAnchors || inheritedScope?.value);
-    const anchorPrefix = `comment-${useId()}-`;
+    const anchorPrefix = `markdown-${useId()}-`;
     provide(SCOPED_MARKDOWN_ANCHORS, scopeAnchors);
     const fragment = computed(() =>
       parseHtmlFragment(props.html, scopeAnchors.value ? anchorPrefix : ""),

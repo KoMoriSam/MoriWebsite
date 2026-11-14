@@ -1,6 +1,6 @@
 <template>
   <section
-    class="not-prose flex w-full flex-col relative mx-auto my-4 max-w-full overflow-hidden rounded-box border border-base-300 bg-base-100 font-sans"
+    class="not-prose markdown-block markdown-block-panel"
     data-markdown-code-block
     :data-language="language"
     :data-title="title || undefined"
@@ -13,7 +13,7 @@
           :data-tip="copied ? translate('markdown.codeBlock.copied') : translate('markdown.codeBlock.copy')"
         >
           <button
-            class="btn btn-sm btn-square"
+            class="btn btn-sm btn-square markdown-control"
             :class="{
               'btn-success': copied,
               'btn-ghost': !copied,

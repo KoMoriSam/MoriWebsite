@@ -1,7 +1,7 @@
 <template>
   <details
     role="alert"
-    class="alert alert-soft alert-vertical bg-transparent sm:gap-2"
+    class="alert alert-soft markdown-block bg-transparent"
     :class="[colors.border, foldable && ['collapse', 'collapse-arrow']]"
     :open="!foldable || !collapsed"
     data-markdown-alert
@@ -15,11 +15,13 @@
       ]"
     >
       <i :class="icon"></i>
-      <h6>
+      <span class="alert-heading">
         <RenderedContent :html="titleHtml" />
-      </h6>
+      </span>
     </summary>
-    <slot />
+    <div class="alert-content">
+      <slot />
+    </div>
   </details>
 </template>
 
@@ -55,46 +57,60 @@ const colors = computed(() =>
 @reference "@/assets/main.css";
 
 details.alert {
-  @apply block w-full max-w-full box-border
-    border-l-4 border-0 rounded-none
-    text-left justify-items-stretch;
+  @apply block w-full max-w-full box-border rounded-none text-start;
+  border-width: 0;
+  border-inline-start-width: 4px;
+  padding: var(--md-component-gap) var(--md-component-padding);
 }
 
-details.alert > summary.alert-title {
-  @apply flex w-full max-w-full min-w-0
-    items-center box-border gap-2 p-0 text-left;
+summary.alert-title {
+  @apply flex w-full min-w-0 items-center box-border p-0 text-start;
+  gap: var(--md-component-gap);
+  font-size: var(--md-component-detail-size);
+  line-height: 1.25;
 }
 
-details.alert > summary.alert-title h6 {
-  @apply flex-initial min-w-0 p-0 indent-0 font-serif;
+summary.alert-title > i {
+  flex: none;
+  font-size: var(--md-component-icon);
+  line-height: 1;
 }
 
-.collapse-arrow > .collapse-title::after {
-  @apply static! shrink-0! self-center! translate-y-0.75!;
+/* daisyUI's collapse arrow normally floats over the summary. Here it is
+   the final flex item, so it stays aligned when the title wraps. */
+details.alert.collapse-arrow > summary.alert-title::after {
+  position: static;
+  flex: none;
+  inline-size: calc(var(--md-component-icon) * 0.5);
+  block-size: calc(var(--md-component-icon) * 0.5);
+  margin-inline: 0.125rem;
+  align-self: center;
+  translate: 0 0.1875rem;
 }
 
-details.alert.collapse > summary.alert-title {
-  @apply w-full;
+.alert-heading {
+  @apply min-w-0 font-serif font-medium;
 }
 
-details.alert > :not(summary.alert-title) {
-  @apply w-full text-justify;
+.alert-content {
+  --md-indent: 0px;
+  --md-list-offset: 0px;
+  --md-align: start;
+  --md-text-size: var(--md-component-detail-size);
+  --md-block-gap: var(--md-component-gap);
+  --md-list-item-gap: var(--md-block-gap);
+  color: var(--color-base-content);
+  text-align: start;
 }
 
-details.alert > p,
-details.alert > ul,
-details.alert > ol {
-  @apply w-full;
+.alert-content :deep(> :last-child),
+.alert-content :deep(> :is(ul, ol, blockquote):last-child > :last-child),
+.alert-content :deep(> :is(ul, ol):last-child > li:last-child > p:last-child),
+.alert-content :deep(> .markdown-table-scroll:last-child > .markdown-table-wrapper) {
+  margin-block-end: 0;
 }
 
-details.alert p,
-details.alert ul li,
-details.alert ol li {
-  @apply indent-0 text-base-content py-0 mt-2 mb-1;
-}
-
-details.alert ul li,
-details.alert ol li {
-  @apply ps-0 indent-0;
+.alert-content :deep(> :is(h1, h2, h3, h4, h5, h6):last-child) {
+  padding-block-end: 0;
 }
 </style>

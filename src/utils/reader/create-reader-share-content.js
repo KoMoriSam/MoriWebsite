@@ -577,10 +577,10 @@ const getContextMeta = (block) => {
   if (alert) {
     return {
       type: "callout",
-      systemLabel: Boolean(alert.dataset.systemLabel) || !alert.querySelector(":scope > summary.alert-title h6")?.textContent,
+      systemLabel: Boolean(alert.dataset.systemLabel) || !alert.querySelector(":scope > summary.alert-title .alert-heading")?.textContent,
       tone: getAlertTone(alert),
       label: normalizeLabel(
-        alert.dataset.systemLabel || alert.querySelector(":scope > summary.alert-title h6")?.textContent ||
+        alert.dataset.systemLabel || alert.querySelector(":scope > summary.alert-title .alert-heading")?.textContent ||
           "提示",
       ),
     };
