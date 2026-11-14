@@ -148,6 +148,7 @@
                 :key="comment.id"
                 :comment="comment"
                 :author-login="authorLogin"
+                :viewer-login="moriSession.profile?.login"
                 :now="now"
                 :load-history="loadEditHistory"
                 :history-revision="moriSession.revision"
