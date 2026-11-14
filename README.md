@@ -26,7 +26,9 @@
   <a href="./README_si.md">සිංහල</a>
 </p>
 
-<p align="center">当前版本：<strong>2.21.2</strong></p>
+<p align="center">
+  当前版本：<strong>2.21.2</strong>
+</p>
 
 ## 关于远方之森
 
