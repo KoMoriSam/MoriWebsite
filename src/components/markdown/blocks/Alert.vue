@@ -1,22 +1,18 @@
 <template>
   <details
     role="alert"
-    class="alert alert-soft alert-vertical sm:gap-2"
-    :class="[
-      `bg-transparent border-${type}`,
-      foldable && ['collapse', 'collapse-arrow'],
-    ]"
+    class="alert alert-soft alert-vertical bg-transparent sm:gap-2"
+    :class="[colors.border, foldable && ['collapse', 'collapse-arrow']]"
     :open="!foldable || !collapsed"
     data-markdown-alert
     :data-system-label="defaultTitle || undefined"
   >
     <summary
       class="alert-title"
-      :class="
-        foldable
-          ? `text-${type} collapse-title`
-          : `text-${type} pointer-events-none`
-      "
+      :class="[
+        colors.title,
+        foldable ? 'collapse-title' : 'pointer-events-none',
+      ]"
     >
       <i :class="icon"></i>
       <h6>
@@ -28,9 +24,10 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import RenderedContent from "@/components/markdown/RenderedContent.vue";
 
-defineProps({
+const props = defineProps({
   type: { type: String, default: "info" },
   icon: { type: String, default: "ri-information-line" },
   titleHtml: { type: String, default: "" },
@@ -38,6 +35,20 @@ defineProps({
   foldable: { type: Boolean, default: false },
   collapsed: { type: Boolean, default: false },
 });
+
+const colorsByType = {
+  info: { border: "border-info", title: "text-info" },
+  success: { border: "border-success", title: "text-success" },
+  warning: { border: "border-warning", title: "text-warning" },
+  error: { border: "border-error", title: "text-error" },
+  muted: { border: "border-base-content/30", title: "text-base-content/70" },
+};
+
+const colors = computed(() =>
+  Object.hasOwn(colorsByType, props.type)
+    ? colorsByType[props.type]
+    : colorsByType.info,
+);
 </script>
 
 <style scoped>
@@ -45,7 +56,7 @@ defineProps({
 
 details.alert {
   @apply block w-full max-w-full box-border
-    border-l-4 border-0 rounded-s-none
+    border-l-4 border-0 rounded-none
     text-left justify-items-stretch;
 }
 
