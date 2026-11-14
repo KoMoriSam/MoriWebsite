@@ -32,33 +32,17 @@
       </button>
     </div>
 
-    <CommentPopover
-      v-if="overflowActions.length"
-      ref="overflow"
-      class="ms-auto @xl:ms-0"
+    <ActionMenu
       :label="label('more')"
       :disabled="disabled"
-      trigger-class="btn btn-ghost btn-xs btn-square rounded-inner"
+      :groups="overflowGroups"
+      trigger-class="btn btn-ghost btn-xs btn-square rounded-inner ms-auto @xl:ms-0"
+      @select="choose"
     >
       <template #trigger>
         <i class="ri-more-line" aria-hidden="true"></i>
       </template>
-      <ul class="menu menu-sm w-full p-0">
-        <li v-for="[action, icon] in overflowActions" :key="action">
-          <button
-            type="button"
-            class="rounded-inner"
-            :aria-pressed="action === 'monospace' ? monospace : undefined"
-            :disabled="disabled"
-            @click="choose(action)"
-          >
-            <i :class="icon" aria-hidden="true"></i>
-            {{ label(action) }}
-            <i v-if="action === 'monospace' && monospace" class="ri-check-line ms-auto" aria-hidden="true"></i>
-          </button>
-        </li>
-      </ul>
-    </CommentPopover>
+    </ActionMenu>
 
     <div aria-hidden="true" class="pointer-events-none invisible absolute start-0 top-0 size-0 overflow-hidden">
       <span ref="buttonSize" class="btn btn-ghost btn-xs btn-square"></span>
@@ -68,18 +52,14 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useLocale } from "@/i18n";
-import CommentPopover from "./CommentPopover.vue";
+import ActionMenu from "@/components/display/menu/ActionMenu.vue";
 
 const monospace = defineModel({ type: Boolean, required: true });
 const props = defineProps({ disabled: Boolean });
 const emit = defineEmits(["format"]);
 const { t } = useLocale();
-const overflow = ref(null);
-watch(() => props.disabled, (disabled) => {
-  if (disabled) overflow.value?.close();
-});
 const toolbar = ref(null);
 const buttonSize = ref(null);
 const dividerSize = ref(null);
@@ -105,7 +85,19 @@ const visibleGroups = computed(() => formatGroups
   .map((group) => group.filter(([action]) => visible.value.has(action)))
   .filter((group) => group.length),
 );
-const overflowActions = computed(() => actions.filter(([action]) => !visible.value.has(action)));
+const overflowGroups = computed(() =>
+  formatGroups
+    .map((group) => ({
+      items: group
+        .filter(([action]) => !visible.value.has(action))
+        .map(([action, icon]) => ({
+          id: action,
+          icon,
+          label: label(action),
+          checked: action === "monospace" ? monospace.value : undefined,
+        })),
+    })),
+);
 let observer;
 
 function showActions(next) {
@@ -156,7 +148,6 @@ onBeforeUnmount(() => observer?.disconnect());
 
 function choose(action) {
   if (props.disabled) return;
-  overflow.value?.close();
   if (action === "monospace") {
     monospace.value = !monospace.value;
     return;

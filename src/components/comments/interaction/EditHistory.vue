@@ -1,5 +1,5 @@
 <template>
-  <CommentPopover
+  <Popover
     :label="t('reader.comments.editHistory')"
     align="start"
     trigger-class="cursor-pointer text-xs text-base-content/60 hover:underline"
@@ -31,13 +31,13 @@
     <p v-else-if="loaded && !edits.length" class="px-2 py-1.5">
       {{ t("reader.comments.noEdits") }}
     </p>
-  </CommentPopover>
+  </Popover>
 </template>
 
 <script setup>
 import { onBeforeUnmount, ref } from "vue";
 import { useLocale } from "@/i18n";
-import CommentPopover from "./CommentPopover.vue";
+import Popover from "@/components/display/menu/Popover.vue";
 
 const props = defineProps({
   commentId: { type: String, required: true },

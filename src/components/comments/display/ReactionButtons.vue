@@ -17,7 +17,7 @@
       <i :class="vote.icon" aria-hidden="true"></i>
       {{ number(vote.count) }}
     </button>
-    <CommentPopover
+    <Popover
       ref="picker"
       :label="t('reader.comments.chooseReaction')"
       :disabled="disabled"
@@ -42,7 +42,7 @@
       >
         {{ reaction.emoji }}
       </button>
-    </CommentPopover>
+    </Popover>
     <button
       v-for="reaction in activeReactions"
       :key="reaction.content"
@@ -66,7 +66,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useLocale } from "@/i18n";
-import CommentPopover from "../interaction/CommentPopover.vue";
+import Popover from "@/components/display/menu/Popover.vue";
 const props = defineProps({
   groups: { type: Array, default: () => [] },
   disabled: Boolean,

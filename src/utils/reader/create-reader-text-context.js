@@ -329,6 +329,14 @@ export const createReaderTextContext = ({
   ).closest("[data-reader-paragraph-id]");
   const paragraphId =
     paragraph?.dataset.readerParagraphId || paragraph?.id || "";
+  let block = null;
+  if (!selectionDetails && !paragraph && !hasPointTarget) {
+    block =
+      target.closest("[data-markdown-code-block], th, td") ||
+      target.closest(TEXT_BLOCK_SELECTOR) ||
+      target.closest("table, .markdown-content > div");
+    if (block === root || !root.contains(block)) block = null;
+  }
   const selectedText = selectionDetails?.text || pointedFormula?.text || "";
   const latex = activeRange
     ? getLatexSelection(activeRange) ||
@@ -341,16 +349,19 @@ export const createReaderTextContext = ({
           pointedImage.image.getAttribute("alt"),
       )
     : "";
-  const text = selectedText || pointedFormula?.text || imageText || paragraphText ||
-    normalizeReaderText(pointedLink?.textContent || "");
   const shareContent = createReaderShareContent({
     range: activeRange,
     element:
       selectedMermaid ||
       pointedMermaid ||
       pointedImage?.element ||
-      paragraph || pointedLink,
+      paragraph || pointedLink || block?.closest("table") || block,
   });
+  const blockText = block?.matches("[data-markdown-code-block]")
+    ? shareContent.blocks[0]?.runs.map(({ text }) => text).join("") || ""
+    : extractParagraphText(block);
+  const text = selectedText || pointedFormula?.text || imageText || paragraphText ||
+    normalizeReaderText(pointedLink?.textContent || "") || blockText;
   const hasShareContent = Boolean(shareContent.blocks.length);
 
   if (!text && !paragraphId && !hasShareContent && !pointedLink) return null;
@@ -358,6 +369,7 @@ export const createReaderTextContext = ({
   return {
     clientX,
     clientY,
+    hasTextSelection: Boolean(selectionDetails),
     anchorRect:
       selectionDetails?.anchorRect ||
       pointedFormula?.element.getBoundingClientRect() ||

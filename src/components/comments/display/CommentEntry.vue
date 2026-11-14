@@ -30,11 +30,11 @@
         <span v-if="isContentAuthor" class="badge badge-outline badge-xs">
           {{ t("reader.comments.contentAuthor") }}
         </span>
-        <CommentPopover
+        <Popover
           :label="publishedAt"
           :title="publishedAt"
           focus-preview
-          align="start"
+          align="center"
           trigger-class="cursor-pointer whitespace-nowrap text-xs text-base-content/60 hover:underline"
           panel-class="text-xs"
         >
@@ -42,7 +42,7 @@
             <time :datetime="comment.createdAt">{{ relativeTime }}</time>
           </template>
           <time :datetime="comment.createdAt">{{ publishedAt }}</time>
-        </CommentPopover>
+        </Popover>
         <EditHistory
           v-if="comment.lastEditedAt && !comment.isMinimized"
           :key="`${historyRevision}:${comment.lastEditedAt}`"
@@ -50,73 +50,17 @@
           :load-history="loadHistory"
         />
       </div>
-      <CommentPopover
-        v-if="commentUrl || canQuoteComment || canEditComment || canDeleteComment"
-        ref="actions"
-        class="ms-auto"
+      <ActionMenu
         :label="t('reader.comments.actions')"
         :disabled="busy"
-        menu
-        trigger-class="btn btn-ghost btn-xs btn-square"
+        :groups="actionGroups"
+        trigger-class="btn btn-ghost btn-xs btn-square ms-auto"
+        @select="chooseAction"
       >
         <template #trigger>
           <i class="ri-more-line text-base" aria-hidden="true"></i>
         </template>
-        <ul class="menu menu-sm w-full p-0" role="none">
-          <li v-if="commentUrl" role="none">
-            <button
-              class="rounded-inner"
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              @click="copyLink"
-            >
-              {{ t("reader.comments.copyLink") }}
-            </button>
-          </li>
-          <li v-if="canQuoteComment" role="none">
-            <button
-              class="rounded-inner"
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              :disabled="busy"
-              @click="chooseAction('quote')"
-            >
-              {{ t("reader.comments.quoteReply") }}
-            </button>
-          </li>
-          <li
-            v-if="(commentUrl || canQuoteComment) && (canEditComment || canDeleteComment)"
-            class="my-1 border-t border-base-300"
-            role="separator"
-          ></li>
-          <li v-if="canEditComment" role="none">
-            <button
-              class="rounded-inner"
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              :disabled="busy"
-              @click="chooseAction('edit')"
-            >
-              {{ t("reader.comments.edit") }}
-            </button>
-          </li>
-          <li v-if="canDeleteComment" role="none">
-            <button
-              class="rounded-inner text-error"
-              type="button"
-              role="menuitem"
-              tabindex="-1"
-              :disabled="busy"
-              @click="chooseAction('delete')"
-            >
-              {{ t("reader.comments.delete") }}
-            </button>
-          </li>
-        </ul>
-      </CommentPopover>
+      </ActionMenu>
     </header>
     <p v-if="comment.isMinimized" class="px-4 py-4 text-base-content/60">
       {{ t("reader.comments.minimized") }}
@@ -181,12 +125,13 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useClipboard } from "@vueuse/core";
 import Avatar from "@/components/auth/Avatar.vue";
 import Renderer from "@/components/markdown/Renderer.vue";
 import ReactionButtons from "./ReactionButtons.vue";
-import CommentPopover from "../interaction/CommentPopover.vue";
+import ActionMenu from "@/components/display/menu/ActionMenu.vue";
+import Popover from "@/components/display/menu/Popover.vue";
 import EditHistory from "../interaction/EditHistory.vue";
 import { useLocale } from "@/i18n";
 import { formatRelativeDate } from "@/i18n/format-date";
@@ -209,10 +154,9 @@ const props = defineProps({
   busy: Boolean,
 });
 const emit = defineEmits(["reply", "quote", "edit", "delete", "react", "toggle-replies"]);
-const actions = ref(null);
 function chooseAction(action) {
-  actions.value?.close();
-  emit(action);
+  if (action === "copyLink") void copyLink();
+  else emit(action);
 }
 const { t, locale, date: formatDate, number } = useLocale();
 const login = computed(() => props.comment.author?.login?.toLowerCase());
@@ -236,8 +180,26 @@ const canEditComment = computed(
 const canDeleteComment = computed(
   () => props.permissions && !props.comment.isMinimized && props.comment.viewerCanDelete,
 );
+const actionGroups = computed(() => [
+  {
+    items: [
+      commentUrl.value && { id: "copyLink", label: t("reader.comments.copyLink") },
+      canQuoteComment.value && { id: "quote", label: t("reader.comments.quoteReply") },
+    ].filter(Boolean),
+  },
+  {
+    items: [
+      canEditComment.value && { id: "edit", label: t("reader.comments.edit") },
+      canDeleteComment.value && {
+        id: "delete",
+        label: t("reader.comments.delete"),
+        destructive: true,
+      },
+    ].filter(Boolean),
+  },
+]);
+
 async function copyLink() {
-  actions.value?.close();
   try {
     await copy(commentUrl.value);
     if (!copied.value) throw new Error("Clipboard is unavailable");

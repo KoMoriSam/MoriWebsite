@@ -1,94 +1,16 @@
 <template>
-  <Teleport to="body">
-    <Transition
-      appear
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="scale-95 opacity-0"
-      leave-active-class="transition duration-100 ease-in"
-      leave-to-class="scale-95 opacity-0"
-    >
-      <div
-        v-if="modelValue"
-        ref="menuRef"
-        class="fixed z-[100] w-fit max-w-[calc(100dvw-1rem)] rounded-box border border-base-300 bg-base-100 text-base-content shadow-xl"
-        :style="menuPosition"
-        data-reader-interactive
-        :aria-label="translate('reader.contextMenu.label')"
-        @pointerdown.stop
-        @contextmenu.prevent
-      >
-        <ScrollableContainer>
-          <ul class="menu menu-horizontal min-h-0 max-w-full flex-nowrap overflow-x-auto overscroll-x-contain p-1 scrollbar-thin">
-            <li v-if="context.latex?.pure">
-              <button type="button" @click="copyLatexSource">
-                <i class="ri-braces-line" aria-hidden="true"></i>
-                <span>{{ translate('reader.contextMenu.copyLatex') }}</span>
-              </button>
-            </li>
-            <li v-if="context.latex?.pure">
-              <button type="button" @click="copyLatexAsSvg">
-                <i class="ri-shapes-line" aria-hidden="true"></i>
-                <span>{{ translate('reader.contextMenu.copySvg') }}</span>
-              </button>
-            </li>
-            <li v-else>
-              <button
-                type="button"
-                :disabled="context.image ? !context.image.src : !context.link && !context.text"
-                @click="handlePrimaryAction"
-              >
-                <i
-                  :class="
-                    context.image ? 'ri-download-2-line' : 'ri-file-copy-line'
-                  "
-                  aria-hidden="true"
-                ></i>
-                <span>{{ context.image ? translate('reader.format.save') : translate('reader.contextMenu.copy') }}</span>
-              </button>
-            </li>
-            <li v-if="context.link">
-              <a
-                :href="context.link"
-                target="_blank"
-                rel="noopener noreferrer"
-                @click="close"
-              >
-                <i class="ri-external-link-line" aria-hidden="true"></i>
-                <span>{{ translate('reader.contextMenu.open') }}</span>
-              </a>
-            </li>
-            <li>
-              <button type="button" :disabled="!context.text" @click="searchText">
-                <i class="ri-search-line" aria-hidden="true"></i>
-                <span>{{ translate('common.nav.search') }}</span>
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                :disabled="!context.text && !context.shareContent?.blocks?.length"
-                @click="shareText"
-              >
-                <i class="ri-share-forward-line" aria-hidden="true"></i>
-                <span>{{ translate('markdown.moment.share') }}</span>
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                :disabled="!context.paragraphId"
-                @click="openComment"
-              >
-                <i class="ri-chat-quote-line" aria-hidden="true"></i>
-                <span>{{ translate('markdown.moment.comments') }}</span>
-              </button>
-            </li>
-
-          </ul>
-        </ScrollableContainer>
-</div>
-    </Transition>
-  </Teleport>
+  <ActionMenu
+    ref="menu"
+    :label="translate('reader.contextMenu.label')"
+    :groups="groups"
+    align="center"
+    :horizontal="selectionMenu"
+    :placement="selectionMenu ? 'top' : 'side'"
+    :gap="10"
+    preserve-selection
+    @close="close"
+    @select="runAction"
+  />
   <component
     :is="shareDialogComponent"
     v-if="shareDialogComponent"
@@ -97,15 +19,13 @@
 </template>
 
 <script setup>
-import ScrollableContainer from "@/components/layout/ScrollableContainer.vue";
+import ActionMenu from "@/components/display/menu/ActionMenu.vue";
 import { useLocale } from '@/i18n';
 const { t: translate } = useLocale();
 
 import {
   computed,
   nextTick,
-  onBeforeUnmount,
-  onMounted,
   ref,
   shallowRef,
   watch,
@@ -120,70 +40,56 @@ const props = defineProps({
 });
 const emit = defineEmits(["update:modelValue", "search", "comment"]);
 const toast = useToast({ position: "center", closable: false });
-const menuRef = ref(null);
+const menu = ref(null);
 const shareDialogRef = ref(null);
 const shareDialogComponent = shallowRef(null);
-const position = ref({ left: 8, top: 8 });
-const positioned = ref(false);
 let shareDialogPromise;
-const menuPosition = computed(() => ({
-  left: `${position.value.left}px`,
-  top: `${position.value.top}px`,
-  visibility: positioned.value ? "visible" : "hidden",
-}));
 
-const close = () => emit("update:modelValue", false);
-const positionMenu = async () => {
-  await nextTick();
-  const menu = menuRef.value;
-  if (!menu) return;
-  const menuWidth = menu.offsetWidth;
-  const menuHeight = menu.offsetHeight;
+const menuContext = shallowRef({});
+watch(
+  () => props.modelValue ? props.context : null,
+  (context) => {
+    // Keep the last open menu intact while its panel transitions out.
+    if (context) menuContext.value = context;
+  },
+  { immediate: true },
+);
 
-  const margin = 8;
-  const visualViewport = window.visualViewport;
-  const viewportLeft = visualViewport?.offsetLeft || 0;
-  const viewportTop = visualViewport?.offsetTop || 0;
-  const viewportRight =
-    viewportLeft + (visualViewport?.width || window.innerWidth);
-  const viewportBottom =
-    viewportTop + (visualViewport?.height || window.innerHeight);
-  const anchor = props.context.anchorRect;
-  const anchorLeft = anchor
-    ? anchor.left + anchor.width / 2
-    : Number(props.context.clientX || viewportLeft + margin);
-  const anchorTop =
-    anchor?.top ?? Number(props.context.clientY || viewportTop + margin);
-  const anchorBottom = anchor?.bottom ?? anchorTop;
-  const desiredLeft = anchorLeft - menuWidth / 2;
-  const spaceAbove = anchorTop - viewportTop - margin - 10;
-  const spaceBelow = viewportBottom - anchorBottom - margin - 10;
-  const placeAbove =
-    spaceAbove >= menuHeight ||
-    (spaceBelow < menuHeight && spaceAbove >= spaceBelow);
-  const desiredTop = placeAbove
-    ? anchorTop - menuHeight - 10
-    : anchorBottom + 10;
-  position.value = {
-    left: Math.min(
-      viewportRight - menuWidth - margin,
-      Math.max(viewportLeft + margin, desiredLeft),
-    ),
-    top: Math.min(
-      viewportBottom - menuHeight - margin,
-      Math.max(viewportTop + margin, desiredTop),
-    ),
-  };
-  positioned.value = true;
+const selectionMenu = computed(() =>
+  menuContext.value.hasTextSelection && !menuContext.value.explicitContextMenu,
+);
+
+const groups = computed(() => {
+  const context = menuContext.value;
+  const primary = context.latex?.pure
+    ? [
+        { id: "latex", icon: "ri-braces-line", label: translate("reader.contextMenu.copyLatex") },
+        { id: "svg", icon: "ri-shapes-line", label: translate("reader.contextMenu.copySvg") },
+      ]
+    : [{
+        id: "primary",
+        icon: context.image ? "ri-download-2-line" : "ri-file-copy-line",
+        label: context.image ? translate("reader.format.save") : translate("reader.contextMenu.copy"),
+        disabled: context.image ? !context.image.src : !context.link && !context.text,
+      }];
+  if (context.link) {
+    primary.push({ id: "link", icon: "ri-external-link-line", label: translate("reader.contextMenu.open"), href: context.link });
+  }
+  return [
+    { items: primary },
+    {
+      items: [
+        { id: "search", icon: "ri-search-line", label: translate("common.nav.search"), disabled: !context.text },
+        { id: "share", icon: "ri-share-forward-line", label: translate("markdown.moment.share"), disabled: !context.text && !context.shareContent?.blocks?.length },
+        { id: "comment", icon: "ri-chat-quote-line", label: translate("markdown.moment.comments"), disabled: !context.paragraphId },
+      ],
+    },
+  ];
+});
+
+const close = () => {
+  if (props.modelValue) emit("update:modelValue", false);
 };
-
-const handleOutsidePointerDown = (event) => {
-  if (!props.modelValue || menuRef.value?.contains(event.target)) return;
-  const selection = window.getSelection?.();
-  if (selection && !selection.isCollapsed) return;
-  close();
-};
-const handleViewportChange = () => props.modelValue && void positionMenu();
 
 const copyToClipboard = async (text) => {
   if (navigator.clipboard?.writeText) {
@@ -348,34 +254,33 @@ const openComment = () => {
   close();
 };
 
+function runAction(id) {
+  const actions = {
+    latex: copyLatexSource,
+    svg: copyLatexAsSvg,
+    primary: handlePrimaryAction,
+    search: searchText,
+    share: shareText,
+    comment: openComment,
+  };
+  actions[id]?.();
+}
+
+function syncMenu() {
+  if (!props.modelValue) {
+    menu.value?.close();
+    return;
+  }
+  const { anchorRect, clientX, clientY, explicitContextMenu } = menuContext.value;
+  const x = clientX ?? (window.visualViewport?.offsetLeft ?? 0) + 8;
+  const y = clientY ?? (window.visualViewport?.offsetTop ?? 0) + 8;
+  const point = { left: x, right: x, top: y, bottom: y };
+  void menu.value?.show(explicitContextMenu ? point : anchorRect ?? point);
+}
+
 watch(
-  () => [
-    props.modelValue,
-    props.context.clientX,
-    props.context.clientY,
-    props.context.anchorRect?.left,
-    props.context.anchorRect?.right,
-    props.context.anchorRect?.top,
-    props.context.anchorRect?.bottom,
-  ],
-  ([open]) => {
-    positioned.value = false;
-    if (open) void positionMenu();
-  },
+  [menu, () => props.modelValue, menuContext],
+  syncMenu,
   { flush: "post" },
 );
-
-onMounted(() => {
-  document.addEventListener("pointerdown", handleOutsidePointerDown, true);
-  window.addEventListener("resize", handleViewportChange);
-  window.visualViewport?.addEventListener("resize", handleViewportChange);
-  window.visualViewport?.addEventListener("scroll", handleViewportChange);
-  if (props.modelValue) void positionMenu();
-});
-onBeforeUnmount(() => {
-  document.removeEventListener("pointerdown", handleOutsidePointerDown, true);
-  window.removeEventListener("resize", handleViewportChange);
-  window.visualViewport?.removeEventListener("resize", handleViewportChange);
-  window.visualViewport?.removeEventListener("scroll", handleViewportChange);
-});
 </script>
